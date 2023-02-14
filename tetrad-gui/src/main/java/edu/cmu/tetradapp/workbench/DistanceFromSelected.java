@@ -22,8 +22,8 @@
 package edu.cmu.tetradapp.workbench;
 
 
-import edu.cmu.tetrad.graph.FruchtermanReingoldLayout;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.LayoutEditable;
 
@@ -99,7 +99,7 @@ final class DistanceFromSelected {
 
     public void doLayout() {
         if (this.selected.isEmpty()) {
-            new FruchtermanReingoldLayout(this.graph).doLayout();
+            new LayoutUtil.FruchtermanReingoldLayout(this.graph).doLayout();
             return;
         }
 
@@ -201,7 +201,7 @@ final class DistanceFromSelected {
             if (!children.isEmpty() && cMin < pMax + 2) {
                 int diff = (pMax + 2) - cMin;
                 List<Node> descendants =
-                        graph.getDescendants(Collections.singletonList(node));
+                        graph.paths().getDescendants(Collections.singletonList(node));
                 descendants.retainAll(keySet);
                 descendants.remove(node);
 

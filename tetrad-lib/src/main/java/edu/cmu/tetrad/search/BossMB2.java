@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -52,18 +53,18 @@ public class BossMB2 {
      * Prints local graphs for all variables and returns the one of them.
      */
     public Graph search(@NotNull List<Node> order) {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
         TeyssierScorer2 scorer0 = new TeyssierScorer2(this.score);
         scorer0.setKnowledge(this.knowledge);
         scorer0.score(order);
 
-        this.start = System.currentTimeMillis();
+        this.start =  MillisecondTimes.timeMillis();
 
         makeValidKnowledgeOrder(order);
 
-        System.out.println("Initial score = " + scorer0.score() + " Elapsed = " + (System.currentTimeMillis() - start) / 1000.0 + " s");
+        System.out.println("Initial score = " + scorer0.score() + " Elapsed = " + (MillisecondTimes.timeMillis() - start) / 1000.0 + " s");
 
         List<Node> _targets = new ArrayList<>(scorer0.getPi());
         sort(_targets);
@@ -111,7 +112,7 @@ public class BossMB2 {
             }
         }
 
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed time = " + (stop - start) / 1000.0 + " s");
 
@@ -209,7 +210,7 @@ public class BossMB2 {
             scorer.bookmark();
 
             if (verbose) {
-                System.out.println("After snips: # vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s") + " order = " + scorer.getPi());
+                System.out.println("After snips: # vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s") + " order = " + scorer.getPi());
             }
 
 
@@ -225,7 +226,7 @@ public class BossMB2 {
                             scorer.bookmark();
 
                             if (verbose) {
-                                System.out.println("# vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                                System.out.println("# vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                             }
                         } else {
                             scorer.goToBookmark();
@@ -245,27 +246,8 @@ public class BossMB2 {
         bes.setVerbose(verbose);
         bes.setKnowledge(knowledge);
         bes.bes(graph, scorer.getPi());
-        return causalOrder(scorer.getPi(), graph);
+        return graph.paths().validOrder(scorer.getPi(), true);
     }
-
-    private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
-        List<Node> found = new ArrayList<>();
-        boolean _found = true;
-
-        while (_found) {
-            _found = false;
-
-            for (Node node : initialOrder) {
-                HashSet<Node> __found = new HashSet<>(found);
-                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-                    found.add(node);
-                    _found = true;
-                }
-            }
-        }
-        return found;
-    }
-
 
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (!this.knowledge.isEmpty()) {

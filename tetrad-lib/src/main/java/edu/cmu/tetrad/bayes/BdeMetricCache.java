@@ -24,7 +24,6 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.ProbUtils;
 import org.apache.commons.math3.special.Gamma;
 
 import java.util.HashMap;

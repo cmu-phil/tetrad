@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -82,7 +83,7 @@ public class ConditionalGaussianScore implements Score {
         double lik = ret.getLik();
         int k = ret.getDof();
 
-        double score = 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * Math.log(rows.size());
+        double score = 2.0 * (lik + getStructurePrior(parents)) - getPenaltyDiscount() * k * FastMath.log(rows.size());
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NEGATIVE_INFINITY;
@@ -123,7 +124,7 @@ public class ConditionalGaussianScore implements Score {
             int k = parents.length;
             double n = this.dataSet.getNumColumns() - 1;
             double p = this.structurePrior / n;
-            return k * Math.log(p) + (n - k) * Math.log(1.0 - p);
+            return k * FastMath.log(p) + (n - k) * FastMath.log(1.0 - p);
         }
     }
 
@@ -184,7 +185,7 @@ public class ConditionalGaussianScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(Math.log(this.dataSet.getNumRows()));
+        return (int) FastMath.ceil(FastMath.log(this.dataSet.getNumRows()));
     }
 
     @Override

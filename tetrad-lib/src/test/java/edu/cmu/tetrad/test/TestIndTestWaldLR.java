@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
@@ -63,7 +63,7 @@ public class TestIndTestWaldLR {
                 nodes.add(new ContinuousVariable("X" + (i1 + 1)));
             }
 
-            Graph graph = GraphUtils.randomGraph(nodes, 0, 10,
+            Graph graph = RandomGraph.randomGraph(nodes, 0, 10,
                     3, 3, 3, false);
             SemPm pm = new SemPm(graph);
             SemIm im = new SemIm(pm);

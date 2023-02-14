@@ -58,7 +58,7 @@ public class TestLingamPattern {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 6,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 6,
                 4, 4, 4, false));
 
         List<Distribution> variableDistributions = new ArrayList<>();
@@ -109,7 +109,12 @@ public class TestLingamPattern {
 
         // Create some index arrays to hopefully speed up the simulation.
         SemGraph graph = semIm.getSemPm().getGraph();
-        List<Node> tierOrdering = graph.getCausalOrdering();
+
+
+        List<Node> tierOrdering = graph.paths().validOrder(graph.getNodes(), true);
+
+        System.out.println(graph);
+
 
         int[] tierIndices = new int[variableNodes.size()];
 

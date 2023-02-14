@@ -31,6 +31,7 @@ import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -151,7 +152,7 @@ public final class HbmsBeam implements Hbsms {
                         continue;
                     }
 
-                    if (isCheckingCycles() && graph.existsDirectedCycle()) {
+                    if (isCheckingCycles() && graph.paths().existsDirectedCycle()) {
                         continue;
                     }
 
@@ -358,7 +359,7 @@ public final class HbmsBeam implements Hbsms {
                     continue;
                 }
 
-                if (!graph.isAncestorOf(nodes.get(j), nodes.get(i))) {
+                if (!graph.paths().isAncestorOf(nodes.get(j), nodes.get(i))) {
                     Edge edge = Edges.directedEdge(nodes.get(i), nodes.get(j));
                     moves.add(new Move(edge, HbmsBeam.Move.Type.ADD));
                 }
@@ -386,7 +387,7 @@ public final class HbmsBeam implements Hbsms {
                 continue;
             }
 
-            if (graph.isAncestorOf(j, i)) {
+            if (graph.paths().isAncestorOf(j, i)) {
                 continue;
             }
 
@@ -510,7 +511,7 @@ public final class HbmsBeam implements Hbsms {
                     nodeB = nextNode;
                 }
             }
-            if (!graph.isAncestorOf(nodeB, nodeA)) {
+            if (!graph.paths().isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdge(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
                 TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
@@ -534,7 +535,7 @@ public final class HbmsBeam implements Hbsms {
             }
             if (nodeA != null && nodeB != null && graph.isAdjacentTo(nodeA, nodeB) &&
                     !graph.isChildOf(nodeA, nodeB)) {
-                if (!graph.isAncestorOf(nodeA, nodeB)) {
+                if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                     graph.removeEdges(nodeA, nodeB);
                     graph.addDirectedEdge(nodeB, nodeA);
                     TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
@@ -557,14 +558,14 @@ public final class HbmsBeam implements Hbsms {
             int sampleSize = scorer.getSampleSize();
 
             this.chisq = (sampleSize - 1) * getFml();
-            this.bic = this.chisq - this.dof * Math.log(sampleSize);
+            this.bic = this.chisq - this.dof * FastMath.log(sampleSize);
         }
 
         private Score() {
             int sampleSize = 1000;
             this.fml = Double.POSITIVE_INFINITY;
             this.chisq = (sampleSize - 1) * this.fml;
-            this.bic = this.chisq - this.dof * Math.log(sampleSize);
+            this.bic = this.chisq - this.dof * FastMath.log(sampleSize);
         }
 
         public SemIm getEstimatedSem() {

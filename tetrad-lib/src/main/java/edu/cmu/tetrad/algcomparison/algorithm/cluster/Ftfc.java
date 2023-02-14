@@ -42,7 +42,7 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
             ICovarianceMatrix cov;
 
             if (dataSet instanceof DataSet) {
-                cov = DataUtils.getCovMatrix(dataSet);
+                cov = SimpleDataLoader.getCovarianceMatrix(dataSet);
             } else if (dataSet instanceof ICovarianceMatrix) {
                 cov = (ICovarianceMatrix) dataSet;
             } else {

@@ -6,10 +6,10 @@ import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -54,7 +54,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
                 if (!file.getName().endsWith(".txt")) continue;
                 System.out.println("Loading data from " + file.getAbsolutePath());
                 try {
-                    DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"',
+                    DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"',
                             "*", true, Delimiter.TAB);
                     this.dataSets.add(dataSet);
                 } catch (Exception e) {
@@ -75,7 +75,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
                 System.out.println("Loading graph from " + file.getAbsolutePath());
                 this.graph = readGraph(file);
 
-                GraphUtils.circleLayout(this.graph, 225, 200, 150);
+                LayoutUtil.circleLayout(this.graph, 225, 200, 150);
 
                 break;
             }
@@ -131,7 +131,7 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
 
     public Graph readGraph(File file) {
         try {
-            DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
+            DataSet data = SimpleDataLoader.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
             List<Node> variables = data.getVariables();
             Graph graph = new EdgeListGraph(variables);

@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.UpdaterWrapper;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
@@ -162,7 +163,7 @@ class EvidenceWizardMultiple extends JPanel {
 
             for (int j = 0; j < bayesPm.getNumCategories(selectedNode); j++) {
                 double prob = getUpdaterWrapper().getBayesUpdater().getMarginal(nodeIndex, j);
-                double logOdds = Math.log(prob / (1. - prob));
+                double logOdds = FastMath.log(prob / (1. - prob));
 
                 marginalsArea.append("Category " +
                         bayesPm.getCategory(selectedNode, j) + ": p = " +
@@ -206,7 +207,7 @@ class EvidenceWizardMultiple extends JPanel {
         for (int row = 0; row < numRows; row++) {
             int[] values = getCategories(row, dims);
             double prob = getUpdaterWrapper().getBayesUpdater().getJointMarginal(variables, values);
-            double logOdds = Math.log(prob / (1. - prob));
+            double logOdds = FastMath.log(prob / (1. - prob));
 
             marginalsArea.append("\n");
 

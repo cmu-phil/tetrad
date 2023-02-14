@@ -25,14 +25,13 @@ import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradAlgebra;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.sqrt;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * Stores a covariance matrix together with variable names and sample size,
@@ -92,7 +91,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         List<Node> variables = new ArrayList<>();
         Node x = new ContinuousVariable("X");
         variables.add(x);
-        Matrix matrix = TetradAlgebra.identity(1);
+        Matrix matrix = Matrix.identity(1);
         return new CovarianceMatrix(variables, matrix, 100); //
     }
 

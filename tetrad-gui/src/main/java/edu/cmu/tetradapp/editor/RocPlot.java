@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -319,7 +320,7 @@ class RocPlot extends JPanel implements PropertyChangeListener {
         g.setFont(this.fontBold);
 
         // # radians to rotate.
-        final double theta = -Math.PI / 2;
+        final double theta = -FastMath.PI / 2;
 
         Rectangle plotRect = getPlotRect();
         /*

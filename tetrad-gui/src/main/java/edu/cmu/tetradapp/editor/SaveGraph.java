@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import javax.swing.*;
@@ -82,18 +82,18 @@ public class SaveGraph extends AbstractAction {
 
         if (this.type == Type.xml) {
             File file = EditorUtils.getSaveFile("graph", "xml", parent, false, this.title);
-            PrintWriter out = GraphUtils.saveGraph(graph, file, true);
+            PrintWriter out = GraphPersistence.saveGraph(graph, file, true);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
             out.close();
         } else if (this.type == Type.text) {
             File file = EditorUtils.getSaveFile("graph", "txt", parent, false, this.title);
-            PrintWriter out = GraphUtils.saveGraph(graph, file, false);
+            PrintWriter out = GraphPersistence.saveGraph(graph, file, false);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
             out.close();
         } else if (this.type == Type.r) {
             File file = EditorUtils.getSaveFile("graph", "r.txt", parent, false, this.title);
             try {
-                String text = GraphUtils.graphRMatrixTxt(graph);
+                String text = GraphPersistence.graphRMatrixTxt(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
@@ -128,7 +128,7 @@ public class SaveGraph extends AbstractAction {
         } else if (this.type == Type.dot) {
             File file = EditorUtils.getSaveFile("graph", "dot", parent, false, this.title);
             try {
-                String text = GraphUtils.graphToDot(graph);
+                String text = GraphPersistence.graphToDot(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
@@ -145,7 +145,7 @@ public class SaveGraph extends AbstractAction {
         }else if (this.type == Type.pcalg) {
             File file = EditorUtils.getSaveFile("graph", "pcalg.csv", parent, false, this.title);
             try {
-                String text = GraphUtils.graphToPcalg(graph);
+                String text = GraphPersistence.graphToPcalg(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);

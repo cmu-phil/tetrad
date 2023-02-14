@@ -28,7 +28,7 @@ import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
-import edu.cmu.tetrad.algcomparison.statistic.ElapsedTime;
+import edu.cmu.tetrad.algcomparison.statistic.ElapsedCpuTime;
 import edu.cmu.tetrad.algcomparison.statistic.ParameterColumn;
 import edu.cmu.tetrad.algcomparison.statistic.Statistic;
 import edu.cmu.tetrad.algcomparison.statistic.Statistics;
@@ -39,9 +39,9 @@ import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 import org.reflections.Reflections;
 
 import java.io.*;
@@ -498,7 +498,7 @@ public class TimeoutComparison {
                     File file2 = new File(dir1, "graph." + (j + 1) + ".txt");
                     Graph graph = simulationWrapper.getTrueGraph(j);
 
-                    GraphUtils.saveGraph(graph, file2, false);
+                    GraphPersistence.saveGraph(graph, file2, false);
 
                     File file = new File(dir2, "data." + (j + 1) + ".txt");
                     Writer out = new FileWriter(file);
@@ -508,12 +508,12 @@ public class TimeoutComparison {
 
                     if (isSaveCPDAGs()) {
                         File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
-                        GraphUtils.saveGraph(SearchGraphUtils.cpdagForDag(graph), file3, false);
+                        GraphPersistence.saveGraph(SearchGraphUtils.cpdagForDag(graph), file3, false);
                     }
 
                     if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphUtils.saveGraph(dagToPag(graph), file4, false);
+                        GraphPersistence.saveGraph(dagToPag(graph), file4, false);
                     }
                 }
 
@@ -816,7 +816,7 @@ public class TimeoutComparison {
     }
 
     private String dateTimeNow() {
-        return TimeoutComparison.DF.format(new Date(System.currentTimeMillis()));
+        return TimeoutComparison.DF.format(new Date(MillisecondTimes.timeMillis()));
     }
 
     private void shutdownAndAwaitTermination(ExecutorService pool) {
@@ -1073,7 +1073,7 @@ public class TimeoutComparison {
         System.out.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
                 + " simulationWrapper: " + simulationWrapper.getDescription());
 
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         Graph out;
 
         try {
@@ -1097,12 +1097,13 @@ public class TimeoutComparison {
                 for (int i = 0; i < numDataModels; i++) {
                     indices.add(i);
                 }
-                Collections.shuffle(indices);
+                RandomUtil.shuffle(indices);
 
                 List<DataModel> dataModels = new ArrayList<>();
                 int randomSelectionSize = algorithmWrapper.getAlgorithmSpecificParameters().getInt(
                         "randomSelectionSize");
-                for (int i = 0; i < Math.min(numDataModels, randomSelectionSize); i++) {
+                for (int i = 0; i <
+                        FastMath.min(numDataModels, randomSelectionSize); i++) {
                     dataModels.add(simulationWrapper.getSimulation().getDataModel(indices.get(i)));
                 }
 
@@ -1122,7 +1123,7 @@ public class TimeoutComparison {
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
         int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         long elapsed = stop - start;
 
@@ -1195,7 +1196,7 @@ public class TimeoutComparison {
 
                     double stat;
 
-                    if (_stat instanceof ElapsedTime) {
+                    if (_stat instanceof ElapsedCpuTime) {
                         stat = elapsed / 1000.0;
                     } else {
                         stat = _stat.getValue(truth[u], est[u], null);
@@ -1444,7 +1445,7 @@ public class TimeoutComparison {
                         table.setToken(t + 1, initialColumn + statIndex, "*");
                     } else {
                         table.setToken(t + 1, initialColumn + statIndex,
-                                Math.abs(stat) < Math.pow(10, -smallNf.getMaximumFractionDigits()) && stat != 0 ? smallNf.format(stat) : nf.format(stat));
+                                FastMath.abs(stat) < FastMath.pow(10, -smallNf.getMaximumFractionDigits()) && stat != 0 ? smallNf.format(stat) : nf.format(stat));
                     }
                 }
 

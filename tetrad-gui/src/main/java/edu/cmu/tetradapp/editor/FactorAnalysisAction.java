@@ -35,6 +35,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -134,15 +135,15 @@ public class FactorAnalysisAction extends AbstractAction {
 
         for (int i = 0; i < rotatedSolution.rows(); i++) {
             for (int j = 0; j < rotatedSolution.columns(); j++) {
-                if (Math.abs(rotatedSolution.get(i, j)) > threshold) {
+                if (FastMath.abs(rotatedSolution.get(i, j)) > threshold) {
                     graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
                     //HEY JOE -- rotatedSolution.get(i, j) is the edge coeficient
                 }
             }
         }
 
-        GraphUtils.circleLayout(graph, 225, 200, 150);
-        GraphUtils.fruchtermanReingoldLayout(graph);
+        LayoutUtil.circleLayout(graph, 225, 200, 150);
+        LayoutUtil.fruchtermanReingoldLayout(graph);
 
         GraphWorkbench workbench = new GraphWorkbench(graph);
 
@@ -182,7 +183,7 @@ public class FactorAnalysisAction extends AbstractAction {
                 } else if (i > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
-                    token += Math.abs(coefficient) > threshold ? "*" : " ";
+                    token += FastMath.abs(coefficient) > threshold ? "*" : " ";
                     table.setToken(i, j, token);
                 }
             }
@@ -206,7 +207,7 @@ public class FactorAnalysisAction extends AbstractAction {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 9,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 9,
                 30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);

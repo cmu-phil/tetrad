@@ -24,7 +24,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -135,7 +137,7 @@ public final class SvarGFci implements GraphSearch {
 
 
     public Graph search() {
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         List<Node> nodes = getIndependenceTest().getVariables();
 
@@ -197,15 +199,7 @@ public final class SvarGFci implements GraphSearch {
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(this.graph);
 
-//        System.out.println("GFCI: Final orientation done");
-
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
-
-        long time2 = System.currentTimeMillis();
-
-        long elapsedTime = time2 - time1;
-
-        this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         return this.graph;
     }
@@ -499,7 +493,7 @@ public final class SvarGFci implements GraphSearch {
         int ntiers = knowledge.getNumTiers();
         int indx_tier = knowledge.isInWhichTier(x);
         int indy_tier = knowledge.isInWhichTier(y);
-        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
         List tier_x = knowledge.getTier(indx_tier);
@@ -573,7 +567,7 @@ public final class SvarGFci implements GraphSearch {
         int ntiers = this.knowledge.getNumTiers();
         int indx_tier = this.knowledge.isInWhichTier(x);
         int indy_tier = this.knowledge.isInWhichTier(y);
-        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
         List tier_x = this.knowledge.getTier(indx_tier);

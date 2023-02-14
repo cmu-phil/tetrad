@@ -22,8 +22,10 @@ package edu.cmu.tetrad.sem;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
-import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import edu.cmu.tetrad.util.dist.Uniform;
@@ -32,13 +34,14 @@ import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.apache.commons.math3.random.Well1024a;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.sqrt;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * Stores a SEM model, pared down, for purposes of simulating data sets with
@@ -54,7 +57,6 @@ public final class LargeScaleSimulation {
     private double[][] coefs;
     private double[] errorVars;
     private double[] means;
-    private transient TetradAlgebra algebra;
     private final List<Node> variableNodes;
     private final Graph graph;
     private double coefLow;
@@ -83,7 +85,9 @@ public final class LargeScaleSimulation {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
 
-        List<Node> causalOrdering = graph.getCausalOrdering();
+        Paths paths = graph.paths();
+        List<Node> initialOrder = graph.getNodes();
+        List<Node> causalOrdering = paths.validOrder(initialOrder, true);
         this.tierIndices = new int[causalOrdering.size()];
         for (int i = 0; i < this.tierIndices.length; i++) {
             this.tierIndices[i] = this.variableNodes.indexOf(causalOrdering.get(i));
@@ -215,7 +219,7 @@ public final class LargeScaleSimulation {
         NormalDistribution normal = new NormalDistribution(new Well1024a(++this.seed), 0, 1);
 
         Matrix B = new Matrix(getCoefficientMatrix());
-        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+        Matrix iMinusBInv = Matrix.identity(B.rows()).minus(B).inverse();
 
         double[][] all = new double[this.variableNodes.size()][sampleSize];
 
@@ -514,14 +518,6 @@ public final class LargeScaleSimulation {
         this.alreadySetUp = true;
     }
 
-    public TetradAlgebra getAlgebra() {
-        if (this.algebra == null) {
-            this.algebra = new TetradAlgebra();
-        }
-
-        return this.algebra;
-    }
-
     public Graph getGraph() {
         return this.graph;
     }
@@ -582,7 +578,7 @@ public final class LargeScaleSimulation {
         int ntiers = knowledge.getNumTiers();
         int indx_tier = knowledge.isInWhichTier(x);
         int indy_tier = knowledge.isInWhichTier(y);
-        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
         List<String> tier_x = knowledge.getTier(indx_tier);

@@ -113,7 +113,7 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     private BCInference setup(DataSet dataSet) {
-        int[] nodeDimensions = new int[dataSet.getNumColumns() + 1];
+        int[] nodeDimensions = new int[dataSet.getNumColumns() + 2];
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             DiscreteVariable variable = (DiscreteVariable) (dataSet.getVariable(j));

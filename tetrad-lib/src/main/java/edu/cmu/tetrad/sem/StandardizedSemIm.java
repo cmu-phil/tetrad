@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.Math.sqrt;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * A special SEM model in which variances of variables are always 1 and means of variables
@@ -135,7 +135,7 @@ public class StandardizedSemIm implements Simulator {
         this.semGraph.setShowErrorTerms(true);
         this.sampleSize = parameters.getInt(Params.SAMPLE_SIZE);
 
-        if (this.semGraph.existsDirectedCycle()) {
+        if (this.semGraph.paths().existsDirectedCycle()) {
             throw new IllegalArgumentException("The cyclic case is not handled.");
         }
 
@@ -558,12 +558,12 @@ public class StandardizedSemIm implements Simulator {
         return simulateDataReducedForm(sampleSize, latentDataSaved);
     }
 
-    @Override
-    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-        RandomUtil random = RandomUtil.getInstance();
-        random.setSeed(seed);
-        return simulateData(sampleSize, latentDataSaved);
-    }
+//    @Override
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateData(sampleSize, latentDataSaved);
+//    }
 
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         this.edgeCoef = null;
@@ -574,7 +574,7 @@ public class StandardizedSemIm implements Simulator {
 
         // Calculate inv(I - edgeCoefC)
         Matrix B = edgeCoef().transpose();
-        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+        Matrix iMinusBInv = Matrix.identity(B.rows()).minus(B).inverse();
 
         // Pick error values e, for each calculate inv * e.
         Matrix sim = new Matrix(sampleSize, numVars);
@@ -857,7 +857,7 @@ public class StandardizedSemIm implements Simulator {
                     coef2 = 1;
                 }
 
-                List<List<Node>> treks = GraphUtils.treksIncludingBidirected(this.semGraph, node1, node2);
+                List<List<Node>> treks = this.semGraph.paths().treksIncludingBidirected(node1, node2);
 
                 double cov = 0.0;
 

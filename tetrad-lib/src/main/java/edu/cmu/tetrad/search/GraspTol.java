@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -10,8 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.util.Collections.shuffle;
 
 
 /**
@@ -61,8 +62,12 @@ public class GraspTol {
         this.variables = new ArrayList<>(test.getVariables());
     }
 
+    public GraspTol(List<Node> variables) {
+        this.variables = variables;
+    }
+
     public List<Node> bestOrder(@NotNull List<Node> order) {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
@@ -91,7 +96,7 @@ public class GraspTol {
                 shuffle(order);
             }
 
-            this.start = System.currentTimeMillis();
+            this.start =  MillisecondTimes.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -112,7 +117,7 @@ public class GraspTol {
 
         this.scorer.score(bestPerm);
 
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
@@ -163,7 +168,7 @@ public class GraspTol {
                                 System.out.println("# Edges = " + scorer.getNumEdges()
                                         + " Score = " + scorer.score()
                                         + " (betterMutation)"
-                                        + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " sp"));
+                                        + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " sp"));
                             }
                         }
                     }
@@ -265,7 +270,7 @@ public class GraspTol {
             TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
                     + " Score = " + scorer.score()
                     + " (GRaSP)"
-                    + " Elapsed " + ((System.currentTimeMillis() - this.start) / 1000.0 + " s"));
+                    + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();

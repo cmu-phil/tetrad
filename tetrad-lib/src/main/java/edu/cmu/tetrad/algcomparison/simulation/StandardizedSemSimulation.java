@@ -12,6 +12,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +47,9 @@ public class StandardizedSemSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (!newModel && !dataSets.isEmpty()) return;
+        if (parameters.getLong(Params.SEED) != -1L) {
+            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+        }
 
         Graph graph = this.randomGraph.createGraph(parameters);
 
@@ -94,6 +97,7 @@ public class StandardizedSemSimulation implements Simulation {
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
+        parameters.add(Params.SEED);
         return parameters;
     }
 

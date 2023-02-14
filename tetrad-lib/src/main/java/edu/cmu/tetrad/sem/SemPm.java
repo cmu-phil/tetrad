@@ -493,9 +493,9 @@ public final class SemPm implements PM, TetradSerializable {
         // to accomodate time lag graphs. jdramsey 4/14/10.
 
         List<Parameter> parameters = new ArrayList<>();
-        Set<Edge> edges = this.graph.getEdges();
+        List<Edge> edges = new ArrayList<>(this.graph.getEdges());
 
-        new ArrayList<>(edges).sort((o1, o2) -> {
+        edges.sort((o1, o2) -> {
             int compareFirst = o1.getNode1().getName().compareTo(o2.getNode1().toString());
             int compareSecond = o1.getNode2().getName().compareTo(o2.getNode2().toString());
 

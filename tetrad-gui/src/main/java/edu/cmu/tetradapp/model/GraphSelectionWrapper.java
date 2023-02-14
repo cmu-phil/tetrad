@@ -110,7 +110,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
         for (int i = 0; i < graphs.size(); i++) {
             Graph graph = selectionGraphs.get(i);
-            GraphUtils.fruchtermanReingoldLayout(graph);
+            LayoutUtil.fruchtermanReingoldLayout(graph);
         }
 
         // No variable is selected by default - Updated 11/19/2018 by Zhou
@@ -227,7 +227,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             Set<Node> adj = new HashSet<>(selectedVariables);
 
             for (Node node : selectedVariables) {
-                adj.addAll((getSelectedGraph(k).getAncestors(Collections.singletonList(node))));
+                adj.addAll((getSelectedGraph(k).paths().getAncestors(Collections.singletonList(node))));
             }
 
             selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
@@ -236,7 +236,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             Set<Node> adj = new HashSet<>(selectedVariables);
 
             for (Node node : selectedVariables) {
-                adj.addAll((getSelectedGraph(k).getDescendants(Collections.singletonList(node))));
+                adj.addAll((getSelectedGraph(k).paths().getDescendants(Collections.singletonList(node))));
             }
 
             selectedGraph = (getSelectedGraph(k).subgraph(new ArrayList<>(adj)));
@@ -307,7 +307,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                 for (int j = i + 1; j < selectedVariables.size(); j++) {
                     Node x = selectedVariables.get(i);
                     Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = GraphUtils.treks(getGraphAtIndex(k), x, y, getN() + 1);
+                    List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, getN() + 1);
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
                         for (List<Node> path : paths) {
@@ -345,21 +345,21 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                     Node y = selectedVariables.get(j);
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
-                        List<List<Node>> paths = GraphUtils.treks(getGraphAtIndex(k), x, y, getN() + 1);
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, getN() + 1);
                         for (List<Node> path : paths) {
                             if (path.size() <= getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
-                        List<List<Node>> paths = GraphUtils.treks(getGraphAtIndex(k), x, y, -1);
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, -1);
                         for (List<Node> path : paths) {
                             if (path.size() >= getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = GraphUtils.treks(getGraphAtIndex(k), x, y, getN() + 1);
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().treks(x, y, getN() + 1);
                         for (List<Node> path : paths) {
                             if (path.size() == getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
@@ -378,7 +378,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                 for (int j = i + 1; j < selectedVariables.size(); j++) {
                     Node x = selectedVariables.get(i);
                     Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = GraphUtils.allPathsFromTo(getGraphAtIndex(k), x, y, getN());
+                    List<List<Node>> paths = getGraphAtIndex(k).paths().allPathsFromTo(x, y, getN());
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
                         for (List<Node> path : paths) {
@@ -416,21 +416,21 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                     Node y = selectedVariables.get(j);
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
-                        List<List<Node>> paths = GraphUtils.allPathsFromTo(getGraphAtIndex(k), x, y, getN());
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPathsFromTo(x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() <= getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
-                        List<List<Node>> paths = GraphUtils.allPathsFromTo(getGraphAtIndex(k), x, y, -1);
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPathsFromTo(x, y, -1);
                         for (List<Node> path : paths) {
                             if (path.size() >= getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = GraphUtils.allPathsFromTo(getGraphAtIndex(k), x, y, getN());
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().allPathsFromTo(x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() == getN() + 1) {
                                 edges.addAll(getEdgesFromPath(path, getGraphAtIndex(k)));
@@ -453,7 +453,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                     Node y = selectedVariables.get(j);
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString())) {
-                        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(getGraphAtIndex(k), x, y, getN());
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPathsFromTo(x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() <= getN() + 1) {
                                 g.addDirectedEdge(x, y);
@@ -461,7 +461,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.atLeast.toString())) {
-                        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(getGraphAtIndex(k), x, y, -1);
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPathsFromTo(x, y, -1);
                         for (List<Node> path : paths) {
                             if (path.size() >= getN() + 1) {
                                 g.addDirectedEdge(x, y);
@@ -469,7 +469,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
                             }
                         }
                     } else if (this.params.getString("nType", "atLeast").equals(nType.equals.toString())) {
-                        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(getGraphAtIndex(k), x, y, getN());
+                        List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPathsFromTo(x, y, getN());
                         for (List<Node> path : paths) {
                             if (path.size() == getN() + 1) {
                                 g.addDirectedEdge(x, y);
@@ -491,7 +491,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
                     Node x = selectedVariables.get(i);
                     Node y = selectedVariables.get(j);
-                    List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(getGraphAtIndex(k), x, y, getN());
+                    List<List<Node>> paths = getGraphAtIndex(k).paths().allDirectedPathsFromTo(x, y, getN());
 
                     if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && !paths.isEmpty()) {
                         for (List<Node> path : paths) {

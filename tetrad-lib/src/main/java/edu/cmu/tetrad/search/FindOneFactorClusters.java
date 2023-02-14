@@ -23,13 +23,16 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.sqrt;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 
 /**
@@ -54,8 +57,10 @@ public class FindOneFactorClusters {
     private final TestType testType;
     private List<List<Node>> clusters;
     private boolean verbose;
-    private boolean significanceCalculated;
+    private boolean significanceChecked;
     private final Algorithm algorithm;
+    private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
+
 
     public FindOneFactorClusters(ICovarianceMatrix cov, TestType testType, Algorithm algorithm, double alpha) {
         if (testType == null) throw new NullPointerException("Null indepTest type.");
@@ -167,7 +172,7 @@ public class FindOneFactorClusters {
             outlier = removeZeroIndex(outlier);
         }
 
-        log(removedVariables.size() + " variables removed: " + variablesForIndices(removedVariables));
+        log(removedVariables.size() + " variables removed: " + ClusterSignificance.variablesForIndices(removedVariables, variables));
 
         return (removedVariables);
     }
@@ -195,12 +200,16 @@ public class FindOneFactorClusters {
         } else {
             throw new IllegalStateException("Expected SAG or GAP: " + this.testType);
         }
-        this.clusters = variablesForIndices2(allClusters);
+
+        this.clusters = ClusterSignificance.variablesForIndices2(allClusters, variables);
 
         System.out.println("allClusters = " + allClusters);
         System.out.println("this.clusters = " + this.clusters);
 
 //        if (allClusters.isEmpty()) return new EdgeListGraph();
+
+        ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
+        clusterSignificance.printClusterPValues(allClusters);
 
         return convertToGraph(allClusters);
     }
@@ -289,7 +298,7 @@ public class FindOneFactorClusters {
             HashSet<Integer> _cluster = new HashSet<>(triple);
 
             if (this.verbose) {
-                log("++" + variablesForIndices(triple));
+                log("++" + ClusterSignificance.variablesForIndices(triple, variables));
             }
 
             puretriples.add(_cluster);
@@ -357,6 +366,12 @@ public class FindOneFactorClusters {
 
                     _cluster.add(o);
 
+                    ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
+                    clusterSignificance.setCheckType(checkType);
+
+                    if (significanceChecked && clusterSignificance.significant(_cluster2, alpha)) {
+                        _cluster2.remove(o);
+                    }
                 }
 
                 // This takes out all pure clusters that are subsets of _cluster.
@@ -382,7 +397,8 @@ public class FindOneFactorClusters {
                 }
 
                 if (this.verbose) {
-                    log("Grown " + (++count) + " of " + total + ": " + variablesForIndices(new ArrayList<>(_cluster)));
+                    log("Grown " + (++count) + " of " + total + ": "
+                            + ClusterSignificance.variablesForIndices(new ArrayList<>(_cluster), variables));
                 }
                 grown.add(_cluster);
             } while (!puretriples.isEmpty());
@@ -589,7 +605,7 @@ public class FindOneFactorClusters {
             ArrayList<Integer> _l = new ArrayList<>(l);
             Collections.sort(_l);
             if (this.verbose) {
-                log("Grown: " + variablesForIndices(_l));
+                log("Grown: " + ClusterSignificance.variablesForIndices(_l, variables));
             }
         }
 
@@ -609,21 +625,6 @@ public class FindOneFactorClusters {
 
             out.add(cluster);
             all.addAll(cluster);
-        }
-
-        if (this.significanceCalculated) {
-            for (Set<Integer> _out : out) {
-                try {
-                    double p = significance(new ArrayList<>(_out));
-                    log("OUT: " + variablesForIndices(new ArrayList<>(_out)) + " p = " + p);
-                } catch (Exception e) {
-                    log("OUT: " + variablesForIndices(new ArrayList<>(_out)) + " p = EXCEPTION");
-                }
-            }
-        } else {
-            for (Set<Integer> _out : out) {
-                log("OUT: " + variablesForIndices(new ArrayList<>(_out)));
-            }
         }
 
         return out;
@@ -662,7 +663,7 @@ public class FindOneFactorClusters {
                     addOtherVariables(_variables, cluster);
 
                     if (this.verbose) {
-                        log("Cluster found: " + variablesForIndices(cluster));
+                        log("Cluster found: " + ClusterSignificance.variablesForIndices(cluster, variables));
                     }
                     clusters.add(cluster);
                     _variables.removeAll(cluster);
@@ -713,12 +714,17 @@ public class FindOneFactorClusters {
         }
     }
 
-    private boolean modelInsignificantWithNewCluster(Set<List<Integer>> clusters, List<Integer> cluster) {
+    private boolean modelInsignificantWithNewCluster(Set<List<Integer>> clusters, List<Integer> cluster,
+                                                     List<Node> variable, DataModel dataModel) {
 //        if (true) return false;
 
         List<List<Integer>> __clusters = new ArrayList<>(clusters);
         __clusters.add(cluster);
-        double significance3 = getModelPValue(__clusters);
+
+        ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
+        clusterSignificance.setCheckType(checkType);
+        double significance3 = clusterSignificance.getModelPValue(__clusters);
+
         if (this.verbose) {
             log("Significance * " + __clusters + " = " + significance3);
         }
@@ -788,7 +794,7 @@ public class FindOneFactorClusters {
                     remaining.removeAll(cluster);
 
                     if (this.verbose) {
-                        log("3-cluster found: " + variablesForIndices(cluster));
+                        log("3-cluster found: " + ClusterSignificance.variablesForIndices(cluster, variables));
                     }
 
                     continue REMAINING;
@@ -801,52 +807,10 @@ public class FindOneFactorClusters {
         return triples;
     }
 
-    private double significance(List<Integer> cluster) {
-        double chisq = getClusterChiSquare(cluster);
-
-        // From "Algebraic factor analysis: tetrads, triples and beyond" Drton et al.
-        int n = cluster.size();
-        int dof = dofHarman(n);
-        double q = ProbUtils.chisqCdf(chisq, dof);
-        return 1.0 - q;
-    }
-
-    private double modelSignificance(List<List<Integer>> clusters) {
-        return getModelPValue(clusters);
-    }
-
     private int dofDrton(int n) {
         int dof = ((n - 2) * (n - 3)) / 2 - 2;
         if (dof < 0) dof = 0;
         return dof;
-    }
-
-    private int dofHarman(int n) {
-        int dof = n * (n - 5) / 2 + 1;
-        if (dof < 0) dof = 0;
-        return dof;
-    }
-
-    private List<Node> variablesForIndices(List<Integer> cluster) {
-        List<Node> _cluster = new ArrayList<>();
-
-        for (int c : cluster) {
-            _cluster.add(this.variables.get(c));
-        }
-
-//        Collections.sort(_cluster);
-
-        return _cluster;
-    }
-
-    private List<List<Node>> variablesForIndices2(Set<List<Integer>> clusters) {
-        List<List<Node>> variables = new ArrayList<>();
-
-        for (List<Integer> cluster : clusters) {
-            variables.add(variablesForIndices(cluster));
-        }
-
-        return variables;
     }
 
     private boolean pure(List<Integer> quartet) {
@@ -873,116 +837,6 @@ public class FindOneFactorClusters {
         }
 
         return false;
-    }
-
-    private double getClusterChiSquare(List<Integer> cluster) {
-        SemIm im = estimateClusterModel(cluster);
-        return im.getChiSquare();
-    }
-
-    private SemIm estimateClusterModel(List<Integer> quartet) {
-        Graph g = new EdgeListGraph();
-        Node l1 = new GraphNode("L1");
-        l1.setNodeType(NodeType.LATENT);
-        Node l2 = new GraphNode("L2");
-        l2.setNodeType(NodeType.LATENT);
-        g.addNode(l1);
-        g.addNode(l2);
-
-        for (Integer integer : quartet) {
-            Node n = this.variables.get(integer);
-            g.addNode(n);
-            g.addDirectedEdge(l1, n);
-            g.addDirectedEdge(l2, n);
-        }
-
-        SemPm pm = new SemPm(g);
-
-        SemEstimator est;
-
-        if (this.dataModel instanceof DataSet) {
-            est = new SemEstimator((DataSet) this.dataModel, pm, new SemOptimizerEm());
-        } else {
-            est = new SemEstimator((CovarianceMatrix) this.dataModel, pm, new SemOptimizerEm());
-        }
-
-        return est.estimate();
-    }
-
-    private double getModelPValue(List<List<Integer>> clusters) {
-        SemIm im = estimateModel(clusters);
-        return im.getPValue();
-    }
-
-    private SemIm estimateModel(List<List<Integer>> clusters) {
-        Graph g = new EdgeListGraph();
-
-        List<Node> upperLatents = new ArrayList<>();
-        List<Node> lowerLatents = new ArrayList<>();
-
-        for (int i = 0; i < clusters.size(); i++) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            List<Integer> cluster = clusters.get(i);
-            Node l1 = new GraphNode("L1." + (i + 1));
-            l1.setNodeType(NodeType.LATENT);
-
-            Node l2 = new GraphNode("L2." + (i + 1));
-            l2.setNodeType(NodeType.LATENT);
-
-            upperLatents.add(l1);
-            lowerLatents.add(l2);
-
-            g.addNode(l1);
-            g.addNode(l2);
-
-            for (Integer integer : cluster) {
-                Node n = this.variables.get(integer);
-                g.addNode(n);
-                g.addDirectedEdge(l1, n);
-                g.addDirectedEdge(l2, n);
-            }
-        }
-
-        for (int i = 0; i < upperLatents.size(); i++) {
-            for (int j = i + 1; j < upperLatents.size(); j++) {
-                g.addDirectedEdge(upperLatents.get(i), upperLatents.get(j));
-                g.addDirectedEdge(lowerLatents.get(i), lowerLatents.get(j));
-            }
-        }
-
-        for (int i = 0; i < upperLatents.size(); i++) {
-            for (int j = 0; j < lowerLatents.size(); j++) {
-                if (i == j) continue;
-                g.addDirectedEdge(upperLatents.get(i), lowerLatents.get(j));
-            }
-        }
-
-        SemPm pm = new SemPm(g);
-
-        for (Node node : upperLatents) {
-            Parameter p = pm.getParameter(node, node);
-            p.setFixed(true);
-            p.setStartingValue(1.0);
-        }
-
-        for (Node node : lowerLatents) {
-            Parameter p = pm.getParameter(node, node);
-            p.setFixed(true);
-            p.setStartingValue(1.0);
-        }
-
-        SemEstimator est;
-
-        if (this.dataModel instanceof DataSet) {
-            est = new SemEstimator((DataSet) this.dataModel, pm, new SemOptimizerEm());
-        } else {
-            est = new SemEstimator((CovarianceMatrix) this.dataModel, pm, new SemOptimizerEm());
-        }
-
-        return est.estimate();
     }
 
     private List<Integer> quartet(int n1, int n2, int n3, int n4) {
@@ -1026,7 +880,7 @@ public class FindOneFactorClusters {
             for (int j = i + 1; j < cluster.size(); j++) {
                 double r = this.corr.getValue(cluster.get(i), cluster.get(j));
                 int N = this.corr.getSampleSize();
-                double f = sqrt(N) * Math.log((1. + r) / (1. - r));
+                double f = sqrt(N) * FastMath.log((1. + r) / (1. - r));
                 double p = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(f)));
                 if (p > this.alpha) count++;
             }
@@ -1112,12 +966,12 @@ public class FindOneFactorClusters {
         }
     }
 
-    public boolean isSignificanceCalculated() {
-        return this.significanceCalculated;
+    public void setSignificanceChecked(boolean significanceChecked) {
+        this.significanceChecked = significanceChecked;
     }
 
-    public void setSignificanceCalculated(boolean significanceCalculated) {
-        this.significanceCalculated = significanceCalculated;
+    public void setCheckType(ClusterSignificance.CheckType checkType) {
+        this.checkType = checkType;
     }
 
     public enum Algorithm {SAG, GAP}

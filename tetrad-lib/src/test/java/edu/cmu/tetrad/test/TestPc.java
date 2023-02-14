@@ -27,6 +27,7 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
@@ -105,7 +106,7 @@ public class TestPc {
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
         char[] citesChars = citesString.toCharArray();
-        ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
+        ICovarianceMatrix dataSet = SimpleDataLoader.loadCovarianceMatrix(citesChars, "//", DelimiterType.WHITESPACE, '\"', "*");
 
         Knowledge knowledge = new Knowledge();
 
@@ -140,7 +141,7 @@ public class TestPc {
 
 
         try {
-            trueGraph = GraphUtils.readerToGraphTxt(trueString);
+            trueGraph = GraphPersistence.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {
@@ -155,7 +156,7 @@ public class TestPc {
     private void checkSearch(String inputGraph, String outputGraph) {
 
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphUtils.convert(inputGraph);
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -166,7 +167,7 @@ public class TestPc {
         Graph resultGraph = pc.search(new Fas(independence), independence.getVariables());
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphUtils.convert(outputGraph);
 
         // PrintUtil out problem and graphs.
 
@@ -182,7 +183,7 @@ public class TestPc {
      */
     private void checkWithKnowledge(Knowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert("A-->B,C-->B,B-->D");
+        Graph graph = GraphUtils.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -196,7 +197,7 @@ public class TestPc {
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
+        Graph trueGraph = GraphUtils.convert("A---B,B-->C,D");
 
 //        System.out.println("Knowledge = " + knowledge);
         System.out.println("True graph = " + graph);
@@ -209,7 +210,7 @@ public class TestPc {
     @Test
     public void checknumCPDAGsToStore() {
         for (int i = 0; i < 2; i++) {
-            Graph graph = GraphUtils.randomGraph(100, 0, 100, 100,
+            Graph graph = RandomGraph.randomGraph(100, 0, 100, 100,
                     100, 100, false);
             IndTestDSep test = new IndTestDSep(graph);
             Pc pc = new Pc(test);
@@ -313,7 +314,7 @@ public class TestPc {
                 names.add(name);
             }
 
-            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
+            Graph dag = RandomGraph.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
                     10, 10, 10, false);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
@@ -351,11 +352,11 @@ public class TestPc {
                     throw new IllegalStateException();
             }
 
-            long start = System.currentTimeMillis();
+            long start =  MillisecondTimes.timeMillis();
 
             Graph out = search.search();
 
-            long stop = System.currentTimeMillis();
+            long stop = MillisecondTimes.timeMillis();
 
             long elapsed = stop - start;
             totalElapsed += elapsed;
@@ -377,8 +378,8 @@ public class TestPc {
                 }
 
                 if (edge.getEndpoint1() == Endpoint.ARROW) {
-                    if (!dag.isAncestorOf(edge.getNode1(), edge.getNode2()) &&
-                            dag.existsTrek(edge.getNode1(), edge.getNode2())) {
+                    if (!dag.paths().isAncestorOf(edge.getNode1(), edge.getNode2()) &&
+                            dag.paths().existsTrek(edge.getNode1(), edge.getNode2())) {
                         arrowsTp++;
                     } else {
                         arrowsFp++;
@@ -388,8 +389,8 @@ public class TestPc {
                 }
 
                 if (edge.getEndpoint2() == Endpoint.ARROW) {
-                    if (!dag.isAncestorOf(edge.getNode2(), edge.getNode1()) &&
-                            dag.existsTrek(edge.getNode1(), edge.getNode2())) {
+                    if (!dag.paths().isAncestorOf(edge.getNode2(), edge.getNode1()) &&
+                            dag.paths().existsTrek(edge.getNode1(), edge.getNode2())) {
                         arrowsTp++;
                     } else {
                         arrowsFp++;
@@ -399,7 +400,7 @@ public class TestPc {
                 }
 
                 if (edge.getEndpoint1() == Endpoint.TAIL) {
-                    if (dag.existsDirectedPathFromTo(edge.getNode1(), edge.getNode2())) {
+                    if (dag.paths().existsDirectedPathFromTo(edge.getNode1(), edge.getNode2())) {
                         tailsTp++;
                     } else {
                         tailsFp++;
@@ -409,7 +410,7 @@ public class TestPc {
                 }
 
                 if (edge.getEndpoint2() == Endpoint.TAIL) {
-                    if (dag.existsDirectedPathFromTo(edge.getNode2(), edge.getNode1())) {
+                    if (dag.paths().existsDirectedPathFromTo(edge.getNode2(), edge.getNode1())) {
                         tailsTp++;
                     } else {
                         tailsFp++;
@@ -419,9 +420,9 @@ public class TestPc {
                 }
 
                 if (Edges.isBidirectedEdge(edge)) {
-                    if (!dag.isAncestorOf(edge.getNode1(), edge.getNode2())
-                            && !dag.isAncestorOf(edge.getNode2(), edge.getNode1())
-                            && dag.existsTrek(edge.getNode1(), edge.getNode2())) {
+                    if (!dag.paths().isAncestorOf(edge.getNode1(), edge.getNode2())
+                            && !dag.paths().isAncestorOf(edge.getNode2(), edge.getNode1())
+                            && dag.paths().existsTrek(edge.getNode1(), edge.getNode2())) {
                         bidirectedTp++;
                     } else {
                         bidirectedFp++;
@@ -497,7 +498,7 @@ public class TestPc {
                 Edge e = out.getEdge(n, m);
                 Endpoint proximalEndpoint = e.getProximalEndpoint(n);
                 if (proximalEndpoint == Endpoint.CIRCLE || proximalEndpoint == Endpoint.TAIL) {
-                    List<Node> descendants = out.getDescendants(Collections.singletonList(m));
+                    List<Node> descendants = out.paths().getDescendants(Collections.singletonList(m));
 
                     for (Node o : descendants) {
                         if (!revised.isAdjacentTo(m, o)) {
@@ -677,7 +678,7 @@ public class TestPc {
                 names.add(name);
             }
 
-            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
+            Graph dag = RandomGraph.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
                     10, 10, 10, false);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
@@ -744,9 +745,9 @@ public class TestPc {
 
             out = trim(out, target);
 
-            long start = System.currentTimeMillis();
+            long start =  MillisecondTimes.timeMillis();
 
-            long stop = System.currentTimeMillis();
+            long stop = MillisecondTimes.timeMillis();
 
             long elapsed = stop - start;
 

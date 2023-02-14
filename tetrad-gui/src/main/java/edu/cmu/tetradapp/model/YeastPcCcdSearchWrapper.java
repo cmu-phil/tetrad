@@ -24,8 +24,8 @@ package edu.cmu.tetradapp.model;
 //package
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Ccd;
@@ -68,7 +68,7 @@ public class YeastPcCcdSearchWrapper {
         DataSet cds = null;
 
         try {
-            cds = DataUtils.loadContinuousData(new File(args[0]), "//", '\"',
+            cds = SimpleDataLoader.loadContinuousData(new File(args[0]), "//", '\"',
                     "*", true, Delimiter.TAB);
         } catch (IOException e) {
             e.printStackTrace();

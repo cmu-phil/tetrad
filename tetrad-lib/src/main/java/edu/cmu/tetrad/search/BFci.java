@@ -32,7 +32,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphUtils.*;
+import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
  * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
@@ -147,8 +147,6 @@ public final class BFci implements GraphSearch {
         fciOrient.doFinalOrientation(graph);
 
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
-
-        this.graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         return this.graph;
     }

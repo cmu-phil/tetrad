@@ -2,7 +2,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.multi.FASK;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -105,7 +105,7 @@ public class FaskGraphs {
                 try {
                     if (name.contains("autistic")) {
                         this.types.add(true);
-                        DataSet dataSet = DataUtils.loadContinuousData(new File(path, name), "//", '\"',
+                        DataSet dataSet = SimpleDataLoader.loadContinuousData(new File(path, name), "//", '\"',
                                 "*", true, Delimiter.TAB);
                         this.filenames.add(name);
                         this.datasets.add(dataSet);
@@ -114,7 +114,7 @@ public class FaskGraphs {
                         this.graphs.add(search);
                     } else if (name.contains("typical")) {
                         this.types.add(false);
-                        DataSet dataSet = DataUtils.loadContinuousData(new File(path, name), "//", '\"',
+                        DataSet dataSet = SimpleDataLoader.loadContinuousData(new File(path, name), "//", '\"',
                                 "*", true, Delimiter.TAB);
                         this.filenames.add(name);
                         this.datasets.add(dataSet);

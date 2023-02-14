@@ -21,7 +21,10 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
@@ -102,7 +105,7 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
     }
 
     private void addTreks(Node node1, Node node2, Graph graph, JTextArea textArea) {
-        List<List<Node>> treks = GraphUtils.allPathsFromTo(graph, node1, node2, 8);
+        List<List<Node>> treks = graph.paths().allPathsFromTo(node1, node2, 8);
 
         if (treks.isEmpty()) {
             return;

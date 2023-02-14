@@ -24,10 +24,8 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.ForkJoinPoolInstance;
-import edu.cmu.tetrad.util.TaskManager;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -168,7 +166,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     /**
      * True if one-edge faithfulness is assumed. Speeds the algorithm up.
      */
-    private boolean faithfulnessAssumed = true;
+    private boolean faithfulnessAssumed = false;
 
     // Bounds the indegree of the graph.
     private int maxIndegree = -1;
@@ -195,7 +193,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = true;
+        this.faithfulnessAssumed = faithfulnessAssumed;
     }
 
     /**
@@ -253,10 +251,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         fes();
         bes();
 
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         this.totalScore = 0.0;
 
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
@@ -511,7 +509,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
     public int getMinChunk(int n) {
         // The minimum number of operations to do before parallelizing.
         int minChunk = 100;
-        return Math.max(n / this.maxThreads, minChunk);
+        return FastMath.max(n / this.maxThreads, minChunk);
     }
 
     class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
@@ -588,7 +586,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         this.neighbors = new ConcurrentHashMap<>();
         Set<Node> emptySet = new HashSet<>();
 
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         this.effectEdgesGraph = new EdgeListGraph(nodes);
 
         class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
@@ -600,10 +598,10 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             protected Boolean compute() {
                 Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
 
-                int numNodesPerTask = Math.max(100, nodes.size() / TsFges2.this.maxThreads);
+                int numNodesPerTask = FastMath.max(100, nodes.size() / TsFges2.this.maxThreads);
 
                 for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
-                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, Math.min(nodes.size(), i + numNodesPerTask),
+                    NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, FastMath.min(nodes.size(), i + numNodesPerTask),
                             nodes, emptySet);
                     tasks.add(task);
                     task.fork();
@@ -631,7 +629,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
         this.pool.invoke(new InitializeFromEmptyGraphTask());
 
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             this.out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
@@ -791,7 +789,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
                         Node y = nodes.get(i);
                         List<Node> cond = new ArrayList<>();
-                        Set<Node> D = new HashSet<>(GraphUtils.getDconnectedVars(y, cond, TsFges2.this.graph));
+                        Set<Node> D = new HashSet<>(TsFges2.this.graph.paths().getDconnectedVars(y, cond));
                         D.remove(y);
                         TsFges2.this.effectEdgesGraph.getAdjacentNodes(y).forEach(D::remove);
 
@@ -1067,7 +1065,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
                             adj = new ArrayList<>(g);
                         } else if (TsFges2.this.mode == Mode.allowUnfaithfulness) {
-                            HashSet<Node> D = new HashSet<>(GraphUtils.getDconnectedVars(x, new ArrayList<>(), TsFges2.this.graph));
+                            HashSet<Node> D = new HashSet<>(TsFges2.this.graph.paths().getDconnectedVars(x, new ArrayList<>()));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {
@@ -1125,7 +1123,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         List<Node> TNeighbors = getTNeighbors(a, b);
         int _maxIndegree = this.maxIndegree == -1 ? 1000 : this.maxIndegree;
 
-        int _max = Math.min(TNeighbors.size(), _maxIndegree - this.graph.getIndegree(b));
+        int _max = FastMath.min(TNeighbors.size(), _maxIndegree - this.graph.getIndegree(b));
 
         Set<Set<Node>> previousCliques = new HashSet<>();
         previousCliques.add(new HashSet<>());
@@ -1624,7 +1622,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             Node nodeA = graph.getNode(next.getFrom());
             Node nodeB = graph.getNode(next.getTo());
 
-            if (!graph.isAncestorOf(nodeB, nodeA)) {
+            if (!graph.paths().isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdges(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
                 TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
@@ -1644,7 +1642,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                 if (nodeA == null || nodeB == null) throw new NullPointerException();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
@@ -1652,7 +1650,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                 }
 
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
@@ -1664,14 +1662,14 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                 if (nodeA == null || nodeB == null) throw new NullPointerException();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                     }
                 }
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
@@ -1947,7 +1945,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         int ntiers = this.knowledge.getNumTiers();
         int indx_tier = this.knowledge.isInWhichTier(x);
         int indy_tier = this.knowledge.isInWhichTier(y);
-        int tier_diff = Math.max(indx_tier, indy_tier) - Math.min(indx_tier, indy_tier);
+        int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
         List tier_x = this.knowledge.getTier(indx_tier);

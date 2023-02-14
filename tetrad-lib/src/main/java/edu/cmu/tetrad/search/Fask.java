@@ -27,11 +27,9 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.util.SublistGenerator;
-import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.StatUtils;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -41,7 +39,7 @@ import java.util.List;
 import java.util.Set;
 
 import static edu.cmu.tetrad.util.StatUtils.*;
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Runs the FASK (Fast Adjacency Skewness) algorithm. The reference is Sanchez-Romero, R., Ramsey, J. D.,
@@ -204,7 +202,7 @@ public final class Fask implements GraphSearch {
      * and some of the adjacencies may be two-cycles.
      */
     public Graph search() {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         NumberFormat nf = new DecimalFormat("0.000");
 
         DataSet dataSet = DataUtils.standardizeData(this.dataSet);
@@ -392,7 +390,7 @@ public final class Fask implements GraphSearch {
             }
         }
 
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
         this.elapsed = stop - start;
 
         this.graph = graph;
@@ -660,14 +658,14 @@ public final class Fask implements GraphSearch {
         double[] lr = new double[x.length];
 
         for (int i = 0; i < x.length; i++) {
-            lr[i] = x[i] * Math.tanh(y[i]) - Math.tanh(x[i]) * y[i];
+            lr[i] = x[i] * FastMath.tanh(y[i]) - FastMath.tanh(x[i]) * y[i];
         }
 
         return correlation(x, y) * mean(lr);
     }
 
     private double g(double x) {
-        return log(cosh(Math.max(x, 0)));
+        return log(cosh(FastMath.max(x, 0)));
     }
 
     private boolean knowledgeOrients(Node X, Node Y) {
@@ -697,7 +695,7 @@ public final class Fask implements GraphSearch {
         adj.remove(X);
         adj.remove(Y);
 
-        SublistGenerator gen = new SublistGenerator(adj.size(), Math.min(this.depth, adj.size()));
+        SublistGenerator gen = new SublistGenerator(adj.size(), FastMath.min(this.depth, adj.size()));
         int[] choice;
 
         while ((choice = gen.next()) != null) {

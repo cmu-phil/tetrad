@@ -26,6 +26,7 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -135,7 +136,7 @@ class ScatterPlotDisplayPanel extends JPanel {
         int widthMinStr = fontMetrics.stringWidth(minStr);
         int widthMaxStr = fontMetrics.stringWidth(maxStr);
 
-        this.PADDINGLEFT = Math.max(widthMinStr, widthMaxStr);
+        this.PADDINGLEFT = FastMath.max(widthMinStr, widthMaxStr);
         this.PADDINGOTHER = 50;
         this.HEIGHT = 600 + this.PADDINGOTHER;
         this.WIDTH = 600 + this.PADDINGLEFT;

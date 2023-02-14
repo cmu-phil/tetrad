@@ -26,10 +26,11 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.LinkedList;
 
-import static java.lang.Math.abs;
+import static org.apache.commons.math3.util.FastMath.abs;
 
 /**
  * Useful references: "Factor Analysis of Data Matrices" - Paul Horst (1965) This work has good specifications and
@@ -150,7 +151,7 @@ public class FactorAnalysis {
         Matrix r = residuals.getLast();
 
         Matrix sumCols = r.transpose().times(unitColumn);
-        Matrix wVector = sumCols.scalarMult(1.0 / Math.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
+        Matrix wVector = sumCols.scalarMult(1.0 / FastMath.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
         Matrix vVector = r.times(wVector);
 
         for (int k = 0; k < normalizedFactorLoadings.columns(); k++) {
@@ -187,7 +188,7 @@ public class FactorAnalysis {
                 Matrix betaVector = FactorAnalysis.matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
                 Matrix uVector = r.transpose().times(betaVector);
 
-                double alpha2 = (Math.sqrt(uVector.transpose().times(uVector).get(0, 0)));
+                double alpha2 = (FastMath.sqrt(uVector.transpose().times(uVector).get(0, 0)));
                 bVectors.add(bVector);
 
                 hVectors.add(uVector.scalarMult(1.0 / alpha2));
@@ -266,13 +267,13 @@ public class FactorAnalysis {
             return false;
         }
 
-        double d = Math.sqrt(l0.get(0, 0));
+        double d = FastMath.sqrt(l0.get(0, 0));
         Matrix f = residual.times(approximationVector).scalarMult(1.0 / d);
 
         for (int i = 0; i < 100; i++) {
             Matrix ui = residual.times(f);
             Matrix li = f.transpose().times(ui);
-            double di = Math.sqrt(li.get(0, 0));
+            double di = FastMath.sqrt(li.get(0, 0));
 
             if (abs((d - di)) <= getThreshold()) {
                 break;
@@ -312,7 +313,7 @@ public class FactorAnalysis {
     }
 
     private static Matrix normalizeVector(Matrix vector) {
-        double scalar = Math.sqrt(vector.transpose().times(vector).get(0, 0));
+        double scalar = FastMath.sqrt(vector.transpose().times(vector).get(0, 0));
         return vector.scalarMult(1.0 / scalar);
     }
 
@@ -320,7 +321,7 @@ public class FactorAnalysis {
         Matrix result = new Matrix(matrix.rows(), matrix.columns());
         for (int i = 0; i < matrix.rows(); i++) {
             for (int j = 0; j < matrix.columns(); j++) {
-                result.set(i, j, Math.pow(matrix.get(i, j), exponent));
+                result.set(i, j, FastMath.pow(matrix.get(i, j), exponent));
             }
         }
         return result;

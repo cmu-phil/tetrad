@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.data;
 
 import org.apache.commons.math3.distribution.RealDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.Collections;
 import java.util.List;
@@ -116,10 +117,10 @@ public class GeneralAndersonDarlingTest {
 
         for (int i = 1; i <= n; i++) {
             double x1 = this.data.get(i - 1);
-            double a1 = Math.log(this.dist.cumulativeProbability(x1));
+            double a1 = FastMath.log(this.dist.cumulativeProbability(x1));
 
             double x2 = this.data.get(n + 1 - i - 1);
-            double a2 = Math.log(1.0 - this.dist.cumulativeProbability(x2));
+            double a2 = FastMath.log(1.0 - this.dist.cumulativeProbability(x2));
 
             double k = (2 * i - 1) * (a1 + a2);
 
@@ -130,17 +131,17 @@ public class GeneralAndersonDarlingTest {
         }
 
         double a = -n - (1.0 / numSummed) * h;
-        double aa = (1 + 0.75 / numSummed + 2.25 / Math.pow(numSummed, 2)) * a;
+        double aa = (1 + 0.75 / numSummed + 2.25 / FastMath.pow(numSummed, 2)) * a;
         double p;
 
         if (aa < 0.2) {
-            p = 1 - Math.exp(-13.436 + 101.14 * aa - 223.73 * aa * aa);
+            p = 1 - FastMath.exp(-13.436 + 101.14 * aa - 223.73 * aa * aa);
         } else if (aa < 0.34) {
-            p = 1 - Math.exp(-8.318 + 42.796 * aa - 59.938 * aa * aa);
+            p = 1 - FastMath.exp(-8.318 + 42.796 * aa - 59.938 * aa * aa);
         } else if (aa < 0.6) {
-            p = Math.exp(0.9177 - 4.279 * aa - 1.38 * aa * aa);
+            p = FastMath.exp(0.9177 - 4.279 * aa - 1.38 * aa * aa);
         } else {
-            p = Math.exp(1.2937 - 5.709 * aa + 0.0186 * aa * aa);
+            p = FastMath.exp(1.2937 - 5.709 * aa + 0.0186 * aa * aa);
         }
 
         this.aSquared = a;

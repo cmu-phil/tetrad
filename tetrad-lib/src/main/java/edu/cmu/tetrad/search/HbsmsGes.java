@@ -27,7 +27,9 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.DagScorer;
 import edu.cmu.tetrad.sem.Scorer;
 import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -167,7 +169,7 @@ public final class HbsmsGes implements Hbsms {
         do {
             x = y = null;
             List<Node> nodes = graph.getNodes();
-            Collections.shuffle(nodes);
+            RandomUtil.shuffle(nodes);
 
             for (int i = 0; i < nodes.size(); i++) {
                 Node _x = nodes.get(i);
@@ -199,7 +201,7 @@ public final class HbsmsGes implements Hbsms {
 
                         tryInsert(_x, _y, tSubset, graph2);
 
-                        if (graph2.existsDirectedCycle()) {
+                        if (graph2.paths().existsDirectedCycle()) {
                             continue;
                         }
 
@@ -248,7 +250,7 @@ public final class HbsmsGes implements Hbsms {
         do {
             x = y = null;
             List<Edge> graphEdges = new ArrayList<>(graph.getEdges());
-            Collections.shuffle(graphEdges);
+            RandomUtil.shuffle(graphEdges);
 
             for (Edge edge : graphEdges) {
                 Node _x;
@@ -559,7 +561,7 @@ public final class HbsmsGes implements Hbsms {
 
     private static List<Set<Node>> powerSet(List<Node> nodes) {
         List<Set<Node>> subsets = new ArrayList<>();
-        int total = (int) Math.pow(2, nodes.size());
+        int total = (int) FastMath.pow(2, nodes.size());
         for (int i = 0; i < total; i++) {
             Set<Node> newSet = new HashSet<>();
             String selection = Integer.toBinaryString(i);

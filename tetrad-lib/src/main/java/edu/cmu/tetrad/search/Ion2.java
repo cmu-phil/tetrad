@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -107,7 +108,7 @@ public class Ion2 {
             }
             for (Triple triple : getAllTriples(pag)) {
                 if (pag.isDefNoncollider(triple.getX(), triple.getY(), triple.getZ())) {
-                    pag.addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+                    pag.underlines().addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
             }
         }
@@ -142,11 +143,11 @@ public class Ion2 {
      */
     public List<Graph> search() {
 
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         TetradLogger.getInstance().log("info", "Starting ION Search.");
         logGraphs("\nInitial Pags: ", this.input);
         TetradLogger.getInstance().log("info", "Transfering local information.");
-        long steps = System.currentTimeMillis();
+        long steps = MillisecondTimes.timeMillis();
 
         /*
          * Step 1 - Create the empty graph
@@ -167,7 +168,7 @@ public class Ion2 {
         for (NodePair pair : nonIntersection(graph)) {
             graph.addEdge(new Edge(pair.getFirst(), pair.getSecond(), Endpoint.CIRCLE, Endpoint.CIRCLE));
         }
-        TetradLogger.getInstance().log("info", "Steps 1-2: " + (System.currentTimeMillis() - steps) / 1000. + "s");
+        TetradLogger.getInstance().log("info", "Steps 1-2: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
         System.out.println("step2");
         System.out.println(graph);
 
@@ -176,7 +177,7 @@ public class Ion2 {
          *
          * Branch and prune step that blocks problematic undirectedPaths, possibly d-connecting undirectedPaths
          */
-        steps = System.currentTimeMillis();
+        steps = MillisecondTimes.timeMillis();
         Queue<Graph> searchPags = new LinkedList<>();
         // place graph constructed in step 2 into the queue
         searchPags.offer(graph);
@@ -277,7 +278,7 @@ public class Ion2 {
                             boolean okay = true;
                             for (Triple collider : gc.getColliders()) {
 
-                                if (pag.isUnderlineTriple(collider.getX(), collider.getY(), collider.getZ())) {
+                                if (pag.underlines().isUnderlineTriple(collider.getX(), collider.getY(), collider.getZ())) {
                                     okay = false;
                                     break;
                                 }
@@ -303,9 +304,9 @@ public class Ion2 {
                             break;
                         }
                     }
-                    float starthitset = System.currentTimeMillis();
+                    float starthitset = MillisecondTimes.timeMillis();
                     Collection<GraphChange> hittingSets = IonHittingSet.findHittingSet(possibleChanges);
-                    this.recHitTimes.add((System.currentTimeMillis() - starthitset) / 1000.);
+                    this.recHitTimes.add((MillisecondTimes.timeMillis() - starthitset) / 1000.);
                     // Part 3.c - checks the newly constructed graphs from 3.b and rejects those that
                     // cycles or produce independencies known not to occur from the input PAGs or
                     // include undirectedPaths from definite nonancestors
@@ -390,7 +391,7 @@ public class Ion2 {
                         }
                         // reject if null, predicts false independencies or has cycle
                         if (predictsFalseIndependence(associations, changed)
-                                || changed.existsDirectedCycle()) {
+                                || changed.paths().existsDirectedCycle()) {
                             reject.add(changed);
                         }
                         // makes orientations preventing definite noncolliders from becoming colliders
@@ -407,7 +408,7 @@ public class Ion2 {
                 }
             }
         }
-        TetradLogger.getInstance().log("info", "Step 3: " + (System.currentTimeMillis() - steps) / 1000. + "s");
+        TetradLogger.getInstance().log("info", "Step 3: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
         Queue<Graph> step3Pags = new LinkedList<>(step3PagsSet);
 
         /*
@@ -416,7 +417,7 @@ public class Ion2 {
          * Finds redundant undirectedPaths and uses this information to expand the list
          * of possible graphs
          */
-        steps = System.currentTimeMillis();
+        steps = MillisecondTimes.timeMillis();
         Map<Edge, Boolean> necEdges;
         Set<Graph> outputPags = new HashSet<>();
 
@@ -445,7 +446,7 @@ public class Ion2 {
                                     continue;
                                 }
                                 // makes each triple a noncollider
-                                pag.addUnderlineTriple(trek.get(i - 2), trek.get(i - 1), trek.get(i));
+                                pag.underlines().addUnderlineTriple(trek.get(i - 2), trek.get(i - 1), trek.get(i));
                             }
                         }
                         // stop looping once the empty set is found
@@ -484,7 +485,7 @@ public class Ion2 {
         outputPags = removeMoreSpecific(outputPags);
 //        outputPags = applyKnowledge(outputPags);
 
-        TetradLogger.getInstance().log("info", "Step 4: " + (System.currentTimeMillis() - steps) / 1000. + "s");
+        TetradLogger.getInstance().log("info", "Step 4: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
 
         /*
          * Step 5
@@ -492,7 +493,7 @@ public class Ion2 {
          * Generate the Markov equivalence classes for graphs and accept only
          * those that do not predict false d-separations
          */
-        steps = System.currentTimeMillis();
+        steps = MillisecondTimes.timeMillis();
         Set<Graph> outputSet = new HashSet<>();
         for (Graph pag : outputPags) {
             Set<Triple> unshieldedPossibleColliders = new HashSet<>();
@@ -513,9 +514,9 @@ public class Ion2 {
             }
             for (Graph outputPag : this.finalResult) {
                 if (!predictsFalseIndependence(associations, outputPag)) {
-                    Set<Triple> underlineTriples = new HashSet<>(outputPag.getUnderLines());
+                    Set<Triple> underlineTriples = new HashSet<>(outputPag.underlines().getUnderLines());
                     for (Triple triple : underlineTriples) {
-                        outputPag.removeUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+                        outputPag.underlines().removeUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
                     }
                     outputSet.add(outputPag);
                 }
@@ -526,8 +527,8 @@ public class Ion2 {
         outputSet = checkPaths(outputSet);
 
         this.output.addAll(outputSet);
-        TetradLogger.getInstance().log("info", "Step 5: " + (System.currentTimeMillis() - steps) / 1000. + "s");
-        this.runtime = ((System.currentTimeMillis() - start) / 1000.);
+        TetradLogger.getInstance().log("info", "Step 5: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
+        this.runtime = ((MillisecondTimes.timeMillis() - start) / 1000.);
         logGraphs("\nReturning output (" + this.output.size() + " Graphs):", this.output);
         double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         if (currentUsage > this.maxMemory) this.maxMemory = currentUsage;
@@ -696,10 +697,10 @@ public class Ion2 {
                     }
                 }
             }
-            for (Triple triple : pag.getUnderLines()) {
+            for (Triple triple : pag.underlines().getUnderLines()) {
                 Triple graphTriple = new Triple(graph.getNode(triple.getX().getName()), graph.getNode(triple.getY().getName()), graph.getNode(triple.getZ().getName()));
                 if (graphTriple.alongPathIn(graph)) {
-                    graph.addUnderlineTriple(graphTriple.getX(), graphTriple.getY(), graphTriple.getZ());
+                    graph.underlines().addUnderlineTriple(graphTriple.getX(), graphTriple.getY(), graphTriple.getZ());
                     this.definiteNoncolliders.add(graphTriple);
                 }
             }
@@ -788,7 +789,7 @@ public class Ion2 {
                         for (Node node : subset) {
                             pagSubset.add(pag.getNode(node.getName()));
                         }
-                        if (pag.isDSeparatedFrom(pagX, pagY, new ArrayList<>(pagSubset))) {
+                        if (pag.paths().isDSeparatedFrom(pagX, pagY, new ArrayList<>(pagSubset))) {
                             if (!pag.isAdjacentTo(pagX, pagY)) {
                                 addIndep = true;
                                 indep.addMoreZ(new ArrayList<>(subset));
@@ -834,7 +835,7 @@ public class Ion2 {
     private boolean predictsFalseIndependence(Set<IonIndependenceFacts> associations, Graph pag) {
         for (IonIndependenceFacts assocFact : associations)
             for (List<Node> conditioningSet : assocFact.getZ())
-                if (pag.isDSeparatedFrom(
+                if (pag.paths().isDSeparatedFrom(
                         assocFact.getX(), assocFact.getY(), conditioningSet))
                     return true;
         return false;
@@ -847,7 +848,7 @@ public class Ion2 {
         Set<Triple> possibleTriples = new HashSet<>();
         for (Triple triple : getAllTriples(pag)) {
             if (pag.isAdjacentTo(triple.getX(), triple.getY()) && pag.isAdjacentTo(triple.getY(), triple.getZ())
-                    && !pag.isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ()) &&
+                    && !pag.underlines().isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ()) &&
                     !this.definiteNoncolliders.contains(triple) &&
                     !pag.isDefCollider(triple.getX(), triple.getY(), triple.getZ())) {
                 possibleTriples.add(triple);
@@ -908,7 +909,7 @@ public class Ion2 {
                     if ((!conditions.contains(current)) && i > 0) {
                         Triple colider = new Triple(possPath.get(i - 1), current, next);
 
-                        if (possible.getPag().isUnderlineTriple(possPath.get(i - 1), current, next))
+                        if (possible.getPag().underlines().isUnderlineTriple(possPath.get(i - 1), current, next))
                             continue;
 
                         Edge edge1 = possible.getPag().getEdge(colider.getX(), colider.getY());
@@ -1279,7 +1280,7 @@ public class Ion2 {
         if ((graph.isAdjacentTo(a, c)) &&
                 (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
                 (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
-            if (graph.isDirectedFromTo(a, b) && graph.isDirectedFromTo(b, c)) {
+            if (graph.paths().isDirectedFromTo(a, b) && graph.paths().isDirectedFromTo(b, c)) {
                 graph.setEndpoint(c, a, Endpoint.TAIL);
                 this.changeFlag = true;
             }
@@ -1498,13 +1499,13 @@ public class Ion2 {
                     Node node2 = pag.getNode(edge.getNode2().getName());
 
                     if (Edges.isDirectedEdge(edge)) {
-                        if (!pag.existsSemiDirectedPathFromTo(node1, Collections.singleton(node2))) {
+                        if (!pag.paths().existsSemiDirectedPathFromTo(node1, Collections.singleton(node2))) {
                             allAccountFor = false;
                             break GRAPH;
                         }
                     }
                     if (/*!pag.existsTrek(node1, node2) ||*/ Edges.isPartiallyOrientedEdge(edge)) {
-                        if (pag.existsSemiDirectedPathFromTo(node2, Collections.singleton(node1))) {
+                        if (pag.paths().existsSemiDirectedPathFromTo(node2, Collections.singleton(node1))) {
                             allAccountFor = false;
                             break GRAPH;
                         }

@@ -28,6 +28,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -137,11 +138,11 @@ public class MNLRLikelihood {
         if (sigma2 <= 0) {
             Vector ones = new Vector(n);
             for (int i = 0; i < n; i++) ones.set(i, 1);
-            r = ones.scalarMult(ones.dotProduct(Y) / (double) Math.max(n, 2)).minus(Y);
+            r = ones.scalarMult(ones.dotProduct(Y) / (double) FastMath.max(n, 2)).minus(Y);
             sigma2 = r.dotProduct(r) / n;
         }
 
-        double lik = -(n / 2.) * (Math.log(2 * Math.PI) + Math.log(sigma2) + 1);
+        double lik = -(n / 2.) * (FastMath.log(2 * FastMath.PI) + FastMath.log(sigma2) + 1);
 
         if (Double.isInfinite(lik) || Double.isNaN(lik)) {
             System.out.println(lik);
@@ -182,12 +183,12 @@ public class MNLRLikelihood {
                 for (int i = 0; i < p; i++) {
                     for (Integer integer : cell) {
                         mean[i] += this.continuousData[continuousCols[i]][integer];
-                        var[i] += Math.pow(this.continuousData[continuousCols[i]][integer], 2);
+                        var[i] += FastMath.pow(this.continuousData[continuousCols[i]][integer], 2);
                     }
                     mean[i] /= r;
                     var[i] /= r;
-                    var[i] -= Math.pow(mean[i], 2);
-                    var[i] = Math.sqrt(var[i]);
+                    var[i] -= FastMath.pow(mean[i], 2);
+                    var[i] = FastMath.sqrt(var[i]);
 
                     if (Double.isNaN(var[i])) {
                         System.out.println(var[i]);
@@ -196,14 +197,14 @@ public class MNLRLikelihood {
 
                 int degree = this.fDegree;
                 if (this.fDegree < 1) {
-                    degree = (int) Math.floor(Math.log(r));
+                    degree = (int) FastMath.floor(FastMath.log(r));
                 }
                 Matrix subset = new Matrix(r, p * degree + 1);
                 for (int i = 0; i < r; i++) {
                     subset.set(i, p * degree, 1);
                     for (int j = 0; j < p; j++) {
                         for (int d = 0; d < degree; d++) {
-                            subset.set(i, p * d + j, Math.pow((this.continuousData[continuousCols[j]][cell.get(i)] - mean[j]) / var[j], d + 1));
+                            subset.set(i, p * d + j, FastMath.pow((this.continuousData[continuousCols[j]][cell.get(i)] - mean[j]) / var[j], d + 1));
                         }
                     }
                 }
@@ -253,7 +254,7 @@ public class MNLRLikelihood {
 
                 int degree = this.fDegree;
                 if (this.fDegree < 1) {
-                    degree = (int) Math.floor(Math.log(r));
+                    degree = (int) FastMath.floor(FastMath.log(r));
                 }
                 if (c instanceof ContinuousVariable) {
                     dof += degree * continuous_parents.size() + 1;
@@ -278,7 +279,7 @@ public class MNLRLikelihood {
         if (this.structurePrior == 0) {
             return 0;
         }
-        return k * Math.log(p) + (n - k) * Math.log(1 - p);
+        return k * FastMath.log(p) + (n - k) * FastMath.log(1 - p);
 
     }
 
@@ -286,7 +287,7 @@ public class MNLRLikelihood {
 
         double n = this.dataSet.getNumColumns();
         double gamma = -this.structurePrior;
-        return gamma * Math.log(n);
+        return gamma * FastMath.log(n);
 
     }
 
@@ -331,7 +332,7 @@ public class MNLRLikelihood {
                     den += p[0];
                 }
             }
-            lik += Math.log(num / den);
+            lik += FastMath.log(num / den);
         }
 
         return lik;

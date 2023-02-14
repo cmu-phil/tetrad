@@ -27,6 +27,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.MultiKeyMap;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
@@ -34,9 +35,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.max;
-import static java.util.Collections.shuffle;
 import static java.util.Collections.sort;
+import static org.apache.commons.math3.util.FastMath.max;
 
 /**
  * Graph utilities for search algorithm. Lots of orientation method, for
@@ -188,7 +188,7 @@ public final class SearchGraphUtils {
         adj.remove(c);
         adj.remove(a);
 
-        for (int d = 0; d <= Math.min(1000, adj.size()); d++) {
+        for (int d = 0; d <= FastMath.min(1000, adj.size()); d++) {
             ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
             int[] choice;
 
@@ -302,7 +302,7 @@ public final class SearchGraphUtils {
         if (_depth == -1) {
             _depth = 1000;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             if (_nodes.size() >= d) {
@@ -359,7 +359,7 @@ public final class SearchGraphUtils {
                     }
 
                     if (graph.getEndpoint(b, a) == Endpoint.ARROW
-                            && graph.isUndirectedFromTo(a, c)) {
+                            && graph.paths().isUndirectedFromTo(a, c)) {
                         if (SearchGraphUtils.existsLocalSepsetWithout(b, a, c, test, graph,
                                 depth)) {
                             continue;
@@ -371,7 +371,7 @@ public final class SearchGraphUtils {
                             changed = true;
                         }
                     } else if (graph.getEndpoint(c, a) == Endpoint.ARROW
-                            && graph.isUndirectedFromTo(a, b)) {
+                            && graph.paths().isUndirectedFromTo(a, b)) {
                         if (SearchGraphUtils.existsLocalSepsetWithout(b, a, c, test, graph,
                                 depth)) {
                             continue;
@@ -411,16 +411,16 @@ public final class SearchGraphUtils {
                 Node b = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (graph.isDirectedFromTo(b, a)
-                        && graph.isDirectedFromTo(a, c)
-                        && graph.isUndirectedFromTo(b, c)) {
+                if (graph.paths().isDirectedFromTo(b, a)
+                        && graph.paths().isDirectedFromTo(a, c)
+                        && graph.paths().isUndirectedFromTo(b, c)) {
                     if (SearchGraphUtils.isArrowpointAllowed(b, c, knowledge)) {
                         graph.setEndpoint(b, c, Endpoint.ARROW);
                         TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(b, c)));
                     }
-                } else if (graph.isDirectedFromTo(c, a)
-                        && graph.isDirectedFromTo(a, b)
-                        && graph.isUndirectedFromTo(c, b)) {
+                } else if (graph.paths().isDirectedFromTo(c, a)
+                        && graph.paths().isDirectedFromTo(a, b)
+                        && graph.paths().isUndirectedFromTo(c, b)) {
                     if (SearchGraphUtils.isArrowpointAllowed(c, b, knowledge)) {
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                         TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(c, b)));
@@ -451,7 +451,7 @@ public final class SearchGraphUtils {
                 List<Node> otherAdjacents = new LinkedList<>(adjacentNodes);
                 otherAdjacents.remove(b);
 
-                if (!graph.isUndirectedFromTo(a, b)) {
+                if (!graph.paths().isUndirectedFromTo(a, b)) {
                     continue;
                 }
 
@@ -467,16 +467,16 @@ public final class SearchGraphUtils {
                         continue;
                     }
 
-                    if (!graph.isUndirectedFromTo(a, c)) {
+                    if (!graph.paths().isUndirectedFromTo(a, c)) {
                         continue;
                     }
 
-                    if (!graph.isUndirectedFromTo(a, d)) {
+                    if (!graph.paths().isUndirectedFromTo(a, d)) {
                         continue;
                     }
 
-                    if (graph.isDirectedFromTo(c, b)
-                            && graph.isDirectedFromTo(d, b)) {
+                    if (graph.paths().isDirectedFromTo(c, b)
+                            && graph.paths().isDirectedFromTo(d, b)) {
                         if (SearchGraphUtils.isArrowpointAllowed(a, b, knowledge)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
                             TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R3", graph.getEdge(a, b)));
@@ -522,24 +522,24 @@ public final class SearchGraphUtils {
                     Node b = otherAdjacents.get(combination[0]);
                     Node c = otherAdjacents.get(combination[1]);
 
-                    if (!graph.isUndirectedFromTo(a, b)) {
+                    if (!graph.paths().isUndirectedFromTo(a, b)) {
                         continue;
                     }
 
-                    if (!graph.isUndirectedFromTo(a, c)) {
+                    if (!graph.paths().isUndirectedFromTo(a, c)) {
                         continue;
                     }
 
-                    if (graph.isDirectedFromTo(b, c)
-                            && graph.isDirectedFromTo(d, c)) {
+                    if (graph.paths().isDirectedFromTo(b, c)
+                            && graph.paths().isDirectedFromTo(d, c)) {
                         if (SearchGraphUtils.isArrowpointAllowed(a, c, knowledge)) {
                             graph.setEndpoint(a, c, Endpoint.ARROW);
                             TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, c)));
                             changed = true;
                             break;
                         }
-                    } else if (graph.isDirectedFromTo(c, d)
-                            && graph.isDirectedFromTo(d, b)) {
+                    } else if (graph.paths().isDirectedFromTo(c, d)
+                            && graph.paths().isDirectedFromTo(d, b)) {
                         if (SearchGraphUtils.isArrowpointAllowed(a, b, knowledge)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
                             TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, b)));
@@ -676,7 +676,7 @@ public final class SearchGraphUtils {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
-                if (Edges.isUndirectedEdge(edge) && !graph.isAncestorOf(y, x)) {
+                if (Edges.isUndirectedEdge(edge) && !graph.paths().isAncestorOf(y, x)) {
                     SearchGraphUtils.direct(x, y, dag);
                     rules.orientImplied(dag);
                     continue NEXT;
@@ -696,54 +696,283 @@ public final class SearchGraphUtils {
         graph.addEdge(after);
     }
 
+    // Zhang 2008 Theorem 2
     public static Graph pagToMag(Graph pag) {
-        Graph graph = new EdgeListGraph(pag);
-        SepsetProducer sepsets = new DagSepsets(graph);
+        Graph mag = new EdgeListGraph(pag.getNodes());
+        for (Edge e : pag.getEdges()) mag.addEdge(new Edge(e));
+
+        SepsetProducer sepsets = new DagSepsets(mag);
         FciOrient fciOrient = new FciOrient(sepsets);
 
-        while (true) {
-            boolean oriented = SearchGraphUtils.orientOneCircle(graph);
-            if (!oriented) {
-                break;
+        List<Node> nodes = mag.getNodes();
+
+        Graph pcafci = new EdgeListGraph(nodes);
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = 0; j < nodes.size(); j++) {
+                if (i == j) continue;
+
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (mag.getEndpoint(y, x) == Endpoint.CIRCLE && mag.getEndpoint(x, y) == Endpoint.ARROW) {
+                    mag.setEndpoint(y, x, Endpoint.TAIL);
+                }
+
+                if (mag.getEndpoint(y, x) == Endpoint.TAIL && mag.getEndpoint(x, y) == Endpoint.CIRCLE) {
+                    mag.setEndpoint(x, y, Endpoint.ARROW);
+                }
+
+                if (mag.getEndpoint(y, x) == Endpoint.CIRCLE && mag.getEndpoint(x, y) == Endpoint.CIRCLE) {
+                    pcafci.addEdge(mag.getEdge(x, y));
+                }
             }
-            fciOrient.doFinalOrientation(graph);
         }
 
-        for (Edge edge : graph.getEdges()) {
-            edge.getProperties().clear();
+        for (Edge e : pcafci.getEdges()) {
+            e.setEndpoint1(Endpoint.TAIL);
+            e.setEndpoint2(Endpoint.TAIL);
         }
 
-        GraphUtils.addPagColoring(graph);
+        W:
+        while (true) {
+            for (Edge e : pcafci.getEdges()) {
+                if (Edges.isUndirectedEdge(e)) {
+                    Node x = e.getNode1();
+                    Node y = e.getNode2();
 
-        return graph;
+                    pcafci.setEndpoint(y, x, Endpoint.TAIL);
+                    pcafci.setEndpoint(x, y, Endpoint.ARROW);
+
+                    MeekRules meekRules = new MeekRules();
+                    meekRules.setRevertToUnshieldedColliders(false);
+                    meekRules.orientImplied(pcafci);
+
+                    continue W;
+                }
+            }
+
+            break;
+        }
+
+        for (Edge e : pcafci.getEdges()) {
+            mag.removeEdge(e.getNode1(), e.getNode2());
+            mag.addEdge(e);
+        }
+
+        return mag;
     }
 
-    private static boolean orientOneCircle(Graph graph) {
-        List<Edge> edges = new ArrayList<>(graph.getEdges());
-        shuffle(edges);
+    public static class LegalPagRet {
+        private final boolean legalPag;
+        private final String reason;
 
-        for (Edge edge : edges) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
+        public LegalPagRet(boolean legalPag, String reason) {
+            if (reason == null) throw new NullPointerException("Reason must be given.");
+            this.legalPag = legalPag;
+            this.reason = reason;
+        }
 
-            if (graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-                if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-                    graph.setEndpoint(x, y, Endpoint.ARROW);
-                } else {
-                    graph.setEndpoint(x, y, Endpoint.TAIL);
-                }
-                return true;
-            } else if (graph.getEndpoint(y, x) == Endpoint.CIRCLE) {
-                if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
-                    graph.setEndpoint(y, x, Endpoint.ARROW);
-                } else {
-                    graph.setEndpoint(y, x, Endpoint.TAIL);
-                }
-                return true;
+        public boolean isLegalPag() {
+            return legalPag;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+    }
+
+    public static LegalPagRet isLegalPag(Graph pag) {
+
+        for (Node n : pag.getNodes()) {
+            if (n.getNodeType() != NodeType.MEASURED) {
+                return new LegalPagRet(false,
+                        "Node " + n + " is not measured");
             }
         }
 
-        return false;
+//        for (Node n : pag.getNodes()) {
+//            if (pag.paths().existsDirectedPathFromTo(n, n))
+//                return new LegalPagRet(false,
+//                        "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself");
+//        }
+
+//        for (Edge e : pag.getEdges()) {
+//            Node x = e.getNode1();
+//            Node y = e.getNode2();
+//
+//            if (Edges.isBidirectedEdge(e)) {
+//                if (pag.existsDirectedPathFromTo(x, y)) {
+//                    List<Node> path = GraphUtils.directedPathsFromTo(
+//                            pag, x, y, 100).get(0);
+//                    return new LegalPagRet(false,
+//                            "Bidirected edge semantics violated: there is a directed path for " + e + " from " + x + " to " + y
+//                                    + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
+//                                    + "An example path is " + GraphUtils.pathString(pag, path));
+//                } else if (pag.existsDirectedPathFromTo(y, x)) {
+//                    List<Node> path = GraphUtils.directedPathsFromTo(
+//                            pag, y, x, 100).get(0);
+//                    return new LegalPagRet(false,
+//                            "Bidirected edge semantics violated: There is an a directed path for " + e + " from " + y + " to " + x +
+//                                    ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
+//                                    + "An example path is " + GraphUtils.pathString(pag, path));
+//                }
+//            }
+//        }
+
+        Graph mag = pagToMag(pag);
+
+
+        LegalMagRet legalMag = isLegalMag(mag);
+
+        if (!legalMag.isLegalMag()) {
+            return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
+        }
+
+        Graph pag2 = SearchGraphUtils.dagToPag(mag);
+
+        if (!pag.equals(pag2)) {
+            String edgeMismatch = "";
+
+            for (Edge e : pag.getEdges()) {
+                Edge e2 = pag2.getEdge(e.getNode1(), e.getNode2());
+
+                if (!e.equals(e2)) {
+                    edgeMismatch = "For example, the original PAG has edge " + e
+                            + " whereas the reconstituted PAG has edge " + e2;
+                }
+            }
+
+            String reason = "Could be a MAG or between a MAG and a PAG; cannot recover the original graph by finding " +
+                    "the PAG of an implied MAG";
+
+            if (!edgeMismatch.equals("")) {
+                reason = reason + ". " + edgeMismatch;
+            }
+
+            return new LegalPagRet(false, reason);
+        }
+
+        return new LegalPagRet(true, "This is a legal PAG");
+    }
+
+    public static class LegalMagRet {
+        private final boolean legalMag;
+        private final String reason;
+
+        public LegalMagRet(boolean legalPag, String reason) {
+            if (reason == null) throw new NullPointerException("Reason must be given.");
+            this.legalMag = legalPag;
+            this.reason = reason;
+        }
+
+        public boolean isLegalMag() {
+            return legalMag;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+    }
+
+    private static LegalMagRet isLegalMag(Graph mag) {
+        for (Node n : mag.getNodes()) {
+            if (n.getNodeType() == NodeType.LATENT)
+                return new LegalMagRet(false,
+                        "Node " + n + " is not measured");
+        }
+
+        List<Node> nodes = mag.getNodes();
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (!mag.isAdjacentTo(x, y)) continue;
+
+                if (mag.getEdges(x, y).size() > 1) {
+                    return new LegalMagRet(false,
+                            "There is more than one edge between " + x + " and " + y);
+                }
+
+                Edge e = mag.getEdge(x, y);
+
+                if (!(Edges.isDirectedEdge(e) || Edges.isBidirectedEdge(e) || Edges.isUndirectedEdge(e))) {
+                    return new LegalMagRet(false,
+                            "Edge " + e + " should be directed, bidirected, or undirected.");
+                }
+            }
+        }
+
+        for (Node n : mag.getNodes()) {
+            if (mag.paths().existsDirectedPathFromTo(n, n))
+                return new LegalMagRet(false,
+                        "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself");
+        }
+
+        for (Edge e : mag.getEdges()) {
+            Node x = e.getNode1();
+            Node y = e.getNode2();
+
+            if (Edges.isBidirectedEdge(e)) {
+                if (mag.paths().existsDirectedPathFromTo(x, y)) {
+                    List<Node> path = mag.paths().directedPathsFromTo(x, y, 100).get(0);
+                    return new LegalMagRet(false,
+                            "Bidirected edge semantics violated: there is a directed path for " + e + " from " + x + " to " + y
+                                    + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
+                                    + "An example path is " + GraphUtils.pathString(mag, path));
+                } else if (mag.paths().existsDirectedPathFromTo(y, x)) {
+                    List<Node> path = mag.paths().directedPathsFromTo(y, x, 100).get(0);
+                    return new LegalMagRet(false,
+                            "Bidirected edge semantics violated: There is an a directed path for " + e + " from " + y + " to " + x +
+                                    ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
+                                    + "An example path is " + GraphUtils.pathString(mag, path));
+                }
+            }
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (!mag.isAdjacentTo(x, y)) {
+                    if (mag.paths().existsInducingPath(x, y))
+                        return new LegalMagRet(false,
+                                "This is not maximal; there is an inducing path between non-adjacent " + x + " and " + y);
+                }
+            }
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i + 1; j < nodes.size(); j++) {
+                Node x = nodes.get(i);
+                Node y = nodes.get(j);
+
+                if (!mag.isAdjacentTo(x, y)) continue;
+
+                Edge e = mag.getEdge(x, y);
+
+                if (Edges.isUndirectedEdge(e)) {
+                    for (Node z : mag.getAdjacentNodes(x)) {
+                        if (mag.isParentOf(z, x) || Edges.isBidirectedEdge(mag.getEdge(z, x))) {
+                            return new LegalMagRet(false,
+                                    "For undirected edge " + e + ", " + z + " should not be a parent or a spouse of " + x);
+                        }
+                    }
+
+                    for (Node z : mag.getAdjacentNodes(y)) {
+                        if (mag.isParentOf(z, y) || Edges.isBidirectedEdge(mag.getEdge(z, y))) {
+                            return new LegalMagRet(false,
+                                    "For undirected edge " + e + ", " + z + " should not be a parent or a spouse of " + y);
+                        }
+                    }
+                }
+            }
+        }
+
+        return new LegalMagRet(true, "This is a legal MAG");
     }
 
     public static void arrangeByKnowledgeTiers(Graph graph,
@@ -938,7 +1167,7 @@ public final class SearchGraphUtils {
 
     public static List<Set<Node>> powerSet(List<Node> nodes) {
         List<Set<Node>> subsets = new ArrayList<>();
-        int total = (int) Math.pow(2, nodes.size());
+        int total = (int) FastMath.pow(2, nodes.size());
         for (int i = 0; i < total; i++) {
             Set<Node> newSet = new HashSet<>();
             String selection = Integer.toBinaryString(i);
@@ -1060,7 +1289,7 @@ public final class SearchGraphUtils {
         if (_depth == -1) {
             _depth = 1000;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
@@ -1087,7 +1316,7 @@ public final class SearchGraphUtils {
         _nodes.remove(x);
         TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
@@ -1140,11 +1369,11 @@ public final class SearchGraphUtils {
             estGraph = SearchGraphUtils.cpdagForDag(estGraph);
 
             // Will check mixedness later.
-            if (trueGraph.existsDirectedCycle()) {
+            if (trueGraph.paths().existsDirectedCycle()) {
                 TetradLogger.getInstance().forceLogMessage("SHD failed: True graph couldn't be converted to a CPDAG");
             }
 
-            if (estGraph.existsDirectedCycle()) {
+            if (estGraph.paths().existsDirectedCycle()) {
                 TetradLogger.getInstance().forceLogMessage("SHD failed: Estimated graph couldn't be converted to a CPDAG");
                 return -99;
             }
@@ -1502,11 +1731,11 @@ public final class SearchGraphUtils {
                 if (printStars) {
                     boolean directedInGraph2 = false;
 
-                    if (Edges.isDirectedEdge(edge1) && GraphUtils.existsSemidirectedPath(node1, node2, targetGraph)) {
+                    if (Edges.isDirectedEdge(edge1) && targetGraph.paths().existsSemidirectedPath(node1, node2)) {
                         directedInGraph2 = true;
                     } else if ((Edges.isUndirectedEdge(edge1) || Edges.isBidirectedEdge(edge1))
-                            && (GraphUtils.existsSemidirectedPath(node1, node2, targetGraph)
-                            || GraphUtils.existsSemidirectedPath(node2, node1, targetGraph))) {
+                            && (targetGraph.paths().existsSemidirectedPath(node1, node2)
+                            || targetGraph.paths().existsSemidirectedPath(node2, node1))) {
                         directedInGraph2 = true;
                     }
 
@@ -1535,11 +1764,11 @@ public final class SearchGraphUtils {
                 if (printStars) {
                     boolean directedInGraph1 = false;
 
-                    if (Edges.isDirectedEdge(edge) && GraphUtils.existsSemidirectedPath(node1, node2, trueGraph)) {
+                    if (Edges.isDirectedEdge(edge) && trueGraph.paths().existsSemidirectedPath(node1, node2)) {
                         directedInGraph1 = true;
                     } else if ((Edges.isUndirectedEdge(edge) || Edges.isBidirectedEdge(edge))
-                            && (GraphUtils.existsSemidirectedPath(node1, node2, trueGraph)
-                            || GraphUtils.existsSemidirectedPath(node2, node1, trueGraph))) {
+                            && (trueGraph.paths().existsSemidirectedPath(node1, node2)
+                            || trueGraph.paths().existsSemidirectedPath(node2, node1))) {
                         directedInGraph1 = true;
                     }
 
@@ -1589,56 +1818,57 @@ public final class SearchGraphUtils {
             if (!edge1.equals(edge2)) {
                 incorrect.add(adj);
 
-                if (trueGraph.getGraphType() == EdgeListGraph.GraphType.PAG && targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG) {
-                    GraphUtils.addPagColoring(trueGraph);
-                    GraphUtils.addPagColoring(targetGraph);
-
-                    if (edge2 == null) continue;
-
-                    if (GraphUtils.compatible(edge1, edge2)) {
-                        compatible.add(edge1);
-                    } else {
-                        incompatible.add(edge1);
-                    }
-                }
+//                if (SearchGraphUtils.isLegalPag(trueGraph).isLegalPag() && SearchGraphUtils.isLegalPag(targetGraph).isLegalPag()) {
+//                    GraphUtils.addPagColoring(trueGraph);
+//                    GraphUtils.addPagColoring(targetGraph);
+//
+//                    if (edge2 == null) continue;
+//
+//                    if (GraphUtils.compatible(edge1, edge2)) {
+//                        compatible.add(edge1);
+//                    } else {
+//                        incompatible.add(edge1);
+//                    }
+//                }
             }
         }
 
-        if (trueGraph.getGraphType() == EdgeListGraph.GraphType.PAG && targetGraph.getGraphType() == EdgeListGraph.GraphType.PAG) {
-            builder.append("\n\n" + "Edges incorrectly oriented (incompatible)");
-
-            if (incompatible.isEmpty()) {
-                builder.append("\n  --NONE--");
-            } else {
-                sort(incompatible);
-
-                int j1 = 0;
-
-                for (Edge adj : incompatible) {
-                    Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
-                    Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
-                    if (edge1 == null || edge2 == null) continue;
-                    builder.append("\n").append(++j1).append(". ").append(edge2).append(" ====> ").append(edge1);
-                }
-            }
-
-            builder.append("\n\n" + "Edges incorrectly oriented (compatible)");
-
-            sort(compatible);
-
-            if (compatible.isEmpty()) {
-                builder.append("\n  --NONE--");
-            } else {
-                int j1 = 0;
-
-                for (Edge adj : compatible) {
-                    Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
-                    Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
-                    if (edge1 == null || edge2 == null) continue;
-                    builder.append("\n").append(++j1).append(". ").append(edge2).append(" ====> ").append(edge1);
-                }
-            }
-        } else {
+//        if (SearchGraphUtils.isLegalPag(trueGraph).isLegalPag() && SearchGraphUtils.isLegalPag(targetGraph).isLegalPag()) {
+//            builder.append("\n\n" + "Edges incorrectly oriented (incompatible)");
+//
+//            if (incompatible.isEmpty()) {
+//                builder.append("\n  --NONE--");
+//            } else {
+//                sort(incompatible);
+//
+//                int j1 = 0;
+//
+//                for (Edge adj : incompatible) {
+//                    Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
+//                    Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
+//                    if (edge1 == null || edge2 == null) continue;
+//                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
+//                }
+//            }
+//
+//            builder.append("\n\n" + "Edges incorrectly oriented (compatible)");
+//
+//            sort(compatible);
+//
+//            if (compatible.isEmpty()) {
+//                builder.append("\n  --NONE--");
+//            } else {
+//                int j1 = 0;
+//
+//                for (Edge adj : compatible) {
+//                    Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
+//                    Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
+//                    if (edge1 == null || edge2 == null) continue;
+//                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
+//                }
+//            }
+//        } else
+        {
             builder.append("\n\n" + "Edges incorrectly oriented");
 
             if (incorrect.isEmpty()) {
@@ -1732,47 +1962,6 @@ public final class SearchGraphUtils {
         }
 
         return counts;
-    }
-
-    public static Graph reorient(Graph graph, DataModel dataModel, Knowledge knowledge) {
-        if (dataModel instanceof DataModelList) {
-            DataModelList list = (DataModelList) dataModel;
-            List<DataModel> dataSets = new ArrayList<>(list);
-            Fges images = new Fges(new SemBicScoreImages(dataSets));
-
-            images.setBoundGraph(graph);
-            images.setKnowledge(knowledge);
-            return images.search();
-        } else if (dataModel instanceof DataSet) {
-            DataSet dataSet = (DataSet) dataModel;
-
-            Score score;
-
-            if (dataModel.isContinuous()) {
-                score = new SemBicScore(new CovarianceMatrix(dataSet));
-            } else if (dataSet.isDiscrete()) {
-                score = new BDeuScore(dataSet);
-            } else {
-                throw new NullPointerException();
-            }
-
-            Fges ges = new Fges(score);
-
-            ges.setBoundGraph(graph);
-            ges.setKnowledge(knowledge);
-            return ges.search();
-        } else if (dataModel instanceof CovarianceMatrix) {
-            ICovarianceMatrix cov = (CovarianceMatrix) dataModel;
-            Score score = new SemBicScore(cov);
-
-            Fges ges = new Fges(score);
-
-            ges.setBoundGraph(graph);
-            ges.setKnowledge(knowledge);
-            return ges.search();
-        }
-
-        throw new IllegalStateException("Can do that that reorientation.");
     }
 
     @NotNull

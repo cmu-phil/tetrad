@@ -33,12 +33,13 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Unmarshallable;
 
 import java.io.IOException;
@@ -278,7 +279,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
             Graph graph = algo.search(null, this.parameters);
 
-            GraphUtils.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.circleLayout(graph, 200, 200, 150);
 
             graphList.add(graph);
         } else {
@@ -297,7 +298,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                         throw new IllegalArgumentException("Sorry, the 'random selection size' is greater than "
                                 + "the number of data sets: " + randomSelectionSize + " > " + dataSets.size());
                     }
-                    Collections.shuffle(dataSets);
+                    RandomUtil.shuffle(dataSets);
 
                     List<DataModel> sub = new ArrayList<>();
                     for (int j = 0; j < randomSelectionSize; j++) {
@@ -330,7 +331,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                             Graph graph = this.algorithm.search(dataSet, this.parameters);
 
-                            GraphUtils.circleLayout(graph, 200, 200, 150);
+                            LayoutUtil.circleLayout(graph, 200, 200, 150);
 
                             graphList.add(graph);
                         } else if (dataModel instanceof DataSet) {
@@ -349,7 +350,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
                             }
 
                             Graph graph = this.algorithm.search(dataSet, this.parameters);
-                            GraphUtils.circleLayout(graph, 200, 200, 150);
+                            LayoutUtil.circleLayout(graph, 200, 200, 150);
 
                             graphList.add(graph);
                         }
@@ -379,15 +380,15 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                         if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
                             Graph graph = algo.search(data, this.parameters);
-                            GraphUtils.circleLayout(graph, 200, 200, 150);
+                            LayoutUtil.circleLayout(graph, 200, 200, 150);
                             graphList.add(graph);
                         } else if (data.isDiscrete() && (algDataType == DataType.Discrete || algDataType == DataType.Mixed)) {
                             Graph graph = algo.search(data, this.parameters);
-                            GraphUtils.circleLayout(graph, 200, 200, 150);
+                            LayoutUtil.circleLayout(graph, 200, 200, 150);
                             graphList.add(graph);
                         } else if (data.isMixed() && algDataType == DataType.Mixed) {
                             Graph graph = algo.search(data, this.parameters);
-                            GraphUtils.circleLayout(graph, 200, 200, 150);
+                            LayoutUtil.circleLayout(graph, 200, 200, 150);
                             graphList.add(graph);
                         } else {
                             throw new IllegalArgumentException("The algorithm was not expecting that type of data.");
@@ -409,7 +410,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
         } else {
             for (Graph graph : graphList) {
-                GraphUtils.circleLayout(graph, 225, 200, 150);
+                LayoutUtil.circleLayout(graph, 225, 200, 150);
             }
         }
 
@@ -653,7 +654,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             return null;
         } else {
             Graph graph = this.graphList.get(0);
-            GraphUtils.circleLayout( graph,225, 225, 180);
+            LayoutUtil.circleLayout( graph,225, 225, 180);
             return graph;
         }
     }

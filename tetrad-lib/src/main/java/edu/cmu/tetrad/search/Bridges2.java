@@ -24,9 +24,9 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 
 import java.io.PrintStream;
-import java.util.*;
-
-import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * GesSearch is an implementation of the GES algorithm, as specified in
@@ -127,7 +127,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
                     // node into parents of the proximal node
 
                     for (Node c : g.getAdjacentNodes(b)) {
-                        if (existsSemidirectedPath(c, a, g)) {
+                        if (g.paths().existsSemidirectedPath(c, a)) {
                             g.removeEdge(g.getEdge(b, c));
                             g.addDirectedEdge(c, b);
                         }
@@ -138,7 +138,7 @@ public final class Bridges2 implements GraphSearch, GraphScorer {
                     g.removeEdge(edge);
                     g.addEdge(reversed);
 
-                    fges.setExternalGraph(g);
+                    fges.setInitialGraph(g);
                     Graph g1 = fges.search();
                     double s1 = fges.getModelScore();
 

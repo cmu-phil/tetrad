@@ -18,29 +18,13 @@
  */
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeTypeProbability;
-import edu.cmu.tetrad.graph.Edges;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
+import edu.cmu.tetrad.graph.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
+import javax.swing.*;
+import javax.swing.table.*;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Apr 30, 2019 2:30:18 PM
@@ -112,10 +96,10 @@ public class EdgeTypeTable extends JPanel {
             TableCellRenderer headerRenderer = header.getDefaultRenderer();
             header.setDefaultRenderer((tbl, value, isSelected, hasFocus, row, column) -> {
                 Component comp = headerRenderer.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
-                if (column >= 9 && column <= 12) {
+                if (column >= 10 && column <= 13) {
                     comp.setForeground(Color.BLUE);
                 }
-                if (column >= 11 && column <= 12) {
+                if (column >= 12 && column <= 13) {
                     comp.setFont(boldFont);
                 }
 
@@ -298,7 +282,7 @@ public class EdgeTypeTable extends JPanel {
             Component component = super.prepareRenderer(renderer, row, column);
             int rendererWidth = component.getPreferredSize().width;
             TableColumn tableColumn = getColumnModel().getColumn(column);
-            tableColumn.setPreferredWidth(Math.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
+            tableColumn.setPreferredWidth(FastMath.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
 
             return component;
         }

@@ -89,11 +89,11 @@ public class ImagesBDeu implements MultiDataSetAlgorithm, HasKnowledge {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(DataUtils.getDiscreteDataSet(dataSet)), parameters);
+            return search(Collections.singletonList(SimpleDataLoader.getDiscreteDataSet(dataSet)), parameters);
         } else {
             ImagesBDeu imagesBDeu = new ImagesBDeu();
 
-            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
                     imagesBDeu,
                     parameters.getInt(Params.NUMBER_RESAMPLING),

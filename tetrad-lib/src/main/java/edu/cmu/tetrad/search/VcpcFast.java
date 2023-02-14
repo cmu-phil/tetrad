@@ -26,7 +26,9 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -222,22 +224,6 @@ public final class VcpcFast implements GraphSearch {
         return new HashSet<>(this.definitelyNonadjacencies);
     }
 
-    /**
-     * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
-     * See PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
-     */
-//    public final Graph search() {
-//        return search(independenceTest.getVariable());
-//    }
-
-////    public Graph search(List<Node> nodes) {
-////
-//////        return search(new FasICov2(getIndependenceTest()), nodes);
-//////        return search(new Fas(getIndependenceTest()), nodes);
-////        return search(new Fas(getIndependenceTest()), nodes);
-//    }
-
-
 //  modified FAS into VCFAS; added in definitelyNonadjacencies set of edges.
     public Graph search() {
         this.logger.log("info", "Starting VCCPC algorithm");
@@ -250,7 +236,7 @@ public final class VcpcFast implements GraphSearch {
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        long startTime = System.currentTimeMillis();
+        long startTime = MillisecondTimes.timeMillis();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
 
@@ -279,7 +265,7 @@ public final class VcpcFast implements GraphSearch {
         meekRules.orientImplied(this.graph);
 
 
-        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.getAmbiguousTriples());
+        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.underlines().getAmbiguousTriples());
 
         int[] dims = new int[ambiguousTriples.size()];
 
@@ -308,7 +294,7 @@ public final class VcpcFast implements GraphSearch {
 
             for (int k = 0; k < combination.length; k++) {
                 Triple triple = ambiguousTriples.get(k);
-                _graph.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                _graph.underlines().removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
 
                 if (combination[k] == 0) {
                     newColliders.get(_graph).add(triple);
@@ -384,7 +370,7 @@ public final class VcpcFast implements GraphSearch {
 
             MeekRules rules = new MeekRules();
             rules.orientImplied(graph);
-            if (graph.existsDirectedCycle()) {
+            if (graph.paths().existsDirectedCycle()) {
                 patterns.remove(graph);
             }
 
@@ -446,7 +432,7 @@ public final class VcpcFast implements GraphSearch {
         System.out.println("VCPC:");
 
 //        System.out.println("# of patterns: " + patterns.size());
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         System.out.println("Search Time (seconds):" + (this.elapsedTime) / 1000 + " s");
@@ -590,7 +576,7 @@ public final class VcpcFast implements GraphSearch {
                 } else if (type == CpcTripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     Edge edge = Edges.undirectedEdge(x, z);
                     this.definitelyNonadjacencies.add(edge);
                 } else {
@@ -629,7 +615,7 @@ public final class VcpcFast implements GraphSearch {
         if (_depth == -1) {
             _depth = 1000;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         while (true) {
             for (int d = 0; d <= _depth; d++) {
@@ -670,7 +656,7 @@ public final class VcpcFast implements GraphSearch {
             if (_depth == -1) {
                 _depth = 1000;
             }
-            _depth = Math.min(_depth, _nodes.size());
+            _depth = FastMath.min(_depth, _nodes.size());
 
             for (int d = 0; d <= _depth; d++) {
                 ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);

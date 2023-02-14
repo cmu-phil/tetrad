@@ -23,9 +23,9 @@ package edu.cmu.tetrad.util;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +33,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static java.lang.Double.NaN;
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.*;
 
 
 /**
@@ -782,7 +782,7 @@ public final class StatUtils {
      * @return the standard deviation of the first N values in array.
      */
     public static double sd(long[] array, int N) {
-        return Math.pow(StatUtils.ssx(array, N) / (N - 1), .5);
+        return FastMath.pow(StatUtils.ssx(array, N) / (N - 1), .5);
     }
 
     /**
@@ -791,7 +791,7 @@ public final class StatUtils {
      * @return the standard deviation of the first N values in array.
      */
     public static double sd(double[] array, int N) {
-        return Math.pow(StatUtils.ssx(array, N) / (N - 1), .5);
+        return FastMath.pow(StatUtils.ssx(array, N) / (N - 1), .5);
     }
 
     /**
@@ -915,7 +915,7 @@ public final class StatUtils {
         double covXY = StatUtils.sxy(array1, array2, N);
         double covXX = StatUtils.sxy(array1, array1, N);
         double covYY = StatUtils.sxy(array2, array2, N);
-        return (covXY / (Math.pow(covXX, .5) * Math.pow(covYY, .5)));
+        return (covXY / (FastMath.pow(covXX, .5) * FastMath.pow(covYY, .5)));
     }
 
     /**
@@ -1249,7 +1249,7 @@ public final class StatUtils {
                     "when the variance is zero.");
         }
 
-        return esss / Math.pow(ess, 1.5);
+        return esss / FastMath.pow(ess, 1.5);
     }
 
     /**
@@ -1276,7 +1276,7 @@ public final class StatUtils {
                     "when the variance is zero.");
         }
 
-        return esss / Math.pow(ess, 1.5);
+        return esss / FastMath.pow(ess, 1.5);
     }
 
     public static double[] removeNaN(double[] x1) {
@@ -1355,7 +1355,7 @@ public final class StatUtils {
                     "Kurtosis is undefined when variance is zero.");
         }
 
-        kurt = (kurt / (N * Math.pow(variance, 5 / 2.)));
+        kurt = (kurt / (N * FastMath.pow(variance, 5 / 2.)));
 
         return kurt;
     }
@@ -1379,7 +1379,7 @@ public final class StatUtils {
                     "Kurtosis is undefined when variance is zero.");
         }
 
-        kurt = (kurt / (N * Math.pow(variance, 6 / 2.)));
+        kurt = (kurt / (N * FastMath.pow(variance, 6 / 2.)));
 
         return kurt;
     }
@@ -1429,9 +1429,9 @@ public final class StatUtils {
             double multiplier = floor(z / 1.2);
             double remainder = z / multiplier;
             double coef1 =
-                    Math.pow(2.0 * PI, (0.5 * (1.0 - multiplier)));
+                    FastMath.pow(2.0 * PI, (0.5 * (1.0 - multiplier)));
             double coef2 =
-                    Math.pow(multiplier, ((multiplier * remainder) - 0.5));
+                    FastMath.pow(multiplier, ((multiplier * remainder) - 0.5));
             int N = (int) multiplier;
             double prod = 1.0;
 
@@ -1463,7 +1463,7 @@ public final class StatUtils {
                 0.0000000000000014, 0.0000000000000001};
 
         for (int i = 0; i < c.length; i++) {
-            sum += c[i] * Math.pow(z, i + 1);
+            sum += c[i] * FastMath.pow(z, i + 1);
         }
 
         return (1.0 / sum);
@@ -1488,12 +1488,12 @@ public final class StatUtils {
      * @return incomplete gamma of (a, x).
      */
     public static double igamma(double a, double x) {
-        double coef = (exp(-x) * Math.pow(x, a)) / StatUtils.gamma(a);
+        double coef = (exp(-x) * FastMath.pow(x, a)) / StatUtils.gamma(a);
         double sum = 0.0;
 
         for (int i = 0; i < 100; i++) {
             sum += (StatUtils.gamma(a) / StatUtils.gamma(a + 1.0 + (double) i)) *
-                    Math.pow(x, i);
+                    FastMath.pow(x, i);
         }
 
         return (coef * sum);
@@ -1506,7 +1506,7 @@ public final class StatUtils {
      * @return error function of this argument.
      */
     public static double erf(double x) {
-        return (StatUtils.igamma(0.5, Math.pow(x, 2.0)));
+        return (StatUtils.igamma(0.5, FastMath.pow(x, 2.0)));
     }
 
     /**
@@ -1530,7 +1530,7 @@ public final class StatUtils {
         if (cum) {
             return (1.0 - StatUtils.igamma(k, x));
         } else {
-            return ((exp(-x) * Math.pow(x, k)) / StatUtils.gamma(k));
+            return ((exp(-x) * FastMath.pow(x, k)) / StatUtils.gamma(k));
         }
     }
 
@@ -1809,7 +1809,7 @@ public final class StatUtils {
         double sum = 0.0;
 
         for (int i = 0; i < 1000; i++) {
-//            sum += Math.pow(Math.tanh(RandomUtil.getInstance().nextNormal(0, 1)), 2);
+//            sum += FastMath.pow(FastMath.tanh(RandomUtil.getInstance().nextNormal(0, 1)), 2);
             sum += abs(RandomUtil.getInstance().nextNormal(0, 1));
         }
 
@@ -1887,12 +1887,12 @@ public final class StatUtils {
         double b2 = 0.0;
 
         for (double aX : x) {
-            b2 += aX * exp(Math.pow(-aX, 2) / 2);
+            b2 += aX * exp(FastMath.pow(-aX, 2) / 2);
         }
 
         b2 /= x.length;
 
-        double negentropy = k2 * Math.pow(b1 - gamma, 2) + k1 * Math.pow(b2, 2);
+        double negentropy = k2 * FastMath.pow(b1 - gamma, 2) + k1 * FastMath.pow(b2, 2);
 
         return gaussianEntropy - negentropy + log(xstd);
     }

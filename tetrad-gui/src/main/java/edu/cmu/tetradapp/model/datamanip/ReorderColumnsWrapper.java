@@ -24,12 +24,12 @@ package edu.cmu.tetradapp.model.datamanip;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
 import edu.cmu.tetradapp.model.PcRunner;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -52,7 +52,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
 
         DataModelList newData = new DataModelList();
         variables = new ArrayList<>(variables);
-        Collections.shuffle(variables);
+        RandomUtil.shuffle(variables);
 
         if (dataModelList.get(0) instanceof DataSet) {
             List<DataSet> dataSets = new ArrayList<>();
@@ -102,7 +102,7 @@ public class ReorderColumnsWrapper extends DataWrapper {
             }
         }
 
-        Collections.shuffle(vars);
+        RandomUtil.shuffle(vars);
         return dataModel.subsetColumns(vars);
     }
 

@@ -4,7 +4,7 @@ import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.algcomparison.utils.HasParameterValues;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.File;
@@ -39,7 +39,7 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
             for (int i = 1; i <= 20; i++) {
                 File f = new File(this.path, this.prefix + i + ".txt");
                 try {
-                    this.covs.add(DataUtils.parseCovariance(f, "//", DelimiterType.WHITESPACE, '\"', "*"));
+                    this.covs.add(SimpleDataLoader.loadCovarianceMatrix(f, "//", DelimiterType.WHITESPACE, '\"', "*"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -47,7 +47,7 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
         }
 
         File graphFile = new File("/Users/user/Downloads//graph/graph1.txt");
-        this.graph = GraphUtils.loadGraphTxt(graphFile);
+        this.graph = GraphPersistence.loadGraphTxt(graphFile);
 
     }
 

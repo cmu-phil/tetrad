@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -162,7 +163,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     private Graph adjacencies;
 
     // True if it is assumed that zero effect adjacencies are not in the graph.
-    private boolean faithfulnessAssumed = true;
+    private boolean faithfulnessAssumed = false;
 
     // A utility map to help with orientation.
     private final WeakHashMap<Node, Set<Node>> neighbors = new WeakHashMap<>();
@@ -270,7 +271,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
         storeGraph(graph);
 
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         this.score = 0.0;
 
         // Do forward search.
@@ -279,7 +280,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         // Do backward search.
         bes(graph);
 
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
         this.logger.log("graph", "\nReturning this graph: " + graph);
 
@@ -486,7 +487,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     // Simultaneously finds the first edge to add to an empty graph and finds all length 1 undirectedPaths that are
     // not canceled by other undirectedPaths (the "effect edges")
     private Graph getEffectEdges(List<Node> nodes) {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         Graph effectEdgesGraph = new EdgeListGraph(nodes);
         Set<Node> emptySet = new HashSet<>(0);
 
@@ -546,8 +547,8 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                             }
 //
 //                            if (bump > 0.0) {
-                            if (bump > -getPenaltyDiscount() * Math.log(sampleSize())) {
-//                                if (bump > -getPenaltyDiscount() * Math.log(sampleSize())) {
+                            if (bump > -getPenaltyDiscount() * FastMath.log(sampleSize())) {
+//                                if (bump > -getPenaltyDiscount() * FastMath.log(sampleSize())) {
                                 Edge edge = Edges.undirectedEdge(x, y);
                                 effectEdgesGraph.addEdge(edge);
                             }
@@ -583,7 +584,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         buildIndexing(nodes);
         this.pool.invoke(new EffectTask(this.minChunk, 0, nodes.size()));
 
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             this.out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");
@@ -815,7 +816,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         Set<Node> naYX = FgesOrienter.getNaYX(a, b, graph);
         List<Node> t = FgesOrienter.getTNeighbors(a, b, graph);
 
-        int _depth = Math.min(t.size(), this.depth == -1 ? 1000 : this.depth);
+        int _depth = FastMath.min(t.size(), this.depth == -1 ? 1000 : this.depth);
 
         clearArrow(a, b);
 
@@ -928,7 +929,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         clearArrow(a, b);
 
         List<Node> _naYX = new ArrayList<>(naYX);
-//        final int _depth = Math.min(_naYX.size(), depth == -1 ? 1000 : depth);
+//        final int _depth = FastMath.min(_naYX.size(), depth == -1 ? 1000 : depth);
 
         SublistGenerator gen = new SublistGenerator(_naYX.size(), _naYX.size());
         int[] choice;
@@ -1238,7 +1239,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             Node nodeA = graph.getNode(next.getFrom());
             Node nodeB = graph.getNode(next.getTo());
 
-            if (!graph.isAncestorOf(nodeB, nodeA)) {
+            if (!graph.paths().isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdges(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
                 TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
@@ -1253,7 +1254,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 Node nodeB = edge.getNode2();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
@@ -1261,7 +1262,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 }
 
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
@@ -1272,14 +1273,14 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
                 Node nodeB = edge.getNode1();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
                     }
                 }
                 if (!graph.isChildOf(nodeA, nodeB) && getKnowledge().isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
                         TetradLogger.getInstance().log("insertedEdges", "Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
@@ -1606,7 +1607,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
     // Calculates the BIC score.
     private double score(double residualVariance, int n, int p, double c) {
-        return -n * Math.log(residualVariance) - c * getK(p) * Math.log(n);
+        return -n * FastMath.log(residualVariance) - c * getK(p) * FastMath.log(n);
     }
 
     // Degrees of freedom--a stringent choice.

@@ -178,13 +178,13 @@ public class MeekRules implements ImpliedOrientation {
         Set<Node> common = getCommonAdjacents(a, c, graph);
 
         for (Node b : common) {
-            if (graph.isDirectedFromTo(a, b) && graph.isDirectedFromTo(b, c)) {
+            if (graph.paths().isDirectedFromTo(a, b) && graph.paths().isDirectedFromTo(b, c)) {
                 if (r2Helper(a, b, c, graph, visited)) {
                     return true;
                 }
             }
 
-            if (graph.isDirectedFromTo(c, b) && graph.isDirectedFromTo(b, a)) {
+            if (graph.paths().isDirectedFromTo(c, b) && graph.paths().isDirectedFromTo(b, a)) {
                 if (r2Helper(c, b, a, graph, visited)) {
                     return true;
                 }
@@ -230,11 +230,11 @@ public class MeekRules implements ImpliedOrientation {
     private boolean r3Helper(Node a, Node d, Node b, Node c, Graph graph, Set<Node> visited) {
         boolean oriented = false;
 
-        boolean b4 = graph.isUndirectedFromTo(d, a);
-        boolean b5 = graph.isUndirectedFromTo(d, b);
-        boolean b6 = graph.isUndirectedFromTo(d, c);
-        boolean b7 = graph.isDirectedFromTo(b, a);
-        boolean b8 = graph.isDirectedFromTo(c, a);
+        boolean b4 = graph.paths().isUndirectedFromTo(d, a);
+        boolean b5 = graph.paths().isUndirectedFromTo(d, b);
+        boolean b6 = graph.paths().isUndirectedFromTo(d, c);
+        boolean b7 = graph.paths().isDirectedFromTo(b, a);
+        boolean b8 = graph.paths().isDirectedFromTo(c, a);
 
         if (b4 && b5 && b6 && b7 && b8) {
             oriented = direct(d, a, graph, visited);
@@ -281,7 +281,7 @@ public class MeekRules implements ImpliedOrientation {
 //            return false;
 //        }
 
-        if (aggressivelyPreventCycles && graph.existsDirectedPathFromTo(c, a)) {
+        if (aggressivelyPreventCycles && graph.paths().existsDirectedPathFromTo(c, a)) {
             graph.addEdge(before);
             return false;
         }

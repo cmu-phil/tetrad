@@ -103,7 +103,7 @@ public class ExampleStARS {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 0.25);
         statistics.setWeight("AR", 0.25);

@@ -4,7 +4,7 @@ import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.ConditionalCorrelationIndependence;
 import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.IndependenceTest;
@@ -33,7 +33,7 @@ public class CciTest implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(DataUtils.getContinuousDataSet(dataSet),
+        IndTestConditionalCorrelation cci = new IndTestConditionalCorrelation(SimpleDataLoader.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA));
         if (parameters.getInt(Params.KERNEL_TYPE) == 1) {
             cci.setKernel(ConditionalCorrelationIndependence.Kernel.Gaussian);

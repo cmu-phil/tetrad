@@ -232,7 +232,7 @@ public class Cstar {
 
                     if (dir != null && new File(dir, "pattern." + (this.k + 1) + ".txt").exists() && new File(dir, "effects." + (this.k + 1) + ".txt").exists()) {
                         try {
-                            pattern = GraphUtils.loadGraphTxt(new File(dir, "pattern." + (this.k + 1) + ".txt"));
+                            pattern = GraphPersistence.loadGraphTxt(new File(dir, "pattern." + (this.k + 1) + ".txt"));
                             effects = loadMatrix(new File(dir, "effects." + (this.k + 1) + ".txt"));
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -252,7 +252,7 @@ public class Cstar {
                         edgesCount[0]++;
 
                         if (dir != null) {
-                            GraphUtils.saveGraph(pattern, new File(dir, "pattern." + (this.k + 1) + ".txt"), false);
+                            GraphPersistence.saveGraph(pattern, new File(dir, "pattern." + (this.k + 1) + ".txt"), false);
                         }
 
                         Ida ida = new Ida(sample, pattern, this.possibleCauses);
@@ -408,7 +408,7 @@ public class Cstar {
 
     private DataSet readData(File dir) {
         try {
-            DataSet dataSet = DataUtils.loadContinuousData(new File(dir, "data.txt"), "//", '*', "*", true, Delimiter.TAB);
+            DataSet dataSet = SimpleDataLoader.loadContinuousData(new File(dir, "data.txt"), "//", '*', "*", true, Delimiter.TAB);
 
             TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
 
@@ -647,7 +647,7 @@ public class Cstar {
 
     private double[][] loadMatrix(File file) {
         try {
-            DataSet dataSet = DataUtils.loadContinuousData(file, "//", '\"', "*", true, Delimiter.TAB);
+            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"', "*", true, Delimiter.TAB);
 
 //            TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
 

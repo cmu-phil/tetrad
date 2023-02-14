@@ -24,8 +24,11 @@ import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.annotation.AnnotatedClass;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetradapp.Tetrad;
-
-import java.util.*;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -81,16 +84,16 @@ public final class AlgorithmModels {
         return (dataType == DataType.All)
                 ? algorithmModels
                 : algorithmModels.stream()
-                .filter(e -> !multiDataSetAlgorithm || algoAnno.acceptMultipleDataset(e.getAlgorithm().getClazz()))
-                .filter(e -> {
-                    for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
-                        if (dt == DataType.All || dt == dataType) {
-                            return true;
-                        }
-                    }
-                    return false;
-                })
-                .collect(Collectors.toList());
+                        .filter(e -> !multiDataSetAlgorithm || algoAnno.takesMultipleDataset(e.getAlgorithm().getClazz()))
+                        .filter(e -> {
+                            for (DataType dt : e.getAlgorithm().getAnnotation().dataType()) {
+                                if (dt == DataType.All || dt == dataType) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        })
+                        .collect(Collectors.toList());
     }
 
     public List<AlgorithmModel> getModels(DataType dataType, boolean multiDataSetAlgorithm) {

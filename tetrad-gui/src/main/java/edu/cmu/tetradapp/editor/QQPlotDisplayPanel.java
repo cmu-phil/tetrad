@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -142,19 +143,19 @@ class QQPlotDisplayPanel extends JPanel {
         g2d.drawRect(QQPlotDisplayPanel.PADDING, 0, (QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE) - QQPlotDisplayPanel.PADDING, height);
         // graw the buttom line
         g2d.setColor(QQPlotDisplayPanel.LINE_COLOR);
-        g2d.drawString(this.format.format(Math.floor(this.qqPlot.getMinSample())), QQPlotDisplayPanel.PADDING + 5, height + 15);
+        g2d.drawString(this.format.format(FastMath.floor(this.qqPlot.getMinSample())), QQPlotDisplayPanel.PADDING + 5, height + 15);
         g2d.drawLine(QQPlotDisplayPanel.PADDING, height + QQPlotDisplayPanel.DASH, QQPlotDisplayPanel.PADDING, height);
-        String maxStr = this.format.format((int) Math.ceil(this.qqPlot.getMaxSample()));
+        String maxStr = this.format.format((int) FastMath.ceil(this.qqPlot.getMaxSample()));
         g2d.drawString(maxStr, QQPlotDisplayPanel.WIDTH - fontMetrics.stringWidth(maxStr), height + 15);
         g2d.drawLine(QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE, height + QQPlotDisplayPanel.DASH, QQPlotDisplayPanel.WIDTH + QQPlotDisplayPanel.SPACE, height);
 
         // draw the side line
         g2d.setColor(QQPlotDisplayPanel.LINE_COLOR);
         final int topY = 0;
-        String top = "" + Math.ceil(this.qqPlot.getMaxSample());
+        String top = "" + FastMath.ceil(this.qqPlot.getMaxSample());
         g2d.drawString(top, QQPlotDisplayPanel.PADDING - fontMetrics.stringWidth(top), topY + 10);
         g2d.drawLine(QQPlotDisplayPanel.PADDING - QQPlotDisplayPanel.DASH, topY, QQPlotDisplayPanel.PADDING, topY);
-        g2d.drawString(Math.floor(this.qqPlot.getMinSample()) + "", QQPlotDisplayPanel.PADDING - fontMetrics.stringWidth(Math.floor(this.qqPlot.getMinIdeal()) + ""), height - 2);
+        g2d.drawString(FastMath.floor(this.qqPlot.getMinSample()) + "", QQPlotDisplayPanel.PADDING - fontMetrics.stringWidth(FastMath.floor(this.qqPlot.getMinIdeal()) + ""), height - 2);
         g2d.drawLine(QQPlotDisplayPanel.PADDING - QQPlotDisplayPanel.DASH, height, QQPlotDisplayPanel.PADDING, height);
 
         //draw the data points
@@ -179,7 +180,7 @@ class QQPlotDisplayPanel extends JPanel {
 
             if (x >= this.qqPlot.getMinSample() && x <= this.qqPlot.getMaxSample()
                     && y >= this.qqPlot.getMinSample() && y <= this.qqPlot.getMaxSample()) {
-                double[] result = plotPoint(x, y, Math.floor(this.qqPlot.getMinSample()), Math.ceil(this.qqPlot.getMaxSample()));
+                double[] result = plotPoint(x, y, FastMath.floor(this.qqPlot.getMinSample()), FastMath.ceil(this.qqPlot.getMaxSample()));
 
                 g2d.fill(new Ellipse2D.Double(result[0], result[1], 4, 4));
             }

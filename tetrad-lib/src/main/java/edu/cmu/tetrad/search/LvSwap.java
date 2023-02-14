@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
@@ -59,9 +60,9 @@ import static java.util.Collections.reverse;
  */
 public final class LvSwap implements GraphSearch {
 
-    public enum AlgType {Alg1, Alg2, Alg3}
+    public enum AlgType {LVSwap1, LVSwap2a, LVSwap2b}
 
-    private AlgType algType = AlgType.Alg1;
+    private AlgType algType = AlgType.LVSwap1;
 
     private Boss.AlgType bossAlgType = Boss.AlgType.BOSS1;
 
@@ -98,19 +99,19 @@ public final class LvSwap implements GraphSearch {
 
     //========================PUBLIC METHODS==========================//
     public Graph search() {
-        if (algType == AlgType.Alg1) {
-            return search_1();
-        } else if (algType == AlgType.Alg2) {
-            return search_2();
-        } else if (algType == AlgType.Alg3) {
-            return search_3();
+        if (algType == AlgType.LVSwap1) {
+            return lvswap1();
+        } else if (algType == AlgType.LVSwap2a) {
+            return lvswap2a();
+        } else if (algType == AlgType.LVSwap2b) {
+            return lvswap2b();
         }
 
         throw new IllegalArgumentException("Unexpected alg type: " + algType);
     }
 
     // Bryan.
-    public Graph search_1() {
+    public Graph lvswap1() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
@@ -140,7 +141,7 @@ public final class LvSwap implements GraphSearch {
             List<Node> xParents = GBoss.getParents(x);
 
             int _depth = depth < 0 ? xParents.size() : depth;
-            _depth = Math.min(_depth, xParents.size());
+            _depth = FastMath.min(_depth, xParents.size());
 
             // Order of increasing size
             SublistGenerator gen = new SublistGenerator(xParents.size(), _depth);
@@ -183,12 +184,85 @@ public final class LvSwap implements GraphSearch {
 
         finalOrientation(knowledge, G);
 
-        G.setGraphType(EdgeListGraph.GraphType.PAG);
-
         return G;
     }
 
-    public Graph search_2() {
+    public Graph lvswap2a() {
+        TeyssierScorer scorer = new TeyssierScorer(test, score);
+
+        Boss alg = new Boss(scorer);
+        alg.setAlgType(bossAlgType);
+        alg.setUseScore(useScore);
+        alg.setUseRaskuttiUhler(useRaskuttiUhler);
+        alg.setUseDataOrder(useDataOrder);
+        alg.setDepth(depth);
+        alg.setNumStarts(numStarts);
+        alg.setVerbose(verbose);
+
+        alg.bestOrder(this.score.getVariables());
+        Graph G = alg.getGraph(true);
+
+        retainUnshieldedColliders(G);
+
+//        removeByPossibleDsep(G, test, new SepsetMap());
+
+
+        scorer.bookmark();
+
+        Set<Triple> T = new HashSet<>();
+
+        List<Node> pi = scorer.getPi();
+
+        for (int i = 0; i < 3; i++) {
+//            for (Node y : pi) {
+////            List<Node> adjy = G.getAdjacentNodes(y);
+//
+//                for (Node x : pi) {
+//                    for (Node z : pi) {
+//                        if (y == x) continue;
+//                        if (y == z) continue;
+//                        if (x == z) continue;
+
+            for (Node y : pi) {
+                List<Node> adjy = G.getAdjacentNodes(y);
+
+                for (Node x : adjy) {
+                    for (Node z : adjy) {
+                        if (x == z) continue;
+//                    if (!G.isAdjacentTo(x, z)) continue;
+                        if (T.contains(new Triple(x, y, z))) continue;
+
+                        scorer.goToBookmark();
+                        scorer.swaptuck(x, y, z, true);
+
+                        if (!scorer.adjacent(x, z) && scorer.collider(x, y, z)) {
+                            Set<Node> adj = scorer.getAdjacentNodes(x);
+                            adj.retainAll(scorer.getAdjacentNodes(z));
+
+                            for (Node w : adj) {
+                                if (scorer.collider(x, w, z)) {
+                                    T.add(new Triple(x, w, z));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            removeShields(G, T);
+            retainUnshieldedColliders(G);
+            orientColliders(G, T);
+        }
+
+
+
+        finalOrientation(knowledge, G);
+
+        scorer.goToBookmark();
+        return G;
+    }
+
+    public Graph lvswap2b() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
@@ -209,16 +283,43 @@ public final class LvSwap implements GraphSearch {
 
         Set<Triple> T = new HashSet<>();
 
-        for (Node y : scorer.getPi()) {
+        List<Node> pi = scorer.getPi();
+
+//        for (Node y : pi) {
+//            List<Node> adjy = G.getAdjacentNodes(y);
+
+//            for (Node x : pi) {
+//                for (Node z : pi) {
+//                    if (y == x) continue;
+//                    if (y == z) continue;
+//                    if (x == z) continue;
+
+        for (Node y : pi) {
             List<Node> adjy = G.getAdjacentNodes(y);
 
             for (Node x : adjy) {
                 for (Node z : adjy) {
-                    if (!G.isAdjacentTo(x, z)) continue;
+                    if (!scorer.adjacent(x, z)) continue;
                     if (T.contains(new Triple(x, y, z))) continue;
 
                     scorer.goToBookmark();
-                    scorer.swaptuck(x, y, z);
+                    scorer.swaptuck(x, y, z, false);
+
+                    if (!scorer.adjacent(x, z) && scorer.collider(x, y, z)) {
+                        Set<Node> adj = scorer.getAdjacentNodes(x);
+                        adj.retainAll(scorer.getAdjacentNodes(z));
+
+                        for (Node w : adj) {
+                            if (scorer.collider(x, w, z)) {
+                                T.add(new Triple(x, w, z));
+                            }
+                        }
+                    } else {
+                        scorer.bookmark();
+                    }
+
+                    scorer.goToBookmark();
+                    scorer.swaptuck(x, y, z, true);
 
                     if (!scorer.adjacent(x, z) && scorer.collider(x, y, z)) {
                         Set<Node> adj = scorer.getAdjacentNodes(x);
@@ -240,86 +341,11 @@ public final class LvSwap implements GraphSearch {
 
         finalOrientation(knowledge, G);
 
-        G.setGraphType(EdgeListGraph.GraphType.PAG);
-
         scorer.goToBookmark();
         return G;
     }
 
-    public Graph search_2b() {
-        TeyssierScorer scorer = new TeyssierScorer(test, score);
-
-        Boss alg = new Boss(scorer);
-        alg.setAlgType(bossAlgType);
-        alg.setUseScore(useScore);
-        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-        alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(depth);
-        alg.setNumStarts(numStarts);
-        alg.setVerbose(verbose);
-
-        alg.bestOrder(this.score.getVariables());
-        Graph G = alg.getGraph(false);
-
-        retainUnshieldedColliders(G);
-
-        Set<Triple> allT = new HashSet<>();
-        Graph G2 = new EdgeListGraph(G);
-
-        Set<Triple> T = new HashSet<>();
-
-        scorer.bookmark();
-
-        do {
-            allT.addAll(T);
-
-            G = new EdgeListGraph(G2);
-
-            removeShields(G, allT);
-            retainUnshieldedColliders(G);
-            orientColliders(G, allT);
-
-            T = new HashSet<>();
-
-            List<Node> nodes = G.getNodes();
-
-            for (Node y : nodes) {
-                for (Node x : G.getAdjacentNodes(y)) {
-                    for (Node z : G.getAdjacentNodes(y)) {
-                        if (x == z) continue;
-
-                        if (!G.isAdjacentTo(x, z)) continue;
-
-                        scorer.goToBookmark();
-
-                        boolean swapped = scorer.swaptuck(x, y, z);
-
-                        if (!swapped) continue;
-
-                        if (!scorer.adjacent(x, z)) {
-                            Set<Node> adj = scorer.getAdjacentNodes(x);
-                            adj.retainAll(scorer.getAdjacentNodes(z));
-
-                            for (Node w : adj) {
-                                if (scorer.collider(x, w, z)) {
-                                    T.add(new Triple(x, w, z));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } while (!allT.containsAll(T));
-
-        finalOrientation(knowledge, G);
-
-        G.setGraphType(EdgeListGraph.GraphType.PAG);
-
-        scorer.goToBookmark();
-        return G;
-    }
-
-    public Graph search_3() {
+    public Graph lvswap3() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         Boss alg = new Boss(scorer);
@@ -369,7 +395,7 @@ public final class LvSwap implements GraphSearch {
                         List<Node> children = new ArrayList<>(scorer.getAdjacentNodes(y));
 
                         int _depth = depth < 0 ? children.size() : depth;
-                        _depth = Math.min(_depth, children.size());
+                        _depth = FastMath.min(_depth, children.size());
 
                         // Order of increasing size
                         SublistGenerator gen = new SublistGenerator(children.size(), _depth);
@@ -396,8 +422,6 @@ public final class LvSwap implements GraphSearch {
         } while (!allT.containsAll(T));
 
         finalOrientation(knowledge, G);
-
-        G.setGraphType(EdgeListGraph.GraphType.PAG);
 
         return G;
     }
@@ -500,7 +524,7 @@ public final class LvSwap implements GraphSearch {
         fciOrient.setDoDiscriminatingPathTailRule(doDiscriminatingPathTailRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.setKnowledge(knowledge2);
-        fciOrient.setVerbose(true);
+        fciOrient.setVerbose(verbose);
         fciOrient.doFinalOrientation(G);
     }
 

@@ -4,10 +4,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.ExternalAlgorithm;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -74,12 +74,12 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
         System.out.println(file.getAbsolutePath());
 
         try {
-            DataSet dataSet2 = DataUtils.loadContinuousData(file, "//", '\"',
+            DataSet dataSet2 = SimpleDataLoader.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
             System.out.println("Loading graph from " + file.getAbsolutePath());
             Graph graph = ExternalAlgorithmPcalgPc.loadGraphPcAlgMatrix(dataSet2);
 
-            GraphUtils.circleLayout(graph, 225, 200, 150);
+            LayoutUtil.circleLayout(graph, 225, 200, 150);
 
             return graph;
         } catch (IOException e) {

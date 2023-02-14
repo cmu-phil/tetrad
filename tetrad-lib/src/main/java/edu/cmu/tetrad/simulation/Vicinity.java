@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeEqualityMode;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -82,7 +83,8 @@ public class Vicinity {
 
         //System.out.println("baserange: " +baserange);
         //since I'm searching in a cube but distance is usually measured euclidian, I increase range by sqrt(3)
-        int range = (int) Math.ceil(Math.sqrt(3) * (double) baserange);
+        int range = (int) FastMath.ceil(
+                FastMath.sqrt(3) * (double) baserange);
         //System.out.println(findEdges(edge,range));
         return this.findEdges(edge, range);
     }
@@ -104,9 +106,9 @@ public class Vicinity {
              * they respect that a single increment of the x/y/z grid scales with that dimension of the voxel
              */
             //create separate range values for x y and z, scaled by xdist ydist zdist
-            int xrange = (int) Math.ceil(range / xDist);
-            int yrange = (int) Math.ceil(range / yDist);
-            int zrange = (int) Math.ceil(range / zDist);
+            int xrange = (int) FastMath.ceil(range / xDist);
+            int yrange = (int) FastMath.ceil(range / yDist);
+            int zrange = (int) FastMath.ceil(range / zDist);
 
             //list edges with either endpoint near node1
             for (int x = this.getX(edge.getNode1(), locationMap) - xrange; x <= this.getX(edge.getNode1(), locationMap) + xrange; x++) {
@@ -171,9 +173,9 @@ public class Vicinity {
             range += chunksize;
 
             //create separate range values for x y and z, scaled by xdist ydist zdist
-            int xrange = (int) Math.ceil(range / xDist);
-            int yrange = (int) Math.ceil(range / yDist);
-            int zrange = (int) Math.ceil(range / zDist);
+            int xrange = (int) FastMath.ceil(range / xDist);
+            int yrange = (int) FastMath.ceil(range / yDist);
+            int zrange = (int) FastMath.ceil(range / zDist);
 
             //initialize the edge sets
             Set<Edge> node1edges1 = new HashSet<>();
@@ -236,9 +238,9 @@ public class Vicinity {
         Set<Edge> edges = new HashSet<>();
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
         //create separate range values for x y and z, scaled by xdist ydist zdist
-        int xrange = (int) Math.ceil(range / this.xDist);
-        int yrange = (int) Math.ceil(range / this.yDist);
-        int zrange = (int) Math.ceil(range / this.zDist);
+        int xrange = (int) FastMath.ceil(range / this.xDist);
+        int yrange = (int) FastMath.ceil(range / this.yDist);
+        int zrange = (int) FastMath.ceil(range / this.zDist);
 
         //initialize the edge sets
         Set<Edge> node1edges1 = new HashSet<>();

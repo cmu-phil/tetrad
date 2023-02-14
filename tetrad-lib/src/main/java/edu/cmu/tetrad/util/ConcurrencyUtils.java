@@ -1,7 +1,8 @@
 package edu.cmu.tetrad.util;
 
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ForkJoinPool;
 
 public class ConcurrencyUtils {
     public static void runCallables(List<Callable<Boolean>> tasks, boolean parallelized) {

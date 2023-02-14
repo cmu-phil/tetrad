@@ -36,7 +36,7 @@ public class NumDefinitelyDirected implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (cpdag.isAncestorOf(x, y)) {
+                if (cpdag.paths().isAncestorOf(x, y)) {
                     count++;
                 }
             }

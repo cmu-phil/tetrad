@@ -6,10 +6,6 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * The bidirected true positives.
  *
@@ -47,8 +43,8 @@ public class CommonAncestorTruePositiveBidirected implements Statistic {
 
         for (Node c : trueGraph.getNodes()) {
 //            if (c == edge.getNode1() || c == edge.getNode2()) continue;
-            if (trueGraph.isAncestorOf(c, edge.getNode1())
-                    && trueGraph.isAncestorOf(c, edge.getNode2())) {
+            if (trueGraph.paths().isAncestorOf(c, edge.getNode1())
+                    && trueGraph.paths().isAncestorOf(c, edge.getNode2())) {
                 return true;
             }
         }

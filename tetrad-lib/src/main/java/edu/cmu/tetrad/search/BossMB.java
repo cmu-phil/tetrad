@@ -4,6 +4,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,9 +13,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static java.util.Collections.shuffle;
-
 
 /**
  * Implements the GRASP algorithms, with various execution flags.
@@ -40,7 +39,7 @@ public class BossMB {
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order, List<Node> targets) {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer2(this.score);
@@ -57,10 +56,10 @@ public class BossMB {
 
         for (int r = 0; r < this.numStarts; r++) {
             if ((r == 0 && !this.useDataOrder) || r > 0) {
-                shuffle(order);
+                RandomUtil.shuffle(order);
             }
 
-            this.start = System.currentTimeMillis();
+            this.start =  MillisecondTimes.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -117,7 +116,7 @@ public class BossMB {
 
         this.graph = SearchGraphUtils.cpdagForDag(this.graph);
 
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
@@ -161,7 +160,7 @@ public class BossMB {
 
             scorer.bookmark();
 
-            System.out.println("After snips: # vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s") + " order = " + scorer.getPi());
+            System.out.println("After snips: # vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s") + " order = " + scorer.getPi());
 
 
             for (Node x : scorer.getPi()) {
@@ -174,7 +173,7 @@ public class BossMB {
                             scorer.bookmark();
 
                             if (verbose) {
-                                System.out.println("# vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                                System.out.println("# vars = " + scorer.getPi().size() + " # Edges = " + scorer.getNumEdges() + " Score = " + scorer.score() + " (betterMutation)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                             }
                         } else {
                             scorer.goToBookmark();
@@ -194,27 +193,8 @@ public class BossMB {
         bes.setVerbose(verbose);
         bes.setKnowledge(knowledge);
         bes.bes(graph, scorer.getPi());
-        return causalOrder(scorer.getPi(), graph);
+        return graph.paths().validOrder(scorer.getPi(), true);
     }
-
-    private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
-        List<Node> found = new ArrayList<>();
-        boolean _found = true;
-
-        while (_found) {
-            _found = false;
-
-            for (Node node : initialOrder) {
-                HashSet<Node> __found = new HashSet<>(found);
-                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-                    found.add(node);
-                    _found = true;
-                }
-            }
-        }
-        return found;
-    }
-
 
     public int getNumEdges() {
         return this.scorer.getNumEdges();

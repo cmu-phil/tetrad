@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -207,7 +208,7 @@ public final class VcpcAlt implements GraphSearch {
         Vcfas fas = new Vcfas(getIndependenceTest());
         this.definitelyNonadjacencies = new HashSet<>();
 
-        long startTime = System.currentTimeMillis();
+        long startTime = MillisecondTimes.timeMillis();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
 
@@ -237,7 +238,7 @@ public final class VcpcAlt implements GraphSearch {
         }
 
 
-        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.getAmbiguousTriples());
+        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.underlines().getAmbiguousTriples());
 
         int[] dims = new int[ambiguousTriples.size()];
 
@@ -264,7 +265,7 @@ public final class VcpcAlt implements GraphSearch {
 
             for (int k = 0; k < combination.length; k++) {
                 Triple triple = ambiguousTriples.get(k);
-                _graph.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                _graph.underlines().removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
 
 
                 if (combination[k] == 0) {
@@ -338,7 +339,7 @@ public final class VcpcAlt implements GraphSearch {
 
             MeekRules rules = new MeekRules();
             rules.orientImplied(graph);
-            if (graph.existsDirectedCycle()) {
+            if (graph.paths().existsDirectedCycle()) {
                 patterns.remove(graph);
             }
         }
@@ -420,7 +421,7 @@ public final class VcpcAlt implements GraphSearch {
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
@@ -571,7 +572,7 @@ public final class VcpcAlt implements GraphSearch {
                 } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     ambiguousTriples.add(triple);
-                    graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     Edge edge = Edges.undirectedEdge(x, z);
                     definitelyNonadjacencies.add(edge);
                 } else {

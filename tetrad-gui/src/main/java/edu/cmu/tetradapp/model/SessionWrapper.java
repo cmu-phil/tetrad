@@ -84,7 +84,6 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     private final boolean highlighted = false;
     private boolean pag;
     private boolean CPDAG;
-    private GraphType graphType;
 
     //==========================CONSTRUCTORS=======================//
 
@@ -608,81 +607,6 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         throw new UnsupportedOperationException();
     }
 
-    public Set<Triple> getAmbiguousTriples() {
-        return new HashSet<>();
-    }
-
-    public Set<Triple> getUnderLines() {
-        return new HashSet<>();
-    }
-
-    public Set<Triple> getDottedUnderlines() {
-        return new HashSet<>();
-    }
-
-    /**
-     * States whether x-y-x is an underline triple or not.
-     */
-    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * States whether x-y-x is an underline triple or not.
-     */
-    public boolean isUnderlineTriple(Node x, Node y, Node z) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * States whether x-y-x is an underline triple or not.
-     */
-    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void addAmbiguousTriple(Node x, Node y, Node z) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void addUnderlineTriple(Node x, Node y, Node z) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void removeAmbiguousTriple(Node x, Node y, Node z) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void removeUnderlineTriple(Node x, Node y, Node z) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
-        throw new UnsupportedOperationException();
-    }
-
-
-    public void setAmbiguousTriples(Set<Triple> triples) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void setUnderLineTriples(Set<Triple> triples) {
-        throw new UnsupportedOperationException();
-    }
-
-
-    public void setDottedUnderLineTriples(Set<Triple> triples) {
-        throw new UnsupportedOperationException();
-    }
-
-    public List<Node> getCausalOrdering() {
-        throw new UnsupportedOperationException();
-    }
-
     public List<String> getNodeNames() {
         throw new UnsupportedOperationException();
     }
@@ -732,24 +656,6 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
         }
 
         return this.propertyChangeSupport;
-    }
-
-    @Override
-    public List<String> getTriplesClassificationTypes() {
-        return null;
-    }
-
-    @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
-        return null;
-    }
-
-    public void setGraphType(GraphType graphType) {
-        this.graphType = graphType;
-    }
-
-    public GraphType getGraphType() {
-        return this.graphType;
     }
 
     /**

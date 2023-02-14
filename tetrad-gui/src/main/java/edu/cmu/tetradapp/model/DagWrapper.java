@@ -26,13 +26,15 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Holds a tetrad dag with all of the constructors necessary for it to serve as
@@ -77,7 +79,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
         if (params.getString("newGraphInitializationMode", "manual").equals("manual")) {
             setDag(new Dag());
         } else if (params.getString("newGraphInitializationMode", "manual").equals("random")) {
-            RandomUtil.getInstance().setSeed(new Date().getTime());
+//            RandomUtil.getInstance().setSeed(new Date().getTime());
             setDag(new Dag(edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), params)));
         }
         log();
@@ -127,7 +129,7 @@ public class DagWrapper implements GraphSource, KnowledgeBoxInput, IndTestProduc
             setGraph(new EdgeListGraph(wrapper.getVariables()));
         }
 
-        GraphUtils.circleLayout(getGraph(), 200, 200, 150);
+        LayoutUtil.circleLayout(getGraph(), 200, 200, 150);
     }
 
     public DagWrapper(BayesPmWrapper wrapper) {

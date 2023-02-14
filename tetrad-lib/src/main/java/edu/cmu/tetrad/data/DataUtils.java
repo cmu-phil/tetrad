@@ -26,28 +26,19 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
-import edu.pitt.dbmi.data.reader.ContinuousData;
-import edu.pitt.dbmi.data.reader.Data;
-import edu.pitt.dbmi.data.reader.DataColumn;
-import edu.pitt.dbmi.data.reader.Delimiter;
-import edu.pitt.dbmi.data.reader.tabular.*;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.jetbrains.annotations.NotNull;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.util.FastMath;
 
-import java.io.*;
 import java.rmi.MarshalledObject;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.SynchronizedRandomGenerator;
-import org.apache.commons.math3.random.Well44497b;
 
 /**
  * Some static utility methods for dealing with data sets.
@@ -293,16 +284,16 @@ public final class DataUtils {
             for (int i = 0; i < x1.length; i++) {
                 if (isUnlog) {
                     if (base == 0) {
-                        x1[i] = Math.exp(x1Orig[i]) - a;
+                        x1[i] = FastMath.exp(x1Orig[i]) - a;
                     } else {
-                        x1[i] = Math.pow(base, (x1Orig[i])) - a;
+                        x1[i] = FastMath.pow(base, (x1Orig[i])) - a;
                     }
                 } else {
-                    double log = Math.log(a + x1Orig[i]);
+                    double log = FastMath.log(a + x1Orig[i]);
                     if (base == 0) {
                         x1[i] = log;
                     } else {
-                        x1[i] = log / Math.log(base);
+                        x1[i] = log / FastMath.log(base);
                     }
                 }
             }
@@ -337,7 +328,7 @@ public final class DataUtils {
                 norm += v * v;
             }
 
-            norm = Math.sqrt(norm / (data.rows() - 1));
+            norm = FastMath.sqrt(norm / (data.rows() - 1));
 
             for (int i = 0; i < data.rows(); i++) {
                 data2.set(i, j, data2.get(i, j) / norm);
@@ -368,7 +359,7 @@ public final class DataUtils {
             norm += v * v;
         }
 
-        norm = Math.sqrt(norm / (data2.length - 1));
+        norm = FastMath.sqrt(norm / (data2.length - 1));
 
         for (int i = 0; i < data2.length; i++) {
             data2[i] = data2[i] / norm;
@@ -399,7 +390,7 @@ public final class DataUtils {
             norm += v * v;
         }
 
-        norm = Math.sqrt(norm / (data2.size() - 1));
+        norm = FastMath.sqrt(norm / (data2.size() - 1));
 
         for (int i = 0; i < data2.size(); i++) {
             data2.set(i, data2.get(i) / norm);
@@ -639,25 +630,6 @@ public final class DataUtils {
      * @return the submatrix of m with variables in the order of the x variables.
      */
     public static Matrix subMatrix(ICovarianceMatrix m, Map<Node, Integer> indexMap, Node x, Node y, List<Node> z) {
-//        if (x == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (y == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        if (z == null) {
-//            throw new NullPointerException();
-//        }
-//
-//        for (Node node : z) {
-//            if (node == null) {
-//                throw new NullPointerException();
-//            }
-//        }
-
-        // Create index array for the given variables.
         int[] indices = new int[2 + z.size()];
 
         indices[0] = indexMap.get(x);
@@ -666,8 +638,6 @@ public final class DataUtils {
         for (int i = 0; i < z.size(); i++) {
             indices[i + 2] = indexMap.get(z.get(i));
         }
-
-        // Extract submatrix of correlation matrix using this index array.
 
         return m.getSelection(indices, indices);
     }
@@ -891,14 +861,6 @@ public final class DataUtils {
         return means;
     }
 
-    public static void remean(Matrix data, Vector means) {
-        for (int j = 0; j < data.columns(); j++) {
-            for (int i = 0; i < data.rows(); i++) {
-                data.set(i, j, data.get(i, j) + means.get(j));
-            }
-        }
-    }
-
     public static Matrix cov(Matrix data) {
         for (int j = 0; j < data.columns(); j++) {
             double sum = 0.0;
@@ -931,32 +893,6 @@ public final class DataUtils {
         return prod;
     }
 
-    public static void simpleTest() {
-        double[][] d = {
-                {1, 2},
-                {3, 4},
-                {5, 6},
-        };
-
-        RealMatrix m = new BlockRealMatrix(d);
-
-        System.out.println(m);
-
-        System.out.println(DataUtils.times(m.transpose(), m));
-
-        System.out.println(MatrixUtils.transposeWithoutCopy(m).multiply(m));
-
-        Matrix n = new Matrix(m.getData());
-
-        System.out.println(n);
-
-        RealMatrix q = new BlockRealMatrix(n.toArray());
-
-        RealMatrix q1 = MatrixUtils.transposeWithoutCopy(q);
-        RealMatrix q2 = DataUtils.times(q1, q);
-        System.out.println(new Matrix(q2.getData()));
-    }
-
     private static RealMatrix times(RealMatrix m, RealMatrix n) {
         if (m.getColumnDimension() != n.getRowDimension()) throw new IllegalArgumentException("Incompatible matrices.");
 
@@ -974,7 +910,7 @@ public final class DataUtils {
 
             Runnable worker = () -> {
                 int chunk = rowDimension / NTHREADS + 1;
-                for (int row = _t * chunk; row < Math.min((_t + 1) * chunk, rowDimension); row++) {
+                for (int row = _t * chunk; row < FastMath.min((_t + 1) * chunk, rowDimension); row++) {
                     if ((row + 1) % 100 == 0) System.out.println(row + 1);
 
                     for (int col = 0; col < columnDimension; ++col) {
@@ -1103,7 +1039,7 @@ public final class DataUtils {
             availRows.add(i);
         }
 
-        Collections.shuffle(availRows);
+        RandomUtil.shuffle(availRows);
 
         List<Integer> addedRows = new ArrayList<>();
         int[] rows = new int[_size];
@@ -1128,8 +1064,8 @@ public final class DataUtils {
     /**
      * Get dataset sampled without replacement.
      *
-     * @param data original dataset
-     * @param sampleSize number of data (row)
+     * @param data            original dataset
+     * @param sampleSize      number of data (row)
      * @param randomGenerator random number generator
      * @return dataset
      */
@@ -1145,7 +1081,7 @@ public final class DataUtils {
             availRows.add(i);
         }
 
-        Collections.shuffle(availRows);
+        RandomUtil.shuffle(availRows);
 
         List<Integer> addedRows = new ArrayList<>();
         int[] rows = new int[_size];
@@ -1194,8 +1130,8 @@ public final class DataUtils {
     /**
      * Get dataset sampled with replacement.
      *
-     * @param data original dataset
-     * @param sampleSize number of data (row)
+     * @param data            original dataset
+     * @param sampleSize      number of data (row)
      * @param randomGenerator random number generator
      * @return dataset
      */
@@ -1225,7 +1161,7 @@ public final class DataUtils {
         List<Integer> rows = new ArrayList<>();
         for (int i = 0; i < data.getNumRows(); i++) rows.add(i);
 
-        Collections.shuffle(rows);
+        RandomUtil.shuffle(rows);
 
         int split = (int) (rows.size() * percentTest);
 
@@ -1300,7 +1236,7 @@ public final class DataUtils {
 
         List<Integer> indicesList = new ArrayList<>();
         for (int i = 0; i < numVariables; i++) indicesList.add(i);
-        Collections.shuffle(indicesList);
+        RandomUtil.shuffle(indicesList);
 
         int[] indices = new int[numVariables];
 
@@ -1317,7 +1253,7 @@ public final class DataUtils {
         List<Node> vars = new ArrayList<>();
 
         List<Node> variables = dataSets.get(0).getVariables();
-        Collections.shuffle(variables);
+        RandomUtil.shuffle(variables);
 
         for (Node node : variables) {
             Node _node = dataSets.get(0).getVariable(node.getName());
@@ -1452,7 +1388,7 @@ public final class DataUtils {
             Matrix data = dataSet.getDoubleData();
             Matrix X = data.like();
             double n = dataSet.getNumRows();
-//            delta = 1.0 / (4.0 * Math.pow(n, 0.25) * Math.sqrt(Math.PI * Math.log(n)));
+//            delta = 1.0 / (4.0 * FastMath.pow(n, 0.25) * FastMath.sqrt(FastMath.PI * FastMath.log(n)));
 
             NormalDistribution normalDistribution = new NormalDistribution();
 
@@ -1475,7 +1411,6 @@ public final class DataUtils {
 
                 for (int i = 0; i < xTransformed.length; i++) {
                     xTransformed[i] /= n;
-
                     xTransformed[i] = normalDistribution.inverseCumulativeProbability(xTransformed[i]);
                 }
 
@@ -1484,20 +1419,42 @@ public final class DataUtils {
                 }
 
                 for (int i = 0; i < xTransformed.length; i++) {
-//                    xTransformed[i] /= std;
                     xTransformed[i] *= std1;
                     xTransformed[i] += mu1;
                 }
 
                 double a2Transformed = new AndersonDarlingTest(xTransformed).getASquaredStar();
 
+                double min = Double.POSITIVE_INFINITY;
+                double max = Double.NEGATIVE_INFINITY;
+
+                for (double v : xTransformed) {
+                    if (v > max && !Double.isInfinite(v)) {
+                        max = v;
+                    }
+
+                    if (v < min && !Double.isInfinite(v)) {
+                        min = v;
+                    }
+                }
+
+                for (int i = 0; i < xTransformed.length; i++) {
+                    if (xTransformed[i] == Double.POSITIVE_INFINITY) {
+                        xTransformed[i] = max;
+                    }
+
+                    if (xTransformed[i] < Double.NEGATIVE_INFINITY) {
+                        xTransformed[i] = min;
+                    }
+                }
+
                 System.out.println(dataSet.getVariable(j) + ": A^2* = " + a2Orig + " transformed A^2* = " + a2Transformed);
 
-                if (a2Transformed < a2Orig) {
-                    X.assignColumn(j, new Vector(xTransformed));
-                } else {
-                    X.assignColumn(j, new Vector(x1Orig));
-                }
+//                if (a2Transformed < a2Orig) {
+                X.assignColumn(j, new Vector(xTransformed));
+//                } else {
+//                    X.assignColumn(j, new Vector(x1Orig));
+//                }
             }
 
             return new BoxDataSet(new VerticalDoubleDataBox(X.transpose().toArray()), dataSet.getVariables());
@@ -1565,44 +1522,6 @@ public final class DataUtils {
         return dataSet.subsetColumns(newCols);
     }
 
-    public static ICovarianceMatrix getCovMatrix(DataModel dataModel) {
-        if (dataModel == null) {
-            throw new IllegalArgumentException("Expecting either a tabular dataset or a covariance matrix.");
-        }
-
-        if (dataModel instanceof ICovarianceMatrix) {
-            return (ICovarianceMatrix) dataModel;
-        } else if (dataModel instanceof DataSet) {
-            return new CovarianceMatrix((DataSet) dataModel);
-        } else {
-            throw new IllegalArgumentException("Sorry, I was expecting either a tabular dataset or a covariance matrix.");
-        }
-    }
-
-    public static DataSet getDiscreteDataSet(DataModel dataSet) {
-        if (!(dataSet instanceof DataSet) || !dataSet.isDiscrete()) {
-            throw new IllegalArgumentException("Sorry, I was expecting a discrete data set.");
-        }
-
-        return (DataSet) dataSet;
-    }
-
-    public static DataSet getContinuousDataSet(DataModel dataSet) {
-        if (!(dataSet instanceof DataSet) || !dataSet.isContinuous()) {
-            throw new IllegalArgumentException("Sorry, I was expecting a (tabular) continuous data set.");
-        }
-
-        return (DataSet) dataSet;
-    }
-
-    public static DataSet getMixedDataSet(DataModel dataSet) {
-        if (!(dataSet instanceof DataSet)) {
-            throw new IllegalArgumentException("Sorry, I was expecting a (tabular) mixed data set.");
-        }
-
-        return (DataSet) dataSet;
-    }
-
     /**
      * Returns the equivalent sample size, assuming all units are equally correlated and all unit variances are equal.
      */
@@ -1622,593 +1541,6 @@ public final class DataUtils {
 
         double rho = (n * sum - n * m) / (m * (n * n - n));
         return n / (1. + (n - 1.) * rho);
-    }
-
-    /**
-     * Loads knowledge from a file. Assumes knowledge is the only thing in the
-     * file. No jokes please. :)
-     */
-    public static Knowledge loadKnowledge(File file, DelimiterType delimiterType, String commentMarker) throws IOException {
-        FileReader reader = new FileReader(file);
-        Lineizer lineizer = new Lineizer(reader, commentMarker);
-        Knowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
-        TetradLogger.getInstance().reset();
-        return knowledge;
-    }
-
-    /**
-     * Reads a knowledge file in tetrad2 format (almost--only does temporal
-     * tiers currently). Format is:
-     * <pre>
-     * /knowledge
-     * addtemporal
-     * 0 x1 x2
-     * 1 x3 x4
-     * 4 x5
-     * </pre>
-     */
-    public static Knowledge loadKnowledge(Lineizer lineizer, Pattern delimiter) {
-        Knowledge knowledge = new Knowledge();
-
-        String line = lineizer.nextLine();
-        String firstLine = line;
-
-        if (line == null) {
-            return new Knowledge();
-        }
-
-        if (line.startsWith("/knowledge")) {
-            line = lineizer.nextLine();
-            firstLine = line;
-        }
-
-        TetradLogger.getInstance().log("info", "\nLoading knowledge.");
-
-        SECTIONS:
-        while (lineizer.hasMoreLines()) {
-            if (firstLine == null) {
-                line = lineizer.nextLine();
-            } else {
-                line = firstLine;
-            }
-
-            // "addtemp" is the original in Tetrad 2.
-            if ("addtemporal".equalsIgnoreCase(line.trim())) {
-                while (lineizer.hasMoreLines()) {
-                    line = lineizer.nextLine();
-
-                    if (line.startsWith("forbiddirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("requiredirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("forbiddengroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("requiredgroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    int tier = -1;
-
-                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
-                    if (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        boolean forbiddenWithin = false;
-                        if (token.endsWith("*")) {
-                            forbiddenWithin = true;
-                            token = token.substring(0, token.length() - 1);
-                        }
-
-                        tier = Integer.parseInt(token);
-                        if (tier < 1) {
-                            throw new IllegalArgumentException(
-                                    lineizer.getLineNumber() + ": Tiers must be 1, 2...");
-                        }
-                        if (forbiddenWithin) {
-                            knowledge.setTierForbiddenWithin(tier - 1, true);
-                        }
-                    }
-
-                    while (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        token = token.trim();
-
-                        if (token.isEmpty()) {
-                            continue;
-                        }
-
-                        String name = DataUtils.substitutePeriodsForSpaces(token);
-
-                        DataUtils.addVariable(knowledge, name);
-
-                        knowledge.addToTier(tier - 1, name);
-
-                        TetradLogger.getInstance().log("info", "Adding to tier " + (tier - 1) + " " + name);
-                    }
-                }
-            } else if ("forbiddengroup".equalsIgnoreCase(line.trim())) {
-                while (lineizer.hasMoreLines()) {
-                    line = lineizer.nextLine();
-
-                    if (line.startsWith("forbiddirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("requiredirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("addtemporal")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("requiredgroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    Set<String> from = new HashSet<>();
-                    Set<String> to = new HashSet<>();
-
-                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
-
-                    while (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        token = token.trim();
-                        String name = DataUtils.substitutePeriodsForSpaces(token);
-
-                        DataUtils.addVariable(knowledge, name);
-
-                        from.add(name);
-                    }
-
-                    line = lineizer.nextLine();
-
-                    st = new RegexTokenizer(line, delimiter, '"');
-
-                    while (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        token = token.trim();
-                        String name = DataUtils.substitutePeriodsForSpaces(token);
-
-                        DataUtils.addVariable(knowledge, name);
-
-                        to.add(name);
-                    }
-
-                    KnowledgeGroup group = new KnowledgeGroup(KnowledgeGroup.FORBIDDEN, from, to);
-
-                    knowledge.addKnowledgeGroup(group);
-                }
-            } else if ("requiredgroup".equalsIgnoreCase(line.trim())) {
-                while (lineizer.hasMoreLines()) {
-                    line = lineizer.nextLine();
-
-                    if (line.startsWith("forbiddirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("requiredirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("forbiddengroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("addtemporal")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    Set<String> from = new HashSet<>();
-                    Set<String> to = new HashSet<>();
-
-                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
-
-                    while (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        token = token.trim();
-                        String name = DataUtils.substitutePeriodsForSpaces(token);
-
-                        DataUtils.addVariable(knowledge, name);
-
-                        from.add(name);
-                    }
-
-                    line = lineizer.nextLine();
-
-                    st = new RegexTokenizer(line, delimiter, '"');
-
-                    while (st.hasMoreTokens()) {
-                        String token = st.nextToken();
-                        token = token.trim();
-                        String name = DataUtils.substitutePeriodsForSpaces(token);
-
-                        DataUtils.addVariable(knowledge, name);
-
-                        to.add(name);
-                    }
-
-                    KnowledgeGroup group = new KnowledgeGroup(KnowledgeGroup.REQUIRED, from, to);
-
-                    knowledge.addKnowledgeGroup(group);
-                }
-            } else if ("forbiddirect".equalsIgnoreCase(line.trim())) {
-                while (lineizer.hasMoreLines()) {
-                    line = lineizer.nextLine();
-
-                    if (line.startsWith("addtemporal")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("requiredirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("forbiddengroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("requiredgroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
-                    String from = null, to = null;
-
-                    if (st.hasMoreTokens()) {
-                        from = st.nextToken();
-                    }
-
-                    if (st.hasMoreTokens()) {
-                        to = st.nextToken();
-                    }
-
-                    if (st.hasMoreTokens()) {
-                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                + ": Lines contains more than two elements.");
-                    }
-
-                    if (from == null || to == null) {
-                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                + ": Line contains fewer than two elements.");
-                    }
-
-                    DataUtils.addVariable(knowledge, from);
-
-                    DataUtils.addVariable(knowledge, to);
-
-                    knowledge.setForbidden(from, to);
-                }
-            } else if ("requiredirect".equalsIgnoreCase(line.trim())) {
-                while (lineizer.hasMoreLines()) {
-                    line = lineizer.nextLine();
-
-                    if (line.startsWith("forbiddirect")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("addtemporal")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("forbiddengroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    if (line.startsWith("requiredgroup")) {
-                        firstLine = line;
-                        continue SECTIONS;
-                    }
-
-                    RegexTokenizer st = new RegexTokenizer(line, delimiter, '"');
-                    String from = null, to = null;
-
-                    if (st.hasMoreTokens()) {
-                        from = st.nextToken();
-                    }
-
-                    if (st.hasMoreTokens()) {
-                        to = st.nextToken();
-                    }
-
-                    if (st.hasMoreTokens()) {
-                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                + ": Lines contains more than two elements.");
-                    }
-
-                    if (from == null || to == null) {
-                        throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                                + ": Line contains fewer than two elements.");
-                    }
-
-                    DataUtils.addVariable(knowledge, from);
-                    DataUtils.addVariable(knowledge, to);
-
-                    knowledge.removeForbidden(from, to);
-                    knowledge.setRequired(from, to);
-                }
-            } else {
-                throw new IllegalArgumentException("Line " + lineizer.getLineNumber()
-                        + ": Expecting 'addtemporal', 'forbiddirect' or 'requiredirect'.");
-            }
-        }
-
-        return knowledge;
-    }
-
-    private static void addVariable(Knowledge knowledge, String from) {
-        if (!knowledge.getVariables().contains(from)) {
-            knowledge.addVariable(from);
-        }
-    }
-
-    private static String substitutePeriodsForSpaces(String s) {
-        return s.replaceAll(" ", ".");
-    }
-
-    @NotNull
-    public static DataSet loadContinuousData(File file, String commentMarker, char quoteCharacter,
-                                             String missingValueMarker, boolean hasHeader, Delimiter delimiter)
-            throws IOException {
-        ContinuousTabularDatasetFileReader dataReader
-                = new ContinuousTabularDatasetFileReader(file.toPath(), delimiter);
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setQuoteCharacter(quoteCharacter);
-        dataReader.setMissingDataMarker(missingValueMarker);
-        dataReader.setHasHeader(hasHeader);
-        ContinuousData data = (ContinuousData) dataReader.readInData();
-        return (DataSet) DataConvertUtils.toContinuousDataModel(data);
-    }
-
-    @NotNull
-    public static DataSet loadDiscreteData(File file, String commentMarker, char quoteCharacter,
-                                           String missingValueMarker, boolean hasHeader, Delimiter delimiter)
-            throws IOException {
-        TabularColumnReader columnReader = new TabularColumnFileReader(file.toPath(), delimiter);
-        DataColumn[] dataColumns = columnReader.readInDataColumns(new int[]{1}, true);
-
-        columnReader.setCommentMarker(commentMarker);
-
-        TabularDataReader dataReader = new TabularDataFileReader(file.toPath(), delimiter);
-
-        // Need to specify commentMarker, .... again to the TabularDataFileReader
-        dataReader.setCommentMarker(commentMarker);
-        dataReader.setMissingDataMarker(missingValueMarker);
-        dataReader.setQuoteCharacter(quoteCharacter);
-
-        Data data = dataReader.read(dataColumns, hasHeader);
-        DataModel dataModel = DataConvertUtils.toDataModel(data);
-
-        return (DataSet) dataModel;
-    }
-
-
-    /**
-     * Reads in a covariance matrix. The format is as follows.
-     * <pre>
-     * /covariance
-     * 100
-     * X1   X2   X3   X4
-     * 1.4
-     * 3.2  2.3
-     * 2.5  3.2  5.3
-     * 3.2  2.5  3.2  4.2
-     * </pre>
-     * <pre>
-     * CovarianceMatrix dataSet = DataLoader.loadCovMatrix(
-     *                           new FileReader(file), " \t", "//");
-     * </pre> The initial "/covariance" is optional.
-     */
-    public static ICovarianceMatrix parseCovariance(char[] chars, String commentMarker,
-                                                    DelimiterType delimiterType,
-                                                    char quoteChar,
-                                                    String missingValueMarker) {
-
-        // Do first pass to get a description of the file.
-        CharArrayReader reader = new CharArrayReader(chars);
-
-        // Close the reader and re-open for a second pass to load the data.
-        reader.close();
-        CharArrayReader reader2 = new CharArrayReader(chars);
-        ICovarianceMatrix covarianceMatrix = DataUtils.doCovariancePass(reader2, commentMarker,
-                delimiterType, quoteChar, missingValueMarker);
-
-        TetradLogger.getInstance().log("info", "\nData set loaded!");
-        return covarianceMatrix;
-    }
-
-    /**
-     * Parses the given files for a tabular data set, returning a
-     * RectangularDataSet if successful.
-     *
-     * @throws IOException if the file cannot be read.
-     */
-    public static ICovarianceMatrix parseCovariance(File file, String commentMarker,
-                                                    DelimiterType delimiterType,
-                                                    char quoteChar,
-                                                    String missingValueMarker) throws IOException {
-        FileReader reader = null;
-
-        try {
-            reader = new FileReader(file);
-            ICovarianceMatrix covarianceMatrix = DataUtils.doCovariancePass(reader, commentMarker,
-                    delimiterType, quoteChar, missingValueMarker);
-
-            TetradLogger.getInstance().log("info", "\nCovariance matrix loaded!");
-            return covarianceMatrix;
-        } catch (FileNotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            if (reader != null) {
-                reader.close();
-            }
-
-            throw new RuntimeException("Parsing failed.", e);
-        }
-    }
-
-
-    static ICovarianceMatrix doCovariancePass(Reader reader, String commentMarker, DelimiterType delimiterType,
-                                              char quoteChar, String missingValueMarker) {
-        TetradLogger.getInstance().log("info", "\nDATA LOADING PARAMETERS:");
-        TetradLogger.getInstance().log("info", "File type = COVARIANCE");
-        TetradLogger.getInstance().log("info", "Comment marker = " + commentMarker);
-        TetradLogger.getInstance().log("info", "Delimiter type = " + delimiterType);
-        TetradLogger.getInstance().log("info", "Quote char = " + quoteChar);
-        TetradLogger.getInstance().log("info", "Missing value marker = " + missingValueMarker);
-        TetradLogger.getInstance().log("info", "--------------------");
-
-        Lineizer lineizer = new Lineizer(reader, commentMarker);
-
-        // Skip "/Covariance" if it is there.
-        String line = lineizer.nextLine();
-
-        if ("/Covariance".equalsIgnoreCase(line.trim())) {
-            line = lineizer.nextLine();
-        }
-
-        // Read br sample size.
-        RegexTokenizer st = new RegexTokenizer(line, delimiterType.getPattern(), quoteChar);
-        String token = st.nextToken();
-
-        int n;
-
-        try {
-            n = Integer.parseInt(token);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(
-                    "Expected a sample size here, got \"" + token + "\".");
-        }
-
-        if (st.hasMoreTokens() && !"".equals(st.nextToken())) {
-            throw new IllegalArgumentException(
-                    "Line from file has more tokens than expected: \"" + st.nextToken() + "\"");
-        }
-
-        // Read br variable names and set up DataSet.
-        line = lineizer.nextLine();
-
-        // Variable lists can't have missing values, so we can excuse an extra tab at the end of the line.
-        if (line.subSequence(line.length() - 1, line.length()).equals("\t")) {
-            line = line.substring(0, line.length() - 1);
-        }
-
-        st = new RegexTokenizer(line, delimiterType.getPattern(), quoteChar);
-
-        List<String> vars = new ArrayList<>();
-
-        while (st.hasMoreTokens()) {
-            String _token = st.nextToken();
-
-            if ("".equals(_token)) {
-                TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a variable name--ignoring.");
-                continue;
-            }
-
-            vars.add(_token);
-        }
-
-        String[] varNames = vars.toArray(new String[0]);
-
-        TetradLogger.getInstance().log("info", "Variables:");
-
-        for (String varName : varNames) {
-            TetradLogger.getInstance().log("info", varName + " --> Continuous");
-        }
-
-        // Read br covariances.
-        Matrix c = new Matrix(vars.size(), vars.size());
-
-        for (int i = 0; i < vars.size(); i++) {
-            st = new RegexTokenizer(lineizer.nextLine(), delimiterType.getPattern(), quoteChar);
-
-            for (int j = 0; j <= i; j++) {
-                if (!st.hasMoreTokens()) {
-                    throw new IllegalArgumentException("Expecting " + (i + 1)
-                            + " numbers on line " + (i + 1)
-                            + " of the covariance " + "matrix input.");
-                }
-
-                String literal = st.nextToken();
-
-                if ("".equals(literal)) {
-                    TetradLogger.getInstance().log("emptyToken", "Parsed an empty token for a "
-                            + "covariance value--ignoring.");
-                    continue;
-                }
-
-                if ("*".equals(literal)) {
-                    c.set(i, j, Double.NaN);
-                    c.set(j, i, Double.NaN);
-                    continue;
-                }
-
-                double r = Double.parseDouble(literal);
-
-                c.set(i, j, r);
-                c.set(j, i, r);
-            }
-        }
-
-        Knowledge knowledge = DataUtils.loadKnowledge(lineizer, delimiterType.getPattern());
-
-        ICovarianceMatrix covarianceMatrix
-                = new CovarianceMatrix(DataUtils.createContinuousVariables(varNames), c, n);
-
-        covarianceMatrix.setKnowledge(knowledge);
-
-        TetradLogger.getInstance().log("info", "\nData set loaded!");
-        return covarianceMatrix;
-    }
-
-    @NotNull
-    public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet) {
-        ICovarianceMatrix cov;
-
-//        if (dataSet.getNumRows() < 1000) {
-//            cov = new CovarianceMatrixOnTheFly(dataSet);
-//        } else {
-        cov = new CovarianceMatrix(dataSet);
-//        }
-
-        return cov;
-    }
-
-    @NotNull
-    public static ICovarianceMatrix getCorrelationMatrix(DataSet dataSet) {
-        ICovarianceMatrix cov;
-
-//        if (dataSet.getNumRows() < 1000) {
-//            cov = new CorrelationMatrixOnTheFly(new CovarianceMatrixOnTheFly(dataSet));
-//        } else {
-        cov = new CovarianceMatrix(dataSet);
-//        }
-
-        return cov;
     }
 }
 

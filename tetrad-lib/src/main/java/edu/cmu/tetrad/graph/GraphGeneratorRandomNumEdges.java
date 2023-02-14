@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -222,7 +223,7 @@ public final class GraphGeneratorRandomNumEdges {
         NumberFormat nf = NumberFormat.getInstance();
         nf.setMaximumFractionDigits(0);
 
-        int numDigits = (int) Math.ceil(Math.log(this.numNodes) / Math.log(10.0));
+        int numDigits = (int) FastMath.ceil(FastMath.log(this.numNodes) / FastMath.log(10.0));
         nf.setMinimumIntegerDigits(numDigits);
 
         for (int i = 1; i <= getNumNodes(); i++) {
@@ -242,7 +243,7 @@ public final class GraphGeneratorRandomNumEdges {
             }
         }
 
-        GraphUtils.circleLayout(dag, 200, 200, 150);
+        LayoutUtil.circleLayout(dag, 200, 200, 150);
         return dag;
     }
 

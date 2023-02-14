@@ -33,11 +33,12 @@ import edu.cmu.tetrad.search.kernel.KernelGaussian;
 import edu.cmu.tetrad.search.kernel.KernelUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -241,7 +242,7 @@ public final class IndTestHsic implements IndependenceTest {
                 for (int j = 0; j < m; j++) {
                     indicesList.add(j);
                 }
-                Collections.shuffle(indicesList);
+                RandomUtil.shuffle(indicesList);
                 for (int j = 0; j < m; j++) {
                     double shuffleVal = this.dataSet.getDouble(indicesList.get(j), ycol);
                     shuffleData.setDouble(j, ycol, shuffleVal);
@@ -252,7 +253,7 @@ public final class IndTestHsic implements IndependenceTest {
                 for (List<Integer> integers : clusterAssign) {
                     List<Integer> shuffleCluster = new ArrayList<>(integers);
 
-                    Collections.shuffle(shuffleCluster);
+                    RandomUtil.shuffle(shuffleCluster);
 
                     for (int k = 0; k < shuffleCluster.size(); k++) {
                         // first swap y;
@@ -340,7 +341,7 @@ public final class IndTestHsic implements IndependenceTest {
         for (int i = 0; i < m; i++) {
             empHSIC += Kyx.get(i, i);
         }
-        empHSIC /= Math.pow(m - 1, 2);
+        empHSIC /= FastMath.pow(m - 1, 2);
         return empHSIC;
     }
 
@@ -367,7 +368,7 @@ public final class IndTestHsic implements IndependenceTest {
         for (int i = 0; i < m; i++) {
             empHSIC += matrixProductEntry(B, Gcxt, i, i);
         }
-        empHSIC /= Math.pow(m - 1, 2);
+        empHSIC /= FastMath.pow(m - 1, 2);
         return empHSIC;
     }
 
@@ -404,12 +405,12 @@ public final class IndTestHsic implements IndependenceTest {
             empHSIC += (-2 * Kyzzregzx.get(i, i));
             empHSIC += Kyzzregzxzzregz.get(i, i);
         }
-        empHSIC /= Math.pow(m - 1, 2);
+        empHSIC /= FastMath.pow(m - 1, 2);
         double Bz = 0.0;
         for (int i = 0; i < (m - 1); i++) {
             for (int j = (i + 1); j < m; j++) {
-                Bz += Math.pow(Kz.get(i, j), 2);
-                Bz += Math.pow(Kz.get(j, i), 2);
+                Bz += FastMath.pow(Kz.get(i, j), 2);
+                Bz += FastMath.pow(Kz.get(j, i), 2);
             }
         }
         Bz = (m * (m - 1)) / Bz;
@@ -493,8 +494,8 @@ public final class IndTestHsic implements IndependenceTest {
         double betaz = 0.0;
         for (int i = 0; i < (m - 1); i++) {
             for (int j = (i + 1); j < m; j++) {
-                betaz += Math.pow(matrixProductEntry(Gcz, Gczt, i, j), 2);
-                betaz += Math.pow(matrixProductEntry(Gcz, Gczt, j, i), 2);
+                betaz += FastMath.pow(matrixProductEntry(Gcz, Gczt, i, j), 2);
+                betaz += FastMath.pow(matrixProductEntry(Gcz, Gczt, j, i), 2);
             }
         }
 

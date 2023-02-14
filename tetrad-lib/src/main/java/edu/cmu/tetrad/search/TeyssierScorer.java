@@ -1,15 +1,16 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.Callable;
 
-import static java.lang.Math.floor;
-import static java.util.Collections.shuffle;
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 import static java.util.Collections.sort;
+import static org.apache.commons.math3.util.FastMath.floor;
 
 
 /**
@@ -46,11 +47,15 @@ public class TeyssierScorer {
     private double runningScore = 0f;
     private Graph mag = null;
 
+    private GrowShrinkTree GST;
+
     public TeyssierScorer(IndependenceTest test, Score score) {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
         this.score = score;
         this.test = test;
+
+        this.GST = new GrowShrinkTree(score);
 
         if (score != null) {
             this.variables = score.getVariables();
@@ -211,7 +216,7 @@ public class TeyssierScorer {
     /**
      * Performs a tuck operation.
      */
-    public boolean swaptuck(Node x, Node y, Node z) {
+    public boolean swaptuck(Node x, Node y, Node z, boolean doZ) {
         boolean moved = false;
 
         if (index(y) < index(x)) {
@@ -219,9 +224,11 @@ public class TeyssierScorer {
             moved = true;
         }
 
-        if (index(y) < index(z)) {
-            moveTo(z, index(y));
-            moved = true;
+        if (doZ) {
+            if (index(y) < index(z)) {
+                moveTo(z, index(y));
+                moved = true;
+            }
         }
 
         return moved;
@@ -231,8 +238,7 @@ public class TeyssierScorer {
         if (index(x) < index(y)) {
 //            moveTo(y, index(x));
             return false;
-        } else
-        if (index(y) < index(x)) {
+        } else if (index(y) < index(x)) {
             moveTo(x, index(y));
             return true;
         }
@@ -433,7 +439,24 @@ public class TeyssierScorer {
      */
     public Graph getGraph(boolean cpDag) {
         if (cpDag) {
-            return findCompelled();
+            List<Node> order = getPi();
+            Graph G1 = new EdgeListGraph(this.variables);
+
+            for (int p = 0; p < order.size(); p++) {
+                for (Node z : getParents(p)) {
+                    G1.addDirectedEdge(z, order.get(p));
+                }
+            }
+
+            GraphUtils.replaceNodes(G1, this.variables);
+
+            MeekRules rules = new MeekRules();
+            rules.setKnowledge(knowledge);
+            rules.orientImplied(G1);
+
+            return G1;
+
+//            return findCompelled();
         } else {
             List<Node> order = getPi();
             Graph G1 = new EdgeListGraph(this.variables);
@@ -449,6 +472,61 @@ public class TeyssierScorer {
             return G1;
         }
     }
+
+    public void orientbk(Knowledge bk, Graph graph, List<Node> variables) {
+        for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*-&gt;from
+            graph.setEndpoint(to, from, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+
+        for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
+            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*-&gt;from
+            graph.setEndpoint(from, to, Endpoint.ARROW);
+//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
+//            this.changeFlag = true;
+//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+        }
+    }
+
 
 //    public Graph getGraph(boolean cpDag) {
 //
@@ -1028,120 +1106,127 @@ public class TeyssierScorer {
     private Pair getGrowShrinkScore(int p) {
         Node n = this.pi.get(p);
 
-        Set<Node> parents = new HashSet<>();
-        boolean changed = true;
+//        Set<Node> parents = new HashSet<>();
+//        boolean changed = true;
 
-        double sMax = score(n, new HashSet<>());
-        List<Node> prefix = new ArrayList<>(getPrefix(p));
+//        double sMax = score(n, new HashSet<>());
+//        List<Node> prefix = new ArrayList<>(getPrefix(p));
 
-        // Backward scoring only from the prefix variables
-        if (this.useBackwardScoring) {
-            parents.addAll(prefix);
-            sMax = score(n, parents);
-            changed = false;
-        }
+        Set<Node> prefix = new HashSet<>(getPrefix(p));
+        LinkedHashSet<Node> parents = new LinkedHashSet<>();
+        double sMax = GST.GrowShrink(n, prefix, parents);
 
-        // Grow-shrink
-        while (changed) {
-            changed = false;
+        return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
 
-            // Let z be the node that maximizes the score...
-            Node z = null;
 
-            for (Node z0 : prefix) {
-                if (parents.contains(z0)) continue;
-
-                if (!knowledge.isEmpty() && this.knowledge.isForbidden(z0.getName(), n.getName())) continue;
-
-                parents.add(z0);
-
-                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
-
-                double s2 = score(n, parents);
-
-                if (s2 >= sMax) {
-                    sMax = s2;
-                    z = z0;
-                }
-
-                parents.remove(z0);
-            }
-
-            if (z != null) {
-                parents.add(z);
-                changed = true;
-            }
-
-        }
-
-        boolean changed2 = true;
-
-        while (changed2) {
-            changed2 = false;
-
-            Node w = null;
-
-            for (Node z0 : new HashSet<>(parents)) {
-                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
-
-                parents.remove(z0);
-
-                double s2 = score(n, parents);
-
-                if (s2 > sMax) {
-                    sMax = s2;
-                    w = z0;
-                }
-
-                parents.add(z0);
-            }
-
-            if (w != null) {
-                parents.remove(w);
-                changed2 = true;
-            }
-        }
-
+//        // Backward scoring only from the prefix variables
+//        if (this.useBackwardScoring) {
+//            parents.addAll(prefix);
+//            sMax = score(n, parents);
+//            changed = false;
+//        }
+//
+//        // Grow-shrink
+//        while (changed) {
+//            changed = false;
+//
+//            // Let z be the node that maximizes the score...
+//            Node z = null;
+//
+//            for (Node z0 : prefix) {
+//                if (parents.contains(z0)) continue;
+//
+//                if (!knowledge.isEmpty() && this.knowledge.isForbidden(z0.getName(), n.getName())) continue;
+//
+//                parents.add(z0);
+//
+//                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
+//
+//                double s2 = score(n, parents);
+//
+//                if (s2 >= sMax) {
+//                    sMax = s2;
+//                    z = z0;
+//                }
+//
+//                parents.remove(z0);
+//            }
+//
+//            if (z != null) {
+//                parents.add(z);
+//                changed = true;
+//            }
+//
+//        }
+//
+//        boolean changed2 = true;
+//
 //        while (changed2) {
 //            changed2 = false;
 //
-//            List<Node> aaa = null;
+//            Node w = null;
 //
-//            List<Node> pp = new ArrayList<>(parents);
+//            for (Node z0 : new HashSet<>(parents)) {
+//                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
 //
-//            SublistGenerator gen = new SublistGenerator(parents.size(), 2);
-//            int[] choice;
-//
-//            while ((choice = gen.next()) != null) {
-//                List<Node> aa = GraphUtils.asList(choice, pp);
-//
-////            for (Node z0 : new HashSet<>(parents)) {
-////                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
-////
-//                aa.forEach(parents::remove);
+//                parents.remove(z0);
 //
 //                double s2 = score(n, parents);
 //
 //                if (s2 > sMax) {
 //                    sMax = s2;
-//                    aaa = aa;
+//                    w = z0;
 //                }
 //
-//                parents.addAll(aa);
+//                parents.add(z0);
 //            }
 //
-//            if (aaa != null) {
-//                aaa.forEach(parents::remove);
+//            if (w != null) {
+//                parents.remove(w);
 //                changed2 = true;
 //            }
-//
 //        }
-
-        if (this.useScore) {
-            return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
-        } else {
-            return new Pair(parents, -parents.size());
-        }
+//
+////        while (changed2) {
+////            changed2 = false;
+////
+////            List<Node> aaa = null;
+////
+////            List<Node> pp = new ArrayList<>(parents);
+////
+////            SublistGenerator gen = new SublistGenerator(parents.size(), 2);
+////            int[] choice;
+////
+////            while ((choice = gen.next()) != null) {
+////                List<Node> aa = GraphUtils.asList(choice, pp);
+////
+//////            for (Node z0 : new HashSet<>(parents)) {
+//////                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
+//////
+////                aa.forEach(parents::remove);
+////
+////                double s2 = score(n, parents);
+////
+////                if (s2 > sMax) {
+////                    sMax = s2;
+////                    aaa = aa;
+////                }
+////
+////                parents.addAll(aa);
+////            }
+////
+////            if (aaa != null) {
+////                aaa.forEach(parents::remove);
+////                changed2 = true;
+////            }
+////
+////        }
+//
+//        if (this.useScore) {
+//            return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
+//        } else {
+//            return new Pair(parents, -parents.size());
+//        }
     }
 
     private Pair getGrowShrinkIndependent(int p) {

@@ -39,7 +39,7 @@ public final class TestBayesIm {
 
     @Test
     public void testCopyConstructor() {
-        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Graph graph = GraphUtils.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
@@ -49,7 +49,7 @@ public final class TestBayesIm {
 
     @Test
     public void testConstructManual() {
-        Graph graph = GraphConverter.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
+        Graph graph = GraphUtils.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
         Graph dag = new Dag(graph);
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm);

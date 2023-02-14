@@ -102,11 +102,11 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            return search(Collections.singletonList(DataUtils.getContinuousDataSet(dataSet)), parameters);
+            return search(Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet)), parameters);
         } else {
             FaskConcatenated algorithm = new FaskConcatenated(this.score, this.test);
 
-            List<DataSet> dataSets = Collections.singletonList(DataUtils.getContinuousDataSet(dataSet));
+            List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getContinuousDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
                     algorithm,
                     parameters.getInt(Params.NUMBER_RESAMPLING),

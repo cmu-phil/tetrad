@@ -23,6 +23,7 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Paths;
 import edu.cmu.tetrad.graph.TimeLagGraph;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -33,8 +34,8 @@ import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.pow;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.pow;
 
 /**
  * Stores a table of probabilities for a Bayes net and, together with BayesPm
@@ -823,11 +824,13 @@ public final class MlBayesIm implements BayesIm {
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
 
-        if (graph.existsDirectedCycle()) {
+        if (graph.paths().existsDirectedCycle()) {
             throw new IllegalArgumentException("Graph must be acyclic to simulate from discrete Bayes net.");
         }
 
-        List<Node> tierOrdering = graph.getCausalOrdering();
+        Paths paths = graph.paths();
+        List<Node> initialOrder = graph.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
@@ -844,7 +847,9 @@ public final class MlBayesIm implements BayesIm {
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
-        List<Node> tierOrdering = graph.getCausalOrdering();
+        Paths paths = graph.paths();
+        List<Node> initialOrder = graph.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
@@ -871,7 +876,9 @@ public final class MlBayesIm implements BayesIm {
         DataSet fullData = new BoxDataSet(new VerticalIntDataBox(sampleSize, variables.size()), variables);
 
         Graph contemporaneousDag = timeSeriesGraph.subgraph(lag0Nodes);
-        List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
+        Paths paths = contemporaneousDag.paths();
+        List<Node> initialOrder = contemporaneousDag.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
@@ -914,36 +921,6 @@ public final class MlBayesIm implements BayesIm {
         }
 
         return fullData;
-    }
-
-    /**
-     * Simulates a sample with the given sample size.
-     *
-     * @param sampleSize the sample size.
-     * @param seed       the random number generator seed allows you recreate the
-     *                   simulated data by passing in the same seed (so you don't have to store
-     *                   the sample data
-     * @return the simulated sample as a DataSet.
-     */
-    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-        RandomUtil random = RandomUtil.getInstance();
-        random.setSeed(seed);
-        return simulateData(sampleSize, latentDataSaved);
-    }
-
-    public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
-        RandomUtil.getInstance().setSeed(seed);
-
-        // Get a tier ordering and convert it to an int array.
-        Graph graph = getBayesPm().getDag();
-        List<Node> tierOrdering = graph.getCausalOrdering();
-        int[] tiers = new int[tierOrdering.size()];
-
-        for (int i = 0; i < tierOrdering.size(); i++) {
-            tiers[i] = getNodeIndex(tierOrdering.get(i));
-        }
-
-        return simulateDataHelper(dataSet, latentDataSaved, tiers);
     }
 
     /**

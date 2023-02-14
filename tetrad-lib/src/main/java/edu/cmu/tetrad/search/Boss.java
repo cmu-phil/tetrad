@@ -3,6 +3,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -10,8 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import java.text.NumberFormat;
 import java.util.*;
 
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.util.Collections.shuffle;
 
 /**
  * Implements the BOSS algorithm.
@@ -26,6 +27,7 @@ public class Boss {
     private Knowledge knowledge = new Knowledge();
     private final TeyssierScorer scorer;
     private long start;
+    long stop;
     private boolean useScore = true;
     private boolean useRaskuttiUhler;
     private boolean useDataOrder = true;
@@ -34,6 +36,7 @@ public class Boss {
     private int numStarts = 1;
     private AlgType algType = AlgType.BOSS1;
     private boolean caching = true;
+    private double epsilon = 1e-10;
 
     public Boss(@NotNull IndependenceTest test, Score score) {
         this.test = test;
@@ -63,7 +66,7 @@ public class Boss {
         scorer.setKnowledge(knowledge);
 
         List<Node> bestPerm;
-        long start = System.currentTimeMillis();
+        long start = MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
         this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
@@ -87,31 +90,39 @@ public class Boss {
                 shuffle(order);
             }
 
-            this.start = System.currentTimeMillis();
+            this.start = MillisecondTimes.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
             double s1, s2;
 
             int count = 0;
-            boolean ensureMinimumCount = score instanceof ZhangShenBoundScore;
+//            boolean ensureMinimumCount = score instanceof ZhangShenBoundScore;
+
+            if (algType == AlgType.BOSS1) {
+                betterMutation1(scorer);
+            } else if (algType == AlgType.BOSS2) {
+                betterMutation2(scorer);
+            } else if (algType == AlgType.BOSS3) {
+                betterMutationBryan(scorer);
+            }
 
             do {
                 s1 = scorer.score();
 
                 if (algType == AlgType.BOSS1) {
+                    besMutation(scorer);
                     betterMutation1(scorer);
-                    besMutation(scorer);
                 } else if (algType == AlgType.BOSS2) {
+                    besMutation(scorer);
                     betterMutation2(scorer);
-                    besMutation(scorer);
                 } else if (algType == AlgType.BOSS3) {
-                    betterMutationBryan(scorer);
                     besMutation(scorer);
+                    betterMutationBryan(scorer);
                 }
 
                 s2 = scorer.score();
-            } while (s2 > s1 || (++count <= 5));
+            } while (s2 > s1);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -121,7 +132,7 @@ public class Boss {
 
         this.scorer.score(bestPerm);
 
-        long stop = System.currentTimeMillis();
+        this.stop = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("\nFinal " + algType + " order = " + this.scorer.getPi());
@@ -132,20 +143,76 @@ public class Boss {
         return bestPerm;
     }
 
+//    public void betterMutation1(@NotNull TeyssierScorer scorer) {
+//        double bestScore = scorer.score();
+//        scorer.bookmark();
+//        double s1, s2;
+//
+//        Set<Node> introns1;
+//        Set<Node> introns2;
+//
+//        introns2 = new HashSet<>(scorer.getPi());
+//
+//        int[] range = new int[2];
+//
+//        do {
+//            s1 = scorer.score();
+//
+//            introns1 = introns2;
+//            introns2 = new HashSet<>();
+//
+//            for (int i = 1; i < scorer.size(); i++) {
+//                Node x = scorer.get(i);
+//                if (!introns1.contains(x)) continue;
+//
+//                scorer.bookmark(1);
+//
+//                for (int j = i - 1; j >= 0; j--) {
+//                    if (!scorer.adjacent(scorer.get(j), x)) continue;
+//
+//                    tuck(x, j, scorer, range);
+//
+//                    if (scorer.score() < bestScore || violatesKnowledge(scorer.getPi())) {
+//                        scorer.goToBookmark();
+//                    } else {
+//                        bestScore = scorer.score();
+//
+//                        for (int l = range[0]; l <= range[1]; l++) {
+//                            introns2.add(scorer.get(l));
+//                        }
+//                    }
+//
+//                    scorer.bookmark();
+//
+//                    if (verbose) {
+//                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutation1)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
+//                    }
+//                }
+//            }
+//
+//            if (verbose) {
+//                System.out.println();
+//            }
+//
+//            s2 = scorer.score();
+//        } while (s2 > s1);
+//
+//        scorer.goToBookmark(1);
+//    }
+
     public void betterMutation1(@NotNull TeyssierScorer scorer) {
         double bestScore = scorer.score();
+        double originalScore;
         scorer.bookmark();
-        double s1, s2;
 
         Set<Node> introns1;
         Set<Node> introns2;
 
         introns2 = new HashSet<>(scorer.getPi());
-
         int[] range = new int[2];
 
         do {
-            s1 = scorer.score();
+            originalScore = bestScore;
 
             introns1 = introns2;
             introns2 = new HashSet<>();
@@ -154,39 +221,31 @@ public class Boss {
                 Node x = scorer.get(i);
                 if (!introns1.contains(x)) continue;
 
-                scorer.bookmark(1);
-
                 for (int j = i - 1; j >= 0; j--) {
                     if (!scorer.adjacent(scorer.get(j), x)) continue;
 
                     tuck(x, j, scorer, range);
 
-                    if (scorer.score() < bestScore || violatesKnowledge(scorer.getPi())) {
-                        scorer.goToBookmark();
-                    } else {
-                        bestScore = scorer.score();
-
+                    if (scorer.score() > bestScore + epsilon || violatesKnowledge(scorer.getPi())) {
                         for (int l = range[0]; l <= range[1]; l++) {
                             introns2.add(scorer.get(l));
                         }
+                        bestScore = scorer.score();
+                        scorer.bookmark();
+                    } else {
+                        scorer.goToBookmark();
                     }
 
-                    scorer.bookmark();
-
                     if (verbose) {
-                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutation1)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                     }
                 }
             }
-
             if (verbose) {
                 System.out.println();
             }
-
-            s2 = scorer.score();
-        } while (s2 > s1);
-
-        scorer.goToBookmark(1);
+        } while (bestScore > originalScore + epsilon);
     }
 
 
@@ -194,54 +253,39 @@ public class Boss {
         scorer.bookmark();
         double s1, s2;
 
-        Set<Node> introns1;
-        Set<Node> introns2;
-
-        introns2 = new HashSet<>(scorer.getPi());
-
         do {
             s1 = scorer.score();
             scorer.bookmark(1);
-
-            introns1 = introns2;
-            introns2 = new HashSet<>();
 
             for (Node k : scorer.getPi()) {
                 double _sp = NEGATIVE_INFINITY;
                 scorer.bookmark();
 
-                if (!introns1.contains(k)) continue;
-
                 for (int j = 0; j < scorer.size(); j++) {
                     scorer.moveTo(k, j);
 
-                    if (scorer.score() >= _sp) {
+                    if (scorer.score() >= _sp + epsilon) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             _sp = scorer.score();
                             scorer.bookmark();
 
-                            if (scorer.index(k) <= j) {
-                                for (int m = scorer.index(k); m <= j; m++) {
-                                    introns2.add(scorer.get(m));
-                                }
-                            } else if (scorer.index(k) > j) {
-                                for (int m = j; m <= scorer.index(k); m++) {
-                                    introns2.add(scorer.get(m));
-                                }
+                            if (verbose) {
+                                System.out.print("\rIndex = " + (scorer.index(k) + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                             }
                         }
-                    }
+                   }
 
-                    if (verbose) {
-                        System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
-                    }
                 }
 
                 scorer.goToBookmark();
             }
 
+            if (verbose) {
+                System.out.println();
+            }
+
             s2 = scorer.score();
-        } while (s2 > s1);
+        } while (s2 > s1 + epsilon);
 
         scorer.goToBookmark(1);
     }
@@ -288,14 +332,14 @@ public class Boss {
                     }
 
                     if (verbose) {
-                        System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                        System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                     }
                 }
 
                 scorer.bookmark();
 
                 if (verbose) {
-                    System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((System.currentTimeMillis() - start) / 1000.0 + " s"));
+                    System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                 }
             }
 
@@ -357,32 +401,9 @@ public class Boss {
         bes.setVerbose(false);
         bes.setKnowledge(knowledge);
         bes.bes(graph, scorer.getPi());
-        List<Node> pi = causalOrder(scorer.getPi(), graph);
+        List<Node> pi = graph.paths().validOrder(scorer.getPi(), true);
         scorer.score(pi);
     }
-
-    private List<Node> causalOrder(List<Node> initialOrder, Graph graph) {
-        List<Node> found = new ArrayList<>();
-        HashSet<Node> __found = new HashSet<>();
-        boolean _found = true;
-
-        T:
-        while (_found) {
-            _found = false;
-
-            for (Node node : initialOrder) {
-                if (!__found.contains(node) && __found.containsAll(graph.getParents(node))) {
-                    found.add(node);
-                    __found.add(node);
-                    _found = true;
-                    continue T;
-                }
-            }
-        }
-
-        return found;
-    }
-
 
     public int getNumEdges() {
         return this.scorer.getNumEdges();
@@ -412,21 +433,9 @@ public class Boss {
         if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
         Graph graph = this.scorer.getGraph(cpDag);
 
-        orientbk(knowledge, graph, variables);
-        MeekRules meekRules = new MeekRules();
-        meekRules.setRevertToUnshieldedColliders(false);
-        meekRules.orientImplied(graph);
-
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         graph.addAttribute("score ", nf.format(this.scorer.score()));
         return graph;
-
-//        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-//        Graph graph = this.scorer.getGraph(cpDag);
-//
-//        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-//        graph.addAttribute("score ", nf.format(this.scorer.score()));
-//        return graph;
     }
 
     public void orientbk(Knowledge bk, Graph graph, List<Node> variables) {

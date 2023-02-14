@@ -105,7 +105,7 @@ public final class PagUtils {
 
                 List<Node> singletonB = new ArrayList<>();
                 singletonB.add(Bd);
-                List<Node> ancestorsOfB = dag.getAncestors(singletonB);
+                List<Node> ancestorsOfB = dag.paths().getAncestors(singletonB);
                 if (!ancestorsOfB.contains(Ad)) {
                     return false;
                 }
@@ -126,7 +126,7 @@ public final class PagUtils {
                 Node Ad = dag.getNode(A.getName());
                 Node Bd = dag.getNode(B.getName());
 
-                if (dag.isAncestorOf(Bd, Ad)) {
+                if (dag.paths().isAncestorOf(Bd, Ad)) {
                     return false;
                 }
             }
@@ -136,7 +136,7 @@ public final class PagUtils {
     }
 
     public static boolean graphInPagStep4(Graph pag, Graph dag) {
-        Set<Triple> pagUnderLines = pag.getUnderLines();
+        Set<Triple> pagUnderLines = pag.underlines().getUnderLines();
 
         for (Triple underline : pagUnderLines) {
             Node A = underline.getX();
@@ -147,7 +147,7 @@ public final class PagUtils {
             Node Bd = dag.getNode(B.getName());
             Node Cd = dag.getNode(C.getName());
 
-            if (!dag.isAncestorOf(Bd, Ad) && !dag.isAncestorOf(Bd, Cd)) {
+            if (!dag.paths().isAncestorOf(Bd, Ad) && !dag.paths().isAncestorOf(Bd, Cd)) {
                 return false;
             }
         }
@@ -156,7 +156,7 @@ public final class PagUtils {
     }
 
     public static boolean graphInPagStep5(Graph pag, Graph dag) {
-        for (Triple triple : pag.getDottedUnderlines()) {
+        for (Triple triple : pag.underlines().getDottedUnderlines()) {
             Node A = triple.getX();
             Node B = triple.getY();
             Node C = triple.getZ();
@@ -170,7 +170,7 @@ public final class PagUtils {
                 commonChildrenAC.retainAll(dag.getChildren(Cd));
 
                 for (Node Dd : commonChildrenAC) {
-                    if (dag.isDescendentOf(Bd, Dd)) {
+                    if (dag.paths().isDescendentOf(Bd, Dd)) {
                         return false;
                     }
                 }

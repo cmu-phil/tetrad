@@ -21,19 +21,22 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -180,7 +183,7 @@ public class TestFci {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 10, numEdges,
+        Dag trueGraph = new Dag(RandomGraph.randomGraph(nodes, 10, numEdges,
                 7, 5, 5, false));
 
         IndependenceTest test = new IndTestDSep(trueGraph);
@@ -189,8 +192,10 @@ public class TestFci {
 
         Graph graph = fci.search();
 
-        DagToPag dagToPag = new DagToPag(trueGraph);
-        Graph truePag = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(trueGraph);
+//        Graph truePag = dagToPag.convert();
+
+        Graph truePag = SearchGraphUtils.dagToPag(trueGraph);
 
         assertEquals(graph, truePag);
     }
@@ -205,7 +210,7 @@ public class TestFci {
         }
 
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphUtils.convert(inputGraph);
 
         System.out.println("Graph = " + graph);
 
@@ -222,7 +227,7 @@ public class TestFci {
 
         // Run search
         Graph resultGraph = fci.search();
-        Graph pag = GraphConverter.convert(outputGraph);
+        Graph pag = GraphUtils.convert(outputGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, pag.getNodes());
 
@@ -260,7 +265,7 @@ public class TestFci {
                 nodes.add(new ContinuousVariable(name));
             }
 
-            Graph dag = GraphUtils.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
+            Graph dag = RandomGraph.randomGraphRandomForwardEdges(nodes, numLatents, numEdges,
                     10, 10, 10, false);
             SemPm pm = new SemPm(dag);
             SemIm im = new SemIm(pm);
@@ -271,7 +276,7 @@ public class TestFci {
             DataSet marginalData = data.copy();
 
             List<Node> variables = marginalData.getVariables();
-            Collections.shuffle(variables);
+            RandomUtil.shuffle(variables);
 
             for (int m = 0; m < numVarsToMarginalize; m++) {
                 marginalData.removeColumn(marginalData.getColumn(variables.get(m)));
@@ -345,7 +350,7 @@ public class TestFci {
     private boolean ancestral(Node n, Node q, Graph pag) {
         if (n == q) return false;
 
-        if (pag.isAncestorOf(n, q)) {
+        if (pag.paths().isAncestorOf(n, q)) {
             return true;
         } else {
             List<Node> adj = uncoveredPotentiallyDirectedPathStarts(n, q, pag, new LinkedList<>());

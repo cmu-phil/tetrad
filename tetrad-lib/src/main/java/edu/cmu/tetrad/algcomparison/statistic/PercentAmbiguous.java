@@ -48,7 +48,7 @@ public class PercentAmbiguous implements Statistic {
                 Node a = _adj.get(0);
                 Node c = _adj.get(1);
 
-                if (estGraph.isAmbiguousTriple(a, b, c)) {
+                if (estGraph.underlines().isAmbiguousTriple(a, b, c)) {
                     numAmbiguous++;
                 }
 

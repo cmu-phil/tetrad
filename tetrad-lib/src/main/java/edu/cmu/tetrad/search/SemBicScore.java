@@ -23,20 +23,21 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 import static edu.cmu.tetrad.util.MatrixUtils.convertCovToCorr;
 import static java.lang.Double.NaN;
-import static java.lang.Math.abs;
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Implements the continuous BIC score for FGES.
@@ -120,7 +121,7 @@ public class SemBicScore implements Score {
 
     @NotNull
     private ICovarianceMatrix getiCovarianceMatrix(DataSet dataSet) {
-        ICovarianceMatrix cov = DataUtils.getCovarianceMatrix(dataSet);
+        ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataSet);
         return cov;
     }
 
@@ -284,10 +285,10 @@ public class SemBicScore implements Score {
 //        System.arraycopy(parents, 0, all, 1, parents.length);
 //
 //        Matrix cov1 = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), parents, parents, data, covariances);
-//        double lik = Math.log(MatrixUtils.determinant(cov1.toArray()));
+//        double lik = FastMath.log(MatrixUtils.determinant(cov1.toArray()));
 //
 //        Matrix cov2 = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
-//        lik -= Math.log(MatrixUtils.determinant(cov2.toArray()));
+//        lik -= FastMath.log(MatrixUtils.determinant(cov2.toArray()));
 
 
         int k = parents.length;
@@ -419,7 +420,7 @@ public class SemBicScore implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(log(this.sampleSize));
+        return (int) FastMath.ceil(log(this.sampleSize));
     }
 
     @Override

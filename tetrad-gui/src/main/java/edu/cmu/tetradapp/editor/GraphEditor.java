@@ -26,7 +26,6 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphWrapper;
 import edu.cmu.tetradapp.model.IndTestProducer;
@@ -425,7 +424,8 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
-        graph.add(new PagTypeSetter(getWorkbench()));
+//        graph.addSeparator();
+        graph.add(new PagColorer(getWorkbench()));
 
         menuBar.add(graph);
 
@@ -509,7 +509,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                         return;
                     }
 
-                    RandomUtil.getInstance().setSeed(new Date().getTime());
+//                    RandomUtil.getInstance().setSeed(new Date().getTime());
                     Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), GraphEditor.this.parameters);
 
                     boolean addCycles = GraphEditor.this.parameters.getBoolean("randomAddCycles", false);
@@ -517,7 +517,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
                     if (addCycles) {
                         int newGraphNumMeasuredNodes = GraphEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
                         int newGraphNumEdges = GraphEditor.this.parameters.getInt("newGraphNumEdges", 10);
-                        graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
+                        graph1 = RandomGraph.randomCyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
                     }
 
                     getWorkbench().setGraph(graph1);
@@ -529,7 +529,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
         graph.add(new JMenuItem(new SelectBidirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectUndirectedAction(getWorkbench())));
         graph.add(new JMenuItem(new SelectLatentsAction(getWorkbench())));
-        graph.add(new PagTypeSetter(getWorkbench()));
+        graph.add(new PagColorer(getWorkbench()));
 
         // Only show these menu options for graph that has interventional nodes - Zhou
         if (isHasInterventional()) {

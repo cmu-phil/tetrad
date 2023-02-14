@@ -29,14 +29,15 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
 import static edu.cmu.tetrad.util.MatrixUtils.transpose;
 import static edu.cmu.tetrad.util.StatUtils.*;
 import static java.lang.Double.isNaN;
-import static java.lang.Math.pow;
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.pow;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * LOFS = Ling Orientation Fixed Structure. Some additional algorithm.
@@ -1006,7 +1007,7 @@ public class Lofs2 {
     }
 
     private double g(double x) {
-        return log(cosh(Math.max(x, 0)));
+        return log(cosh(FastMath.max(x, 0)));
     }
 
     // cutoff is NaN if no thresholding is to be done, otherwise a threshold between 0 and 1.
@@ -1057,8 +1058,8 @@ public class Lofs2 {
 
         for (int i = 0; i < d1b.length; i++) {
             double y1 = (d1in[i] - grotMIN) / (grotMAX - grotMIN);
-            double y2 = Math.min(y1, 1.0);
-            double y3 = Math.max(y2, 0.0);
+            double y2 = FastMath.min(y1, 1.0);
+            double y3 = FastMath.max(y2, 0.0);
             d1b[i] = y3;
         }
 
@@ -1076,8 +1077,8 @@ public class Lofs2 {
 
         for (int i = 0; i < d2b.length; i++) {
             double y1 = (d2in[i] - grotMIN) / (grotMAX - grotMIN);
-            double y2 = Math.min(y1, 1.0);
-            double y3 = Math.max(y2, 0.0);
+            double y2 = FastMath.min(y1, 1.0);
+            double y3 = FastMath.max(y2, 0.0);
             d2b[i] = y3;
         }
 
@@ -1662,7 +1663,7 @@ public class Lofs2 {
         setDataSets(this.dataSets);
 
         Set<Edge> edgeList1 = graph.getEdges();
-//        Collections.shuffle(edgeList1);
+//        RandomUtil.shuffle(edgeList1);
 
         for (Edge adj : edgeList1) {
             Node x = adj.getNode1();

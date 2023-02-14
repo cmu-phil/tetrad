@@ -20,7 +20,7 @@
 <div class="inner">
 
     <div class="header"><h1>Tetrad Manual</h1>
-        <p>Last updated: January, 18 2023</p></div>
+        <p>Last updated: 02/09/2023</p></div>
 
     <!-- Table of Contents, give each section a unique id -->
     <div
@@ -522,7 +522,7 @@
         the reference graph, and whether it contains latent variables. When the
         comparison is complete, the following window results:</p>
 
-    <img alt="" src="images/stats-list-example.png" width="650">
+    <img alt="" src="images/compare_box_1.png" width="650">
 
     <p>You may choose (by a menu in the upper left part of the box) whether the
         graph being compared is the original DAG, or the CPDAG of the original
@@ -2581,7 +2581,7 @@ tabs will not appear.</p> -->
         Search and Generate Graph" which will execute the search.</p>
 
     <p>Notably there are some experimental algorithms available in this box.
-    To see these, select File->Settings->Enable Experimental.</p>
+        To see these, select File->Settings->Enable Experimental.</p>
 
 
     <h2>Search Algorithms</h2>
@@ -2818,6 +2818,13 @@ tabs will not appear.</p> -->
             will automatically apply the time lag transform. The same goes for any
             algorithm that has this parameter available in the interface.</p>
 
+        <p> Note: It is possible to run FGES followed some non-Gaussian
+            orientation algorithm like FASK-pairwise or R3 or RSkew. To do this,
+            see the FASK algorithm. There one can select an algorithm to
+            estimate adjacencies and a pairwise algorithm to estimate orientations.
+            This is for the linear, non-Gaussian case, where such pairwise
+            algorithms are effective.
+        </p>
 
     </div>
 
@@ -2845,37 +2852,37 @@ tabs will not appear.</p> -->
         <a href="#verbose">verbose</a> <a href="#meekVerbose">meekVerbose</a></p>
 
 
-<!--    <h3>The IMaGES Discrete Algorithm (BDeu Score)</h3>-->
+    <!--    <h3>The IMaGES Discrete Algorithm (BDeu Score)</h3>-->
 
-<!--    <h4>Description</h4>-->
+    <!--    <h4>Description</h4>-->
 
-<!--    <div id="imgs_disc">-->
+    <!--    <div id="imgs_disc">-->
 
-<!--        <p>Adjusts the discrete BDeu variable score of FGES so allow for-->
-<!--            multiple datasets as input. The BDeu scores for each data set are-->
-<!--            averaged at each step of the algorithm, producing a model for all-->
-<!--            data sets that assumes they have the same graphical structure across-->
-<!--            dataset. Note that in order to use this algorithm in a nontrivial-->
-<!--            way, one needs to have loaded or simulated multiple dataset.</p>-->
+    <!--        <p>Adjusts the discrete BDeu variable score of FGES so allow for-->
+    <!--            multiple datasets as input. The BDeu scores for each data set are-->
+    <!--            averaged at each step of the algorithm, producing a model for all-->
+    <!--            data sets that assumes they have the same graphical structure across-->
+    <!--            dataset. Note that in order to use this algorithm in a nontrivial-->
+    <!--            way, one needs to have loaded or simulated multiple dataset.</p>-->
 
-<!--    </div>-->
+    <!--    </div>-->
 
-<!--    <h4>Input Assumptions</h4>-->
+    <!--    <h4>Input Assumptions</h4>-->
 
-<!--    <p>A set of discrete datasets with the same variables and sample-->
-<!--        sizes.</p>-->
+    <!--    <p>A set of discrete datasets with the same variables and sample-->
+    <!--        sizes.</p>-->
 
-<!--    <h4>Output Format</h4>-->
+    <!--    <h4>Output Format</h4>-->
 
-<!--    <p>A CPDAG, interpreted as a common model for all datasets.</p>-->
+    <!--    <p>A CPDAG, interpreted as a common model for all datasets.</p>-->
 
-<!--    <h4>Parameters</h4>-->
+    <!--    <h4>Parameters</h4>-->
 
-<!--    <p>All of the parameters from FGES are available for IMaGES.-->
-<!--        Additionally:</p>-->
+    <!--    <p>All of the parameters from FGES are available for IMaGES.-->
+    <!--        Additionally:</p>-->
 
-<!--    <p><a href="#numRuns">numRuns</a>, <a-->
-<!--            href="#randomSelectionSize">randomSelectionSize</a></p>-->
+    <!--    <p><a href="#numRuns">numRuns</a>, <a-->
+    <!--            href="#randomSelectionSize">randomSelectionSize</a></p>-->
 
 
     <h3>The IMaGES Algorithm</h3>
@@ -3030,53 +3037,33 @@ tabs will not appear.</p> -->
             href="#maxPathLength">maxPathLength</a>, <a
             href="#completeRuleSetUsed">completeRuleSetUsed</a></p>
 
+    <h3>The PAG-Sampling RFCI Algorithm</h3>
 
-<!--    <h3>The RFCI-BSC Algorithm</h3>-->
+    <h4>Description</h4>
 
-<!--    <h4>Description</h4>-->
+    <div id="pag-sampling-rfci">
 
-<!--    <div id="rfci-bsc">-->
+        <p>A modification of the RFCI algorithm which does probabilistic bootstrap
+            sampling with respect to the RFCI PAG output.For discrete data only.
+            Parameters are: (a) Number of search probabilistic models, (b) boostrap
+            ensemble method to use (see bootstrapping), (c) maximimum size of
+            conditioning set (depth), (d) maximum length of any discriminating path
+            (a property for RFCI). This must use the probabilistic test, which must
+            be selected. Parameters for the probabilistic test are (d) independence
+            cutoff threshold, default 0.5, (e) prior equivalent sample size, and
+            (f) whether the cutoff in (d) is used in the independence test calculation;
+            if not, then a coin flip is used (probaility 0.5).
+        </p>
 
-<!--        <p>RFCI-BSC is a combination of the RFCI [Colombo, 2012]-->
-<!--            algorithm and the Bayesian Scoring of Constraints (BSC) method-->
-<!--            [Jabbari, 2017] that can generate and probabilistically score-->
-<!--            multiple models, outputting the most probable one. This search-->
-<!--            algorithm is a hybrid method that derives a Bayesian probability that-->
-<!--            the set of independence tests associated with a given causal model-->
-<!--            are jointly correct. Using this constraint-based scoring method, we-->
-<!--            are able to score multiple causal models, which possibly contain-->
-<!--            latent variables, and output the most probable one. See [Jabbari,-->
-<!--            2017].</p>-->
+    </div>
 
-<!--        <p>Currently, this algorithm can only be accessed if experimental-->
-<!--            algorithms are activated. One may do so by going to the-->
-<!--            File menu, selecting Settings, and then making sure the-->
-<!--            'Experimental' checkbox is checked.</p>-->
+    <h4>Input Assumptions</h4>
 
-<!--    </div>-->
+    <p>A discrete dataset.</p>
 
-<!--    <h4>Input Assumptions</h4>-->
+    <h4>Output Format</h4>
 
-<!--    <p>The data are discrete only.</p>-->
-
-<!--    <h4>Output Format</h4>-->
-
-<!--    <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>-->
-
-<!--    <h4>Parameters</h4>-->
-
-<!--    <p>All of the parameters from RFCI are available for RFCI-BSC.-->
-<!--        Additionally:</p>-->
-
-<!--    <p><a-->
-<!--            href="#numRandomizedSearchModels">numRandomizedSearchModels</a>, <a-->
-<!--            href="#thresholdNoRandomDataSearch">thresholdNoRandomDataSearch</a>, <a-->
-<!--            href="#cutoffDataSearch">cutoffDataSearch</a>, <a-->
-<!--            href="#thresholdNoRandomConstrainSearch">thresholdNoRandomConstrainSearch-->
-<!--    </a>, <a href="#cutoffConstrainSearch">cutoffConstrainSearch</a>, <a-->
-<!--            href="#numBscBootstrapSamples">numBscBootstrapSamples</a>, <a-->
-<!--            href="#lowerBound">lowerBound</a>, <a href="#upperBound">upperBound</a>,-->
-<!--        <a href="#outputRBD">outputRBD</a></p>-->
+    <p>A partial ancestral graph (PAG). See Spirtes et al., 2000.</p>
 
     <h3>The GFCI Algorithm</h3>
 
@@ -4021,6 +4008,27 @@ tabs will not appear.</p> -->
 
     <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
 
+    <h3>Kim et al. Scores</h3>
+
+    <div id="kim-bic-tests"><p>
+        This is a set of generalized information criterion (GIC) scores, used as tests,
+        based on the paper, Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection
+        criteria on high dimensions. The Journal 0of Machine Learning Research,
+        13(1), 1037-1057. One needs to select which lambda to use in place of the
+        usual lambda for the linear, Gaussian BIC score. An penalty discount parameter
+        may also be specified, though this is by default for these scores equal
+        to 1 (since the lambda choice is essentially picking a penalty discount
+        for you).
+    </p>
+    </div>
+
+    <h3>MAG SEM BIC Test</h3>
+
+    <div id="mag-sem-bic-test"><p>
+        This gives a BIC score (used as a test here) for a Mixed Ancestral Graph (MAG).
+    </p>
+    </div>
+
     <h3>Probabilistic Test</h3>
 
     <div id="prob-test"><p> The Probabilistic Test applies a Bayesian
@@ -4347,9 +4355,46 @@ tabs will not appear.</p> -->
         recommended depending on how many variables there are per sample. </p>
     </div>
 
-    <h4>Parameters</h4>
+    <h3>Kim et al. Scores</h3>
 
-    <p><a href="#ebicGamma">ebicGamma</a></p>
+    <div id="kim-scores"><p>
+        This is a set of generalized information criterion (GIC) scores based on
+        the paper, Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection
+        criteria on high dimensions. The Journal 0of Machine Learning Research,
+        13(1), 1037-1057. One needs to select which lambda to use in place of the
+        usual lambda for the linear, Gaussian BIC score. An penalty discount parameter
+        may also be specified, though this is by default for these scores equal
+        to 1 (since the lambda choice is essentially picking a penalty discount
+        for you).
+    </p>
+    </div>
+
+    <h3>Poisson Prior Score</h3>
+
+    <div id="poisson-prior-score"><p>
+        This is likelihood score attenuated by the log
+        of the Poisson distribution. It has one parameter, lambda, from the Poisson
+        distribution, which acts as a structure prior.
+    </p>
+    </div>
+
+    <h3>Zhang-Shen Bound Score</h3>
+
+    <div id="zsbound-score"><p>
+        Uses Theorem 1 from Zhang, Y., & Shen, X. (2010). Model selection procedure for
+        high‐dimensional data. Statistical Analysis and Data Mining: The ASA Data
+        Science Journal, 3(5), 350-358, to make a score that controls false positives.
+        The is one parameter, the "risk bound", a number between 0 and 1 (a bound on
+        false positive risk probability).
+    </p>
+    </div>
+
+    <h3>MAG SEM BIC Score</h3>
+
+    <div id="mag-sem-bic-score"><p>
+        This gives a BIC score for a Mixed Ancestral Graph (MAG).
+    </p>
+    </div>
 
     <div id="parameters"><h2>Search Parameters</h2>
 
@@ -7233,13 +7278,36 @@ tabs will not appear.</p> -->
                     id="penaltyDiscount_value_type">Double</span></li>
         </ul>
 
+        <h3 class="parameter_description"
+            id="penaltyDiscountZs">penaltyDiscountZs</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="penaltyDiscountZs_short_desc">Penalty discount (min =
+        0.0)</span></li>
+            <li>Long Description: <span
+                    id="penaltyDiscountZs_long_desc"> The parameter c added to a modified
+        BIC score of the form 2L – c k lambda, where L is the likelihood, k the
+        number of degrees of freedom, and lambda the choice of GIC lambda. Higher c yield
+        sparser graphs. </span></li>
+            <li>Default Value: <span
+                    id="penaltyDiscountZs_default_value">1.0</span></li>
+            <li>Lower Bound:
+                <span id="penaltyDiscountZs_lower_bound">0.0</span></li>
+            <li>Upper
+                Bound: <span
+                        id="penaltyDiscountZs_upper_bound">1.7976931348623157E308</span></li>
+            <li>Value Type: <span
+                    id="penaltyDiscountZs_value_type">Double</span></li>
+        </ul>
+
         <h3 id="zSRiskBound" class="parameter_description">zSRiskBound</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="zSRiskBound_short_desc">Risk bound</span></li>
             <li>Long Description: <span id="zSRiskBound_long_desc">
                 This is the probability of getting the true model if a correct model is discovered. Could underfit.</span>
             </li>
-            <li>Default Value: <span id="zSRiskBound_default_value">0.001</span></li>
+            <li>Default Value: <span id="zSRiskBound_default_value">0.1</span></li>
             <li>Lower Bound: <span id="zSRiskBound_lower_bound">0</span></li>
             <li>Upper Bound: <span id="zSRiskBound_upper_bound">1</span></li>
             <li>Value Type: <span id="zSRiskBound_value_type">Double</span></li>
@@ -7748,12 +7816,13 @@ tabs will not appear.</p> -->
         <h3 class="parameter_description"
             id="seed">seed</h3>
         <ul
-            class="parameter_description_list">
+                class="parameter_description_list">
             <li>Short Description: <span
-                    id="seed_short_desc">Seed for pseudorandom number generator (min = -1)</span></li>
+                    id="seed_short_desc">Seed for pseudorandom number generator (-1 = off)</span></li>
             <li>Long Description: <span
                     id="seed_long_desc">The seed is the initial value of the
-                    internal state of the pseudorandom number generator.</span></li>
+                    internal state of the pseudorandom number generator. A value of -1
+                skips setting a new seed.</span></li>
             <li>Default Value: <span
                     id="seed_default_value">-1</span></li>
             <li>Lower Bound:
@@ -8408,6 +8477,25 @@ tabs will not appear.</p> -->
                     id="useWishart_value_type">Boolean</span></li>
         </ul>
 
+        <h3 class="parameter_description" id="checkType">checkType</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="checkType_short_desc">
+                    Model significance check type: 1 = Significance, 2 = Clique, 3 = None
+            <li>Long Description: <span id="checkType_long_desc">
+        		Model significance check type: 1 = Significance, 2 = Clique, 3 = None
+         </span></li>
+            <li>Default Value: <span
+                    id="checkType_default_value">1</span></li>
+            <li>Lower Bound: <span
+                    id="checkType_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="checkType_upper_bound">3</span></li>
+            <li>Value
+                Type: <span id="checkType_value_type">Integer</span></li>
+        </ul>
+
         <h3 class="parameter_description" id="varHigh">varHigh</h3>
         <ul
                 class="parameter_description_list">
@@ -8425,6 +8513,26 @@ tabs will not appear.</p> -->
                     id="varHigh_upper_bound">1.7976931348623157E308</span></li>
             <li>Value
                 Type: <span id="varHigh_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description" id="significanceChecked">significanceChecked</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="significanceChecked_short_desc">
+                    True if the significance of the cluster should be checked.
+                    </span></li>
+            <li>Long Description: <span id="significanceChecked_long_desc">
+            True if the significance of clusters should be checked, false if not.
+            </span></li>
+            <li>Default Value: <span
+                    id="significanceChecked_default_value">false</span></li>
+            <li>Lower Bound: <span
+                    id="significanceChecked_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="significanceChecked_upper_bound"></span></li>
+            <li>Value
+                Type: <span id="significanceChecked_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="varLow">varLow</h3>
@@ -8456,7 +8564,7 @@ tabs will not appear.</p> -->
                     id="verbose_long_desc"> If this parameter is set to ‘Yes’, extra
         (“verbose”) output will be printed if available giving some details
         about the step-by-step operation of the algorithm.</span></li>
-            <li>Default Value: <span id="verbose_default_value">true</span></li>
+            <li>Default Value: <span id="verbose_default_value">false</span></li>
             <li>Lower Bound: <span id="verbose_lower_bound"></span></li>
             <li>Upper Bound: <span id="verbose_upper_bound"></span></li>
             <li>Value Type: <span id="verbose_value_type">Boolean</span></li>
@@ -8912,6 +9020,9 @@ ga.q = [];
 ga.l = +new Date;
 ga('create', 'UA-XXXXX-Y', 'auto');
 ga('send', 'pageview')
+
+
+
 
 
 

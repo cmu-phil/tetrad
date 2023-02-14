@@ -27,8 +27,9 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.util.MillisecondTimes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,7 @@ public class ADTreeTest {
             variables.add(new ContinuousVariable(name));
         }
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(variables, 0, numEdges, 30, 15, 15, false, true);
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(variables, 0, numEdges, 30, 15, 15, false, true);
 
         BayesPm pm = new BayesPm(graph);
         BayesIm im = new MlBayesIm(pm, MlBayesIm.RANDOM);
@@ -74,26 +75,26 @@ public class ADTreeTest {
         }
 
         // create the tree
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         ADTree<Node, Short> adTree = new ADTree<>(dataTable);
-        System.out.printf("Generated tree in %s millis%n", System.currentTimeMillis() - start);
+        System.out.printf("Generated tree in %s millis%n", MillisecondTimes.timeMillis() - start);
 
         // the query is an arbitrary map of vars and their values
         TreeMap<Node, Short> query = new TreeMap<>();
         query.put(ADTreeTest.node(pm, "X1"), (short) 1);
         query.put(ADTreeTest.node(pm, "X5"), (short) 0);
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         System.out.printf("Count is %d%n", adTree.count(query));
-        System.out.printf("Query in %s ms%n", System.currentTimeMillis() - start);
+        System.out.printf("Query in %s ms%n", MillisecondTimes.timeMillis() - start);
 
         query.clear();
         query.put(ADTreeTest.node(pm, "X1"), (short) 1);
         query.put(ADTreeTest.node(pm, "X2"), (short) 1);
         query.put(ADTreeTest.node(pm, "X5"), (short) 0);
         query.put(ADTreeTest.node(pm, "X10"), (short) 1);
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         System.out.printf("Count is %d%n", adTree.count(query));
-        System.out.printf("Query in %s ms%n", System.currentTimeMillis() - start);
+        System.out.printf("Query in %s ms%n", MillisecondTimes.timeMillis() - start);
 
 
     }

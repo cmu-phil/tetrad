@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
@@ -104,7 +104,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
 
         List<int[]> partitionAsInts = ClusterUtils.convertListToInt(partition, test.getVariables());
         setResultGraph(ClusterUtils.convertSearchGraph(partitionAsInts, test.getVarNames()));
-        GraphUtils.fruchtermanReingoldLayout(getResultGraph());
+        LayoutUtil.fruchtermanReingoldLayout(getResultGraph());
 
         setClusters(outputClusters);
     }

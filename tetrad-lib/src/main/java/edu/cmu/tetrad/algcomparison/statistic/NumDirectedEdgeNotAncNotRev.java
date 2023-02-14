@@ -33,7 +33,7 @@ public class NumDirectedEdgeNotAncNotRev implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (!trueGraph.isAncestorOf(x, y) && !trueGraph.isAncestorOf(y, x)) {
+                if (!trueGraph.paths().isAncestorOf(x, y) && !trueGraph.paths().isAncestorOf(y, x)) {
                     tp++;
                     System.out.println("Should be " + x + "<~->" + y + ": " + estGraph.getEdge(x, y));
                 }

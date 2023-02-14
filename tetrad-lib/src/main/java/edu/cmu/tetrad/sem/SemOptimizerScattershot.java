@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
 
@@ -92,8 +93,8 @@ public class SemOptimizerScattershot implements SemOptimizer {
             optimize2(_sem2);
             double chisq = _sem2.getChiSquare();
 
-            if (Math.abs(chisq) < min) {
-                min = Math.abs(chisq);
+            if (FastMath.abs(chisq) < min) {
+                min = FastMath.abs(chisq);
                 _sem = _sem2;
             }
         }

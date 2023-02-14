@@ -9,16 +9,18 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
-import static java.lang.Math.exp;
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.exp;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Dec 17, 2018 3:28:15 PM
@@ -74,12 +76,12 @@ public class RfciBsc implements GraphSearch {
     @Override
     public Graph search() {
         long stop = 0;
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         IndTestProbabilistic _test = (IndTestProbabilistic) this.rfci.getIndependenceTest();
 
         // create empirical data for constraints
-        DataSet dataSet = DataUtils.getDiscreteDataSet(_test.getData());
+        DataSet dataSet = SimpleDataLoader.getDiscreteDataSet(_test.getData());
 
         this.pAGs.clear();
 
@@ -362,7 +364,7 @@ public class RfciBsc implements GraphSearch {
             this.out.println("graphRBD:\n" + this.graphRBD);
             this.out.println("graphRBI:\n" + this.graphRBI);
 
-            stop = System.currentTimeMillis();
+            stop = MillisecondTimes.timeMillis();
 
             this.out.println("Elapsed " + (stop - start) + " ms");
         }
@@ -517,7 +519,7 @@ public class RfciBsc implements GraphSearch {
         if (lnYminusLnX < RfciBsc.MININUM_EXPONENT) {
             return lnX;
         } else {
-            double w = Math.log1p(exp(lnYminusLnX));
+            double w = FastMath.log1p(exp(lnYminusLnX));
             return w + lnX;
         }
     }
@@ -543,7 +545,7 @@ public class RfciBsc implements GraphSearch {
             BCInference.OP op;
             double p = 0.0;
 
-            if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;
@@ -574,7 +576,7 @@ public class RfciBsc implements GraphSearch {
                             }
                         }
                         IndependenceFact parentFact = new IndependenceFact(_X, _Y, _Z);
-                        if (pag.isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
+                        if (pag.paths().isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
                             parentValues[parentIndex] = 1;
                         } else {
                             parentValues[parentIndex] = 0;
@@ -631,7 +633,7 @@ public class RfciBsc implements GraphSearch {
         for (IndependenceFact fact : H.keySet()) {
             BCInference.OP op;
 
-            if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;

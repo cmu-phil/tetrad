@@ -50,7 +50,7 @@ public class ShortTriangularMatrix implements TriangularMatrix {
         ShortTriangularMatrix test = new ShortTriangularMatrix();
         File file = new File("C:/data1.txt");
         try {
-            DataSet data = DataUtils.loadContinuousData(file, "//", '\"',
+            DataSet data = SimpleDataLoader.loadContinuousData(file, "//", '\"',
                     "*", true, Delimiter.TAB);
             test.becomeCorrelationMatrix(data);
             System.out.println(test);

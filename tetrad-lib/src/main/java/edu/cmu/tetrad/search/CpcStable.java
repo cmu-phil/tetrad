@@ -24,7 +24,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -189,10 +191,12 @@ public final class CpcStable implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
         this.graph = new EdgeListGraph(nodes);
 
 
         FasConcurrent fas = new FasConcurrent(getIndependenceTest());
+        fas.setStable(true);
         fas.setOut(this.out);
         return search(fas, nodes);
     }
@@ -203,7 +207,7 @@ public final class CpcStable implements GraphSearch {
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        long startTime = System.currentTimeMillis();
+        long startTime = MillisecondTimes.timeMillis();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
@@ -236,7 +240,7 @@ public final class CpcStable implements GraphSearch {
 
         meekRules.orientImplied(getGraph());
 
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
@@ -282,7 +286,7 @@ public final class CpcStable implements GraphSearch {
                     }
                 } else {
                     Triple triple = new Triple(x, y, z);
-                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
             }
         }
@@ -295,7 +299,7 @@ public final class CpcStable implements GraphSearch {
         List<Node> adjk = g.getAdjacentNodes(k);
         List<List<Node>> sepsets = new ArrayList<>();
 
-        for (int d = 0; d <= Math.max(adji.size(), adjk.size()); d++) {
+        for (int d = 0; d <= FastMath.max(adji.size(), adjk.size()); d++) {
             if (adji.size() >= 2 && d <= adji.size()) {
                 ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;

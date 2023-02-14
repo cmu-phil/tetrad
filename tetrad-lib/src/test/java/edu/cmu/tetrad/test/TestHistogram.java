@@ -29,8 +29,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Histogram;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -60,7 +60,7 @@ public final class TestHistogram {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Dag trueGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 5, 30, 15, 15, false));
+        Dag trueGraph = new Dag(RandomGraph.randomGraph(nodes, 0, 5, 30, 15, 15, false));
         final int sampleSize = 1000;
 
         // Continuous
@@ -72,8 +72,8 @@ public final class TestHistogram {
         histogram.setTarget("X1");
         histogram.setNumBins(20);
 
-        assertEquals(5.33, histogram.getMax(), 0.01);
-        assertEquals(-4.97, histogram.getMin(), 0.01);
+        assertEquals(3.65, histogram.getMax(), 0.01);
+        assertEquals(-3.46, histogram.getMin(), 0.01);
         assertEquals(1000, histogram.getN());
 
         histogram.setTarget("X1");
@@ -83,8 +83,8 @@ public final class TestHistogram {
 
         histogram.removeConditioningVariable("X3");
 
-        assertEquals(5.33, histogram.getMax(), 0.01);
-        assertEquals(-4.97, histogram.getMin(), 0.01);
+        assertEquals(3.65, histogram.getMax(), 0.01);
+        assertEquals(-3.46, histogram.getMin(), 0.01);
 //        assertEquals( 142, histogram.getN());
 
         double[] arr = histogram.getContinuousData("X2");

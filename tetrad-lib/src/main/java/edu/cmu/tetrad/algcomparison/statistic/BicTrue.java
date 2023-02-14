@@ -5,7 +5,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.SemBicScorer;
 
-import static java.lang.Math.tanh;
+import static org.apache.commons.math3.util.FastMath.tanh;
 
 /**
  * True BIC score.

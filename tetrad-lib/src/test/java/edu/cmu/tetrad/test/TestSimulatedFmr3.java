@@ -71,7 +71,7 @@ public class TestSimulatedFmr3 {
         statistics.add(new TwoCycleFalsePositive());
         statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 1.0);
@@ -176,7 +176,7 @@ public class TestSimulatedFmr3 {
         statistics.add(new TwoCycleFalsePositive());
         statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 1.0);

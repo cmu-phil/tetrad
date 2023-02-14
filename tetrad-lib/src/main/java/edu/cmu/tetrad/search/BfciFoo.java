@@ -149,8 +149,6 @@ public final class BfciFoo implements GraphSearch {
         fciOrient.setKnowledge(knowledge2);
         fciOrient.doFinalOrientation(graph);
 
-        graph.setGraphType(EdgeListGraph.GraphType.PAG);
-
         return graph;
     }
 

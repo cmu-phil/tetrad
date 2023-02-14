@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DeltaSextadTest;
 import edu.cmu.tetrad.search.IntSextad;
@@ -30,13 +30,13 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -117,7 +117,7 @@ public class TestDeltaSextadTest {
 
         try {
             final String name = "src/test/resources/dataLG.txt";
-            data = DataUtils.loadContinuousData(new File(name), "//", '\"',
+            data = SimpleDataLoader.loadContinuousData(new File(name), "//", '\"',
                     "*", true, Delimiter.TAB);
         } catch (IOException e) {
             e.printStackTrace();
@@ -224,7 +224,7 @@ public class TestDeltaSextadTest {
         indices.add(5);
         indices.add(7);
 
-        Collections.shuffle(indices);
+        RandomUtil.shuffle(indices);
 
         int x1 = indices.get(0);
         int x2 = indices.get(1);

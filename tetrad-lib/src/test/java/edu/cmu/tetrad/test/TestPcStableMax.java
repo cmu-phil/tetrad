@@ -21,10 +21,12 @@
 
 package edu.cmu.tetrad.test;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DelimiterType;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphConverter;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.*;
 import org.junit.Test;
@@ -96,7 +98,7 @@ public class TestPcStableMax {
                 ".18\t.15\t.19\t.41\t.43\t.55\t1.0";
 
         char[] citesChars = citesString.toCharArray();
-        ICovarianceMatrix dataSet = DataUtils.parseCovariance(citesChars, "//", DelimiterType.WHITESPACE,
+        ICovarianceMatrix dataSet = SimpleDataLoader.loadCovarianceMatrix(citesChars, "//", DelimiterType.WHITESPACE,
                 '\"', "*");
 
         Knowledge knowledge = new Knowledge();
@@ -139,7 +141,7 @@ public class TestPcStableMax {
     private void checkSearch(String inputGraph, String outputGraph) {
 
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(inputGraph);
+        Graph graph = GraphUtils.convert(inputGraph);
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -150,7 +152,7 @@ public class TestPcStableMax {
         Graph resultGraph = pc.search(new Fas(independence), independence.getVariables());
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert(outputGraph);
+        Graph trueGraph = GraphUtils.convert(outputGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
@@ -164,7 +166,7 @@ public class TestPcStableMax {
      */
     private void checkWithKnowledge(String input, Knowledge knowledge) {
         // Set up graph and node objects.
-        Graph graph = GraphConverter.convert(input);
+        Graph graph = GraphUtils.convert(input);
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
@@ -177,7 +179,7 @@ public class TestPcStableMax {
         Graph resultGraph = pc.search();
 
         // Build comparison graph.
-        Graph trueGraph = GraphConverter.convert("A---B,B-->C,D");
+        Graph trueGraph = GraphUtils.convert("A---B,B-->C,D");
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 

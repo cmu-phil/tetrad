@@ -23,10 +23,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.SublistGenerator;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradLogger;
+import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -169,7 +167,7 @@ public final class PcMb implements MbSearch, GraphSearch {
      * @param targets The targets variable.
      */
     public Graph search(List<Node> targets) {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
@@ -626,7 +624,7 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     private void finishUp(long start, Graph graph) {
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
         this.elapsedTime = stop - start;
         double seconds = this.elapsedTime / 1000d;
 
@@ -706,7 +704,7 @@ public final class PcMb implements MbSearch, GraphSearch {
                 } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
                 } else {
                     this.noncolliderTriples.add(new Triple(x, y, z));
@@ -731,7 +729,7 @@ public final class PcMb implements MbSearch, GraphSearch {
         if (_depth == -1) {
             _depth = Integer.MAX_VALUE;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             if (Thread.currentThread().isInterrupted()) {
@@ -767,7 +765,7 @@ public final class PcMb implements MbSearch, GraphSearch {
         if (_depth == -1) {
             _depth = Integer.MAX_VALUE;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             if (Thread.currentThread().isInterrupted()) {

@@ -202,9 +202,9 @@ public class DagInCPDAGIterator {
             Node node1 = this.edge.getNode1();
             Node node2 = this.edge.getNode2();
 
-            return (!this.triedLeft && !this.graph.isAncestorOf(node1, node2) &&
+            return (!this.triedLeft && !this.graph.paths().isAncestorOf(node1, node2) &&
                     !getKnowledge().isForbidden(node2.getName(), node1.getName())) ||
-                    (!this.triedRight && !this.graph.isAncestorOf(node2, node1) &&
+                    (!this.triedRight && !this.graph.paths().isAncestorOf(node2, node1) &&
                             !getKnowledge().isForbidden(node1.getName(), node2.getName()));
 
         }
@@ -214,7 +214,7 @@ public class DagInCPDAGIterator {
                 return null;
             }
 
-            if (!this.triedLeft && !this.graph.isAncestorOf(this.edge.getNode1(), this.edge.getNode2()) &&
+            if (!this.triedLeft && !this.graph.paths().isAncestorOf(this.edge.getNode1(), this.edge.getNode2()) &&
                     !getKnowledge().isForbidden(this.edge.getNode2().getName(), this.edge.getNode1().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
@@ -222,7 +222,7 @@ public class DagInCPDAGIterator {
                 graph.removeEdges(this.edge.getNode1(), this.edge.getNode2());
 
                 graph.addDirectedEdge(this.edge.getNode2(), this.edge.getNode1());
-                graph.setHighlighted(graph.getEdge(this.edge.getNode2(), this.edge.getNode1()), true);
+                graph.getEdge(this.edge.getNode2(), this.edge.getNode1()).setHighlighted(true);
 
                 edges.add(graph.getEdge(this.edge.getNode2(), this.edge.getNode1()));
                 edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
@@ -238,7 +238,8 @@ public class DagInCPDAGIterator {
                 this.getChangedEdges().put(graph, edges);
 
                 for (Edge edge : edges) {
-                    graph.setHighlighted(edge, true);
+                    edge.setHighlighted(true);
+//                    graph.setHighlighted(edge, true);
                 }
 
                 this.triedLeft = true;
@@ -247,14 +248,14 @@ public class DagInCPDAGIterator {
                         isAllowArbitraryOrientation());
             }
 
-            if (!this.triedRight && !this.graph.isAncestorOf(this.edge.getNode2(), this.edge.getNode1()) &&
+            if (!this.triedRight && !this.graph.paths().isAncestorOf(this.edge.getNode2(), this.edge.getNode1()) &&
                     !getKnowledge().isForbidden(this.edge.getNode1().getName(), this.edge.getNode2().getName())) {
                 Set<Edge> edges = new HashSet<>();
 
                 Graph graph = new EdgeListGraph(this.graph);
                 graph.removeEdges(this.edge.getNode1(), this.edge.getNode2());
                 graph.addDirectedEdge(this.edge.getNode1(), this.edge.getNode2());
-                graph.setHighlighted(graph.getEdge(this.edge.getNode1(), this.edge.getNode2()), true);
+                graph.getEdge(this.edge.getNode1(), this.edge.getNode2()).setHighlighted(true);
 
                 edges.add(graph.getEdge(this.edge.getNode1(), this.edge.getNode2()));
                 edges.addAll(new HashSet<>(getChangedEdges().get(this.graph)));
@@ -266,7 +267,7 @@ public class DagInCPDAGIterator {
                 this.getChangedEdges().put(graph, edges);
 
                 for (Edge edge : edges) {
-                    graph.setHighlighted(edge, true);
+                    edge.setHighlighted(true);
                 }
 
                 this.triedRight = true;

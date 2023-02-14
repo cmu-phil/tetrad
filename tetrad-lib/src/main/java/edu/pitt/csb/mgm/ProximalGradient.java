@@ -25,6 +25,7 @@ import cern.colt.matrix.DoubleFactory1D;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Implementation of Nesterov's 83 method as described in Beck and Teboulle, 2009
@@ -116,7 +117,7 @@ public class ProximalGradient {
             obj = Fx + Gx;
 
             while (true) {
-                theta = 2.0 / (1.0 + Math.sqrt(1.0 + (4.0 * L) / (Lold * Math.pow(thetaOld, 2))));
+                theta = 2.0 / (1.0 + FastMath.sqrt(1.0 + (4.0 * L) / (Lold * FastMath.pow(thetaOld, 2))));
                 if (theta < 1) {
                     Y.assign(Xold.copy().assign(Functions.mult(1 - theta)));
                     Y.assign(Z.copy().assign(Functions.mult(theta)), Functions.plus);
@@ -146,9 +147,9 @@ public class ProximalGradient {
                 if (backtrackSwitch) {
                     //System.out.println("Back Norm");
                     Qx = Fy + this.alg.mult(XmY, GrY) + (L / 2.0) * normXY;
-                    LocalL = L + 2 * Math.max(Fx - Qx, 0) / normXY;
+                    LocalL = L + 2 * FastMath.max(Fx - Qx, 0) / normXY;
                     double backtrackTol = 1e-10;
-                    backtrackSwitch = Math.abs(Fy - Fx) >= backtrackTol * Math.max(Math.abs(Fx), Math.abs(Fy));
+                    backtrackSwitch = FastMath.abs(Fy - Fx) >= backtrackTol * FastMath.max(FastMath.abs(Fx), FastMath.abs(Fy));
                 } else {
                     //System.out.println("Close Rule");
 
@@ -168,7 +169,7 @@ public class ProximalGradient {
                     LocalL = L;
                 }
 
-                L = Math.max(LocalL, L / this.beta);
+                L = FastMath.max(LocalL, L / this.beta);
 
             }
 
@@ -183,7 +184,7 @@ public class ProximalGradient {
                 }
             }
 
-            dx = ProximalGradient.norm2(X.copy().assign(Xold, Functions.minus)) / Math.max(1, ProximalGradient.norm2(X));
+            dx = ProximalGradient.norm2(X.copy().assign(Xold, Functions.minus)) / FastMath.max(1, ProximalGradient.norm2(X));
 
             //sometimes there are more edge changes after initial 0, so may want to do two zeros in a row...
             if (diffEdges == 0 && this.edgeConverge) {
@@ -195,7 +196,7 @@ public class ProximalGradient {
                     break;
                 }
                 // negative noEdgeChangeTol stops when diffEdges <= |noEdgeChangeTol|
-            } else if (this.noEdgeChangeTol < 0 && diffEdges <= Math.abs(this.noEdgeChangeTol)) {
+            } else if (this.noEdgeChangeTol < 0 && diffEdges <= FastMath.abs(this.noEdgeChangeTol)) {
                 System.out.println("Edges converged at iter: " + iterCount + " with |dx|/|x|: " + dx);
                 System.out.println("Iter: " + iterCount + " |dx|/|x|: " + dx + " normX: " + ProximalGradient.norm2(X) + " nll: " +
                         Fx + " reg: " + Gx + " DiffEdges: " + diffEdges + " L: " + L);
@@ -243,8 +244,8 @@ public class ProximalGradient {
     }
 
     public static double norm2(DoubleMatrix1D vec) {
-        //return Math.sqrt(vec.copy().assign(Functions.pow(2)).zSum());
-        return Math.sqrt(new Algebra().norm2(vec));
+        //return FastMath.sqrt(vec.copy().assign(Functions.pow(2)).zSum());
+        return FastMath.sqrt(new Algebra().norm2(vec));
     }
 }
 

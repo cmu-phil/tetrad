@@ -33,8 +33,6 @@ import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
 import edu.cmu.tetradapp.util.WatchedProcess;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;

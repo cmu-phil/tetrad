@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +15,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.util.Collections.*;
+import static java.util.Collections.shuffle;
 
 
 /**
@@ -63,7 +64,7 @@ public class Grasp {
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
-        long start = System.currentTimeMillis();
+        long start = MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
@@ -93,7 +94,7 @@ public class Grasp {
                 shuffle(order);
             }
 
-            this.start = System.currentTimeMillis();
+            this.start = MillisecondTimes.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -111,7 +112,7 @@ public class Grasp {
 
         this.scorer.score(bestPerm);
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());
@@ -180,7 +181,7 @@ public class Grasp {
             TetradLogger.getInstance().forceLogMessage("# Edges = " + scorer.getNumEdges()
                     + " Score = " + scorer.score()
                     + " (GRaSP)"
-                    + " Elapsed " + ((System.currentTimeMillis() - this.start) / 1000.0 + " s"));
+                    + " Elapsed " + ((MillisecondTimes.timeMillis() - this.start) / 1000.0 + " s"));
         }
 
         return scorer.getPi();
@@ -272,21 +273,9 @@ public class Grasp {
         if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
         Graph graph = this.scorer.getGraph(cpDag);
 
-        orientbk(knowledge, graph, variables);
-        MeekRules meekRules = new MeekRules();
-        meekRules.setRevertToUnshieldedColliders(false);
-        meekRules.orientImplied(graph);
-
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         graph.addAttribute("score ", nf.format(this.scorer.score()));
         return graph;
-
-//        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-//        Graph graph = this.scorer.getGraph(cpDag);
-//
-//        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-//        graph.addAttribute("score ", nf.format(this.scorer.score()));
-//        return graph;
     }
 
     public void setCacheScores(boolean cachingScores) {
@@ -322,12 +311,12 @@ public class Grasp {
     }
 
     public void setSingularDepth(int uncoveredDepth) {
-        if (this.depth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
+        if (uncoveredDepth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
         this.uncoveredDepth = uncoveredDepth;
     }
 
     public void setNonSingularDepth(int nonSingularDepth) {
-        if (this.depth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
+        if (nonSingularDepth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
         this.nonSingularDepth = nonSingularDepth;
     }
 
@@ -430,7 +419,7 @@ public class Grasp {
             Node nodeA = graph.getNode(next.getFrom());
             Node nodeB = graph.getNode(next.getTo());
 
-            if (!graph.isAncestorOf(nodeB, nodeA)) {
+            if (!graph.paths().isAncestorOf(nodeB, nodeA)) {
                 graph.removeEdges(nodeA, nodeB);
                 graph.addDirectedEdge(nodeA, nodeB);
 
@@ -452,7 +441,7 @@ public class Grasp {
                 Node nodeB = edge.getNode2();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -463,7 +452,7 @@ public class Grasp {
                 }
 
                 if (!graph.isChildOf(nodeA, nodeB) && knowledge.isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -477,7 +466,7 @@ public class Grasp {
                 Node nodeB = edge.getNode1();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 
@@ -487,7 +476,7 @@ public class Grasp {
                     }
                 }
                 if (!graph.isChildOf(nodeA, nodeB) && knowledge.isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.isAncestorOf(nodeA, nodeB)) {
+                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
                         graph.removeEdges(nodeA, nodeB);
                         graph.addDirectedEdge(nodeB, nodeA);
 

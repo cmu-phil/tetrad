@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 
 import java.util.Collections;
 import java.util.List;
@@ -50,8 +53,8 @@ public class NumCommonMeasuredAncestorBidirected implements Statistic {
     }
 
     public static boolean existsCommonAncestor(Graph trueGraph, Edge edge) {
-        List<Node> nodes = trueGraph.getAncestors(Collections.singletonList(edge.getNode1()));
-        nodes.retainAll(trueGraph.getAncestors(Collections.singletonList(edge.getNode2())));
+        List<Node> nodes = trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode1()));
+        nodes.retainAll(trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode2())));
         return !nodes.isEmpty();
     }
 }

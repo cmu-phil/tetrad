@@ -6,9 +6,10 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagToPag;
 import edu.cmu.tetrad.search.IndTestProbabilistic;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.XdslXmlParser;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Builder;
 import nu.xom.Document;
@@ -40,7 +41,7 @@ public class TestRfciBsc {
         final long seed = 878376L;
         RandomUtil.getInstance().setSeed(seed);
 
-        Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X1-->X5,X2-->X3,X2-->X4,X2-->X6,X3-->X4,X4-->X5,X5-->X6");
+        Graph g = GraphUtils.convert("X1-->X2,X1-->X3,X1-->X4,X1-->X5,X2-->X3,X2-->X4,X2-->X6,X3-->X4,X4-->X5,X5-->X6");
         Dag dag = new Dag(g);
 
         // set a number of latent variables
@@ -48,21 +49,25 @@ public class TestRfciBsc {
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
 
+        RandomUtil.getInstance().setSeed(seed);
+
         // simulate data from instantiated model
-        DataSet fullData = bayesIm.simulateData(sampleSize, seed, true);
+        DataSet fullData = bayesIm.simulateData(sampleSize, true);
         TestRfciBsc.refineData(fullData);
         DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
-        DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        Graph PAG_True = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        dagToPag.setCompleteRuleSetUsed(false);
+//        Graph PAG_True = dagToPag.convert();
+
+        Graph PAG_True = SearchGraphUtils.dagToPag(dag);
+
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
         IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
         edu.cmu.tetrad.search.Rfci rfci = new edu.cmu.tetrad.search.Rfci(test);
         rfci.setVerbose(true);
-        rfci.setCompleteRuleSetUsed(false);
         rfci.setDepth(depth);
 
         edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc rfciBsc = new edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc(rfci);
@@ -73,11 +78,11 @@ public class TestRfciBsc {
         rfciBsc.setOutputRBD(true);
         rfciBsc.setVerbose(true);
 
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         rfciBsc.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
         System.out.println("\nBSC-I: " + rfciBsc.getBscI());
@@ -113,25 +118,29 @@ public class TestRfciBsc {
 
         // set a number of latent variables
         final int LV = 4;
-        GraphUtils.fixLatents4(LV, dag);
+        RandomGraph.fixLatents4(LV, dag);
         System.out.println("Variables set to be latent:" + TestRfciBsc.getLatents(dag));
 
+        RandomUtil.getInstance().setSeed(seed);
+
         // simulate data from instantiated model
-        DataSet fullData = im.simulateData(sampleSize, seed, true);
+        DataSet fullData = im.simulateData(sampleSize, true);
         TestRfciBsc.refineData(fullData);
 
         DataSet dataSet = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
-        DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        Graph PAG_True = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        dagToPag.setCompleteRuleSetUsed(false);
+//        Graph PAG_True = dagToPag.convert();
+
+        Graph PAG_True = SearchGraphUtils.dagToPag(dag);
+
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
         IndTestProbabilistic test = new IndTestProbabilistic(dataSet);
         edu.cmu.tetrad.search.Rfci rfci = new edu.cmu.tetrad.search.Rfci(test);
         rfci.setVerbose(true);
-        rfci.setCompleteRuleSetUsed(false);
         rfci.setDepth(depth);
 
         edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc rfciBsc = new edu.pitt.dbmi.algo.bayesian.constraint.search.RfciBsc(rfci);
@@ -142,11 +151,11 @@ public class TestRfciBsc {
         rfciBsc.setOutputRBD(true);
         rfciBsc.setVerbose(true);
 
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         rfciBsc.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
         System.out.println("\nBSC-I: " + rfciBsc.getBscI());

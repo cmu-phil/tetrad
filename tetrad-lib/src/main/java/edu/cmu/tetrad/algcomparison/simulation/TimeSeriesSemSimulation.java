@@ -3,7 +3,10 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
@@ -38,7 +41,10 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (!newModel && !dataSets.isEmpty()) return;
+//        if (parameters.getLong(Params.SEED) != -1L) {
+//            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+//        }
+
         this.dataSets = new ArrayList<>();
         this.graphs = new ArrayList<>();
 
@@ -108,6 +114,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
+//        parameters.add(Params.SEED);
 
         return parameters;
 

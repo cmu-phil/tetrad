@@ -31,6 +31,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.tabular.VerticalDiscreteTabularDatasetFileReader;
 import org.junit.Test;
@@ -69,7 +70,7 @@ public class TestGFci {
             vars.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph dag = GraphUtils.randomGraphUniform(vars, numLatents, numEdges, 4, 4, 4, false);
+        Graph dag = RandomGraph.randomGraphUniform(vars, numLatents, numEdges, 4, 4, 4, false, 50000);
 
         DataSet data;
 
@@ -95,10 +96,12 @@ public class TestGFci {
         gFci.setFaithfulnessAssumed(true);
         Graph outGraph = gFci.search();
 
-        DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        dagToPag.setMaxPathLength(maxPathLength);
-        Graph truePag = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        dagToPag.setCompleteRuleSetUsed(false);
+//        dagToPag.setMaxPathLength(maxPathLength);
+//        Graph truePag = dagToPag.convert();
+
+        Graph truePag = SearchGraphUtils.dagToPag(dag);
 
         outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
 
@@ -169,17 +172,19 @@ public class TestGFci {
         final int numIterations = 1;
 
         for (int i = 0; i < numIterations; i++) {
-            Graph dag = GraphUtils.randomGraph(numNodes, numLatents, numNodes,
+            Graph dag = RandomGraph.randomGraph(numNodes, numLatents, numNodes,
                     10, 10, 10, false);
 
             GFci gfci = new GFci(new IndTestDSep(dag), new GraphScore(dag));
-            gfci.setCompleteRuleSetUsed(false);
+            gfci.setCompleteRuleSetUsed(true);
             gfci.setFaithfulnessAssumed(true);
             Graph pag1 = gfci.search();
 
-            DagToPag dagToPag = new DagToPag(dag);
-            dagToPag.setCompleteRuleSetUsed(false);
-            Graph pag2 = dagToPag.convert();
+//            DagToPag dagToPag = new DagToPag(dag);
+//            dagToPag.setCompleteRuleSetUsed(false);
+//            Graph pag2 = dagToPag.convert();
+
+            Graph pag2 = SearchGraphUtils.dagToPag(dag);
 
             assertEquals(pag2, pag1);
         }
@@ -198,7 +203,7 @@ public class TestGFci {
             variables.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph g = GraphUtils.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
+        Graph g = RandomGraph.randomGraphRandomForwardEdges(variables, numLatents, numEdges, 10, 10, 10, false, false);
 
         SemPm pm = new SemPm(g);
         SemIm im = new SemIm(pm);
@@ -216,23 +221,20 @@ public class TestGFci {
         GFci gFci = new GFci(test, score);
         gFci.setFaithfulnessAssumed(true);
 
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         gFci.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
-
-        DagToPag dagToPag = new DagToPag(g);
-        dagToPag.setVerbose(false);
     }
 
     @Test
     public void testRandomDiscreteData() {
         final int sampleSize = 1000;
 
-        Graph g = GraphConverter.convert("X1-->X2,X1-->X3,X1-->X4,X2-->X3,X2-->X4,X3-->X4");
+        Graph g = GraphUtils.convert("X1-->X2,X1-->X3,X1-->X4,X2-->X3,X2-->X4,X3-->X4");
         Dag dag = new Dag(g);
         BayesPm bayesPm = new BayesPm(dag);
         BayesIm bayesIm = new MlBayesIm(bayesPm, MlBayesIm.RANDOM);
@@ -247,16 +249,13 @@ public class TestGFci {
         GFci gFci = new GFci(test, bDeuScore);
         gFci.setFaithfulnessAssumed(true);
 
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         gFci.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
-
-        DagToPag dagToPag = new DagToPag(g);
-        dagToPag.setVerbose(false);
     }
 
     @Test
@@ -281,11 +280,11 @@ public class TestGFci {
         gFci.setCompleteRuleSetUsed(false);
         gFci.setVerbose(true);
 
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         gFci.search();
 
-        long stop = System.currentTimeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed " + (stop - start) + " ms");
     }

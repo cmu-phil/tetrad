@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphUtils.existsSemidirectedPath;
-import static java.util.Collections.shuffle;
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
  * Implementation of the experimental BRIDGES algorithm
@@ -59,7 +58,7 @@ public class BridgesOld {
                     Node b = Edges.getDirectedEdgeTail(edge);
 
                     for (Node c : g.getAdjacentNodes(b)) {
-                        if (c == a || existsSemidirectedPath(c, a, g)) {
+                        if (c == a || g.paths().existsSemidirectedPath(c, a)) {
                             g.removeEdge(g.getEdge(b, c));
                             g.addDirectedEdge(c, b);
                         }
@@ -67,7 +66,7 @@ public class BridgesOld {
 
                     meeks.orientImplied(g);
 
-                    ges.setExternalGraph(g);
+                    ges.setInitialGraph(g);
                     Graph g1 = ges.search();
                     double s1 = ges.getModelScore();
 

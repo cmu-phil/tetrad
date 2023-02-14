@@ -97,7 +97,7 @@ public class TestSemIm {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 8, 30, 15, 15, false));
+        Graph randomGraph = new Dag(RandomGraph.randomGraph(nodes, 0, 8, 30, 15, 15, false));
         SemPm semPm1 = new SemPm(randomGraph);
         SemIm semIm1 = new SemIm(semPm1);
 
@@ -116,7 +116,7 @@ public class TestSemIm {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph randomGraph = new Dag(GraphUtils.randomGraph(nodes, 0, 8, 30, 15, 15, false));
+        Graph randomGraph = new Dag(RandomGraph.randomGraph(nodes, 0, 8, 30, 15, 15, false));
         SemPm semPm = new SemPm(randomGraph);
         SemIm semIm = new SemIm(semPm);
 
@@ -210,8 +210,8 @@ public class TestSemIm {
         B.set(1, 0, 5);
         B.set(1, 1, 0);
 
-        Matrix I = TetradAlgebra.identity(2);
-        Matrix iMinusB = TetradAlgebra.identity(2).minus(B);
+        Matrix I = Matrix.identity(2);
+        Matrix iMinusB = Matrix.identity(2).minus(B);
         Matrix reduced = iMinusB.inverse();
         Vector e = new Vector(2);
 

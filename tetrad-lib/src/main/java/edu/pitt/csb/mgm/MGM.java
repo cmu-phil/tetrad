@@ -32,12 +32,14 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphConverter;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.GraphSearch;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.StatUtils;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -348,7 +350,7 @@ public class MGM extends ConvexProximal implements GraphSearch {
     private double logsumexp(DoubleMatrix1D x) {
         DoubleMatrix1D myX = x.copy();
         double maxX = StatUtils.max(myX.toArray());
-        return Math.log(myX.assign(Functions.minus(maxX)).assign(Functions.exp).zSum()) + maxX;
+        return FastMath.log(myX.assign(Functions.minus(maxX)).assign(Functions.exp).zSum()) + maxX;
     }
 
     //calculate parameter weights as in Lee and Hastie
@@ -363,7 +365,7 @@ public class MGM extends ConvexProximal implements GraphSearch {
                 double curp = this.yDat.viewColumn(j).copy().assign(Functions.equals(k + 1)).zSum() / (double) this.n;
                 curWeight += curp * (1 - curp);
             }
-            this.weights.set(this.p + j, Math.sqrt(curWeight));
+            this.weights.set(this.p + j, FastMath.sqrt(curWeight));
         }
     }
 
@@ -455,7 +457,7 @@ public class MGM extends ConvexProximal implements GraphSearch {
         }
 
         double sqloss = -this.n / 2.0 * par.betad.copy().assign(Functions.log).zSum() +
-                .5 * Math.pow(this.alg.normF(this.alg.mult(tempLoss, this.factory2D.diagonal(par.betad.copy().assign(Functions.sqrt)))), 2);
+                .5 * FastMath.pow(this.alg.normF(this.alg.mult(tempLoss, this.factory2D.diagonal(par.betad.copy().assign(Functions.sqrt)))), 2);
 
 
         // categorical loss
@@ -549,7 +551,7 @@ public class MGM extends ConvexProximal implements GraphSearch {
         //sqloss=-n/2*sum(log(betad))+...
         //.5*norm((X-e*alpha1'-Xbeta-Dtheta)*diag(sqrt(betad)),'fro')^2;
         double sqloss = -this.n / 2.0 * par.betad.copy().assign(Functions.log).zSum() +
-                .5 * Math.pow(this.alg.normF(this.alg.mult(tempLoss, this.factory2D.diagonal(par.betad.copy().assign(Functions.sqrt)))), 2);
+                .5 * FastMath.pow(this.alg.normF(this.alg.mult(tempLoss, this.factory2D.diagonal(par.betad.copy().assign(Functions.sqrt)))), 2);
 
         //ok now tempLoss = res
         tempLoss.assign(Functions.mult(-1));
@@ -705,7 +707,7 @@ public class MGM extends ConvexProximal implements GraphSearch {
                 }
 
                 DoubleMatrix1D tempVec = par.theta.viewColumn(i).viewPart(this.lcumsum[j], this.l[j]);
-                thetaNorms += weightMat.get(i, this.p + j) * Math.sqrt(this.alg.norm2(tempVec));
+                thetaNorms += weightMat.get(i, this.p + j) * FastMath.sqrt(this.alg.norm2(tempVec));
             }
         }
 
@@ -965,9 +967,9 @@ public class MGM extends ConvexProximal implements GraphSearch {
                 }
 
                 DoubleMatrix1D tempVec = par.theta.viewColumn(i).viewPart(this.lcumsum[j], this.l[j]);
-                //double thetaScale = Math.max(0, 1 - tlam.get(1)*weightMat.get(i, p+j)/Math.sqrt(alg.norm2(tempVec)));
+                //double thetaScale = FastMath.max(0, 1 - tlam.get(1)*weightMat.get(i, p+j)/FastMath.sqrt(alg.norm2(tempVec)));
                 double foo = MGM.norm2(tempVec);
-                double thetaScale = Math.max(0, 1 - tlam.get(1) * weightMat.get(i, this.p + j) / MGM.norm2(tempVec));
+                double thetaScale = FastMath.max(0, 1 - tlam.get(1) * weightMat.get(i, this.p + j) / MGM.norm2(tempVec));
                 tempVec.assign(Functions.mult(thetaScale));
             }
         }
@@ -997,9 +999,9 @@ public class MGM extends ConvexProximal implements GraphSearch {
                 DoubleMatrix2D tempMat = par.phi.viewPart(this.lcumsum[i], this.lcumsum[j], this.l[i], this.l[j]);
 
                 //Not sure why this isnt Frobenius norm...
-                //double phiScale = Math.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.norm2(tempMat));
-                double phiScale = Math.max(0, 1 - tlam.get(2) * weightMat.get(this.p + i, this.p + j) / MGM.norm2(tempMat));
-                //double phiScale = Math.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.normF(tempMat));
+                //double phiScale = FastMath.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.norm2(tempMat));
+                double phiScale = FastMath.max(0, 1 - tlam.get(2) * weightMat.get(this.p + i, this.p + j) / MGM.norm2(tempMat));
+                //double phiScale = FastMath.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.normF(tempMat));
                 tempMat.assign(Functions.mult(phiScale));
             }
         }
@@ -1055,7 +1057,7 @@ public class MGM extends ConvexProximal implements GraphSearch {
                 if (curVal != 0) {
                     curVal = curVal * betascale.get(i, j);
                     par.beta.set(i, j, curVal);
-                    betaNorms += Math.abs(betaWeight.get(i, j) * curVal);
+                    betaNorms += FastMath.abs(betaWeight.get(i, j) * curVal);
                 }
             }
         }
@@ -1088,11 +1090,11 @@ public class MGM extends ConvexProximal implements GraphSearch {
                 }
 
                 DoubleMatrix1D tempVec = par.theta.viewColumn(i).viewPart(this.lcumsum[j], this.l[j]);
-                //double thetaScale = Math.max(0, 1 - tlam.get(1)*weightMat.get(i, p+j)/Math.sqrt(alg.norm2(tempVec)));
+                //double thetaScale = FastMath.max(0, 1 - tlam.get(1)*weightMat.get(i, p+j)/FastMath.sqrt(alg.norm2(tempVec)));
                 double foo = MGM.norm2(tempVec);
-                double thetaScale = Math.max(0, 1 - tlam.get(1) * weightMat.get(i, this.p + j) / MGM.norm2(tempVec));
+                double thetaScale = FastMath.max(0, 1 - tlam.get(1) * weightMat.get(i, this.p + j) / MGM.norm2(tempVec));
                 tempVec.assign(Functions.mult(thetaScale));
-                thetaNorms += weightMat.get(i, this.p + j) * Math.sqrt(this.alg.norm2(tempVec));
+                thetaNorms += weightMat.get(i, this.p + j) * FastMath.sqrt(this.alg.norm2(tempVec));
             }
         }
 
@@ -1122,9 +1124,9 @@ public class MGM extends ConvexProximal implements GraphSearch {
                 DoubleMatrix2D tempMat = par.phi.viewPart(this.lcumsum[i], this.lcumsum[j], this.l[i], this.l[j]);
 
                 //not sure why this isnt Frobenius norm...
-                //double phiScale = Math.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.norm2(tempMat));
-                double phiScale = Math.max(0, 1 - tlam.get(2) * weightMat.get(this.p + i, this.p + j) / MGM.norm2(tempMat));
-                //double phiScale = Math.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.normF(tempMat));
+                //double phiScale = FastMath.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.norm2(tempMat));
+                double phiScale = FastMath.max(0, 1 - tlam.get(2) * weightMat.get(this.p + i, this.p + j) / MGM.norm2(tempMat));
+                //double phiScale = FastMath.max(0, 1-tlam.get(2)*weightMat.get(p+i,p+j)/alg.normF(tempMat));
                 tempMat.assign(Functions.mult(phiScale));
                 phiNorms += weightMat.get(this.p + i, this.p + j) * this.alg.normF(tempMat);
             }
@@ -1193,7 +1195,7 @@ public class MGM extends ConvexProximal implements GraphSearch {
 
                 double v1 = this.params.beta.get(i, j);
 
-                if (Math.abs(v1) > 0) {
+                if (FastMath.abs(v1) > 0) {
                     if (!g.isAdjacentTo(this.variables.get(i), this.variables.get(j))) {
                         g.addUndirectedEdge(this.variables.get(i), this.variables.get(j));
                     }
@@ -1307,9 +1309,9 @@ public class MGM extends ConvexProximal implements GraphSearch {
      * @return
      */
     public Graph search() {
-        long startTime = System.currentTimeMillis();
+        long startTime = MillisecondTimes.timeMillis();
         learnEdges(1000); //unlikely to hit this limit
-        this.elapsedTime = System.currentTimeMillis() - startTime;
+        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
         return graphFromMGM();
     }
 
@@ -1363,12 +1365,12 @@ public class MGM extends ConvexProximal implements GraphSearch {
 
     //zeros out everthing below di-th diagonal
     public static DoubleMatrix2D upperTri(DoubleMatrix2D mat, int di) {
-        for (int i = Math.max(-di + 1, 0); i < mat.rows(); i++) {
+        for (int i = FastMath.max(-di + 1, 0); i < mat.rows(); i++) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            for (int j = 0; j < Math.min(i + di, mat.rows()); j++) {
+            for (int j = 0; j < FastMath.min(i + di, mat.rows()); j++) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
@@ -1382,12 +1384,12 @@ public class MGM extends ConvexProximal implements GraphSearch {
 
     //zeros out everthing above di-th diagonal
     private static DoubleMatrix2D lowerTri(DoubleMatrix2D mat, int di) {
-        for (int i = 0; i < mat.rows() - Math.max(di + 1, 0); i++) {
+        for (int i = 0; i < mat.rows() - FastMath.max(di + 1, 0); i++) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }
 
-            for (int j = Math.max(i + di + 1, 0); j < mat.rows(); j++) {
+            for (int j = FastMath.max(i + di + 1, 0); j < mat.rows(); j++) {
                 if (Thread.currentThread().isInterrupted()) {
                     break;
                 }
@@ -1401,7 +1403,7 @@ public class MGM extends ConvexProximal implements GraphSearch {
 
     // should move somewhere else...
     private static double norm2(DoubleMatrix2D mat) {
-        //return Math.sqrt(mat.copy().assign(Functions.pow(2)).zSum());
+        //return FastMath.sqrt(mat.copy().assign(Functions.pow(2)).zSum());
         Algebra al = new Algebra();
 
         //norm found by svd so we need rows >= cols
@@ -1412,8 +1414,8 @@ public class MGM extends ConvexProximal implements GraphSearch {
     }
 
     private static double norm2(DoubleMatrix1D vec) {
-        //return Math.sqrt(vec.copy().assign(Functions.pow(2)).zSum());
-        return Math.sqrt(new Algebra().norm2(vec));
+        //return FastMath.sqrt(vec.copy().assign(Functions.pow(2)).zSum());
+        return FastMath.sqrt(new Algebra().norm2(vec));
     }
 
     private static void runTests1() {
@@ -1438,14 +1440,14 @@ public class MGM extends ConvexProximal implements GraphSearch {
 
             DoubleMatrix2D test = xIn.copy();
             DoubleMatrix2D test2 = xIn.copy();
-            long t = System.currentTimeMillis();
+            long t = MillisecondTimes.timeMillis();
             for (int i = 0; i < 50000; i++) {
                 test2 = xIn.copy();
                 test.assign(test2);
             }
-            System.out.println("assign Time: " + (System.currentTimeMillis() - t));
+            System.out.println("assign Time: " + (MillisecondTimes.timeMillis() - t));
 
-            t = System.currentTimeMillis();
+            t = MillisecondTimes.timeMillis();
             double[][] xArr = xIn.toArray();
             for (int i = 0; i < 50000; i++) {
                 if (Thread.currentThread().isInterrupted()) {
@@ -1456,16 +1458,16 @@ public class MGM extends ConvexProximal implements GraphSearch {
                 test2 = xIn.copy();
                 test = test2;
             }
-            System.out.println("equals Time: " + (System.currentTimeMillis() - t));
+            System.out.println("equals Time: " + (MillisecondTimes.timeMillis() - t));
 
 
             System.out.println("Init nll: " + model.smoothValue(model.params.toMatrix1D()));
             System.out.println("Init reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
 
-            t = System.currentTimeMillis();
+            t = MillisecondTimes.timeMillis();
             model.learnEdges(700);
             //model.learn(1e-7, 700);
-            System.out.println("Orig Time: " + (System.currentTimeMillis() - t));
+            System.out.println("Orig Time: " + (MillisecondTimes.timeMillis() - t));
 
             System.out.println("nll: " + model.smoothValue(model.params.toMatrix1D()));
             System.out.println("reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
@@ -1483,7 +1485,7 @@ public class MGM extends ConvexProximal implements GraphSearch {
      * test non penalty use cases
      */
     private static void runTests2() {
-        Graph g = GraphConverter.convert("X1-->X2,X3-->X2,X4-->X5");
+        Graph g = GraphUtils.convert("X1-->X2,X3-->X2,X4-->X5");
         //simple graph pm im gen example
 
         HashMap<String, Integer> nd = new HashMap<>();

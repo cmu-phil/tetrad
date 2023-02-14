@@ -2,7 +2,7 @@ package edu.cmu.tetrad.simulation;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
@@ -24,12 +24,12 @@ public class GdistanceApply {
         final double zdist = 2;
         long timestart = System.nanoTime();
         System.out.println("Loading first graph");
-        Graph graph1 = GraphUtils.loadGraphTxt(new File("Motion_Corrected_Graphs/singlesub_motion_graph_025_04.txt"));
+        Graph graph1 = GraphPersistence.loadGraphTxt(new File("Motion_Corrected_Graphs/singlesub_motion_graph_025_04.txt"));
         long timegraph1 = System.nanoTime();
         //System.out.println(graph1);
         System.out.println("Done loading first graph. Elapsed time: " + (timegraph1 - timestart) / 1000000000 + "s");
         System.out.println("Loading second graph");
-        Graph graph2 = GraphUtils.loadGraphTxt(new File("Motion_Corrected_Graphs/singlesub_motion_graph_027_04.txt"));
+        Graph graph2 = GraphPersistence.loadGraphTxt(new File("Motion_Corrected_Graphs/singlesub_motion_graph_027_04.txt"));
         long timegraph2 = System.nanoTime();
         System.out.println("Done loading second graph. Elapsed time: " + (timegraph2 - timegraph1) / 1000000000 + "s");
 

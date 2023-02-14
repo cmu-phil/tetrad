@@ -60,7 +60,7 @@ public class CompareExternalAlgorithms {
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
         statistics.add(new F1All());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);

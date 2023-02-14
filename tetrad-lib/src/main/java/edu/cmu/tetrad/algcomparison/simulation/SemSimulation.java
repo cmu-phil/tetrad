@@ -14,6 +14,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +56,10 @@ public class SemSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
+        if (parameters.getLong(Params.SEED) != -1L) {
+            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+        }
+
         Graph graph = this.randomGraph.createGraph(parameters);
 
         this.dataSets = new ArrayList<>();
@@ -82,7 +87,7 @@ public class SemSimulation implements Simulation {
                 for (int k = 0; k < dataSet.getNumRows(); k++) {
                     for (int j = 0; j < dataSet.getNumColumns(); j++) {
                         double d = dataSet.getDouble(k, j);
-                        double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
                         dataSet.setDouble(k, j, d + norm);
                     }
                 }
@@ -120,9 +125,9 @@ public class SemSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        if (this.im == null) {
-            parameters.addAll(SemIm.getParameterNames());
-        }
+//        if (this.im == null) {
+        parameters.addAll(SemIm.getParameterNames());
+//        }
 
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.NUM_RUNS);
@@ -134,6 +139,7 @@ public class SemSimulation implements Simulation {
         parameters.add(Params.SIMULATION_ERROR_TYPE);
         parameters.add(Params.SIMULATION_PARAM1);
         parameters.add(Params.SIMULATION_PARAM2);
+        parameters.add(Params.SEED);
 
         return parameters;
     }
@@ -151,26 +157,35 @@ public class SemSimulation implements Simulation {
     private DataSet simulate(Graph graph, Parameters parameters) {
         boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
-        SemIm im = this.im;
+        SemPm pm = this.pm;
 
-        if (im == null) {
-            SemPm pm = this.pm;
-
-            if (pm == null) {
-                pm = new SemPm(graph);
-            }
-
-            im = new SemIm(pm, parameters);
+        if (pm == null) {
+            pm = new SemPm(graph);
         }
 
+        // Aargh, need to go through the motions of initializing the SEM IM each time so that if a
+        // random seed is set, the random number methods on RandomUtil will have been called the
+        // same number of times in the deterministic pseudorandom sequence. But we only want
+        // to keep the first one of these, because we want the IM for this SemSimulation object
+        // to be constant. Grr. And we have to do it this way because the parameters are needed to
+        // initialize the SEM IM but are only passed in this method and not available in the
+        // constructor. :-( So don't change this code!!! Please!!! -JR 2023/02/04
+        SemIm im = new SemIm(pm, parameters);
+
+        // Not setting this im messes up algcomparison. -JR 20230206
+
+//        if (this.im == null) {
+        this.im = im;
+//        }
+
         // Need this in case the SEM IM is given externally.
-        im.setParams(parameters);
+        this.im.setParams(parameters);
 
         this.ims.add(im);
-        return im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
+        return this.im.simulateData(parameters.getInt(Params.SAMPLE_SIZE), saveLatentVars);
     }
 
     public List<SemIm> getSemIms() {
-        return this.ims;
+        return ims;
     }
 }

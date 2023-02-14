@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
 
@@ -34,7 +37,7 @@ public class TrueDagRecallArrows implements Statistic {
             for (Node y : nodes) {
                 if (x == y) continue;
 
-                if (!trueGraph.isAncestorOf(y, x)) {
+                if (!trueGraph.paths().isAncestorOf(y, x)) {
                     Edge edge2 = estGraph.getEdge(x, y);
 
                     if (edge2 != null) {

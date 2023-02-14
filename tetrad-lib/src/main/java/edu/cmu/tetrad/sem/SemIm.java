@@ -30,13 +30,14 @@ import edu.cmu.tetrad.util.*;
 import edu.cmu.tetrad.util.dist.Distribution;
 import edu.cmu.tetrad.util.dist.Split;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.rmi.MarshalledObject;
 import java.util.*;
 
-import static java.lang.Math.sqrt;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * Stores an instantiated structural equation model (SEM), with error covariance
@@ -400,14 +401,14 @@ public final class SemIm implements IM, ISemIm {
 
     public static List<String> getParameterNames() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("coefLow");
-        parameters.add("coefHigh");
-        parameters.add("covLow");
-        parameters.add("covHigh");
-        parameters.add("varLow");
-        parameters.add("varHigh");
-        parameters.add("coefSymmetric");
-        parameters.add("covSymmetric");
+        parameters.add(Params.COEF_LOW);
+        parameters.add(Params.COEF_HIGH);
+        parameters.add(Params.COV_LOW);
+        parameters.add(Params.COV_HIGH);
+        parameters.add(Params.VAR_LOW);
+        parameters.add(Params.VAR_HIGH);
+        parameters.add(Params.COEF_SYMMETRIC);
+        parameters.add(Params.COV_SYMMETRIC);
         return parameters;
     }
 
@@ -678,7 +679,13 @@ public final class SemIm implements IM, ISemIm {
         }
 
         SemGraph semGraph = getSemPm().getGraph();
-        List<Node> tierOrdering = semGraph.getCausalOrdering();
+
+        System.out.println(semGraph);
+
+        semGraph.setShowErrorTerms(false);
+        Paths paths = new Paths(semGraph);
+        List<Node> initialOrder = semGraph.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
 
         double[] intercepts = new double[tierOrdering.size()];
 
@@ -713,10 +720,10 @@ public final class SemIm implements IM, ISemIm {
 
     public SemIm(SemPm semPm, List<Node> variableNodes, List<Node> measuredNodes, Matrix edgeCoef, double[] variableMeansStdDev) {
         this.semPm = semPm;
-        this.variableNodes = variableNodes;
-        this.measuredNodes = measuredNodes;
-        this.edgeCoef = edgeCoef;
-        this.variableMeansStdDev = variableMeansStdDev;
+        this.variableNodes = new ArrayList<>(variableNodes);
+        this.measuredNodes = new ArrayList<>(measuredNodes);
+        this.edgeCoef = new Matrix(edgeCoef);
+        this.variableMeansStdDev = Arrays.copyOf(variableMeansStdDev, variableMeansStdDev.length);
     }
 
     /**
@@ -1027,7 +1034,7 @@ public final class SemIm implements IM, ISemIm {
         double fml;
 
         try {
-            fml = Math.log(sigma.det()) + (s.times(sigma.inverse())).trace() - Math.log(s.det()) - getMeasuredNodes().size();
+            fml = FastMath.log(sigma.det()) + (s.times(sigma.inverse())).trace() - FastMath.log(s.det()) - getMeasuredNodes().size();
         } catch (Exception e) {
             return Double.NaN;
         }
@@ -1079,9 +1086,9 @@ public final class SemIm implements IM, ISemIm {
      */
     public double getBicScore() {
         int dof = getSemPm().getDof();
-//        return getChiSquare() - dof * Math.log(sampleSize);
+//        return getChiSquare() - dof * FastMath.log(sampleSize);
 
-        return getChiSquare() - dof * Math.log(this.sampleSize);
+        return getChiSquare() - dof * FastMath.log(this.sampleSize);
 
     }
 
@@ -1182,7 +1189,9 @@ public final class SemIm implements IM, ISemIm {
 
         Graph contemporaneousDag = timeSeriesGraph.subgraph(timeSeriesGraph.getLag0Nodes());
 
-        List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
+        Paths paths = contemporaneousDag.paths();
+        List<Node> initialOrder = contemporaneousDag.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
 
         for (int currentStep = 0; currentStep < sampleSize; currentStep++) {
             for (Node to : tierOrdering) {
@@ -1219,20 +1228,20 @@ public final class SemIm implements IM, ISemIm {
         return latentDataSaved ? fullData : DataUtils.restrictToMeasured(fullData);
     }
 
-    /**
-     * This simulate method uses the implied covariance metrix directly to
-     * simulate data, instead of going tier by tier. It should work for cyclic
-     * graphs as well as acyclic graphs.
-     *
-     * @param sampleSize how many data points in sample
-     * @param seed       a seed for random number generation
-     */
-    @Override
-    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-        RandomUtil random = RandomUtil.getInstance();
-        random.setSeed(seed);
-        return simulateData(sampleSize, latentDataSaved);
-    }
+//    /**
+//     * This simulate method uses the implied covariance metrix directly to
+//     * simulate data, instead of going tier by tier. It should work for cyclic
+//     * graphs as well as acyclic graphs.
+//     *
+//     * @param sampleSize how many data points in sample
+//     * @param seed       a seed for random number generation
+//     */
+//    @Override
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateData(sampleSize, latentDataSaved);
+//    }
 
     /**
      * Simulates data from this Sem using a Cholesky decomposition of the
@@ -1344,7 +1353,9 @@ public final class SemIm implements IM, ISemIm {
 
         // Create some index arrays to hopefully speed up the simulation.
         Graph graph = new EdgeListGraph(getSemPm().getGraph());
-        List<Node> tierOrdering = graph.getCausalOrdering();
+        Paths paths = graph.paths();
+        List<Node> initialOrder = graph.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
 
         int[] tierIndices = new int[variableNodes.size()];
 
@@ -1494,7 +1505,7 @@ public final class SemIm implements IM, ISemIm {
 
         // Calculate inv(I - edgeCoefC)
         Matrix B = edgeCoef().transpose();
-        Matrix iMinusBInv = TetradAlgebra.identity(B.rows()).minus(B).inverse();
+        Matrix iMinusBInv = Matrix.identity(B.rows()).minus(B).inverse();
 
         // Pick error values e, for each calculate inv * e.
         Matrix sim = new Matrix(sampleSize, numVars);
@@ -1558,7 +1569,7 @@ public final class SemIm implements IM, ISemIm {
         // Calculate inv(I - edgeCoefC)
         Matrix edgeCoef = edgeCoef().copy().transpose();
 
-        Matrix iMinusB = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef);
+        Matrix iMinusB = Matrix.identity(edgeCoef.rows()).minus(edgeCoef);
 
         Matrix inv = iMinusB.inverse();
 
@@ -1669,7 +1680,7 @@ public final class SemIm implements IM, ISemIm {
     public double getPValue(Parameter parameter, int maxFreeParams) {
         double tValue = getTValue(parameter, maxFreeParams);
         int df = getSampleSize() - 1;
-        return 2.0 * (1.0 - ProbUtils.tCdf(Math.abs(tValue), df));
+        return 2.0 * (1.0 - ProbUtils.tCdf(FastMath.abs(tValue), df));
     }
 
     public boolean isParameterBoundsEnforced() {
@@ -1691,7 +1702,7 @@ public final class SemIm implements IM, ISemIm {
 
     public boolean isCyclic() {
         if (!this.cyclicChecked) {
-            this.cyclic = this.semPm.getGraph().existsDirectedCycle();
+            this.cyclic = this.semPm.getGraph().paths().existsDirectedCycle();
             this.cyclicChecked = true;
         }
 
@@ -1933,7 +1944,7 @@ public final class SemIm implements IM, ISemIm {
                 if (getParams().getBoolean("coefSymmetric", true)) {
                     return value;
                 } else {
-                    return Math.abs(value);
+                    return FastMath.abs(value);
                 }
             } else if (parameter.getType() == ParamType.COVAR) {
                 double covLow = getParams().getDouble("covLow", 0.1);
@@ -1942,7 +1953,7 @@ public final class SemIm implements IM, ISemIm {
                 if (getParams().getBoolean("covSymmetric", true)) {
                     return value;
                 } else {
-                    return Math.abs(value);
+                    return FastMath.abs(value);
                 }
             } else { //if (parameter.getType() == ParamType.VAR) {
                 return RandomUtil.getInstance().nextUniform(getParams().getDouble("varLow", 1), getParams().getDouble("varHigh", 3));
@@ -2057,8 +2068,8 @@ public final class SemIm implements IM, ISemIm {
 
     private double logDet(Matrix matrix2D) {
         double det = matrix2D.det();
-        return Math.log(Math.abs(det));
-//        return det > 0 ? Math.log(det) : 0;
+        return FastMath.log(FastMath.abs(det));
+//        return det > 0 ? FastMath.log(det) : 0;
     }
 
     private double traceAInvB(Matrix A, Matrix B) {
@@ -2103,7 +2114,6 @@ public final class SemIm implements IM, ISemIm {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

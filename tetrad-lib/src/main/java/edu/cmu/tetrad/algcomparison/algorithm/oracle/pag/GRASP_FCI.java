@@ -14,10 +14,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.LvSwap;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -30,29 +27,34 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
 
 /**
- * Does BOSS, followed by the swap rule, then final orientation.
+ * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial
+ * steps of finding adjacencies and unshielded colliders.
+ * <p>
+ * GFCI reference is this:
+ * <p>
+ * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
+ * for Latent Variable Models," JMLR 2016.
  *
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-Swap-3",
-        command = "lv-swap-3",
+        name = "GRASP-FCI",
+        command = "grasp-fci",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-@Experimental
-public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public LVSWAP_3() {
+    public GRASP_FCI() {
         // Used for reflection; do not delete.
     }
 
-    public LVSWAP_3(IndependenceWrapper test, ScoreWrapper score) {
+    public GRASP_FCI(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -70,32 +72,33 @@ public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
                 knowledge = timeSeries.getKnowledge();
             }
 
-            LvSwap search = new LvSwap(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            IndependenceTest test = this.test.getTest(dataModel, parameters);
+            Score score = this.score.getScore(dataModel, parameters);
 
-            if (parameters.getInt(Params.BOSS_ALG) == 1) {
-                search.setBossAlgType(Boss.AlgType.BOSS1);
-            } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
-                search.setBossAlgType(Boss.AlgType.BOSS2);
-            } else if (parameters.getInt(Params.BOSS_ALG) == 3) {
-                search.setBossAlgType(Boss.AlgType.BOSS3);
-            } else {
-                throw new IllegalArgumentException("Unrecognized boss algorithm type.");
-            }
+            test.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            GraspFci search = new GraspFci(test, score);
 
-            search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
-            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-
-            search.setAlgType(LvSwap.AlgType.Alg3);
-            search.setDepth(parameters.getInt(Params.DEPTH));
+            // GRaSP
+            search.setDepth(parameters.getInt(Params.GRASP_DEPTH));
+            search.setSingularDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
+            search.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
+            search.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
-            search.setDoDefiniteDiscriminatingPathTailRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_TAIL_RULE));
             search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-            search.setKnowledge(knowledge);
-
+            search.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+
+            // FCI
+            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+            search.setPossibleDsepSearchDone(parameters.getBoolean((Params.POSSIBLE_DSEP_DONE)));
+
+            // General
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setKnowledge(this.knowledge);
 
             Object obj = parameters.get(Params.PRINT_STREAM);
 
@@ -103,16 +106,14 @@ public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
                 search.setOut((PrintStream) obj);
             }
 
-            Graph graph = search.search();
-
-            GraphUtils.circleLayout(graph, 200, 200, 150);
-
-            return graph;
+            return search.search();
         } else {
-            LVSWAP_3 algorithm = new LVSWAP_3(this.test, this.score);
+            GRASP_FCI algorithm = new GRASP_FCI(this.test, this.score);
+
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
+
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -126,7 +127,7 @@ public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
     @Override
     public String getDescription() {
-        return "LV-Swap-3 (BOSS + swap rules) using " + this.test.getDescription()
+        return "GRASP-FCI (GRaSP FCI) using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 
@@ -139,18 +140,26 @@ public class LVSWAP_3 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
-        params.add(Params.BOSS_ALG);
-        params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.DO_DISCRIMINATING_PATH_TAIL_RULE);
-        params.add(Params.GRASP_USE_SCORE);
+        // GRaSP
+        params.add(Params.GRASP_DEPTH);
+        params.add(Params.GRASP_SINGULAR_DEPTH);
+        params.add(Params.GRASP_NONSINGULAR_DEPTH);
+        params.add(Params.GRASP_ORDERED_ALG);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
+        params.add(Params.CACHE_SCORES);
+        params.add(Params.NUM_STARTS);
+
+        // FCI
         params.add(Params.DEPTH);
+        params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.COMPLETE_RULE_SET_USED);
+        params.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        params.add(Params.POSSIBLE_DSEP_DONE);
+
+        // General
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
-
-        // Parameters
-        params.add(Params.NUM_STARTS);
 
         return params;
     }

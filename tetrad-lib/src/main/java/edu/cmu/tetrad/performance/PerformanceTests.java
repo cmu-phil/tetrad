@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
@@ -54,7 +55,7 @@ public class PerformanceTests {
 
         init(new File("long.pc." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         System.out.println("Making list of vars");
 
@@ -68,7 +69,7 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false, true);
 
         System.out.println("Graph done");
@@ -83,7 +84,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -97,7 +98,7 @@ public class PerformanceTests {
         System.out.println("Covariance matrix done");
 
 
-        long time3 = System.currentTimeMillis();
+        long time3 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -114,7 +115,7 @@ public class PerformanceTests {
 
         this.out.println(outGraph);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = MillisecondTimes.timeMillis();
 
         this.out.println("# Vars = " + numVars);
         this.out.println("# Edges = " + (int) (numVars * edgeFactor));
@@ -152,7 +153,7 @@ public class PerformanceTests {
             final double edgeFactor = 1.0;
             final int numCases = 1000;
 
-            Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+            Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                     30, 15, 15, false, true);
 
             out2.println(graph);
@@ -183,7 +184,7 @@ public class PerformanceTests {
 
         init(new File("long.pcstable." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC Stable algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         Graph dag = makeDag(numVars, edgeFactor);
 
@@ -199,7 +200,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -210,7 +211,7 @@ public class PerformanceTests {
 
         System.out.println("Covariance matrix done");
 
-        long time3 = System.currentTimeMillis();
+        long time3 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -224,7 +225,7 @@ public class PerformanceTests {
 
 //        out.println(estCPDAG);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = MillisecondTimes.timeMillis();
 
         this.out.println("# Cases = " + numCases);
         this.out.println("alpha = " + alpha);
@@ -251,7 +252,7 @@ public class PerformanceTests {
 
         init(new File("long.pcstablemax." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC Max algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         Graph dag = makeDag(numVars, edgeFactor);
 
@@ -267,7 +268,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -278,7 +279,7 @@ public class PerformanceTests {
 
         System.out.println("Covariance matrix done");
 
-        long time3 = System.currentTimeMillis();
+        long time3 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -292,7 +293,7 @@ public class PerformanceTests {
 
 //        out.println(estCPDAG);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = MillisecondTimes.timeMillis();
 
         this.out.println("# Cases = " + numCases);
         this.out.println("alpha = " + alpha);
@@ -317,7 +318,7 @@ public class PerformanceTests {
     public void testFges(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
         init(new File("long.fges." + numVars + "." + edgeFactor + "." + penaltyDiscount + ".txt"), "Tests performance of the FGES algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         Graph dag = makeDag(numVars, edgeFactor);
 
@@ -333,7 +334,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -343,7 +344,7 @@ public class PerformanceTests {
 
         System.out.println("Covariance matrix done");
 
-        long time3 = System.currentTimeMillis();
+        long time3 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -356,7 +357,7 @@ public class PerformanceTests {
 
 //        out.println(estCPDAG);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = MillisecondTimes.timeMillis();
 
         this.out.println("# Cases = " + numCases);
         this.out.println("penalty discount = " + penaltyDiscount);
@@ -384,7 +385,7 @@ public class PerformanceTests {
 
         init(new File("long.cpc." + numVars + ".txt"), "Tests performance of the CPC algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         System.out.println("Making list of vars");
 
@@ -398,7 +399,7 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false, true);
 
         System.out.println("Graph done");
@@ -413,7 +414,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -427,7 +428,7 @@ public class PerformanceTests {
         System.out.println("Covariance matrix done");
 
 
-        long time3 = System.currentTimeMillis();
+        long time3 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -444,7 +445,7 @@ public class PerformanceTests {
 
         this.out.println(outGraph);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = MillisecondTimes.timeMillis();
 
         this.out.println("# Vars = " + numVars);
         this.out.println("# Edges = " + (int) (numVars * edgeFactor));
@@ -466,7 +467,7 @@ public class PerformanceTests {
 
         init(new File("long.cpcstable." + numVars + ".txt"), "Tests performance of the CPC algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         System.out.println("Making list of vars");
 
@@ -489,7 +490,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -500,7 +501,7 @@ public class PerformanceTests {
 
         System.out.println("Covariance matrix done");
 
-        long time3 = System.currentTimeMillis();
+        long time3 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -517,7 +518,7 @@ public class PerformanceTests {
 
 //        out.println(outGraph);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = MillisecondTimes.timeMillis();
 
         this.out.println("# Cases = " + numCases);
 
@@ -531,7 +532,7 @@ public class PerformanceTests {
 
         SearchGraphUtils.graphComparison(trueCPDAG, outGraph, this.out);
 
-        this.out.println("# ambiguous triples = " + outGraph.getAmbiguousTriples().size());
+        this.out.println("# ambiguous triples = " + outGraph.underlines().getAmbiguousTriples().size());
 
         this.out.close();
     }
@@ -542,7 +543,7 @@ public class PerformanceTests {
 
         init(new File("long.fci." + numVars + ".txt"), "Tests performance of the FCI algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         System.out.println("Making list of vars");
 
@@ -556,7 +557,7 @@ public class PerformanceTests {
 
         System.out.println("Making graph");
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 15, 15, false, true);
 
         System.out.println("Graph done");
@@ -571,7 +572,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing simulation");
 
-        long time2 = System.currentTimeMillis();
+        long time2 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -583,7 +584,7 @@ public class PerformanceTests {
         System.out.println("Covariance matrix done");
 
 
-        long time3 = System.currentTimeMillis();
+        long time3 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -600,7 +601,7 @@ public class PerformanceTests {
 
         this.out.println(outGraph);
 
-        long time4 = System.currentTimeMillis();
+        long time4 = MillisecondTimes.timeMillis();
 
         this.out.println("# Vars = " + numVars);
         this.out.println("# Edges = " + (int) (numVars * edgeFactor));
@@ -625,7 +626,7 @@ public class PerformanceTests {
 
         init(new File("long.gfci." + numVars + ".txt"), "Tests performance of the FCI-GES algorithm");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         System.out.println("Making list of vars");
 
@@ -641,7 +642,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing list of vars");
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, numLatentConfounders, (int) (numVars * edgeFactor),
+        Graph dag = RandomGraph.randomGraphRandomForwardEdges(vars, numLatentConfounders, (int) (numVars * edgeFactor),
                 10, 10, 10, false, false);
 
         System.out.println("Graph done");
@@ -661,7 +662,7 @@ public class PerformanceTests {
 
         System.out.println("Num measured vars = " + data.getNumColumns());
 
-        long time2 = System.currentTimeMillis();
+        long time2 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
@@ -671,7 +672,7 @@ public class PerformanceTests {
 
         System.out.println("Covariance matrix done");
 
-        long time3 = System.currentTimeMillis();
+        long time3 = MillisecondTimes.timeMillis();
 
         this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
 
@@ -685,7 +686,7 @@ public class PerformanceTests {
         fci.setVerbose(false);
         fci.setMaxPathLength(maxPathLength);
         fci.setMaxDegree(depth);
-        fci.setFaithfulnessAssumed(false);
+        fci.setFaithfulnessAssumed(true);
         fci.setCompleteRuleSetUsed(true);
         Graph outGraph = fci.search();
 
@@ -693,7 +694,7 @@ public class PerformanceTests {
 
         System.out.println(MisclassificationUtils.edgeMisclassifications(outGraph, dagToPag(dag)));
 
-        long time4 = System.currentTimeMillis();
+        long time4 = MillisecondTimes.timeMillis();
 
         this.out.println("# Vars = " + numVars);
         this.out.println("# Edges = " + (int) (numVars * edgeFactor));
@@ -720,7 +721,6 @@ public class PerformanceTests {
 //        RandomUtil.getInstance().setSeed(4828384343999L);
         final double penaltyDiscount = 4.0;
         final int maxIndegree = 5;
-        final boolean faithfulness = true;
 
 //        RandomUtil.getInstance().setSeed(50304050454L);
 
@@ -778,7 +778,7 @@ public class PerformanceTests {
 
             System.out.println("Graph done");
 
-            long time1 = System.currentTimeMillis();
+            long time1 = MillisecondTimes.timeMillis();
 
             this.out.println("Graph done");
 
@@ -799,14 +799,14 @@ public class PerformanceTests {
 
                 System.out.println(new Date());
 
-                long time2 = System.currentTimeMillis();
+                long time2 = MillisecondTimes.timeMillis();
 
                 this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
                 System.out.println(new Date());
 
                 System.out.println("Making covariance matrix");
 
-                long time3 = System.currentTimeMillis();
+                long time3 = MillisecondTimes.timeMillis();
 
                 ICovarianceMatrix cov = new CovarianceMatrix(data);
 
@@ -820,18 +820,17 @@ public class PerformanceTests {
                 System.out.println(new Date());
                 System.out.println("\nStarting FGES");
 
-                long timea = System.currentTimeMillis();
+                long timea = MillisecondTimes.timeMillis();
 
                 Fges fges = new Fges(score);
 //                fges.setVerbose(false);
                 fges.setOut(System.out);
-                fges.setFaithfulnessAssumed(faithfulness);
 
-                long timeb = System.currentTimeMillis();
+                long timeb = MillisecondTimes.timeMillis();
 
                 estCPDAG = fges.search();
 
-                long timec = System.currentTimeMillis();
+                long timec = MillisecondTimes.timeMillis();
 
                 this.out.println("Time for FGES constructor " + (timeb - timea) + " ms");
                 this.out.println("Time for FGES search " + (timec - timea) + " ms");
@@ -848,11 +847,11 @@ public class PerformanceTests {
 
                 System.out.println("Finishing simulation");
 
-                long time2 = System.currentTimeMillis();
+                long time2 = MillisecondTimes.timeMillis();
 
                 this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
-                long time3 = System.currentTimeMillis();
+                long time3 = MillisecondTimes.timeMillis();
 
                 BDeuScore score = new BDeuScore(data);
                 score.setStructurePrior(1);
@@ -861,18 +860,17 @@ public class PerformanceTests {
                 System.out.println(new Date());
                 System.out.println("\nStarting FGES");
 
-                long timea = System.currentTimeMillis();
+                long timea = MillisecondTimes.timeMillis();
 
                 Fges fges = new Fges(score);
 //                fges.setVerbose(false);
                 fges.setOut(System.out);
-                fges.setFaithfulnessAssumed(faithfulness);
 
-                long timeb = System.currentTimeMillis();
+                long timeb = MillisecondTimes.timeMillis();
 
                 estCPDAG = fges.search();
 
-                long timec = System.currentTimeMillis();
+                long timec = MillisecondTimes.timeMillis();
 
                 this.out.println("Time consructing BDeu score " + (timea - time3) + " ms");
                 this.out.println("Time for FGES constructor " + (timeb - timea) + " ms");
@@ -958,7 +956,6 @@ public class PerformanceTests {
         final int structurePrior = 10;
         final int samplePrior = 10;
         final int maxIndegree = -1;
-//        boolean faithfulness = false;
 
         List<int[][]> allCounts = new ArrayList<>();
         List<double[]> comparisons = new ArrayList<>();
@@ -983,7 +980,7 @@ public class PerformanceTests {
 
         System.out.println("Graph done");
 
-        long time1 = System.currentTimeMillis();
+        long time1 = MillisecondTimes.timeMillis();
 
         this.out.println("Graph done");
 
@@ -1020,14 +1017,14 @@ public class PerformanceTests {
 
             System.out.println(new Date());
 
-            long time2 = System.currentTimeMillis();
+            long time2 = MillisecondTimes.timeMillis();
 
             this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
             System.out.println(new Date());
 
             System.out.println("Making covariance matrix");
 
-            long time3 = System.currentTimeMillis();
+            long time3 = MillisecondTimes.timeMillis();
 
             ICovarianceMatrix cov = new CovarianceMatrix(data);
 
@@ -1071,11 +1068,11 @@ public class PerformanceTests {
 
             System.out.println("Finishing simulation");
 
-            long time2 = System.currentTimeMillis();
+            long time2 = MillisecondTimes.timeMillis();
 
             this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
 
-            long time3 = System.currentTimeMillis();
+            long time3 = MillisecondTimes.timeMillis();
 
             BDeuScore score = new BDeuScore(data);
             score.setStructurePrior(structurePrior);
@@ -1084,7 +1081,7 @@ public class PerformanceTests {
             System.out.println(new Date());
             System.out.println("\nStarting FGES");
 
-            long time4 = System.currentTimeMillis();
+            long time4 = MillisecondTimes.timeMillis();
 
             fges = new FgesMb(score);
             fges.setVerbose(false);
@@ -1094,7 +1091,7 @@ public class PerformanceTests {
             fges.setMaxDegree(maxIndegree);
             fges.setCycleBound(-1);
 
-            long timeb = System.currentTimeMillis();
+            long timeb = MillisecondTimes.timeMillis();
 
             this.out.println("Time consructing BDeu score " + (time4 - time3) + " ms");
             this.out.println("Time for FGES-MB constructor " + (timeb - time4) + " ms");
@@ -1108,11 +1105,11 @@ public class PerformanceTests {
 
             Node target = vars.get(RandomUtil.getInstance().nextInt(vars.size()));
             System.out.println("Target = " + target);
-            long timea = System.currentTimeMillis();
+            long timea = MillisecondTimes.timeMillis();
 
             estCPDAG = fges.search(target);
 
-            long timed = System.currentTimeMillis();
+            long timed = MillisecondTimes.timeMillis();
 
             elapsed = timed - timea;
 
@@ -1127,7 +1124,7 @@ public class PerformanceTests {
 
             Graph trueMbGraph = CPDAG.subgraph(new ArrayList<>(mb));
 
-            long timec = System.currentTimeMillis();
+            long timec = MillisecondTimes.timeMillis();
 
             this.out.println("Time for FGES-MB search " + (timec - timea) + " ms");
             this.out.println();
@@ -1260,10 +1257,12 @@ public class PerformanceTests {
 
             System.out.println("Graph done");
 
-            DagToPag dagToPag = new DagToPag(dag);
-            dagToPag.setCompleteRuleSetUsed(false);
-            dagToPag.setMaxPathLength(maxPathLength);
-            Graph truePag = dagToPag.convert();
+//            DagToPag dagToPag = new DagToPag(dag);
+//            dagToPag.setCompleteRuleSetUsed(false);
+//            dagToPag.setMaxPathLength(maxPathLength);
+//            Graph truePag = dagToPag.convert();
+
+            Graph truePag = SearchGraphUtils.dagToPag(dag);
 
             System.out.println("True PAG_of_the_true_DAG done");
 
@@ -1297,7 +1296,7 @@ public class PerformanceTests {
 //            out.println("\n\n\n========================FCI run " + (run + 1));
             this.out.println("\n\n\n========================TGFCI run " + (run + 1));
 
-            long ta1 = System.currentTimeMillis();
+            long ta1 = MillisecondTimes.timeMillis();
 
 //            FCI fci = new FCI(independenceTest);
             GFci fci = new GFci(independenceTest, score);
@@ -1308,7 +1307,7 @@ public class PerformanceTests {
             fci.setFaithfulnessAssumed(faithfulnessAssumed);
             estPag = fci.search();
 
-            long ta2 = System.currentTimeMillis();
+            long ta2 = MillisecondTimes.timeMillis();
 
             estPag = GraphUtils.replaceNodes(estPag, truePag.getNodes());
 
@@ -1377,11 +1376,13 @@ public class PerformanceTests {
 
         Graph dag;
         if (false) {
-            dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
+            dag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, numEdges, 30, 15, 15, false, true);
         } else {
 //            dag = DataGraphUtils.randomDagRandomFowardEdges(vars, 0, numEdges);
-            dag = GraphUtils.randomGraph(vars, 0, numEdges, 100, 100, 100, false);
-            List<Node> ordering = dag.getCausalOrdering();
+            dag = RandomGraph.randomGraph(vars, 0, numEdges, 100, 100, 100, false);
+            Paths paths = dag.paths();
+            List<Node> initialOrder = dag.getNodes();
+            List<Node> ordering = paths.validOrder(initialOrder, true);
         }
         System.out.println("DAG = " + dag);
 
@@ -1433,7 +1434,7 @@ public class PerformanceTests {
 
         System.out.println("Finishing list of vars");
 
-        Graph dag = GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgeFactor),
+        Graph dag = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (vars.size() * edgeFactor),
                 30, 15, 15, false, true);
 
         System.out.println("DAG = " + dag);
@@ -1499,7 +1500,7 @@ public class PerformanceTests {
         System.out.println("Making dag");
 
         //        printDegreeDistribution(dag, out);
-        return GraphUtils.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
+        return RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgeFactor),
                 30, 12, 15, false, true);
     }
 
@@ -1598,8 +1599,8 @@ public class PerformanceTests {
             boolean existsCommonCause = false;
 
             for (Node latent : missingNodes) {
-                if (dag.existsDirectedPathFromTo(latent, edge.getNode1())
-                        && dag.existsDirectedPathFromTo(latent, edge.getNode2())) {
+                if (dag.paths().existsDirectedPathFromTo(latent, edge.getNode1())
+                        && dag.paths().existsDirectedPathFromTo(latent, edge.getNode2())) {
                     existsCommonCause = true;
                     break;
                 }
@@ -1762,7 +1763,7 @@ public class PerformanceTests {
             Edge edge1 = truePag.getEdge(x, y);
 
             if (ex == Endpoint.ARROW) {
-                if (!dag.isAncestorOf(x, y)) {
+                if (!dag.paths().isAncestorOf(x, y)) {
                     correctNonAncestorRelationships++;
                 }
 
@@ -1774,7 +1775,7 @@ public class PerformanceTests {
             }
 
             if (ey == Endpoint.ARROW) {
-                if (!dag.isAncestorOf(y, x)) {
+                if (!dag.paths().isAncestorOf(y, x)) {
                     correctNonAncestorRelationships++;
                 }
 
@@ -1843,7 +1844,7 @@ public class PerformanceTests {
             Edge edge1 = truePag.getEdge(x, y);
 
             if (ex == Endpoint.TAIL) {
-                if (dag.isAncestorOf(x, y)) {
+                if (dag.paths().isAncestorOf(x, y)) {
                     correctAncestorRelationships++;
                 }
 
@@ -1855,7 +1856,7 @@ public class PerformanceTests {
             }
 
             if (ey == Endpoint.TAIL) {
-                if (dag.isAncestorOf(y, x)) {
+                if (dag.paths().isAncestorOf(y, x)) {
                     correctAncestorRelationships++;
                 }
 
@@ -1965,7 +1966,7 @@ public class PerformanceTests {
     private Graph getLatentGraph(List<Node> vars, double edgeFactor, int numLatents) {
         int numEdges = (int) (vars.size() * edgeFactor);
 
-        return GraphUtils.randomGraph(vars,
+        return RandomGraph.randomGraph(vars,
                 numLatents, numEdges, 3, 3, 3, false);
     }
 
@@ -1974,7 +1975,7 @@ public class PerformanceTests {
         final int numVars = 30000;
         final int numEdges = 60000;
 
-        Graph graph = GraphUtils.randomGraphRandomForwardEdges(numVars, 0, numEdges,
+        Graph graph = RandomGraph.randomGraphRandomForwardEdges(numVars, 0, numEdges,
                 30, 30, 30, false);
 
         TreeMap<Integer, Integer> degreeCounts = new TreeMap<>();

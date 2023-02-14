@@ -2,34 +2,39 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 
 /**
- * Records the elapsed time of the algorithm in seconds. This is a placeholder, really;
- * the elapsed time is calculated by the comparison class and recorded if this statistic is
- * used.
- *
  * @author jdramsey
  */
-public class ElapsedTime implements Statistic {
+public class NoCyclicPathsCondition implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "E";
+        return "NoCyclic";
     }
 
     @Override
     public String getDescription() {
-        return "Elapsed Time in Seconds";
+        return "1 if the no cyclic paths condition passes, 0 if not";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        return Double.NaN; // This has to be handled separately.
+        Graph pag = estGraph;
+
+        for (Node n : pag.getNodes()) {
+            if (pag.paths().existsDirectedPathFromTo(n, n)) {
+                return 0;
+            }
+        }
+
+        return 1;
     }
 
     @Override
     public double getNormValue(double value) {
-        return 1 - Math.tanh(0.001 * value);
+        return value;
     }
 }

@@ -23,6 +23,7 @@ package edu.cmu.tetrad.util;
 
 
 import org.apache.commons.math3.special.Gamma;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Frequency function of partial correlation r(12|34...k), assuming that the
@@ -82,7 +83,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
 
       */
         double gammaRatio = gammaRatio(n, k);
-        this.constant = (1 / Math.pow(Math.PI, 0.5)) * gammaRatio;
+        this.constant = (1 / FastMath.pow(FastMath.PI, 0.5)) * gammaRatio;
         this.outsideExp = (double) (n - k - 2) / 2.0;
     }
 
@@ -105,7 +106,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      * @return the value of the function at x.
      */
     public double valueAt(double x) {
-        return this.constant * Math.pow(1 - x * x, this.outsideExp);
+        return this.constant * FastMath.pow(1 - x * x, this.outsideExp);
     }
 
     /**
@@ -119,7 +120,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
         double top = (n - k + 1) / 2.0;
         double bottom = (n - k) / 2.0;
         double lngamma = Gamma.logGamma(top) - Gamma.logGamma(bottom);
-        return Math.exp(lngamma);
+        return FastMath.exp(lngamma);
     }
 
     /**

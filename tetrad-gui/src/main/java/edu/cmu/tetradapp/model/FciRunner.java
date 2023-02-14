@@ -111,7 +111,6 @@ public class FciRunner extends AbstractAlgorithmRunner
         if (getParams().getBoolean("rfciUsed", false)) {
             Rfci fci = new Rfci(getIndependenceTest());
             fci.setKnowledge(knowledge);
-            fci.setCompleteRuleSetUsed(getParams().getBoolean("completeRuleSetUsed", false));
             fci.setMaxPathLength(getParams().getInt("maxReachablePathLength", -1));
             fci.setDepth(getParams().getInt("depth", -1));
             graph = fci.search();
@@ -126,11 +125,11 @@ public class FciRunner extends AbstractAlgorithmRunner
         }
 
         if (getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+            LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
-            GraphUtils.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.circleLayout(graph, 200, 200, 150);
         }
 
         setResultGraph(graph);

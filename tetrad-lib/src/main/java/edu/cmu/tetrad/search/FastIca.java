@@ -27,9 +27,10 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
+import org.apache.commons.math3.util.FastMath;
 
-import static java.lang.Math.exp;
-import static java.lang.Math.tanh;
+import static org.apache.commons.math3.util.FastMath.exp;
+import static org.apache.commons.math3.util.FastMath.tanh;
 
 /**
  * A Java implementation of FastIca following the R package fastICA. The only
@@ -380,10 +381,10 @@ public class FastIca {
         int n = this.X.columns();
         int p = this.X.rows();
 
-        if (this.numComponents > Math.min(n, p)) {
+        if (this.numComponents > FastMath.min(n, p)) {
             TetradLogger.getInstance().log("info", "Requested number of components is too large.");
-            TetradLogger.getInstance().log("info", "Reset to " + Math.min(n, p));
-            this.numComponents = Math.min(n, p);
+            TetradLogger.getInstance().log("info", "Reset to " + FastMath.min(n, p));
+            this.numComponents = FastMath.min(n, p);
         }
 
         if (this.wInit == null) {
@@ -419,7 +420,7 @@ public class FastIca {
         Matrix U = new Matrix(s.getU().getData());
 
         for (int i = 0; i < D.rows(); i++) {
-            D.set(i, i, 1.0 / Math.sqrt(D.get(i, i)));
+            D.set(i, i, 1.0 / FastMath.sqrt(D.get(i, i)));
         }
 
         Matrix K = D.times(U.transpose());
@@ -550,7 +551,7 @@ public class FastIca {
                     _tolerance += w1.get(k) * w.get(k);
                 }
 
-                _tolerance = Math.abs(Math.abs(_tolerance) - 1.0);
+                _tolerance = FastMath.abs(FastMath.abs(_tolerance) - 1.0);
 
                 if (verbose) {
                     TetradLogger.getInstance().log("fastIcaDetails", "Iteration " + it + " tol = " + _tolerance);
@@ -597,7 +598,7 @@ public class FastIca {
 
     private double rms(Vector w) {
         double ssq = sumOfSquares(w);
-        return Math.sqrt(ssq);
+        return FastMath.sqrt(ssq);
     }
 
     private Matrix icaParallel(Matrix X, int numComponents,
@@ -670,7 +671,7 @@ public class FastIca {
             _tolerance = Double.NEGATIVE_INFINITY;
 
             for (int i = 0; i < d.size(); i++) {
-                double m = Math.abs(Math.abs(d.get(i)) - 1);
+                double m = FastMath.abs(FastMath.abs(d.get(i)) - 1);
                 if (m > _tolerance) _tolerance = m;
             }
 

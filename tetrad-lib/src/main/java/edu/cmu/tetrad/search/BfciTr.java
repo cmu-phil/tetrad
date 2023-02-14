@@ -30,7 +30,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.graph.GraphUtils.*;
+import static edu.cmu.tetrad.graph.GraphUtils.retainUnshieldedColliders;
 
 /**
  * Does an FCI-style latent variable search using permutation-based reasoning. Follows GFCI to
@@ -141,8 +141,6 @@ public final class BfciTr implements GraphSearch {
         fciOrient.setDoDiscriminatingPathTailRule(true);//this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(graph);
-
-        graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
         return graph;
     }

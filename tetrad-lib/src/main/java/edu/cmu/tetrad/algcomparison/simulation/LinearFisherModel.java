@@ -13,6 +13,7 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -57,7 +58,9 @@ public class LinearFisherModel implements Simulation, TakesData {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (!newModel && !dataSets.isEmpty()) return;
+//        if (parameters.getLong(Params.SEED) != -1L) {
+//            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+//        }
 
         boolean saveLatentVars = parameters.getBoolean(Params.SAVE_LATENT_VARS);
 
@@ -132,7 +135,7 @@ public class LinearFisherModel implements Simulation, TakesData {
                 for (int k = 0; k < dataSet.getNumRows(); k++) {
                     for (int j = 0; j < dataSet.getNumColumns(); j++) {
                         double d = dataSet.getDouble(k, j);
-                        double delta = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        double delta = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
                         dataSet.setDouble(k, j, d + delta);
                     }
                 }
@@ -196,6 +199,7 @@ public class LinearFisherModel implements Simulation, TakesData {
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.STANDARDIZE);
+//        parameters.add(Params.SEED);
 
         return parameters;
     }

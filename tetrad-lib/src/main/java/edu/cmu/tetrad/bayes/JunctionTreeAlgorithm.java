@@ -22,6 +22,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.TetradSerializable;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -485,7 +486,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         double logJointClusterPotentials = this.root.getLogJointClusterPotentials(nodeValues);
         double logJointSeparatorPotentials = this.root.getLogJointSeparatorPotentials(nodeValues);
 
-        return Math.exp(logJointClusterPotentials - logJointSeparatorPotentials);
+        return FastMath.exp(logJointClusterPotentials - logJointSeparatorPotentials);
     }
 
     public double getJointProbability(int[] nodes, int[] values) {
@@ -826,7 +827,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         }
 
         private double getLogJointSeparatorPotentials(int[] nodeValues) {
-            double logJointPotentials = Math.log(1);
+            double logJointPotentials = FastMath.log(1);
 
             if (this.parentSeparator != null) {
                 Node[] parentNodes = this.parentSeparator.nodes;
@@ -836,7 +837,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                     values[iNode] = nodeValues[JunctionTreeAlgorithm.this.bayesIm.getNodeIndex(parentNodes[iNode])];
                 }
 
-                logJointPotentials += Math.log(this.parentSeparator.childPotentials[getIndexOfCPT(parentNodes, values)]);
+                logJointPotentials += FastMath.log(this.parentSeparator.childPotentials[getIndexOfCPT(parentNodes, values)]);
             }
 
             logJointPotentials = this.children.stream()
@@ -853,7 +854,7 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
                 values[iNode] = nodeValues[JunctionTreeAlgorithm.this.bayesIm.getNodeIndex(this.nodes[iNode])];
             }
 
-            double logJointPotentials = Math.log(this.prob[getIndexOfCPT(this.nodes, values)]);
+            double logJointPotentials = FastMath.log(this.prob[getIndexOfCPT(this.nodes, values)]);
             logJointPotentials = this.children.stream()
                     .map(child -> child.getLogJointClusterPotentials(nodeValues))
                     .reduce(logJointPotentials, Double::sum);

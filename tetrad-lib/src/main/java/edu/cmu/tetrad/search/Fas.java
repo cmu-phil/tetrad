@@ -117,7 +117,9 @@ public class Fas implements IFas {
      *
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
-    public Graph search() {
+    public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
         if (verbose) {
             this.logger.log("info", "Starting Fast Adjacency Search.");
         }
@@ -133,7 +135,7 @@ public class Fas implements IFas {
         this.sepset = new SepsetMap();
 
         List<Edge> edges = new ArrayList<>();
-        List<Node> nodes = new ArrayList<>(this.test.getVariables());
+//        List<Node> nodes = new ArrayList<>(this.test.getVariables());
         Map<Edge, Double> scores = new HashMap<>();
 
         if (this.heuristic == 1) {
@@ -393,8 +395,8 @@ public class Fas implements IFas {
     }
 
     @Override
-    public Graph search(List<Node> nodes) {
-        return null;
+    public Graph search() {
+        return search(test.getVariables());
     }
 
     @Override

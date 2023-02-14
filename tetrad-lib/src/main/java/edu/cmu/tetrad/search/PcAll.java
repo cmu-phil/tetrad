@@ -24,7 +24,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -93,6 +95,7 @@ public final class PcAll implements GraphSearch {
     private Concurrent concurrent = Concurrent.YES;
     private ColliderDiscovery colliderDiscovery = ColliderDiscovery.FAS_SEPSETS;
     private ConflictRule conflictRule = ConflictRule.OVERWRITE;
+    private Graph externalGraph = null;
 
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
@@ -295,6 +298,8 @@ public final class PcAll implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
         this.logger.log("info", "Starting algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
         this.ambiguousTriples = new HashSet<>();
@@ -303,7 +308,7 @@ public final class PcAll implements GraphSearch {
 
         this.independenceTest.setVerbose(this.verbose);
 
-        long startTime = System.currentTimeMillis();
+        long startTime = MillisecondTimes.timeMillis();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
 
@@ -368,10 +373,10 @@ public final class PcAll implements GraphSearch {
 
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(this.knowledge);
-        meekRules.setVerbose(true);
+        meekRules.setVerbose(verbose);
         meekRules.orientImplied(this.graph);
 
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
@@ -449,7 +454,7 @@ public final class PcAll implements GraphSearch {
                 } else {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
             }
         }
@@ -462,7 +467,7 @@ public final class PcAll implements GraphSearch {
         List<Node> adjk = g.getAdjacentNodes(k);
         List<List<Node>> sepsets = new ArrayList<>();
 
-        for (int d = 0; d <= Math.max(adji.size(), adjk.size()); d++) {
+        for (int d = 0; d <= FastMath.max(adji.size(), adjk.size()); d++) {
             if (adji.size() >= 2 && d <= adji.size()) {
                 ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;
@@ -592,6 +597,10 @@ public final class PcAll implements GraphSearch {
                 }
             }
         }
+    }
+
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 
     public enum FasType {REGULAR, STABLE}

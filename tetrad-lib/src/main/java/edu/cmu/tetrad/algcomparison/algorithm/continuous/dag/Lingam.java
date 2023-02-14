@@ -6,7 +6,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
@@ -40,7 +40,7 @@ public class Lingam implements Algorithm {
             lingam.setFastIcaA(parameters.getDouble(Params.FAST_ICA_A));
             lingam.setFastMaxIter(parameters.getInt(Params.FAST_ICA_MAX_ITER));
             lingam.setFastIcaTolerance(parameters.getDouble(Params.FAST_ICA_TOLERANCE));
-            return lingam.search(DataUtils.getContinuousDataSet(dataSet));
+            return lingam.search(SimpleDataLoader.getContinuousDataSet(dataSet));
         } else {
             Lingam algorithm = new Lingam();
 

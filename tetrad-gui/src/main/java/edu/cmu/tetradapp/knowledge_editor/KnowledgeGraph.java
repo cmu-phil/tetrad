@@ -50,11 +50,9 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
      * @serial
      */
     private final Knowledge knowledge;
-    private boolean pag;
-    private boolean CPDAG;
-
     private final Map<String, Object> attributes = new HashMap<>();
-    private EdgeListGraph.GraphType graphType = EdgeListGraph.GraphType.DAG;
+
+    private final Paths paths;
 
     //============================CONSTRUCTORS=============================//
 
@@ -67,6 +65,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         }
 
         this.knowledge = knowledge;
+        this.paths = new Paths(this.graph);
     }
 
     /**
@@ -93,88 +92,14 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         this.getGraph().transferAttributes(graph);
     }
 
-    public Set<Triple> getAmbiguousTriples() {
-        return getGraph().getAmbiguousTriples();
+    @Override
+    public Underlines underlines() {
+        return graph.underlines();
     }
 
-    public Set<Triple> getUnderLines() {
-        return getGraph().getUnderLines();
-    }
-
-    public Set<Triple> getDottedUnderlines() {
-        return getGraph().getDottedUnderlines();
-    }
-
-
-    /**
-     * States whether x-y-x is an underline triple or not.
-     */
-    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
-        return getGraph().isAmbiguousTriple(x, y, z);
-    }
-
-    /**
-     * States whether x-y-x is an underline triple or not.
-     */
-    public boolean isUnderlineTriple(Node x, Node y, Node z) {
-        return getGraph().isUnderlineTriple(x, y, z);
-    }
-
-    /**
-     * States whether x-y-x is an underline triple or not.
-     */
-    public boolean isDottedUnderlineTriple(Node x, Node y, Node z) {
-        return getGraph().isDottedUnderlineTriple(x, y, z);
-    }
-
-    public void addAmbiguousTriple(Node x, Node y, Node z) {
-        getGraph().addAmbiguousTriple(x, y, z);
-    }
-
-    public void addUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().addUnderlineTriple(x, y, z);
-    }
-
-    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().addDottedUnderlineTriple(x, y, z);
-    }
-
-    public void removeAmbiguousTriple(Node x, Node y, Node z) {
-        getGraph().removeAmbiguousTriple(x, y, z);
-    }
-
-    public void removeUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().removeUnderlineTriple(x, y, z);
-    }
-
-    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
-        getGraph().removeDottedUnderlineTriple(x, y, z);
-    }
-
-
-    public void setAmbiguousTriples(Set<Triple> triples) {
-        getGraph().setAmbiguousTriples(triples);
-    }
-
-    public void setUnderLineTriples(Set<Triple> triples) {
-        getGraph().setUnderLineTriples(triples);
-    }
-
-
-    public void setDottedUnderLineTriples(Set<Triple> triples) {
-        getGraph().setDottedUnderLineTriples(triples);
-    }
-
-    public List<Node> getCausalOrdering() {
-        return getGraph().getCausalOrdering();
-    }
-
-    public void setHighlighted(Edge edge, boolean highlighted) {
-        getGraph().setHighlighted(edge, highlighted);
-    }
-
-    public boolean isHighlighted(Edge edge) {
-        return getGraph().isHighlighted(edge);
+    @Override
+    public Paths paths() {
+        return this.paths;
     }
 
     public boolean isParameterizable(Node node) {
@@ -187,11 +112,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     public TimeLagGraph getTimeLagGraph() {
         return null;
-    }
-
-    @Override
-    public void removeTriplesNotInGraph() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -214,10 +134,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     public void reorientAllWith(Endpoint endpoint) {
         getGraph().reorientAllWith(endpoint);
-    }
-
-    public Endpoint[][] getEndpointMatrix() {
-        return getGraph().getEndpointMatrix();
     }
 
     public List<Node> getAdjacentNodes(Node node) {
@@ -263,23 +179,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     public Graph subgraph(List<Node> nodes) {
         return getGraph().subgraph(nodes);
-    }
-
-    public boolean existsDirectedPathFromTo(Node node1, Node node2) {
-        return getGraph().existsDirectedPathFromTo(node1, node2);
-    }
-
-    @Override
-    public List<Node> findCycle() {
-        return getGraph().findCycle();
-    }
-
-    public boolean existsUndirectedPathFromTo(Node node1, Node node2) {
-        return getGraph().existsUndirectedPathFromTo(node1, node2);
-    }
-
-    public boolean existsSemiDirectedPathFromTo(Node node1, Set<Node> node2) {
-        return getGraph().existsSemiDirectedPathFromTo(node1, node2);
     }
 
     public boolean addDirectedEdge(Node nodeA, Node nodeB) {
@@ -432,22 +331,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().removeNodes(nodes);
     }
 
-    public boolean existsDirectedCycle() {
-        return getGraph().existsDirectedCycle();
-    }
-
-    public boolean isDirectedFromTo(Node node1, Node node2) {
-        return getGraph().isDirectedFromTo(node1, node2);
-    }
-
-    public boolean isUndirectedFromTo(Node node1, Node node2) {
-        return getGraph().isUndirectedFromTo(node1, node2);
-    }
-
-    public boolean defVisible(Edge edge) {
-        return getGraph().defVisible(edge);
-    }
-
     public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
         return getGraph().isDefNoncollider(node1, node2, node3);
     }
@@ -456,20 +339,12 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().isDefCollider(node1, node2, node3);
     }
 
-    public boolean existsTrek(Node node1, Node node2) {
-        return getGraph().existsTrek(node1, node2);
-    }
-
     public List<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
 
-    public int getConnectivity() {
-        return getGraph().getConnectivity();
-    }
-
-    public List<Node> getDescendants(List<Node> nodes) {
-        return getGraph().getDescendants(nodes);
+    public int getDegree() {
+        return getGraph().getDegree();
     }
 
     public Edge getEdge(Node node1, Node node2) {
@@ -497,57 +372,12 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getOutdegree(node);
     }
 
-    public boolean isAncestorOf(Node node1, Node node2) {
-        return getGraph().isAncestorOf(node1, node2);
-    }
-
-    public boolean possibleAncestor(Node node1, Node node2) {
-        return getGraph().possibleAncestor(node1, node2);
-    }
-
-    public List<Node> getAncestors(List<Node> nodes) {
-        return getGraph().getAncestors(nodes);
-    }
-
     public boolean isChildOf(Node node1, Node node2) {
         return getGraph().isChildOf(node1, node2);
     }
 
-    public boolean isDescendentOf(Node node1, Node node2) {
-        return getGraph().isDescendentOf(node1, node2);
-    }
-
-    public boolean defNonDescendent(Node node1, Node node2) {
-        return getGraph().defNonDescendent(node1, node2);
-    }
-
-    public boolean isDConnectedTo(Node node1, Node node2,
-                                  List<Node> conditioningNodes) {
-        return getGraph().isDConnectedTo(node1, node2, conditioningNodes);
-    }
-
-    public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {
-        return getGraph().isDSeparatedFrom(node1, node2, z);
-    }
-
-    public boolean possDConnectedTo(Node node1, Node node2, List<Node> z) {
-        return getGraph().possDConnectedTo(node1, node2, z);
-    }
-
-    public boolean existsInducingPath(Node node1, Node node2) {
-        return getGraph().existsInducingPath(node1, node2);
-    }
-
     public boolean isParentOf(Node node1, Node node2) {
         return getGraph().isParentOf(node1, node2);
-    }
-
-    public boolean isProperAncestorOf(Node node1, Node node2) {
-        return getGraph().isProperAncestorOf(node1, node2);
-    }
-
-    public boolean isProperDescendentOf(Node node1, Node node2) {
-        return getGraph().isProperDescendentOf(node1, node2);
     }
 
     public boolean isExogenous(Node node) {
@@ -564,24 +394,6 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
 
     private Graph getGraph() {
         return this.graph;
-    }
-
-    @Override
-    public List<String> getTriplesClassificationTypes() {
-        return null;
-    }
-
-    @Override
-    public List<List<Triple>> getTriplesLists(Node node) {
-        return null;
-    }
-
-    public void setGraphType(EdgeListGraph.GraphType graphType) {
-        this.graphType = graphType;
-    }
-
-    public EdgeListGraph.GraphType getGraphType() {
-        return this.graphType;
     }
 
     @Override

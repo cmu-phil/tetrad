@@ -6,8 +6,8 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
-import static edu.cmu.tetrad.algcomparison.statistic.NumCommonMeasuredAncestorBidirected.existsCommonAncestor;
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
+import static edu.cmu.tetrad.algcomparison.statistic.NumCommonMeasuredAncestorBidirected.existsCommonAncestor;
 
 /**
  * The bidirected true positives.
@@ -36,7 +36,7 @@ public class NumDirectedEdgeBnaMeasuredCounfounded implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (!trueGraph.isAncestorOf(x, y) && !trueGraph.isAncestorOf(y, x) &&
+                if (!trueGraph.paths().isAncestorOf(x, y) && !trueGraph.paths().isAncestorOf(y, x) &&
                         (existsCommonAncestor(trueGraph, edge) && !existsLatentCommonAncestor(trueGraph, edge))) {
                     tp++;
                 }

@@ -26,7 +26,6 @@ import edu.cmu.tetrad.search.IndTestDSep;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.DagWrapper;
 import edu.cmu.tetradapp.model.IndTestProducer;
@@ -53,8 +52,10 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
 
 /**
  * Displays a workbench editing workbench area together with a toolbench for
@@ -458,7 +459,7 @@ public final class DagEditor extends JPanel
                         return;
                     }
 
-                    RandomUtil.getInstance().setSeed(new Date().getTime());
+//                    RandomUtil.getInstance().setSeed(new Date().getTime());
                     Graph graph1 = edu.cmu.tetradapp.util.GraphUtils.makeRandomGraph(getGraph(), DagEditor.this.parameters);
 
                     boolean addCycles = DagEditor.this.parameters.getBoolean("randomAddCycles", false);
@@ -466,7 +467,7 @@ public final class DagEditor extends JPanel
                     if (addCycles) {
                         int newGraphNumMeasuredNodes = DagEditor.this.parameters.getInt("newGraphNumMeasuredNodes", 10);
                         int newGraphNumEdges = DagEditor.this.parameters.getInt("newGraphNumEdges", 10);
-                        graph1 = GraphUtils.cyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
+                        graph1 = RandomGraph.randomCyclicGraph2(newGraphNumMeasuredNodes, newGraphNumEdges, 8);
                     }
 
                     getWorkbench().setGraph(graph1);

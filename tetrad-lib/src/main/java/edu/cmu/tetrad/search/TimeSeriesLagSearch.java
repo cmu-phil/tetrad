@@ -24,8 +24,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -201,9 +203,11 @@ public final class TimeSeriesLagSearch implements GraphSearch {
      * caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      */
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
         TetradLogger.getInstance().log("info", "Starting TimeSeriesLagSearch.");
         TetradLogger.getInstance().log("info", "Independence test = " + this.independenceTest + ".");
-        long startTime = System.currentTimeMillis();
+        long startTime = MillisecondTimes.timeMillis();
         this.allTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
@@ -235,7 +239,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
@@ -354,7 +358,7 @@ public final class TimeSeriesLagSearch implements GraphSearch {
 
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 } else {
 //                    System.out.println("orientUnshieldedTriples 8");
 

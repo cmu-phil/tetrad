@@ -66,7 +66,7 @@ public class TestSemEstimator {
 
     @Test
     public void testSet8() {
-        Graph graph = GraphConverter.convert("X1-->X2,X2-->X3,X3-->X4,X4-->X1");
+        Graph graph = GraphUtils.convert("X1-->X2,X2-->X3,X3-->X4,X4-->X1");
 
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -147,7 +147,7 @@ public class TestSemEstimator {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 5,
                 30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
@@ -170,7 +170,7 @@ public class TestSemEstimator {
             nodes.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes, 0, 5,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 5,
                 30, 15, 15, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);

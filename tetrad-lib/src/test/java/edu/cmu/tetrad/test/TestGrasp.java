@@ -29,9 +29,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BRIDGES_OLD;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.*;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GFCI;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.LVSWAP_1;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.LVSWAP_2a;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
@@ -70,7 +70,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.search.OtherPermAlgs.Method.SP;
-import static java.util.Collections.shuffle;
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 
 /**
@@ -154,7 +154,7 @@ public final class TestGrasp {
 
         params.set(Params.PENALTY_DISCOUNT, 2);
         params.set(Params.ZS_RISK_BOUND, 0.001); //, 0.01, 0.1);
-        params.set(Params.EBIC_GAMMA, 0.8);
+        params.set(Params.EBIC_GAMMA, 0.2, 0.6, 0.8);
         params.set(Params.ALPHA, 0.001);
 
         params.set(Params.GRASP_DEPTH, 3);
@@ -194,7 +194,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -337,7 +337,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -430,7 +430,7 @@ public final class TestGrasp {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new F1Adj());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setSaveData(false);
@@ -576,7 +576,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -646,7 +646,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -710,7 +710,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -758,7 +758,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -809,7 +809,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -877,7 +877,7 @@ public final class TestGrasp {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new BicEst());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -940,7 +940,7 @@ public final class TestGrasp {
         statistics.add(new SHD());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -1000,7 +1000,7 @@ public final class TestGrasp {
         statistics.add(new SHD());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -1063,7 +1063,7 @@ public final class TestGrasp {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new F1Adj());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -1080,7 +1080,7 @@ public final class TestGrasp {
 
         for (int i = 0; i < 100; i++) {
 
-            Graph g = GraphUtils.randomGraph(20, 0, 40,
+            Graph g = RandomGraph.randomGraph(20, 0, 40,
                     100, 100, 100, false);
             SemPm pm = new SemPm(g);
             SemIm im = new SemIm(pm);
@@ -1201,7 +1201,7 @@ public final class TestGrasp {
     public void bryanCheckDensityClaims() {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         boolean usePearl = true;
         int numVars = 5; // Will change this in OtherParams.sp() too
 
@@ -1496,10 +1496,10 @@ public final class TestGrasp {
 
                 }
 
-                System.out.println("\tExists nonfrugal = " + existsNonfrugal + " all = " + all + " (" + (System.currentTimeMillis() - start) / 1000.0 + " s)");
+                System.out.println("\tExists nonfrugal = " + existsNonfrugal + " all = " + all + " (" + (MillisecondTimes.timeMillis() - start) / 1000.0 + " s)");
             }
 
-            System.out.println("\nTOTAL: exists nonfrugal = " + existsNonfrugal + " all = " + all + " (" + (System.currentTimeMillis() - start) / 1000.0 + " s)");
+            System.out.println("\nTOTAL: exists nonfrugal = " + existsNonfrugal + " all = " + all + " (" + (MillisecondTimes.timeMillis() - start) / 1000.0 + " s)");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1989,7 +1989,7 @@ public final class TestGrasp {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
         statistics.add(new SHD());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -2058,7 +2058,7 @@ public final class TestGrasp {
         statistics.add(new NumberOfEdgesTrue());
         statistics.add(new NumberOfEdgesEst());
         statistics.add(new SHD());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -2373,7 +2373,7 @@ public final class TestGrasp {
         SemGraph graph = imsd.getSemPm().getGraph();
         graph.setShowErrorTerms(false);
 
-        List<List<Node>> paths = GraphUtils.allDirectedPathsFromTo(graph, x1, x4, -1);
+        List<List<Node>> paths = graph.paths().allDirectedPathsFromTo(x1, x4, -1);
 
         if (paths.size() < 2) return false;
 
@@ -2454,6 +2454,11 @@ public final class TestGrasp {
         RandomUtil.getInstance().setSeed(38482838482L);
 
         Parameters params = new Parameters();
+        params.set(Params.ALPHA, 1e-5, 0.0001, 0.001, 0.01, 0.1);
+        params.set(Params.PENALTY_DISCOUNT, 1, 2, 4);
+//        params.set(Params.ZS_RISK_BOUND, 0.1, 0.5, 0.9);
+        params.set(Params.EBIC_GAMMA, .2, .6, .8);
+
         params.set(Params.SAMPLE_SIZE, 1000, 10000);
         params.set(Params.NUM_MEASURES, 30);
         params.set(Params.AVG_DEGREE, 6);
@@ -2468,7 +2473,7 @@ public final class TestGrasp {
         params.set(Params.NUM_RUNS, 20);
 
         params.set(Params.BOSS_ALG, 1);
-        params.set(Params.DEPTH, 3);
+        params.set(Params.DEPTH, -1);
         params.set(Params.MAX_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
         params.set(Params.POSSIBLE_DSEP_DONE, true);
@@ -2482,55 +2487,55 @@ public final class TestGrasp {
 
         // default for kim et al. is gic = 4, pd = 1.
         params.set(Params.SEM_GIC_RULE, 4);
-        params.set(Params.PENALTY_DISCOUNT, 1);
-        params.set(Params.ALPHA, 0.01);
-        params.set(Params.ZS_RISK_BOUND, 0.2);
+//        params.set(Params.ALPHA, 0.01);
         params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 3);
 
         params.set(Params.DIFFERENT_GRAPHS, true);
 
         params.set(Params.ADD_ORIGINAL_DATASET, false);
 
+//        params.set(Params.SEED, -1l);
+
         IndependenceWrapper test = new FisherZ();
 
         List<ScoreWrapper> scores = new ArrayList<>();
         scores.add(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
-        scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
-        scores.add(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore());
-        scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
+//        scores.add(new edu.cmu.tetrad.algcomparison.score.EbicScore());
+//        scores.add(new edu.cmu.tetrad.algcomparison.score.KimEtAlScores());
+//        scores.add(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore());
 
         List<Algorithm> algorithms = new ArrayList<>();
 
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci(test));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax(test));
+//        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax(test));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci(test));
-
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS(test, score));
-        }
-
+//
+////        for (ScoreWrapper score : scores) {
+////            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS(test, score));
+////        }
+//
         for (ScoreWrapper score : scores) {
             algorithms.add(new GFCI(test, score));
         }
+//
+//        for (ScoreWrapper score : scores) {
+//            algorithms.add(new BFCI(test, score));
+//        }
+//
+//        for (ScoreWrapper score : scores) {
+//            algorithms.add(new LVSWAP_1(test, score));
+//        }
 
         for (ScoreWrapper score : scores) {
-            algorithms.add(new BFCI(test, score));
+            algorithms.add(new LVSWAP_2a(test, score));
         }
 
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_1(test, score));
-        }
-
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_2(test, score));
-        }
-
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_3(test, score));
-        }
+//        for (ScoreWrapper score : scores) {
+//            algorithms.add(new LVSWAP_2b(test, score));
+//        }
 
 
-//            Collections.shuffle(algorithms);
+//            RandomUtil.shuffle(algorithms);
 
         Algorithms _algorithms = new Algorithms();
 
@@ -2543,29 +2548,45 @@ public final class TestGrasp {
 
         Statistics statistics = new Statistics();
 
+        statistics.add(new LegalPag());
+//        statistics.add(new NoAlmostCyclicPathsCondition());
+//        statistics.add(new NoCyclicPathsCondition());
+        statistics.add(new NoAlmostCyclicPathsInMagCondition());
+        statistics.add(new NoCyclicPathsInMagCondition());
+        statistics.add(new MaximalityCondition());
+
+        statistics.add(new ParameterColumn(Params.ALPHA));
+        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
         statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
         statistics.add(new ParameterColumn(Params.DEPTH));
+        statistics.add(new ParameterColumn(Params.ZS_RISK_BOUND));
+//        statistics.add(new ParameterColumn(Params.EBIC_GAMMA));
 
-        // Joe table.
+//        // Joe table.
+//        statistics.add(new LegalPag());
+//        statistics.add(new NumDirectedEdges());
+//        statistics.add(new TrueDagPrecisionTails());
+//        statistics.add(new TrueDagPrecisionArrow());
+//        statistics.add(new NumDirectedShouldBePartiallyDirected());
         statistics.add(new NumDirectedEdges());
-        statistics.add(new TrueDagPrecisionArrow());
-        statistics.add(new TrueDagPrecisionTails());
         statistics.add(new NumBidirectedEdgesEst());
+        statistics.add(new TrueDagPrecisionTails());
         statistics.add(new BidirectedLatentPrecision());
+//
+//        // Greg table
+//        statistics.add(new AncestorPrecision());
+//        statistics.add(new AncestorRecall());
+//        statistics.add(new AncestorF1());
+//        statistics.add(new SemidirectedPrecision());
+//        statistics.add(new SemidirectedRecall());
+//        statistics.add(new SemidirectedPathF1());
+//        statistics.add(new NoSemidirectedPrecision());
+//        statistics.add(new NoSemidirectedRecall());
+//        statistics.add(new NoSemidirectedF1());
 
 
-        // Greg table
-        statistics.add(new AncestorPrecision());
-        statistics.add(new AncestorRecall());
-        statistics.add(new AncestorF1());
-        statistics.add(new SemidirectedPrecision());
-        statistics.add(new SemidirectedRecall());
-        statistics.add(new SemidirectedPathF1());
-        statistics.add(new NoSemidirectedPrecision());
-        statistics.add(new NoSemidirectedRecall());
-        statistics.add(new NoSemidirectedF1());
-
-        statistics.add(new ElapsedTime());
+//        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -2663,7 +2684,7 @@ public final class TestGrasp {
 
         for (int i = 0; i < 40; i++) {
 
-            Graph trueGraph = GraphUtils.randomGraph(20, 8, 40,
+            Graph trueGraph = RandomGraph.randomGraph(20, 8, 40,
                     100, 100, 100, false);
 
             Graph truePag = SearchGraphUtils.dagToPag(trueGraph);
@@ -2684,7 +2705,7 @@ public final class TestGrasp {
 //            algorithms.add(new GFCI(test, score));
 //            algorithms.add(new BFCI(test, score));
             algorithms.add(new LVSWAP_1(test, score));
-            algorithms.add(new LVSWAP_2(test, score));
+            algorithms.add(new LVSWAP_2a(test, score));
 //            algorithms.add(new LVSWAP_3(test, score));
 
             algNames = new ArrayList<>();
@@ -2780,14 +2801,14 @@ public final class TestGrasp {
     }
 
     public void testDsep() {
-        Graph graph = GraphUtils.randomGraph(20, 0, 40, 100, 100, 100, false);
+        Graph graph = RandomGraph.randomGraph(20, 0, 40, 100, 100, 100, false);
 
         for (Node x : graph.getNodes()) {
             List<Node> parents = graph.getParents(x);
 
             for (Node y : graph.getNodes()) {
-                if (!graph.isDescendentOf(y, x) && !parents.contains(y)) {
-                    if (!graph.isDSeparatedFrom(x, y, parents)) {
+                if (!graph.paths().isDescendentOf(y, x) && !parents.contains(y)) {
+                    if (!graph.paths().isDSeparatedFrom(x, y, parents)) {
                         System.out.println("Failure! " + SearchLogUtils.dependenceFactMsg(x, y, parents, 1.0));
                     }
                 }
@@ -2852,7 +2873,7 @@ public final class TestGrasp {
             statistics.add(new ArrowheadRecall());
             statistics.add(new ArrowheadPrecisionCommonEdges());
             statistics.add(new ArrowheadRecallCommonEdges());
-            statistics.add(new ElapsedTime());
+            statistics.add(new ElapsedCpuTime());
 
             Comparison comparison = new Comparison();
             comparison.setShowAlgorithmIndices(true);
@@ -2917,7 +2938,7 @@ public final class TestGrasp {
             statistics.add(new ArrowheadRecall());
             statistics.add(new ArrowheadPrecisionCommonEdges());
             statistics.add(new ArrowheadRecallCommonEdges());
-            statistics.add(new ElapsedTime());
+            statistics.add(new ElapsedCpuTime());
 
             Comparison comparison = new Comparison();
             comparison.setShowAlgorithmIndices(true);
@@ -3177,7 +3198,7 @@ public final class TestGrasp {
 
                         int numEdges = (int) (a * m / 2.);
 
-                        Graph graph = GraphUtils.randomGraph(m, 0,
+                        Graph graph = RandomGraph.randomGraph(m, 0,
                                 numEdges, 100, 100, 100, false);
 
                         Parameters parameters = new Parameters();
@@ -3205,9 +3226,9 @@ public final class TestGrasp {
                             l.add(w);
                         }
 
-                        Collections.shuffle(l);
-                        Collections.shuffle(l);
-                        Collections.shuffle(l);
+                        shuffle(l);
+                        shuffle(l);
+                        shuffle(l);
 
                         int[] perm = new int[l.size()];
                         for (int w = 0; w < V.size(); w++) {
@@ -3278,7 +3299,7 @@ public final class TestGrasp {
         // This just checks to make sure the causalOrdering method is behaving correctly.
 
         for (int k = 0; k < 100; k++) {
-            Graph g = GraphUtils.randomGraph(10, 0, 15, 100,
+            Graph g = RandomGraph.randomGraph(10, 0, 15, 100,
                     100, 100, false);
             IndTestDSep test = new IndTestDSep(g);
             GraphScore score = new GraphScore(g);
@@ -3286,7 +3307,9 @@ public final class TestGrasp {
             Fges fges = new Fges(score);
             Graph cpdag1 = fges.search();
 
-            List<Node> pi = GraphUtils.getCausalOrdering(cpdag1, cpdag1.getNodes());
+            Paths paths = cpdag1.paths();
+            List<Node> initialOrder = cpdag1.getNodes();
+            List<Node> pi = paths.validOrder(initialOrder, true);
 
             TeyssierScorer scorer = new TeyssierScorer(test, score);
             scorer.setUseScore(false);
@@ -3309,7 +3332,7 @@ public final class TestGrasp {
         int all = 0;
 
         for (int k = 0; k < 100; k++) {
-            Graph g = GraphUtils.randomGraph(20, 0, 30, 100,
+            Graph g = RandomGraph.randomGraph(20, 0, 30, 100,
                     100, 100, false);
             SemPm pm = new SemPm(g);
             SemIm im = new SemIm(pm);
@@ -3322,7 +3345,9 @@ public final class TestGrasp {
             Fges fges = new Fges(score);
             Graph cpdag = fges.search();
 
-            List<Node> pi1 = GraphUtils.getCausalOrdering(cpdag, cpdag.getNodes());
+            Paths paths = cpdag.paths();
+            List<Node> initialOrder = cpdag.getNodes();
+            List<Node> pi1 = paths.validOrder(initialOrder, true);
 
             List<Node> pi2 = new ArrayList<>(pi1);
             shuffle(pi2);
@@ -3351,7 +3376,7 @@ public final class TestGrasp {
 
     //    @Test
     public void testAddUnfaithfulIndependencies() {
-        Graph graph = GraphUtils.randomGraph(7, 0, 15, 100, 100,
+        Graph graph = RandomGraph.randomGraph(7, 0, 15, 100, 100,
                 100, false);
 
         System.out.println("Source = " + graph);//SearchGraphUtils.cpdagForDag(graph));
@@ -3370,7 +3395,7 @@ public final class TestGrasp {
 
                 System.out.println("<x, y> = <" + x + ", " + y + ">");
 
-                List<List<Node>> treks = GraphUtils.treks(graph, x, y, 4);
+                List<List<Node>> treks = graph.paths().treks(x, y, 4);
 
                 if (treks.size() >= 2) {
                     IndependenceFact fact = new IndependenceFact(x, y, new ArrayList<>());
@@ -3379,7 +3404,7 @@ public final class TestGrasp {
 
                     count++;
                 } else {
-                    List<List<Node>> paths = GraphUtils.allPathsFromTo(graph, x, y, 4);
+                    List<List<Node>> paths = graph.paths().allPathsFromTo(x, y, 4);
 
                     if (paths.size() >= 1) {
                         List<List<Node>> nonTrekPaths = new ArrayList<>();

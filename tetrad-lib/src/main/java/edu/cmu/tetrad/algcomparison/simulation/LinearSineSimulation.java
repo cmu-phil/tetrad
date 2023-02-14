@@ -3,15 +3,16 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A simulation method based on the mixed variable polynomial assumption.
@@ -44,7 +45,9 @@ public class LinearSineSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (!newModel && !dataSets.isEmpty()) return;
+        if (parameters.getLong(Params.SEED) != -1L) {
+            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+        }
 
         setInterceptLow(parameters.getDouble("interceptLow"));
         setInterceptHigh(parameters.getDouble("interceptHigh"));
@@ -111,6 +114,7 @@ public class LinearSineSimulation implements Simulation {
         parameters.add("betaHigh");
         parameters.add("gammaLow");
         parameters.add("gammaHigh");
+        parameters.add(Params.SEED);
         return parameters;
     }
 
@@ -129,11 +133,11 @@ public class LinearSineSimulation implements Simulation {
 
         List<Node> nodes = G.getNodes();
 
-        Collections.shuffle(nodes);
+        RandomUtil.shuffle(nodes);
 
         if (this.shuffledOrder == null) {
             List<Node> shuffledNodes = new ArrayList<>(nodes);
-            Collections.shuffle(shuffledNodes);
+            RandomUtil.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
 
@@ -146,7 +150,9 @@ public class LinearSineSimulation implements Simulation {
 
         DataSet mixedData = new BoxDataSet(new MixedDataBox(nodes, parameters.getInt(Params.SAMPLE_SIZE)), nodes);
 
-        List<Node> tierOrdering = G.getCausalOrdering();
+        Paths paths = G.paths();
+        List<Node> initialOrder = G.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
         for (int t = 0; t < tierOrdering.size(); t++) {
             tiers[t] = nodes.indexOf(tierOrdering.get(t));
@@ -172,8 +178,8 @@ public class LinearSineSimulation implements Simulation {
                     double m0 = mixedData.getDouble(0, mixedData.getColumn(continuousParents.get(j - 1)));
                     double m1 = mixedData.getDouble(0, mixedData.getColumn(continuousParents.get(j - 1)));
                     for (int i = 1; i < parameters.getInt(Params.SAMPLE_SIZE); i++) {
-                        m0 = Math.min(m0, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
-                        m1 = Math.max(m1, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
+                        m0 = FastMath.min(m0, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
+                        m1 = FastMath.max(m1, mixedData.getDouble(i, mixedData.getColumn(continuousParents.get(j - 1))));
                     }
                     double[] temp = new double[3];
                     temp[0] = m0;
@@ -219,7 +225,7 @@ public class LinearSineSimulation implements Simulation {
                     double[] gammaCoefficients = new double[parents.length];
                     for (int j = 0; j < parents.length; j++) {
                         String key2 = continuousParents.get(j).toString();
-                        gammaCoefficients[j] = (bounds.get(key2)[1] - bounds.get(key2)[0]) / (2 * Math.PI * RandomUtil.getInstance().nextUniform(this.gammaLow, this.gammaHigh));
+                        gammaCoefficients[j] = (bounds.get(key2)[1] - bounds.get(key2)[0]) / (2 * FastMath.PI * RandomUtil.getInstance().nextUniform(this.gammaLow, this.gammaHigh));
                     }
                     gamma.put(key, gammaCoefficients);
                 }
@@ -227,22 +233,22 @@ public class LinearSineSimulation implements Simulation {
                 value += intercept.get(key)[0];
                 if (!continuousParents.isEmpty()) {
                     for (int x = 0; x < parents.length; x++) {
-                        value += linear.get(key)[x] * parents[x] + beta.get(key)[x] * Math.sin(parents[x] / (gamma.get(key)[x]));
+                        value += linear.get(key)[x] * parents[x] + beta.get(key)[x] * FastMath.sin(parents[x] / (gamma.get(key)[x]));
                     }
                 }
 
                 mixedData.setDouble(i, mixedIndex, value);
 
                 mean += value;
-                var += Math.pow(value, 2);
+                var += FastMath.pow(value, 2);
             }
             if (continuousParents.size() == 0) {
                 var = 1;
             } else {
                 mean /= mixedData.getNumRows();
                 var /= mixedData.getNumRows();
-                var -= Math.pow(mean, 2);
-                var = Math.sqrt(var);
+                var -= FastMath.pow(mean, 2);
+                var = FastMath.sqrt(var);
             }
 
             double noiseVar = RandomUtil.getInstance().nextUniform(this.varLow, this.varHigh);

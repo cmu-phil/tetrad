@@ -20,9 +20,9 @@ package edu.cmu.tetrad.annotation;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-
 import java.util.List;
 
 /**
@@ -46,23 +46,27 @@ public class AlgorithmAnnotations extends AbstractAnnotations<Algorithm> {
         return filterOutByAnnotation(list, Experimental.class);
     }
 
-    public boolean acceptMultipleDataset(Class clazz) {
+    public boolean takesMultipleDataset(Class clazz) {
         return clazz != null && MultiDataSetAlgorithm.class.isAssignableFrom(clazz);
     }
 
-    public boolean acceptKnowledge(Class clazz) {
+    public boolean takesKnowledge(Class clazz) {
         return clazz != null && HasKnowledge.class.isAssignableFrom(clazz);
     }
 
-    public boolean requireIndependenceTest(Class clazz) {
+    public boolean takesExternalGraph(Class clazz) {
+        return clazz != null && TakesExternalGraph.class.isAssignableFrom(clazz);
+    }
+
+    public boolean requiresIndependenceTest(Class clazz) {
         return clazz != null && TakesIndependenceWrapper.class.isAssignableFrom(clazz);
     }
 
-    public boolean requireScore(Class clazz) {
+    public boolean requiresScore(Class clazz) {
         return clazz != null && UsesScoreWrapper.class.isAssignableFrom(clazz);
     }
 
-    public boolean handleUnmeasuredConfounder(Class clazz) {
+    public boolean handlesUnmeasuredConfounder(Class clazz) {
         return clazz != null && clazz.isAnnotationPresent(UnmeasuredConfounder.class);
     }
 

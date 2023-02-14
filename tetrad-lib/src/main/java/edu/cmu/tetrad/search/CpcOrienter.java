@@ -24,7 +24,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -130,7 +132,7 @@ public final class CpcOrienter implements Reorienter {
     public void orient(Graph graph) {
         TetradLogger.getInstance().log("info", "Starting CPC Orienter algorithm.");
         TetradLogger.getInstance().log("info", "Independence test = " + this.independenceTest + ".");
-        long startTime = System.currentTimeMillis();
+        long startTime = MillisecondTimes.timeMillis();
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
@@ -150,7 +152,7 @@ public final class CpcOrienter implements Reorienter {
         meekRules.orientImplied(graph);
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
@@ -248,7 +250,7 @@ public final class CpcOrienter implements Reorienter {
                 } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 } else {
                     this.noncolliderTriples.add(new Triple(x, y, z));
                 }
@@ -279,7 +281,7 @@ public final class CpcOrienter implements Reorienter {
         if (_depth == -1) {
             _depth = Integer.MAX_VALUE;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
@@ -309,7 +311,7 @@ public final class CpcOrienter implements Reorienter {
         if (_depth == -1) {
             _depth = Integer.MAX_VALUE;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);

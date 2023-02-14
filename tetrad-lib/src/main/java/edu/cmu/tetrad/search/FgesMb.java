@@ -23,8 +23,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
@@ -133,7 +135,7 @@ public final class FgesMb {
     /**
      * True if one-edge faithfulness is assumed. Speeds the algorithm up.
      */
-    private boolean faithfulnessAssumed = true;
+    private boolean faithfulnessAssumed = false;
 
     //===========================CONSTRUCTORS=============================//
     private boolean parallelized = false;
@@ -198,7 +200,7 @@ public final class FgesMb {
     public Graph search(List<Node> targets) {
 
         // Assumes one-edge faithfulness.
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         if (targets == null) {
             throw new NullPointerException();
@@ -236,7 +238,7 @@ public final class FgesMb {
         fes();
         bes();
 
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
@@ -612,7 +614,7 @@ public final class FgesMb {
     public int getMinChunk(int n) {
         // The minimum number of operations to do before parallelizing.
         int minChunk = 100;
-        return Math.max(n / Runtime.getRuntime().availableProcessors(), minChunk);
+        return FastMath.max(n / Runtime.getRuntime().availableProcessors(), minChunk);
     }
 
     private void initializeTwoStepEdges(List<Node> nodes) {
@@ -972,7 +974,7 @@ public final class FgesMb {
                             adj = new ArrayList<>(g);
                         } else if (FgesMb.this.mode == Mode.allowUnfaithfulness) {
                             HashSet<Node> D = new HashSet<>(
-                                    GraphUtils.getDconnectedVars(x, new ArrayList<>(), FgesMb.this.graph));
+                                    FgesMb.this.graph.paths().getDconnectedVars(x, new ArrayList<>()));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {
@@ -1038,7 +1040,7 @@ public final class FgesMb {
         List<Node> TNeighbors = getTNeighbors(a, b);
         int _maxDegree = this.maxDegree == -1 ? 1000 : this.maxDegree;
 
-        int _max = Math.min(TNeighbors.size(), _maxDegree - this.graph.getIndegree(b));
+        int _max = FastMath.min(TNeighbors.size(), _maxDegree - this.graph.getIndegree(b));
 
         Set<Set<Node>> previousCliques = new HashSet<>();
         previousCliques.add(new HashSet<>());

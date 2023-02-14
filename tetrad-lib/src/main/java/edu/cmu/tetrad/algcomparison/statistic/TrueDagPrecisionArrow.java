@@ -1,9 +1,10 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,7 +33,7 @@ public class TrueDagPrecisionArrow implements Statistic {
         for (Node x : nodes) {
             for (Node y : nodes) {
                 if (estGraph.isAdjacentTo(x, y) && estGraph.getEndpoint(x, y) == Endpoint.ARROW) {
-                    if (!trueGraph.isAncestorOf(y, x)) {
+                    if (!trueGraph.paths().isAncestorOf(y, x)) {
                         tp++;
                     } else {
                         System.out.println("Shouldn't be " + y + "~~>" + x + ": " + estGraph.getEdge(x, y));

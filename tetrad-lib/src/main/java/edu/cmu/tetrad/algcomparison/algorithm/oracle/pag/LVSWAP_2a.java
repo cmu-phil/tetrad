@@ -14,7 +14,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.LvSwap;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
@@ -35,24 +35,24 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LV-Swap-2",
-        command = "lv-swap-2",
+        name = "LV-Swap-2a",
+        command = "lv-swap-2a",
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class LVSWAP_2 implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class LVSWAP_2a implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public LVSWAP_2() {
+    public LVSWAP_2a() {
         // Used for reflection; do not delete.
     }
 
-    public LVSWAP_2(IndependenceWrapper test, ScoreWrapper score) {
+    public LVSWAP_2a(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -85,7 +85,7 @@ public class LVSWAP_2 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-            search.setAlgType(LvSwap.AlgType.Alg2);
+            search.setAlgType(LvSwap.AlgType.LVSwap2a);
             search.setDepth(-1);//parameters.getInt(Params.DEPTH));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
@@ -105,11 +105,11 @@ public class LVSWAP_2 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
             Graph graph = search.search();
 
-            GraphUtils.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.circleLayout(graph, 200, 200, 150);
 
             return graph;
         } else {
-            LVSWAP_2 algorithm = new LVSWAP_2(this.test, this.score);
+            LVSWAP_2a algorithm = new LVSWAP_2a(this.test, this.score);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
@@ -126,7 +126,7 @@ public class LVSWAP_2 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
     @Override
     public String getDescription() {
-        return "LV-Swap-2 (BOSS + swap rules) using " + this.test.getDescription()
+        return "LV-Swap-2a (BOSS + swap rules) using " + this.test.getDescription()
                 + " and " + this.score.getDescription();
     }
 

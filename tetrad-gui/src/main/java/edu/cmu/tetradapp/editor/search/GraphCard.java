@@ -33,8 +33,6 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import java.net.URL;
 
 /**
@@ -95,7 +93,7 @@ public class GraphCard extends JPanel {
         graph.add(new JMenuItem(new SelectBidirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectUndirectedAction(this.workbench)));
         graph.add(new JMenuItem(new SelectLatentsAction(this.workbench)));
-        graph.add(new PagTypeSetter(this.workbench));
+        graph.add(new PagColorer(this.workbench));
 
         menuBar.add(graph);
 

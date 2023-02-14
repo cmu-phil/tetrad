@@ -24,7 +24,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -231,6 +233,7 @@ public final class Cpc implements GraphSearch {
     }
 
     public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
         return search(new Fas(getIndependenceTest()), nodes);
     }
 
@@ -243,7 +246,7 @@ public final class Cpc implements GraphSearch {
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
-        long startTime = System.currentTimeMillis();
+        long startTime = MillisecondTimes.timeMillis();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
         if (!allNodes.containsAll(nodes)) {
@@ -274,7 +277,7 @@ public final class Cpc implements GraphSearch {
         meekRules.orientImplied(this.graph);
 
         // Remove ambiguities whose status have been determined.
-        Set<Triple> ambiguities = this.graph.getAmbiguousTriples();
+        Set<Triple> ambiguities = this.graph.underlines().getAmbiguousTriples();
 
         for (Triple triple : new HashSet<>(ambiguities)) {
             Node x = triple.getX();
@@ -282,17 +285,17 @@ public final class Cpc implements GraphSearch {
             Node z = triple.getZ();
 
             if (this.graph.isDefCollider(x, y, z)) {
-                this.graph.removeAmbiguousTriple(x, y, z);
+                this.graph.underlines().removeAmbiguousTriple(x, y, z);
             }
 
             if (this.graph.getEdge(x, y).pointsTowards(x) || this.graph.getEdge(y, z).pointsTowards(z)) {
-                this.graph.removeAmbiguousTriple(x, y, z);
+                this.graph.underlines().removeAmbiguousTriple(x, y, z);
             }
         }
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
@@ -399,7 +402,7 @@ public final class Cpc implements GraphSearch {
                 } else {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
             }
         }
@@ -412,7 +415,7 @@ public final class Cpc implements GraphSearch {
         List<Node> adjk = g.getAdjacentNodes(k);
         List<List<Node>> sepsets = new ArrayList<>();
 
-        for (int d = 0; d <= Math.max(adji.size(), adjk.size()); d++) {
+        for (int d = 0; d <= FastMath.max(adji.size(), adjk.size()); d++) {
             if (adji.size() >= 2 && d <= adji.size()) {
                 ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;

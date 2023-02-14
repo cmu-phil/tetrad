@@ -4,9 +4,10 @@ import edu.cmu.tetrad.algcomparison.simulation.Simulation;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.GraphPersistence;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -46,14 +47,14 @@ public class LoadContinuousDataAndGraphs implements Simulation {
                 for (int i = 0; i < numDataSets; i++) {
                     File file2 = new File(this.path + "/graph/graph." + (i + 1) + ".txt");
                     System.out.println("Loading graph from " + file2.getAbsolutePath());
-                    this.graphs.add(GraphUtils.loadGraphTxt(file2));
+                    this.graphs.add(GraphPersistence.loadGraphTxt(file2));
 
-                    edu.cmu.tetrad.graph.GraphUtils.circleLayout(this.graphs.get(i), 225, 200, 150);
+                    LayoutUtil.circleLayout(this.graphs.get(i), 225, 200, 150);
 
                     File file1 = new File(this.path + "/data/data." + (i + 1) + ".txt");
 
                     System.out.println("Loading data from " + file1.getAbsolutePath());
-                    DataSet data = DataUtils.loadContinuousData(file1, "//", '\"',
+                    DataSet data = SimpleDataLoader.loadContinuousData(file1, "//", '\"',
                             "*", true, Delimiter.TAB);
                     this.dataSets.add(data);
                 }

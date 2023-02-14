@@ -6,7 +6,10 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.PcAll;
@@ -46,16 +49,14 @@ public class PCMAX implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-                if (parameters.getInt(Params.TIME_LAG) > 0) {
-                    DataSet dataSet = (DataSet) dataModel;
-                    DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                    if (dataSet.getName() != null) {
-                        timeSeries.setName(dataSet.getName());
-                    }
-                    dataModel = timeSeries;
-                    knowledge = timeSeries.getKnowledge();
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                DataSet dataSet = (DataSet) dataModel;
+                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
                 }
+                dataModel = timeSeries;
+                knowledge = timeSeries.getKnowledge();
             }
 
             final PcAll.ColliderDiscovery colliderDiscovery

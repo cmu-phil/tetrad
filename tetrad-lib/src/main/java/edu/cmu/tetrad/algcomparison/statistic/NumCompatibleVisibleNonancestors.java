@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Edges;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 
 import static edu.cmu.tetrad.graph.GraphUtils.compatible;
@@ -39,7 +42,7 @@ public class NumCompatibleVisibleNonancestors implements Statistic {
                 Node x = Edges.getDirectedEdgeTail(edge);
                 Node y = Edges.getDirectedEdgeHead(edge);
 
-                if (trueGraph.isAncestorOf(x, y)) {
+                if (trueGraph.paths().isAncestorOf(x, y)) {
 //                    System.out.println("Ancestor(x, y): " + Edges.directedEdge(x, y));
                     tp++;
                 } else {

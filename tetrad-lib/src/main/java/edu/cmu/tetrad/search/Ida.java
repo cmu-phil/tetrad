@@ -8,14 +8,15 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.SublistGenerator;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.min;
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.min;
 
 /**
  * Implements the IDA algorithm, Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
@@ -57,7 +58,7 @@ public class Ida {
         Map<Node, Double> allEffects = calculateMinimumEffectsOnY(y);
 
         List<Node> nodes = new ArrayList<>(allEffects.keySet());
-        Collections.shuffle(nodes);
+        RandomUtil.shuffle(nodes);
 
         nodes.sort((o1, o2) -> Double.compare(abs(allEffects.get(o2)), abs(allEffects.get(o1))));
 
@@ -114,7 +115,7 @@ public class Ida {
     public double trueEffect(Node x, Node y, Graph trueDag) {
         if (x == y) throw new IllegalArgumentException("x == y");
 
-        if (!trueDag.isAncestorOf(x, y)) return 0.0;
+        if (!trueDag.paths().isAncestorOf(x, y)) return 0.0;
 
         trueDag = GraphUtils.replaceNodes(trueDag, this.dataSet.getVariables());
 

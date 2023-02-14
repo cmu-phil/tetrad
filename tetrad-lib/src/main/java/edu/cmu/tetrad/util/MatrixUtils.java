@@ -25,6 +25,7 @@ import cern.colt.matrix.linalg.Property;
 import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.linear.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -32,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.lang.Math.sqrt;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * Class Matrix includes several public static functions performing matrix
@@ -200,7 +201,7 @@ public final class MatrixUtils {
     public static boolean isSymmetric(double[][] m, double tolerance) {
         for (int i = 0; i < m.length; i++) {
             for (int j = i; j < m[0].length; j++) {
-                if (Math.abs(m[i][j] - m[j][i]) > tolerance) {
+                if (FastMath.abs(m[i][j] - m[j][i]) > tolerance) {
                     return false;
                 }
             }
@@ -317,7 +318,7 @@ public final class MatrixUtils {
      * @return the identity matrix of the given order.
      */
     public static double[][] identity(int size) {
-        return TetradAlgebra.identity(size).toArray();
+        return Matrix.identity(size).toArray();
     }
 
     /**
@@ -454,7 +455,7 @@ public final class MatrixUtils {
 
         final int sampleSize = 10000;
 
-        Matrix iMinusBInverse = TetradAlgebra.identity(edgeCoef.rows()).minus(edgeCoef).inverse();
+        Matrix iMinusBInverse = Matrix.identity(edgeCoef.rows()).minus(edgeCoef).inverse();
 
         Matrix sample = new Matrix(sampleSize, edgeCoef.columns());
         Vector e = new Vector((edgeCoef.columns()));

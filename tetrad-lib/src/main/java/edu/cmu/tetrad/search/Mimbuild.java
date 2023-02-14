@@ -21,7 +21,10 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CorrelationMatrix;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -142,7 +145,7 @@ public class Mimbuild {
         graph = search.getGraph(true);
 
         this.structureGraph = new EdgeListGraph(graph);
-        GraphUtils.fruchtermanReingoldLayout(this.structureGraph);
+        LayoutUtil.fruchtermanReingoldLayout(this.structureGraph);
 
         return this.structureGraph;
     }

@@ -3,10 +3,14 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
+import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Score;
@@ -30,12 +34,15 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
+public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph {
 
     static final long serialVersionUID = 23L;
 
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
+
+    private Graph externalGraph = null;
+    private Algorithm algorithm = null;
 
     public Fges() {
 
@@ -58,11 +65,21 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
                 knowledge = timeSeries.getKnowledge();
             }
 
+            if (this.algorithm != null) {
+                Graph _graph = this.algorithm.search(dataModel, parameters);
+
+                if (_graph != null) {
+                    this.externalGraph = _graph;
+                }
+            }
+
             Score score = this.score.getScore(dataModel, parameters);
             Graph graph;
 
             edu.cmu.tetrad.search.Fges search
                     = new edu.cmu.tetrad.search.Fges(score);
+//            search.setInitialGraph(externalGraph);
+            search.setBoundGraph(externalGraph);
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setMeekVerbose(parameters.getBoolean(Params.MEEK_VERBOSE));
@@ -81,6 +98,9 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
             return graph;
         } else {
             Fges fges = new Fges(this.score);
+            if (this.externalGraph != null) {
+                fges.setExternalGraph(this.externalGraph);
+            }
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(
@@ -131,7 +151,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     @Override
@@ -144,4 +164,24 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper {
         this.score = score;
     }
 
+
+    @Override
+    public Graph getExternalGraph() {
+        return this.externalGraph;
+    }
+
+    @Override
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
+    }
+
+    @Override
+    public void setExternalGraph(Algorithm algorithm) {
+        if (algorithm == null) {
+            throw new IllegalArgumentException("This EB algorithm needs both data and a graph source as inputs; it \n"
+                    + "will orient the edges in the input graph using the data.");
+        }
+
+        this.algorithm = algorithm;
+    }
 }

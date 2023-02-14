@@ -27,16 +27,17 @@ import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
+import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.csb.mgm.MGM;
 import edu.pitt.csb.mgm.MixedUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
@@ -199,7 +200,7 @@ public class StabilityUtils {
         int[][] sampMat = new int[numSub][subSize];
 
         for (int i = 0; i < numSub; i++) {
-            Collections.shuffle(indices);
+            RandomUtil.shuffle(indices);
             int[] curSamp;
             SAMP:
             while (true) {
@@ -223,7 +224,7 @@ public class StabilityUtils {
             indices.add(i);
         }
 
-        Collections.shuffle(indices);
+        RandomUtil.shuffle(indices);
         int[] samp = new int[subSize];
         for (int i = 0; i < subSize; i++) {
             samp[i] = indices.get(i);
@@ -235,7 +236,7 @@ public class StabilityUtils {
     //some tests...
     public static void main(String[] args) {
         final String fn = "/Users/ajsedgewick/tetrad_mgm_runs/run2/networks/DAG_0_graph.txt";
-        Graph trueGraph = GraphUtils.loadGraphTxt(new File(fn));
+        Graph trueGraph = GraphPersistence.loadGraphTxt(new File(fn));
         DataSet ds = null;
         try {
             ds = MixedUtils.loadData("/Users/ajsedgewick/tetrad_mgm_runs/run2/data/", "DAG_0_data.txt");
@@ -245,14 +246,14 @@ public class StabilityUtils {
 
         final double lambda = .1;
         SearchWrappers.MGMWrapper mgm = new SearchWrappers.MGMWrapper(lambda, lambda, lambda);
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         DoubleMatrix2D xi = StabilityUtils.StabilitySearch(ds, mgm, 8, 200);
-        long end = System.currentTimeMillis();
+        long end = MillisecondTimes.timeMillis();
         System.out.println("Not parallel: " + ((end - start) / 1000.0));
 
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         DoubleMatrix2D xi2 = StabilityUtils.StabilitySearchPar(ds, mgm, 8, 200);
-        end = System.currentTimeMillis();
+        end = MillisecondTimes.timeMillis();
         System.out.println("Parallel: " + ((end - start) / 1000.0));
 
         System.out.println(xi);

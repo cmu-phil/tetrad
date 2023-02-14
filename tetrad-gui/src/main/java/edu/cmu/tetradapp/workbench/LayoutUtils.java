@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.GraphEditorUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -89,7 +90,7 @@ public class LayoutUtils {
         }
 
         int lag0YDiff = maxLag0Y - minLag0Y;
-        int ySpace = Math.max(lag0YDiff + 25, 100);
+        int ySpace = FastMath.max(lag0YDiff + 25, 100);
 
         int minY = Integer.MAX_VALUE;
 
@@ -146,7 +147,7 @@ public class LayoutUtils {
         }
 
         int lag0YDiff = maxLag0Y - minLag0Y;
-        int ySpace = Math.max(lag0YDiff + 25, 100);
+        int ySpace = FastMath.max(lag0YDiff + 25, 100);
 
         int minY = Integer.MAX_VALUE;
 
@@ -203,7 +204,7 @@ public class LayoutUtils {
         }
 
         int lag0XDiff = maxLag0X - minLag0X;
-        int xSpace = Math.max(lag0XDiff + 25, 90);
+        int xSpace = FastMath.max(lag0XDiff + 25, 90);
 
         int minX = Integer.MAX_VALUE;
 
@@ -260,7 +261,7 @@ public class LayoutUtils {
         }
 
         int lag0XDiff = maxLag0X - minLag0X;
-        int xSpace = Math.max(lag0XDiff + 25, 90);
+        int xSpace = FastMath.max(lag0XDiff + 25, 90);
 
         int minX = Integer.MAX_VALUE;
 
@@ -454,7 +455,7 @@ public class LayoutUtils {
             }
         }
 
-        GraphUtils.circleLayout(graph, 225, 200, 150);
+        LayoutUtil.circleLayout(graph, 225, 200, 150);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.layered;
     }
@@ -469,7 +470,7 @@ public class LayoutUtils {
         }
 
         Graph sourceGraph = layoutEditable.getSourceGraph();
-        GraphUtils.arrangeBySourceGraph(graph, sourceGraph);
+        LayoutUtil.arrangeBySourceGraph(graph, sourceGraph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.source;
     }
@@ -507,13 +508,13 @@ public class LayoutUtils {
 
         Rectangle r = layoutEditable.getVisibleRect();
 
-        int m = Math.min(r.width, r.height) / 2;
+        int m = FastMath.min(r.width, r.height) / 2;
         int radius = m - 50;
         int centerx = r.x + m;
         int centery = r.y + m;
 
 //        DataGraphUtils.circleLayout(graph, 200, 200, 150);
-        GraphUtils.circleLayout(graph, centerx, centery, radius);
+        LayoutUtil.circleLayout(graph, centerx, centery, radius);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.circle;
     }
@@ -545,7 +546,7 @@ public class LayoutUtils {
             double stopEnergy = Preferences.userRoot().getDouble(
                     "kamadaKawaiLayoutStopEnergy", 1.0);
 
-            GraphUtils.kamadaKawaiLayout(graph, initializeRandomly,
+            LayoutUtil.kamadaKawaiLayout(graph, initializeRandomly,
                     naturalEdgeLength, springConstant, stopEnergy);
             layoutEditable.layoutByGraph(graph);
             LayoutUtils.layout = Layout.kamadaKawai;
@@ -564,7 +565,7 @@ public class LayoutUtils {
             }
         }
 
-        GraphUtils.fruchtermanReingoldLayout(graph);
+        LayoutUtil.fruchtermanReingoldLayout(graph);
         layoutEditable.layoutByGraph(graph);
         LayoutUtils.layout = Layout.fruchtermReingold;
     }

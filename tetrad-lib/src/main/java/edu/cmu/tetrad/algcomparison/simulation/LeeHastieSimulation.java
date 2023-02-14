@@ -11,11 +11,10 @@ import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.csb.mgm.MixedUtils;
-import org.apache.commons.lang3.RandomUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -40,7 +39,9 @@ public class LeeHastieSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (!newModel && !dataSets.isEmpty()) return;
+//        if (parameters.getLong(Params.SEED) != -1L) {
+//            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+//        }
 
         double percentDiscrete = parameters.getDouble(Params.PERCENT_DISCRETE);
 
@@ -115,6 +116,7 @@ public class LeeHastieSimulation implements Simulation {
         parameters.add(Params.SAVE_LATENT_VARS);
 
         parameters.add(Params.VERBOSE);
+//        parameters.add(Params.SEED);
 
         return parameters;
     }
@@ -134,16 +136,15 @@ public class LeeHastieSimulation implements Simulation {
 
         List<Node> nodes = dag.getNodes();
 
-        Collections.shuffle(nodes);
+        List<Node> shuffledNodes = new ArrayList<>(nodes);
+        RandomUtil.shuffle(shuffledNodes);
 
         if (this.shuffledOrder == null) {
-            List<Node> shuffledNodes = new ArrayList<>(nodes);
-            Collections.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
 
-        for (int i = 0; i < nodes.size(); i++) {
-            if (i < nodes.size() * parameters.getDouble(Params.PERCENT_DISCRETE) * 0.01) {
+        for (int i = 0; i < this.shuffledOrder.size(); i++) {
+            if (i < this.shuffledOrder.size() * parameters.getDouble(Params.PERCENT_DISCRETE) * 0.01) {
                 int minNumCategories = parameters.getInt(Params.MIN_CATEGORIES);
                 int maxNumCategories = parameters.getInt(Params.MAX_CATEGORIES);
                 int value = pickNumCategories(minNumCategories, maxNumCategories);
@@ -165,6 +166,6 @@ public class LeeHastieSimulation implements Simulation {
     }
 
     private int pickNumCategories(int min, int max) {
-        return RandomUtils.nextInt(min, max + 1);
+        return min + RandomUtil.getInstance().nextInt(max - min + 1);
     }
 }

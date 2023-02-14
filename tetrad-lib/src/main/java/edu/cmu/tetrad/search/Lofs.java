@@ -31,6 +31,7 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -88,7 +89,7 @@ public class Lofs {
         Graph graph = new EdgeListGraph(skeleton.getNodes());
 
         List<Node> nodes = skeleton.getNodes();
-//        Collections.shuffle(nodes);
+//        RandomUtil.shuffle(nodes);
 
         if (isR1Done()) {
             ruleR1(skeleton, graph, nodes);
@@ -160,7 +161,7 @@ public class Lofs {
 
     private void ruleR2(Graph skeleton, Graph graph) {
         Set<Edge> edgeList1 = skeleton.getEdges();
-//        Collections.shuffle(edgeList1);
+//        RandomUtil.shuffle(edgeList1);
 
         for (Edge adj : edgeList1) {
             Node x = adj.getNode1();
@@ -392,11 +393,11 @@ public class Lofs {
         if (this.score == Score.andersonDarling) {
             return andersonDarlingPASquareStar(y, parents);
         } else if (this.score == Score.kurtosis) {
-            return Math.abs(StatUtils.kurtosis(residual(y, parents)));
+            return FastMath.abs(StatUtils.kurtosis(residual(y, parents)));
         } else if (this.score == Score.skew) {
-            return Math.abs(StatUtils.skewness(residual(y, parents)));
+            return FastMath.abs(StatUtils.skewness(residual(y, parents)));
         } else if (this.score == Score.fifthMoment) {
-            return Math.abs(StatUtils.standardizedFifthMoment(residual(y, parents)));
+            return FastMath.abs(StatUtils.standardizedFifthMoment(residual(y, parents)));
         } else if (this.score == Score.absoluteValue) {
             return localScoreA(y, parents);
         }
@@ -455,11 +456,11 @@ public class Lofs {
         DoubleArrayList f = new DoubleArrayList(_f);
 
         for (int k = 0; k < _residuals.size(); k++) {
-            f.set(k, Math.abs(f.get(k)));
+            f.set(k, FastMath.abs(f.get(k)));
         }
 
         double _mean = Descriptive.mean(f);
-        double diff = _mean - Math.sqrt(2.0 / Math.PI);
+        double diff = _mean - FastMath.sqrt(2.0 / FastMath.PI);
         score += diff * diff;
 
         return score;

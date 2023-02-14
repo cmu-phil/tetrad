@@ -26,7 +26,10 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -37,7 +40,7 @@ public class TestMarkovBlanketSearches {
      */
     @Test
     public void testSubgraph1() {
-        Graph graph = GraphConverter.convert("T-->X,X-->Y,W-->X,W-->Y");
+        Graph graph = GraphUtils.convert("T-->X,X-->Y,W-->X,W-->Y");
 
         IndTestDSep test = new IndTestDSep(graph);
 
@@ -56,7 +59,7 @@ public class TestMarkovBlanketSearches {
      */
 //    @Test
     public void testSubgraph2() {
-        Graph graph = GraphConverter.convert("P1-->T,P2-->T,T-->C1,T-->C2," +
+        Graph graph = GraphUtils.convert("P1-->T,P2-->T,T-->C1,T-->C2," +
                 "T-->C3,PC1a-->C1,PC1b-->C1,PC2a-->C2,PC2b<--C2,PC3a-->C3," +
                 "PC3b-->C3,PC1b-->PC2a,PC1a<--PC3b,U,V");
 
@@ -79,7 +82,7 @@ public class TestMarkovBlanketSearches {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph dag = new Dag(GraphUtils.randomGraph(nodes1, 0, 10,
+        Graph dag = new Dag(RandomGraph.randomGraph(nodes1, 0, 10,
                 5, 5, 5, false));
         IndependenceTest test = new IndTestDSep(dag);
         PcMb search = new PcMb(test, -1);

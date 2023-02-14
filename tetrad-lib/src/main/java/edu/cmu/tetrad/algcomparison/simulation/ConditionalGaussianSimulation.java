@@ -5,17 +5,13 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.ParamType;
 import edu.cmu.tetrad.sem.Parameter;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
-import org.apache.commons.lang3.RandomUtils;
 
 import java.util.*;
 
@@ -46,7 +42,9 @@ public class ConditionalGaussianSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (!newModel && !dataSets.isEmpty()) return;
+        if (parameters.getLong(Params.SEED) != -1L) {
+            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+        }
 
         setVarLow(parameters.getDouble(Params.VAR_LOW));
         setVarHigh(parameters.getDouble(Params.VAR_HIGH));
@@ -134,6 +132,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         parameters.add(Params.MEAN_HIGH);
         parameters.add(Params.SAVE_LATENT_VARS);
         parameters.add(Params.RANDOMIZE_COLUMNS);
+        parameters.add(Params.SEED);
 
         return parameters;
     }
@@ -153,11 +152,11 @@ public class ConditionalGaussianSimulation implements Simulation {
 
         List<Node> nodes = G.getNodes();
 
-        Collections.shuffle(nodes);
+        RandomUtil.shuffle(nodes);
 
         if (this.shuffledOrder == null) {
             List<Node> shuffledNodes = new ArrayList<>(nodes);
-            Collections.shuffle(shuffledNodes);
+            RandomUtil.shuffle(shuffledNodes);
             this.shuffledOrder = shuffledNodes;
         }
 
@@ -218,7 +217,9 @@ public class ConditionalGaussianSimulation implements Simulation {
 
         Map<Combination, Double> paramValues = new HashMap<>();
 
-        List<Node> tierOrdering = G.getCausalOrdering();
+        Paths paths = G.paths();
+        List<Node> initialOrder = G.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
 
         int[] tiers = new int[tierOrdering.size()];
 
@@ -496,6 +497,6 @@ public class ConditionalGaussianSimulation implements Simulation {
     }
 
     private int pickNumCategories(int min, int max) {
-        return RandomUtils.nextInt(min, max + 1);
+        return min + RandomUtil.getInstance().nextInt(max - min + 1);
     }
 }

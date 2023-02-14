@@ -22,15 +22,16 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static edu.cmu.tetrad.graph.GraphUtils.removeByPossibleDsep;
 
 /**
  * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
@@ -180,7 +181,7 @@ public final class Fci implements GraphSearch {
     }
 
     public Graph search() {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         Fas fas = new Fas(getIndependenceTest());
         this.logger.log("info", "Starting FCI algorithm.");
@@ -205,7 +206,7 @@ public final class Fci implements GraphSearch {
 
         if (isPossibleDsepSearchDone()) {
             new FciOrient(sepsets1).ruleR0(graph);
-            removeByPossibleDsep(graph, independenceTest, sepsets);
+            graph.paths().removeByPossibleDsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
@@ -225,9 +226,8 @@ public final class Fci implements GraphSearch {
         fciOrient.ruleR0(graph);
 
         fciOrient.doFinalOrientation(graph);
-        graph.setGraphType(EdgeListGraph.GraphType.PAG);
 
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
 
         this.elapsedTime = stop - start;
 

@@ -35,6 +35,7 @@ import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -54,7 +55,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
-import static java.lang.Math.min;
+import static org.apache.commons.math3.util.FastMath.min;
 
 
 /**
@@ -119,7 +120,7 @@ public class MarkovCheckEditor extends JPanel {
                     "\n    " + missingVars);
         }
 
-        if (sourceGraph.existsDirectedCycle()) {
+        if (sourceGraph.paths().existsDirectedCycle()) {
             JOptionPane.showMessageDialog(
                     JOptionUtils.centeringComp().getTopLevelAncestor(),
                     "That graph is not a DAG. For linear models, this is OK, but for nonlinear models," +
@@ -572,7 +573,7 @@ public class MarkovCheckEditor extends JPanel {
 
                 // Listing all facts before checking any (in preparation for parallelization).
                 for (Node x : dag.getNodes()) {
-                    List<Node> desc = dag.getDescendants(Collections.singletonList(x));
+                    List<Node> desc = dag.paths().getDescendants(Collections.singletonList(x));
                     List<Node> nondesc = dag.getNodes();
                     nondesc.removeAll(desc);
                     nondesc.removeAll(dag.getParents(x));
@@ -618,7 +619,7 @@ public class MarkovCheckEditor extends JPanel {
                             Node y = fact.getY();
                             List<Node> z = fact.getZ();
                             boolean verbose = test.isVerbose();
-                            test.setVerbose(true);
+                            test.setVerbose(verbose);
                             IndependenceResult result = test.checkIndependence(x, y, z);
                             boolean indep = result.independent();
                             double pValue = result.getPValue();
@@ -697,7 +698,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private int getChunkSize(int n) {
-        int chunk = (int) Math.ceil((n / ((double) (5 * Runtime.getRuntime().availableProcessors()))));
+        int chunk = (int) FastMath.ceil((n / ((double) (5 * Runtime.getRuntime().availableProcessors()))));
         if (chunk < 1) chunk = 1;
         return chunk;
     }

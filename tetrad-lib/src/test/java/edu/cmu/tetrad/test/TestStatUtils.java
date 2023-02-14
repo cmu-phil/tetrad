@@ -24,8 +24,8 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Matrix;
@@ -39,7 +39,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -67,7 +67,7 @@ public class TestStatUtils {
             nodes1.add(new ContinuousVariable("X" + (i + 1)));
         }
 
-        Graph graph = new Dag(GraphUtils.randomGraph(nodes1, 0, 5,
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes1, 0, 5,
                 3, 3, 3, false));
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);

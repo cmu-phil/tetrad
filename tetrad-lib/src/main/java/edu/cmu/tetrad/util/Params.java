@@ -147,6 +147,7 @@ public final class Params {
     public static final String OUTPUT_RBD = "outputRBD";
     public static final String PARALLELIZED = "parallelized";
     public static final String PENALTY_DISCOUNT = "penaltyDiscount";
+    public static final String PENALTY_DISCOUNT_ZS = "penaltyDiscountZs";
     public static final String EBIC_GAMMA = "ebicGamma";
     public static final String PERCENT_DISCRETE = "percentDiscrete";
     public static final String PERCENT_RESAMPLE_SIZE = "percentResampleSize";
@@ -184,6 +185,7 @@ public final class Params {
     public static final String USE_MAX_P_ORIENTATION_HEURISTIC = "useMaxPOrientationHeuristic";
     public static final String USE_SKEW_ADJACENCIES = "useSkewAdjacencies";
     public static final String USE_WISHART = "useWishart";
+    public static final String CHECK_TYPE = "checkType";
     public static final String VAR_HIGH = "varHigh";
     public static final String VAR_LOW = "varLow";
     public static final String VERBOSE = "verbose";
@@ -233,6 +235,7 @@ public final class Params {
     public static final String IMAGES_META_ALG = "imagesMetaAlg";
     
     public static final String SEED = "seed";
+    public static final String SIGNIFICANCE_CHECKED = "significanceChecked";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

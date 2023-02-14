@@ -15,6 +15,7 @@ import edu.cmu.tetrad.sem.TemplateExpander;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -55,7 +56,9 @@ public class GeneralSemSimulation implements Simulation {
 
     @Override
     public void createData(Parameters parameters, boolean newModel) {
-//        if (!newModel && !dataSets.isEmpty()) return;
+        if (parameters.getLong(Params.SEED) != -1L) {
+            RandomUtil.getInstance().setSeed(parameters.getLong(Params.SEED));
+        }
 
         Graph graph = this.randomGraph.createGraph(parameters);
 
@@ -84,7 +87,7 @@ public class GeneralSemSimulation implements Simulation {
                 for (int k = 0; k < dataSet.getNumRows(); k++) {
                     for (int j = 0; j < dataSet.getNumColumns(); j++) {
                         double d = dataSet.getDouble(k, j);
-                        double norm = RandomUtil.getInstance().nextNormal(0, Math.sqrt(variance));
+                        double norm = RandomUtil.getInstance().nextNormal(0, FastMath.sqrt(variance));
                         dataSet.setDouble(k, j, d + norm);
                     }
                 }
@@ -155,6 +158,7 @@ public class GeneralSemSimulation implements Simulation {
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.GUARANTEE_IID);
+        parameters.add(Params.SEED);
 
         return parameters;
     }

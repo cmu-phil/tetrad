@@ -24,7 +24,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -196,9 +198,10 @@ public final class CcdMax implements GraphSearch {
     //======================================== PRIVATE METHODS ====================================//
 
     private Graph fastAdjacencySearch() {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         FasConcurrent fas = new FasConcurrent(this.independenceTest);
+        fas.setStable(true);
         fas.setDepth(getDepth());
         fas.setKnowledge(this.knowledge);
         fas.setVerbose(false);
@@ -209,7 +212,7 @@ public final class CcdMax implements GraphSearch {
             this.sepsetMap = fas.getSepsets();
         }
 
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
         this.elapsed = stop - start;
 
         return new EdgeListGraph(graph);
@@ -442,7 +445,7 @@ public final class CcdMax implements GraphSearch {
         adji.remove(k);
         adjk.remove(i);
 
-        for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), Math.max(adji.size(), adjk.size())); d++) {
+        for (int d = 0; d <= FastMath.min((this.depth == -1 ? 1000 : this.depth), FastMath.max(adji.size(), adjk.size())); d++) {
             if (d <= adji.size()) {
                 ChoiceGenerator gen = new ChoiceGenerator(adji.size(), d);
                 int[] choice;
@@ -515,7 +518,7 @@ public final class CcdMax implements GraphSearch {
         adj.remove(c);
         adj.remove(a);
 
-        for (int d = 0; d <= Math.min((this.depth == -1 ? 1000 : this.depth), adj.size()); d++) {
+        for (int d = 0; d <= FastMath.min((this.depth == -1 ? 1000 : this.depth), adj.size()); d++) {
             ChoiceGenerator gen = new ChoiceGenerator(adj.size(), d);
             int[] choice;
 

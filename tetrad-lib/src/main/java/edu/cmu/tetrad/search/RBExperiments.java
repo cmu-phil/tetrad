@@ -7,12 +7,14 @@ import edu.cmu.tetrad.bayes.DirichletEstimator;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.performance.Comparison;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.ParsingException;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,8 +25,8 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static java.lang.Math.exp;
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.exp;
+import static org.apache.commons.math3.util.FastMath.log;
 
 public class RBExperiments {
 
@@ -193,8 +195,8 @@ public class RBExperiments {
 
         // set the "numLatentConfounders" percentage of variables to be latent
         int numVars = im.getNumNodes();
-        int LV = (int) Math.floor(numLatentConfounders * numVars);
-        GraphUtils.fixLatents4(LV, dag);
+        int LV = (int) FastMath.floor(numLatentConfounders * numVars);
+        RandomGraph.fixLatents4(LV, dag);
         System.out.println("Variables set to be latent:" + getLatents(dag));
 
         // create output directory and files
@@ -216,35 +218,40 @@ public class RBExperiments {
             throw new RuntimeException(e);
         }
 
+        RandomUtil.getInstance().setSeed(round * 1000000L + 71512);
+
         // simulate data from instantiated model
-        DataSet fullData = im.simulateData(numCases, round * 1000000 + 71512, true);
+        DataSet fullData = im.simulateData(numCases, /*round * 1000000 + 71512,*/ true);
         fullData = refineData(fullData);
         DataSet data = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
-        DagToPag dagToPag = new DagToPag(dag);
-        dagToPag.setCompleteRuleSetUsed(false);
-        Graph PAG_True = dagToPag.convert();
+//        DagToPag dagToPag = new DagToPag(dag);
+//        dagToPag.setCompleteRuleSetUsed(false);
+//        Graph PAG_True = dagToPag.convert();
+
+        Graph PAG_True = SearchGraphUtils.dagToPag(dag);
+
         PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());
 
         // run RFCI to get a PAG using chi-squared test
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         Graph rfciPag = runPagCs(data, alpha);
-        long RfciTime = System.currentTimeMillis() - start;
+        long RfciTime = MillisecondTimes.timeMillis() - start;
         System.out.println("RFCI done!");
 
         // run RFCI-BSC (RB) search using BSC test and obtain constraints that
         // are queried during the search
         List<Graph> bscPags = new ArrayList<>();
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         IndTestProbabilistic testBSC = runRB(data, bscPags, numModels, threshold1);
-        long BscRfciTime = System.currentTimeMillis() - start;
+        long BscRfciTime = MillisecondTimes.timeMillis() - start;
         Map<IndependenceFact, Double> H = testBSC.getH();
         //		out.println("H Size:" + H.size());
         System.out.println("RB (RFCI-BSC) done!");
         //
         // create empirical data for constraints
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         DataSet depData = createDepDataFiltering(H, data, numBootstrapSamples, threshold2, lower, upper);
         out.println("DepData(row,col):" + depData.getNumRows() + "," + depData.getNumColumns());
         System.out.println("Dep data creation done!");
@@ -260,23 +267,23 @@ public class RBExperiments {
         BayesPm pmHat = new BayesPm(estDepBN, 2, 2);
         DirichletBayesIm prior = DirichletBayesIm.symmetricDirichletIm(pmHat, 0.5);
         BayesIm imHat = DirichletEstimator.estimate(prior, depData);
-        Long BscdTime = System.currentTimeMillis() - start;
+        Long BscdTime = MillisecondTimes.timeMillis() - start;
         System.out.println("Dependency BN_Param done");
 
         // compute scores of graphs that are output by RB search using BSC-I and
         // BSC-D methods
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         allScores lnProbs = getLnProbsAll(bscPags, H, data, imHat, estDepBN);
-        Long mutualTime = (System.currentTimeMillis() - start) / 2;
+        Long mutualTime = (MillisecondTimes.timeMillis() - start) / 2;
 
         // normalize the scores
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         Map<Graph, Double> normalizedDep = normalProbs(lnProbs.LnBSCD);
-        Long dTime = System.currentTimeMillis() - start;
+        Long dTime = MillisecondTimes.timeMillis() - start;
 
-        start = System.currentTimeMillis();
+        start =  MillisecondTimes.timeMillis();
         Map<Graph, Double> normalizedInd = normalProbs(lnProbs.LnBSCI);
-        Long iTime = System.currentTimeMillis() - start;
+        Long iTime = MillisecondTimes.timeMillis() - start;
 
         // get the most probable PAG using each scoring method
         normalizedDep = MapUtil.sortByValue(normalizedDep);
@@ -683,7 +690,6 @@ public class RBExperiments {
         Rfci BSCrfci = new Rfci(BSCtest);
 
         BSCrfci.setVerbose(false);
-        BSCrfci.setCompleteRuleSetUsed(false);
         BSCrfci.setDepth(this.depth);
 
         for (int i = 0; i < numModels; i++) {
@@ -701,7 +707,6 @@ public class RBExperiments {
         Rfci fci1 = new Rfci(test);
         fci1.setDepth(this.depth);
         fci1.setVerbose(false);
-        fci1.setCompleteRuleSetUsed(false);
         Graph PAG_CS = fci1.search();
         PAG_CS = GraphUtils.replaceNodes(PAG_CS, data.getVariables());
         return PAG_CS;
@@ -714,7 +719,7 @@ public class RBExperiments {
             BCInference.OP op;
             double p = 0.0;
 
-            if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;
@@ -745,7 +750,7 @@ public class RBExperiments {
                             }
                         }
                         IndependenceFact parentFact = new IndependenceFact(X, Y, Z);
-                        if (pag.isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
+                        if (pag.paths().isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
                             parentValues[parentIndex] = 1;
                         } else {
                             parentValues[parentIndex] = 0;
@@ -802,7 +807,7 @@ public class RBExperiments {
         for (IndependenceFact fact : H.keySet()) {
             BCInference.OP op;
 
-            if (pag.isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;
@@ -869,7 +874,7 @@ public class RBExperiments {
         if (lnYminusLnX < RBExperiments.MININUM_EXPONENT) {
             return lnX;
         } else {
-            double w = Math.log1p(exp(lnYminusLnX));
+            double w = FastMath.log1p(exp(lnYminusLnX));
             return w + lnX;
         }
     }

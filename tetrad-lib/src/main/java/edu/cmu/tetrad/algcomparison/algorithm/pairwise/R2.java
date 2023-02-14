@@ -6,7 +6,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Lofs2;
@@ -56,7 +56,7 @@ public class R2 implements Algorithm, TakesExternalGraph {
             }
 
             List<DataSet> dataSets = new ArrayList<>();
-            dataSets.add(DataUtils.getContinuousDataSet(dataSet));
+            dataSets.add(SimpleDataLoader.getContinuousDataSet(dataSet));
 
             Lofs2 lofs = new Lofs2(this.externalGraph, dataSets);
             lofs.setRule(Lofs2.Rule.R2);

@@ -4,8 +4,10 @@ import edu.cmu.tetrad.annotation.General;
 import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.data.SimpleDataLoader;
+import edu.cmu.tetrad.search.ConditionalCorrelationIndependenceLingam;
+import edu.cmu.tetrad.search.IndTestConditionalCorrelationLingam;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -31,7 +33,7 @@ public class CciLingamTest implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestConditionalCorrelationLingam cci = new IndTestConditionalCorrelationLingam(DataUtils.getContinuousDataSet(dataSet),
+        IndTestConditionalCorrelationLingam cci = new IndTestConditionalCorrelationLingam(SimpleDataLoader.getContinuousDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA));
 
         if (parameters.getInt(Params.BASIS_TYPE) == 1) {

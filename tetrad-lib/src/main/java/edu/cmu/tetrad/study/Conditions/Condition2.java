@@ -58,7 +58,7 @@ public class Condition2 {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
@@ -95,7 +95,7 @@ public class Condition2 {
         statistics.add(new ArrowheadRecall());
         statistics.add(new MathewsCorrAdj());
         statistics.add(new MathewsCorrArrow());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
         statistics.setWeight("AR", 0.5);
@@ -192,7 +192,7 @@ public class Condition2 {
         statistics2.add(new ArrowheadFN());
         statistics2.add(new ArrowheadTP());
         statistics2.add(new ArrowheadTN());
-        statistics2.add(new ElapsedTime());
+        statistics2.add(new ElapsedCpuTime());
 //
         comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_2",
                 "/Users/user/causal-comparisons/condition_2", "Counts.txt",

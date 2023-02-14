@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -698,7 +699,9 @@ public final class MlBayesImObs implements BayesIm {
         DataSet fullData = new BoxDataSet(new VerticalDoubleDataBox(sampleSize, variables.size()), variables);
 
         Graph contemporaneousDag = timeSeriesGraph.subgraph(lag0Nodes);
-        List<Node> tierOrdering = contemporaneousDag.getCausalOrdering();
+        Paths paths = contemporaneousDag.paths();
+        List<Node> initialOrder = contemporaneousDag.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
@@ -743,26 +746,26 @@ public final class MlBayesImObs implements BayesIm {
         return fullData;
     }
 
-    /**
-     * Simulates a sample with the given sample size.
-     *
-     * @param sampleSize the sample size.
-     * @param seed       the random number generator seed allows you recreate the
-     *                   simulated data by passing in the same seed (so you don't have to store
-     *                   the sample data
-     * @return the simulated sample as a DataSet.
-     */
-    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-        RandomUtil random = RandomUtil.getInstance();
-        random.setSeed(seed);
-        return simulateData(sampleSize, latentDataSaved);
-    }
+//    /**
+//     * Simulates a sample with the given sample size.
+//     *
+//     * @param sampleSize the sample size.
+//     * @param seed       the random number generator seed allows you recreate the
+//     *                   simulated data by passing in the same seed (so you don't have to store
+//     *                   the sample data
+//     * @return the simulated sample as a DataSet.
+//     */
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateData(sampleSize, latentDataSaved);
+//    }
 
-    public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
-        RandomUtil random = RandomUtil.getInstance();
-        random.setSeed(seed);
-        return simulateDataHelper(dataSet, latentDataSaved);
-    }
+//    public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateDataHelper(dataSet, latentDataSaved);
+//    }
 
     /**
      * Simulates a sample with the given sample size.
@@ -851,7 +854,9 @@ public final class MlBayesImObs implements BayesIm {
         // Get a tier ordering and convert it to an int array.
         Graph graph = getBayesPm().getDag();
         Dag dag = new Dag(graph);
-        List<Node> tierOrdering = dag.getCausalOrdering();
+        Paths paths = dag.paths();
+        List<Node> initialOrder = dag.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
@@ -937,7 +942,7 @@ public final class MlBayesImObs implements BayesIm {
                         continue;
                     }
 
-                    if (Math.abs(prob - otherProb) > MlBayesImObs.ALLOWABLE_DIFFERENCE) {
+                    if (FastMath.abs(prob - otherProb) > MlBayesImObs.ALLOWABLE_DIFFERENCE) {
                         return false;
                     }
                 }

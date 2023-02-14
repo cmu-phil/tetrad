@@ -23,6 +23,7 @@ package edu.cmu.tetrad.calculator.expression;
 
 import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.Collections;
 import java.util.List;
@@ -38,13 +39,13 @@ public class ConstantExpression implements Expression {
     /**
      * Constant expression for PI.
      */
-    public static final ConstantExpression PI = new ConstantExpression(Math.PI, "PI");//"\u03C0");
+    public static final ConstantExpression PI = new ConstantExpression(FastMath.PI, "PI");//"\u03C0");
 
 
     /**
      * Constant expression for e.
      */
-    public static final ConstantExpression E = new ConstantExpression(Math.E, "E");// "e");
+    public static final ConstantExpression E = new ConstantExpression(FastMath.E, "E");// "e");
 
     /**
      * THe value of the expression.

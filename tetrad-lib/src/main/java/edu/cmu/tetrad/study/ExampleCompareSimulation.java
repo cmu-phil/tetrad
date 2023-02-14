@@ -103,7 +103,7 @@ public class ExampleCompareSimulation {
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecallCommonEdges());
         statistics.add(new F1All());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
         statistics.add(new TailPrecision());
         statistics.add(new TailRecall());
         statistics.add(new GraphExactlyRight());

@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.*;
@@ -200,18 +200,17 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
             }
         }
 
-        this.fges.setExternalGraph(this.externalGraph);
+        this.fges.setBoundGraph(this.externalGraph);
         this.fges.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
         this.fges.setVerbose(true);
-        this.fges.setFaithfulnessAssumed(params.getBoolean("faithfulnessAssumed", true));
         Graph graph = this.fges.search();
 
         if (getSourceGraph() != null) {
-            GraphUtils.arrangeBySourceGraph(graph, getSourceGraph());
+            LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (((Knowledge) getParams().get("knowledge", new Knowledge())).isDefaultToKnowledgeLayout()) {
             SearchGraphUtils.arrangeByKnowledgeTiers(graph, (Knowledge) getParams().get("knowledge", new Knowledge()));
         } else {
-            GraphUtils.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.circleLayout(graph, 200, 200, 150);
         }
 
         setResultGraph(graph);

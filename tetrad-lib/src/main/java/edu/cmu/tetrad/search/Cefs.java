@@ -24,8 +24,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
 import java.util.*;
@@ -174,7 +176,7 @@ public final class Cefs {
      * @param targetName The name of the target variable.
      */
     public Graph search(String targetName) {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
@@ -443,7 +445,7 @@ public final class Cefs {
     }
 
     private void finishUp(long start, Graph graph) {
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
         this.elapsedTime = stop - start;
         double seconds = this.elapsedTime / 1000d;
 
@@ -562,7 +564,7 @@ public final class Cefs {
                 } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     this.logger.log("tripleClassifications", "Ambiguous triple oriented: " + Triple.pathString(graph, x, y, z));
                 } else {
                     this.noncolliderTriples.add(new Triple(x, y, z));
@@ -589,7 +591,7 @@ public final class Cefs {
         if (_depth == -1) {
             _depth = Integer.MAX_VALUE;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);
@@ -618,7 +620,7 @@ public final class Cefs {
         if (_depth == -1) {
             _depth = Integer.MAX_VALUE;
         }
-        _depth = Math.min(_depth, _nodes.size());
+        _depth = FastMath.min(_depth, _nodes.size());
 
         for (int d = 0; d <= _depth; d++) {
             ChoiceGenerator cg = new ChoiceGenerator(_nodes.size(), d);

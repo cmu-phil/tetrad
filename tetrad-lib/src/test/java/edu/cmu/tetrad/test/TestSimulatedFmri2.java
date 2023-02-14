@@ -62,7 +62,7 @@ public class TestSimulatedFmri2 {
         statistics.add(new TwoCycleFalsePositive());
         statistics.add(new TwoCycleFalseNegative());
         statistics.add(new TwoCycleTruePositive());
-        statistics.add(new ElapsedTime());
+        statistics.add(new ElapsedCpuTime());
         statistics.setWeight("AHR", 1.0);
         statistics.setWeight("2CP", 1.0);
         statistics.setWeight("2CR", 1.0);

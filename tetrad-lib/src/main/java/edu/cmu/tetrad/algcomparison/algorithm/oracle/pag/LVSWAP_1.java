@@ -14,7 +14,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.LvSwap;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
@@ -85,7 +85,7 @@ public class LVSWAP_1 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
 
-            search.setAlgType(LvSwap.AlgType.Alg1);
+            search.setAlgType(LvSwap.AlgType.LVSwap1);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
@@ -105,7 +105,7 @@ public class LVSWAP_1 implements Algorithm, UsesScoreWrapper, TakesIndependenceW
 
             Graph graph = search.search();
 
-            GraphUtils.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.circleLayout(graph, 200, 200, 150);
 
             return graph;
         } else {

@@ -26,7 +26,7 @@ import edu.cmu.tetradapp.workbench.DisplayNodeUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 
 /**
  * Appearance of session nodes for standard nodes.
@@ -112,8 +112,8 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
     }
 
     private Shape getShape() {
-        return new Rectangle2D.Double(0, 0, getSize().width - 1,
-                getSize().height - 1);
+        return new RoundRectangle2D.Double(0, 0, getSize().width - 1,
+                getSize().height - 1, 10, 10);
     }
 
     public boolean contains(int x, int y) {

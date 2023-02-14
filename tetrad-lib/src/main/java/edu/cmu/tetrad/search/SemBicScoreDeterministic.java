@@ -27,10 +27,11 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
 
-import static java.lang.Math.log;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Implements the continuous BIC score for FGES.
@@ -169,7 +170,7 @@ public class SemBicScoreDeterministic implements Score {
 
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > 0;//-0.25 * getPenaltyDiscount() * Math.log(sampleSize);
+        return bump > 0;//-0.25 * getPenaltyDiscount() * FastMath.log(sampleSize);
     }
 
     public DataSet getDataSet() {
@@ -219,7 +220,7 @@ public class SemBicScoreDeterministic implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(log(this.sampleSize));
+        return (int) FastMath.ceil(log(this.sampleSize));
     }
 
     @Override

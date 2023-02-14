@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetradapp.util.DoubleTextField;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import java.awt.*;
@@ -855,9 +856,9 @@ public class ScatterPlotView extends JPanel {
             g.drawString(this.nf.format(xmin), 20 + 30, yMax + 14);
             g.drawString(this.scatterPlot.getXvar(), xMin + (xRange / 2) - 10, yMax + 14);
             g.translate(xMin - 7, yMin + (yRange / 2) + 10);
-            g.rotate(-Math.PI / 2.0);
+            g.rotate(-FastMath.PI / 2.0);
             g.drawString(this.scatterPlot.getYvar(), xStringMin, 0);
-            g.rotate(Math.PI / 2.0);
+            g.rotate(FastMath.PI / 2.0);
             g.translate(-(xMin - 7), -(yMin + (yRange / 2) + 10));
 
             /* draws ScatterPlot of the values */

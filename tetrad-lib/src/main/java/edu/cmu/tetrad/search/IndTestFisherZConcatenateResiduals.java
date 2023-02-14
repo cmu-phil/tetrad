@@ -32,9 +32,9 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -153,15 +153,15 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         if (r > 1.) r = 1.;
         if (r < -1.) r = -1.;
 
-        double fisherZ = Math.sqrt(sampleSize - z.size() - 3.0) *
-                0.5 * (Math.log(1.0 + r) - Math.log(1.0 - r));
+        double fisherZ = FastMath.sqrt(sampleSize - z.size() - 3.0) *
+                0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
         if (Double.isNaN(fisherZ)) {
             return new IndependenceResult(new IndependenceFact(x, y, z),
                     true, Double.NaN);
         }
 
-        double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
+        double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(fisherZ)));
         this.pValue = pValue;
         boolean independent = pValue > this.alpha;
 
@@ -229,7 +229,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      */
     public double getPValue() {
         return this.pValue;
-//        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, Math.abs(fisherZ)));
+//        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(fisherZ)));
     }
 
     /**

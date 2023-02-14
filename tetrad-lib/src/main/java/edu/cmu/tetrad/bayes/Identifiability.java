@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.bayes;
 
-import edu.cmu.tetrad.graph.Dag;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.graph.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -399,7 +396,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             System.out.println(this.bayesIm.getDag());
         }
 
-        List<Node> dNodes = dag.getAncestors(sNodes);
+        List<Node> dNodes = dag.paths().getAncestors(sNodes);
 
         // create a Bayes IM with the dag G_dNodes
         Dag gD = new Dag(this.bayesIm.getDag().subgraph(dNodes));
@@ -689,7 +686,9 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         Dag graphH = new Dag(graphWhole.getDag().subgraph(h));
 
         // tier ordering
-        List<Node> tierOrdering = graphH.getCausalOrdering();
+        Paths paths = graphH.paths();
+        List<Node> initialOrder = graphH.getNodes();
+        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
 
         // convert to the indices of the original graph
         // (from which the subgraph was obtained)
@@ -804,7 +803,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
                            QList qT) {
         Dag graphT = new Dag(this.bayesIm.getDag().subgraph(nodesT));
 
-        List<Node> nodesA = graphT.getAncestors(nodesC);
+        List<Node> nodesA = graphT.paths().getAncestors(nodesC);
 
         int nNodes = this.bayesIm.getNumNodes();
         QList qC = new QList(nNodes);

@@ -23,6 +23,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;
@@ -201,7 +203,7 @@ public class Dci {
      * Begins the DCI search procedure, described at each step
      */
     public List<Graph> search() {
-        this.elapsedTime = System.currentTimeMillis();
+        this.elapsedTime = MillisecondTimes.timeMillis();
 
         /*
          * Step 1 - Create the complete graph
@@ -285,7 +287,7 @@ public class Dci {
         /*
          * Step 6 - returns the output set of consistent graphs
          */
-        this.elapsedTime = System.currentTimeMillis() - this.elapsedTime;
+        this.elapsedTime = MillisecondTimes.timeMillis() - this.elapsedTime;
         System.out.println(this.output.size());
         return new ArrayList<>(this.output);
     }
@@ -574,7 +576,7 @@ public class Dci {
         if ((graph.isAdjacentTo(a, c)) &&
                 (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
                 (graph.getEndpoint(c, a) == Endpoint.CIRCLE)) {
-            if (graph.isDirectedFromTo(a, b) && graph.isDirectedFromTo(b, c)) {
+            if (graph.paths().isDirectedFromTo(a, b) && graph.paths().isDirectedFromTo(b, c)) {
                 graph.setEndpoint(c, a, Endpoint.TAIL);
                 this.changeFlag = true;
             }
@@ -830,7 +832,7 @@ public class Dci {
                 for (int k = 2; k <= size; k++) {
                     newPaths.put(k, new HashMap<>());
                 }
-                for (List<Node> trek : GraphUtils.treks(Dci.this.currentGraph, Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()), -1)) {
+                for (List<Node> trek : Dci.this.currentGraph.paths().treks(Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()), -1)) {
                     boolean inMarginal = true;
                     for (Node node : trek) {
                         if (!Dci.this.currentMarginalSet.contains(node)) {
@@ -975,8 +977,8 @@ public class Dci {
             for (Triple triple : colliders.keySet()) {
                 List<Set<Edge>> edgeSet = new ArrayList<>();
                 List<List<Node>> treks = new ArrayList<>();
-                treks.addAll(GraphUtils.treks(graph, triple.getY(), colliders.get(triple).getFirst(), -1));
-                treks.addAll(GraphUtils.treks(graph, triple.getY(), colliders.get(triple).getSecond(), -1));
+                treks.addAll(graph.paths().treks(triple.getY(), colliders.get(triple).getFirst(), -1));
+                treks.addAll(graph.paths().treks(triple.getY(), colliders.get(triple).getSecond(), -1));
                 for (List<Node> trek : treks) {
                     Set<Edge> edges = new HashSet<>();
                     boolean okay = true;
@@ -1035,7 +1037,7 @@ public class Dci {
                     visited.remove(next);
                     continue;
                 }
-                if (!graph.possibleAncestor(next, node2)) {
+                if (!graph.paths().possibleAncestor(next, node2)) {
                     path.removeLast();
                     visited.remove(next);
                     continue;
@@ -1324,7 +1326,7 @@ public class Dci {
                     && !graph.isDefCollider(triple.getX(), triple.getY(), triple.getZ()) &&
                     graph.isAdjacentTo(triple.getX(), triple.getY()) &&
                     graph.isAdjacentTo(triple.getY(), triple.getZ()) &&
-                    !graph.isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ())) {
+                    !graph.underlines().isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ())) {
                 this.currentPossibleColliders.add(triple);
             }
         }
@@ -1373,7 +1375,7 @@ public class Dci {
     private void simpleColliderIterator(int skeletonsLeft) {
         Set<Set<Triple>> necessaryEdges = new HashSet<>();
         PowerSet<Triple> pset = new PowerSet<>(this.currentPossibleColliders);
-        int psetsize = (int) java.lang.Math.pow(2, this.currentPossibleColliders.size());
+        int psetsize = (int) org.apache.commons.math3.util.FastMath.pow(2, this.currentPossibleColliders.size());
         for (Set<Triple> set : pset) {
             System.out.println("Searching Possible PAGs: " + psetsize + " (" + skeletonsLeft + " Skeletons Remaining)");
             psetsize--;
@@ -1412,8 +1414,8 @@ public class Dci {
                                 continue;
                             }
                         }
-                        if (!graph.existsDirectedCycle()) {
-                            graph.setUnderLineTriples(new HashSet<>());
+                        if (!graph.paths().existsDirectedCycle()) {
+                            graph.underlines().setUnderLineTriples(new HashSet<>());
                             this.output.add(graph);
                         }
                     }
@@ -1790,7 +1792,7 @@ public class Dci {
                         continue;
                     }
                     for (List<Node> condSet : sepset.getSet(x, y)) {
-                        if (!graph.isDSeparatedFrom(x, y, condSet)) {
+                        if (!graph.paths().isDSeparatedFrom(x, y, condSet)) {
                             return true;
                         }
                     }
@@ -1905,12 +1907,12 @@ public class Dci {
             }
 //            condSet.remove(remove);
             int c = 1;
-            int cs = (int) Math.pow(2, condSet.size());
+            int cs = (int) FastMath.pow(2, condSet.size());
             for (Set<Node> set : new PowerSet<>(condSet)) {
                 System.out.println("Resolving inconsistencies... " + c + " of " + cs + " (" + p + " of " + pairs.size() + " pairs)");
                 c++;
                 List<Node> z = new ArrayList<>(set);
-                if (allInd.isDConnectedTo(pair.getFirst(), pair.getSecond(), z)) {
+                if (allInd.paths().isDConnectedTo(pair.getFirst(), pair.getSecond(), z)) {
                     continue;
                 }
                 combinedSepset.set(pair.getFirst(), pair.getSecond(), new ArrayList<>(set));
@@ -1983,7 +1985,7 @@ public class Dci {
                     for (Set<Node> inpset : pset) {
                         List<Node> cond = new ArrayList<>(inpset);
                         cond.add(node);
-                        if (fciResult.isDSeparatedFrom(x, y, cond)) {
+                        if (fciResult.paths().isDSeparatedFrom(x, y, cond)) {
                             newSepset.set(x, y, cond);
                         }
                     }
@@ -2013,10 +2015,10 @@ public class Dci {
             possibleNodes.addAll(graph.getAdjacentNodes(x));
             possibleNodes.addAll(graph.getAdjacentNodes(y));
             int c = 1;
-            int ps = (int) Math.pow(2, possibleNodes.size());
+            int ps = (int) FastMath.pow(2, possibleNodes.size());
             for (Set<Node> condSet : new PowerSet<>(possibleNodes)) {
                 System.out.println("Getting closure set... " + c + " of " + ps + "(" + p + " of " + pairs.size() + " remaining)");
-                if (graph.isDSeparatedFrom(x, y, new ArrayList<>(condSet))) {
+                if (graph.paths().isDSeparatedFrom(x, y, new ArrayList<>(condSet))) {
                     sepset.set(x, y, new ArrayList<>(condSet));
                 }
                 c++;

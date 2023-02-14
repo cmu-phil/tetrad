@@ -3,7 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
-import static java.lang.Math.tanh;
+import static org.apache.commons.math3.util.FastMath.tanh;
 
 /**
  * The adjacency precision. The true positives are the number of adjacencies in both
@@ -26,7 +26,7 @@ public class NumAmbiguousTriples implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        return estGraph.getAmbiguousTriples().size();
+        return estGraph.underlines().getAmbiguousTriples().size();
     }
 
     @Override

@@ -21,8 +21,9 @@
 
 package edu.cmu.tetrad.data;
 
+import edu.cmu.tetrad.util.RandomUtil;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -59,7 +60,7 @@ public final class RandomSampler {
             indices.add(i);
         }
 
-        Collections.shuffle(indices);
+        RandomUtil.shuffle(indices);
 
         //Number of samples in input dataset
         int ncols = dataSet.getNumColumns();

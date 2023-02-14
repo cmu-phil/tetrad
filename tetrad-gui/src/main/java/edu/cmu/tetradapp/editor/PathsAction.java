@@ -204,7 +204,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> paths = GraphUtils.directedPathsFromTo(graph, node1, node2,
+                List<List<Node>> paths = graph.paths().directedPathsFromTo(node1, node2,
                         Preferences.userRoot().getInt("pathMaxLength", 3));
 
                 if (paths.isEmpty()) {
@@ -231,7 +231,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> paths = GraphUtils.semidirectedPathsFromTo(graph, node1, node2,
+                List<List<Node>> paths = graph.paths().semidirectedPathsFromTo(node1, node2,
                         Preferences.userRoot().getInt("pathMaxLength", 3));
 
                 if (paths.isEmpty()) {
@@ -258,7 +258,7 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
 
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<List<Node>> treks = GraphUtils.treks(graph, node1, node2, Preferences.userRoot().getInt("pathMaxLength", 3));
+                List<List<Node>> treks = graph.paths().treks(node1, node2, Preferences.userRoot().getInt("pathMaxLength", 3));
 
                 if (treks.isEmpty()) {
                     continue;

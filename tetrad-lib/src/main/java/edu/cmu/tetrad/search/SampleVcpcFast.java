@@ -21,7 +21,10 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
@@ -30,6 +33,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -249,7 +253,7 @@ public final class SampleVcpcFast implements GraphSearch {
         Vcfas fas = new Vcfas(getIndependenceTest());
         this.definitelyNonadjacencies = new HashSet<>();
 
-        long startTime = System.currentTimeMillis();
+        long startTime = MillisecondTimes.timeMillis();
 
         List<Node> allNodes = getIndependenceTest().getVariables();
 
@@ -279,7 +283,7 @@ public final class SampleVcpcFast implements GraphSearch {
         }
 
 
-        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.getAmbiguousTriples());
+        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.underlines().getAmbiguousTriples());
 
         int[] dims = new int[ambiguousTriples.size()];
 
@@ -307,7 +311,7 @@ public final class SampleVcpcFast implements GraphSearch {
             for (int k = 0; k < combination.length; k++) {
 //                System.out.println("k = " + combination[k]);
                 Triple triple = ambiguousTriples.get(k);
-                _graph.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                _graph.underlines().removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
 
 
                 if (combination[k] == 0) {
@@ -384,7 +388,7 @@ public final class SampleVcpcFast implements GraphSearch {
 
             MeekRules rules = new MeekRules();
             rules.orientImplied(graph);
-            if (graph.existsDirectedCycle()) {
+            if (graph.paths().existsDirectedCycle()) {
                 CPDAGs.remove(graph);
             }
         }
@@ -546,7 +550,7 @@ public final class SampleVcpcFast implements GraphSearch {
 
         System.out.println("Sample VCPC:");
         System.out.println("# of CPDAGs: " + CPDAGs.size());
-        long endTime = System.currentTimeMillis();
+        long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 
         System.out.println("Search Time (seconds):" + (this.elapsedTime) / 1000 + " s");
@@ -739,7 +743,7 @@ public final class SampleVcpcFast implements GraphSearch {
                 } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     ambiguousTriples.add(triple);
-                    graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     Edge edge = Edges.undirectedEdge(x, z);
                     definitelyNonadjacencies.add(edge);
                 } else {

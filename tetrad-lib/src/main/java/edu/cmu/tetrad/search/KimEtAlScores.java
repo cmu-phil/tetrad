@@ -21,14 +21,17 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static java.lang.Math.*;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Implements the continuous BIC score for FGES.
@@ -108,7 +111,7 @@ public class KimEtAlScores implements Score {
 //        }
 
 //        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet.getVariables(), cov, dataSet.getNumRows());
-        ICovarianceMatrix covarianceMatrix = (DataUtils.getCovarianceMatrix(dataSet));
+        ICovarianceMatrix covarianceMatrix = (SimpleDataLoader.getCovarianceMatrix(dataSet));
 
         this.data = dataSet.getDoubleData();
         this.dataSet = dataSet;
@@ -273,7 +276,7 @@ public class KimEtAlScores implements Score {
 
     @Override
     public int getMaxDegree() {
-        return (int) Math.ceil(log(sampleSize));
+        return (int) FastMath.ceil(log(sampleSize));
     }
 
     @Override

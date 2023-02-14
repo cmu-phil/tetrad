@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.graph;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -17,7 +16,7 @@ public class Cyclic implements RandomGraph {
 
     @Override
     public Graph createGraph(Parameters parameters) {
-        return GraphUtils.cyclicGraph3(parameters.getInt("numMeasures"),
+        return edu.cmu.tetrad.graph.RandomGraph.randomCyclicGraph3(parameters.getInt("numMeasures"),
                 parameters.getInt("avgDegree") * parameters.getInt("numMeasures") / 2,
                 parameters.getInt("maxDegree"), parameters.getDouble("probCycle"),
                 parameters.getInt("probTwoCycle"));

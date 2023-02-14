@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -160,9 +161,9 @@ public class StARS implements Algorithm, TakesExternalGraph {
 
     private static double getValue(double value, Parameters parameters) {
         if (parameters.getBoolean("logScale")) {
-            return Math.round(Math.pow(10.0, value) * 1000000000.0) / 1000000000.0;
+            return FastMath.round(FastMath.pow(10.0, value) * 1000000000.0) / 1000000000.0;
         } else {
-            return Math.round(value * 1000000000.0) / 1000000000.0;
+            return FastMath.round(value * 1000000000.0) / 1000000000.0;
         }
     }
 

@@ -195,8 +195,8 @@ public final class CptInvariantMarginalCalculator
             conditioners.add(this.bayesIm.getNode(parents[j]));
         }
 
-        List<Node> condAncestors = this.bayesIm.getDag().getAncestors(conditioners);
-        List<Node> targetAncestor = this.bayesIm.getDag().getAncestors(target);
+        List<Node> condAncestors = this.bayesIm.getDag().paths().getAncestors(conditioners);
+        List<Node> targetAncestor = this.bayesIm.getDag().paths().getAncestors(target);
         Set<Node> intersection = new HashSet<>(condAncestors);
         intersection.retainAll(targetAncestor);
 

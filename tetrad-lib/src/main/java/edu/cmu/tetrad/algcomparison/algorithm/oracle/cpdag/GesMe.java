@@ -13,6 +13,7 @@ import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
+import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.text.DecimalFormat;
@@ -20,7 +21,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.Math.sqrt;
+import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * FGES (the heuristic version).
@@ -233,7 +234,7 @@ public class GesMe implements Algorithm {
                 } else if (i > 0) {
                     double coefficient = matrix.get(i - 1, j - 1);
                     String token = !Double.isNaN(coefficient) ? nf.format(coefficient) : "Undefined";
-                    token += Math.abs(coefficient) > threshold ? "*" : " ";
+                    token += FastMath.abs(coefficient) > threshold ? "*" : " ";
                     table.setToken(i, j, token);
                 }
             }

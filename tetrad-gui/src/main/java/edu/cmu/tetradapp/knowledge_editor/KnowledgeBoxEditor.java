@@ -21,7 +21,7 @@
 package edu.cmu.tetradapp.knowledge_editor;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeVariableType;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.ForbiddenGraphModel;
 import edu.cmu.tetradapp.model.KnowledgeBoxModel;
 import edu.cmu.tetradapp.model.RemoveNonSkeletonEdgesModel;
+import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -164,7 +165,7 @@ public class KnowledgeBoxEditor extends JPanel {
             Preferences.userRoot().put("fileSaveLocation", selectedFile.getParent());
 
             try {
-                Knowledge knowledge = DataUtils.loadKnowledge(selectedFile, DelimiterType.WHITESPACE, "//");
+                Knowledge knowledge = SimpleDataLoader.loadKnowledge(selectedFile, DelimiterType.WHITESPACE, "//");
                 setKnowledge(knowledge);
                 resetTabbedPane();
             } catch (Exception e1) {
@@ -215,7 +216,7 @@ public class KnowledgeBoxEditor extends JPanel {
         this.tabbedPane.addChangeListener((e) -> {
             JTabbedPane pane = (JTabbedPane) e.getSource();
             if (pane.getSelectedIndex() == 0) {
-                setNumDisplayTiers(Math.max(getNumTiers(), this.knowledge.getNumTiers()));
+                setNumDisplayTiers(FastMath.max(getNumTiers(), this.knowledge.getNumTiers()));
             } else if (pane.getSelectedIndex() == 2) {
                 resetEdgeDisplay(null);
             }
@@ -225,8 +226,8 @@ public class KnowledgeBoxEditor extends JPanel {
     private Box tierDisplay() {
         if (getNumTiers() < 0) {
             int numTiers = getKnowledge().getNumTiers();
-            int _default = (int) (Math.pow(this.vars.size(), 0.5) + 1);
-            numTiers = Math.max(numTiers, _default);
+            int _default = (int) (FastMath.pow(this.vars.size(), 0.5) + 1);
+            numTiers = FastMath.max(numTiers, _default);
             setNumDisplayTiers(numTiers);
         }
 
@@ -277,8 +278,8 @@ public class KnowledgeBoxEditor extends JPanel {
     private void setNumDisplayTiers(int numTiers) {
         if (numTiers < 2) {
             int knowledgeTiers = getKnowledge().getNumTiers();
-            int defaultTiers = (int) (Math.pow(getVarNames().size(), 0.5) + 1);
-            numTiers = Math.max(knowledgeTiers, defaultTiers);
+            int defaultTiers = (int) (FastMath.pow(getVarNames().size(), 0.5) + 1);
+            numTiers = FastMath.max(knowledgeTiers, defaultTiers);
         }
 
         setNumTiers(numTiers);
@@ -686,11 +687,11 @@ public class KnowledgeBoxEditor extends JPanel {
             }
         }
 
-        boolean arrangedAll = GraphUtils.arrangeBySourceGraph(graph,
+        boolean arrangedAll = LayoutUtil.arrangeBySourceGraph(graph,
                 this.edgeWorkbench.getGraph());
 
         if (!arrangedAll) {
-            GraphUtils.circleLayout(graph, 200, 200, 150);
+            LayoutUtil.circleLayout(graph, 200, 200, 150);
         }
 
         this.edgeWorkbench.setGraph(graph);

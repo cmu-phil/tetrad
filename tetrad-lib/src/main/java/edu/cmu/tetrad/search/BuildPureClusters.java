@@ -23,7 +23,9 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
 
@@ -82,6 +84,8 @@ public final class BuildPureClusters {
     private DataSet dataSet;
     private double alpha;
     private boolean verbose;
+    private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
+
 
     //**************************** INITIALIZATION ***********************************/
 
@@ -168,13 +172,13 @@ public final class BuildPureClusters {
      * @return the result search graph, or null if there is no model.
      */
     public Graph search() {
-        long start = System.currentTimeMillis();
+        long start =  MillisecondTimes.timeMillis();
 
         TetradLogger.getInstance().log("info", "BPC alpha = " + this.alpha + " test = " + this.sigTestType);
-
-        List<int[]> clustering = findMeasurementPattern();
-        clustering.removeIf(cluster -> cluster.length < 3);
         List<Node> variables = this.tetradTest.getVariables();
+
+        List<int[]> clustering = findMeasurementPattern(variables);
+        clustering.removeIf(cluster -> cluster.length < 3);
         Set<Set<Integer>> clusters = new HashSet<>();
 
         for (int[] _c : clustering) {
@@ -192,10 +196,25 @@ public final class BuildPureClusters {
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
 
-        long stop = System.currentTimeMillis();
+        long stop =  MillisecondTimes.timeMillis();
         long elapsed = stop - start;
 
         TetradLogger.getInstance().log("elapsed", "Elapsed " + elapsed + " ms");
+
+        Set<List<Integer>> _clustering = new HashSet<>();
+
+        for (int[] _cluster : clustering) {
+            List<Integer> __cluster = new ArrayList<>();
+            for (int i : _cluster) {
+                __cluster.add(i);
+            }
+
+            _clustering.add(__cluster);
+        }
+
+        ClusterSignificance clusterSignificance = new ClusterSignificance(variables, covarianceMatrix);
+        clusterSignificance.printClusterPValues(_clustering);
+
 
         return graph;
     }
@@ -812,7 +831,9 @@ public final class BuildPureClusters {
     }
 
     private List<List<int[]>> filterAndOrderClusterings(List<List<int[]>> baseListOfClusterings,
-                                                        List<List<Integer>> baseListOfIds, List<int[]> clusteringIds, int[][] ng) {
+                                                        List<List<Integer>> baseListOfIds,
+                                                        List<int[]> clusteringIds, int[][] ng,
+                                                        List<Node> variables) {
 
         assert clusteringIds != null;
         List<List<int[]>> listOfClusterings = new ArrayList<>();
@@ -832,6 +853,14 @@ public final class BuildPureClusters {
 
             for (int j = 0; j < baseClustering.size(); j++) {
                 int[] currentCluster = baseClustering.get(j);
+
+                ClusterSignificance clusterSignificance = new ClusterSignificance(variables, covarianceMatrix);
+                clusterSignificance.setCheckType(checkType);
+                List<Integer> cluster = ClusterSignificance.getInts(currentCluster);
+                if (clusterSignificance.significant(cluster, alpha)) {
+                    continue;
+                }
+
                 Integer currentId = baseIds.get(j);
                 int[] draftArea = new int[currentCluster.length];
                 int draftCount = 0;
@@ -1136,7 +1165,7 @@ public final class BuildPureClusters {
 
     /******************** MAIN ALGORITHM: INITIALIZATION************************************/
 
-    private List<int[]> initialMeasurementPattern(int[][] ng, int[][] cv) {
+    private List<int[]> initialMeasurementPattern(int[][] ng, int[][] cv, List<Node> variables) {
         boolean[][] notYellow = new boolean[numVariables()][numVariables()];
 
         /* Stage 1: identify (partially) uncorrelated and impure pairs */
@@ -1400,7 +1429,7 @@ public final class BuildPureClusters {
         List<List<int[]>> clusterings = chooseClusterings(clustering, ids, true, cv);
         List<int[]> orderedIds = new ArrayList<>();
         List<List<int[]>> actualClustering = filterAndOrderClusterings(clusterings, ids,
-                orderedIds, ng);
+                orderedIds, ng, variables);
         return purify(actualClustering, orderedIds);
     }
 
@@ -1486,7 +1515,7 @@ public final class BuildPureClusters {
 
     /******************************* MAIN ALGORITHM: CORE ***************************************/
 
-    private List<int[]> findMeasurementPattern() {
+    private List<int[]> findMeasurementPattern(List<Node> variables) {
         int[][] ng = new int[numVariables()][numVariables()];
         int[][] cv = new int[numVariables()][numVariables()];
         boolean[] selected = new boolean[numVariables()];
@@ -1495,7 +1524,7 @@ public final class BuildPureClusters {
             selected[i] = false;
         }
 
-        List<int[]> initialClustering = initialMeasurementPattern(ng, cv);
+        List<int[]> initialClustering = initialMeasurementPattern(ng, cv, variables);
         printClustering(initialClustering);
         for (int[] nextCluster : initialClustering) {
             for (int j : nextCluster) {
@@ -1652,7 +1681,7 @@ public final class BuildPureClusters {
         List<List<int[]>> clusterings = chooseClusterings(clustering, ids, false, cv);
         List<int[]> orderedIds = new ArrayList<>();
         List<List<int[]>> actualClusterings = filterAndOrderClusterings(clusterings, ids,
-                orderedIds, ng);
+                orderedIds, ng, variables);
         List<int[]> finalPureModel = purify(actualClusterings, orderedIds
         );
 
@@ -1667,7 +1696,7 @@ public final class BuildPureClusters {
         boolean[] marked = new boolean[clustering.size()];
         boolean[] buffer = new boolean[this.numVariables()];
 
-        int max = Math.min(clustering.size(), 1000);
+        int max = FastMath.min(clustering.size(), 1000);
 
         boolean[][] compatibility = new boolean[clustering.size()][clustering.size()];
         if (need3) {
@@ -1840,6 +1869,10 @@ public final class BuildPureClusters {
 
     public boolean isVerbose() {
         return this.verbose;
+    }
+
+    public void setCheckType(ClusterSignificance.CheckType checkType) {
+        this.checkType = checkType;
     }
 }
 
