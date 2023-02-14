@@ -125,9 +125,9 @@ public class SemSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        if (this.im == null) {
-            parameters.addAll(SemIm.getParameterNames());
-        }
+//        if (this.im == null) {
+        parameters.addAll(SemIm.getParameterNames());
+//        }
 
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.NUM_RUNS);
@@ -175,7 +175,7 @@ public class SemSimulation implements Simulation {
         // Not setting this im messes up algcomparison. -JR 20230206
 
 //        if (this.im == null) {
-            this.im = im;
+        this.im = im;
 //        }
 
         // Need this in case the SEM IM is given externally.
