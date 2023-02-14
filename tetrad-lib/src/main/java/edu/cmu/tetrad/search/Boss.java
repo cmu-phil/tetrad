@@ -97,33 +97,32 @@ public class Boss {
             double s1, s2;
 
             int count = 0;
-            boolean ensureMinimumCount = score instanceof ZhangShenBoundScore;
+//            boolean ensureMinimumCount = score instanceof ZhangShenBoundScore;
+
+            if (algType == AlgType.BOSS1) {
+                betterMutation1(scorer);
+            } else if (algType == AlgType.BOSS2) {
+                betterMutation2(scorer);
+            } else if (algType == AlgType.BOSS3) {
+                betterMutationBryan(scorer);
+            }
 
             do {
                 s1 = scorer.score();
 
                 if (algType == AlgType.BOSS1) {
+                    besMutation(scorer);
                     betterMutation1(scorer);
-
-                    if (scorer.score() > s1 + epsilon) {
-                        besMutation(scorer);
-                    }
                 } else if (algType == AlgType.BOSS2) {
+                    besMutation(scorer);
                     betterMutation2(scorer);
-
-                    if (scorer.score() > s1 + epsilon) {
-                        besMutation(scorer);
-                    }
                 } else if (algType == AlgType.BOSS3) {
+                    besMutation(scorer);
                     betterMutationBryan(scorer);
-
-                    if (scorer.score() > s1 + epsilon) {
-                        besMutation(scorer);
-                    }
                 }
 
                 s2 = scorer.score();
-            } while (s2 > s1 + epsilon || (ensureMinimumCount && ++count <= 5));
+            } while (s2 > s1);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();

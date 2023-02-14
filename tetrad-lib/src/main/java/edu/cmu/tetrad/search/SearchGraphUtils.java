@@ -853,7 +853,7 @@ public final class SearchGraphUtils {
             return new LegalPagRet(false, reason);
         }
 
-        return new LegalPagRet(true, "This ia a legal PAG");
+        return new LegalPagRet(true, "This is a legal PAG");
     }
 
     public static class LegalMagRet {
@@ -972,7 +972,7 @@ public final class SearchGraphUtils {
             }
         }
 
-        return new LegalMagRet(true, "This ia a legal MAG");
+        return new LegalMagRet(true, "This is a legal MAG");
     }
 
     public static void arrangeByKnowledgeTiers(Graph graph,

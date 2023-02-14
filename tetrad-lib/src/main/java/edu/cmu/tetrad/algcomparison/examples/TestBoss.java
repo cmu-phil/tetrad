@@ -47,13 +47,13 @@ public class TestBoss {
         Parameters parameters = new Parameters();
         parameters.set(Params.NUM_RUNS, 1);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
-        parameters.set(Params.NUM_MEASURES, 100);
-        parameters.set(Params.AVG_DEGREE, 20);
+        parameters.set(Params.NUM_MEASURES, 500);
+        parameters.set(Params.AVG_DEGREE, 10);
         parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.COEF_LOW, 0);
         parameters.set(Params.COEF_HIGH, 1);
 
-        parameters.set(Params.BOSS_ALG, 2);
+        parameters.set(Params.BOSS_ALG, 1);
 
         parameters.set(Params.PENALTY_DISCOUNT, 2);
         parameters.set(Params.SEM_BIC_STRUCTURE_PRIOR, 0);
@@ -70,7 +70,8 @@ public class TestBoss {
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new BOSS(new FisherZ(), new ZhangShenBoundScore()));
+        algorithms.add(new BOSS(new FisherZ(), new SemBicScore()));
+//        algorithms.add(new BDCE(new SemBicScore()));
 //        algorithms.add(new BOSSDC(new SemBicScore()));
 
         Simulations simulations = new Simulations();
