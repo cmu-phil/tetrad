@@ -90,7 +90,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
     /**
      * An initial graph to start from.
      */
-    private Graph initialGraph;
+    private Graph externalGraph;
     /**
      * If non-null, edges not adjacent in this graph will not be added.
      */

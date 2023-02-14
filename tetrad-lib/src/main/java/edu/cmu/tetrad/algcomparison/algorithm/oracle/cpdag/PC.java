@@ -39,7 +39,7 @@ public class PC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
 
-    private Graph initialGraph = null;
+    private Graph externalGraph = null;
 
     public PC() {
     }
@@ -102,7 +102,7 @@ public class PC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
             search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
-            search.setInitialGraph(initialGraph);
+            search.setExternalGraph(externalGraph);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
@@ -171,7 +171,7 @@ public class PC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         this.test = test;
     }
 
-    public void setInitialGraph(Graph initialGraph) {
-        this.initialGraph = initialGraph;
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
     }
 }

@@ -217,6 +217,7 @@ public class ParameterTab extends JPanel {
         this.parameterBox.removeAll();
         if (this.simulation.getSimulation() != null) {
             Set<String> params = new LinkedHashSet<>(this.simulation.getSimulation().getParameters());
+
             if (params.isEmpty()) {
                 this.parameterBox.add(ParameterTab.NO_PARAM_LBL, BorderLayout.NORTH);
             } else {

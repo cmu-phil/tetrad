@@ -1818,56 +1818,57 @@ public final class SearchGraphUtils {
             if (!edge1.equals(edge2)) {
                 incorrect.add(adj);
 
-                if (SearchGraphUtils.isLegalPag(trueGraph).isLegalPag() && SearchGraphUtils.isLegalPag(targetGraph).isLegalPag()) {
-                    GraphUtils.addPagColoring(trueGraph);
-                    GraphUtils.addPagColoring(targetGraph);
-
-                    if (edge2 == null) continue;
-
-                    if (GraphUtils.compatible(edge1, edge2)) {
-                        compatible.add(edge1);
-                    } else {
-                        incompatible.add(edge1);
-                    }
-                }
+//                if (SearchGraphUtils.isLegalPag(trueGraph).isLegalPag() && SearchGraphUtils.isLegalPag(targetGraph).isLegalPag()) {
+//                    GraphUtils.addPagColoring(trueGraph);
+//                    GraphUtils.addPagColoring(targetGraph);
+//
+//                    if (edge2 == null) continue;
+//
+//                    if (GraphUtils.compatible(edge1, edge2)) {
+//                        compatible.add(edge1);
+//                    } else {
+//                        incompatible.add(edge1);
+//                    }
+//                }
             }
         }
 
-        if (SearchGraphUtils.isLegalPag(trueGraph).isLegalPag() && SearchGraphUtils.isLegalPag(targetGraph).isLegalPag()) {
-            builder.append("\n\n" + "Edges incorrectly oriented (incompatible)");
-
-            if (incompatible.isEmpty()) {
-                builder.append("\n  --NONE--");
-            } else {
-                sort(incompatible);
-
-                int j1 = 0;
-
-                for (Edge adj : incompatible) {
-                    Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
-                    Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
-                    if (edge1 == null || edge2 == null) continue;
-                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
-                }
-            }
-
-            builder.append("\n\n" + "Edges incorrectly oriented (compatible)");
-
-            sort(compatible);
-
-            if (compatible.isEmpty()) {
-                builder.append("\n  --NONE--");
-            } else {
-                int j1 = 0;
-
-                for (Edge adj : compatible) {
-                    Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
-                    Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
-                    if (edge1 == null || edge2 == null) continue;
-                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
-                }
-            }
-        } else {
+//        if (SearchGraphUtils.isLegalPag(trueGraph).isLegalPag() && SearchGraphUtils.isLegalPag(targetGraph).isLegalPag()) {
+//            builder.append("\n\n" + "Edges incorrectly oriented (incompatible)");
+//
+//            if (incompatible.isEmpty()) {
+//                builder.append("\n  --NONE--");
+//            } else {
+//                sort(incompatible);
+//
+//                int j1 = 0;
+//
+//                for (Edge adj : incompatible) {
+//                    Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
+//                    Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
+//                    if (edge1 == null || edge2 == null) continue;
+//                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
+//                }
+//            }
+//
+//            builder.append("\n\n" + "Edges incorrectly oriented (compatible)");
+//
+//            sort(compatible);
+//
+//            if (compatible.isEmpty()) {
+//                builder.append("\n  --NONE--");
+//            } else {
+//                int j1 = 0;
+//
+//                for (Edge adj : compatible) {
+//                    Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
+//                    Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
+//                    if (edge1 == null || edge2 == null) continue;
+//                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
+//                }
+//            }
+//        } else
+        {
             builder.append("\n\n" + "Edges incorrectly oriented");
 
             if (incorrect.isEmpty()) {
