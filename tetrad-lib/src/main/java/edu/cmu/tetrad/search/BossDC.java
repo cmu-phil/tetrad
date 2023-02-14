@@ -97,37 +97,41 @@ public class BossDC {
             conquerRTL(scorer, a, b, c);
         } else if (algType == Boss.AlgType.BOSS2){
             conquerLTR(scorer, a, b, c);
+        } else if (algType == Boss.AlgType.BOSS3){
+            conquerMT(scorer, a, b, c);
         }
     }
 
     public void conquerRTL(@NotNull TeyssierScorer scorer, int a, int b, int c) {
-        double currentScore = scorer.score();;
+        double currentScore = scorer.score();
         double bestScore = currentScore;
         scorer.bookmark();
 
         for (int i = b; i < c; i++) {
             Node x = scorer.get(i);
+            Set<Node> ancestors = scorer.getAncestors(x);
 
             for (int j = (b-1); j >= a; j--) {
                 if (!scorer.adjacent(scorer.get(j), x)) continue;
 
-                tuck(x, j, scorer);
+                tuck(x, j, scorer, ancestors);
                 currentScore = scorer.score();
 
-                if (currentScore > bestScore) {
+                if (currentScore > bestScore + 1e-10) {
                     bestScore = currentScore;
+                    ancestors = scorer.getAncestors(x);
                     scorer.bookmark();
                 }
             }
 
-            if (currentScore < bestScore) {
+            if (currentScore < bestScore + 1e-10) {
                 scorer.goToBookmark();
             }
         }
     }
 
     public void conquerLTR(@NotNull TeyssierScorer scorer, int a, int b, int c) {
-        double currentScore = scorer.score();;
+        double currentScore = scorer.score();
         double bestScore = currentScore;
         scorer.bookmark();
 
@@ -140,7 +144,7 @@ public class BossDC {
                 tuck(x, j, scorer);
                 currentScore = scorer.score();
 
-                if (currentScore > bestScore){
+                if (currentScore > bestScore + 1e-10){
                     bestScore = currentScore;
                     scorer.bookmark();
                     break;
@@ -151,9 +155,55 @@ public class BossDC {
         }
     }
 
+    public void conquerMT(@NotNull TeyssierScorer scorer, int a, int b, int c) {
+        double currentScore = scorer.score();
+        double bestScore = currentScore;
+        scorer.bookmark();
+
+        for (int i = a; i < b; i++) {
+            Node x = scorer.get(i);
+            for (int j = (c-1); j >= b; j--) {
+                scorer.moveTo(x, j);
+                currentScore = scorer.score();
+                if (currentScore > bestScore + 1e-10) {
+                    bestScore = currentScore;
+                    scorer.bookmark();
+                }
+            }
+            if (currentScore < bestScore + 1e-10) {
+                scorer.goToBookmark();
+            }
+        }
+
+        for (int i = b; i < c; i++) {
+            Node x = scorer.get(i);
+            for (int j = (b-1); j >= a; j--) {
+                scorer.moveTo(x, j);
+                currentScore = scorer.score();
+                if (currentScore > bestScore + 1e-10) {
+                    bestScore = currentScore;
+                    scorer.bookmark();
+                }
+            }
+            if (currentScore < bestScore + 1e-10) {
+                scorer.goToBookmark();
+            }
+        }
+    }
+
     private void tuck(Node k, int j, TeyssierScorer scorer) {
         if (scorer.index(k) < j) return;
         Set<Node> ancestors = scorer.getAncestors(k);
+
+        for (int i = j + 1; i <= scorer.index(k); i++) {
+            if (ancestors.contains(scorer.get(i))) {
+                scorer.moveTo(scorer.get(i), j++);
+            }
+        }
+    }
+
+    private void tuck(Node k, int j, TeyssierScorer scorer, Set<Node> ancestors) {
+        if (scorer.index(k) < j) return;
 
         for (int i = j + 1; i <= scorer.index(k); i++) {
             if (ancestors.contains(scorer.get(i))) {
@@ -218,5 +268,5 @@ public class BossDC {
         this.caching = caching;
     }
 
-    public enum AlgType {BOSS1, BOSS2}
+    public enum AlgType {BOSS1, BOSS2, BOSS3}
 }

@@ -107,13 +107,13 @@ public class BayesNetSimulation implements Simulation {
             parameters.addAll(this.randomGraph.getParameters());
         }
 
-        if (this.pm == null) {
-            parameters.addAll(BayesPm.getParameterNames());
-        }
+//        if (this.pm == null) {
+        parameters.addAll(BayesPm.getParameterNames());
+//        }
 
-        if (this.im == null) {
-            parameters.addAll(MlBayesIm.getParameterNames());
-        }
+//        if (this.im == null) {
+        parameters.addAll(MlBayesIm.getParameterNames());
+//        }
 
         parameters.add(Params.NUM_RUNS);
         parameters.add(Params.DIFFERENT_GRAPHS);

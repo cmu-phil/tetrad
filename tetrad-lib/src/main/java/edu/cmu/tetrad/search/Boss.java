@@ -36,6 +36,7 @@ public class Boss {
     private int numStarts = 1;
     private AlgType algType = AlgType.BOSS1;
     private boolean caching = true;
+    private double epsilon = 1e-10;
 
     public Boss(@NotNull IndependenceTest test, Score score) {
         this.test = test;
@@ -89,31 +90,39 @@ public class Boss {
                 shuffle(order);
             }
 
-            this.start =  MillisecondTimes.timeMillis();
+            this.start = MillisecondTimes.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
             double s1, s2;
 
             int count = 0;
-            boolean ensureMinimumCount = score instanceof ZhangShenBoundScore;
+//            boolean ensureMinimumCount = score instanceof ZhangShenBoundScore;
+
+            if (algType == AlgType.BOSS1) {
+                betterMutation1(scorer);
+            } else if (algType == AlgType.BOSS2) {
+                betterMutation2(scorer);
+            } else if (algType == AlgType.BOSS3) {
+                betterMutationBryan(scorer);
+            }
 
             do {
                 s1 = scorer.score();
 
                 if (algType == AlgType.BOSS1) {
+                    besMutation(scorer);
                     betterMutation1(scorer);
-                    besMutation(scorer);
                 } else if (algType == AlgType.BOSS2) {
+                    besMutation(scorer);
                     betterMutation2(scorer);
-                    besMutation(scorer);
                 } else if (algType == AlgType.BOSS3) {
-                    betterMutationBryan(scorer);
                     besMutation(scorer);
+                    betterMutationBryan(scorer);
                 }
 
                 s2 = scorer.score();
-            } while (s2 > s1 || (++count <= 5));
+            } while (s2 > s1);
 
             if (this.scorer.score() > best) {
                 best = this.scorer.score();
@@ -123,7 +132,7 @@ public class Boss {
 
         this.scorer.score(bestPerm);
 
-        this.stop =  MillisecondTimes.timeMillis();
+        this.stop = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("\nFinal " + algType + " order = " + this.scorer.getPi());
@@ -210,14 +219,14 @@ public class Boss {
 
             for (int i = 1; i < scorer.size(); i++) {
                 Node x = scorer.get(i);
-//                if (!introns1.contains(x)) continue;
+                if (!introns1.contains(x)) continue;
 
                 for (int j = i - 1; j >= 0; j--) {
                     if (!scorer.adjacent(scorer.get(j), x)) continue;
 
                     tuck(x, j, scorer, range);
 
-                    if (scorer.score() > bestScore || violatesKnowledge(scorer.getPi())) {
+                    if (scorer.score() > bestScore + epsilon || violatesKnowledge(scorer.getPi())) {
                         for (int l = range[0]; l <= range[1]; l++) {
                             introns2.add(scorer.get(l));
                         }
@@ -236,63 +245,47 @@ public class Boss {
             if (verbose) {
                 System.out.println();
             }
-        } while (bestScore > originalScore);
+        } while (bestScore > originalScore + epsilon);
     }
-
 
 
     public void betterMutation2(@NotNull TeyssierScorer scorer) {
         scorer.bookmark();
         double s1, s2;
 
-        Set<Node> introns1;
-        Set<Node> introns2;
-
-        introns2 = new HashSet<>(scorer.getPi());
-
         do {
             s1 = scorer.score();
             scorer.bookmark(1);
-
-            introns1 = introns2;
-            introns2 = new HashSet<>();
 
             for (Node k : scorer.getPi()) {
                 double _sp = NEGATIVE_INFINITY;
                 scorer.bookmark();
 
-//                if (!introns1.contains(k)) continue;
-
                 for (int j = 0; j < scorer.size(); j++) {
                     scorer.moveTo(k, j);
 
-                    if (scorer.score() >= _sp) {
+                    if (scorer.score() >= _sp + epsilon) {
                         if (!violatesKnowledge(scorer.getPi())) {
                             _sp = scorer.score();
                             scorer.bookmark();
 
-                            if (scorer.index(k) <= j) {
-                                for (int m = scorer.index(k); m <= j; m++) {
-                                    introns2.add(scorer.get(m));
-                                }
-                            } else if (scorer.index(k) > j) {
-                                for (int m = j; m <= scorer.index(k); m++) {
-                                    introns2.add(scorer.get(m));
-                                }
+                            if (verbose) {
+                                System.out.print("\rIndex = " + (scorer.index(k) + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                             }
                         }
-                    }
+                   }
 
-                    if (verbose) {
-                        System.out.print("\rIndex = " + (j + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
-                    }
                 }
 
                 scorer.goToBookmark();
             }
 
+            if (verbose) {
+                System.out.println();
+            }
+
             s2 = scorer.score();
-        } while (s2 > s1);
+        } while (s2 > s1 + epsilon);
 
         scorer.goToBookmark(1);
     }

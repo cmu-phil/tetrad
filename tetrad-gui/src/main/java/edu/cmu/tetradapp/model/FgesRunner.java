@@ -200,7 +200,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
             }
         }
 
-        this.fges.setInitialGraph(this.externalGraph);
+        this.fges.setExternalGraph(this.externalGraph);
         this.fges.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
         this.fges.setVerbose(true);
         Graph graph = this.fges.search();

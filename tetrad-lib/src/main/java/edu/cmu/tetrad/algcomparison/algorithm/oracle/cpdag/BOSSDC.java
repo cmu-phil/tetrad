@@ -54,6 +54,8 @@ public class BOSSDC implements Algorithm, UsesScoreWrapper {
             boss.setAlgType(Boss.AlgType.BOSS1);
         } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
             boss.setAlgType(Boss.AlgType.BOSS2);
+        } else if (parameters.getInt(Params.BOSS_ALG) == 3) {
+            boss.setAlgType(Boss.AlgType.BOSS3);
         } else {
             throw new IllegalArgumentException("Unrecognized boss algorithm type.");
         }
