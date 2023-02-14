@@ -25,11 +25,11 @@ import java.util.List;
  * @author bryanandrews
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-DC",
-        command = "boss-dc",
-        algoType = AlgType.forbid_latent_common_causes
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BOSS-DC",
+//        command = "boss-dc",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
 @Bootstrapping
 @Experimental
 public class BOSSDC implements Algorithm, UsesScoreWrapper {

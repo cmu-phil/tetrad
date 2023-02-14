@@ -19,7 +19,7 @@ import java.util.List;
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Kim et al. Score",
+        name = "Kim et al. Scores",
         command = "kim-scores",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
@@ -89,7 +89,7 @@ public class KimEtAlScores implements ScoreWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.SEM_GIC_RULE);
-        parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.PENALTY_DISCOUNT_ZS);
         return parameters;
     }
 

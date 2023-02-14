@@ -88,7 +88,7 @@ public class KimEtAlScoreTests implements IndependenceWrapper {
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
         params.add(Params.SEM_GIC_RULE);
-        params.add(Params.PENALTY_DISCOUNT);
+        params.add(Params.PENALTY_DISCOUNT_ZS);
         return params;
     }
 }
