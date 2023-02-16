@@ -49,7 +49,7 @@ public class EB implements Algorithm, TakesExternalGraph {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             this.externalGraph = this.algorithm.search(dataSet, parameters);
 
-            if (this.externalGraph != null) {
+            if (this.algorithm != null) {
                 this.externalGraph = this.algorithm.search(dataSet, parameters);
             } else {
                 throw new IllegalArgumentException("This EB algorithm needs both data and a graph source as inputs; it \n"
@@ -66,7 +66,7 @@ public class EB implements Algorithm, TakesExternalGraph {
         } else {
             EB eb = new EB(this.algorithm);
             if (this.externalGraph != null) {
-                eb.setExternalGraph(this.externalGraph);
+                eb.setExternalGraph(this.algorithm);
             }
 
             DataSet data = (DataSet) dataSet;
@@ -108,16 +108,6 @@ public class EB implements Algorithm, TakesExternalGraph {
     }
 
     @Override
-    public Graph getExternalGraph() {
-        return this.externalGraph;
-    }
-
-    @Override
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
-    }
-
-    @Override
     public void setExternalGraph(Algorithm algorithm) {
         if (algorithm == null) {
             throw new IllegalArgumentException("This EB algorithm needs both data and a graph source as inputs; it \n"
@@ -126,5 +116,4 @@ public class EB implements Algorithm, TakesExternalGraph {
 
         this.algorithm = algorithm;
     }
-
 }

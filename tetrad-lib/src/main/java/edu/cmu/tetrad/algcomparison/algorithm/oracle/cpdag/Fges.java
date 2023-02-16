@@ -42,6 +42,7 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
     private Knowledge knowledge = new Knowledge();
 
     private Graph externalGraph = null;
+
     private Algorithm algorithm = null;
 
     public Fges() {
@@ -98,8 +99,8 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
             return graph;
         } else {
             Fges fges = new Fges(this.score);
-            if (this.externalGraph != null) {
-                fges.setExternalGraph(this.externalGraph);
+            if (this.algorithm != null) {
+                fges.setExternalGraph(this.algorithm);
             }
 
             DataSet data = (DataSet) dataModel;
@@ -164,24 +165,8 @@ public class Fges implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
         this.score = score;
     }
 
-
-    @Override
-    public Graph getExternalGraph() {
-        return this.externalGraph;
-    }
-
-    @Override
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
-    }
-
     @Override
     public void setExternalGraph(Algorithm algorithm) {
-        if (algorithm == null) {
-            throw new IllegalArgumentException("This EB algorithm needs both data and a graph source as inputs; it \n"
-                    + "will orient the edges in the input graph using the data.");
-        }
-
         this.algorithm = algorithm;
     }
 }

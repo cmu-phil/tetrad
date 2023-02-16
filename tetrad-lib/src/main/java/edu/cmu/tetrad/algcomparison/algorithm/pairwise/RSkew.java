@@ -65,7 +65,7 @@ public class RSkew implements Algorithm, TakesExternalGraph {
         } else {
             RSkew rSkew = new RSkew(this.algorithm);
             if (this.externalGraph != null) {
-                rSkew.setExternalGraph(this.externalGraph);
+                rSkew.setExternalGraph(this.algorithm);
             }
 
             DataSet data = (DataSet) dataSet;
@@ -104,16 +104,6 @@ public class RSkew implements Algorithm, TakesExternalGraph {
         parameters.add(Params.VERBOSE);
 
         return parameters;
-    }
-
-    @Override
-    public Graph getExternalGraph() {
-        return this.externalGraph;
-    }
-
-    @Override
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
     }
 
     @Override
