@@ -144,6 +144,11 @@ public class Grasp {
                 }
             });
         }
+
+        if (violatesKnowledge(order)) {
+            throw new IllegalArgumentException("The initial sorting procedure could not find a permutation " +
+                    "consistent with that knowledge.");
+        }
     }
 
     public List<Node> grasp(@NotNull TeyssierScorer scorer) {
