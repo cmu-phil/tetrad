@@ -116,7 +116,7 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     public Graph call() {
         long start;
         long stop;
-        start =  MillisecondTimes.timeMillis();
+        start = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             this.out.println("thread started ... ");

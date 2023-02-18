@@ -243,8 +243,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         Algorithm algo = getAlgorithm();
 
-        if (algo instanceof HasKnowledge) {
-            ((HasKnowledge) algo).setKnowledge(this.knowledge.copy());
+        if (this.knowledge != null && !knowledge.isEmpty()) {
+            if (algo instanceof HasKnowledge) {
+                ((HasKnowledge) algo).setKnowledge(this.knowledge.copy());
+            } else {
+                throw new IllegalArgumentException("Knowledge has been supplied, but this algorithm does not use knowledge.");
+            }
         }
 
         if (getDataModelList().size() == 0 && getSourceGraph() != null) {

@@ -313,7 +313,7 @@ public class Mimbuild {
         if (df < 1) throw new IllegalStateException(
                 "Mimbuild error: The degrees of freedom for this model ((m * (m + 1) / 2) - # estimation params)" +
                         "\nwas calculated to be less than 1. Perhaps the model is not a multiple indicator model " +
-                        "\nor doesn't have enough pure nmeasurments to do a proper estimation.");
+                        "\nor doesn't have enough pure nmeasurements to do a proper estimation.");
 
         this.pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(x);
 

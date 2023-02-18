@@ -2889,7 +2889,7 @@ tabs will not appear.</p> -->
 
     <h4>Description</h4>
 
-    <div id="imgs_cont">
+    <div id="images">
 
         <p>Adjusts the selected score for FGES so
             allow for multiple datasets as input. The linear, Gaussian BIC scores
@@ -3118,7 +3118,7 @@ tabs will not appear.</p> -->
 
     <h4>Description</h4>
 
-    <div id="graspfci">
+    <div id="grasp-fci">
 
         <p>GRaSP-FCI is wrapper around the GRaSP algorithm that replaces
             the FGES step in GFCI with the more accurate GRaSP algrorithm, which
@@ -3829,7 +3829,7 @@ tabs will not appear.</p> -->
 
     <h4>Input Assumptions</h4>
 
-    <p>Continuous, linear data in which all of the variables are
+    <p>Continuous, linear data in which all the variables are
         skewed.</p>
 
     <h4>Output Format</h4>
@@ -3945,6 +3945,40 @@ tabs will not appear.</p> -->
     <h4>Parameters</h4>
 
     <p><a href="#maxit">alpha</a>, <a href="#depth">depth</a></p>
+
+    <h3>The CStaR Algorithm</h3>
+
+    <h4>Description</h4>
+
+    <div id="cstar">
+
+        <p>The CStaR algorithm (Causal Stability Ranking, Stekhoven,
+            D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L.,
+            Maathuis, M. H., & Bühlmann, P. 2012. Causal stability
+            ranking. Bioinformatics, 28(21), 2819-2823) calculates
+            lower bounds on estimated parameters for the causally
+            sufficient case. It first runs a CPDAG algorithm and then
+            for X->Y locally about Y finds all possible orientation of
+            the edges in the CPDAG and does an estimation for each of
+            these and finds their lower bound. In the interface,
+            all nodes that are found to have significant impace on
+            a given target nodes are marked as into that target node.
+            However, the more useful thing is to look at the CStaR
+            table produced by the procedure. To see this table, either
+            run CStaR on a dataset, specifying a target node, and the
+            table will be printed out, or run Tetrad using java -jar
+            and look at the console output, or if these methods are
+            not available, turn on logging in the interface before
+            running the methods, and the table will be printed out.
+            The table is to interpreted as in the Steckhoven et al.
+            paper cited above (see), and is in the same format.
+        </p>
+
+    </div>
+
+    <h4>Input Assumptions</h4>
+
+    <p>Same as for PC.</p>
 
 
     <h2>Statistical Tests</h2>
