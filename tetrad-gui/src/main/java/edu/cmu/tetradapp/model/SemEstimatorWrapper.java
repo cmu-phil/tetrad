@@ -79,7 +79,7 @@ public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
             ICovarianceMatrix covMatrix = new CovarianceMatrix((ICovarianceMatrix) dataModel);
             SemEstimator estimator = new SemEstimator(covMatrix, semPm, getOptimizer());
             estimator.setNumRestarts(getParams().getInt("numRestarts", 1));
-            estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.SemBic));
+            estimator.setScoreType((ScoreType) getParams().get("scoreType", ScoreType.Fml));
             estimator.estimate();
             if (!degreesOfFreedomCheck(semPm)) {
                 throw new IllegalArgumentException("Cannot proceed.");
