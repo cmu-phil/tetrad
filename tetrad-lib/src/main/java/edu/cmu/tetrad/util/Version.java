@@ -96,10 +96,10 @@ public class Version implements TetradSerializable {
         Pattern pattern3 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)");
         Matcher matcher3 = pattern3.matcher(spec);
 
-        Pattern pattern4 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-SNAPSHOT");
+        Pattern pattern4 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)(.*)-SNAPSHOT");
         Matcher matcher4 = pattern4.matcher(spec);
 
-        Pattern pattern5 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)\\.(\\d*)");
+        Pattern pattern5 = Pattern.compile("(\\d*)\\.(\\d*)\\.(\\d*)-(\\d*)(.*)-SNAPSHOT");
         Matcher matcher5 = pattern5.matcher(spec);
 
         if (matcher2.matches()) {

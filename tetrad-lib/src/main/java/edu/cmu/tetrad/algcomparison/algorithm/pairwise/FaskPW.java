@@ -48,13 +48,11 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            Graph graph = this.externalGraph;
-
-            if (graph == null) {
-                graph = this.algorithm.search(dataModel, parameters);
+            if (this.externalGraph == null) {
+                this.externalGraph = this.algorithm.search(dataModel, parameters);
             }
 
-            if (graph == null) {
+            if (this.externalGraph == null) {
                 throw new IllegalArgumentException(
                         "This FASK-PW (pairwise) algorithm needs both data and a graph source as inputs; it \n"
                                 + "will orient the edges in the input graph using the data");
@@ -64,14 +62,14 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
 
             Fask fask = new Fask(dataSet, new SemBicScore(dataSet), new IndTestFisherZ(dataSet, 0.01));
             fask.setAdjacencyMethod(Fask.AdjacencyMethod.EXTERNAL_GRAPH);
-            fask.setExternalGraph(graph);
+            fask.setExternalGraph(this.externalGraph);
             fask.setSkewEdgeThreshold(Double.POSITIVE_INFINITY);
 
             return fask.search();
         } else {
             FaskPW rSkew = new FaskPW(this.algorithm);
             if (this.externalGraph != null) {
-                rSkew.setExternalGraph(this.externalGraph);
+                rSkew.setExternalGraph(this.algorithm);
             }
 
             DataSet data = (DataSet) dataModel;
@@ -110,16 +108,6 @@ public class FaskPW implements Algorithm, TakesExternalGraph {
         parameters.add(Params.VERBOSE);
 
         return parameters;
-    }
-
-    @Override
-    public Graph getExternalGraph() {
-        return this.externalGraph;
-    }
-
-    @Override
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
     }
 
     @Override

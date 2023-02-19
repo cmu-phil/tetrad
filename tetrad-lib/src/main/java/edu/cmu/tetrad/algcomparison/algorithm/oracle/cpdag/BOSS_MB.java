@@ -29,11 +29,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-MB",
-        command = "boss-mb",
-        algoType = AlgType.search_for_Markov_blankets
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BOSS-MB",
+//        command = "boss-mb",
+//        algoType = AlgType.search_for_Markov_blankets
+//)
 @Bootstrapping
 @Experimental
 public class BOSS_MB implements Algorithm, HasKnowledge, UsesScoreWrapper {

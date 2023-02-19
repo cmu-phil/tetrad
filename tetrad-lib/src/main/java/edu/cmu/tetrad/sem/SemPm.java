@@ -523,7 +523,7 @@ public final class SemPm implements PM, TetradSerializable {
                 Parameter param = new Parameter(newBName(), ParamType.COEF,
                         edge.getNode1(), edge.getNode2());
 
-                param.setDistribution(new Split(0.5, 1.5));
+                param.setDistribution(new Split(0, 1));
                 parameters.add(param);
             }
         }

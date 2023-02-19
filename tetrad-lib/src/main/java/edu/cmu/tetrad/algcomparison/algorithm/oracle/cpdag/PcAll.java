@@ -26,11 +26,11 @@ import java.util.List;
  *
  * @author jdramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "PC Variants",
-        command = "pc-all",
-        algoType = AlgType.forbid_latent_common_causes
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "PC Variants",
+//        command = "pc-all",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
 @Experimental
 @Bootstrapping
 public class PcAll implements Algorithm, HasKnowledge, TakesIndependenceWrapper {

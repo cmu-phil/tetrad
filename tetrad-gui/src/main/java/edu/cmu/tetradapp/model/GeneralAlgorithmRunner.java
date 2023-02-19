@@ -243,8 +243,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         Algorithm algo = getAlgorithm();
 
-        if (algo instanceof HasKnowledge) {
-            ((HasKnowledge) algo).setKnowledge(this.knowledge.copy());
+        if (this.knowledge != null && !knowledge.isEmpty()) {
+            if (algo instanceof HasKnowledge) {
+                ((HasKnowledge) algo).setKnowledge(this.knowledge.copy());
+            } else {
+                throw new IllegalArgumentException("Knowledge has been supplied, but this algorithm does not use knowledge.");
+            }
         }
 
         if (getDataModelList().size() == 0 && getSourceGraph() != null) {
@@ -286,10 +290,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             if (getAlgorithm() instanceof MultiDataSetAlgorithm) {
                 for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
                     Knowledge knowledge1 = getDataModelList().get(0).getKnowledge();
-                    List<DataSet> dataSets = getDataModelList().stream()
-                            .map(e -> (DataSet) e)
-                            .collect(Collectors.toCollection(ArrayList::new));
-                    for (DataSet dataSet : dataSets) dataSet.setKnowledge(knowledge1);
+                    List<DataModel> dataSets = new ArrayList<>(getDataModelList());
+                    for (DataModel dataSet : dataSets) dataSet.setKnowledge(knowledge1);
                     int randomSelectionSize = this.parameters.getInt("randomSelectionSize");
                     if (randomSelectionSize == 0) {
                         randomSelectionSize = dataSets.size();
