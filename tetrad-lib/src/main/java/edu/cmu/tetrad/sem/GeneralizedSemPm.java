@@ -300,7 +300,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
                         }
                     }
 
-                    setStartsWithParametersTemplate("s", "Split(-105, -.5, .5, 1.0)");
+                    setStartsWithParametersTemplate("s", "Split(-1, -.5, .5, 1.0)");
                     setStartsWithParametersEstimationInitializaationTemplate("s", "Split(-1.5, -.5, .5, 1.5)");
                 }
             }

@@ -66,7 +66,7 @@ public class R3 implements Algorithm, TakesExternalGraph {
         } else {
             R3 r3 = new R3(this.algorithm);
             if (this.externalGraph != null) {
-                r3.setExternalGraph(this.externalGraph);
+                r3.setExternalGraph(this.algorithm);
             }
 
             DataSet data = (DataSet) dataSet;
@@ -105,16 +105,6 @@ public class R3 implements Algorithm, TakesExternalGraph {
         parameters.add(Params.VERBOSE);
 
         return parameters;
-    }
-
-    @Override
-    public Graph getExternalGraph() {
-        return this.externalGraph;
-    }
-
-    @Override
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
     }
 
     @Override

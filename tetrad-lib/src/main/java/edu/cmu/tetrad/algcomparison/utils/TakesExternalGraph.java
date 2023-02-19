@@ -10,10 +10,6 @@ import edu.cmu.tetrad.graph.Graph;
  */
 public interface TakesExternalGraph {
 
-    Graph getExternalGraph();
-
-    void setExternalGraph(Graph externalGraph);
-
     void setExternalGraph(Algorithm algorithm);
 
 }

@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
-import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.BootstrapSampler;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -22,14 +21,13 @@ import java.util.concurrent.RecursiveAction;
  *
  * @author jdramsey
  */
-public class StARS implements Algorithm, TakesExternalGraph {
+public class StARS implements Algorithm {
 
     static final long serialVersionUID = 23L;
     private final double low;
     private final double high;
     private final String parameter;
     private final Algorithm algorithm;
-    private Graph externalGraph;
 
     public StARS(Algorithm algorithm, String parameter, double low, double high) {
         if (low >= high) {
@@ -194,22 +192,4 @@ public class StARS implements Algorithm, TakesExternalGraph {
 
         return parameters;
     }
-
-    @Override
-    public Graph getExternalGraph() {
-        // TODO Auto-generated method stub
-        return this.externalGraph;
-    }
-
-    @Override
-    public void setExternalGraph(Graph externalGraph) {
-        // TODO Auto-generated method stub
-        this.externalGraph = externalGraph;
-    }
-
-    @Override
-    public void setExternalGraph(Algorithm algorithm) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
 }

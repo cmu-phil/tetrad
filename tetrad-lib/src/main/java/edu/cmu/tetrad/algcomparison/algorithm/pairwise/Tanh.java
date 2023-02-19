@@ -57,7 +57,7 @@ public class Tanh implements Algorithm, TakesExternalGraph {
         } else {
             Tanh tanh = new Tanh(this.algorithm);
             if (this.externalGraph != null) {
-                tanh.setExternalGraph(this.externalGraph);
+                tanh.setExternalGraph(this.algorithm);
             }
 
             DataSet data = (DataSet) dataSet;
@@ -96,16 +96,6 @@ public class Tanh implements Algorithm, TakesExternalGraph {
         parameters.add(Params.VERBOSE);
 
         return parameters;
-    }
-
-    @Override
-    public Graph getExternalGraph() {
-        return this.externalGraph;
-    }
-
-    @Override
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
     }
 
     @Override

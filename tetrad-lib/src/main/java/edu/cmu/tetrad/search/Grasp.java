@@ -132,17 +132,24 @@ public class Grasp {
                 if (o1.getName().equals(o2.getName())) {
                     return 0;
                 } else if (this.knowledge.isRequired(o1.getName(), o2.getName())) {
-                    return 1;
+                    return -1;
                 } else if (this.knowledge.isRequired(o2.getName(), o1.getName())) {
-                    return -1;
-                } else if (this.knowledge.isForbidden(o1.getName(), o2.getName())) {
-                    return -1;
-                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
                     return 1;
+                } else if (this.knowledge.isForbidden(o1.getName(), o2.getName())) {
+                    return 1;
+                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
+                    return -1;
                 } else {
                     return 0;
                 }
             });
+        }
+
+        System.out.println("Initial knowledge sort order = " + order);
+
+        if (violatesKnowledge(order)) {
+            throw new IllegalArgumentException("The initial sorting procedure could not find a permutation " +
+                    "consistent with that knowledge.");
         }
     }
 

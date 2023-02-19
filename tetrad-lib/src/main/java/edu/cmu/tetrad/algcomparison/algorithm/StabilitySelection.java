@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
-import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.BootstrapSampler;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -23,11 +22,10 @@ import java.util.concurrent.RecursiveAction;
  *
  * @author jdramsey
  */
-public class StabilitySelection implements Algorithm, TakesExternalGraph {
+public class StabilitySelection implements Algorithm {
 
     static final long serialVersionUID = 23L;
     private final Algorithm algorithm;
-    private Graph externalGraph;
 
     public StabilitySelection(Algorithm algorithm) {
         this.algorithm = algorithm;
@@ -91,16 +89,16 @@ public class StabilitySelection implements Algorithm, TakesExternalGraph {
             }
         }
 
-        this.externalGraph = new EdgeListGraph(dataSet.getVariables());
+        Graph outputGraph = new EdgeListGraph(dataSet.getVariables());
         double percentStability = parameters.getDouble("percentStability");
 
         for (Edge edge : counts.keySet()) {
             if (counts.get(edge) > percentStability * numSubsamples) {
-                this.externalGraph.addEdge(edge);
+                outputGraph.addEdge(edge);
             }
         }
 
-        return this.externalGraph;
+        return outputGraph;
     }
 
     private void increment(Edge edge, Map<Edge, Integer> counts) {
@@ -134,20 +132,4 @@ public class StabilitySelection implements Algorithm, TakesExternalGraph {
 
         return parameters;
     }
-
-    @Override
-    public Graph getExternalGraph() {
-        return this.externalGraph;
-    }
-
-    @Override
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
-    }
-
-    @Override
-    public void setExternalGraph(Algorithm algorithm) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
 }

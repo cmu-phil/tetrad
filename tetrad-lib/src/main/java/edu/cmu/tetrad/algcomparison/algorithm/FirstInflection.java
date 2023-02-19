@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.algorithm;
 
-import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Edge;
@@ -17,7 +16,7 @@ import java.util.Set;
  *
  * @author jdramsey
  */
-public class FirstInflection implements Algorithm, TakesExternalGraph {
+public class FirstInflection implements Algorithm {
 
     static final long serialVersionUID = 23L;
     private final double low;
@@ -25,7 +24,6 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
     private final double increment;
     private final String parameter;
     private final Algorithm algorithm;
-    private Graph intialGraph;
 
     public FirstInflection(Algorithm algorithm, String parameter, double low, double high, double increment) {
         if (low >= high) {
@@ -46,21 +44,22 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
         int _prevDiff = Integer.MAX_VALUE;
         double _value = 0.0;
 
+        Graph intialGraph;
         if (this.increment > 0) {
 
             for (double value = this.low - this.increment; value <= this.high + 0.0000001; value += this.increment) {
                 double value0 = FirstInflection.getValue(value, parameters);
 
                 _parameters.set(this.parameter, value0);
-                this.intialGraph = this.algorithm.search(dataSet, _parameters);
+                intialGraph = this.algorithm.search(dataSet, _parameters);
 
                 if (_previous == null) {
-                    _previous = this.intialGraph;
+                    _previous = intialGraph;
                     continue;
                 }
 
-                this.intialGraph = GraphUtils.replaceNodes(this.intialGraph, _previous.getNodes());
-                Set<Edge> edges1 = this.intialGraph.getEdges();
+                intialGraph = GraphUtils.replaceNodes(intialGraph, _previous.getNodes());
+                Set<Edge> edges1 = intialGraph.getEdges();
 
                 int numEdges = edges1.size();
 
@@ -75,7 +74,7 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
                 if (diff >= _prevDiff) {
                     break;
                 }
-                _previous = this.intialGraph;
+                _previous = intialGraph;
                 _value = _parameters.getDouble(this.parameter);
                 _prevDiff = diff;
             }
@@ -85,15 +84,15 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
                     value = FirstInflection.getValue(value, parameters);
 
                     _parameters.set(this.parameter, value);
-                    this.intialGraph = this.algorithm.search(dataSet, _parameters);
+                    intialGraph = this.algorithm.search(dataSet, _parameters);
 
                     assert _previous != null;
-                    this.intialGraph = GraphUtils.replaceNodes(this.intialGraph, _previous.getNodes());
-                    Set<Edge> edges1 = this.intialGraph.getEdges();
+                    intialGraph = GraphUtils.replaceNodes(intialGraph, _previous.getNodes());
+                    Set<Edge> edges1 = intialGraph.getEdges();
 
                     int numEdges = edges1.size();
 
-                    Set<Edge> edges2 = this.intialGraph.getEdges();
+                    Set<Edge> edges2 = intialGraph.getEdges();
                     edges2.removeAll(_previous.getEdges());
                     int diff = edges2.size();
 
@@ -104,7 +103,7 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
                     if (diff >= _prevDiff) {
                         break;
                     }
-                    _previous = this.intialGraph;
+                    _previous = intialGraph;
                     _value = _parameters.getDouble(this.parameter);
                     _prevDiff = diff;
                 }
@@ -115,15 +114,15 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
                 double value0 = FirstInflection.getValue(value, parameters);
 
                 _parameters.set(this.parameter, value0);
-                this.intialGraph = this.algorithm.search(dataSet, _parameters);
+                intialGraph = this.algorithm.search(dataSet, _parameters);
 
                 if (_previous == null) {
-                    _previous = this.intialGraph;
+                    _previous = intialGraph;
                     continue;
                 }
 
-                this.intialGraph = GraphUtils.replaceNodes(this.intialGraph, _previous.getNodes());
-                Set<Edge> edges1 = this.intialGraph.getEdges();
+                intialGraph = GraphUtils.replaceNodes(intialGraph, _previous.getNodes());
+                Set<Edge> edges1 = intialGraph.getEdges();
 
                 int numEdges = edges1.size();
 
@@ -138,7 +137,7 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
                 if (diff >= _prevDiff) {
                     break;
                 }
-                _previous = this.intialGraph;
+                _previous = intialGraph;
                 _value = _parameters.getDouble(this.parameter);
                 _prevDiff = diff;
             }
@@ -148,15 +147,15 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
                     value = FirstInflection.getValue(value, parameters);
 
                     _parameters.set(this.parameter, value);
-                    this.intialGraph = this.algorithm.search(dataSet, _parameters);
+                    intialGraph = this.algorithm.search(dataSet, _parameters);
 
                     assert _previous != null;
-                    this.intialGraph = GraphUtils.replaceNodes(this.intialGraph, _previous.getNodes());
-                    Set<Edge> edges1 = this.intialGraph.getEdges();
+                    intialGraph = GraphUtils.replaceNodes(intialGraph, _previous.getNodes());
+                    Set<Edge> edges1 = intialGraph.getEdges();
 
                     int numEdges = edges1.size();
 
-                    Set<Edge> edges2 = this.intialGraph.getEdges();
+                    Set<Edge> edges2 = intialGraph.getEdges();
                     edges2.removeAll(_previous.getEdges());
                     int diff = edges2.size();
 
@@ -167,7 +166,7 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
                     if (diff >= _prevDiff) {
                         break;
                     }
-                    _previous = this.intialGraph;
+                    _previous = intialGraph;
                     _value = _parameters.getDouble(this.parameter);
                     _prevDiff = diff;
                 }
@@ -179,11 +178,6 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
 
         return _previous;
 
-    }
-
-    @Override
-    public void setExternalGraph(Algorithm externalGraph) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     private static double getValue(double value, Parameters parameters) {
@@ -215,15 +209,5 @@ public class FirstInflection implements Algorithm, TakesExternalGraph {
         parameters.add("depth");
         parameters.add("verbose");
         return parameters;
-    }
-
-    @Override
-    public Graph getExternalGraph() {
-        return this.intialGraph;
-    }
-
-    @Override
-    public void setExternalGraph(Graph externalGraph) {
-        // TODO Auto-generated method stub
     }
 }

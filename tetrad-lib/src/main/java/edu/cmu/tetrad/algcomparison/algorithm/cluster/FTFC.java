@@ -24,16 +24,15 @@ import java.util.List;
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FTFC",
         command = "ftfc",
-        algoType = AlgType.search_for_structure_over_latents,
-        dataType = DataType.Continuous
+        algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
+public class FTFC implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
     private Knowledge knowledge = new Knowledge();
 
-    public Ftfc() {
+    public FTFC() {
     }
 
     @Override
@@ -66,7 +65,7 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
             return search.search();
         } else {
-            Ftfc algorithm = new Ftfc();
+            FTFC algorithm = new FTFC();
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));

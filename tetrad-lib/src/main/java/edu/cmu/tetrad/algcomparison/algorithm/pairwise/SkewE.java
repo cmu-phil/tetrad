@@ -65,7 +65,7 @@ public class SkewE implements Algorithm, TakesExternalGraph {
         } else {
             SkewE skewE = new SkewE(this.algorithm);
             if (this.externalGraph != null) {
-                skewE.setExternalGraph(this.externalGraph);
+                skewE.setExternalGraph(this.algorithm);
             }
 
             DataSet data = (DataSet) dataSet;
@@ -104,16 +104,6 @@ public class SkewE implements Algorithm, TakesExternalGraph {
         parameters.add(Params.VERBOSE);
 
         return parameters;
-    }
-
-    @Override
-    public Graph getExternalGraph() {
-        return this.externalGraph;
-    }
-
-    @Override
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
     }
 
     @Override

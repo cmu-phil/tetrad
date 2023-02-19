@@ -29,12 +29,12 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
+public class BPC implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
     private Knowledge knowledge = new Knowledge();
 
-    public Bpc() {
+    public BPC() {
     }
 
     @Override
@@ -105,7 +105,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                 return fullGraph;
             }
         } else {
-            Bpc algorithm = new Bpc();
+            BPC algorithm = new BPC();
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
