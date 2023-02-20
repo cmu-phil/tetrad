@@ -6,7 +6,7 @@
     <parent>
         <groupId>io.github.cmu-phil</groupId>
         <artifactId>tetrad</artifactId>
-        <version>7.2.1</version>
+        <version>7.2.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>tetrad-gui</artifactId>
