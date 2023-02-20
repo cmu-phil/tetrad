@@ -244,6 +244,8 @@ public class Cstar {
                             pattern = getPatternFges(sample);
                         } else if (Cstar.this.patternAlgorithm == PatternAlgorithm.PC_STABLE) {
                             pattern = getPatternPcStable(sample);
+                        } else if (Cstar.this.patternAlgorithm == PatternAlgorithm.GRaSP) {
+                            pattern = getPatternPcStable(sample);
                         } else {
                             throw new IllegalArgumentException("That type of of pattern algorithm is not configured: " + Cstar.this.patternAlgorithm);
                         }
@@ -600,6 +602,14 @@ public class Cstar {
         return pc.search();
     }
 
+    private Graph getPatternGRaSP(DataSet sample) {
+        test.setVerbose(false);
+        Grasp alg = new Grasp(new SemBicScore(sample));
+        alg.setVerbose(false);
+        alg.bestOrder(sample.getVariables());
+        return alg.getGraph(true);
+    }
+
     //=============================PRIVATE==============================//
 
     private Graph getPatternFges(DataSet sample) {
@@ -687,7 +697,7 @@ public class Cstar {
         return results;
     }
 
-    public enum PatternAlgorithm {FGES, PC_STABLE}
+    public enum PatternAlgorithm {FGES, PC_STABLE, GRaSP}
 
     public enum SampleStyle {BOOTSTRAP, SPLIT}
 

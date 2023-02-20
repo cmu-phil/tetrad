@@ -8,7 +8,7 @@ public class ConcurrencyUtils {
     public static void runCallables(List<Callable<Boolean>> tasks, boolean parallelized) {
         if (tasks.isEmpty()) return;
 
-        if (parallelized) {
+        if (!parallelized) {
             for (Callable<Boolean> task : tasks) {
                 try {
                     task.call();
