@@ -74,6 +74,10 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
         List<Node> possibleCauses = new ArrayList<>(dataSet.getVariables());
         possibleCauses.removeAll(possibleEffects);
 
+        if (dataSet instanceof DataSet) {
+            throw new IllegalArgumentException("Expecting tabular data for CStaR.");
+        }
+
         LinkedList<LinkedList<Cstar.Record>> allRecords
                 = cStaR.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, test.getTest(dataSet, parameters));
 
