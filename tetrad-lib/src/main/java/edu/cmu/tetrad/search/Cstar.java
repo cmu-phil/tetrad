@@ -178,10 +178,8 @@ public class Cstar {
             this.test = test;
         } else if (test instanceof ChiSquare) {
             this.test = test;
-        } else if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof ConditionalGaussianScore) {
-            this.test = test;
-        } else {
-            throw new IllegalArgumentException("Expecting Fisher Z, Chi Square, Sem BIC, or Conditional Gaussian Score.");
+Rem        } else {
+            throw new IllegalArgumentException("Expecting Fisher Z, Chi Square, or Sem BIC.");
         }
 
         List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
