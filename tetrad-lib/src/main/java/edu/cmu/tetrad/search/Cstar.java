@@ -178,7 +178,7 @@ public class Cstar {
             this.test = test;
         } else if (test instanceof ChiSquare) {
             this.test = test;
-Rem        } else {
+        } else {
             throw new IllegalArgumentException("Expecting Fisher Z, Chi Square, or Sem BIC.");
         }
 
