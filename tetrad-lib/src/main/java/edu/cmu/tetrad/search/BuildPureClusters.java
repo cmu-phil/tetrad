@@ -857,7 +857,7 @@ public final class BuildPureClusters {
                 ClusterSignificance clusterSignificance = new ClusterSignificance(variables, covarianceMatrix);
                 clusterSignificance.setCheckType(checkType);
                 List<Integer> cluster = ClusterSignificance.getInts(currentCluster);
-                if (clusterSignificance.significant(cluster, alpha)) {
+                if (!clusterSignificance.significant(cluster, alpha)) {
                     continue;
                 }
 

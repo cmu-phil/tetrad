@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.cmu-phil</groupId>
     <artifactId>tetrad</artifactId>
-    <version>7.2.1</version>
+    <version>7.2.2</version>
     <packaging>pom</packaging>
 
     <name>Tetrad Project</name>
@@ -132,6 +132,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
+                <version>3.12.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.velocity</groupId>

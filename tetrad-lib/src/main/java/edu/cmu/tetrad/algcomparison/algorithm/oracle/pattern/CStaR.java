@@ -53,18 +53,18 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
 
         List<Node> possibleEffects = new ArrayList<>();
 
-        String targetName = parameters.getString(Params.TARGETS);
+        String targetNames = parameters.getString(Params.TARGETS);
 
-        if (targetName.trim().equalsIgnoreCase("")) {
+        if (targetNames.trim().equalsIgnoreCase("")) {
             throw new IllegalStateException("Please specify target name(s).");
         }
 
-        if (targetName.trim().equalsIgnoreCase("all")) {
+        if (targetNames.trim().equalsIgnoreCase("all")) {
             for (String name : dataSet.getVariableNames()) {
                 possibleEffects.add(dataSet.getVariable(name));
             }
         } else {
-            String[] names = targetName.split(",");
+            String[] names = targetNames.split(",");
 
             for (String name : names) {
                 possibleEffects.add(dataSet.getVariable(name.trim()));
@@ -72,6 +72,11 @@ public class CStaR implements Algorithm, TakesIndependenceWrapper {
         }
 
         List<Node> possibleCauses = new ArrayList<>(dataSet.getVariables());
+//        possibleCauses.removeAll(possibleEffects);
+
+        if (!(dataSet instanceof DataSet)) {
+            throw new IllegalArgumentException("Expecting tabular data for CStaR.");
+        }
 
         LinkedList<LinkedList<Cstar.Record>> allRecords
                 = cStaR.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, test.getTest(dataSet, parameters));
