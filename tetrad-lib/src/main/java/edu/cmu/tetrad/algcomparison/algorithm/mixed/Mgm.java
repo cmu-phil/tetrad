@@ -33,6 +33,10 @@ public class Mgm implements Algorithm {
 
     @Override
     public Graph search(DataModel ds, Parameters parameters) {
+        if (!(ds instanceof DataSet)) {
+            throw new IllegalArgumentException("Expecting tabular data for MGM.");
+        }
+
         DataSet _data = (DataSet) ds;
 
         for (int j = 0; j < _data.getNumColumns(); j++) {
