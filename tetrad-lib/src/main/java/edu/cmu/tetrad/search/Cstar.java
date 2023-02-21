@@ -178,10 +178,8 @@ public class Cstar {
             this.test = test;
         } else if (test instanceof ChiSquare) {
             this.test = test;
-        } else if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof ConditionalGaussianScore) {
-            this.test = test;
         } else {
-            throw new IllegalArgumentException("Expecting Fisher Z, Chi Square, Sem BIC, or Conditional Gaussian Score.");
+            throw new IllegalArgumentException("Expecting Fisher Z, Chi Square, or Sem BIC.");
         }
 
         List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
@@ -243,6 +241,8 @@ public class Cstar {
                         if (Cstar.this.patternAlgorithm == PatternAlgorithm.FGES) {
                             pattern = getPatternFges(sample);
                         } else if (Cstar.this.patternAlgorithm == PatternAlgorithm.PC_STABLE) {
+                            pattern = getPatternPcStable(sample);
+                        } else if (Cstar.this.patternAlgorithm == PatternAlgorithm.GRaSP) {
                             pattern = getPatternPcStable(sample);
                         } else {
                             throw new IllegalArgumentException("That type of of pattern algorithm is not configured: " + Cstar.this.patternAlgorithm);
@@ -600,6 +600,14 @@ public class Cstar {
         return pc.search();
     }
 
+    private Graph getPatternGRaSP(DataSet sample) {
+        test.setVerbose(false);
+        Grasp alg = new Grasp(new SemBicScore(sample));
+        alg.setVerbose(false);
+        alg.bestOrder(sample.getVariables());
+        return alg.getGraph(true);
+    }
+
     //=============================PRIVATE==============================//
 
     private Graph getPatternFges(DataSet sample) {
@@ -687,7 +695,7 @@ public class Cstar {
         return results;
     }
 
-    public enum PatternAlgorithm {FGES, PC_STABLE}
+    public enum PatternAlgorithm {FGES, PC_STABLE, GRaSP}
 
     public enum SampleStyle {BOOTSTRAP, SPLIT}
 

@@ -29,7 +29,7 @@ import java.util.List;
         command = "pag-sampling-rfci",
         algoType = AlgType.allow_latent_common_causes
 )
-@Experimental
+//@Experimental
 public class PagSamplingRfci implements Algorithm, HasKnowledge {
 
     public static final List<String> PAG_SAMPLING_RFCI_PARAMETERS = new LinkedList<>();
