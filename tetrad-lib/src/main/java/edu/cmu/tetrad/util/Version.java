@@ -123,8 +123,10 @@ public class Version implements TetradSerializable {
             this.minorSubversion = Integer.parseInt(matcher5.group(3));
             this.incrementalRelease = Integer.parseInt(matcher5.group(4));
         } else {
-            throw new IllegalArgumentException("Version should be either of the " +
-                    "form a.b.c or a.b.c-d or a.b.c-SNAPSHOT or a.b.c-d.e " + spec);
+            this.majorVersion = 0;//Integer.parseInt(matcher5.group(1));
+            this.minorVersion = 0;//Integer.parseInt(matcher5.group(2));
+            this.minorSubversion = 0;//Integer.parseInt(matcher5.group(3));
+            this.incrementalRelease = 0;//Integer.parseInt(matcher5.group(4));
         }
 
     }

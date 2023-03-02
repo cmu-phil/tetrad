@@ -3,11 +3,13 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -428,6 +430,26 @@ public class Boss {
             });
         }
 
+        if (violatesKnowledge(order)) {
+            Edge edge = violatesForbiddenKnowledge(order);
+
+            if (edge != null) {
+                JOptionPane.showMessageDialog (JOptionUtils.centeringComp(),
+                        "The initial sorting procedure could not find a permutation consistent with that \n" +
+                                "knowledge; this edge was in the DAG: " + edge + " in the initial sort,\n" +
+                                "but this edge was forbidden.");
+            }
+
+            Edge edge2 = violatesRequiredKnowledge(order);
+
+            if (edge2 != null) {
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+                        "The initial sorting procedure could not find a permutation consistent with that \n" +
+                                "knowledge; this edge was not in the DAG: " + edge2 + " in the initial sorted," +
+                                "but this edge was required.");
+            }
+        }
+
         System.out.println("Initial knowledge sort order = " + order);
 
         if (violatesKnowledge(order)) {
@@ -530,6 +552,38 @@ public class Boss {
         }
 
         return false;
+    }
+
+    private Edge violatesForbiddenKnowledge(List<Node> order) {
+        if (!this.knowledge.isEmpty()) {
+            scorer.score(order);
+
+            for (int i = 0; i < order.size(); i++) {
+                for (int j = i + 1; j < order.size(); j++) {
+                    if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName()) && scorer.parent(order.get(i), order.get(j))) {
+                        return Edges.directedEdge(order.get(i), order.get(j));
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private Edge violatesRequiredKnowledge(List<Node> order) {
+        if (!this.knowledge.isEmpty()) {
+            scorer.score(order);
+
+            for (int i = 0; i < order.size(); i++) {
+                for (int j = i + 1; j < order.size(); j++) {
+                    if (this.knowledge.isRequired(order.get(j).getName(), order.get(i).getName()) && !scorer.parent(order.get(i), order.get(j))) {
+                        return Edges.directedEdge(order.get(j), order.get(i));
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
