@@ -2,6 +2,10 @@ The purpose of Tetrad is to make algorithms available to do causal inference. Th
 
 https://www.cmu.edu/dietrich/news/news-stories/2020/august/tetrad-sail.html
 
+We have a project web page here with all of the current links for artifacts, a list of contributors, and a bit of history here:
+
+https://sites.google.com/view/tetradcausal
+
 All artifacts are published in the Maven Central Repository here:
 
 https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/
@@ -39,10 +43,6 @@ https://github.com/cmu-phil/tetrad
 The web page for the Center for Causal Discovery is here:
 
 https://www.ccd.pitt.edu/
-
-We have a project web page here with all of the current links for artifacts, a list of contributors, and a bit of history here:
-
-https://sites.google.com/view/tetradcausal
 
 A tutorial can be found here:
 
