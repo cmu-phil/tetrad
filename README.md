@@ -20,11 +20,13 @@ where g is the maximum number of Gigabytes you wish to allocate to the process.
 
 We have a tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that lets you run Tetrad algorithms at the command line.
 
+For Python integration, please see out (still new) [py-tetrad project](https://github.com/cmu-phil/py-tetrad). Also, please see the [causal-learn package](https://github.com/py-why/causal-learn), now part of the [py-why space](https://github.com/py-why).
+
 All artifacts for Tetrad and causal-cmd are published in [Maven Central](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/). This includes all downloadable jars and Javadocs.
 
 Please submit issue requests for Tetrad using our [Issue Tracker](https://github.com/cmu-phil/tetrad/issues).
 
-Here is out [GitHub URL](https://github.com/cmu-phil/tetrad).
+Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Actually you're already here.
 
 Here is the web page for the [Center for Causal Discovery](https://www.ccd.pitt.edu/), which also supports the latest version of Tetrad.
 
