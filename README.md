@@ -26,14 +26,6 @@ java -Xmx[g]G -jar *-launch.jar
 
 where [g] is the maximum number of Gigabytes you wish to allocate to the process.
 
-# Bug Reports
-
-Please submit issue requests for Tetrad using our [Issue Tracker](https://github.com/cmu-phil/tetrad/issues).
-
-# Documentation
-
-If you're new to Tetrad, here is a [Tutorial](https://rawgit.com/cmu-phil/tetrad/development/tetrad-gui/src/main/resources/resources/javahelp/manual/tetrad_tutorial.html). Also, here is our [Manual](https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html). If you like to watch thought-provoking lectures, here are some [lectures on the Center for Causal Discovery site](https://www.ccd.pitt.edu/video-tutorials/).
-
 # Command Line
 
 We have a tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that lets you run Tetrad algorithms at the command line.
@@ -44,6 +36,9 @@ For Python integration, please see our (still new) [py-tetrad Python project](ht
 
 Also, please see the [causal-learn Python package](https://causal-learn.readthedocs.io/en/latest/), translating some Tetrad algorithms into Python and adding some algorithms not in Tetrad, now part of the awesome [py-why space](https://github.com/py-why). Have fun exploring that too!
 
+# Documentation
+
+If you're new to Tetrad, here is a [Tutorial](https://rawgit.com/cmu-phil/tetrad/development/tetrad-gui/src/main/resources/resources/javahelp/manual/tetrad_tutorial.html). Also, here is our [Manual](https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html). If you like to watch thought-provoking lectures, here are some [lectures on the Center for Causal Discovery site](https://www.ccd.pitt.edu/video-tutorials/).
 
 # Install
 
@@ -55,3 +50,7 @@ The project contains well-developed code in these packages:
 * tetradapp
 
 The  tetrad-lib package contains the model code; the tetrad-gui package contains the view (GUI) code.
+
+# Bug Reports
+
+Please submit issue requests for Tetrad using our [Issue Tracker](https://github.com/cmu-phil/tetrad/issues).
