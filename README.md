@@ -40,7 +40,7 @@ If you're new to Tetrad, here is a [Tutorial](https://rawgit.com/cmu-phil/tetrad
 
 All artifacts are published in the [Maven Central Repository](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/). This includes all downloadable jars and Javadocs.
 
-Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Also, here are some [instructions on how to set this project up in IntelliJ IDEA](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA). You can run the Tetrad lifecycle package target and launch the "-launch" jar that is  built in the target directory.
+Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Also, here are some [instructions on how to set this project up in IntelliJ IDEA](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA).
 
 ## Bug/Issue Reports
 
