@@ -28,7 +28,7 @@ All artifacts for Tetrad and causal-cmd are published in [Maven Central](https:/
 
 Please submit issue requests for Tetrad using our [Issue Tracker](https://github.com/cmu-phil/tetrad/issues).
 
-Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Actually you're already here.
+Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Actually you're already here, so don't worry about it.
 
 Here is the web page for the [Center for Causal Discovery](https://www.ccd.pitt.edu/), which also supports the latest version of Tetrad and Causal Command.
 
