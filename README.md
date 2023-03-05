@@ -41,7 +41,7 @@ Also, please see the [causal-learn Python package](https://causal-learn.readthed
 
 # Install
 
-Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Actually you're already here. All of our code is public and we welcome suggestions, expecially if you have awesome algorithms that outperform ours.
+Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). All of our code is public and we welcome suggestions, expecially if you have awesome algorithms that outperform ours.
 
 Here are some [instructions on how to set this project up in IntelliJ IDEA](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA). You can run the Tetrad lifecycle package target and launch the "-launch" jar that is  built in the target directory.
 
