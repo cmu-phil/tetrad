@@ -4,13 +4,11 @@ The purpose of Tetrad is to make algorithms available in Java to do causal infer
 
 Here is our [project web page](https://sites.google.com/view/tetradcausal) here with current links for artifacts, a list of contributors, and a bit of history.
 
-All artifacts are published in the [Maven Central Repository](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/).
-
 Here is the web page for the [Center for Causal Discovery](https://www.ccd.pitt.edu/), which also supports the latest version of Tetrad and Causal Command.
 
-All of our code is public and we welcome suggestions, expecially if you have awesome algorithms that outperform ours.
+All artifacts are published in the [Maven Central Repository](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/). This includes all downloadable jars and Javadocs.
 
-All artifacts for Tetrad and causal-cmd are published in [Maven Central](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/). This includes all downloadable jars and Javadocs.
+All of our code is public and we welcome suggestions, expecially if you have awesome algorithms that outperform ours.
 
 ## Tetrad GUI Application
 
