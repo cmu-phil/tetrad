@@ -28,7 +28,7 @@ We have a tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that le
 
 ## Python Integration
 
-For Python integration, please see our (still new) [py-tetrad Python project](https://github.com/cmu-phil/py-tetrad), which shows how to integrate arbitrary Java code in the Tetrad project into a Python workflow using the [JPype Python project](https://jpype.readthedocs.io/en/latest/).
+For Python integration, please see our (still new) [py-tetrad Python project](https://github.com/cmu-phil/py-tetrad), which shows how to integrate arbitrary Java code in the Tetrad project into a Python workflow using [JPype](https://jpype.readthedocs.io/en/latest/).
 
 Also, please see the [causal-learn Python package](https://causal-learn.readthedocs.io/en/latest/), translating some Tetrad algorithms into Python and adding some algorithms not in Tetrad, now part of the awesome [py-why space](https://github.com/py-why).
 
