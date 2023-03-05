@@ -10,7 +10,7 @@ All of our code is public and we welcome suggestions, expecially if you have awe
 
 ## Install
 
-This software will work on all major platforms once a recent version of the Java JRE/JCK is installed, certainly **_greater than version 1.8 (version 8)_**. We find that the most recent [Corretto JRE/JDK](https://aws.amazon.com/corretto/?filtered-posts.sort-by=item.additionalFields.createdDate&filtered-posts.sort-order=desc) with long term support (LTS) works well on all platforms. 
+This software will work on all major platforms once a recent version of the Java JRE/JCK is installed, certainly **_greater than version 1.8 (version 8)_**. We find that the most recent [Corretto JRE/JDK](https://aws.amazon.com/corretto/?filtered-posts.sort-by=item.additionalFields.createdDate&filtered-posts.sort-order=desc) with long term support (LTS) works well and consistently on all platforms. 
 
 All artifacts are published in the [Maven Central Repository](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/). This includes all downloadable jars and Javadocs.
 
