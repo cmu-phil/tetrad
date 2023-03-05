@@ -45,4 +45,4 @@ If you're new to Tetrad, here is a [Tutorial](https://rawgit.com/cmu-phil/tetrad
 ## Bug Reports/Issue Requests
 
 Please submit issue requests for Tetrad using our [Issue Tracker](https://github.com/cmu-phil/tetrad/issues). We will try to the extent possible to resolve all reported issues before [releasing new versions of Tetrad](https://github.com/cmu-phil/tetrad/releases). This may involve moving items to our [Wish List
-](https://github.com/cmu-phil/tetrad/wiki/Current-Wish-List).
+](https://github.com/cmu-phil/tetrad/wiki/Current-Wish-List), which we revisit periodically.
