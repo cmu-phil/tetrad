@@ -24,6 +24,8 @@ Please submit issue requests for Tetrad using our [Issue Tracker](https://github
 
 Here is the web page for the [Center for Causal Discovery](https://www.ccd.pitt.edu/), which also supports the latest version of Tetrad and Causal Command.
 
+All of our code is public and we welcome suggestions, expecially if you have awesome algorithms that outperform ours.
+
 # Documentation
 
 If you're new to Tetrad, here is a [Tutorial](https://rawgit.com/cmu-phil/tetrad/development/tetrad-gui/src/main/resources/resources/javahelp/manual/tetrad_tutorial.html). Also, here is our [Manual](https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html). If you like to watch thought-provoking lectures, here are some [lectures on the Center for Causal Discovery site](https://www.ccd.pitt.edu/video-tutorials/).
@@ -41,9 +43,7 @@ Also, please see the [causal-learn Python package](https://causal-learn.readthed
 
 # Install
 
-Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). All of our code is public and we welcome suggestions, expecially if you have awesome algorithms that outperform ours.
-
-Here are some [instructions on how to set this project up in IntelliJ IDEA](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA). You can run the Tetrad lifecycle package target and launch the "-launch" jar that is  built in the target directory.
+Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Also, here are some [instructions on how to set this project up in IntelliJ IDEA](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA). You can run the Tetrad lifecycle package target and launch the "-launch" jar that is  built in the target directory.
 
 The project contains fairly well-developed code in these packages:
 * tetrad
