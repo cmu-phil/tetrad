@@ -42,13 +42,6 @@ All artifacts are published in the [Maven Central Repository](https://s01.oss.so
 
 Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Also, here are some [instructions on how to set this project up in IntelliJ IDEA](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA). You can run the Tetrad lifecycle package target and launch the "-launch" jar that is  built in the target directory.
 
-The project contains well-developed code in these packages:
-* tetrad
-* pitt
-* tetradapp
-
-The  tetrad-lib package contains the model code; the tetrad-gui package contains the view (GUI) code.
-
 ## Bug/Issue Reports
 
 Please submit issue requests for Tetrad using our [Issue Tracker](https://github.com/cmu-phil/tetrad/issues). We will try to the extent possible to resolve all reported issues before [releasing new versions of Tetrad](https://github.com/cmu-phil/tetrad/releases). This may involve moving items to our [Wish List
