@@ -16,7 +16,7 @@ You may be able to launch this jar by double clicking the jar file name, though 
 java -Xmx[g]G -jar *-launch.jar
 ```
 
-where g is the maximum number of Gigabytes you wish to allocate to the process.
+where [g] is the maximum number of Gigabytes you wish to allocate to the process.
 
 We have a tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that lets you run Tetrad algorithms at the command line.
 
