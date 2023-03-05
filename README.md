@@ -6,7 +6,7 @@ Here is our [project web page](https://sites.google.com/view/tetradcausal) here 
 
 All artifacts are published in the [Maven Central Repository](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/).
 
-to download the current jar you can use to launch the Tetrad GUI, click [here](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.2.2/tetrad-gui-7.2.2-launch.jar). Please delete any old ones you're not using.
+To download the current jar you can use to launch the Tetrad GUI, click [here](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.2.2/tetrad-gui-7.2.2-launch.jar). Please delete any old ones you're not using.
 
 The application will work on all major platforms once a recent version of the Java JRE/JCK is installed. We find that the most recent [Corretto 18 JRK/JDK](https://aws.amazon.com/corretto/?filtered-posts.sort-by=item.additionalFields.createdDate&filtered-posts.sort-order=desc) with long term support (LTS) works well cross-platform. 
 
