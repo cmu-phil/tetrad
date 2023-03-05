@@ -6,7 +6,7 @@ Here is our [project web page](https://sites.google.com/view/tetradcausal) here 
 
 Here is the web page for the [Center for Causal Discovery](https://www.ccd.pitt.edu/), which also supports the latest version of Tetrad and Causal Command.
 
-All of our code is public and we welcome suggestions, expecially if you have awesome algorithms that outperform ours.
+All of our code is public and we welcome suggestions, expecially if you have awesome algorithms that outperform ours. Performance is everything. This is the Way.
 
 ## Tetrad GUI Application
 
