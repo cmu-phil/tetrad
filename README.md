@@ -12,7 +12,7 @@ All of our code is public and we welcome suggestions, expecially if you have awe
 
 All artifacts for Tetrad and causal-cmd are published in [Maven Central](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/). This includes all downloadable jars and Javadocs.
 
-# Tetrad GUI Application
+## Tetrad GUI Application
 
 To download the current jar you can use to launch the Tetrad GUI, click [here](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.2.2/tetrad-gui-7.2.2-launch.jar). Please delete any old ones you're not using.
 
@@ -26,21 +26,21 @@ java -Xmx[g]G -jar *-launch.jar
 
 where [g] is the maximum number of Gigabytes you wish to allocate to the process.
 
-# Command Line
+## Command Line
 
 We have a tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that lets you run Tetrad algorithms at the command line.
 
-# Python Integration
+## Python Integration
 
 For Python integration, please see our (still new) [py-tetrad Python project](https://github.com/cmu-phil/py-tetrad), which shows how to integrate arbitrary Java code in the Tetrad project into a Python workflow using the [JPype Python project](https://jpype.readthedocs.io/en/latest/). The JPype project is already quite awesome; it is not necessary to use it in the way suggested in py-tetrad, though perhaps py-tetrad can provide a way to get started with it. Have fun exploring!
 
 Also, please see the [causal-learn Python package](https://causal-learn.readthedocs.io/en/latest/), translating some Tetrad algorithms into Python and adding some algorithms not in Tetrad, now part of the awesome [py-why space](https://github.com/py-why). Have fun exploring that too!
 
-# Documentation
+## Documentation
 
 If you're new to Tetrad, here is a [Tutorial](https://rawgit.com/cmu-phil/tetrad/development/tetrad-gui/src/main/resources/resources/javahelp/manual/tetrad_tutorial.html). Also, here is our [Manual](https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html). If you like to watch thought-provoking lectures, here are some [lectures on the Center for Causal Discovery site](https://www.ccd.pitt.edu/video-tutorials/).
 
-# Install
+## Install
 
 Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Also, here are some [instructions on how to set this project up in IntelliJ IDEA](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA). You can run the Tetrad lifecycle package target and launch the "-launch" jar that is  built in the target directory.
 
