@@ -49,6 +49,6 @@ The project contains well-developed code in these packages:
 
 The  tetrad-lib package contains the model code; the tetrad-gui package contains the view (GUI) code.
 
-# Bug Reports
+## Bug Reports
 
 Please submit issue requests for Tetrad using our [Issue Tracker](https://github.com/cmu-phil/tetrad/issues). We will try to the extent possible to resolve all reported issues before publishing new versions of Tetrad.
