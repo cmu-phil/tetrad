@@ -6,7 +6,7 @@ All artifacts are published in the [Maven Central Repository](https://s01.oss.so
 
 to download the current jar you can use to launch the Tetrad GUI, click [here](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.2.2/tetrad-gui-7.2.2-launch.jar). Please delete any old ones you're not using.
 
-The application will work on all major platforms once a recent version of the Java JRE/JCK is installed. We find that the most recent [Corretto 18 JRK/JDK](https://aws.amazon.com/corretto/?filtered-posts.sort-by=item.additionalFields.createdDate&filtered-posts.sort-order=desc))with long term support (LTS) works well cross-platform. 
+The application will work on all major platforms once a recent version of the Java JRE/JCK is installed. We find that the most recent [Corretto 18 JRK/JDK](https://aws.amazon.com/corretto/?filtered-posts.sort-by=item.additionalFields.createdDate&filtered-posts.sort-order=desc) with long term support (LTS) works well cross-platform. 
 
 You may be able to launch this jar by double clicking the jar file name, though on a Mac, this presents some [security challenges](https://github.com/cmu-phil/tetrad/wiki/Dealing-with-Tetrad-on-a-Mac:--Security-Issues). In any case, on all platforms, the jar may be launched at the command line (with a specification of the amount of RAM you will allow it to use) using this command:
 
@@ -14,7 +14,7 @@ You may be able to launch this jar by double clicking the jar file name, though 
 java -Xmx[g]G -jar *-launch.jar
 ```
 
-where 'g' is the maximum number of Gigabytes you wish to allocate to the process.
+where g is the maximum number of Gigabytes you wish to allocate to the process.
 
 We have a tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that lets you run Tetrad algorithms at the command line.
 
@@ -31,9 +31,8 @@ If you're new to Tetrad, here is a [Tutorial](https://rawgit.com/cmu-phil/tetrad
 Here are some [instructions on how to set this project up in IntelliJ IDEA](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA). You can run the Tetrad lifecycle package target and launch the "-launch" jar that is  built in the target directory.
 
 The project contains fairly well-developed code in these packages:
+* tetrad
+* pitt
+* tetradapp
 
-tetrad
-pitt
-tetradapp
-
-The  tetrad-lib package contains the "model" code; the tetrad-gui package contains the "view" (GUI) code.
+The  tetrad-lib package contains the model code; the tetrad-gui package contains the view (GUI) code.
