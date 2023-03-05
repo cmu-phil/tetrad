@@ -8,7 +8,7 @@ All artifacts are published in the [Maven Central Repository](https://s01.oss.so
 
 To download the current jar you can use to launch the Tetrad GUI, click [here](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.2.2/tetrad-gui-7.2.2-launch.jar). Please delete any old ones you're not using.
 
-The application will work on all major platforms once a recent version of the Java JRE/JCK is installed. We find that the most recent [Corretto 18 JRK/JDK](https://aws.amazon.com/corretto/?filtered-posts.sort-by=item.additionalFields.createdDate&filtered-posts.sort-order=desc) with long term support (LTS) works well cross-platform. 
+The application will work on all major platforms once a recent version of the Java JRE/JCK is installed, certainly _greater than version 1.8 (version 8)_. We find that the most recent [Corretto 18 JRK/JDK](https://aws.amazon.com/corretto/?filtered-posts.sort-by=item.additionalFields.createdDate&filtered-posts.sort-order=desc) with long term support (LTS) works well cross-platform. 
 
 You may be able to launch this jar by double clicking the jar file name, though on a Mac, this presents some [security challenges](https://github.com/cmu-phil/tetrad/wiki/Dealing-with-Tetrad-on-a-Mac:--Security-Issues). In any case, on all platforms, the jar may be launched at the command line (with a specification of the amount of RAM you will allow it to use) using this command:
 
