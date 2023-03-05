@@ -10,7 +10,7 @@ All of our code is public and we welcome suggestions, expecially if you have awe
 
 ## Java Install
 
-The application will work on all major platforms once a recent version of the Java JRE/JCK is installed, certainly **_greater than version 1.8 (version 8)_**. We find that the most recent [Corretto JRE/JDK](https://aws.amazon.com/corretto/?filtered-posts.sort-by=item.additionalFields.createdDate&filtered-posts.sort-order=desc) with long term support (LTS) works well cross-platform. 
+This software will work on all major platforms once a recent version of the Java JRE/JCK is installed, certainly **_greater than version 1.8 (version 8)_**. We find that the most recent [Corretto JRE/JDK](https://aws.amazon.com/corretto/?filtered-posts.sort-by=item.additionalFields.createdDate&filtered-posts.sort-order=desc) with long term support (LTS) works well cross-platform. 
 
 ## Tetrad GUI Application
 
