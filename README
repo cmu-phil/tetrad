@@ -10,7 +10,9 @@ The application will work on all major platforms once a recent version of the Ja
 
 You may be able to launch this jar by double clicking the jar file name, though on a Mac, this presents some [security challenges](https://github.com/cmu-phil/tetrad/wiki/Dealing-with-Tetrad-on-a-Mac:--Security-Issues). In any case, on all platforms, the jar may be launched at the command line (with a specification of the amount of RAM you will allow it to use) using this command:
 
+```
 java -Xmx[g]G -jar *-launch.jar
+```
 
 where 'g' is the maximum number of Gigabytes you wish to allocate to the process.
 
