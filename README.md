@@ -10,6 +10,8 @@ Here is the web page for the [Center for Causal Discovery](https://www.ccd.pitt.
 
 All of our code is public and we welcome suggestions, expecially if you have awesome algorithms that outperform ours.
 
+All artifacts for Tetrad and causal-cmd are published in [Maven Central](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/). This includes all downloadable jars and Javadocs.
+
 # Tetrad GUI Application
 
 To download the current jar you can use to launch the Tetrad GUI, click [here](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.2.2/tetrad-gui-7.2.2-launch.jar). Please delete any old ones you're not using.
@@ -23,8 +25,6 @@ java -Xmx[g]G -jar *-launch.jar
 ```
 
 where [g] is the maximum number of Gigabytes you wish to allocate to the process.
-
-All artifacts for Tetrad and causal-cmd are published in [Maven Central](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/). This includes all downloadable jars and Javadocs.
 
 # Bug Reports
 
