@@ -20,7 +20,9 @@ where g is the maximum number of Gigabytes you wish to allocate to the process.
 
 We have a tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that lets you run Tetrad algorithms at the command line.
 
-For Python integration, please see our (still new) [py-tetrad project](https://github.com/cmu-phil/py-tetrad), which shows how to integrate arbitrary Java code in this project into a Python workflow using the [JPype Python project](https://jpype.readthedocs.io/en/latest/). The JPype project is already quite awesome; it is not necessary to use it in the way suggested in py-tetrad, though perhaps py-tetrad can provide a way to get started with it. Also, please see the [causal-learn Python package](https://causal-learn.readthedocs.io/en/latest/), translating some Tetrad algorithms into Python and adding some algorithms not in Tetrad, now part of the [py-why space](https://github.com/py-why).
+For Python integration, please see our (still new) [py-tetrad project](https://github.com/cmu-phil/py-tetrad), which shows how to integrate arbitrary Java code in this project into a Python workflow using the [JPype Python project](https://jpype.readthedocs.io/en/latest/). The JPype project is already quite awesome; it is not necessary to use it in the way suggested in py-tetrad, though perhaps py-tetrad can provide a way to get started with it. 
+
+Also, please see the [causal-learn Python package](https://causal-learn.readthedocs.io/en/latest/), translating some Tetrad algorithms into Python and adding some algorithms not in Tetrad, now part of the [py-why space](https://github.com/py-why).
 
 All artifacts for Tetrad and causal-cmd are published in [Maven Central](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/). This includes all downloadable jars and Javadocs.
 
