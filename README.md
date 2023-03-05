@@ -14,7 +14,7 @@ This software will work on all major platforms once a recent version of the Java
 
 All artifacts are published in the [Maven Central Repository](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/). This includes all downloadable jars and Javadocs.
 
-Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Also, here are some [instructions on how to set this project up in IntelliJ IDEA](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA).
+Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Also, here are some [instructions on how to set this project up in IntelliJ IDEA](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA), if you are interested in Java coding.
 
 ## Tetrad GUI Application
 
