@@ -51,4 +51,4 @@ The  tetrad-lib package contains the model code; the tetrad-gui package contains
 
 # Bug Reports
 
-Please submit issue requests for Tetrad using our [Issue Tracker](https://github.com/cmu-phil/tetrad/issues).
+Please submit issue requests for Tetrad using our [Issue Tracker](https://github.com/cmu-phil/tetrad/issues). We will try to the extent possible to resolve all issues before publishing new versions of Tetrad.
