@@ -34,7 +34,7 @@ We have a tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that le
 
 ## Python Integration
 
-For Python integration, please see our [py-tetrad project](https://github.com/cmu-phil/py-tetrad), which shows how to integrate arbitrary Tetrad code into a Python workflow using [JPype](https://jpype.readthedocs.io/en/latest/).
+For Python integration, please see our [py-tetrad project](https://github.com/cmu-phil/py-tetrad), which shows how to easily integrate arbitrary Tetrad code into a Python workflow using [JPype](https://jpype.readthedocs.io/en/latest/).
 
 Also, please see the [causal-learn package](https://causal-learn.readthedocs.io/en/latest/), which translates some Tetrad algorithms into Python and adds several algorithms not in Tetrad, now part of the [py-why space](https://github.com/py-why).
 
