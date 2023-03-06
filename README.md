@@ -16,6 +16,10 @@ All artifacts are published in the [Maven Central Repository](https://s01.oss.so
 
 Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Also, here are some [instructions on how to set this project up in IntelliJ IDEA](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA), if you are interested in Java coding.
 
+## Documentation
+
+If you're new to Tetrad, here is a [Tutorial](https://rawgit.com/cmu-phil/tetrad/development/tetrad-gui/src/main/resources/resources/javahelp/manual/tetrad_tutorial.html). Also, here is our [Manual](https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html). If you like to watch thought-provoking lectures, here are some [lectures on the Center for Causal Discovery site](https://www.ccd.pitt.edu/video-tutorials/).
+
 ## Tetrad GUI Application
 
 To download the current jar for launching the Tetrad GUI, click [here](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.2.2/tetrad-gui-7.2.2-launch.jar). Please delete any old ones you're not using.
@@ -39,10 +43,6 @@ For Python integration, please see our [py-tetrad project](https://github.com/cm
 You can also integrate Tetrad code into Python by making os.sys(..) calls to [Causal Command](https://github.com/bd2kccd/causal-cmd) and parsing the results using tools in [causal-learn](https://github.com/py-why/causal-learn). Here are some [now-outdated examples](https://github.com/cmu-phil/algocompy/blob/main/causalcmd/tetrad_cmd_algs.py) of how to do this, which we will soon update.
 
 Also, please see the [causal-learn package](https://causal-learn.readthedocs.io/en/latest/), which translates some Tetrad algorithms into Python and adds several algorithms not in Tetrad, now part of the [py-why space](https://github.com/py-why).
-
-## Documentation
-
-If you're new to Tetrad, here is a [Tutorial](https://rawgit.com/cmu-phil/tetrad/development/tetrad-gui/src/main/resources/resources/javahelp/manual/tetrad_tutorial.html). Also, here is our [Manual](https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html). If you like to watch thought-provoking lectures, here are some [lectures on the Center for Causal Discovery site](https://www.ccd.pitt.edu/video-tutorials/).
 
 ## Example Data
 
