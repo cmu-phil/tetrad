@@ -40,7 +40,7 @@ Also, please see the [causal-learn package](https://causal-learn.readthedocs.io/
 
 ## Example Data
 
-We maintain a [repository of example datasets](https://github.com/cmu-phil/example-causal-datasets), both real and simulated.
+We maintain a [repository of example datasets](https://github.com/cmu-phil/example-causal-datasets), both real and simulated, with ground truth where known or strongly suggested.
 
 ## Documentation
 
