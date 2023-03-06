@@ -34,9 +34,9 @@ We have a tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that le
 
 ## Python Integration
 
-For Python integration, please see our [py-tetrad project](https://github.com/cmu-phil/py-tetrad), which shows how to integrate arbitrary Tetrad code into a Python workflow using [JPype](https://jpype.readthedocs.io/en/latest/).
+For Python integration, please see our [py-tetrad project](https://github.com/cmu-phil/py-tetrad), which shows how to integrate arbitrary Tetrad code into a Python workflow using [JPype](https://jpype.readthedocs.io/en/latest/). This allows for integration with [causal-learn](https://github.com/py-why/causal-learn) in the [py-why space](https://github.com/py-why).
 
-You can also integrate Tetrad code into Python by making os.sys(..) calls to [Causal Command](https://github.com/bd2kccd/causal-cmd) and parsing the results using tools in [causal-learn](https://github.com/py-why/causal-learn) in the [py-why space](https://github.com/py-why). Here are some [now-outdated examples](https://github.com/cmu-phil/algocompy/blob/main/causalcmd/tetrad_cmd_algs.py) of how to do this, which we will soon update.
+You can also integrate Tetrad code into Python by making os.sys(..) calls to [Causal Command](https://github.com/bd2kccd/causal-cmd) and parsing the results using tools in [causal-learn](https://github.com/py-why/causal-learn). Here are some [now-outdated examples](https://github.com/cmu-phil/algocompy/blob/main/causalcmd/tetrad_cmd_algs.py) of how to do this, which we will soon update.
 
 Also, please see the [causal-learn package](https://causal-learn.readthedocs.io/en/latest/), which translates some Tetrad algorithms into Python and adds several algorithms not in Tetrad, now part of the [py-why space](https://github.com/py-why).
 
