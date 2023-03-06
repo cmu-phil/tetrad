@@ -38,13 +38,11 @@ For Python integration, please see our [py-tetrad project](https://github.com/cm
 
 Also, please see the [causal-learn package](https://causal-learn.readthedocs.io/en/latest/), which translates some Tetrad algorithms into Python and adds several algorithms not in Tetrad, now part of the [py-why space](https://github.com/py-why).
 
-## Example Data
-
-We maintain a [repository of example datasets](https://github.com/cmu-phil/example-causal-datasets), both real and simulated, with ground truth where known or strongly suggested.
-
 ## Documentation
 
 If you're new to Tetrad, here is a [Tutorial](https://rawgit.com/cmu-phil/tetrad/development/tetrad-gui/src/main/resources/resources/javahelp/manual/tetrad_tutorial.html). Also, here is our [Manual](https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html). If you like to watch thought-provoking lectures, here are some [lectures on the Center for Causal Discovery site](https://www.ccd.pitt.edu/video-tutorials/).
+
+As an aside, in case you want to try some real data, we maintain a [repository of example datasets](https://github.com/cmu-phil/example-causal-datasets), both real and simulated, with ground truth where known or strongly suggested. This has been formatted in a uniform way to help avoid problems with preprocessing.
 
 ## Bug Reports/Issue Requests
 
