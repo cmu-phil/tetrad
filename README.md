@@ -44,7 +44,9 @@ Also, please see the [causal-learn package](https://causal-learn.readthedocs.io/
 
 If you're new to Tetrad, here is a [Tutorial](https://rawgit.com/cmu-phil/tetrad/development/tetrad-gui/src/main/resources/resources/javahelp/manual/tetrad_tutorial.html). Also, here is our [Manual](https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html). If you like to watch thought-provoking lectures, here are some [lectures on the Center for Causal Discovery site](https://www.ccd.pitt.edu/video-tutorials/).
 
-As an aside, in case you want to try some real data, we maintain a [repository of example datasets](https://github.com/cmu-phil/example-causal-datasets), both real and simulated, with ground truth where known or strongly suggested. This has been formatted in a uniform way to help avoid problems with preprocessing.
+## Example Data
+
+Tetrad has robust facilities for simulating data, but if you'd like to try your hand at real data, or realistically simulated data, we maintain a [repository of example datasets](https://github.com/cmu-phil/example-causal-datasets), both real and simulated, with ground truth where known or strongly suggested. This has been formatted in a uniform way to help avoid problems with preprocessing.
 
 ## Bug Reports/Issue Requests
 
