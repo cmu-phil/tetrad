@@ -44,6 +44,10 @@ You can also integrate Tetrad code into Python by making os.system(..) calls to 
 
 Also, please see the [causal-learn package](https://causal-learn.readthedocs.io/en/latest/), which translates some Tetrad algorithms into Python and adds several algorithms not in Tetrad, now part of the [py-why space](https://github.com/py-why).
 
+## R Integration
+
+We have an old project, [r-caussal](https://github.com/bd2kccd/r-causal), which integrates R with an old version of Tetrad. We will make an effort to provide updated advice for doing this with a more recent version of Tetrad.
+
 ## Example Data
 
 Tetrad has robust facilities for simulating data, but if you'd like to try your hand at real data, or realistically simulated data, we maintain a [repository of example datasets](https://github.com/cmu-phil/example-causal-datasets), both real and simulated, with ground truth where known or strongly suggested. This has been formatted in a uniform way to help avoid problems with preprocessing.
