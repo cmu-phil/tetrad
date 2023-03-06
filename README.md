@@ -50,7 +50,7 @@ We have an old project, [r-causal](https://github.com/bd2kccd/r-causal), which i
 
 ## Example Data
 
-Tetrad has robust facilities for simulating data, but if you'd like to try your hand at real data, or realistically simulated data, we maintain a [repository of example datasets](https://github.com/cmu-phil/example-causal-datasets), both real and simulated, with ground truth where known or strongly suggested. This has been formatted in a uniform way to help avoid problems with preprocessing.
+Tetrad has robust facilities for simulating data, but if you'd like to try your hand at real data, or realistically simulated data, we maintain a [repository of example datasets](https://github.com/cmu-phil/example-causal-datasets), both real and simulated, with ground truth where known or strongly suggested. These has been formatted in a uniform way to help avoid problems with preprocessing.
 
 ## Bug Reports/Issue Requests
 
