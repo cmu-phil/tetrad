@@ -46,7 +46,7 @@ Also, please see the [causal-learn package](https://causal-learn.readthedocs.io/
 
 ## R Integration
 
-We have an old project, [r-caussal](https://github.com/bd2kccd/r-causal), which integrates R with an old version of Tetrad. We will make an effort to provide updated advice for doing this with a more recent version of Tetrad, as we've done with Python.
+We have an old project, [r-causal](https://github.com/bd2kccd/r-causal), which integrates R with an old version of Tetrad. We will make an effort to provide updated advice for doing this with a more recent version of Tetrad, as we've done with Python.
 're 
 
 ## Example Data
