@@ -150,10 +150,22 @@ public final class TestGrasp {
         ConditionalGaussianScore score = new ConditionalGaussianScore((DataSet) data_model, penaltyDiscount,
                 structurePrior, discretize);
 
+        IndependenceTest test = new IndTestConditionalGaussianLRT((DataSet) data_model, 0.05, true);
+
+
         Fges alg = new Fges(score);
         Graph pat = alg.search();
 
-        System.out.println(pat);
+        System.out.println("FGES" + pat);
+
+
+        Grasp boss = new Grasp(test, score);
+        boss.setUseDataOrder(false);
+        boss.setNumStarts(1);
+        boss.bestOrder(test.getVariables());
+        Graph pat2 = boss.getGraph(true);
+
+        System.out.println("BOSS" + pat2);
 
     }
 
