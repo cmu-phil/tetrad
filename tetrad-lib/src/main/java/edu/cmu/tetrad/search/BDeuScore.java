@@ -171,8 +171,11 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
 
     private double getPriorForStructure(int numParents, int N) {
         double e = getStructurePrior();
-        int vm = N - 1;
-        return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
+        if (e == 0) return 0.0;
+        else {
+            int vm = N - 1;
+            return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
+        }
     }
 
     @Override
