@@ -39,14 +39,13 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
@@ -86,9 +85,76 @@ public final class TestGrasp {
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
 
-        new TestGrasp().testLvSwap();
+//        new TestGrasp().testLvSwap();
 //        new TestGrasp().testLvSwapFromDsep();
 //        new TestGrasp().testDsep();
+
+        new TestGrasp().testCgScore();
+
+    }
+
+    private void testExampleBnSim() {
+
+        Parameters params = new Parameters();
+
+        params.set(Params.NUM_MEASURES, 20);
+        params.set(Params.NUM_LATENTS, 0);
+        params.set(Params.AVG_DEGREE, 6);
+
+        params.set(Params.MIN_CATEGORIES, 3);
+        params.set(Params.MAX_CATEGORIES, 3);
+
+        params.set(Params.RANDOMIZE_COLUMNS, true);
+        params.set(Params.SAMPLE_SIZE, 500);
+        params.set(Params.SAVE_LATENT_VARS, false);
+        params.set(Params.SEED, 29493L);
+
+        params.set(Params.NUM_RUNS, 1);
+
+        BayesNetSimulation sim_ = new BayesNetSimulation(new RandomForward());
+        sim_.createData(params, true);
+        DataModel data_model = sim_.getDataModel(0);
+        Graph graph = sim_.getTrueGraph(0);
+
+    }
+
+    private void testCgScore() {
+
+        Parameters params = new Parameters();
+
+        params.set(Params.NUM_MEASURES, 20);
+        params.set(Params.NUM_LATENTS, 0);
+        params.set(Params.AVG_DEGREE, 6);
+
+        params.set(Params.MIN_CATEGORIES, 3);
+        params.set(Params.MAX_CATEGORIES, 3);
+        params.set(Params.PERCENT_DISCRETE, 50);
+        params.set(Params.DIFFERENT_GRAPHS, false);
+
+        params.set(Params.RANDOMIZE_COLUMNS, true);
+        params.set(Params.SAMPLE_SIZE, 500);
+        params.set(Params.SAVE_LATENT_VARS, false);
+        params.set(Params.SEED, 29493L);
+
+        params.set(Params.NUM_RUNS, 1);
+
+        LeeHastieSimulation sim_ = new LeeHastieSimulation(new RandomForward());
+        sim_.createData(params, true);
+        DataModel data_model = sim_.getDataModel(0);
+        Graph graph = sim_.getTrueGraph(0);
+
+        double penaltyDiscount = 2.0;
+        double structurePrior = 3.0;
+        boolean discretize = true;
+
+        ConditionalGaussianScore score = new ConditionalGaussianScore((DataSet) data_model, penaltyDiscount,
+                structurePrior, discretize);
+
+        Fges alg = new Fges(score);
+        Graph pat = alg.search();
+
+        System.out.println(pat);
+
     }
 
     @NotNull
