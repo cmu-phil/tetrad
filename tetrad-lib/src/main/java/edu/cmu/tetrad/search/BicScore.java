@@ -169,6 +169,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
 
     private double getPriorForStructure(int numParents) {
         double e = getStructurePrior();
+        if (e == 0) return 0.0;
         int vm = this.data.length - 1;
         return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
     }
