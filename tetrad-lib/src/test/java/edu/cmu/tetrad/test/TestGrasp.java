@@ -34,9 +34,11 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.LVSWAP_1;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.LVSWAP_2a;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
+import edu.cmu.tetrad.algcomparison.independence.ConditionalGaussianLRT;
 import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.*;
@@ -140,17 +142,18 @@ public final class TestGrasp {
 
         LeeHastieSimulation sim_ = new LeeHastieSimulation(new RandomForward());
         sim_.createData(params, true);
-        DataModel data_model = sim_.getDataModel(0);
+        DataSet data = (DataSet) sim_.getDataModel(0);
         Graph graph = sim_.getTrueGraph(0);
 
         double penaltyDiscount = 2.0;
-        double structurePrior = 3.0;
+        double structurePrior = 1.0;
         boolean discretize = true;
 
-        ConditionalGaussianScore score = new ConditionalGaussianScore((DataSet) data_model, penaltyDiscount,
-                structurePrior, discretize);
+        ConditionalGaussianScore score = new ConditionalGaussianScore((DataSet) data, penaltyDiscount, discretize);
+        score.setStructurePrior(structurePrior);
+        score.setNumCategoriesToDiscretize(3);
 
-        IndependenceTest test = new IndTestConditionalGaussianLRT((DataSet) data_model, 0.05, true);
+        IndTestConditionalGaussianLRT test = new IndTestConditionalGaussianLRT((DataSet) data, 0.05, true);
 
 
         Fges alg = new Fges(score);
@@ -158,14 +161,23 @@ public final class TestGrasp {
 
         System.out.println("FGES" + pat);
 
+        Pc pc = new Pc(test);
+        Graph pat2 = alg.search();
+
+        System.out.println("PC" + pat2);
+
+        Parameters parameters = new Parameters();
+
+//        GRaSP grasp = new GRaSP(new ConditionalGaussianBicScore(), new ConditionalGaussianLRT());
+//        Graph pat3 = grasp.search(data, parameters);
 
         Grasp boss = new Grasp(test, score);
-        boss.setUseDataOrder(false);
+        boss.setUseDataOrder(true);
         boss.setNumStarts(1);
-        boss.bestOrder(test.getVariables());
-        Graph pat2 = boss.getGraph(true);
+        boss.bestOrder(score.getVariables());
+        Graph pat3 = boss.getGraph(true);
 
-        System.out.println("BOSS" + pat2);
+        System.out.println("GRaSP" + pat3);
 
     }
 

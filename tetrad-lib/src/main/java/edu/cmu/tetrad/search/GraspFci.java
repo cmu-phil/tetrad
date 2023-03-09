@@ -106,12 +106,16 @@ public final class GraspFci implements GraphSearch {
     public Graph search() {
         List<Node> nodes = getIndependenceTest().getVariables();
 
+        if (nodes == null) {
+            throw new NullPointerException("Nodes from test were null.");
+        }
+
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
         this.graph = new EdgeListGraph(nodes);
 
-        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
+//        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
         Grasp alg = new Grasp(independenceTest, score);

@@ -897,8 +897,9 @@ public class TestFges {
     }
 
     private Graph searchMixedFges(DataSet dk) {
-        ConditionalGaussianScore score = new ConditionalGaussianScore(dk, 2.0, 0.0, true);
+        ConditionalGaussianScore score = new ConditionalGaussianScore(dk, 2.0, true);
         score.setPenaltyDiscount(2.0);
+        score.setStructurePrior(0.0);
         Fges fges = new Fges(score);
         return fges.search();
     }

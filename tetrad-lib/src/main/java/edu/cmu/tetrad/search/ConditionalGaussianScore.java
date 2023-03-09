@@ -41,7 +41,7 @@ public class ConditionalGaussianScore implements Score {
 
     private final DataSet dataSet;
 
-    // The variables of the continuousData set.
+    // The variables of the dataset.
     private final List<Node> variables;
 
     // Likelihood function
@@ -49,12 +49,12 @@ public class ConditionalGaussianScore implements Score {
 
     private double penaltyDiscount;
     private int numCategoriesToDiscretize = 3;
-    private final double structurePrior;
+    private double structurePrior = 0;
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, double structurePrior, boolean discretize) {
+    public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, boolean discretize) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -62,7 +62,6 @@ public class ConditionalGaussianScore implements Score {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         this.penaltyDiscount = penaltyDiscount;
-        this.structurePrior = structurePrior;
 
         this.likelihood = new ConditionalGaussianLikelihood(dataSet);
 
@@ -209,6 +208,10 @@ public class ConditionalGaussianScore implements Score {
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
         return "Conditional Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
+    }
+
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
     }
 }
 

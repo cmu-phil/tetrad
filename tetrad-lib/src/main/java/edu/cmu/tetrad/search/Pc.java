@@ -100,7 +100,7 @@ public class Pc implements GraphSearch {
      */
     public Pc(IndependenceTest independenceTest) {
         if (independenceTest == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Independence test is null.");
         }
 
         this.independenceTest = independenceTest;
@@ -141,7 +141,7 @@ public class Pc implements GraphSearch {
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Knowledge is null.");
         }
 
         this.knowledge = knowledge;
@@ -222,7 +222,7 @@ public class Pc implements GraphSearch {
         long startTime = MillisecondTimes.timeMillis();
 
         if (getIndependenceTest() == null) {
-            throw new NullPointerException();
+            throw new NullPointerException("Null independence test.");
         }
 
         List<Node> allNodes = getIndependenceTest().getVariables();

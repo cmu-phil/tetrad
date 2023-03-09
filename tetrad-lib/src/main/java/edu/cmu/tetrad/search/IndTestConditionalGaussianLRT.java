@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.text.DecimalFormat;
@@ -37,6 +36,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
@@ -48,7 +48,7 @@ import java.util.Map;
  */
 public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private final DataSet data;
-    private final Map<Node, Integer> nodesHash;
+    private final Map<String, Integer> nodesHash;
     private double alpha;
 
     // Likelihood function
@@ -59,15 +59,17 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private int numCategoriesToDiscretize = 3;
 
     public IndTestConditionalGaussianLRT(DataSet data, double alpha, boolean discretize) {
+        if (data == null) throw new NullPointerException("Data is null.");
+
         this.data = data;
         this.likelihood = new ConditionalGaussianLikelihood(data);
         this.likelihood.setDiscretize(discretize);
-        this.nodesHash = new HashedMap<>();
+        this.nodesHash = new ConcurrentHashMap<>();
 
         List<Node> variables = data.getVariables();
 
         for (int i = 0; i < variables.size(); i++) {
-            this.nodesHash.put(variables.get(i), i);
+            this.nodesHash.put(variables.get(i).getName(), i);
         }
 
         this.alpha = alpha;
@@ -94,8 +96,8 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
 
         this.likelihood.setRows(getRows(allVars, this.nodesHash));
 
-        int _x = this.nodesHash.get(x);
-        int _y = this.nodesHash.get(y);
+        int _x = getVariable(x);
+        int _y = getVariable(y);
 
         int[] list0 = new int[z.size() + 1];
         int[] list2 = new int[z.size()];
@@ -103,7 +105,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         list0[0] = _x;
 
         for (int i = 0; i < z.size(); i++) {
-            int _z = this.nodesHash.get(z.get(i));
+            int _z = getVariable(z.get(i));
             list0[i + 1] = _z;
             list2[i] = _z;
         }
@@ -117,7 +119,8 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
         if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
         if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
-        if (lik0 == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
+        if (lik0 == Double.POSITIVE_INFINITY)
+            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
 
         double pValue;
 
@@ -141,16 +144,20 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
     }
 
-    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+    private Integer getVariable(Node x) {
+        return this.nodesHash.get(x.getName());
+    }
+
+    private List<Integer> getRows(List<Node> allVars, Map<String, Integer> nodesHash) {
         List<Integer> rows = new ArrayList<>();
 
         K:
         for (int k = 0; k < this.data.getNumRows(); k++) {
             for (Node node : allVars) {
                 if (node instanceof ContinuousVariable) {
-                    if (Double.isNaN(this.data.getDouble(k, nodesHash.get(node)))) continue K;
+                    if (Double.isNaN(this.data.getDouble(k, nodesHash.get(node.getName())))) continue K;
                 } else if (node instanceof DiscreteVariable) {
-                    if (this.data.getInt(k, nodesHash.get(node)) == -99) continue K;
+                    if (this.data.getInt(k, nodesHash.get(node.getName())) == -99) continue K;
                 }
             }
 

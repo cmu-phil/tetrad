@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import static edu.cmu.tetrad.data.Discretizer.discretize;
 import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
@@ -133,7 +134,7 @@ public class ConditionalGaussianLikelihood {
             }
         }
 
-        this.nodesHash = new HashMap<>();
+        this.nodesHash = new ConcurrentSkipListMap<>();
 
         for (int j = 0; j < dataSet.getNumColumns(); j++) {
             Node v = dataSet.getVariable(j);
