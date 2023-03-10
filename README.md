@@ -20,7 +20,7 @@ Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Also, here are som
 
 If you're new to Tetrad, here is a [Tutorial](https://rawgit.com/cmu-phil/tetrad/development/tetrad-gui/src/main/resources/resources/javahelp/manual/tetrad_tutorial.html). Also, here is our [Manual](https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html). If you like to watch thought-provoking lectures, here are some [lectures on the Center for Causal Discovery site](https://www.ccd.pitt.edu/video-tutorials/).
 
-Here are the [Javadocs for Tetrad](https://www.phil.cmu.edu/tetrad-javadocs/7.2.2/).
+Here are the [Javadocs (that is, API docs) for Tetrad](https://www.phil.cmu.edu/tetrad-javadocs/7.2.2/).
 
 ## Tetrad GUI Application
 
