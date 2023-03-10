@@ -12,7 +12,7 @@ Our tools are freeware, and all of our code is public. We welcome suggestions, e
 
 This software will work on all major platforms once a recent version of the Java JRE/JCK is installed, certainly **_greater than version 1.8 (version 8)_**. We find that the most recent [Corretto JRE/JDK](https://aws.amazon.com/corretto/?filtered-posts.sort-by=item.additionalFields.createdDate&filtered-posts.sort-order=desc) with long term support (LTS) works well and consistently on all platforms. 
 
-All artifacts are published in the [Maven Central Repository](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/). This includes all downloadable jars and Javadocs.
+All artifacts are published in the [Maven Central Repository](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/). Here are teh [Javadocs for Tetrad](https://www.phil.cmu.edu/tetrad-javadocs/7.2.2/).
 
 Here is our [GitHub URL](https://github.com/cmu-phil/tetrad). Also, here are some [instructions on how to set this project up in IntelliJ IDEA](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Tetrad-in-IntelliJ-IDEA), if you are interested in Java coding.
 
