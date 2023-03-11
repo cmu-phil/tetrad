@@ -117,7 +117,7 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     @Override
