@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
@@ -87,8 +88,11 @@ public class Pc implements GraphSearch {
     private int numIndependenceTests;
 
     private boolean verbose;
-
-    private boolean fdr;
+    private boolean stable;
+    private boolean concurrent;
+    private boolean useMaxP = false;
+    private int maxPPathLength = -1;
+    private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -206,9 +210,7 @@ public class Pc implements GraphSearch {
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
 
-        IFas fas;
-
-        fas = new Fas(getIndependenceTest());
+        IFas fas = new Fas(getIndependenceTest());
         fas.setVerbose(this.verbose);
         return search(fas, nodes);
     }
@@ -217,8 +219,6 @@ public class Pc implements GraphSearch {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-//        this.logger.log("info", "Variables " + independenceTest.getVariable());
-
         long startTime = MillisecondTimes.timeMillis();
 
         if (getIndependenceTest() == null) {
@@ -226,35 +226,57 @@ public class Pc implements GraphSearch {
         }
 
         List<Node> allNodes = getIndependenceTest().getVariables();
-        if (!allNodes.containsAll(nodes)) {
+        if (!new HashSet<>(allNodes).containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
         }
 
-        fas.setKnowledge(getKnowledge());
-        fas.setDepth(getDepth());
-        fas.setVerbose(this.verbose);
+        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(independenceTest);
+        search.setDepth(depth);
+        search.setHeuristic(1);
+        search.setKnowledge(this.knowledge);
 
-        this.graph = fas.search();
+        if (stable) {
+            search.setFasType(PcAll.FasType.STABLE);
+        } else {
+            search.setFasType(PcAll.FasType.REGULAR);
+        }
+
+        if (concurrent) {
+            search.setConcurrent(PcAll.Concurrent.YES);
+        } else {
+            search.setConcurrent(PcAll.Concurrent.NO);
+        }
+
+        search.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+        search.setConflictRule(conflictRule);
+        search.setUseHeuristic(useMaxP);
+        search.setMaxPathLength(maxPPathLength);
+//        search.setExternalGraph(externalGraph);
+        search.setVerbose(verbose);
+
+//        fas.setKnowledge(getKnowledge());
+//        fas.setDepth(getDepth());
+//        fas.setVerbose(this.verbose);
+
+        this.graph = search.search();
         this.sepsets = fas.getSepsets();
 
         this.numIndependenceTests = fas.getNumIndependenceTests();
 
-//        enumerateTriples();
-
         SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
         SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
 
-        for (Edge edge : this.graph.getEdges()) {
-            if (Edges.isBidirectedEdge(edge)) {
-                this.graph.removeEdge(edge.getNode1(), edge.getNode2());
-                this.graph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
-            }
-        }
+//        for (Edge edge : this.graph.getEdges()) {
+//            if (Edges.isBidirectedEdge(edge)) {
+//                this.graph.removeEdge(edge.getNode1(), edge.getNode2());
+//                this.graph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+//            }
+//        }
 
-        MeekRules rules = new MeekRules();
-        rules.setKnowledge(this.knowledge);
-        rules.orientImplied(this.graph);
+//        MeekRules rules = new MeekRules();
+//        rules.setKnowledge(this.knowledge);
+//        rules.orientImplied(this.graph);
 
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
@@ -286,33 +308,34 @@ public class Pc implements GraphSearch {
         return new HashSet<>(nonAdjacencies);
     }
 
-    //===============================PRIVATE METHODS=======================//
-
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
-
     public List<Node> getNodes() {
         return this.graph.getNodes();
     }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    /**
-     * True iff the algorithm should be run with False Discovery Rate tests.
-     */
-    public boolean isFdr() {
-        return this.fdr;
+    public void setStable(boolean stable) {
+        this.stable = stable;
     }
 
-    public void setFdr(boolean fdr) {
-        this.fdr = fdr;
+    public void setConcurrent(boolean concurrent) {
+        this.concurrent = concurrent;
+    }
+
+    public void setUseMaxP(boolean useMaxP) {
+        this.useMaxP = useMaxP;
+    }
+
+    public void setMaxPPathLength(int maxPPathLength) {
+        this.maxPPathLength = maxPPathLength;
+    }
+
+    public void setConflictRule(PcAll.ConflictRule conflictRule) {
+        this.conflictRule = conflictRule;
     }
 }
 

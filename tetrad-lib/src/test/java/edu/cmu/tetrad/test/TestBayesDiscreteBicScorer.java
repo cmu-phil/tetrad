@@ -38,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Joseph Ramsey
  */
-public final class TestBayesBicScorer {
+public final class TestBayesDiscreteBicScorer {
 
     @Test
     public void testPValue() {

@@ -12,6 +12,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.PcAll;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
@@ -61,51 +62,59 @@ public class PC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
                 knowledge = timeSeries.getKnowledge();
             }
 
-            final PcAll.ColliderDiscovery colliderDiscovery
-                    = PcAll.ColliderDiscovery.FAS_SEPSETS;
-
-            PcAll.ConflictRule conflictRule;
-
-            switch (parameters.getInt(Params.CONFLICT_RULE)) {
-                case 1:
-                    conflictRule = PcAll.ConflictRule.OVERWRITE;
-                    break;
-                case 2:
-                    conflictRule = PcAll.ConflictRule.BIDIRECTED;
-                    break;
-                case 3:
-                    conflictRule = PcAll.ConflictRule.PRIORITY;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Not a choice.");
-            }
-
-            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(this.test.getTest(dataModel, parameters));
+            Pc search = new Pc(getIndependenceWrapper().getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
-            search.setKnowledge(this.knowledge);
-
-            if (parameters.getBoolean(Params.STABLE_FAS)) {
-                search.setFasType(PcAll.FasType.STABLE);
-            } else {
-                search.setFasType(PcAll.FasType.REGULAR);
-            }
-
-            if (parameters.getBoolean(Params.CONCURRENT_FAS)) {
-                search.setConcurrent(PcAll.Concurrent.YES);
-            } else {
-                search.setConcurrent(PcAll.Concurrent.NO);
-            }
-
-            search.setColliderDiscovery(colliderDiscovery);
-            search.setConflictRule(conflictRule);
-            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
-            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
-            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
-            search.setExternalGraph(externalGraph);
+            search.setAggressivelyPreventCycles(true);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
+            search.setConcurrent(parameters.getBoolean(Params.CONCURRENT_FAS));
+            search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
+            search.setMaxPPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             return search.search();
+
+//            final PcAll.ColliderDiscovery colliderDiscovery
+//                    = PcAll.ColliderDiscovery.FAS_SEPSETS;
+//
+//            PcAll.ConflictRule conflictRule;
+//
+//            switch (parameters.getInt(Params.CONFLICT_RULE)) {
+//                case 1:
+//                    conflictRule = PcAll.ConflictRule.OVERWRITE;
+//                    break;
+//                case 2:
+//                    conflictRule = PcAll.ConflictRule.BIDIRECTED;
+//                    break;
+//                case 3:
+//                    conflictRule = PcAll.ConflictRule.PRIORITY;
+//                    break;
+//                default:
+//                    throw new IllegalArgumentException("Not a choice.");
+//            }
+//
+//            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(this.test.getTest(dataModel, parameters));
+//            search.setDepth(parameters.getInt(Params.DEPTH));
+//            search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
+//            search.setKnowledge(this.knowledge);
+//
+//            if (parameters.getBoolean(Params.STABLE_FAS)) {
+//                search.setFasType(PcAll.FasType.STABLE);
+//            } else {
+//                search.setFasType(PcAll.FasType.REGULAR);
+//            }
+//
+//            if (parameters.getBoolean(Params.CONCURRENT_FAS)) {
+//                search.setConcurrent(PcAll.Concurrent.YES);
+//            } else {
+//                search.setConcurrent(PcAll.Concurrent.NO);
+//            }
+//
+//            search.setColliderDiscovery(colliderDiscovery);
+//            search.setConflictRule(conflictRule);
+//            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
+//            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
+//            search.setExternalGraph(externalGraph);
+//            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+//
+//            return search.search();
         } else {
             PC pcAll = new PC(this.test);
 
@@ -142,7 +151,7 @@ public class PC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 //        parameters.add(Params.COLLIDER_DISCOVERY_RULE);
         parameters.add(Params.CONFLICT_RULE);
         parameters.add(Params.DEPTH);
-        parameters.add(Params.FAS_HEURISTIC);
+//        parameters.add(Params.FAS_HEURISTIC);
         parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
         parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
         parameters.add(Params.TIME_LAG);

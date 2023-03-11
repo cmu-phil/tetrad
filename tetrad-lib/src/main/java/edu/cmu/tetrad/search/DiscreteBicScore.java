@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Calculates the discrete BIC score.
  */
-public class BicScore implements LocalDiscreteScore, IBDeuScore {
+public class DiscreteBicScore implements LocalDiscreteScore, IBDeuScore {
     private List<Node> variables;
     private final int[][] data;
     private final int sampleSize;
@@ -40,7 +40,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
     private final int[] numCategories;
     private double structurePrior = 1;
 
-    public BicScore(DataSet dataSet) {
+    public DiscreteBicScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException("Data was not provided.");
         }
@@ -136,7 +136,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
                 continue;
             }
 
-            int rowIndex = BicScore.getRowIndex(dims, parentValues);
+            int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;
