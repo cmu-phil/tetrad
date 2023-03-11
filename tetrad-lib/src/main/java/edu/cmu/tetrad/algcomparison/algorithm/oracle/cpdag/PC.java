@@ -70,51 +70,6 @@ public class PC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
             search.setMaxPPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             return search.search();
-
-//            final PcAll.ColliderDiscovery colliderDiscovery
-//                    = PcAll.ColliderDiscovery.FAS_SEPSETS;
-//
-//            PcAll.ConflictRule conflictRule;
-//
-//            switch (parameters.getInt(Params.CONFLICT_RULE)) {
-//                case 1:
-//                    conflictRule = PcAll.ConflictRule.OVERWRITE;
-//                    break;
-//                case 2:
-//                    conflictRule = PcAll.ConflictRule.BIDIRECTED;
-//                    break;
-//                case 3:
-//                    conflictRule = PcAll.ConflictRule.PRIORITY;
-//                    break;
-//                default:
-//                    throw new IllegalArgumentException("Not a choice.");
-//            }
-//
-//            edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(this.test.getTest(dataModel, parameters));
-//            search.setDepth(parameters.getInt(Params.DEPTH));
-//            search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
-//            search.setKnowledge(this.knowledge);
-//
-//            if (parameters.getBoolean(Params.STABLE_FAS)) {
-//                search.setFasType(PcAll.FasType.STABLE);
-//            } else {
-//                search.setFasType(PcAll.FasType.REGULAR);
-//            }
-//
-//            if (parameters.getBoolean(Params.CONCURRENT_FAS)) {
-//                search.setConcurrent(PcAll.Concurrent.YES);
-//            } else {
-//                search.setConcurrent(PcAll.Concurrent.NO);
-//            }
-//
-//            search.setColliderDiscovery(colliderDiscovery);
-//            search.setConflictRule(conflictRule);
-//            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
-//            search.setMaxPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
-//            search.setExternalGraph(externalGraph);
-//            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-//
-//            return search.search();
         } else {
             PC pcAll = new PC(this.test);
 

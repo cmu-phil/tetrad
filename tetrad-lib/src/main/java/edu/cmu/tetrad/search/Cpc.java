@@ -104,6 +104,12 @@ public final class Cpc implements GraphSearch {
      */
     private boolean verbose;
 
+    private boolean stable;
+    private boolean concurrent;
+    private boolean useHeuristic = false;
+    private int maxPPathLength = -1;
+    private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
+
     //=============================CONSTRUCTORS==========================//
 
     /**
@@ -229,30 +235,32 @@ public final class Cpc implements GraphSearch {
      * See PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      */
     public Graph search() {
-        return search(this.independenceTest.getVariables());
-    }
-
-    public Graph search(List<Node> nodes) {
-        nodes = new ArrayList<>(nodes);
-        return search(new Fas(getIndependenceTest()), nodes);
-    }
-
-    public Graph search(IFas fas, List<Node> nodes) {
         this.logger.log("info", "Starting CPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
 
+        Fas fas = new Fas(getIndependenceTest());
+
+//        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, getIndependenceTest().getVariables());
+//        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
+
+//        for (Edge edge : this.graph.getEdges()) {
+//            if (Edges.isBidirectedEdge(edge)) {
+//                this.graph.removeEdge(edge.getNode1(), edge.getNode2());
+//                this.graph.addUndirectedEdge(edge.getNode1(), edge.getNode2());
+//            }
+//        }
+
+//        MeekRules rules = new MeekRules();
+//        rules.setKnowledge(this.knowledge);
+//        rules.orientImplied(this.graph);
+
+
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
 
         long startTime = MillisecondTimes.timeMillis();
-
-        List<Node> allNodes = getIndependenceTest().getVariables();
-        if (!allNodes.containsAll(nodes)) {
-            throw new IllegalArgumentException("All of the given nodes must " +
-                    "be in the domain of the independence test provided.");
-        }
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(getDepth());
@@ -263,35 +271,70 @@ public final class Cpc implements GraphSearch {
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
 
-        if (this.verbose) {
-            System.out.println("CPC orientation...");
+        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(independenceTest);
+        search.setDepth(depth);
+        search.setHeuristic(1);
+        search.setKnowledge(this.knowledge);
+
+        if (stable) {
+            search.setFasType(PcAll.FasType.STABLE);
+        } else {
+            search.setFasType(PcAll.FasType.REGULAR);
         }
-        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
-        orientUnshieldedTriples(this.knowledge);
-//            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
-        MeekRules meekRules = new MeekRules();
 
-        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
-        meekRules.setKnowledge(this.knowledge);
-
-        meekRules.orientImplied(this.graph);
-
-        // Remove ambiguities whose status have been determined.
-        Set<Triple> ambiguities = this.graph.underlines().getAmbiguousTriples();
-
-        for (Triple triple : new HashSet<>(ambiguities)) {
-            Node x = triple.getX();
-            Node y = triple.getY();
-            Node z = triple.getZ();
-
-            if (this.graph.isDefCollider(x, y, z)) {
-                this.graph.underlines().removeAmbiguousTriple(x, y, z);
-            }
-
-            if (this.graph.getEdge(x, y).pointsTowards(x) || this.graph.getEdge(y, z).pointsTowards(z)) {
-                this.graph.underlines().removeAmbiguousTriple(x, y, z);
-            }
+        if (concurrent) {
+            search.setConcurrent(PcAll.Concurrent.YES);
+        } else {
+            search.setConcurrent(PcAll.Concurrent.NO);
         }
+
+        search.setColliderDiscovery(PcAll.ColliderDiscovery.CONSERVATIVE);
+        search.setConflictRule(conflictRule);
+        search.setUseHeuristic(useHeuristic);
+        search.setMaxPathLength(maxPPathLength);
+//        search.setExternalGraph(externalGraph);
+        search.setVerbose(verbose);
+
+//        fas.setKnowledge(getKnowledge());
+//        fas.setDepth(getDepth());
+//        fas.setVerbose(this.verbose);
+
+        this.graph = search.search();
+        this.sepsets = fas.getSepsets();
+
+        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, independenceTest.getVariables());
+        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
+
+
+//        if (this.verbose) {
+//            System.out.println("CPC orientation...");
+//        }
+//        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, independenceTest.getVariables());
+//        orientUnshieldedTriples(this.knowledge);
+////            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
+//        MeekRules meekRules = new MeekRules();
+//
+//        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+//        meekRules.setKnowledge(this.knowledge);
+//
+//        meekRules.orientImplied(this.graph);
+//
+//        // Remove ambiguities whose status have been determined.
+//        Set<Triple> ambiguities = this.graph.underlines().getAmbiguousTriples();
+//
+//        for (Triple triple : new HashSet<>(ambiguities)) {
+//            Node x = triple.getX();
+//            Node y = triple.getY();
+//            Node z = triple.getZ();
+//
+//            if (this.graph.isDefCollider(x, y, z)) {
+//                this.graph.underlines().removeAmbiguousTriple(x, y, z);
+//            }
+//
+//            if (this.graph.getEdge(x, y).pointsTowards(x) || this.graph.getEdge(y, z).pointsTowards(z)) {
+//                this.graph.underlines().removeAmbiguousTriple(x, y, z);
+//            }
+//        }
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
@@ -497,6 +540,27 @@ public final class Cpc implements GraphSearch {
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
+
+    public void setStable(boolean stable) {
+        this.stable = stable;
+    }
+
+    public void setConcurrent(boolean concurrent) {
+        this.concurrent = concurrent;
+    }
+
+    public void setUseHeuristic(boolean useHeuristic) {
+        this.useHeuristic = useHeuristic;
+    }
+
+    public void setMaxPPathLength(int maxPPathLength) {
+        this.maxPPathLength = maxPPathLength;
+    }
+
+    public void setConflictRule(PcAll.ConflictRule conflictRule) {
+        this.conflictRule = conflictRule;
+    }
+
 }
 
 

@@ -22,9 +22,11 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.MillisecondTimes;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
@@ -39,7 +41,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey.
  */
-public class Pc implements GraphSearch {
+public class PcMax implements GraphSearch {
 
     /**
      * The independence test used for the PC search.g
@@ -90,7 +92,7 @@ public class Pc implements GraphSearch {
     private boolean verbose;
     private boolean stable;
     private boolean concurrent;
-    private boolean useMaxP = false;
+    private boolean useHeuristic = false;
     private int maxPPathLength = -1;
     private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
 
@@ -102,7 +104,7 @@ public class Pc implements GraphSearch {
      * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
      *                         independence test, for fear of duplicating the data set!
      */
-    public Pc(IndependenceTest independenceTest) {
+    public PcMax(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException("Independence test is null.");
         }
@@ -231,7 +233,7 @@ public class Pc implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(independenceTest);
+        PcAll search = new PcAll(independenceTest);
         search.setDepth(depth);
         search.setHeuristic(1);
         search.setKnowledge(this.knowledge);
@@ -248,16 +250,12 @@ public class Pc implements GraphSearch {
             search.setConcurrent(PcAll.Concurrent.NO);
         }
 
-        search.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+        search.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
         search.setConflictRule(conflictRule);
-        search.setUseHeuristic(useMaxP);
+        search.setUseHeuristic(useHeuristic);
         search.setMaxPathLength(maxPPathLength);
 //        search.setExternalGraph(externalGraph);
         search.setVerbose(verbose);
-
-//        fas.setKnowledge(getKnowledge());
-//        fas.setDepth(getDepth());
-//        fas.setVerbose(this.verbose);
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
@@ -315,8 +313,8 @@ public class Pc implements GraphSearch {
         this.concurrent = concurrent;
     }
 
-    public void setUseMaxP(boolean useMaxP) {
-        this.useMaxP = useMaxP;
+    public void setUseHeuristic(boolean useHeuristic) {
+        this.useHeuristic = useHeuristic;
     }
 
     public void setMaxPPathLength(int maxPPathLength) {
