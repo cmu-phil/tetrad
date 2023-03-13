@@ -1114,7 +1114,7 @@ public class TeyssierScorer {
 
         Set<Node> prefix = new HashSet<>(getPrefix(p));
         LinkedHashSet<Node> parents = new LinkedHashSet<>();
-        double sMax = GST.GrowShrink(n, prefix, parents);
+        double sMax = GST.growShrink(n, prefix, parents);
 
         return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
 

@@ -77,7 +77,7 @@ public final class BfciTr implements GraphSearch {
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
     private Knowledge knowledge = new Knowledge();
-    private Boss.AlgType algType = Boss.AlgType.BOSS1;
+    private BossOld.AlgType algType = BossOld.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BfciTr(IndependenceTest test, Score score) {
@@ -93,21 +93,21 @@ public final class BfciTr implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-        Boss boss = new Boss(scorer);
-        boss.setAlgType(algType);
-        boss.setUseScore(useScore);
-        boss.setUseRaskuttiUhler(useRaskuttiUhler);
-        boss.setUseDataOrder(useDataOrder);
-        boss.setDepth(depth);
-        boss.setNumStarts(numStarts);
-        boss.setCaching(true);
-        boss.setVerbose(false); // Get the DAG
+        BossOld bossOld = new BossOld(scorer);
+        bossOld.setAlgType(algType);
+        bossOld.setUseScore(useScore);
+        bossOld.setUseRaskuttiUhler(useRaskuttiUhler);
+        bossOld.setUseDataOrder(useDataOrder);
+        bossOld.setDepth(depth);
+        bossOld.setNumStarts(numStarts);
+        bossOld.setCaching(true);
+        bossOld.setVerbose(false); // Get the DAG
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        boss.bestOrder(variables);
-        Graph graph = boss.getGraph(false);
+        bossOld.bestOrder(variables);
+        Graph graph = bossOld.getGraph(false);
 
 //        if (true) return graph;
 
@@ -350,7 +350,7 @@ public final class BfciTr implements GraphSearch {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
-    public void setAlgType(Boss.AlgType algType) {
+    public void setAlgType(BossOld.AlgType algType) {
         this.algType = algType;
     }
 }

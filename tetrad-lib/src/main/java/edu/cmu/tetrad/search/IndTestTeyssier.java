@@ -77,7 +77,7 @@ public final class IndTestTeyssier implements IndependenceTest {
     private double p = NaN;
     private double r = NaN;
 
-    private Boss boss;
+    private BossOld bossOld;
 
 
     //==========================CONSTRUCTORS=============================//
@@ -138,7 +138,7 @@ public final class IndTestTeyssier implements IndependenceTest {
         score.setPenaltyDiscount(penaltyDiscount);
         this.scorer = new TeyssierScorer(null, score);
         this.scorer.score(variables);
-        this.boss = new Boss(scorer);
+        this.bossOld = new BossOld(scorer);
     }
 
     /**
@@ -164,7 +164,7 @@ public final class IndTestTeyssier implements IndependenceTest {
         score.setPenaltyDiscount(penaltyDiscount);
         this.scorer = new TeyssierScorer(null, score);
         scorer.score(variables);
-        this.boss = new Boss(scorer);
+        this.bossOld = new BossOld(scorer);
 
     }
 
@@ -212,7 +212,7 @@ public final class IndTestTeyssier implements IndependenceTest {
         perm.add(x);
         perm.add(y);
 
-        boss.bestOrder(perm);
+        bossOld.bestOrder(perm);
 
 //        scorer.score(perm);
 //        boss.betterMutationTuck(scorer);

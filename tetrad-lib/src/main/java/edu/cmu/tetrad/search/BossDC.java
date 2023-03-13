@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -28,7 +27,7 @@ public class BossDC {
     private boolean verbose = true;
     private int depth = -1;
     private int numStarts = 1;
-    private Boss.AlgType algType = Boss.AlgType.BOSS1;
+    private BossOld.AlgType algType = BossOld.AlgType.BOSS1;
     private boolean caching = true;
 
 
@@ -93,11 +92,11 @@ public class BossDC {
         if (b < (c - 1)) {
             divide(scorer, b, (b + c) / 2, c);
         }
-        if (algType == Boss.AlgType.BOSS1) {
+        if (algType == BossOld.AlgType.BOSS1) {
             conquerRTL(scorer, a, b, c);
-        } else if (algType == Boss.AlgType.BOSS2){
+        } else if (algType == BossOld.AlgType.BOSS2){
             conquerLTR(scorer, a, b, c);
-        } else if (algType == Boss.AlgType.BOSS3){
+        } else if (algType == BossOld.AlgType.BOSS3){
             conquerMT(scorer, a, b, c);
         }
     }
@@ -260,7 +259,7 @@ public class BossDC {
         this.useDataOrder = useDataOrder;
     }
 
-    public void setAlgType(Boss.AlgType algType) {
+    public void setAlgType(BossOld.AlgType algType) {
         this.algType = algType;
     }
 

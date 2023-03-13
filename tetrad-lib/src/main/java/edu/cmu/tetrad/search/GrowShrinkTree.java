@@ -23,8 +23,8 @@ public class GrowShrinkTree {
         }
     }
 
-    public double GrowShrink(Node node, Set<Node> prefix, LinkedHashSet<Node> parents) {
-        return this.roots.get(node).GrowShrink(node, prefix, parents);
+    public double growShrink(Node node, Set<Node> prefix, Set<Node> parents) {
+        return this.roots.get(node).growShrink(node, prefix, parents);
     }
 
     private static class GSTNode implements Comparable<GSTNode> {
@@ -60,7 +60,7 @@ public class GrowShrinkTree {
             this.growScore = GrowShrinkTree.score.localScore(y, X);
         }
 
-        public double GrowShrink(Node node, Set<Node> prefix, LinkedHashSet<Node> parents) {
+        public double growShrink(Node node, Set<Node> prefix, Set<Node> parents) {
 
             if (!this.grow) {
                 this.grow = true;
@@ -69,7 +69,7 @@ public class GrowShrinkTree {
                 for (Node add : GrowShrinkTree.score.getVariables()) {
                     if (parents.contains(add) || add == node) continue;
                     GSTNode branch = new GSTNode(node, add, parents);
-                    if (this.compareTo(branch) < 0) this.branches.add(branch);
+                    if (branch.getGrowScore() >= this.growScore) this.branches.add(branch);
                 }
                 this.branches.sort(Collections.reverseOrder());
             }
@@ -79,7 +79,7 @@ public class GrowShrinkTree {
                 if (prefix.contains(add)) {
                     prefix.remove(add);
                     parents.add(add);
-                    return branch.GrowShrink(node, prefix, parents);
+                    return branch.growShrink(node, prefix, parents);
                 }
             }
 
@@ -90,40 +90,37 @@ public class GrowShrinkTree {
 
                 if (parents.isEmpty()) return this.shrinkScore;
 
-                int y = GrowShrinkTree.index.get(node);
                 Node best;
+                int y = GrowShrinkTree.index.get(node);
 
                 do {
+
+                    best = null;
                     int[] X = new int[parents.size() - 1];
 
-                    int i = 0;
-                    Iterator<Node> itr = parents.iterator();
-                    itr.next();
-                    while (itr.hasNext()) X[i++] = GrowShrinkTree.index.get(itr.next());
+                    for (Node remove : new HashSet<>(parents)) {
 
-                    itr = parents.iterator();
-                    Node remove = itr.next();
-                    best = null;
+                        int i = 0;
+                        parents.remove(remove);
+                        for (Node parent : parents) X[i++] = GrowShrinkTree.index.get(parent);
+                        parents.add(remove);
 
-                    do {
-                        double s = GrowShrinkTree.score.localScore(y, X);
+                        double s = score.localScore(y, X);
+
                         if (s > this.shrinkScore) {
                             this.shrinkScore = s;
                             best = remove;
                         }
 
-                        if (i < parents.size() - 1) {
-                            remove = itr.next();
-                            X[i++] = GrowShrinkTree.index.get(remove);
-                        }
-                    } while (i < parents.size() - 1);
+                    }
 
                     if (best != null) {
                         parents.remove(best);
                         this.remove.add(best);
                     }
 
-                } while (best != null);
+                } while(best != null);
+
             }
             parents.removeAll(this.remove);
             return this.shrinkScore;

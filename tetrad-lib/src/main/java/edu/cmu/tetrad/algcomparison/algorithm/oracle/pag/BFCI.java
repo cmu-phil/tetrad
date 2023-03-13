@@ -15,7 +15,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BFci;
-import edu.cmu.tetrad.search.Boss;
+import edu.cmu.tetrad.search.BossOld;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -78,11 +78,11 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
             BFci search = new BFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
             if (parameters.getInt(Params.BOSS_ALG) == 1) {
-                search.setAlgType(Boss.AlgType.BOSS1);
+                search.setAlgType(BossOld.AlgType.BOSS1);
             } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
-                search.setAlgType(Boss.AlgType.BOSS2);
+                search.setAlgType(BossOld.AlgType.BOSS2);
             } else if (parameters.getInt(Params.BOSS_ALG) == 3) {
-                search.setAlgType(Boss.AlgType.BOSS3);
+                search.setAlgType(BossOld.AlgType.BOSS3);
             } else {
                 throw new IllegalArgumentException("Unrecognized boss algorithm type.");
             }

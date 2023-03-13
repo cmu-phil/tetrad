@@ -64,7 +64,7 @@ public final class LvSwap implements GraphSearch {
 
     private AlgType algType = AlgType.LVSwap1;
 
-    private Boss.AlgType bossAlgType = Boss.AlgType.BOSS1;
+    private BossOld.AlgType bossAlgType = BossOld.AlgType.BOSS1;
 
     // The score used, if GS is used to build DAGs.
     private final Score score;
@@ -114,7 +114,7 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap1() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        Boss alg = new Boss(scorer);
+        BossOld alg = new BossOld(scorer);
         alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -190,7 +190,7 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap2a() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        Boss alg = new Boss(scorer);
+        BossOld alg = new BossOld(scorer);
         alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -265,7 +265,7 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap2b() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        Boss alg = new Boss(scorer);
+        BossOld alg = new BossOld(scorer);
         alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -348,7 +348,7 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap3() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        Boss alg = new Boss(scorer);
+        BossOld alg = new BossOld(scorer);
         alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -621,7 +621,7 @@ public final class LvSwap implements GraphSearch {
         this.algType = bossAlgType;
     }
 
-    public void setBossAlgType(Boss.AlgType algType) {
+    public void setBossAlgType(BossOld.AlgType algType) {
         this.bossAlgType = algType;
     }
 
