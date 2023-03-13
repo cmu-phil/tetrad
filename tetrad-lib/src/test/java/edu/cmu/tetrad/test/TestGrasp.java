@@ -149,11 +149,11 @@ public final class TestGrasp {
         double structurePrior = 1.0;
         boolean discretize = true;
 
-        ConditionalGaussianScore score = new ConditionalGaussianScore((DataSet) data, penaltyDiscount, discretize);
+        DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data);
         score.setStructurePrior(structurePrior);
-        score.setNumCategoriesToDiscretize(3);
 
-        IndTestConditionalGaussianLRT test = new IndTestConditionalGaussianLRT((DataSet) data, 0.05, true);
+        IndTestDegenerateGaussianLRT test = new IndTestDegenerateGaussianLRT((DataSet) data);
+        test.setAlpha(0.01);
 
 
         Fges alg = new Fges(score);
