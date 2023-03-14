@@ -71,7 +71,6 @@ public interface IndependenceTest {
 
     //==============================DEFAULT METHODS=========================//
 
-
     /**
      * @return an Independence test for a subset of the variables.
      */
