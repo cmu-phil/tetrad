@@ -943,17 +943,17 @@
                 <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor
                 </editor-class>
             </model>
-<!--            <model name="CPT Invariant Exact Updater" acronym="CPT Inv"-->
-<!--                   help="cpt_updater">-->
-<!--                <logger>-->
-<!--                    <event id="info" description="Information" default="on"/>-->
-<!--                    <event id="details" description="Details"/>-->
-<!--                </logger>-->
-<!--                <model-class>edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper-->
-<!--                </model-class>-->
-<!--                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor-->
-<!--                </editor-class>-->
-<!--            </model>-->
+            <!--            <model name="CPT Invariant Exact Updater" acronym="CPT Inv"-->
+            <!--                   help="cpt_updater">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="details" description="Details"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.CptInvariantUpdaterWrapper-->
+            <!--                </model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.editor.BayesUpdaterEditor-->
+            <!--                </editor-class>-->
+            <!--            </model>-->
             <model name="SEM Updater" acronym="SEM Up" help="sem_updater">
                 <model-class>edu.cmu.tetradapp.model.SemUpdaterWrapper
                 </model-class>
@@ -1198,14 +1198,14 @@
                 <model-class>edu.cmu.tetradapp.model.RemoveNonSkeletonEdgesModel</model-class>
                 <editor-class>edu.cmu.tetradapp.knowledge_editor.KnowledgeBoxEditor</editor-class>
             </model>
-<!--            <model name="Independence Facts" acronym="IndFacts" help="indfacts">-->
-<!--                <logger>-->
-<!--                    <event id="info" description="Information" default="on"/>-->
-<!--                    <event id="knowledge" description="Knowledge" default="on"/>-->
-<!--                </logger>-->
-<!--                <model-class>edu.cmu.tetradapp.model.IndependenceFactsModel</model-class>-->
-<!--                <editor-class>edu.cmu.tetradapp.knowledge_editor.IndependenceFactsEditor</editor-class>-->
-<!--            </model>-->
+            <!--            <model name="Independence Facts" acronym="IndFacts" help="indfacts">-->
+            <!--                <logger>-->
+            <!--                    <event id="info" description="Information" default="on"/>-->
+            <!--                    <event id="knowledge" description="Knowledge" default="on"/>-->
+            <!--                </logger>-->
+            <!--                <model-class>edu.cmu.tetradapp.model.IndependenceFactsModel</model-class>-->
+            <!--                <editor-class>edu.cmu.tetradapp.knowledge_editor.IndependenceFactsEditor</editor-class>-->
+            <!--            </model>-->
             <model name="Measurement Model" acronym="Meas. Model" help="mm"
                    category="Multiple Indicator Model searches">
                 <logger>

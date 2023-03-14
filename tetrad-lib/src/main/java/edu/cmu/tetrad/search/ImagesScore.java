@@ -76,7 +76,6 @@ public class ImagesScore implements Score {
     }
 
 
-
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */

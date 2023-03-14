@@ -25,15 +25,15 @@ DataColumn[] dataColumns = columnReader.readInDataColumns(isDiscrete);
 
 Currently we support the following delimiters:
 
-| Delimiter | Char | Corresponding Enum Type |
-| --- | --- | --- |
-| Comma | ',' | Delimiter.COMMA |
-| Colon | ':' | Delimiter.COLON |
-| Space | ' ' | Delimiter.SPACE |
-| Tab | '\t' | Delimiter.TAB |
-| Whitespace | ' ' | Delimiter.WHITESPACE |
-| Semicolon | ';' | Delimiter.SEMICOLON |
-| Pipe | '|' | Delimiter.PIPE |
+| Delimiter  | Char | Corresponding Enum Type |
+|------------|------|-------------------------|
+| Comma      | ','  | Delimiter.COMMA         |
+| Colon      | ':'  | Delimiter.COLON         |
+| Space      | ' '  | Delimiter.SPACE         |
+| Tab        | '\t' | Delimiter.TAB           |
+| Whitespace | ' '  | Delimiter.WHITESPACE    |
+| Semicolon  | ';'  | Delimiter.SEMICOLON     |
+| Pipe       | '    | '                       | Delimiter.PIPE |
 
 And depending on if you want to exclude certain columns/variables, you can pass either column index or actual variable
 names when calling `readInDataColumns()`:

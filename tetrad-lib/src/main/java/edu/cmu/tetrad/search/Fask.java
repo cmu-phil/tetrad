@@ -202,7 +202,7 @@ public final class Fask implements GraphSearch {
      * and some of the adjacencies may be two-cycles.
      */
     public Graph search() {
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         NumberFormat nf = new DecimalFormat("0.000");
 
         DataSet dataSet = DataUtils.standardizeData(this.dataSet);
@@ -390,7 +390,7 @@ public final class Fask implements GraphSearch {
             }
         }
 
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
         this.elapsed = stop - start;
 
         this.graph = graph;

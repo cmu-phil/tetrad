@@ -136,7 +136,6 @@ public class ZhangShenBoundTest implements Score {
     }
 
 
-
     public double localScore(int i, int... parents) throws RuntimeException {
 
         if (this.estMinParents == null) {
@@ -279,9 +278,6 @@ public class ZhangShenBoundTest implements Score {
      */
 
 
-
-
-
     public ICovarianceMatrix getCovariances() {
         return covariances;
     }
@@ -361,7 +357,6 @@ public class ZhangShenBoundTest implements Score {
 
         this.N = covariances.getSampleSize();
     }
-
 
 
     private static int[] indexedParents(int[] parents) {

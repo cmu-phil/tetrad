@@ -94,9 +94,9 @@ public class BossDC {
         }
         if (algType == BossOld.AlgType.BOSS1) {
             conquerRTL(scorer, a, b, c);
-        } else if (algType == BossOld.AlgType.BOSS2){
+        } else if (algType == BossOld.AlgType.BOSS2) {
             conquerLTR(scorer, a, b, c);
-        } else if (algType == BossOld.AlgType.BOSS3){
+        } else if (algType == BossOld.AlgType.BOSS3) {
             conquerMT(scorer, a, b, c);
         }
     }
@@ -110,7 +110,7 @@ public class BossDC {
             Node x = scorer.get(i);
             Set<Node> ancestors = scorer.getAncestors(x);
 
-            for (int j = (b-1); j >= a; j--) {
+            for (int j = (b - 1); j >= a; j--) {
                 if (!scorer.adjacent(scorer.get(j), x)) continue;
 
                 tuck(x, j, scorer, ancestors);
@@ -143,7 +143,7 @@ public class BossDC {
                 tuck(x, j, scorer);
                 currentScore = scorer.score();
 
-                if (currentScore > bestScore + 1e-10){
+                if (currentScore > bestScore + 1e-10) {
                     bestScore = currentScore;
                     scorer.bookmark();
                     break;
@@ -161,7 +161,7 @@ public class BossDC {
 
         for (int i = a; i < b; i++) {
             Node x = scorer.get(i);
-            for (int j = (c-1); j >= b; j--) {
+            for (int j = (c - 1); j >= b; j--) {
                 scorer.moveTo(x, j);
                 currentScore = scorer.score();
                 if (currentScore > bestScore + 1e-10) {
@@ -176,7 +176,7 @@ public class BossDC {
 
         for (int i = b; i < c; i++) {
             Node x = scorer.get(i);
-            for (int j = (b-1); j >= a; j--) {
+            for (int j = (b - 1); j >= a; j--) {
                 scorer.moveTo(x, j);
                 currentScore = scorer.score();
                 if (currentScore > bestScore + 1e-10) {

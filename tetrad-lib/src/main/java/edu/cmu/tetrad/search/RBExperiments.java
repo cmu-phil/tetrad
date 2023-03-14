@@ -235,7 +235,7 @@ public class RBExperiments {
         PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());
 
         // run RFCI to get a PAG using chi-squared test
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         Graph rfciPag = runPagCs(data, alpha);
         long RfciTime = MillisecondTimes.timeMillis() - start;
         System.out.println("RFCI done!");
@@ -243,7 +243,7 @@ public class RBExperiments {
         // run RFCI-BSC (RB) search using BSC test and obtain constraints that
         // are queried during the search
         List<Graph> bscPags = new ArrayList<>();
-        start =  MillisecondTimes.timeMillis();
+        start = MillisecondTimes.timeMillis();
         IndTestProbabilistic testBSC = runRB(data, bscPags, numModels, threshold1);
         long BscRfciTime = MillisecondTimes.timeMillis() - start;
         Map<IndependenceFact, Double> H = testBSC.getH();
@@ -251,7 +251,7 @@ public class RBExperiments {
         System.out.println("RB (RFCI-BSC) done!");
         //
         // create empirical data for constraints
-        start =  MillisecondTimes.timeMillis();
+        start = MillisecondTimes.timeMillis();
         DataSet depData = createDepDataFiltering(H, data, numBootstrapSamples, threshold2, lower, upper);
         out.println("DepData(row,col):" + depData.getNumRows() + "," + depData.getNumColumns());
         System.out.println("Dep data creation done!");
@@ -272,16 +272,16 @@ public class RBExperiments {
 
         // compute scores of graphs that are output by RB search using BSC-I and
         // BSC-D methods
-        start =  MillisecondTimes.timeMillis();
+        start = MillisecondTimes.timeMillis();
         allScores lnProbs = getLnProbsAll(bscPags, H, data, imHat, estDepBN);
         Long mutualTime = (MillisecondTimes.timeMillis() - start) / 2;
 
         // normalize the scores
-        start =  MillisecondTimes.timeMillis();
+        start = MillisecondTimes.timeMillis();
         Map<Graph, Double> normalizedDep = normalProbs(lnProbs.LnBSCD);
         Long dTime = MillisecondTimes.timeMillis() - start;
 
-        start =  MillisecondTimes.timeMillis();
+        start = MillisecondTimes.timeMillis();
         Map<Graph, Double> normalizedInd = normalProbs(lnProbs.LnBSCI);
         Long iTime = MillisecondTimes.timeMillis() - start;
 

@@ -86,7 +86,7 @@ public final class GraspFci implements GraphSearch {
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
 
-    private boolean ordered=false;
+    private boolean ordered = false;
     private boolean cachingScores = true;
     private int graspDepth = 3;
     private int uncoveredDepth = 1;

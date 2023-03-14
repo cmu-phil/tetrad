@@ -18,7 +18,6 @@ import java.util.List;
  * Jul 23, 2018 4:05:07 PM
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
- *
  */
 public class HideShowNoConnectionNodesAction extends AbstractAction implements ClipboardOwner {
 

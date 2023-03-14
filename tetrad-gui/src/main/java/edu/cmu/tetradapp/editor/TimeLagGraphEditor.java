@@ -293,7 +293,6 @@ public final class TimeLagGraphEditor extends JPanel
 
     /**
      * Updates bootstrap table on adding/removing edges or graph changes
-     *
      */
     private void updateBootstrapTable(Graph graph) {
         this.edgeTypeTable.update(graph);

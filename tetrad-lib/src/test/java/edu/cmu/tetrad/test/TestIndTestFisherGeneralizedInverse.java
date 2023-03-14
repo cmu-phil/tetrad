@@ -80,7 +80,7 @@ public class TestIndTestFisherGeneralizedInverse {
         IndependenceTest test1 = new IndTestFisherZGeneralizedInverse(data1, 0.05);
         IndependenceTest test2 = new IndTestFisherZGeneralizedInverse(data2, 0.05);
 
-       IndependenceResult result1 = test1.checkIndependence(data1.getVariable(x.getName()), data1.getVariable(y.getName()));
+        IndependenceResult result1 = test1.checkIndependence(data1.getVariable(x.getName()), data1.getVariable(y.getName()));
         double p1 = result1.getPValue();
 
         IndependenceResult result2 = test2.checkIndependence(data2.getVariable(x.getName()), data2.getVariable(z.getName()),

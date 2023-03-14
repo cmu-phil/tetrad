@@ -269,7 +269,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
      * @return the resulting Pattern.
      */
     public Set<Node> search2(Graph graph, List<Node> variables) {
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         topGraphs.clear();
 
         this.graph = graph;
@@ -498,7 +498,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
     }
 
     private void initializeEffectEdges(final List<Node> nodes) {
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         this.effectEdgesGraph = new EdgeListGraph(nodes);
 
         List<Callable<Boolean>> tasks = new ArrayList<>();
@@ -520,7 +520,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
             ForkJoinPool.commonPool().invokeAll(tasks);
         }
 
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         if (verbose) {
             out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");
@@ -636,7 +636,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
             delete(x, y, arrow.getHOrT(), _bump, arrow.getNaYX());
 
             Set<Node> orientedByMeek = revertToCPDAG();
-            Set<Node> process =  new HashSet<>(orientedByMeek);
+            Set<Node> process = new HashSet<>(orientedByMeek);
             process.add(x);
             process.add(y);
             process.addAll(graph.getAdjacentNodes(x));

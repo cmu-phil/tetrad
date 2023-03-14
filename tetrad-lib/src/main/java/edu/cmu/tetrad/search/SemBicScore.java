@@ -214,7 +214,6 @@ public class SemBicScore implements Score {
     }
 
 
-
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         if (this.ruleType == RuleType.NANDY) {
@@ -245,7 +244,6 @@ public class SemBicScore implements Score {
         return -this.sampleSize * log(1.0 - r * r) - c * log(this.sampleSize)
                 - 2.0 * (sp1 - sp2);
     }
-
 
 
 //    private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
@@ -327,9 +325,6 @@ public class SemBicScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-
-
-
 
 
     public double getPenaltyDiscount() {

@@ -82,7 +82,7 @@ public class TestPcStableMax {
 
         System.out.println(knowledge);
 
-        checkWithKnowledge(  "A-->B,C-->B,B-->D", knowledge);
+        checkWithKnowledge("A-->B,C-->B,B-->D", knowledge);
     }
 
     //    @Test

@@ -352,7 +352,7 @@ public class TestPc {
                     throw new IllegalStateException();
             }
 
-            long start =  MillisecondTimes.timeMillis();
+            long start = MillisecondTimes.timeMillis();
 
             Graph out = search.search();
 
@@ -745,7 +745,7 @@ public class TestPc {
 
             out = trim(out, target);
 
-            long start =  MillisecondTimes.timeMillis();
+            long start = MillisecondTimes.timeMillis();
 
             long stop = MillisecondTimes.timeMillis();
 

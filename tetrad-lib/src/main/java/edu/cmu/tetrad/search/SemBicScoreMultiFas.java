@@ -141,7 +141,6 @@ public class SemBicScoreMultiFas implements ISemBicScore {
     }
 
 
-
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */

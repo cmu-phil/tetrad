@@ -78,7 +78,7 @@ public class TestRfciBsc {
         rfciBsc.setOutputRBD(true);
         rfciBsc.setVerbose(true);
 
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
 
         rfciBsc.search();
 
@@ -151,7 +151,7 @@ public class TestRfciBsc {
         rfciBsc.setOutputRBD(true);
         rfciBsc.setVerbose(true);
 
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
 
         rfciBsc.search();
 

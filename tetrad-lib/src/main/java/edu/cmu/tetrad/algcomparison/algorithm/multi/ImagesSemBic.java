@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * Wraps the IMaGES algorithm for continuous variables.
- *
+ * <p>
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
  * datasets should be taken at a time (randomly). This cannot given multiple
  * values.
@@ -53,7 +53,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
 
             if (parameters.getInt(Params.TIME_LAG) > 0) {
                 for (DataModel dataSet : dataSets) {
-                        DataSet timeSeries = TimeSeriesUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                    DataSet timeSeries = TimeSeriesUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
                     if (dataSet.getName() != null) {
                         timeSeries.setName(dataSet.getName());
                     }
@@ -132,7 +132,7 @@ public class ImagesSemBic implements MultiDataSetAlgorithm, HasKnowledge {
             search.setScoreWrapper(null);
 
             search.setParameters(parameters);
-           search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         }
     }

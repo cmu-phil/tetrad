@@ -150,7 +150,7 @@ public class Grasp {
             Edge edge = violatesForbiddenKnowledge(order);
 
             if (edge != null) {
-                JOptionPane.showMessageDialog (JOptionUtils.centeringComp(),
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "The initial sorting procedure could not find a permutation consistent with that \n" +
                                 "knowledge; this edge was in the DAG: " + edge + " in the initial sort,\n" +
                                 "but this edge was forbidden.");

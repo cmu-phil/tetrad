@@ -37,8 +37,7 @@ public class NumIncorrectVisibleAncestors implements Statistic {
                     tp++;
 
 //                    System.out.println("Correct visible edge: " + edge);
-                }
-                else {
+                } else {
                     fp++;
 
 //                    System.out.println("Incorrect visible edge: " + edge + " x = " + x + " y = " + y);

@@ -44,22 +44,25 @@ public class Boss {
 
         double s1, s2, s3;
         s1 = this.update();
-        do { s2 = s1;
+        do {
+            s2 = s1;
 
-            do { s3 = s1;
+            do {
+                s3 = s1;
                 for (Node x : new ArrayList<>(this.order)) {
                     if (betterMutation(x)) s1 = update();
                 }
-            } while(s1 > s3);
+            } while (s1 > s3);
 
-            do { s3 = s1;
+            do {
+                s3 = s1;
                 Graph graph = this.getGraph(true);
                 this.bes.bes(graph, this.variables);
                 this.order = new LinkedList<>(graph.paths().validOrder(this.order, true));
                 s1 = update();
-            } while(s1 > s3);
+            } while (s1 > s3);
 
-        } while(s1 > s2);
+        } while (s1 > s2);
 
         return this.getGraph(true);
     }

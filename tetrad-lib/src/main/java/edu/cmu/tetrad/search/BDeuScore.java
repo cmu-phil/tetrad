@@ -184,13 +184,6 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
     }
 
 
-
-
-
-
-
-
-
     @Override
     public List<Node> getVariables() {
         return this.variables;

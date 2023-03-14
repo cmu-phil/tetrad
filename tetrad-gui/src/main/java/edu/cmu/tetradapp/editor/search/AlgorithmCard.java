@@ -276,8 +276,8 @@ public class AlgorithmCard extends JPanel {
      * algo name when user changes the upstream (after clicking the "Execute"
      * button), because a new algo algorithmRunner is created and we lose the
      * stored models from the old algorithmRunner - Zhou
-     *
-//     * @param models
+     * <p>
+     * //     * @param models
      */
     private void restoreUserAlgoSelections(Map<String, Object> userAlgoSelections) {
         Object obj = userAlgoSelections.get(this.DATASET_FILTER);

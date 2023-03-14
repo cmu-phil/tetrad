@@ -146,7 +146,7 @@ public class GraphPropertiesAction extends AbstractAction implements ClipboardOw
         JScrollPane scroll = new JScrollPane(textArea);
         scroll.setPreferredSize(new Dimension(400, 300));
 
-        textArea.append("\nNumber of nodes: " + getGraph(). getNumNodes());
+        textArea.append("\nNumber of nodes: " + getGraph().getNumNodes());
         textArea.append("\nNumber of latents: " + numLatents);
         textArea.append("\nNumber of edges: " + numEdges);
         textArea.append("\nNumber of adjacencies: " + numAdjacencies);

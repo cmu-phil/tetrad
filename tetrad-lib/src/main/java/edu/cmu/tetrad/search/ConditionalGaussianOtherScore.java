@@ -65,6 +65,7 @@ public class ConditionalGaussianOtherScore implements Score {
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
+     *
      * @return the score, or NaN if the score can't be calculated.
      */
     public double localScore(int i, int... parents) {
@@ -118,15 +119,9 @@ public class ConditionalGaussianOtherScore implements Score {
     }
 
 
-
-
-
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-
-
-
 
 
     public int getSampleSize() {

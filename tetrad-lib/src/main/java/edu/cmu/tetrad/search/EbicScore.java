@@ -27,7 +27,6 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.*;
@@ -119,7 +118,6 @@ public class EbicScore implements Score {
     }
 
 
-
     /**
      * @param i       The index of the node.
      * @param parents The indices of the node's parents.
@@ -154,9 +152,6 @@ public class EbicScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-
-
-
 
 
     public ICovarianceMatrix getCovariances() {
@@ -242,7 +237,6 @@ public class EbicScore implements Score {
 
         this.N = covariances.getSampleSize();
     }
-
 
 
     public void setGamma(double gamma) {

@@ -221,7 +221,7 @@ public class TestGFci {
         GFci gFci = new GFci(test, score);
         gFci.setFaithfulnessAssumed(true);
 
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
 
         gFci.search();
 
@@ -249,7 +249,7 @@ public class TestGFci {
         GFci gFci = new GFci(test, bDeuScore);
         gFci.setFaithfulnessAssumed(true);
 
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
 
         gFci.search();
 
@@ -280,7 +280,7 @@ public class TestGFci {
         gFci.setCompleteRuleSetUsed(false);
         gFci.setVerbose(true);
 
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
 
         gFci.search();
 

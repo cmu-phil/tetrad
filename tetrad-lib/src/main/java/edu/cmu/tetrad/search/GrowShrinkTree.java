@@ -119,7 +119,7 @@ public class GrowShrinkTree {
                         this.remove.add(best);
                     }
 
-                } while(best != null);
+                } while (best != null);
 
             }
             parents.removeAll(this.remove);

@@ -51,7 +51,6 @@ public class BoxCoxParamsEditor extends JPanel implements ParameterEditor {
 
     /**
      * Sets the parameters.
-     *
      */
     public void setParams(Parameters params) {
         this.params = params;

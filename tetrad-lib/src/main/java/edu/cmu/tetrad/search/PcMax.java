@@ -298,9 +298,11 @@ public class PcMax implements GraphSearch {
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
+
     public List<Node> getNodes() {
         return this.graph.getNodes();
     }
+
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

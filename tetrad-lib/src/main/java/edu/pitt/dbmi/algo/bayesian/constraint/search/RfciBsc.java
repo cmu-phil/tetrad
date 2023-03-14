@@ -26,7 +26,6 @@ import static org.apache.commons.math3.util.FastMath.log;
  * Dec 17, 2018 3:28:15 PM
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
- *
  */
 public class RfciBsc implements GraphSearch {
 
@@ -76,7 +75,7 @@ public class RfciBsc implements GraphSearch {
     @Override
     public Graph search() {
         long stop = 0;
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
 
         IndTestProbabilistic _test = (IndTestProbabilistic) this.rfci.getIndependenceTest();
 

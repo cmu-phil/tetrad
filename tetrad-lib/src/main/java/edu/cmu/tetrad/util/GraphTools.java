@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 /**
  * A utility for computing frequency probabilities.
- *
+ * <p>
  * Jan 29, 2023 3:28:26 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
@@ -40,7 +40,7 @@ public final class GraphTools {
      *
      * @param node1 node
      * @param node2 node
-     * @param edge a graph edge containing the node node1 and node node2
+     * @param edge  a graph edge containing the node node1 and node node2
      * @return the edge-type
      */
     private static EdgeTypeProbability.EdgeType getEdgeType(Node node1, Node node2, Edge edge) {
@@ -69,8 +69,8 @@ public final class GraphTools {
     /**
      * Get a list of probabilities for each edge type for the given nodes.
      *
-     * @param node1 node
-     * @param node2 node
+     * @param node1  node
+     * @param node2  node
      * @param graphs list of graphs
      * @return a list of edge-type probabilities
      */

@@ -113,7 +113,7 @@ public class SepsetsGreedy implements SepsetProducer {
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
-        this.result= result;
+        this.result = result;
         return result.independent();
     }
 

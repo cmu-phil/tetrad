@@ -12,7 +12,6 @@ import java.util.Map;
  * Jan 22, 2019 3:39:27 PM
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
- *
  */
 public class DisplayLegend extends JComponent implements TetradSerializableExcluded {
 

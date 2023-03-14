@@ -1711,7 +1711,7 @@ public final class SemEstimatorEditor extends JPanel {
         private void setEdgeValue(Edge edge, String text) {
             try {
                 Parameter parameter = getEdgeParameter(edge);
-                double d =Double.parseDouble(text);
+                double d = Double.parseDouble(text);
 
                 if (this.editor.isEditCovariancesAsCorrelations()
                         && parameter.getType() == ParamType.COVAR) {

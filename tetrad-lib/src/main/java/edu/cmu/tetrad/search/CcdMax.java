@@ -198,7 +198,7 @@ public final class CcdMax implements GraphSearch {
     //======================================== PRIVATE METHODS ====================================//
 
     private Graph fastAdjacencySearch() {
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
 
         FasConcurrent fas = new FasConcurrent(this.independenceTest);
         fas.setStable(true);
@@ -212,7 +212,7 @@ public final class CcdMax implements GraphSearch {
             this.sepsetMap = fas.getSepsets();
         }
 
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
         this.elapsed = stop - start;
 
         return new EdgeListGraph(graph);

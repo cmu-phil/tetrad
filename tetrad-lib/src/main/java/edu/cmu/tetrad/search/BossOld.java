@@ -275,7 +275,7 @@ public class BossOld {
                                 System.out.print("\rIndex = " + (scorer.index(k) + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
                             }
                         }
-                   }
+                    }
 
                 }
 
@@ -434,7 +434,7 @@ public class BossOld {
             Edge edge = violatesForbiddenKnowledge(order);
 
             if (edge != null) {
-                JOptionPane.showMessageDialog (JOptionUtils.centeringComp(),
+                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
                         "The initial sorting procedure could not find a permutation consistent with that \n" +
                                 "knowledge; this edge was in the DAG: " + edge + " in the initial sort,\n" +
                                 "but this edge was forbidden.");

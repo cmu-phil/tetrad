@@ -271,7 +271,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
 
         storeGraph(graph);
 
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         this.score = 0.0;
 
         // Do forward search.
@@ -487,7 +487,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     // Simultaneously finds the first edge to add to an empty graph and finds all length 1 undirectedPaths that are
     // not canceled by other undirectedPaths (the "effect edges")
     private Graph getEffectEdges(List<Node> nodes) {
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         Graph effectEdgesGraph = new EdgeListGraph(nodes);
         Set<Node> emptySet = new HashSet<>(0);
 
@@ -584,7 +584,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         buildIndexing(nodes);
         this.pool.invoke(new EffectTask(this.minChunk, 0, nodes.size()));
 
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             this.out.println("Elapsed getEffectEdges = " + (stop - start) + " ms");

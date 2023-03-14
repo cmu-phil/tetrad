@@ -50,13 +50,14 @@ public final class LongTextField extends JTextField {
     private Filter filter;
 
     //==========================CONSTRUCTORS=============================//
+
     /**
      * Constructs a new long text field displaying the given default value,
      * restricting the value to [lowerBound, upperBound].
      *
      * @param value The initial value. Must be between lowerBound and
-     * upperBound.
-     * @param size the number of columns in the textfield.
+     *              upperBound.
+     * @param size  the number of columns in the textfield.
      */
     public LongTextField(long value, int size) {
         super(size);
@@ -168,6 +169,7 @@ public final class LongTextField extends JTextField {
     }
 
     //==============================PRIVATE METHODS======================//
+
     /**
      * Determines whether the given value is a legal value for this text field.
      * The default behavior is to constrain the value to be within a certain
@@ -186,6 +188,7 @@ public final class LongTextField extends JTextField {
     }
 
     //==============================Interfaces============================//
+
     /**
      * Filters the given value, returning the value that should actually be
      * displayed. Typical use is to return either the value or the old value,
@@ -199,9 +202,9 @@ public final class LongTextField extends JTextField {
          * Filters the given value, returning the new value that should be
          * displayed.
          *
-         * @param value The value entered by the user.
+         * @param value    The value entered by the user.
          * @param oldValue The value previously displayed, in case it needs to
-         * be reverted to.
+         *                 be reverted to.
          */
         long filter(long value, long oldValue);
     }

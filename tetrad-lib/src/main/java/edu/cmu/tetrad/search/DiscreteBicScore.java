@@ -179,13 +179,6 @@ public class DiscreteBicScore implements LocalDiscreteScore, IBDeuScore {
     }
 
 
-
-
-
-
-
-
-
     @Override
     public List<Node> getVariables() {
         return this.variables;

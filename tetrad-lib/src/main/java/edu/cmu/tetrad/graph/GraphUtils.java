@@ -1720,7 +1720,6 @@ public final class GraphUtils {
     }
 
 
-
     public static int getDegree(Graph graph) {
         int max = 0;
 
@@ -1744,6 +1743,7 @@ public final class GraphUtils {
 
         return max;
     }
+
     // Used to find semidirected paths for cycle checking.
     public static Node traverseSemiDirected(Node node, Edge edge) {
         if (node == edge.getNode1()) {
@@ -2204,6 +2204,7 @@ public final class GraphUtils {
         public List<Edge> getEdgesRemoved() {
             return this.edgesRemoved;
         }
+
         public double getAdjPrec() {
             return this.adjPrec;
         }

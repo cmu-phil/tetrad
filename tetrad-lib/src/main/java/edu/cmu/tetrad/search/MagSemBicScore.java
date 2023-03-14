@@ -33,7 +33,7 @@ import java.util.*;
 /**
  * @author Bryan Andrews
  */
-public class MagSemBicScore implements Score{
+public class MagSemBicScore implements Score {
 
     private final SemBicScore score;
 
@@ -129,7 +129,7 @@ public class MagSemBicScore implements Score{
                 }
 
                 int[] parents = new int[j];
-                for (int k = 0 ; k < j ; k++){
+                for (int k = 0; k < j; k++) {
                     parents[k] = this.score.getVariables().indexOf(condSet.get(k));
                 }
 
@@ -187,9 +187,9 @@ public class MagSemBicScore implements Score{
         List<Node> mb = new ArrayList<>(mbo);
         mb.removeAll(in);
 
-        for (Node v3 : in.subList(0,in.size())) {
+        for (Node v3 : in.subList(0, in.size())) {
             for (Node v2 : mb) {
-                Edge e = this.mag.getEdge(v2,v3);
+                Edge e = this.mag.getEdge(v2, v3);
                 if (e != null && e.getEndpoint1() == Endpoint.ARROW && e.getEndpoint2() == Endpoint.ARROW) {
                     if (an.contains(v2)) {
                         updateIntrinsics(in, sib, an, v2, mbo);
@@ -208,7 +208,6 @@ public class MagSemBicScore implements Score{
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.score.setPenaltyDiscount(penaltyDiscount);
     }
-
 
 
     @Override

@@ -97,7 +97,6 @@ public class BdeuScoreImages implements IBDeuScore {
     }
 
 
-
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
      */
@@ -151,7 +150,6 @@ public class BdeuScoreImages implements IBDeuScore {
 
         return sum / this.scores.size();
     }
-
 
 
     public DataSet getDataSet() {

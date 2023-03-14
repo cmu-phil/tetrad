@@ -27,7 +27,6 @@ import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.special.Gamma;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.*;
@@ -118,9 +117,8 @@ public class PoissonPriorScore implements Score {
     }
 
 
-
     /**
-     * @param i The index of the node.
+     * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
      */
@@ -131,14 +129,14 @@ public class PoissonPriorScore implements Score {
 
         try {
             varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
-        } catch (SingularMatrixException e){
+        } catch (SingularMatrixException e) {
             return Double.NaN;
         }
 
         double r = k * log(lambda);
 
         // Bryan
-        double score = - 0.5 * this.N * log(varRy) - 0.5 * k * log(this.N) + r - Gamma.logGamma(k + 1.);
+        double score = -0.5 * this.N * log(varRy) - 0.5 * k * log(this.N) + r - Gamma.logGamma(k + 1.);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
@@ -154,9 +152,6 @@ public class PoissonPriorScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-
-
-
 
 
     public ICovarianceMatrix getCovariances() {
@@ -242,7 +237,6 @@ public class PoissonPriorScore implements Score {
 
         this.N = covariances.getSampleSize();
     }
-
 
 
     public void setLambda(double lambda) {

@@ -113,8 +113,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                 search.setKnowledge(this.knowledge);
                 search.setVerbose(parameters.getBoolean(Params.VERBOSE));
                 return search.search();
-            }
-            else {
+            } else {
                 throw new IllegalArgumentException("Unrecognized meta option: " + meta);
             }
         } else {

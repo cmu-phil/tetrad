@@ -120,10 +120,10 @@ public final class IndTestConditionalCorrelationLingam implements IndependenceTe
         boolean independent = p > this.alpha;
 
 //        if (this.verbose) {
-            if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, p));
-            }
+        if (independent) {
+            TetradLogger.getInstance().forceLogMessage(
+                    SearchLogUtils.independenceFactMsg(x, y, z, p));
+        }
 //        }
 
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);

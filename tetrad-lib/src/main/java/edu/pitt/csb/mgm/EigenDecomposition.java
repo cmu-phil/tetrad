@@ -445,7 +445,6 @@ public class EigenDecomposition {
          * This method only finds exact linear solutions, i.e. solutions for
          * which ||A &times; X - B|| is exactly 0.
          *
-         *
          * @param b Right-hand side of the equation A &times; X = B.
          * @return a Vector X that minimizes the two norm of A &times; X - B.
          * @throws DimensionMismatchException if the matrices dimensions do not match.

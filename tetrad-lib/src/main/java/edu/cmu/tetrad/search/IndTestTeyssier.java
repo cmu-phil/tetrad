@@ -87,7 +87,7 @@ public final class IndTestTeyssier implements IndependenceTest {
      * given data set (must be continuous). The given significance level is used.
      *
      * @param dataSet A data set containing only continuous columns.
-//     * @param alpha   The alpha level of the test.
+     *                //     * @param alpha   The alpha level of the test.
      */
     public IndTestTeyssier(DataSet dataSet, double penaltyDiscount) {
         this.dataSet = dataSet;

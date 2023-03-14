@@ -251,7 +251,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         fes();
         bes();
 
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         this.totalScore = 0.0;
 
         long endTime = MillisecondTimes.timeMillis();
@@ -586,7 +586,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         this.neighbors = new ConcurrentHashMap<>();
         Set<Node> emptySet = new HashSet<>();
 
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         this.effectEdgesGraph = new EdgeListGraph(nodes);
 
         class InitializeFromEmptyGraphTask extends RecursiveTask<Boolean> {
@@ -629,7 +629,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
         this.pool.invoke(new InitializeFromEmptyGraphTask());
 
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             this.out.println("Elapsed initializeForwardEdgesFromEmptyGraph = " + (stop - start) + " ms");

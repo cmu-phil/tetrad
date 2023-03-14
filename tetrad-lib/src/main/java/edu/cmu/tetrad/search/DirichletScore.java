@@ -179,13 +179,6 @@ public class DirichletScore implements LocalDiscreteScore {
     }
 
 
-
-
-
-
-
-
-
     @Override
     public List<Node> getVariables() {
         return this.variables;

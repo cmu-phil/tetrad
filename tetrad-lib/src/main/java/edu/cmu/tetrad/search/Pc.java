@@ -22,9 +22,11 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.MillisecondTimes;
-import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
@@ -300,9 +302,11 @@ public class Pc implements GraphSearch {
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
+
     public List<Node> getNodes() {
         return this.graph.getNodes();
     }
+
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

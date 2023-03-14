@@ -133,9 +133,6 @@ public class SemBicScoreDeterministic implements Score {
      */
 
 
-
-
-
     public double getPenaltyDiscount() {
         return this.penaltyDiscount;
     }

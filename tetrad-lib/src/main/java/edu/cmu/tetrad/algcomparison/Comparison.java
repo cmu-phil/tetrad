@@ -1159,7 +1159,7 @@ public class Comparison {
         stdout.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
                 + " simulationWrapper: " + simulationWrapper.getDescription());
 
-        long start =  MillisecondTimes.cpuTimeMillis();
+        long start = MillisecondTimes.cpuTimeMillis();
         Graph graphOut;
 
         try {
@@ -1209,7 +1209,7 @@ public class Comparison {
         int simIndex = simulationWrappers.indexOf(simulationWrapper) + 1;
         int algIndex = algorithmWrappers.indexOf(algorithmWrapper) + 1;
 
-        long stop =  MillisecondTimes.cpuTimeMillis();
+        long stop = MillisecondTimes.cpuTimeMillis();
 
         long elapsed = (stop - start);
 

@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.*;
@@ -110,7 +109,6 @@ public class ZhangShenBoundScore implements Score {
     }
 
 
-
     private int[] indices(List<Node> __adj) {
         int[] indices = new int[__adj.size()];
         for (int t = 0; t < __adj.size(); t++) indices[t] = variables.indexOf(__adj.get(t));
@@ -121,7 +119,6 @@ public class ZhangShenBoundScore implements Score {
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
-
 
 
     public double localScore(int i, int... parents) throws RuntimeException {
@@ -176,9 +173,6 @@ public class ZhangShenBoundScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-
-
-
 
 
     public ICovarianceMatrix getCovariances() {

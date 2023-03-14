@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.*;
@@ -135,7 +134,6 @@ public class KimEtAlScores implements Score {
     }
 
 
-
     public double localScore(int i, int... parents) {
         double sn = 12;
 
@@ -205,13 +203,9 @@ public class KimEtAlScores implements Score {
      */
 
 
-
-
-
 //    public double getTrueErrorVariance() {
 //        return trueErrorVariance;
 //    }
-
     public ICovarianceMatrix getCovariances() {
         return covariances;
     }
@@ -311,7 +305,6 @@ public class KimEtAlScores implements Score {
 
         this.N = covariances.getSampleSize();
     }
-
 
 
     public void setRuleType(RuleType ruleType) {

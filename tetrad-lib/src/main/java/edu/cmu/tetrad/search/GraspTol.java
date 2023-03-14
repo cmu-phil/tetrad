@@ -67,7 +67,7 @@ public class GraspTol {
     }
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
         this.scorer = new TeyssierScorer(this.test, this.score);
@@ -96,7 +96,7 @@ public class GraspTol {
                 shuffle(order);
             }
 
-            this.start =  MillisecondTimes.timeMillis();
+            this.start = MillisecondTimes.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -117,7 +117,7 @@ public class GraspTol {
 
         this.scorer.score(bestPerm);
 
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         if (this.verbose) {
             TetradLogger.getInstance().forceLogMessage("Final order = " + this.scorer.getPi());

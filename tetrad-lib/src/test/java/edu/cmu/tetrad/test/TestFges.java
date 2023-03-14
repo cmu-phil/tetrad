@@ -120,7 +120,6 @@ public class TestFges {
         System.out.println("ap = " + ap + " ar = " + ar);
 
 
-
 //        int[][] counts = SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, null);
 //
 //        int[][] expectedCounts = {
@@ -1047,7 +1046,7 @@ public class TestFges {
             Graph out;
             final double penalty = 2;
 
-            long start =  MillisecondTimes.timeMillis();
+            long start = MillisecondTimes.timeMillis();
 
             switch (t) {
                 case 0:

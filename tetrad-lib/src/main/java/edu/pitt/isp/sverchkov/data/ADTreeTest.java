@@ -75,7 +75,7 @@ public class ADTreeTest {
         }
 
         // create the tree
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         ADTree<Node, Short> adTree = new ADTree<>(dataTable);
         System.out.printf("Generated tree in %s millis%n", MillisecondTimes.timeMillis() - start);
 
@@ -83,7 +83,7 @@ public class ADTreeTest {
         TreeMap<Node, Short> query = new TreeMap<>();
         query.put(ADTreeTest.node(pm, "X1"), (short) 1);
         query.put(ADTreeTest.node(pm, "X5"), (short) 0);
-        start =  MillisecondTimes.timeMillis();
+        start = MillisecondTimes.timeMillis();
         System.out.printf("Count is %d%n", adTree.count(query));
         System.out.printf("Query in %s ms%n", MillisecondTimes.timeMillis() - start);
 
@@ -92,7 +92,7 @@ public class ADTreeTest {
         query.put(ADTreeTest.node(pm, "X2"), (short) 1);
         query.put(ADTreeTest.node(pm, "X5"), (short) 0);
         query.put(ADTreeTest.node(pm, "X10"), (short) 1);
-        start =  MillisecondTimes.timeMillis();
+        start = MillisecondTimes.timeMillis();
         System.out.printf("Count is %d%n", adTree.count(query));
         System.out.printf("Query in %s ms%n", MillisecondTimes.timeMillis() - start);
 

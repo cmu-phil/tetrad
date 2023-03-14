@@ -1403,7 +1403,7 @@ public final class StatUtils {
 
         kurt = kurt / (variance * variance) - 3.0;
 
-        kurt = (((N + 1) * N)/(double)((N-1)*(N-2)*(N-3))) * kurt - 3 * (N-1)*(N-1)/(double)((N-2)*(N-3));
+        kurt = (((N + 1) * N) / (double) ((N - 1) * (N - 2) * (N - 3))) * kurt - 3 * (N - 1) * (N - 1) / (double) ((N - 2) * (N - 3));
 
         return kurt;
     }

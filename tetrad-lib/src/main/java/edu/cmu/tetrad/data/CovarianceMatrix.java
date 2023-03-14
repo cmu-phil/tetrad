@@ -279,7 +279,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     public final CovarianceMatrix getSubmatrix(String[] submatrixVarNames) {
         List<Node> submatrixVars = new LinkedList<>();
 
-            List<String> missing = new ArrayList<>();
+        List<String> missing = new ArrayList<>();
 
         for (String submatrixVarName : submatrixVarNames) {
             if (submatrixVarName.startsWith("E_")) continue;

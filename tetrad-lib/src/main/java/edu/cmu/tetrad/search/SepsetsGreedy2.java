@@ -85,7 +85,7 @@ public class SepsetsGreedy2 implements SepsetProducer {
         List<Node> allCond = new ArrayList<>(adji);
         allCond.addAll(adjk);
 
-        List<Node> maxCond =  null;
+        List<Node> maxCond = null;
         double maxScore = Float.NEGATIVE_INFINITY;
 
         for (int d = 0; d <= FastMath.min((this.depth == -1 ? 1000 : this.depth), FastMath.max(adji.size(), adjk.size())); d++) {
@@ -161,7 +161,7 @@ public class SepsetsGreedy2 implements SepsetProducer {
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
-        this.result= result;
+        this.result = result;
         return result.independent();
     }
 

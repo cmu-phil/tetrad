@@ -255,7 +255,6 @@ public final class LvSwap implements GraphSearch {
         }
 
 
-
         finalOrientation(knowledge, G);
 
         scorer.goToBookmark();
