@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  */
-public final class GraphTools {
+public final class GraphSampling {
 
-    private GraphTools() {
+    private GraphSampling() {
     }
 
     /**
