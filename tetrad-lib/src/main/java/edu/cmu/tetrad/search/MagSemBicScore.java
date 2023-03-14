@@ -216,13 +216,6 @@ public class MagSemBicScore implements Score{
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-
-
-
-
-    @Override
-
-
     @Override
     public int getSampleSize() {
         return this.score.getSampleSize();
