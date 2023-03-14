@@ -186,8 +186,6 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
      */
 
 
-
-
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
@@ -207,12 +205,10 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
 
-
     @Override
     public int getSampleSize() {
         return 0;
     }
-
 
 
     @Override

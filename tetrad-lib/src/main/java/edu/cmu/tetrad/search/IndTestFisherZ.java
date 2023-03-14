@@ -381,7 +381,6 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
 
-
     /**
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
@@ -468,7 +467,6 @@ public final class IndTestFisherZ implements IndependenceTest {
     public int getSampleSize() {
         return this.cor.getSampleSize();
     }
-
 
 
     @Override

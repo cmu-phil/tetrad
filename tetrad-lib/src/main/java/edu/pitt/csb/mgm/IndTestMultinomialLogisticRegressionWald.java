@@ -24,7 +24,6 @@ package edu.pitt.csb.mgm;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
@@ -33,7 +32,6 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchLogUtils;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
@@ -365,9 +363,6 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
 
-
-
-
     /**
      * @return true if y is determined the variable in z.
      */
@@ -395,14 +390,10 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     }
 
 
-
-
-
     @Override
     public int getSampleSize() {
         return 0;
     }
-
 
 
     @Override

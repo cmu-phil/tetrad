@@ -190,8 +190,6 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
      */
 
 
-
-
     /**
      * @throws UnsupportedOperationException
      */

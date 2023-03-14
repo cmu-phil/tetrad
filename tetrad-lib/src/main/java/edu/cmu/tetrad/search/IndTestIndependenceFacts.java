@@ -22,12 +22,9 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.List;
@@ -110,14 +107,10 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
 
-
-
-
     @Override
     public int getSampleSize() {
         return 0;
     }
-
 
 
     @Override

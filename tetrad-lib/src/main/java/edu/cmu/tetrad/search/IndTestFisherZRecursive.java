@@ -259,7 +259,6 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     }
 
 
-
     /**
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
@@ -352,7 +351,6 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     public int getSampleSize() {
         return this.covMatrix.getSampleSize();
     }
-
 
 
     @Override

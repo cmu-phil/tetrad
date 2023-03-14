@@ -31,7 +31,6 @@ import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -340,21 +339,16 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
 
-
-
-
     @Override
     public int getSampleSize() {
         return 0;
     }
 
 
-
     @Override
     public double getScore() {
         return -(getPValue() - getAlpha());
     }
-
 
 
     /**

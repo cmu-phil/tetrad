@@ -25,7 +25,6 @@ import edu.cmu.tetrad.cluster.KMeans;
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.kernel.Kernel;
@@ -592,7 +591,6 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
 
-
     /**
      * @return the data set being analyzed.
      */
@@ -601,14 +599,10 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
 
-
-
-
     @Override
     public int getSampleSize() {
         return 0;
     }
-
 
 
     @Override

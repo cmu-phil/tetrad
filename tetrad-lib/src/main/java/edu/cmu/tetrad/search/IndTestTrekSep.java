@@ -229,7 +229,6 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
 
-
     /**
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
@@ -342,7 +341,6 @@ public final class IndTestTrekSep implements IndependenceTest {
     public int getSampleSize() {
         return this.covMatrix.getSampleSize();
     }
-
 
 
     @Override

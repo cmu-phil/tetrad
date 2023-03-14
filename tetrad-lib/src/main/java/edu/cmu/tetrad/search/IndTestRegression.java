@@ -27,7 +27,6 @@ import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.Regression;
@@ -205,9 +204,6 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
 
-
-
-
     public String toString() {
         return "Linear Regression Test, alpha = " + IndTestRegression.nf.format(getAlpha());
     }
@@ -286,14 +282,10 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
 
-
-
-
     @Override
     public int getSampleSize() {
         return 0;
     }
-
 
 
     @Override

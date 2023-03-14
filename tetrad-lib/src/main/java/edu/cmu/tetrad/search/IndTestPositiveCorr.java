@@ -227,7 +227,6 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     }
 
 
-
     /**
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
@@ -311,7 +310,6 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     public int getSampleSize() {
         return this.covMatrix.getSampleSize();
     }
-
 
 
     @Override

@@ -22,15 +22,12 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -159,9 +156,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
 
-
-
-
     /**
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
@@ -178,14 +172,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
 
-
-
-
     @Override
     public int getSampleSize() {
         return 0;
     }
-
 
 
     @Override

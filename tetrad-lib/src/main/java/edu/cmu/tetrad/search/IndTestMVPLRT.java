@@ -22,16 +22,13 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -158,9 +155,6 @@ public class IndTestMVPLRT implements IndependenceTest {
     }
 
 
-
-
-
     /**
      * @return true if y is determined the variable in z.
      */
@@ -188,14 +182,10 @@ public class IndTestMVPLRT implements IndependenceTest {
     }
 
 
-
-
-
     @Override
     public int getSampleSize() {
         return 0;
     }
-
 
 
     @Override

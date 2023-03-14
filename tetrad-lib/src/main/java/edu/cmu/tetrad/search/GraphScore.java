@@ -83,7 +83,7 @@ public class GraphScore implements Score {
      * Calculates the sample likelihood and BIC score for y given its z in a simple SEM model
      */
     public double localScore(int y, int[] z) {
-        return  getPearlParentsTest().size();
+        return getPearlParentsTest().size();
     }
 
     private Node n = null;
@@ -224,6 +224,7 @@ public class GraphScore implements Score {
 
         throw new IllegalArgumentException("Expecting either a DAG or an IndependenceFacts object.");
     }
+
     public boolean isDConnectedTo(Node x, Node y, List<Node> z) {
         return !isDSeparatedFrom(x, y, z);
     }
