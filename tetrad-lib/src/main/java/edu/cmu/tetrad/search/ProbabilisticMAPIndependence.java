@@ -191,10 +191,7 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
         return data;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
+
 
     @Override
     public List<DataSet> getDataSets() {

@@ -310,10 +310,7 @@ public final class IndTestRegression implements IndependenceTest {
         return this.dataSet;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
+
 
     @Override
     public List<DataSet> getDataSets() {

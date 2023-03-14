@@ -236,10 +236,7 @@ public final class IndTestCodec implements IndependenceTest {
         return null;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
+
 
     @Override
     public List<DataSet> getDataSets() {

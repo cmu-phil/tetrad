@@ -206,10 +206,7 @@ public class IndTestMVPLRT implements IndependenceTest {
         return this.data;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
+
 
     @Override
     public List<DataSet> getDataSets() {

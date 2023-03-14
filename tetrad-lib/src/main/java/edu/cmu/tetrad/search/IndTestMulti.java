@@ -158,10 +158,7 @@ public final class IndTestMulti implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
+
 
     @Override
     public List<DataSet> getDataSets() {

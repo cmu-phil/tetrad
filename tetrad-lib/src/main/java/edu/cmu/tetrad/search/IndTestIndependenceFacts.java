@@ -113,10 +113,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         return this.facts;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
+
 
     @Override
     public List<DataSet> getDataSets() {

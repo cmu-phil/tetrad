@@ -348,10 +348,7 @@ public final class IndTestCramerT implements IndependenceTest {
         return this.dataSet;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
+
 
     @Override
     public List<DataSet> getDataSets() {
