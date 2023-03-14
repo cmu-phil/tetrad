@@ -124,7 +124,7 @@ public class Boss {
     }
 
     private Graph getGraph(boolean cpDag) {
-        Graph graph = new EdgeListGraph(this.order);
+        Graph graph = new EdgeListGraph(this.variables);
 
         for (Node a : this.order) {
             for (Node b : this.parents.get(a)) {
