@@ -162,16 +162,6 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
     }
 
     @Override
-    public List<String> getVariableNames() {
-        List<String> names = new ArrayList<>();
-
-        for (Node node : nodes) {
-            names.add(node.getName());
-        }
-        return names;
-    }
-
-    @Override
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException();
     }

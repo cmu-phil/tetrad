@@ -270,13 +270,6 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * Returns the list of names for the variables in getNodesInEvidence.
-     */
-    public List<String> getVariableNames() {
-        return this.data.getVariableNames();
-    }
-
-    /**
      * Returns true if y is determined the variable in z.
      */
     public boolean determines(List<Node> z, Node y) {

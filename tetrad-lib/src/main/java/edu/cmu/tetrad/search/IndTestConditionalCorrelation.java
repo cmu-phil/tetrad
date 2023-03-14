@@ -158,28 +158,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         return this.variables;
     }
 
-    /**
-     * @return the variable with the given name.
-     */
-    public Node getVariable(String name) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(name)) return node;
-        }
 
-        throw new IllegalArgumentException();
-    }
 
-    /**
-     * @return the list of variable varNames.
-     */
-    public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
-            variableNames.add(variable1.getName());
-        }
-        return variableNames;
-    }
+
 
     /**
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws

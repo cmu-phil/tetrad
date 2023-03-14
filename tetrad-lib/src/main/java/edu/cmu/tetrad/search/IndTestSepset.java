@@ -177,18 +177,6 @@ public class IndTestSepset implements IndependenceTest {
         return Collections.unmodifiableList(this.observedVars);
     }
 
-    /**
-     * @return the list of variable varNames.
-     */
-    public List<String> getVariableNames() {
-        List<Node> nodes = getVariables();
-        List<String> nodeNames = new ArrayList<>();
-        for (Node var : nodes) {
-            nodeNames.add(var.getName());
-        }
-        return nodeNames;
-    }
-
     public boolean determines(List<Node> z, Node x1) {
         return z.contains(x1);
     }

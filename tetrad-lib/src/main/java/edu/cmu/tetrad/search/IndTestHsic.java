@@ -591,17 +591,7 @@ public final class IndTestHsic implements IndependenceTest {
         return null;
     }
 
-    /**
-     * @return the list of variable varNames.
-     */
-    public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
-            variableNames.add(variable1.getName());
-        }
-        return variableNames;
-    }
+
 
     /**
      * @return the data set being analyzed.

@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -54,12 +55,16 @@ public interface IndependenceTest {
     /**
      * @return the variable by the given name.
      */
-    Node getVariable(String name);
+    default Node getVariable(String name) {
+        for (int i = 0; i < getVariables().size(); i++) {
+            Node variable = getVariables().get(i);
+            if (variable.getName().equals(name)) {
+                return variable;
+            }
+        }
 
-    /**
-     * @return the list of names for the variables in getNodesInEvidence.
-     */
-    List<String> getVariableNames();
+        return null;
+    }
 
     /**
      * @return The data model for the independence test.
@@ -95,6 +100,18 @@ public interface IndependenceTest {
     default IndependenceResult checkIndependence(Node x, Node y, Node... z) {
         List<Node> zList = Arrays.asList(z);
         return checkIndependence(x, y, zList);
+    }
+
+    /**
+     * @return the list of names for the variables in getNodesInEvidence.
+     */
+    default List<String> getVariableNames() {
+        List<Node> variables = getVariables();
+        List<String> variableNames = new ArrayList<>();
+        for (Node variable1 : variables) {
+            variableNames.add(variable1.getName());
+        }
+        return variableNames;
     }
 
     /**

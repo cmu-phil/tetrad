@@ -207,16 +207,6 @@ public final class IndTestCodec implements IndependenceTest {
     }
 
     @Override
-    public Node getVariable(String name) {
-        return dataSet.getVariable(name);
-    }
-
-    @Override
-    public List<String> getVariableNames() {
-        return dataSet.getVariableNames();
-    }
-
-    @Override
     public boolean determines(List<Node> z, Node y) {
         return false;
     }

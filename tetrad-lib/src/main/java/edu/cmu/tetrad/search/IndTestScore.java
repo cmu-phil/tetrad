@@ -140,19 +140,6 @@ public class IndTestScore implements IndependenceTest {
     }
 
     /**
-     * @return the list of names for the variables in getNodesInEvidence.
-     */
-    public List<String> getVariableNames() {
-        List<String> names = new ArrayList<>();
-
-        for (Node node : this.variables) {
-            names.add(node.getName());
-        }
-
-        return names;
-    }
-
-    /**
      * @return true if y is determined the variable in z.
      */
     public boolean determines(List<Node> z, Node y) {

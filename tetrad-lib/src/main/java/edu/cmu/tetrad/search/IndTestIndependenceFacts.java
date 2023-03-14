@@ -93,10 +93,6 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         return null;
     }
 
-    public List<String> getVariableNames() {
-        return this.facts.getVariableNames();
-    }
-
     public boolean determines(List<Node> z, Node y) {
         return false;
     }
