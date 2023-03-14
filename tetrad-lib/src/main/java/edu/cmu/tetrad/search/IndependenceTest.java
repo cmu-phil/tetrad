@@ -51,26 +51,12 @@ public interface IndependenceTest {
      */
     List<Node> getVariables();
 
-    /**
-     * @return the variable by the given name.
-     */
-    default Node getVariable(String name) {
-        for (int i = 0; i < getVariables().size(); i++) {
-            Node variable = getVariables().get(i);
-            if (variable.getName().equals(name)) {
-                return variable;
-            }
-        }
-
-        return null;
-    }
+    int getSampleSize();
 
     /**
      * @return The data model for the independence test.
      */
     DataModel getData();
-
-    int getSampleSize();
 
     /**
      * A score that is higher with more likely models.
@@ -84,6 +70,7 @@ public interface IndependenceTest {
     String toString();
 
     //==============================DEFAULT METHODS=========================//
+
 
     /**
      * @return an Independence test for a subset of the variables.
@@ -99,6 +86,20 @@ public interface IndependenceTest {
     default IndependenceResult checkIndependence(Node x, Node y, Node... z) {
         List<Node> zList = Arrays.asList(z);
         return checkIndependence(x, y, zList);
+    }
+
+    /**
+     * @return the variable by the given name.
+     */
+    default Node getVariable(String name) {
+        for (int i = 0; i < getVariables().size(); i++) {
+            Node variable = getVariables().get(i);
+            if (variable.getName().equals(name)) {
+                return variable;
+            }
+        }
+
+        return null;
     }
 
     /**
