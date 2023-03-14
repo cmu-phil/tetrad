@@ -471,10 +471,7 @@ public final class IndTestTeyssier implements IndependenceTest {
         return this.cor.getSampleSize();
     }
 
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
+
 
     @Override
     public double getScore() {

@@ -245,10 +245,7 @@ public final class IndTestCodec implements IndependenceTest {
         return 0;
     }
 
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
+
 
     @Override
     public double getScore() {

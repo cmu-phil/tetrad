@@ -363,10 +363,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         return this.covMatrix.getSampleSize();
     }
 
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
+
 
     @Override
     public double getScore() {

@@ -479,10 +479,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         return this.cor.getSampleSize();
     }
 
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
+
 
     @Override
     public double getScore() {

@@ -119,10 +119,6 @@ public interface IndependenceTest {
         throw new UnsupportedOperationException("The setAlpha() method is not implemented for this test.");
     }
 
-    default List<Matrix> getCovMatrices() {
-        throw new UnsupportedOperationException("The getCovMatrices() method is not implemented for this test.");
-    }
-
     default ICovarianceMatrix getCov() {
         throw new UnsupportedOperationException("The getCov() method is not implemented for this test.");
     }

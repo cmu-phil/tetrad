@@ -246,11 +246,6 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     @Override
-    public List<Matrix> getCovMatrices() {
-        return this.ncov;
-    }
-
-    @Override
     public double getScore() {
         return getPValue();
     }
