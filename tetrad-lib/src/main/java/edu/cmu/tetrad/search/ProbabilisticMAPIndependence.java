@@ -184,12 +184,6 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
 
 
     @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-
-    @Override
     public double getScore() {
         return posterior;
     }

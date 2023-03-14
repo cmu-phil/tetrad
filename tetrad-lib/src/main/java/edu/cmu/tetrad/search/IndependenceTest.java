@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
@@ -34,7 +35,6 @@ import java.util.List;
  * Interface implemented by classes that do conditional independence testing. These classes are capable of serving as
  * conditional independence "oracles" for constraint-based searches.
  *
- * @author Don Crimbchin (djc2@andrew.cmu.edu)
  * @author Joseph Ramsey
  */
 public interface IndependenceTest {
@@ -50,8 +50,6 @@ public interface IndependenceTest {
      * relations.
      */
     List<Node> getVariables();
-
-    int getSampleSize();
 
     /**
      * @return The data model for the independence test.
@@ -85,6 +83,17 @@ public interface IndependenceTest {
     default IndependenceResult checkIndependence(Node x, Node y, Node... z) {
         List<Node> zList = Arrays.asList(z);
         return checkIndependence(x, y, zList);
+    }
+
+    default int getSampleSize() {
+        DataModel data = getData();
+        if (data instanceof CovarianceMatrix) {
+            return ((CovarianceMatrix) data).getSampleSize();
+        } else if (data instanceof DataSet) {
+            return ((DataSet) data).getNumRows();
+        } else {
+            throw new UnsupportedOperationException("Expecting a dataset or a covariance matrix.");
+        }
     }
 
     /**

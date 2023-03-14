@@ -290,12 +290,6 @@ public class IndTestDSep implements IndependenceTest {
 
 
     @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-
-    @Override
     public double getScore() {
         return getPValue() == 1 ? -1 : 1;
     }

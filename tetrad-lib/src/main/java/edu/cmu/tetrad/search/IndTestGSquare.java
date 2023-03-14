@@ -306,12 +306,6 @@ public final class IndTestGSquare implements IndependenceTest {
 
 
     @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-
-    @Override
     public double getScore() {
         return getPValue();
     }

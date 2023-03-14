@@ -223,12 +223,6 @@ public class IndTestSepset implements IndependenceTest {
 
 
     @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-
-    @Override
     public double getScore() {
         return getPValue();
     }

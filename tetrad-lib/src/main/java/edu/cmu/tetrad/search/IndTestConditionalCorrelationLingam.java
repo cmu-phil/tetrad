@@ -176,12 +176,6 @@ public final class IndTestConditionalCorrelationLingam implements IndependenceTe
 
 
     @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-
-    @Override
     public double getScore() {
         return this.score;
     }

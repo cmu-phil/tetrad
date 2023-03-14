@@ -226,12 +226,6 @@ public final class IndTestCodec implements IndependenceTest {
 
 
     @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-
-    @Override
     public double getScore() {
         return 0;
     }

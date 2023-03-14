@@ -391,12 +391,6 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
 
 
     @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-
-    @Override
     public double getScore() {
         return getPValue();
     }
