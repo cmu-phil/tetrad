@@ -285,7 +285,7 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     public DataSet getData() {
-        return null;
+        throw new UnsupportedOperationException("This is a d-separation test, no data available.");
     }
 
 

@@ -221,7 +221,7 @@ public final class IndTestCodec implements IndependenceTest {
 
     @Override
     public DataModel getData() {
-        return null;
+        return dataSet;
     }
 
 
