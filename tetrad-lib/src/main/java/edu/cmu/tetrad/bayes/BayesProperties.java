@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.DiscreteBicScore;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
@@ -86,19 +87,26 @@ public final class BayesProperties {
                 this.numCategories[i] = variable.getNumCategories();
             }
         }
+    }
 
+    public class LikelihoodRet {
+        public double p;
+        public double bic;
+        public double chiSq;
+        public double dof;
     }
 
     /**
      * Calculates the p-value of the graph with respect to the given data.
      */
-    public double getLikelihoodRatioP(Graph graph) {
+    public LikelihoodRet getLikelihoodRatioP(Graph graph) {
 
         // Null hypothesis = complete graph.
         List<Node> nodes = graph.getNodes();
 
         Graph graph0 = new EdgeListGraph(nodes);
 
+        // Need a directed complete graph.
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++)
                 graph0.addDirectedEdge(nodes.get(i), nodes.get(j));
@@ -131,7 +139,13 @@ public final class BayesProperties {
 
         System.out.println("p = " + p);
 
-        return p;
+        LikelihoodRet _ret = new LikelihoodRet();
+        _ret.p = p;
+        _ret.bic = bic;
+        _ret.chiSq = chisq;
+        _ret.dof = dof;
+
+        return _ret;
     }
 
 
@@ -256,76 +270,88 @@ public final class BayesProperties {
 
     private Ret getLikelihoodNode(int node, int[] parents) {
 
-        // Number of categories for node.
-        int c = this.numCategories[node];
+        DiscreteBicScore bic = new DiscreteBicScore(dataSet);
+        double lik = bic.localScore(node, parents);
 
-        // Numbers of categories of parents.
-        int[] dims = new int[parents.length];
+        int dof = (numCategories[node] - 1) * parents.length;
 
-        for (int p = 0; p < parents.length; p++) {
-            dims[p] = this.numCategories[parents[p]];
-        }
+//        int d = ;
+//
+//        for (int childValue = 0; childValue < c; childValue++) {
+//            d++;
+//        }
 
-        // Number of parent states.
-        int r = 1;
 
-        for (int p = 0; p < parents.length; p++) {
-            r *= dims[p];
-        }
+//        // Number of categories for node.
+//        int c = this.numCategories[node];
+//
+//        // Numbers of categories of parents.
+//        int[] dims = new int[parents.length];
+//
+//        for (int p = 0; p < parents.length; p++) {
+//            dims[p] = this.numCategories[parents[p]];
+//        }
+//
+//        // Number of parent states.
+//        int r = 1;
+//
+//        for (int p = 0; p < parents.length; p++) {
+//            r *= dims[p];
+//        }
+//
+//        // Conditional cell coefs of data for node given parents(node).
+//        int[][] n_jk = new int[r][c];
+//        int[] n_j = new int[r];
+//
+//        int[] parentValues = new int[parents.length];
+//
+//        int[][] myParents = new int[parents.length][];
+//        for (int i = 0; i < parents.length; i++) {
+//            myParents[i] = this.data[parents[i]];
+//        }
+//
+//        int[] myChild = this.data[node];
+//
+//        for (int i = 0; i < this.sampleSize; i++) {
+//            for (int p = 0; p < parents.length; p++) {
+//                parentValues[p] = myParents[p][i];
+//            }
+//
+//            int childValue = myChild[i];
+//
+//            if (childValue == -99) {
+//                throw new IllegalStateException("Please remove or impute missing " +
+//                        "values (record " + i + " column " + i + ")");
+//            }
+//
+//            int rowIndex = BayesProperties.getRowIndex(dims, parentValues);
+//
+//            n_jk[rowIndex][childValue]++;
+//            n_j[rowIndex]++;
+//        }
 
-        // Conditional cell coefs of data for node given parents(node).
-        int[][] n_jk = new int[r][c];
-        int[] n_j = new int[r];
-
-        int[] parentValues = new int[parents.length];
-
-        int[][] myParents = new int[parents.length][];
-        for (int i = 0; i < parents.length; i++) {
-            myParents[i] = this.data[parents[i]];
-        }
-
-        int[] myChild = this.data[node];
-
-        for (int i = 0; i < this.sampleSize; i++) {
-            for (int p = 0; p < parents.length; p++) {
-                parentValues[p] = myParents[p][i];
-            }
-
-            int childValue = myChild[i];
-
-            if (childValue == -99) {
-                throw new IllegalStateException("Please remove or impute missing " +
-                        "values (record " + i + " column " + i + ")");
-            }
-
-            int rowIndex = BayesProperties.getRowIndex(dims, parentValues);
-
-            n_jk[rowIndex][childValue]++;
-            n_j[rowIndex]++;
-        }
-
-        //Finally, compute the score
-        double lik = 0.0;
-        int dof = 0;
-
-        for (int rowIndex = 0; rowIndex < r; rowIndex++) {
-            if (rowIndex == 0) continue;
-
-            if (Thread.interrupted()) break;
-
-            int d = 0;
-
-            for (int childValue = 0; childValue < c; childValue++) {
-                int cellCount = n_jk[rowIndex][childValue];
-                int rowCount = n_j[rowIndex];
-
-                if (cellCount == 0) continue;
-                lik += cellCount * FastMath.log(cellCount / (double) rowCount);
-                d++;
-            }
-
-            if (d > 0) dof += c - 1;
-        }
+//        //Finally, compute the score
+//        double lik = 0.0;
+//        int dof = 0;
+//
+//        for (int rowIndex = 0; rowIndex < r; rowIndex++) {
+//            if (rowIndex == 0) continue;
+//
+//            if (Thread.interrupted()) break;
+//
+//            int d = 0;
+//
+//            for (int childValue = 0; childValue < c; childValue++) {
+//                int cellCount = n_jk[rowIndex][childValue];
+//                int rowCount = n_j[rowIndex];
+//
+//                if (cellCount == 0) continue;
+//                lik += cellCount * FastMath.log(cellCount / (double) rowCount);
+//                d++;
+//            }
+//
+//            if (d > 0) dof += c - 1;
+//        }
 
         return new Ret(lik, dof);
     }
