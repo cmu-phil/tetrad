@@ -39,8 +39,6 @@ public interface Score {
 
     List<Node> getVariables();
 
-    Node getVariable(String targetName);
-
     int getSampleSize();
 
     String toString();
@@ -68,6 +66,16 @@ public interface Score {
 
     default double localScore(int node) {
         return localScore(node, new int[0]);
+    }
+
+    default Node getVariable(String targetName) {
+        for (Node node : getVariables()) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
     }
 
     default boolean isEffectEdge(double bump) {

@@ -178,16 +178,7 @@ public class ImagesScore implements Score {
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
 
-    @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
 
-        return null;
-    }
 
     @Override
     public int getMaxDegree() {

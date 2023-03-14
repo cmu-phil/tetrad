@@ -197,17 +197,6 @@ public class BdeuScoreImages implements IBDeuScore {
     }
 
     @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
     public int getMaxDegree() {
         return 1000;
     }

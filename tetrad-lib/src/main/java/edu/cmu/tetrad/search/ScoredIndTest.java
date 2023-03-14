@@ -123,16 +123,7 @@ public class ScoredIndTest implements Score {
         return false;
     }
 
-    @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
 
-        return null;
-    }
 
     @Override
     public int getMaxDegree() {

@@ -185,17 +185,6 @@ public class BDeScore implements LocalDiscreteScore {
     }
 
     @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.dataSet.getVariables()) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
     public int getMaxDegree() {
         return 1000;
     }

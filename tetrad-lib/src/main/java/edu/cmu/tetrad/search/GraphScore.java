@@ -179,16 +179,6 @@ public class GraphScore implements Score {
         return variables;
     }
 
-    public Node getVariable(String name) {
-        for (Node node : variables) {
-            if (node.getName().equals(name)) {
-                return node;
-            }
-        }
-
-        throw new IllegalArgumentException("No variable by that name: " + name);
-    }
-
     @Override
     public int getMaxDegree() {
         return 1000;

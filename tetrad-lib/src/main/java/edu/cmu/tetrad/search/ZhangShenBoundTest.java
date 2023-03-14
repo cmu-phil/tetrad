@@ -305,17 +305,6 @@ public class ZhangShenBoundTest implements Score {
     }
 
     @Override
-    public Node getVariable(String targetName) {
-        for (Node node : variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
     public int getMaxDegree() {
         return (int) ceil(log(sampleSize));
     }

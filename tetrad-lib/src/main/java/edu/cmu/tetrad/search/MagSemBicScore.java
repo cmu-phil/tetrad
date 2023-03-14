@@ -231,16 +231,6 @@ public class MagSemBicScore implements Score {
     }
 
     @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.score.getVariables()) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-        return null;
-    }
-
-    @Override
     public int getMaxDegree() {
         return this.score.getMaxDegree();
     }

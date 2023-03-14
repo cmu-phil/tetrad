@@ -249,17 +249,6 @@ public class KimEtAlScores implements Score {
     }
 
     @Override
-    public Node getVariable(String targetName) {
-        for (Node node : variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
-
-    @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(log(sampleSize));
     }

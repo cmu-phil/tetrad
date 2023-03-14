@@ -236,16 +236,6 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         this.samplePrior = samplePrior;
     }
 
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
-
     @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
