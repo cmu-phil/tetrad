@@ -390,7 +390,6 @@ public class SemBicScore implements Score {
     }
 
 
-
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(log(this.sampleSize));

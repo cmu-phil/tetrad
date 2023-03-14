@@ -124,7 +124,6 @@ public class ScoredIndTest implements Score {
     }
 
 
-
     @Override
     public int getMaxDegree() {
         return 1000;

@@ -215,7 +215,6 @@ public class SemBicScoreImages implements ISemBicScore {
     // Prints a smallest subset of parents that causes a singular matrix exception.
 
 
-
     @Override
     public int getMaxDegree() {
         return 1000;

@@ -134,7 +134,6 @@ public class DiscreteMixedScore implements Score {
     }
 
 
-
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(FastMath.log(this.dataSet.getNumRows()));

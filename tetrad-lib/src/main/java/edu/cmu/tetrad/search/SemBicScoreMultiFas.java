@@ -292,8 +292,6 @@ public class SemBicScoreMultiFas implements ISemBicScore {
     }
 
 
-
-
     @Override
     public int getMaxDegree() {
         return 1000;

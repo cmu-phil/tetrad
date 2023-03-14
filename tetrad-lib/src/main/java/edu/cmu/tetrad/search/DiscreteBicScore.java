@@ -249,7 +249,6 @@ public class DiscreteBicScore implements LocalDiscreteScore, IBDeuScore {
     }
 
 
-
     @Override
     public int getMaxDegree() {
         return 1000;

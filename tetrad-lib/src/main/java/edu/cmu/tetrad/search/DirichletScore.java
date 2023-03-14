@@ -226,7 +226,6 @@ public class DirichletScore implements LocalDiscreteScore {
     }
 
 
-
     @Override
     public int getMaxDegree() {
         return 1000;

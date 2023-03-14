@@ -181,7 +181,6 @@ public class EbicScore implements Score {
     }
 
 
-
     @Override
     public int getMaxDegree() {
         return (int) ceil(log(this.sampleSize));
