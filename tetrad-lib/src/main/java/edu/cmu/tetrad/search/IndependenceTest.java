@@ -40,35 +40,10 @@ import java.util.List;
 public interface IndependenceTest {
 
     /**
-     * @return an Independence test for a subset of the variables.
-     */
-    IndependenceTest indTestSubset(List<Node> vars);
-
-    /**
-     * @return true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
+     * @return an IndependenceResult (see).
+     * @see IndependenceResult
      */
     IndependenceResult checkIndependence(Node x, Node y, List<Node> z);
-
-    /**
-     * @return true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = &lt;z1,...,zn&gt;, where x, y, z1,...,zn are variables in the list returned by
-     * getVariableNames().
-     */
-//    IndependenceResult isIndependent(Node x, Node y, Node... z);
-    default IndependenceResult checkIndependence(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
-        return checkIndependence(x, y, zList);
-    }
-
-//    /**
-//     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
-//     * not meaningful for tis test.
-//     */
-//    double getPValue();
-
-//    double getPValue(Node x, Node y, List<Node> z);
 
     /**
      * @return the list of variables over which this independence checker is capable of determinining independence
@@ -87,33 +62,11 @@ public interface IndependenceTest {
     List<String> getVariableNames();
 
     /**
-     * @return true if y is determined the variable in z.
-     */
-    boolean determines(List<Node> z, Node y);
-
-    /**
-     * @return the significance level of the independence test.
-     * @throws UnsupportedOperationException if there is no significance level.
-     */
-    double getAlpha();
-
-    /**
-     * Sets the significance level.
-     */
-    void setAlpha(double alpha);
-
-    /**
      * @return The data model for the independence test.
      */
     DataModel getData();
 
-    ICovarianceMatrix getCov();
-
-    List<DataSet> getDataSets();
-
     int getSampleSize();
-
-    List<Matrix> getCovMatrices();
 
     /**
      * A score that is higher with more likely models.
@@ -126,6 +79,57 @@ public interface IndependenceTest {
 
     String toString();
 
+    //==============================DEFAULT METHODS=========================//
+
+    /**
+     * @return an Independence test for a subset of the variables.
+     */
+    default IndependenceTest indTestSubset(List<Node> vars) {
+        throw new UnsupportedOperationException("Independence subset feature is not implemented.");
+    }
+
+    /**
+     * @return and IndependenceResult (see).
+     * @see IndependenceResult
+     */
+    default IndependenceResult checkIndependence(Node x, Node y, Node... z) {
+        List<Node> zList = Arrays.asList(z);
+        return checkIndependence(x, y, zList);
+    }
+
+    /**
+     * @return true if y is determined the variable in z.
+     */
+    default boolean determines(List<Node> z, Node y) {
+        throw new UnsupportedOperationException("Determines method is not implmeented.");
+    }
+
+    /**
+     * @return the significance level of the independence test.
+     * @throws UnsupportedOperationException if there is no significance level.
+     */
+    default double getAlpha() {
+        throw new UnsupportedOperationException("The getAlpha() method is not implemented for this test.");
+    }
+
+    /**
+     * Sets the significance level.
+     */
+    default void setAlpha(double alpha) {
+        throw new UnsupportedOperationException("The setAlpha() method is not implemented for this test.");
+    }
+
+    default List<Matrix> getCovMatrices() {
+        throw new UnsupportedOperationException("The getCovMatrices() method is not implemented for this test.");
+    }
+
+    default ICovarianceMatrix getCov() {
+        throw new UnsupportedOperationException("The getCov() method is not implemented for this test.");
+    }
+
+    default List<DataSet> getDataSets() {
+        throw new UnsupportedOperationException("The getDataSets() method is not implemented for this test.");
+    }
 }
 
 

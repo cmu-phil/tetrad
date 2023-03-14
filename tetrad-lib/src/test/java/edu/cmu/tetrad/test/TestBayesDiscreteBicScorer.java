@@ -70,10 +70,9 @@ public final class TestBayesDiscreteBicScorer {
         buf.append("\nBIC score = ").append(nf.format(ret.bic));
 
         System.out.println(buf);
-
         double lik = ret.bic;
 
-        assertEquals(1, lik, 0.001);
+        assertEquals(1, ret.p, 0.001);
     }
 
     public void testGregsBdeuStructurePrior() {
