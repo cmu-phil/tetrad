@@ -1557,7 +1557,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
         return getDiscreteScore().localScore(i, parents);
     }
 
-    // Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
+    // Calculates the sample likelihood and score for i given its parents in a simple SEM model.
     private double localSemScore(int i, int[] parents) {
         ICovarianceMatrix cov = getCovMatrix();
         double residualVariance = cov.getValue(i, i);

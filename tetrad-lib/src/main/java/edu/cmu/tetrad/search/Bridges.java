@@ -1374,7 +1374,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
         if (score instanceof GraphScore) return 0.0;
         dag = GraphUtils.replaceNodes(dag, getVariables());
 
-        Score score = this.score.defaultScore();
+//        Score score = this.score.defaultScore();
 
         double _score = 0;
 
@@ -1401,7 +1401,7 @@ public final class Bridges implements GraphSearch, GraphScorer {
         }
 
         if (recordScores) {
-            graph.addAttribute("BIC", _score);
+            graph.addAttribute("Score", _score);
         }
 
         return _score;

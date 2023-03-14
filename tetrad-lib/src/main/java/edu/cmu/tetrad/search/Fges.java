@@ -122,7 +122,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     // The ordering doesn't matter; it just has to be transitive.
     private int arrowIndex = 0;
 
-    // The BIC score of the model.
+    // The score of the model.
     private double modelScore;
 
     // Internal.
@@ -252,7 +252,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * @return the totalScore of the given DAG, up to a constant.
+     * @return the score of the given DAG, up to a constant.
      */
     public double scoreDag(Graph dag) {
         return scoreDag(dag, false);
@@ -972,7 +972,8 @@ public final class Fges implements GraphSearch, GraphScorer {
         if (score instanceof GraphScore) return 0.0;
         dag = GraphUtils.replaceNodes(dag, getVariables());
 
-        Score score = this.score.defaultScore();
+        // We will switch to using the score of the FGES search.
+//        Score score = this.score.defaultScore();
 
         double _score = 0;
 
@@ -996,7 +997,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         }
 
         if (recordScores) {
-            graph.addAttribute("BIC", _score);
+            graph.addAttribute("Score", _score);
         }
 
         return _score;
