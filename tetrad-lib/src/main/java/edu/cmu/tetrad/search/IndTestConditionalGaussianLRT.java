@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
-import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.text.DecimalFormat;
@@ -37,6 +36,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
@@ -62,7 +62,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         this.data = data;
         this.likelihood = new ConditionalGaussianLikelihood(data);
         this.likelihood.setDiscretize(discretize);
-        this.nodesHash = new HashedMap<>();
+        this.nodesHash = new ConcurrentSkipListMap<>();
 
         List<Node> variables = data.getVariables();
 
@@ -117,7 +117,8 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
         if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
         if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
         if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
-        if (lik0 == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
+        if (lik0 == Double.POSITIVE_INFINITY)
+            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
 
         double pValue;
 
