@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import static org.apache.commons.math3.util.FastMath.log;
 
@@ -148,7 +149,7 @@ public class DegenerateGaussianScore implements Score {
         // The continuous variables of the post-embedding dataset.
         RealMatrix D = new BlockRealMatrix(B_);
         this.ddata = new BoxDataSet(new DoubleDataBox(D.getData()), A);
-        this.nodesHash = new HashedMap<>();
+        this.nodesHash = new ConcurrentSkipListMap<>();
 
         List<Node> variables = dataSet.getVariables();
 

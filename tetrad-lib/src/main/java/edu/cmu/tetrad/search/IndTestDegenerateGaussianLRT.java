@@ -308,7 +308,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
      * relations.
      */
     public List<Node> getVariables() {
-        return this.variables;
+        return new ArrayList<>(this.variables);
     }
 
     /**

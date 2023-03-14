@@ -51,7 +51,6 @@ public class AdjacencyConfusion {
 
         int allEdges = truth.getNumNodes() * (truth.getNumNodes() - 1) / 2;
 
-//        this.tn = allEdges - this.fn;
         this.tn = allEdges - this.fn - this.fp - this.fn;
     }
 

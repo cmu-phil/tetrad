@@ -172,7 +172,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
      * relations.
      */
     public List<Node> getVariables() {
-        return this.data.getVariables();
+        return new ArrayList<>(this.data.getVariables());
     }
 
     /**
