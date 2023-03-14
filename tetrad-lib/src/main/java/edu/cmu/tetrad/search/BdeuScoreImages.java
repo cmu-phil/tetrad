@@ -96,10 +96,7 @@ public class BdeuScoreImages implements IBDeuScore {
         return sum / this.scores.size();
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScoreDiff(x, y, new int[0]);
-    }
+
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
@@ -144,9 +141,7 @@ public class BdeuScoreImages implements IBDeuScore {
 
     }
 
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
+
     public double localScore(int i) {
         double sum = 0.0;
 
@@ -157,10 +152,7 @@ public class BdeuScoreImages implements IBDeuScore {
         return sum / this.scores.size();
     }
 
-    @Override
-    public boolean isEffectEdge(double bump) {
-        return false;
-    }
+
 
     public DataSet getDataSet() {
         throw new UnsupportedOperationException();

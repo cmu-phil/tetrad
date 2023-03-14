@@ -118,12 +118,6 @@ public class GraphScore implements Score {
         return locallyConsistentScoringCriterion(x, y, z);
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScoreDiff(x, y, new int[0]);
-//        return localScore(y, x) - localScore(y);
-    }
-
     private double locallyConsistentScoringCriterion(int x, int y, int[] z) {
         Node _y = variables.get(y);
         Node _x = variables.get(x);
@@ -150,9 +144,7 @@ public class GraphScore implements Score {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
+
     public double localScore(int i) {
         throw new UnsupportedOperationException();
     }

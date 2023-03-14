@@ -104,10 +104,7 @@ public class SemBicScoreImages implements ISemBicScore {
         return sum / this.semBicScores.size();
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScoreDiff(x, y, new int[0]);
-    }
+
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
@@ -161,9 +158,7 @@ public class SemBicScoreImages implements ISemBicScore {
         return sum / count;
     }
 
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
+
     public double localScore(int i) {
         double sum = 0.0;
         int count = 0;

@@ -128,33 +128,13 @@ public class SemBicScoreDeterministic implements Score {
         return v1 - v2;
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScoreDiff(x, y, new int[0]);
-
-//        return localScore(y, x) - localScore(y);
-    }
-
-    private int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 1, parents.length);
-        all[0] = extra;
-        return all;
-    }
-
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(int i, int parent) {
-        return localScore(i, new int[]{parent});
-    }
 
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
-    public double localScore(int i) {
-        return localScore(i, new int[0]);
-    }
+
+
+
 
     public double getPenaltyDiscount() {
         return this.penaltyDiscount;

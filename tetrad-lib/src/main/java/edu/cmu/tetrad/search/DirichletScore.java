@@ -178,27 +178,13 @@ public class DirichletScore implements LocalDiscreteScore {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScore(y, x) - localScore(y);
-    }
 
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
-    }
 
-    @Override
-    public double localScore(int node, int parent) {
-        return localScore(node, new int[]{parent});
-    }
 
-    @Override
-    public double localScore(int node) {
-        return localScore(node, new int[0]);
-    }
+
+
+
+
 
     @Override
     public List<Node> getVariables() {
