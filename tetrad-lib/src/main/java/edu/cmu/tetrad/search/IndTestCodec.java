@@ -238,10 +238,7 @@ public final class IndTestCodec implements IndependenceTest {
 
 
 
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
+
 
     @Override
     public int getSampleSize() {

@@ -201,10 +201,7 @@ public final class IndTestConditionalCorrelationLingam implements IndependenceTe
 
 
 
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
+
 
     @Override
     public int getSampleSize() {

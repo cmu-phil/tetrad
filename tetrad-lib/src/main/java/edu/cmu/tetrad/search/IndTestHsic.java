@@ -612,10 +612,7 @@ public final class IndTestHsic implements IndependenceTest {
 
 
 
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
+
 
     @Override
     public int getSampleSize() {

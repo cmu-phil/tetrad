@@ -225,10 +225,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
     }
 
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
+
 
     @Override
     public int getSampleSize() {
