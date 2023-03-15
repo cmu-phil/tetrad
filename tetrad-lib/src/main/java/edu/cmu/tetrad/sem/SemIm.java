@@ -1938,8 +1938,8 @@ public final class SemIm implements IM, ISemIm {
 
         if (parameter.isInitializedRandomly()) {
             if (parameter.getType() == ParamType.COEF) {
-                double coefLow = getParams().getDouble("coefLow", .5);
-                double coefHigh = getParams().getDouble("coefHigh", 1.5);
+                double coefLow = getParams().getDouble("coefLow", 0.0);
+                double coefHigh = getParams().getDouble("coefHigh", 1.0);
                 double value = new Split(coefLow, coefHigh).nextRandom();
                 if (getParams().getBoolean("coefSymmetric", true)) {
                     return value;

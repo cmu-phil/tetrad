@@ -78,7 +78,7 @@ public class TestCheckMarkov {
 
         System.out.println();
         System.out.println("Alpha = " + alpha + " % Dependent = " +
-                 NumberFormatUtil.getInstance().getNumberFormat().format(
-                         1d - numIndep / (double) total));
+                NumberFormatUtil.getInstance().getNumberFormat().format(
+                        1d - numIndep / (double) total));
     }
 }

@@ -224,7 +224,7 @@ public final class VcpcFast implements GraphSearch {
         return new HashSet<>(this.definitelyNonadjacencies);
     }
 
-//  modified FAS into VCFAS; added in definitelyNonadjacencies set of edges.
+    //  modified FAS into VCFAS; added in definitelyNonadjacencies set of edges.
     public Graph search() {
         this.logger.log("info", "Starting VCCPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");

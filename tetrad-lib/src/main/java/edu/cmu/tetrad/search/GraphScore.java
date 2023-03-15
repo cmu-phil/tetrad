@@ -83,7 +83,7 @@ public class GraphScore implements Score {
      * Calculates the sample likelihood and BIC score for y given its z in a simple SEM model
      */
     public double localScore(int y, int[] z) {
-        return  getPearlParentsTest().size();
+        return getPearlParentsTest().size();
     }
 
     private Node n = null;
@@ -179,16 +179,6 @@ public class GraphScore implements Score {
         return variables;
     }
 
-    public Node getVariable(String name) {
-        for (Node node : variables) {
-            if (node.getName().equals(name)) {
-                return node;
-            }
-        }
-
-        throw new IllegalArgumentException("No variable by that name: " + name);
-    }
-
     @Override
     public int getMaxDegree() {
         return 1000;
@@ -224,6 +214,7 @@ public class GraphScore implements Score {
 
         throw new IllegalArgumentException("Expecting either a DAG or an IndependenceFacts object.");
     }
+
     public boolean isDConnectedTo(Node x, Node y, List<Node> z) {
         return !isDSeparatedFrom(x, y, z);
     }

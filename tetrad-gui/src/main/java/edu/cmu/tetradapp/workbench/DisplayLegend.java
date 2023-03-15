@@ -4,13 +4,14 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 
 import javax.swing.*;
 import java.awt.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Map;
 
 /**
  * Jan 22, 2019 3:39:27 PM
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
- *
  */
 public class DisplayLegend extends JComponent implements TetradSerializableExcluded {
 
@@ -37,8 +38,13 @@ public class DisplayLegend extends JComponent implements TetradSerializableExclu
 
         for (String key : this.attributes.keySet()) {
             Object value = this.attributes.get(key);
+            NumberFormat nf = new DecimalFormat("0.00");
 
-            JLabel attributeLabel = new JLabel(key + ":\t" + value.toString());
+            String _value;
+            if (value instanceof Double) _value = nf.format(value);
+            else _value = value.toString();
+
+            JLabel attributeLabel = new JLabel(key + ":\t" + _value);
             attributesPanel.add(attributeLabel);
         }
 

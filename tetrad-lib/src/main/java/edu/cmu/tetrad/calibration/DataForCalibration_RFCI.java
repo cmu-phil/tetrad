@@ -83,9 +83,9 @@ public class DataForCalibration_RFCI {
 
         boolean probFileExists = DFC.checkProbFileExists("RandomGraph", numVars, numEdges, numCases, numBootstrapSamples, algorithm, seedIndex, numLatentConfounders, alpha, data_path);
         if (probFileExists) {
-            String dirname = data_path +  "/CalibrationConstraintBased/"+ algorithm + "/" + "RandomGraph" +"-Vars" + numVars +  "-Edges" + numEdges +  "-Cases" + numCases +  "-BS" + numBootstrapSamples + "-H" + numLatentConfounders + "-a" + alpha ;
-            String probFileName = "probs_v" + numVars +  "_e" + numEdges +  "_c" + numCases +  "_b" + numBootstrapSamples + "_" + seedIndex + ".txt";
-            System.out.println("Warning: The program stopped because the Prob File already exists in the following path: \n"+ dirname+ "/" + probFileName);
+            String dirname = data_path + "/CalibrationConstraintBased/" + algorithm + "/" + "RandomGraph" + "-Vars" + numVars + "-Edges" + numEdges + "-Cases" + numCases + "-BS" + numBootstrapSamples + "-H" + numLatentConfounders + "-a" + alpha;
+            String probFileName = "probs_v" + numVars + "_e" + numEdges + "_c" + numCases + "_b" + numBootstrapSamples + "_" + seedIndex + ".txt";
+            System.out.println("Warning: The program stopped because the Prob File already exists in the following path: \n" + dirname + "/" + probFileName);
             return;
         }
         String ConfigString = String.valueOf(
@@ -165,7 +165,7 @@ public class DataForCalibration_RFCI {
         BootstrapWorker.BootstrapNum = numBootstrapSamples;
 
         long start, stop;
-        start =  MillisecondTimes.timeMillis();
+        start = MillisecondTimes.timeMillis();
         for (int i1 = 0; i1 < numBootstrapSamples; i1++) {
             DataSet bootstrapSample = DFC.bootStrapSampling(data, data.getNumRows());
             if (algorithm.equals("RFCI")) {
@@ -197,7 +197,7 @@ public class DataForCalibration_RFCI {
             return;
         }
 
-        start =  MillisecondTimes.timeMillis();
+        start = MillisecondTimes.timeMillis();
         DFC.probDistribution(truePag, estPag, frequency, DFC.outProb, algorithm);
         stop = MillisecondTimes.timeMillis();
         System.out.println("probDistribution finished in " + (stop - start) + " ms");

@@ -319,7 +319,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
     /**
      * Updates the graph in workbench when changing graph model
-     *
      */
     private void updateGraphWorkbench(Graph graph) {
         this.workbench = new GraphWorkbench(graph);
@@ -331,7 +330,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
     /**
      * Updates bootstrap table on adding/removing edges or graph changes
-     *
      */
     private void updateBootstrapTable(Graph graph) {
         this.edgeTypeTable.update(graph);
@@ -341,7 +339,6 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
 
     /**
      * Creates the UI component for choosing from multiple graph models
-     *
      */
     private void modelSelection(GraphWrapper graphWrapper) {
         int numModels = graphWrapper.getNumModels();

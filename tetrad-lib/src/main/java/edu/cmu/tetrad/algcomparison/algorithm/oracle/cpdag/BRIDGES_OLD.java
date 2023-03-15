@@ -39,7 +39,8 @@ public class BRIDGES_OLD implements Algorithm, HasKnowledge, UsesScoreWrapper {
     private Knowledge knowledge = new Knowledge();
 
 
-    public BRIDGES_OLD() {}
+    public BRIDGES_OLD() {
+    }
 
     public BRIDGES_OLD(ScoreWrapper score) {
         this.score = score;

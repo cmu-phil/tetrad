@@ -35,7 +35,6 @@ public class HideShowInterventionalAction extends AbstractAction implements Clip
     /**
      * Creates a new copy subsession action for the given desktop and
      * clipboard.
-     *
      */
     public HideShowInterventionalAction(GraphWorkbench workbench) {
         super("Hide/Show Interventional Nodes");
@@ -50,7 +49,6 @@ public class HideShowInterventionalAction extends AbstractAction implements Clip
     /**
      * Copies a parentally closed selection of session nodes in the frontmost
      * session editor to the clipboard.
-     *
      */
     @Override
     public void actionPerformed(ActionEvent e) {

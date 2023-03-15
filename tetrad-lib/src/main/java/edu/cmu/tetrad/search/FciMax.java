@@ -179,7 +179,7 @@ public final class FciMax implements GraphSearch {
     }
 
     public Graph search() {
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
 
         Fas fas = new Fas(getIndependenceTest());
         this.logger.log("info", "Starting FCI algorithm.");
@@ -226,7 +226,7 @@ public final class FciMax implements GraphSearch {
         addColliders(graph);
         fciOrient.doFinalOrientation(graph);
 
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         this.elapsedTime = stop - start;
 

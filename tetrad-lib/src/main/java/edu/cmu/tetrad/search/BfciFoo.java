@@ -72,7 +72,7 @@ public final class BfciFoo implements GraphSearch {
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private Knowledge knowledge = new Knowledge();
-    private Boss.AlgType algType = Boss.AlgType.BOSS1;
+    private BossOld.AlgType algType = BossOld.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BfciFoo(IndependenceTest test, Score score) {
@@ -88,20 +88,20 @@ public final class BfciFoo implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-        Boss boss = new Boss(scorer);
-        boss.setAlgType(algType);
-        boss.setUseScore(useScore);
-        boss.setUseRaskuttiUhler(useRaskuttiUhler);
-        boss.setUseDataOrder(useDataOrder);
-        boss.setDepth(depth);
-        boss.setNumStarts(numStarts);
-        boss.setVerbose(false);
+        BossOld bossOld = new BossOld(scorer);
+        bossOld.setAlgType(algType);
+        bossOld.setUseScore(useScore);
+        bossOld.setUseRaskuttiUhler(useRaskuttiUhler);
+        bossOld.setUseDataOrder(useDataOrder);
+        bossOld.setDepth(depth);
+        bossOld.setNumStarts(numStarts);
+        bossOld.setVerbose(false);
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        boss.bestOrder(variables);
-        Graph graph = boss.getGraph(false);  // Get the DAG
+        bossOld.bestOrder(variables);
+        Graph graph = bossOld.getGraph(false);  // Get the DAG
 
         if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
             ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
@@ -436,7 +436,7 @@ public final class BfciFoo implements GraphSearch {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
-    public void setAlgType(Boss.AlgType algType) {
+    public void setAlgType(BossOld.AlgType algType) {
         this.algType = algType;
     }
 }

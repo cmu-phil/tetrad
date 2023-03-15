@@ -840,7 +840,7 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
      * Calculates the degenerate horizontal sleeve in the case where the point
      * pair is near horizontal.
      *
-     * @param pp        the given point pair.
+     * @param pp the given point pair.
      * @return the sleeve as a polygon.
      */
     private static Polygon getHorizSleeve(PointPair pp) {
@@ -966,7 +966,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Unimplemented.
-     *
      */
     public void setLineColor(Color lineColor) {
 //        throw new UnsupportedOperationException();
@@ -987,7 +986,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Unimplemented.
-     *
      */
     public Color getSelectedColor() {
         throw new UnsupportedOperationException();
@@ -995,7 +993,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Unimplemented.
-     *
      */
     public void setSelectedColor(Color selectedColor) {
         throw new UnsupportedOperationException();
@@ -1011,7 +1008,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Unimplemented.
-     *
      */
     public float getStrokeWidth() {
         throw new UnsupportedOperationException();
@@ -1019,7 +1015,6 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Unimplemented.
-     *
      */
     public void setStrokeWidth(float strokeWidth) {
         throw new UnsupportedOperationException();

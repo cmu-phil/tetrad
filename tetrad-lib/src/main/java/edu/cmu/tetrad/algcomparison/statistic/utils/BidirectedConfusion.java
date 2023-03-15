@@ -53,7 +53,7 @@ public class BidirectedConfusion {
 
         int all = truth.getNumNodes() * (truth.getNumNodes() - 1) / 2;
 
-        this.tn = all - this.fn;
+        this.tn = all - this.fn - this.fp - this.fn;
     }
 
     public int getTp() {

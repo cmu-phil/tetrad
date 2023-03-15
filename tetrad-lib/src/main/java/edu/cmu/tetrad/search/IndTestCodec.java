@@ -23,10 +23,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Matrix;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -207,16 +205,6 @@ public final class IndTestCodec implements IndependenceTest {
     }
 
     @Override
-    public Node getVariable(String name) {
-        return dataSet.getVariable(name);
-    }
-
-    @Override
-    public List<String> getVariableNames() {
-        return dataSet.getVariableNames();
-    }
-
-    @Override
     public boolean determines(List<Node> z, Node y) {
         return false;
     }
@@ -233,28 +221,9 @@ public final class IndTestCodec implements IndependenceTest {
 
     @Override
     public DataModel getData() {
-        return null;
+        return dataSet;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
-
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
-
-    @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
 
     @Override
     public double getScore() {

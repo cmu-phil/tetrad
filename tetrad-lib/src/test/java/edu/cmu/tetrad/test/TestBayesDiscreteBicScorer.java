@@ -33,12 +33,15 @@ import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Test;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author Joseph Ramsey
  */
-public final class TestBayesBicScorer {
+public final class TestBayesDiscreteBicScorer {
 
     @Test
     public void testPValue() {
@@ -56,9 +59,20 @@ public final class TestBayesBicScorer {
 
         BayesProperties scorer = new BayesProperties(data);
 
-        double lik = scorer.getLikelihoodRatioP(graph);
+        BayesProperties properties = new BayesProperties(data);
+        StringBuilder buf = new StringBuilder();
+        BayesProperties.LikelihoodRet ret = properties.getLikelihoodRatioP(graph);
+        NumberFormat nf = new DecimalFormat("0.00");
+        buf.append("\nP-value = ").append(nf.format(ret.p));
+//        buf.append("\nP-value = ").append(properties.getVuongP());
+        buf.append("\nDf = ").append(nf.format(ret.dof));
+        buf.append("\nChi square = ").append(nf.format(ret.chiSq));
+        buf.append("\nBIC score = ").append(nf.format(ret.bic));
 
-        assertEquals(1, lik, 0.001);
+        System.out.println(buf);
+        double lik = ret.bic;
+
+        assertEquals(1, ret.p, 0.001);
     }
 
     public void testGregsBdeuStructurePrior() {

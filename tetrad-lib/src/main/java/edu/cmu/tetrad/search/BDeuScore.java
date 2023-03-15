@@ -171,8 +171,11 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
 
     private double getPriorForStructure(int numParents, int N) {
         double e = getStructurePrior();
-        int vm = N - 1;
-        return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
+        if (e == 0) return 0.0;
+        else {
+            int vm = N - 1;
+            return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
+        }
     }
 
     @Override
@@ -180,27 +183,6 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScore(y, x) - localScore(y);
-    }
-
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
-    }
-
-    @Override
-    public double localScore(int node, int parent) {
-        return localScore(node, new int[]{parent});
-    }
-
-    @Override
-    public double localScore(int node) {
-        return localScore(node, new int[0]);
-    }
 
     @Override
     public List<Node> getVariables() {
@@ -252,16 +234,6 @@ public class BDeuScore implements LocalDiscreteScore, IBDeuScore {
     @Override
     public void setSamplePrior(double samplePrior) {
         this.samplePrior = samplePrior;
-    }
-
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
     }
 
     @Override

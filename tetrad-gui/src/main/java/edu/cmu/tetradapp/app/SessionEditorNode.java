@@ -90,7 +90,6 @@ public final class SessionEditorNode extends DisplayNode {
 
     /**
      * Wraps the given SessionNodeWrapper as a SessionEditorNode.
-     *
      */
     public SessionEditorNode(SessionNodeWrapper modelNode, SimulationStudy simulationStudy) {
         setModelNode(modelNode);

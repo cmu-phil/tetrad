@@ -126,7 +126,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * Sets the previous params, must be <code>DiscretizationParams</code>.
-     *
      */
     @Override
     public void setParams(Parameters params) {
@@ -135,7 +134,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * The parent model should be a <code>DataWrapper</code>.
-     *
      */
     @Override
     public void setParentModels(Object[] parentModels) {
@@ -182,7 +180,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * Determinism detection among interventional variables
-     *
      */
     private List<Set<Integer>> detectDeterministicVars() {
         List<Set<Integer>> deterministicList = new ArrayList<>();
@@ -249,7 +246,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * Merge the deterministic interventional variables and create new dataset
-     *
      */
     private void mergeDeterministicVars(List<Set<Integer>> mergedList) {
         List<Integer> toBeRemovedColumns = new LinkedList<>();
@@ -308,7 +304,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * Check to see if the dataset has interventional variables
-     *
      */
     private boolean containsInterventionalVariables(DataModel model) {
         List<String> interventionalVars = new LinkedList<>();
@@ -324,7 +319,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * Determine if discrete variable x and discrete variable y are deterministic
-     *
      */
     private boolean isDeterministic(Node x, Node y) {
         // For now only check between discrete variables
@@ -357,7 +351,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * Create BoxDataSet from the target nodes
-     *
      */
     private BoxDataSet createDataBoxData(List<Node> nodeList, Map<Node, Integer> origIndexMap) {
         // Now scan all the coloumns and create the data box
@@ -410,7 +403,6 @@ public class DeterminismEditor extends JPanel implements FinalizingParameterEdit
 
     /**
      * The data can only be mixed or discrete. This won't be used for now
-     *
      */
     private BoxDataSet createContinuousDataBox(List<Node> nodeList, Map<Node, Integer> origIndexMap) {
         int numOfCols = nodeList.size();

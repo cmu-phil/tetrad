@@ -295,7 +295,6 @@ public final class DagScorer implements TetradSerializable, Scorer {
      * previously saved out using a version of the class that didn't include
      * it. (That's what the "s.defaultReadObject();" is for. See J. Bloch,
      * Effective Java, for help.
-     *
      */
     private void readObject
     (ObjectInputStream

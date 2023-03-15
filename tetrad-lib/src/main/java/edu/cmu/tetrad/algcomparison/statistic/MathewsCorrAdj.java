@@ -8,9 +8,9 @@ import org.apache.commons.math3.util.FastMath;
 /**
  * Calculates the Matthew's correlation coefficient for adjacencies. See this page in
  * Wikipedia:
- *
+ * <p>
  * https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
- *
+ * <p>
  * We calculate the correlation directly from the confusion matrix.
  *
  * @author jdramsey

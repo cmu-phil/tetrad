@@ -130,7 +130,7 @@ public final class ParameterComponents {
     }
 
     public static LongTextField getLongTextField(String parameter, Parameters parameters,
-                                               long defaultValue, double lowerBound, double upperBound) {
+                                                 long defaultValue, double lowerBound, double upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 10);
 
         field.setFilter((value, oldValue) -> {

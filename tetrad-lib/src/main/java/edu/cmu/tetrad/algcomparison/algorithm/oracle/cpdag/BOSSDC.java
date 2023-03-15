@@ -3,15 +3,14 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.BossDC;
+import edu.cmu.tetrad.search.BossOld;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -51,11 +50,11 @@ public class BOSSDC implements Algorithm, UsesScoreWrapper {
         BossDC boss = new BossDC(score);
 
         if (parameters.getInt(Params.BOSS_ALG) == 1) {
-            boss.setAlgType(Boss.AlgType.BOSS1);
+            boss.setAlgType(BossOld.AlgType.BOSS1);
         } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
-            boss.setAlgType(Boss.AlgType.BOSS2);
+            boss.setAlgType(BossOld.AlgType.BOSS2);
         } else if (parameters.getInt(Params.BOSS_ALG) == 3) {
-            boss.setAlgType(Boss.AlgType.BOSS3);
+            boss.setAlgType(BossOld.AlgType.BOSS3);
         } else {
             throw new IllegalArgumentException("Unrecognized boss algorithm type.");
         }

@@ -23,14 +23,10 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BDCE;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSSDC;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSSOLD;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -70,7 +66,7 @@ public class TestBoss {
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new BOSS(new FisherZ(), new SemBicScore()));
+        algorithms.add(new BOSSOLD(new FisherZ(), new SemBicScore()));
 //        algorithms.add(new BDCE(new SemBicScore()));
 //        algorithms.add(new BOSSDC(new SemBicScore()));
 

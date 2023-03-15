@@ -288,7 +288,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
                 }
 
                 for (String parameter : parameters) {
-                    if (this.parameterEstimationInitializationExpressions.get(parameter)== null) {
+                    if (this.parameterEstimationInitializationExpressions.get(parameter) == null) {
                         if (parametersTemplate != null) {
                             setParameterEstimationInitializationExpression(parameter, parametersTemplate);
                         } else if (this.graph.isTimeLagModel()) {
@@ -908,7 +908,7 @@ public final class GeneralizedSemPm implements PM, TetradSerializable {
      * "b2", "b3", etc., which is not already the name of a node in the
      * workbench.
      *
-     * @param base      the base string.
+     * @param base the base string.
      * @return the first string in the sequence not already being used.
      */
     public String nextParameterName(String base) {

@@ -181,7 +181,7 @@ public class IndependenceFacts implements DataModel {
         for (IndependenceFact fact : unsortedFacts) {
             if (((fact.getX().equals(x) && fact.getY().equals(y))
                     || (fact.getX().equals(y) && fact.getY().equals(x)))
-                    &&  new HashSet<>(fact.getZ()).equals(new HashSet<>(z))) {
+                    && new HashSet<>(fact.getZ()).equals(new HashSet<>(z))) {
                 found = true;
                 break;
             }
