@@ -53,7 +53,7 @@ public class PagSamplingRfci implements GraphSearch {
         List<Graph> graphs = runSearches();
         ResamplingEdgeEnsemble edgeEnsemble = getEdgeEnsemble(this.edgeEnsemble);
 
-        return GraphSampling.createHighEdgeProbabilityGraph(graphs, edgeEnsemble);
+        return GraphSampling.createGraphWithHighProbabilityEdges(graphs, edgeEnsemble);
     }
 
     private ResamplingEdgeEnsemble getEdgeEnsemble(int edgeEnsemble) {
