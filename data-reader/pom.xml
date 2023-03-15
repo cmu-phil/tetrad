@@ -5,9 +5,9 @@
     <parent>
         <groupId>io.github.cmu-phil</groupId>
         <artifactId>tetrad</artifactId>
-        <version>7.2.2</version>
+        <version>7.2.5-SNAPSHOT</version>
     </parent>
-<!--    <groupId>io.github.cmu-phil</groupId>-->
+    <!--    <groupId>io.github.cmu-phil</groupId>-->
     <artifactId>data-reader</artifactId>
     <packaging>jar</packaging>
 
@@ -37,11 +37,11 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.13.4.1</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.slf4j</groupId>-->
-<!--            <artifactId>slf4j-log4j12</artifactId>-->
-<!--            <version>1.7.36</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.slf4j</groupId>-->
+        <!--            <artifactId>slf4j-log4j12</artifactId>-->
+        <!--            <version>1.7.36</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
