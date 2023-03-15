@@ -40,7 +40,7 @@ import java.util.*;
 public class Ion {
 
     // prune using path length
-    private boolean pathLengthSearch  = true;
+    private boolean pathLengthSearch = true;
 
     // prune using adjacencies
     private boolean adjacencySearch;
@@ -130,7 +130,7 @@ public class Ion {
      */
     public List<Graph> search() {
 
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         TetradLogger.getInstance().log("info", "Starting ION Search.");
         logGraphs("\nInitial Pags: ", this.input);
         TetradLogger.getInstance().log("info", "Transfering local information.");

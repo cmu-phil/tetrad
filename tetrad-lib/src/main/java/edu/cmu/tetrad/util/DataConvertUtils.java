@@ -83,7 +83,6 @@ public class DataConvertUtils {
 
     /**
      * Converting using metadata
-     *
      */
     public static DataModel toMixedDataBox(MixedTabularData dataset, Metadata metadata) {
         int numOfRows = dataset.getNumOfRows();
@@ -130,7 +129,6 @@ public class DataConvertUtils {
 
     /**
      * Converting using metadata
-     *
      */
     public static DataModel toVerticalDiscreteDataModel(VerticalDiscreteTabularData dataset, Metadata metatdata) {
         Node[] nodes = DataConvertUtils.toNodes(dataset.getDataColumns()).toArray(new Node[0]);

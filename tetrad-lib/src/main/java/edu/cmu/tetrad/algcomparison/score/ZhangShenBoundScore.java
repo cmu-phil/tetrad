@@ -30,7 +30,7 @@ public class ZhangShenBoundScore implements ScoreWrapper {
     private DataModel dataSet;
 
     @Override
-    
+
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 

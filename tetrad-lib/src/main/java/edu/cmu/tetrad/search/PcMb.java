@@ -167,7 +167,7 @@ public final class PcMb implements MbSearch, GraphSearch {
      * @param targets The targets variable.
      */
     public Graph search(List<Node> targets) {
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
@@ -334,7 +334,7 @@ public final class PcMb implements MbSearch, GraphSearch {
             }
         } else {
             for (Edge e : graph.getEdges()) {
-                if (!(targets.contains( e.getNode1()) || targets.contains(e.getNode2()))) {
+                if (!(targets.contains(e.getNode1()) || targets.contains(e.getNode2()))) {
                     graph.removeEdge(e);
                 }
             }
@@ -624,7 +624,7 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     private void finishUp(long start, Graph graph) {
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
         this.elapsedTime = stop - start;
         double seconds = this.elapsedTime / 1000d;
 

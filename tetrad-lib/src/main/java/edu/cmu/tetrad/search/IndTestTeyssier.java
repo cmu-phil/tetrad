@@ -77,7 +77,7 @@ public final class IndTestTeyssier implements IndependenceTest {
     private double p = NaN;
     private double r = NaN;
 
-    private Boss boss;
+    private BossOld bossOld;
 
 
     //==========================CONSTRUCTORS=============================//
@@ -87,7 +87,7 @@ public final class IndTestTeyssier implements IndependenceTest {
      * given data set (must be continuous). The given significance level is used.
      *
      * @param dataSet A data set containing only continuous columns.
-//     * @param alpha   The alpha level of the test.
+     *                //     * @param alpha   The alpha level of the test.
      */
     public IndTestTeyssier(DataSet dataSet, double penaltyDiscount) {
         this.dataSet = dataSet;
@@ -138,7 +138,7 @@ public final class IndTestTeyssier implements IndependenceTest {
         score.setPenaltyDiscount(penaltyDiscount);
         this.scorer = new TeyssierScorer(null, score);
         this.scorer.score(variables);
-        this.boss = new Boss(scorer);
+        this.bossOld = new BossOld(scorer);
     }
 
     /**
@@ -164,7 +164,7 @@ public final class IndTestTeyssier implements IndependenceTest {
         score.setPenaltyDiscount(penaltyDiscount);
         this.scorer = new TeyssierScorer(null, score);
         scorer.score(variables);
-        this.boss = new Boss(scorer);
+        this.bossOld = new BossOld(scorer);
 
     }
 
@@ -212,7 +212,7 @@ public final class IndTestTeyssier implements IndependenceTest {
         perm.add(x);
         perm.add(y);
 
-        boss.bestOrder(perm);
+        bossOld.bestOrder(perm);
 
 //        scorer.score(perm);
 //        boss.betterMutationTuck(scorer);
@@ -372,17 +372,6 @@ public final class IndTestTeyssier implements IndependenceTest {
         return this.nameMap.get(name);
     }
 
-    /**
-     * @return the list of variable varNames.
-     */
-    public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
-            variableNames.add(variable1.getName());
-        }
-        return variableNames;
-    }
 
     /**
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
@@ -471,10 +460,6 @@ public final class IndTestTeyssier implements IndependenceTest {
         return this.cor.getSampleSize();
     }
 
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
 
     @Override
     public double getScore() {

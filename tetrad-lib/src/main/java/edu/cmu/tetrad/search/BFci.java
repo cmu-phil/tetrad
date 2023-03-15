@@ -88,7 +88,7 @@ public final class BFci implements GraphSearch {
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
-    private Boss.AlgType bossType = Boss.AlgType.BOSS1;
+    private BossOld.AlgType bossType = BossOld.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BFci(IndependenceTest test, Score score) {
@@ -112,7 +112,7 @@ public final class BFci implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-        Boss alg = new Boss(scorer);
+        BossOld alg = new BossOld(scorer);
         alg.setAlgType(bossType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -411,7 +411,7 @@ public final class BFci implements GraphSearch {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
-    public void setAlgType(Boss.AlgType type) {
+    public void setAlgType(BossOld.AlgType type) {
         this.bossType = type;
     }
 }

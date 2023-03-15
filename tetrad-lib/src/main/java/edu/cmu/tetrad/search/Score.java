@@ -31,33 +31,64 @@ import java.util.List;
 public interface Score {
 
     /**
-     * @param node The index of the node.
+     * @param node    The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
      */
     double localScore(int node, int... parents);
 
-    double localScoreDiff(int x, int y, int[] z);
-
-    double localScoreDiff(int x, int y);
-
-    double localScore(int node, int parent);
-
-    double localScore(int node);
-
     List<Node> getVariables();
-
-    boolean isEffectEdge(double bump);
 
     int getSampleSize();
 
-    Node getVariable(String targetName);
-
-    int getMaxDegree();
-
-    boolean determines(List<Node> z, Node y);
-
     String toString();
+
+    //==============================DEFAULT METHODS=========================//
+
+    default double localScoreDiff(int x, int y, int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
+    }
+
+    default int[] append(int[] parents, int extra) {
+        int[] all = new int[parents.length + 1];
+        System.arraycopy(parents, 0, all, 0, parents.length);
+        all[parents.length] = extra;
+        return all;
+    }
+
+    default double localScoreDiff(int x, int y) {
+        return localScore(y, x) - localScore(y);
+    }
+
+    default double localScore(int node, int parent) {
+        return localScore(node, new int[]{parent});
+    }
+
+    default double localScore(int node) {
+        return localScore(node, new int[0]);
+    }
+
+    default Node getVariable(String targetName) {
+        for (Node node : getVariables()) {
+            if (node.getName().equals(targetName)) {
+                return node;
+            }
+        }
+
+        return null;
+    }
+
+    default boolean isEffectEdge(double bump) {
+        return false;
+    }
+
+    default int getMaxDegree() {
+        return 1000;
+    }
+
+    default boolean determines(List<Node> z, Node y) {
+        throw new UnsupportedOperationException("Method determines() is not implemented for this score.");
+    }
 
     default Score defaultScore() {
         return this;

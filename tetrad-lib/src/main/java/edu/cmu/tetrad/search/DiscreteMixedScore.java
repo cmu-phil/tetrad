@@ -113,31 +113,11 @@ public class DiscreteMixedScore implements Score {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScore(y, x) - localScore(y);
-    }
-
-    private int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
-    }
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(int i, int parent) {
-        return localScore(i, new int[]{parent});
-    }
 
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
-    public double localScore(int i) {
-        return localScore(i, new int[0]);
-    }
 
     public int getSampleSize() {
         return this.dataSet.getNumRows();
@@ -153,16 +133,6 @@ public class DiscreteMixedScore implements Score {
         return this.variables;
     }
 
-    @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
 
     @Override
     public int getMaxDegree() {

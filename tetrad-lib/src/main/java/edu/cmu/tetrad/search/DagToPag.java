@@ -146,7 +146,7 @@ public final class DagToPag {
 
                 if (graph.isAdjacentTo(n1, n2)) continue;
 
-                List<Node> inducingPath =  this.dag.paths().getInducingPath(n1, n2);
+                List<Node> inducingPath = this.dag.paths().getInducingPath(n1, n2);
 
                 boolean exists = inducingPath != null;
 

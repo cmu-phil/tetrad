@@ -1073,7 +1073,7 @@ public class TimeoutComparison {
         System.out.println((run.getAlgSimIndex() + 1) + ". " + algorithmWrapper.getDescription()
                 + " simulationWrapper: " + simulationWrapper.getDescription());
 
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         Graph out;
 
         try {

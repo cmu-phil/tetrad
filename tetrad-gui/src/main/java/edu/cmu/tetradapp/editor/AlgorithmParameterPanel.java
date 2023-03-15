@@ -35,14 +35,15 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IntTextField;
 import edu.cmu.tetradapp.util.LongTextField;
 import edu.cmu.tetradapp.util.StringTextField;
+
+import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.swing.*;
 
 /**
  * Dec 4, 2017 5:05:42 PM
@@ -251,7 +252,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     protected DoubleTextField getDoubleField(String parameter, Parameters parameters,
-            double defaultValue, double lowerBound, double upperBound) {
+                                             double defaultValue, double lowerBound, double upperBound) {
         DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -281,7 +282,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     protected IntTextField getIntTextField(String parameter, Parameters parameters,
-            int defaultValue, double lowerBound, double upperBound) {
+                                           int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
@@ -310,7 +311,7 @@ public class AlgorithmParameterPanel extends JPanel {
     }
 
     protected LongTextField getLongTextField(String parameter, Parameters parameters,
-            long defaultValue, long lowerBound, long upperBound) {
+                                             long defaultValue, long lowerBound, long upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {

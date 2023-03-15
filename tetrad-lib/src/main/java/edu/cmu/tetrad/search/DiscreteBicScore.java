@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Calculates the discrete BIC score.
  */
-public class BicScore implements LocalDiscreteScore, IBDeuScore {
+public class DiscreteBicScore implements LocalDiscreteScore, IBDeuScore {
     private List<Node> variables;
     private final int[][] data;
     private final int sampleSize;
@@ -40,7 +40,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
     private final int[] numCategories;
     private double structurePrior = 1;
 
-    public BicScore(DataSet dataSet) {
+    public DiscreteBicScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException("Data was not provided.");
         }
@@ -136,7 +136,7 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
                 continue;
             }
 
-            int rowIndex = BicScore.getRowIndex(dims, parentValues);
+            int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;
@@ -178,27 +178,6 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScore(y, x) - localScore(y);
-    }
-
-    int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
-    }
-
-    @Override
-    public double localScore(int node, int parent) {
-        return localScore(node, new int[]{parent});
-    }
-
-    @Override
-    public double localScore(int node) {
-        return localScore(node, new int[0]);
-    }
 
     @Override
     public List<Node> getVariables() {
@@ -269,16 +248,6 @@ public class BicScore implements LocalDiscreteScore, IBDeuScore {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
 
     @Override
     public int getMaxDegree() {

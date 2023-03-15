@@ -94,7 +94,7 @@ public class OtherPermAlgs {
                 shuffle(order);
             }
 
-            this.start =  MillisecondTimes.timeMillis();
+            this.start = MillisecondTimes.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -129,7 +129,7 @@ public class OtherPermAlgs {
             }
         }
 
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         if (verbose) {
             System.out.println("Final order = " + scorer.getPi());

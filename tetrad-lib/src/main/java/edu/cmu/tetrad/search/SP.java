@@ -55,7 +55,7 @@ public class SP {
 
     public List<Node> bestOrder(@NotNull List<Node> _order) {
         List<Node> order = new ArrayList<>(_order);
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
 
         if (useScore && !(score instanceof GraphScore)) {
             scorer = new TeyssierScorer(test, score);
@@ -79,7 +79,7 @@ public class SP {
                 shuffle(order);
             }
 
-            this.start =  MillisecondTimes.timeMillis();
+            this.start = MillisecondTimes.timeMillis();
 
             makeValidKnowledgeOrder(order);
 
@@ -98,7 +98,7 @@ public class SP {
             }
         }
 
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         if (verbose) {
             System.out.println("Final order = " + scorer.getPi());

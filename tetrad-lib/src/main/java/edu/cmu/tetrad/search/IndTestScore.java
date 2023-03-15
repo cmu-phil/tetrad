@@ -79,8 +79,10 @@ public class IndTestScore implements IndependenceTest {
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         List<Node> z1 = new ArrayList<>(z);
 
-        if (determines(z1, x)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());;
-        if (determines(z1, y)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());;
+        if (determines(z1, x)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());
+        ;
+        if (determines(z1, y)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());
+        ;
 
         double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y), varIndices(z));
         this.bump = v;
@@ -135,19 +137,6 @@ public class IndTestScore implements IndependenceTest {
         }
 
         return null;
-    }
-
-    /**
-     * @return the list of names for the variables in getNodesInEvidence.
-     */
-    public List<String> getVariableNames() {
-        List<String> names = new ArrayList<>();
-
-        for (Node node : this.variables) {
-            names.add(node.getName());
-        }
-
-        return names;
     }
 
     /**

@@ -27,7 +27,6 @@ import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.special.Gamma;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.*;
@@ -114,16 +113,12 @@ public class PoissonPriorScore implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, PoissonPriorScore.append(z, x)) - localScore(y, z);
+        return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScoreDiff(x, y, new int[0]);
-    }
 
     /**
-     * @param i The index of the node.
+     * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
      */
@@ -134,14 +129,14 @@ public class PoissonPriorScore implements Score {
 
         try {
             varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
-        } catch (SingularMatrixException e){
+        } catch (SingularMatrixException e) {
             return Double.NaN;
         }
 
         double r = k * log(lambda);
 
         // Bryan
-        double score = - 0.5 * this.N * log(varRy) - 0.5 * k * log(this.N) + r - Gamma.logGamma(k + 1.);
+        double score = -0.5 * this.N * log(varRy) - 0.5 * k * log(this.N) + r - Gamma.logGamma(k + 1.);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
@@ -157,16 +152,7 @@ public class PoissonPriorScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(int i, int parent) {
-        return localScore(i, new int[]{parent});
-    }
 
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
-    public double localScore(int i) {
-        return localScore(i, new int[0]);
-    }
 
     public ICovarianceMatrix getCovariances() {
         return this.covariances;
@@ -194,16 +180,6 @@ public class PoissonPriorScore implements Score {
         return this.variables;
     }
 
-    @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
 
     @Override
     public int getMaxDegree() {
@@ -252,11 +228,6 @@ public class PoissonPriorScore implements Score {
         this.N = covariances.getSampleSize();
     }
 
-    private static int[] append(int[] z, int x) {
-        int[] _z = Arrays.copyOf(z, z.length + 1);
-        _z[z.length] = x;
-        return _z;
-    }
 
     public void setLambda(double lambda) {
         if (lambda < 1.0) throw new IllegalArgumentException("Structure prior can't be < 1: " + lambda);

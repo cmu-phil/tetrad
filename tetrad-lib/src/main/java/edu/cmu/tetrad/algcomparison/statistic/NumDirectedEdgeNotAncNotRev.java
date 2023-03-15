@@ -21,7 +21,7 @@ public class NumDirectedEdgeNotAncNotRev implements Statistic {
 
     @Override
     public String getDescription() {
-            return "Number X-->Y for which for which both not X~~>Y and not Y~~>X in true (should be X<->Y or Xo->Y or X<-oY)";
+        return "Number X-->Y for which for which both not X~~>Y and not Y~~>X in true (should be X<->Y or Xo->Y or X<-oY)";
     }
 
     @Override

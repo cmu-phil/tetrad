@@ -33,9 +33,10 @@ import org.apache.commons.math3.linear.RealMatrix;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import static org.apache.commons.math3.util.FastMath.*;
 
@@ -108,12 +109,12 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         this.variables = dataSet.getVariables();
         // The number of instances.
         int n = dataSet.getNumRows();
-        this.embedding = new HashMap<>();
+        this.embedding = new ConcurrentSkipListMap<>();
 
         List<Node> A = new ArrayList<>();
         List<double[]> B = new ArrayList<>();
 
-        Map<Node, Integer> nodesHash = new HashMap<>();
+        Map<Node, Integer> nodesHash = new ConcurrentSkipListMap<>();
 
         for (int j = 0; j < this.variables.size(); j++) {
             nodesHash.put(this.variables.get(j), j);
@@ -131,8 +132,8 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
 
             if (v instanceof DiscreteVariable) {
 
-                Map<List<Integer>, Integer> keys = new HashMap<>();
-                Map<Integer, List<Integer>> keysReverse = new HashMap<>();
+                Map<List<Integer>, Integer> keys = new ConcurrentHashMap<>();
+                Map<Integer, List<Integer>> keysReverse = new ConcurrentSkipListMap<>();
                 for (int j = 0; j < n; j++) {
                     List<Integer> key = new ArrayList<>();
                     key.add(this.dataSet.getInt(j, i_));
@@ -308,30 +309,9 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
      * relations.
      */
     public List<Node> getVariables() {
-        return this.variables;
+        return new ArrayList<>(this.variables);
     }
 
-    /**
-     * @return the list of variable varNames.
-     */
-    public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
-            variableNames.add(variable1.getName());
-        }
-        return variableNames;
-    }
-
-    public Node getVariable(String name) {
-        for (int i = 0; i < getVariables().size(); i++) {
-            Node variable = getVariables().get(i);
-            if (variable.getName().equals(name)) {
-                return variable;
-            }
-        }
-        return null;
-    }
 
     /**
      * @return true if y is determined the variable in z.
@@ -359,25 +339,6 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         return this.dataSet;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
-
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
-
-    @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
 
     @Override
     public double getScore() {

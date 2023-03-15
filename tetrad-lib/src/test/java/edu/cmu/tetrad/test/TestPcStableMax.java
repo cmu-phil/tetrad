@@ -82,7 +82,7 @@ public class TestPcStableMax {
 
         System.out.println(knowledge);
 
-        checkWithKnowledge(  "A-->B,C-->B,B-->D", knowledge);
+        checkWithKnowledge("A-->B,C-->B,B-->D", knowledge);
     }
 
     //    @Test
@@ -149,7 +149,7 @@ public class TestPcStableMax {
 
         // Run search
 //        Graph resultGraph = pc.search();
-        Graph resultGraph = pc.search(new Fas(independence), independence.getVariables());
+        Graph resultGraph = pc.search();
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert(outputGraph);

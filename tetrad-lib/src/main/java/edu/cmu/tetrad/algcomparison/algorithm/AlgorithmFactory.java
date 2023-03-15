@@ -26,7 +26,6 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgorithmAnnotations;
 import edu.cmu.tetrad.graph.Graph;
-import org.apache.commons.math3.analysis.function.Sin;
 
 /**
  * Aug 30, 2017 3:14:40 PM

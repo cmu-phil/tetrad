@@ -31,7 +31,6 @@ import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -298,16 +297,7 @@ public final class IndTestCramerT implements IndependenceTest {
     /**
      * @return the variable with the given name, or null if there is no such variable.
      */
-    public Node getVariable(String name) {
-        for (int i = 0; i < getVariables().size(); i++) {
-            Node variable = getVariables().get(i);
-            if (variable.getName().equals(name)) {
-                return variable;
-            }
-        }
 
-        return null;
-    }
 
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
@@ -348,44 +338,12 @@ public final class IndTestCramerT implements IndependenceTest {
         return this.dataSet;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
-
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
-
-    @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
 
     @Override
     public double getScore() {
         return -(getPValue() - getAlpha());
     }
 
-    /**
-     * @return the list of variable names
-     */
-    public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-
-        for (Node variable : variables) {
-            variableNames.add(variable.getName());
-        }
-
-        return variableNames;
-    }
 
     /**
      * @return a string representation of this test.

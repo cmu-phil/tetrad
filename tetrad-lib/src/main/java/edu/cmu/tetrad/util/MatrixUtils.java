@@ -69,7 +69,7 @@ public final class MatrixUtils {
     /**
      * Make a n repeat copy of the rows and columns of the matrix mat.
      *
-     * @param n   number of repeat copy
+     * @param n number of repeat copy
      */
     public static double[][] repmat(double[][] mat, int n) {
         int numOfRow = mat.length;

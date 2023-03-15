@@ -98,7 +98,7 @@ public class JsonUtils {
     }
 
     public static Edge parseJSONObjectToTetradEdge(Graph graph, JSONObject jObj) {
-        Endpoint[] TYPES = new Endpoint[] {Endpoint.TAIL, Endpoint.ARROW, Endpoint.CIRCLE, Endpoint.STAR, Endpoint.NULL};
+        Endpoint[] TYPES = new Endpoint[]{Endpoint.TAIL, Endpoint.ARROW, Endpoint.CIRCLE, Endpoint.STAR, Endpoint.NULL};
 
         Node node1 = graph.getNode(jObj.getJSONObject("node1").getString("name"));
         Node node2 = graph.getNode(jObj.getJSONObject("node2").getString("name"));

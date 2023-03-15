@@ -176,7 +176,7 @@ public final class Cefs {
      * @param targetName The name of the target variable.
      */
     public Graph search(String targetName) {
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
@@ -445,7 +445,7 @@ public final class Cefs {
     }
 
     private void finishUp(long start, Graph graph) {
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
         this.elapsedTime = stop - start;
         double seconds = this.elapsedTime / 1000d;
 

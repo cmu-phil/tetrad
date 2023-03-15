@@ -120,7 +120,6 @@ public class TestFges {
         System.out.println("ap = " + ap + " ar = " + ar);
 
 
-
 //        int[][] counts = SearchGraphUtils.graphComparison(estCPDAG, trueCPDAG, null);
 //
 //        int[][] expectedCounts = {
@@ -897,8 +896,9 @@ public class TestFges {
     }
 
     private Graph searchMixedFges(DataSet dk) {
-        ConditionalGaussianScore score = new ConditionalGaussianScore(dk, 2.0, 0.0, true);
+        ConditionalGaussianScore score = new ConditionalGaussianScore(dk, 2.0, true);
         score.setPenaltyDiscount(2.0);
+        score.setStructurePrior(0.0);
         Fges fges = new Fges(score);
         return fges.search();
     }
@@ -1046,7 +1046,7 @@ public class TestFges {
             Graph out;
             final double penalty = 2;
 
-            long start =  MillisecondTimes.timeMillis();
+            long start = MillisecondTimes.timeMillis();
 
             switch (t) {
                 case 0:

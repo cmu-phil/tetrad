@@ -27,7 +27,6 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.*;
@@ -115,13 +114,9 @@ public class EbicScore implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, EbicScore.append(z, x)) - localScore(y, z);
+        return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScoreDiff(x, y, new int[0]);
-    }
 
     /**
      * @param i       The index of the node.
@@ -157,16 +152,7 @@ public class EbicScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(int i, int parent) {
-        return localScore(i, new int[]{parent});
-    }
 
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
-    public double localScore(int i) {
-        return localScore(i, new int[0]);
-    }
 
     public ICovarianceMatrix getCovariances() {
         return this.covariances;
@@ -194,16 +180,6 @@ public class EbicScore implements Score {
         return this.variables;
     }
 
-    @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
 
     @Override
     public int getMaxDegree() {
@@ -252,11 +228,6 @@ public class EbicScore implements Score {
         this.N = covariances.getSampleSize();
     }
 
-    private static int[] append(int[] z, int x) {
-        int[] _z = Arrays.copyOf(z, z.length + 1);
-        _z[z.length] = x;
-        return _z;
-    }
 
     public void setGamma(double gamma) {
         this.gamma = gamma;

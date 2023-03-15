@@ -257,7 +257,7 @@ public class GraphPersistence {
                 }
             }
 
-            return  graph;
+            return graph;
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalStateException();

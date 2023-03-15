@@ -22,15 +22,12 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -120,10 +117,10 @@ public final class IndTestConditionalCorrelationLingam implements IndependenceTe
         boolean independent = p > this.alpha;
 
 //        if (this.verbose) {
-            if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, p));
-            }
+        if (independent) {
+            TetradLogger.getInstance().forceLogMessage(
+                    SearchLogUtils.independenceFactMsg(x, y, z, p));
+        }
 //        }
 
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
@@ -161,28 +158,6 @@ public final class IndTestConditionalCorrelationLingam implements IndependenceTe
         return this.variables;
     }
 
-    /**
-     * @return the variable with the given name.
-     */
-    public Node getVariable(String name) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(name)) return node;
-        }
-
-        throw new IllegalArgumentException();
-    }
-
-    /**
-     * @return the list of variable varNames.
-     */
-    public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
-            variableNames.add(variable1.getName());
-        }
-        return variableNames;
-    }
 
     /**
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
@@ -199,25 +174,6 @@ public final class IndTestConditionalCorrelationLingam implements IndependenceTe
         return this.dataSet;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
-
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
-
-    @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
 
     @Override
     public double getScore() {

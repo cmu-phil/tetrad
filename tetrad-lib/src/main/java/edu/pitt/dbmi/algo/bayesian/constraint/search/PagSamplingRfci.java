@@ -7,14 +7,14 @@ import edu.cmu.tetrad.search.GraphSearch;
 import edu.cmu.tetrad.search.IndTestProbabilistic;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.util.GraphTools;
+import edu.cmu.tetrad.util.GraphSampling;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
 
 /**
- *
  * Jan 29, 2023 4:10:52 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
@@ -53,7 +53,7 @@ public class PagSamplingRfci implements GraphSearch {
         List<Graph> graphs = runSearches();
         ResamplingEdgeEnsemble edgeEnsemble = getEdgeEnsemble(this.edgeEnsemble);
 
-        return GraphTools.createHighEdgeProbabilityGraph(graphs, edgeEnsemble);
+        return GraphSampling.createGraphWithHighProbabilityEdges(graphs, edgeEnsemble);
     }
 
     private ResamplingEdgeEnsemble getEdgeEnsemble(int edgeEnsemble) {

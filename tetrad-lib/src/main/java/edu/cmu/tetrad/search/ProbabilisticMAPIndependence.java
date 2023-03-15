@@ -24,14 +24,15 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Uses BCInference by Cooper and Bui to calculate probabilistic conditional independence judgments.
@@ -162,16 +163,6 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
     }
 
     @Override
-    public List<String> getVariableNames() {
-        List<String> names = new ArrayList<>();
-
-        for (Node node : nodes) {
-            names.add(node.getName());
-        }
-        return names;
-    }
-
-    @Override
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException();
     }
@@ -191,25 +182,6 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
         return data;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
-
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
-
-    @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
 
     @Override
     public double getScore() {

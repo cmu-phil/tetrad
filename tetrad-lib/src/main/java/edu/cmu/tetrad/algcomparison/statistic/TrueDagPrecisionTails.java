@@ -33,7 +33,7 @@ public class TrueDagPrecisionTails implements Statistic {
 
         List<Node> nodes = estGraph.getNodes();
 
-        for (Node x : nodes){
+        for (Node x : nodes) {
             for (Node y : nodes) {
                 if (x == y) continue;
 

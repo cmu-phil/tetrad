@@ -14,6 +14,7 @@ import java.lang.management.ManagementFactory;
  */
 public class MillisecondTimes {
     public enum Type {Wall, User, CPU}
+
     public static Type type = Type.CPU;
 
     public static long wallTimeMillis() {

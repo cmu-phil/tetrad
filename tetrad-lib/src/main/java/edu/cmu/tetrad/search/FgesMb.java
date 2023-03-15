@@ -200,7 +200,7 @@ public final class FgesMb {
     public Graph search(List<Node> targets) {
 
         // Assumes one-edge faithfulness.
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
 
         if (targets == null) {
             throw new NullPointerException();

@@ -186,7 +186,7 @@ public class SimpleDataLoader {
     }
 
     private static ICovarianceMatrix doCovariancePass(Reader reader, String commentMarker, DelimiterType delimiterType,
-                                              char quoteChar, String missingValueMarker) {
+                                                      char quoteChar, String missingValueMarker) {
         TetradLogger.getInstance().log("info", "\nDATA LOADING PARAMETERS:");
         TetradLogger.getInstance().log("info", "File type = COVARIANCE");
         TetradLogger.getInstance().log("info", "Comment marker = " + commentMarker);
@@ -364,9 +364,9 @@ public class SimpleDataLoader {
      * Loads knowledge from a file. Assumes knowledge is the only thing in the
      * file. No jokes please. :)
      *
-     * @param file               The text file to load the data from.
-     * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
-     * @param commentMarker      The comment marker as a string--e.g., "//".
+     * @param file          The text file to load the data from.
+     * @param delimiter     One of the options in the Delimiter enum--e.g., Delimiter.TAB.
+     * @param commentMarker The comment marker as a string--e.g., "//".
      */
     public static Knowledge loadKnowledge(File file, DelimiterType delimiter, String commentMarker) throws IOException {
         FileReader reader = new FileReader(file);

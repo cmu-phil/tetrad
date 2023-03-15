@@ -25,7 +25,6 @@ import edu.cmu.tetrad.cluster.KMeans;
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.kernel.Kernel;
@@ -591,17 +590,6 @@ public final class IndTestHsic implements IndependenceTest {
         return null;
     }
 
-    /**
-     * @return the list of variable varNames.
-     */
-    public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
-            variableNames.add(variable1.getName());
-        }
-        return variableNames;
-    }
 
     /**
      * @return the data set being analyzed.
@@ -610,25 +598,6 @@ public final class IndTestHsic implements IndependenceTest {
         return this.dataSet;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
-
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
-
-    @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
 
     @Override
     public double getScore() {

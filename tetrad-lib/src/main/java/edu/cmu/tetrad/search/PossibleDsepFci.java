@@ -60,7 +60,8 @@ public class PossibleDsepFci {
 
     /**
      * Creates a new SepSet and assumes that none of the variables have yet been checked.
-     *  @param graph The GaSearchGraph on which to work
+     *
+     * @param graph The GaSearchGraph on which to work
      * @param test  The IndependenceChecker to use as an oracle
      */
     public PossibleDsepFci(Graph graph, IndependenceTest test) {
