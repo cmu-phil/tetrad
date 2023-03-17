@@ -21,13 +21,12 @@ package edu.cmu.tetradapp.util;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
-
-import javax.swing.*;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.swing.*;
 
 /**
  * A utility for creating parameter components for GUI.
@@ -71,7 +70,7 @@ public final class ParameterComponents {
     }
 
     public static DoubleTextField getDoubleField(String parameter, Parameters parameters,
-                                                 double defaultValue, double lowerBound, double upperBound) {
+            double defaultValue, double lowerBound, double upperBound) {
         DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -101,7 +100,7 @@ public final class ParameterComponents {
     }
 
     public static IntTextField getIntTextField(String parameter, Parameters parameters,
-                                               int defaultValue, double lowerBound, double upperBound) {
+            int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
@@ -130,7 +129,7 @@ public final class ParameterComponents {
     }
 
     public static LongTextField getLongTextField(String parameter, Parameters parameters,
-                                                 long defaultValue, double lowerBound, double upperBound) {
+            long defaultValue, double lowerBound, double upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 10);
 
         field.setFilter((value, oldValue) -> {
@@ -233,8 +232,8 @@ public final class ParameterComponents {
             int upperBoundInt = paramDesc.getUpperBoundInt();
             component = ParameterComponents.getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
         } else if (defaultValue instanceof Long) {
-            int lowerBoundInt = paramDesc.getLowerBoundInt();
-            int upperBoundInt = paramDesc.getUpperBoundInt();
+            long lowerBoundInt = paramDesc.getLowerBoundLong();
+            long upperBoundInt = paramDesc.getUpperBoundLong();
             component = ParameterComponents.getLongTextField(parameter, parameters, (Long) defaultValue, lowerBoundInt, upperBoundInt);
         } else if (defaultValue instanceof Boolean) {
             component = ParameterComponents.getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
