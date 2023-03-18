@@ -15,11 +15,13 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @author bryanandrews
  * @author josephramsey
  */
-public class BossNew2 {
+public class BossNew2 implements SuborderSearch {
     private final Bes bes;
     private final Score score;
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
+    private final Map<Node, Double> scores;
+
 
     public BossNew2(Score score) {
         this.bes = new Bes(score);
@@ -30,10 +32,13 @@ public class BossNew2 {
         this.parents = new HashMap<>();
 
         for (Node x : this.variables) this.parents.put(x, new HashSet<>());
+
+        this.scores = new HashMap<>();
+
     }
 
-    public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node,  GrowShrinkTree> gsts,
-                               Map<Node, Set<Node>> parents, Map<Node, Double> scores, int numStarts) {
+    @Override
+    public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts, int numStarts) {
 
         double bestScore = Double.NEGATIVE_INFINITY;
 
@@ -157,18 +162,22 @@ public class BossNew2 {
         this.bes.setDepth(depth);
     }
 
+    @Override
     public void setKnowledge(Knowledge knowledge) {
         this.bes.setKnowledge(knowledge);
     }
 
+    @Override
     public List<Node> getVariables() {
         return variables;
     }
 
+    @Override
     public Map<Node, Set<Node>> getParents() {
         return parents;
     }
 
+    @Override
     public Score getScore() {
         return score;
     }

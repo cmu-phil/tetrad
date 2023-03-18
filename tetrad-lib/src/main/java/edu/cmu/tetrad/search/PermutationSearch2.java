@@ -17,23 +17,21 @@ public class PermutationSearch2 {
     private final List<Node> order;
     private final Map<String, Node> nodeMap;
     private final Map<Node, Integer> index;
-    private final BossNew2 bossNew2;
+    private final SuborderSearch suborderSearch;
     private Knowledge knowledge = new Knowledge();
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
-    private final Map<Node, Double> scores;
     private final Map<Node, GrowShrinkTree> gsts;
     private int numStarts = 1;
     private boolean verbose = true;
 
-    public PermutationSearch2(BossNew2 bossNew2) {
-        this.bossNew2 = bossNew2;
-        this.variables = bossNew2.getVariables();
-        this.parents = bossNew2.getParents();
-        this.score = bossNew2.getScore();
+    public PermutationSearch2(SuborderSearch suborderSearch) {
+        this.suborderSearch = suborderSearch;
+        this.variables = suborderSearch.getVariables();
+        this.parents = suborderSearch.getParents();
+        this.score = suborderSearch.getScore();
         this.nodeMap = new HashMap<>();
         this.order = new ArrayList<>();
-        this.scores = new HashMap<>();
 
         int i = 0;
         this.index = new HashMap<>();
@@ -83,7 +81,7 @@ public class PermutationSearch2 {
             List<Node> prefix = new ArrayList<>(this.order.subList(0, task[0]));
             List<Node> suborder = this.order.subList(task[0], task[1]);
             makeValidKnowledgeOrder(suborder);
-            bossNew2.searchSuborder(prefix, suborder, gsts, parents, scores, numStarts);
+            suborderSearch.searchSuborder(prefix, suborder, gsts, numStarts);
         }
 
         return getGraph(this.variables, parents, true);
@@ -136,6 +134,6 @@ public class PermutationSearch2 {
 
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
-        this.bossNew2.setKnowledge(knowledge);
+        this.suborderSearch.setKnowledge(knowledge);
     }
 }
