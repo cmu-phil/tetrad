@@ -21,6 +21,7 @@ public class BossNew2 implements SuborderSearch {
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
     private final Map<Node, Double> scores;
+    private Map<Node, GrowShrinkTree> gsts;
 
 
     public BossNew2(Score score) {
@@ -43,6 +44,7 @@ public class BossNew2 implements SuborderSearch {
 
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts, int numStarts) {
+        this.gsts = gsts;
 
         double bestScore = Double.NEGATIVE_INFINITY;
 
@@ -50,15 +52,14 @@ public class BossNew2 implements SuborderSearch {
             shuffle(suborder);
 
             double s1, s2, s3;
-            s1 = update(prefix, suborder, parents, scores, gsts);
+            s1 = update(prefix, suborder);
             do {
                 s2 = s1;
 
                 do {
                     s3 = s1;
                     for (Node x : new ArrayList<>(suborder)) {
-                        if (betterMutation(prefix, suborder, x, gsts)) s1 = update(prefix, suborder, parents,
-                            scores, gsts);
+                        if (betterMutation(prefix, suborder, x)) s1 = update(prefix, suborder);
                     }
                 } while (s1 > s3);
 
@@ -69,7 +70,7 @@ public class BossNew2 implements SuborderSearch {
                     Graph graph = PermutationSearch2.getGraph(Z, parents, true);
                     this.bes.bes(graph, Z);
                     validOrder(graph, suborder);
-                    s1 = update(prefix, suborder, parents, scores, gsts);
+                    s1 = update(prefix, suborder);
                 } while (s1 > s3);
 
             } while (s1 > s2);
@@ -80,7 +81,7 @@ public class BossNew2 implements SuborderSearch {
         }
     }
 
-    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x, Map<Node, GrowShrinkTree> gsts) {
+    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
         ListIterator<Node> itr = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
         int i = 0;
@@ -122,8 +123,7 @@ public class BossNew2 implements SuborderSearch {
         return true;
     }
 
-    private double update(List<Node> prefix, List<Node> suborder, Map<Node, Set<Node>> parents
-            , Map<Node, Double> scores, Map<Node, GrowShrinkTree> gsts) {
+    private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
 
         Iterator<Node> itr = suborder.iterator();
