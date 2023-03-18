@@ -2,12 +2,14 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BossNew;
@@ -31,9 +33,10 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class BOSSNEW implements Algorithm, UsesScoreWrapper {
+public class BOSSNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
+    private Knowledge knowledge = new Knowledge();
 
     public BOSSNEW() {
         // Used in reflection; do not delete.
@@ -55,7 +58,7 @@ public class BOSSNEW implements Algorithm, UsesScoreWrapper {
 //                knowledge.addToTier(tier, "X" + (100 * tier + i));
 //            }
 //        }
-//        boss.setKnowledge(knowledge);
+        boss.setKnowledge(this.knowledge);
 
         boss.setDepth(parameters.getInt(Params.DEPTH));
         boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -104,4 +107,13 @@ public class BOSSNEW implements Algorithm, UsesScoreWrapper {
         this.score = score;
     }
 
+    @Override
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
 }
