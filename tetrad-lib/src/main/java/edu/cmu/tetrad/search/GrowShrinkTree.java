@@ -133,6 +133,7 @@ public class GrowShrinkTree {
                     int[] X = new int[parents.size() - 1];
 
                     for (Node remove : new HashSet<>(parents)) {
+                        if (this.tree.isRequired(remove)) continue;
                         int i = 0;
                         parents.remove(remove);
                         for (Node parent : parents) X[i++] = this.tree.getIndex(parent);
