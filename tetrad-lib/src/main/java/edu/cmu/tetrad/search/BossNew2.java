@@ -71,7 +71,7 @@ public class BossNew2 {
         }
     }
 
-    private static boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x, Map<Node, GrowShrinkTree> gsts) {
+    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x, Map<Node, GrowShrinkTree> gsts) {
         ListIterator<Node> itr = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
         int i = 0;
@@ -113,7 +113,7 @@ public class BossNew2 {
         return true;
     }
 
-    private static double update(List<Node> prefix, List<Node> suborder, Map<Node, Set<Node>> parents
+    private double update(List<Node> prefix, List<Node> suborder, Map<Node, Set<Node>> parents
             , Map<Node, Double> scores, Map<Node, GrowShrinkTree> gsts) {
         double score = 0;
 
