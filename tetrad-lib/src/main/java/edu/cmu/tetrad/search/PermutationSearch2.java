@@ -90,13 +90,10 @@ public class PermutationSearch2 {
             bossNew2.searchSuborder(prefix, suborder, gsts, parents, scores, numStarts);
         }
 
-        return getGraph(this.variables, true, parents);
+        return getGraph(this.variables, parents, true);
     }
 
-//    public abstract void subroutine(List<Node> prefix, List<Node> suborder, Map<Node,  GrowShrinkTree> gsts,
-//                                    Map<Node, Set<Node>> parents, Map<Node, Double> scores, int numStarts);
-
-    protected static Graph getGraph(List<Node> nodes, boolean cpDag, Map<Node, Set<Node>> parents) {
+    private static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, boolean cpDag) {
         Graph graph = new EdgeListGraph(nodes);
 
         for (Node a : nodes) {
