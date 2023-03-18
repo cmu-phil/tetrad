@@ -54,13 +54,13 @@ public class BOSSNEW implements Algorithm, UsesScoreWrapper {
         Score score = this.score.getScore(dataModel, parameters);
         BossNew boss = new BossNew(score);
 
-        Knowledge knowledge = new Knowledge();
-        for (int tier = 0; tier < 10; tier++) {
-            for (int i = 1; i <= 100; i++) {
-                knowledge.addToTier(tier, "X" + (100 * tier + i));
-            }
-        }
-        boss.setKnowledge(knowledge);
+//        Knowledge knowledge = new Knowledge();
+//        for (int tier = 0; tier < 10; tier++) {
+//            for (int i = 1; i <= 100; i++) {
+//                knowledge.addToTier(tier, "X" + (100 * tier + i));
+//            }
+//        }
+//        boss.setKnowledge(knowledge);
 
         boss.setDepth(parameters.getInt(Params.DEPTH));
         boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
