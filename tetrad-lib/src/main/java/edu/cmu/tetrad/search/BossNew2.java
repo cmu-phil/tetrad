@@ -35,6 +35,10 @@ public class BossNew2 implements SuborderSearch {
 
         this.scores = new HashMap<>();
 
+        for (Node node : this.variables) {
+            this.parents.put(node, new HashSet<>());
+        }
+
     }
 
     @Override
