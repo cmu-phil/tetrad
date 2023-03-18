@@ -12,23 +12,19 @@ import java.util.*;
  *
  * @author bryanandrews
  */
-
 public class PermutationSearch2 {
     private final Score score;
     private final List<Node> order;
     private final Map<String, Node> nodeMap;
     private final Map<Node, Integer> index;
     private final BossNew2 bossNew2;
-
     private Knowledge knowledge = new Knowledge();
-
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
     private final Map<Node, Double> scores;
     private final Map<Node, GrowShrinkTree> gsts;
     private int numStarts = 1;
     private boolean verbose = true;
-
 
     public PermutationSearch2(BossNew2 bossNew2) {
         this.bossNew2 = bossNew2;

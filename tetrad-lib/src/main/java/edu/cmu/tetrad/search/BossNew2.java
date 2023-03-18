@@ -152,7 +152,6 @@ public class BossNew2 {
         Collections.reverse(order);
     }
 
-
     public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
         this.bes.setDepth(depth);
