@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public interface SuborderSearch {
 
-    void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts, int numStarts);
+    void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts);
 
     void setKnowledge(Knowledge knowledge);
 

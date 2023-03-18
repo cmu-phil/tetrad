@@ -23,7 +23,9 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSSNEW2;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSSOLD;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SPNEW;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -43,7 +45,7 @@ public class TestBoss {
         Parameters parameters = new Parameters();
         parameters.set(Params.NUM_RUNS, 1);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
-        parameters.set(Params.NUM_MEASURES, 500);
+        parameters.set(Params.NUM_MEASURES, 20);
         parameters.set(Params.AVG_DEGREE, 10);
         parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.COEF_LOW, 0);
@@ -66,9 +68,8 @@ public class TestBoss {
 
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new BOSSOLD(new FisherZ(), new SemBicScore()));
-//        algorithms.add(new BDCE(new SemBicScore()));
-//        algorithms.add(new BOSSDC(new SemBicScore()));
+        algorithms.add(new BOSSNEW2(new SemBicScore()));
+        algorithms.add(new SPNEW(new SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));

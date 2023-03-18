@@ -12,10 +12,10 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BossNew;
 import edu.cmu.tetrad.search.BossNew2;
 import edu.cmu.tetrad.search.PermutationSearch2;
 import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.SpNew;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -35,16 +35,16 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class BOSSNEW2 implements Algorithm, UsesScoreWrapper, HasKnowledge {
+public class SPNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public BOSSNEW2() {
+    public SPNEW() {
         // Used in reflection; do not delete.
     }
 
-    public BOSSNEW2(ScoreWrapper score) {
+    public SPNEW(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -53,17 +53,17 @@ public class BOSSNEW2 implements Algorithm, UsesScoreWrapper, HasKnowledge {
     public Graph search(DataModel dataModel, Parameters parameters) {
         Score score = this.score.getScore(dataModel, parameters);
 
-        BossNew2 boss = new BossNew2(score);
-        boss.setDepth(parameters.getInt(Params.DEPTH));
-        boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        PermutationSearch2 permutationSearch2 = new PermutationSearch2(boss);
+        SpNew sp = new SpNew(score);
 
-//        Knowledge knowledge = new Knowledge();
-//        for (int tier = 0; tier < 10; tier++) {
-//            for (int i = 1; i <= 100; i++) {
-//                knowledge.addToTier(tier, "X" + (100 * tier + i));
-//            }
-//        }
+        PermutationSearch2 permutationSearch2 = new PermutationSearch2(sp);
+
+        int numPerTier = 10;
+        for (int tier = 0; tier < 2; tier++) {
+            for (int i = 1; i <= numPerTier; i++) {
+                this.knowledge.addToTier(tier, "X" + (numPerTier * tier + i));
+            }
+        }
+
         permutationSearch2.setKnowledge(this.knowledge);
 
         permutationSearch2.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -78,7 +78,7 @@ public class BOSSNEW2 implements Algorithm, UsesScoreWrapper, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "BOSSNEW2 (Best Order Score Search) using " + this.score.getDescription();
+        return "SP (Sparsest Permutaion Score Search) using " + this.score.getDescription();
     }
 
     @Override
@@ -93,10 +93,6 @@ public class BOSSNEW2 implements Algorithm, UsesScoreWrapper, HasKnowledge {
         // Flags
         params.add(Params.VERBOSE);
 
-        // Parameters
-        params.add(Params.BOSS_ALG);
-        params.add(Params.NUM_STARTS);
-        params.add(Params.DEPTH);
 
         return params;
     }

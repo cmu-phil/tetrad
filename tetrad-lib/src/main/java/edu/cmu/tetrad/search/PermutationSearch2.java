@@ -21,7 +21,6 @@ public class PermutationSearch2 {
     private Knowledge knowledge = new Knowledge();
     private final List<Node> variables;
     private final Map<Node, GrowShrinkTree> gsts;
-    private int numStarts = 1;
     private boolean verbose = true;
 
     public PermutationSearch2(SuborderSearch suborderSearch) {
@@ -78,10 +77,10 @@ public class PermutationSearch2 {
             List<Node> prefix = new ArrayList<>(this.order.subList(0, task[0]));
             List<Node> suborder = this.order.subList(task[0], task[1]);
             makeValidKnowledgeOrder(suborder);
-            suborderSearch.searchSuborder(prefix, suborder, gsts, numStarts);
+            this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
         }
 
-        return getGraph(this.variables, suborderSearch.getParents(), true);
+        return getGraph(this.variables, this.suborderSearch.getParents(), true);
     }
 
     // This would have to be moved to a better place like GraphUtils maybe...
@@ -111,10 +110,6 @@ public class PermutationSearch2 {
                 else return 0;
             });
         }
-    }
-
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
     }
 
     public List<Node> getVariables() {

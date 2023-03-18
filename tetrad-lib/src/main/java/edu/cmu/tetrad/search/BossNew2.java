@@ -22,11 +22,13 @@ public class BossNew2 implements SuborderSearch {
     private final Map<Node, Set<Node>> parents;
     private final Map<Node, Double> scores;
     private Map<Node, GrowShrinkTree> gsts;
+    private int numStarts;
 
 
     public BossNew2(Score score) {
         this.bes = new Bes(score);
         this.bes.setVerbose(false);
+        this.numStarts = 1;
         this.score = score;
 
         this.variables = score.getVariables();
@@ -43,12 +45,12 @@ public class BossNew2 implements SuborderSearch {
     }
 
     @Override
-    public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts, int numStarts) {
+    public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
         this.gsts = gsts;
 
         double bestScore = Double.NEGATIVE_INFINITY;
 
-        for (int i = 0; i < numStarts; i++) {
+        for (int i = 0; i < this.numStarts; i++) {
             shuffle(suborder);
 
             double s1, s2, s3;
@@ -170,6 +172,11 @@ public class BossNew2 implements SuborderSearch {
     public void setKnowledge(Knowledge knowledge) {
         this.bes.setKnowledge(knowledge);
     }
+
+    public void setNumStarts(int numStarts) {
+        this.numStarts = numStarts;
+    }
+
 
     @Override
     public List<Node> getVariables() {
