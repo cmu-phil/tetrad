@@ -47,7 +47,7 @@ public class TeyssierScorer {
     private double runningScore = 0f;
     private Graph mag = null;
 
-    private GrowShrinkTree GST;
+//    private GrowShrinkTree GST;
 
     public TeyssierScorer(IndependenceTest test, Score score) {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
@@ -55,7 +55,7 @@ public class TeyssierScorer {
         this.score = score;
         this.test = test;
 
-        this.GST = new GrowShrinkTree(score);
+//        this.GST = new GrowShrinkTree(score);
 
         if (score != null) {
             this.variables = score.getVariables();
@@ -1106,127 +1106,127 @@ public class TeyssierScorer {
     private Pair getGrowShrinkScore(int p) {
         Node n = this.pi.get(p);
 
-//        Set<Node> parents = new HashSet<>();
-//        boolean changed = true;
+        Set<Node> parents = new HashSet<>();
+        boolean changed = true;
 
-//        double sMax = score(n, new HashSet<>());
-//        List<Node> prefix = new ArrayList<>(getPrefix(p));
+        double sMax = score(n, new HashSet<>());
+        List<Node> prefix = new ArrayList<>(getPrefix(p));
 
-        Set<Node> prefix = new HashSet<>(getPrefix(p));
-        LinkedHashSet<Node> parents = new LinkedHashSet<>();
-        double sMax = GST.growShrink(n, prefix, parents);
+//        Set<Node> prefix = new HashSet<>(getPrefix(p));
+//        LinkedHashSet<Node> parents = new LinkedHashSet<>();
+//        double sMax = GST.growShrink(n, prefix, parents);
+//
+//        return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
 
-        return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
 
+        // Backward scoring only from the prefix variables
+        if (this.useBackwardScoring) {
+            parents.addAll(prefix);
+            sMax = score(n, parents);
+            changed = false;
+        }
 
-//        // Backward scoring only from the prefix variables
-//        if (this.useBackwardScoring) {
-//            parents.addAll(prefix);
-//            sMax = score(n, parents);
-//            changed = false;
-//        }
-//
-//        // Grow-shrink
-//        while (changed) {
-//            changed = false;
-//
-//            // Let z be the node that maximizes the score...
-//            Node z = null;
-//
-//            for (Node z0 : prefix) {
-//                if (parents.contains(z0)) continue;
-//
-//                if (!knowledge.isEmpty() && this.knowledge.isForbidden(z0.getName(), n.getName())) continue;
-//
-//                parents.add(z0);
-//
-//                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
-//
-//                double s2 = score(n, parents);
-//
-//                if (s2 >= sMax) {
-//                    sMax = s2;
-//                    z = z0;
-//                }
-//
-//                parents.remove(z0);
-//            }
-//
-//            if (z != null) {
-//                parents.add(z);
-//                changed = true;
-//            }
-//
-//        }
-//
-//        boolean changed2 = true;
-//
+        // Grow-shrink
+        while (changed) {
+            changed = false;
+
+            // Let z be the node that maximizes the score...
+            Node z = null;
+
+            for (Node z0 : prefix) {
+                if (parents.contains(z0)) continue;
+
+                if (!knowledge.isEmpty() && this.knowledge.isForbidden(z0.getName(), n.getName())) continue;
+
+                parents.add(z0);
+
+                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
+
+                double s2 = score(n, parents);
+
+                if (s2 >= sMax) {
+                    sMax = s2;
+                    z = z0;
+                }
+
+                parents.remove(z0);
+            }
+
+            if (z != null) {
+                parents.add(z);
+                changed = true;
+            }
+
+        }
+
+        boolean changed2 = true;
+
+        while (changed2) {
+            changed2 = false;
+
+            Node w = null;
+
+            for (Node z0 : new HashSet<>(parents)) {
+                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
+
+                parents.remove(z0);
+
+                double s2 = score(n, parents);
+
+                if (s2 > sMax) {
+                    sMax = s2;
+                    w = z0;
+                }
+
+                parents.add(z0);
+            }
+
+            if (w != null) {
+                parents.remove(w);
+                changed2 = true;
+            }
+        }
+
 //        while (changed2) {
 //            changed2 = false;
 //
-//            Node w = null;
+//            List<Node> aaa = null;
 //
-//            for (Node z0 : new HashSet<>(parents)) {
-//                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
+//            List<Node> pp = new ArrayList<>(parents);
 //
-//                parents.remove(z0);
+//            SublistGenerator gen = new SublistGenerator(parents.size(), 2);
+//            int[] choice;
+//
+//            while ((choice = gen.next()) != null) {
+//                List<Node> aa = GraphUtils.asList(choice, pp);
+//
+////            for (Node z0 : new HashSet<>(parents)) {
+////                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
+////
+//                aa.forEach(parents::remove);
 //
 //                double s2 = score(n, parents);
 //
 //                if (s2 > sMax) {
 //                    sMax = s2;
-//                    w = z0;
+//                    aaa = aa;
 //                }
 //
-//                parents.add(z0);
+//                parents.addAll(aa);
 //            }
 //
-//            if (w != null) {
-//                parents.remove(w);
+//            if (aaa != null) {
+//                aaa.forEach(parents::remove);
 //                changed2 = true;
 //            }
-//        }
 //
-////        while (changed2) {
-////            changed2 = false;
-////
-////            List<Node> aaa = null;
-////
-////            List<Node> pp = new ArrayList<>(parents);
-////
-////            SublistGenerator gen = new SublistGenerator(parents.size(), 2);
-////            int[] choice;
-////
-////            while ((choice = gen.next()) != null) {
-////                List<Node> aa = GraphUtils.asList(choice, pp);
-////
-//////            for (Node z0 : new HashSet<>(parents)) {
-//////                if (!knowledge.isEmpty() && knowledge.isRequired(z0.getName(), n.getName())) continue;
-//////
-////                aa.forEach(parents::remove);
-////
-////                double s2 = score(n, parents);
-////
-////                if (s2 > sMax) {
-////                    sMax = s2;
-////                    aaa = aa;
-////                }
-////
-////                parents.addAll(aa);
-////            }
-////
-////            if (aaa != null) {
-////                aaa.forEach(parents::remove);
-////                changed2 = true;
-////            }
-////
-////        }
-//
-//        if (this.useScore) {
-//            return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
-//        } else {
-//            return new Pair(parents, -parents.size());
 //        }
+
+        if (this.useScore) {
+            return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
+        } else {
+            return new Pair(parents, -parents.size());
+        }
     }
 
     private Pair getGrowShrinkIndependent(int p) {
