@@ -54,7 +54,7 @@ public class Paths implements TetradSerializable {
     }
 
 
-    private boolean invalidSink(Node x, Graph graph) {
+    public boolean invalidSink(Node x, Graph graph) {
         LinkedList<Node> neighbors = new LinkedList<>();
 
         for (Edge edge : graph.getEdges(x)) {
