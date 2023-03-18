@@ -7,7 +7,6 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.util.*;
 
-import static edu.cmu.tetrad.search.PermutationSearch2.getGraph;
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
@@ -58,7 +57,7 @@ public class BossNew2 {
                     s3 = s1;
                     List<Node> Z = new ArrayList<>(prefix);
                     Z.addAll(suborder);
-                    Graph graph = getGraph(Z, true, parents);
+                    Graph graph = PermutationSearch2.getGraph(Z, parents, true);
                     this.bes.bes(graph, Z);
                     validOrder(graph, suborder);
                     s1 = update(prefix, suborder, parents, scores, gsts);

@@ -93,7 +93,8 @@ public class PermutationSearch2 {
         return getGraph(this.variables, parents, true);
     }
 
-    private Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, boolean cpDag) {
+    // This would have to be moved to a better place like GraphUtils maybe...
+    public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, boolean cpDag) {
         Graph graph = new EdgeListGraph(nodes);
 
         for (Node a : nodes) {
