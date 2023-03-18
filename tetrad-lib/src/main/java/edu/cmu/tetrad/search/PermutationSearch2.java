@@ -13,28 +13,30 @@ import java.util.*;
  * @author bryanandrews
  */
 
-abstract class PermutationSearch {
+public class PermutationSearch2 {
     private final Score score;
     private final List<Node> order;
     private final Map<String, Node> nodeMap;
     private final Map<Node, Integer> index;
+    private final BossNew2 bossNew2;
+
     private Knowledge knowledge = new Knowledge();
 
-    protected final List<Node> variables;
-    protected final Map<Node, Set<Node>> parents;
-    protected final Map<Node, Double> scores;
-    protected final Map<Node, GrowShrinkTree> gsts;
-    protected int numStarts = 1;
-    protected boolean verbose = true;
+    private final List<Node> variables;
+    private final Map<Node, Set<Node>> parents;
+    private final Map<Node, Double> scores;
+    private final Map<Node, GrowShrinkTree> gsts;
+    private int numStarts = 1;
+    private boolean verbose = true;
 
 
-    public PermutationSearch(Score score) {
-        this.score = score;
-        this.variables = score.getVariables();
+    public PermutationSearch2(BossNew2 bossNew2) {
+        this.bossNew2 = bossNew2;
+        this.variables = bossNew2.getVariables();
+        this.parents = bossNew2.getParents();
+        this.score = bossNew2.getScore();
         this.nodeMap = new HashMap<>();
-
         this.order = new ArrayList<>();
-        this.parents = new HashMap<>();
         this.scores = new HashMap<>();
 
         int i = 0;
@@ -85,19 +87,20 @@ abstract class PermutationSearch {
             List<Node> prefix = new ArrayList<>(this.order.subList(0, task[0]));
             List<Node> suborder = this.order.subList(task[0], task[1]);
             makeValidKnowledgeOrder(suborder);
-            subroutine(prefix, suborder);
+            bossNew2.searchSuborder(prefix, suborder, gsts, parents, scores, numStarts);
         }
 
-        return this.getGraph(this.variables, true);
+        return getGraph(this.variables, true, parents);
     }
 
-    public abstract void subroutine(List<Node> prefix, List<Node> suborder);
+//    public abstract void subroutine(List<Node> prefix, List<Node> suborder, Map<Node,  GrowShrinkTree> gsts,
+//                                    Map<Node, Set<Node>> parents, Map<Node, Double> scores, int numStarts);
 
-    protected Graph getGraph(List<Node> nodes, boolean cpDag) {
+    protected static Graph getGraph(List<Node> nodes, boolean cpDag, Map<Node, Set<Node>> parents) {
         Graph graph = new EdgeListGraph(nodes);
 
         for (Node a : nodes) {
-            for (Node b : this.parents.get(a)) {
+            for (Node b : parents.get(a)) {
                 graph.addDirectedEdge(b, a);
             }
         }
@@ -139,5 +142,6 @@ abstract class PermutationSearch {
 
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
+        this.bossNew2.setKnowledge(knowledge);
     }
 }
