@@ -57,12 +57,12 @@ public class SPNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
 
         PermutationSearch2 permutationSearch2 = new PermutationSearch2(sp);
 
-        int numPerTier = 10;
-        for (int tier = 0; tier < 2; tier++) {
-            for (int i = 1; i <= numPerTier; i++) {
-                this.knowledge.addToTier(tier, "X" + (numPerTier * tier + i));
-            }
-        }
+//        int numPerTier = 10;
+//        for (int tier = 0; tier < 2; tier++) {
+//            for (int i = 1; i <= numPerTier; i++) {
+//                this.knowledge.addToTier(tier, "X" + (numPerTier * tier + i));
+//            }
+//        }
 
         permutationSearch2.setKnowledge(this.knowledge);
 
