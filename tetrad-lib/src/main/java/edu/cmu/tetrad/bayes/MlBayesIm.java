@@ -830,7 +830,7 @@ public final class MlBayesIm implements BayesIm {
 
         Paths paths = graph.paths();
         List<Node> initialOrder = graph.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
@@ -849,7 +849,7 @@ public final class MlBayesIm implements BayesIm {
         Graph graph = getBayesPm().getDag();
         Paths paths = graph.paths();
         List<Node> initialOrder = graph.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
@@ -878,7 +878,7 @@ public final class MlBayesIm implements BayesIm {
         Graph contemporaneousDag = timeSeriesGraph.subgraph(lag0Nodes);
         Paths paths = contemporaneousDag.paths();
         List<Node> initialOrder = contemporaneousDag.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {

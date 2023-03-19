@@ -29,9 +29,9 @@ public class Paths implements TetradSerializable {
      *                     reverse direction.
      * @return The valid causal order found.
      */
-    public List<Node> validOrder(List<Node> initialOrder, boolean forward) {
+    public List<Node> getValidOrder(List<Node> initialOrder, boolean forward) {
         List<Node> _initialOrder = new ArrayList<>(initialOrder);
-        Graph _graph = new EdgeListGraph(graph);
+        Graph _graph = new EdgeListGraph(this.graph);
 
         if (forward) Collections.reverse(_initialOrder);
         List<Node> newOrder = new ArrayList<>();
@@ -53,8 +53,29 @@ public class Paths implements TetradSerializable {
         return newOrder;
     }
 
+    public void makeValidOrder(List<Node> order) {
+        List<Node> initialOrder = new ArrayList<>(order);
+        Graph _graph = new EdgeListGraph(this.graph);
 
-    public boolean invalidSink(Node x, Graph graph) {
+        Collections.reverse(initialOrder);
+        order.clear();
+
+        while (!initialOrder.isEmpty()) {
+            Iterator<Node> itr = initialOrder.iterator();
+            Node x;
+            do {
+                if (itr.hasNext()) x = itr.next();
+                else throw new IllegalArgumentException("This graph has a cycle.");
+            } while (invalidSink(x, _graph));
+            order.add(x);
+            _graph.removeNode(x);
+            itr.remove();
+        }
+
+        Collections.reverse(order);
+    }
+
+    private boolean invalidSink(Node x, Graph graph) {
         LinkedList<Node> neighbors = new LinkedList<>();
 
         for (Edge edge : graph.getEdges(x)) {

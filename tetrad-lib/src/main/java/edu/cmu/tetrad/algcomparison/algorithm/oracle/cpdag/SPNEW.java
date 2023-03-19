@@ -74,7 +74,7 @@ public class SPNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "SP Nww (Sparsest Permutaion Score Search) using " + this.score.getDescription();
+        return "SP New (Sparsest Permutation) using " + this.score.getDescription();
     }
 
     @Override

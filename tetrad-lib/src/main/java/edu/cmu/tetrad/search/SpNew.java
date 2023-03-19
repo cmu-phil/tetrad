@@ -25,18 +25,13 @@ public class SpNew implements SuborderSearch {
 
     public SpNew(Score score) {
         this.score = score;
-
         this.variables = score.getVariables();
         this.parents = new HashMap<>();
-
-        for (Node x : this.variables) this.parents.put(x, new HashSet<>());
-
         this.scores = new HashMap<>();
 
         for (Node node : this.variables) {
             this.parents.put(node, new HashSet<>());
         }
-
     }
 
     @Override
@@ -50,9 +45,9 @@ public class SpNew implements SuborderSearch {
         SwapIterator itr = new SwapIterator(suborder.size());
         while (itr.hasNext()) {
             swap = itr.next();
-            Node node = suborder.get(swap[0]);
+            Node x = suborder.get(swap[0]);
             suborder.set(swap[0], suborder.get(swap[1]));
-            suborder.set(swap[1], node);
+            suborder.set(swap[1], x);
             s = update(prefix, suborder);
             if (s > bestScore) {
                 bestSuborder = new ArrayList<>(suborder);
@@ -102,7 +97,6 @@ public class SpNew implements SuborderSearch {
 
 }
 
-
 class SwapIterator implements Iterator<int[]> {
     private int[] next;
     private final int n;
@@ -146,10 +140,11 @@ class SwapIterator implements Iterator<int[]> {
         if (this.next != null) return this.next;
         if ((this.dirs == null) || (this.perm == null)) return null;
 
-        int i = -1, e = -1;
+        int i = -1;
+        int x = -1;
         for (int j = 0; j < n; j++)
-            if ((this.dirs[j] != 0) && (this.perm[j] > e)) {
-                e = this.perm[j];
+            if ((this.dirs[j] != 0) && (this.perm[j] > x)) {
+                x = this.perm[j];
                 i = j;
             }
 
@@ -161,22 +156,20 @@ class SwapIterator implements Iterator<int[]> {
         swap(i, k, this.dirs);
         swap(i, k, this.perm);
 
-//        System.out.println(Arrays.toString(this.perm));
-
-        if ((k == 0) || (k == n - 1) || (this.perm[k + this.dirs[k]] > e))
+        if ((k == 0) || (k == n - 1) || (this.perm[k + this.dirs[k]] > x))
             this.dirs[k] = 0;
 
         for (int j = 0; j < n; j++)
-            if (this.perm[j] > e)
+            if (this.perm[j] > x)
                 this.dirs[j] = (j < k) ? +1 : -1;
 
         return this.next;
     }
 
-    protected static void swap(int i, int j, int[] arr) {
-        int e = arr[i];
+    private static void swap(int i, int j, int[] arr) {
+        int x = arr[i];
         arr[i] = arr[j];
-        arr[j] = e;
+        arr[j] = x;
     }
 }
 

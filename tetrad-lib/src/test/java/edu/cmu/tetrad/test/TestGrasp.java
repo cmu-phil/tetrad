@@ -3397,7 +3397,7 @@ public final class TestGrasp {
 
             Paths paths = cpdag1.paths();
             List<Node> initialOrder = cpdag1.getNodes();
-            List<Node> pi = paths.validOrder(initialOrder, true);
+            List<Node> pi = paths.getValidOrder(initialOrder, true);
 
             TeyssierScorer scorer = new TeyssierScorer(test, score);
             scorer.setUseScore(false);
@@ -3435,7 +3435,7 @@ public final class TestGrasp {
 
             Paths paths = cpdag.paths();
             List<Node> initialOrder = cpdag.getNodes();
-            List<Node> pi1 = paths.validOrder(initialOrder, true);
+            List<Node> pi1 = paths.getValidOrder(initialOrder, true);
 
             List<Node> pi2 = new ArrayList<>(pi1);
             shuffle(pi2);

@@ -236,7 +236,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         Graph graph = getManipulatedGraph();
         Paths paths = graph.paths();
         List<Node> initialOrder = graph.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {

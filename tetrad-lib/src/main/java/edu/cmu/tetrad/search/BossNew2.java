@@ -26,61 +26,59 @@ public class BossNew2 implements SuborderSearch {
 
 
     public BossNew2(Score score) {
+        this.score = score;
+        this.variables = score.getVariables();
+        this.parents = new HashMap<>();
+        this.scores = new HashMap<>();
+
+        for (Node x : this.variables) {
+            this.parents.put(x, new HashSet<>());
+        }
+
         this.bes = new Bes(score);
         this.bes.setVerbose(false);
         this.numStarts = 1;
-        this.score = score;
-
-        this.variables = score.getVariables();
-        this.parents = new HashMap<>();
-
-        for (Node x : this.variables) this.parents.put(x, new HashSet<>());
-
-        this.scores = new HashMap<>();
-
-        for (Node node : this.variables) {
-            this.parents.put(node, new HashSet<>());
-        }
-
     }
 
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
         this.gsts = gsts;
-
+        List<Node> bestSuborder = new ArrayList<>(suborder);
         double bestScore = Double.NEGATIVE_INFINITY;
 
         for (int i = 0; i < this.numStarts; i++) {
             shuffle(suborder);
-
             double s1, s2, s3;
             s1 = update(prefix, suborder);
             do {
                 s2 = s1;
-
                 do {
                     s3 = s1;
                     for (Node x : new ArrayList<>(suborder)) {
                         if (betterMutation(prefix, suborder, x)) s1 = update(prefix, suborder);
                     }
                 } while (s1 > s3);
-
                 do {
                     s3 = s1;
                     List<Node> Z = new ArrayList<>(prefix);
                     Z.addAll(suborder);
                     Graph graph = PermutationSearch2.getGraph(Z, parents, true);
                     this.bes.bes(graph, Z);
-                    validOrder(graph, suborder);
+                    graph.paths().makeValidOrder(suborder);
                     s1 = update(prefix, suborder);
                 } while (s1 > s3);
-
             } while (s1 > s2);
 
             if (s1 > bestScore) {
+                bestSuborder = new ArrayList<>(suborder);
                 bestScore = s1;
             }
         }
+
+        for (int i = 0; i < suborder.size(); i++) {
+            suborder.set(i, bestSuborder.get(i));
+        }
+        update(prefix, suborder);
     }
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
@@ -141,27 +139,7 @@ public class BossNew2 implements SuborderSearch {
         return score;
     }
 
-    private void validOrder(Graph graph, List<Node> order) {
-        List<Node> initialOrder = new ArrayList<>(order);
-        Graph _graph = new EdgeListGraph(graph);
 
-        Collections.reverse(initialOrder);
-        order.clear();
-
-        while (!initialOrder.isEmpty()) {
-            Iterator<Node> itr = initialOrder.iterator();
-            Node x;
-            do {
-                if (itr.hasNext()) x = itr.next();
-                else throw new IllegalArgumentException("This graph has a cycle.");
-            } while (graph.paths().invalidSink(x, _graph));
-            order.add(x);
-            _graph.removeNode(x);
-            itr.remove();
-        }
-
-        Collections.reverse(order);
-    }
 
     public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");

@@ -857,7 +857,7 @@ public final class DirichletBayesIm implements BayesIm {
         Dag dag = new Dag(graph);
         Paths paths = dag.paths();
         List<Node> initialOrder = dag.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {

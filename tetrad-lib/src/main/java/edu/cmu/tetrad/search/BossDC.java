@@ -217,7 +217,7 @@ public class BossDC {
         bes.setDepth(depth);
         bes.setVerbose(false);
         bes.bes(graph, scorer.getPi());
-        List<Node> pi = graph.paths().validOrder(scorer.getPi(), true);
+        List<Node> pi = graph.paths().getValidOrder(scorer.getPi(), true);
         scorer.score(pi);
     }
 

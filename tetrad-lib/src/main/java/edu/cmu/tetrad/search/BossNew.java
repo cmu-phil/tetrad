@@ -55,7 +55,7 @@ public class BossNew extends PermutationSearch {
                     Z.addAll(suborder);
                     Graph graph = this.getGraph(Z, true);
                     this.bes.bes(graph, Z);
-                    validOrder(graph, suborder);
+                    graph.paths().makeValidOrder(suborder);
                     s1 = update(prefix, suborder);
                 } while (s1 > s3);
 
@@ -125,29 +125,6 @@ public class BossNew extends PermutationSearch {
 
         return score;
     }
-
-    public void validOrder(Graph graph, List<Node> order) {
-        List<Node> initialOrder = new ArrayList<>(order);
-        Graph _graph = new EdgeListGraph(graph);
-
-        Collections.reverse(initialOrder);
-        order.clear();
-
-        while (!initialOrder.isEmpty()) {
-            Iterator<Node> itr = initialOrder.iterator();
-            Node x;
-            do {
-                if (itr.hasNext()) x = itr.next();
-                else throw new IllegalArgumentException("This graph has a cycle.");
-            } while (graph.paths().invalidSink(x, _graph));
-            order.add(x);
-            _graph.removeNode(x);
-            itr.remove();
-        }
-
-        Collections.reverse(order);
-    }
-
 
     public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
