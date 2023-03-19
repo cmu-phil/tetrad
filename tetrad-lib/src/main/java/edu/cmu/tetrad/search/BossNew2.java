@@ -44,8 +44,9 @@ public class BossNew2 implements SuborderSearch {
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
         this.gsts = gsts;
-        List<Node> bestSuborder = null;
-        double bestScore = Double.NEGATIVE_INFINITY;
+        makeValidKnowledgeOrder(suborder);
+        List<Node> bestSuborder = new ArrayList<>(suborder);
+        double bestScore = update(prefix, suborder);
 
         for (int i = 0; i < this.numStarts; i++) {
             shuffle(suborder);

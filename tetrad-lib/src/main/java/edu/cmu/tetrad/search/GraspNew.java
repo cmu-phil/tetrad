@@ -1,9 +1,13 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+
+import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
  * Implements the BOSS algorithm.
@@ -36,10 +40,47 @@ public class GraspNew implements SuborderSearch {
 
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
+        this.gsts = gsts;
+        makeValidKnowledgeOrder(suborder);
+        List<Node> bestSuborder = new ArrayList<>(suborder);
+        double bestScore = update(prefix, suborder);
 
-        // TODO
+        for (int i = 0; i < this.numStarts; i++) {
+            shuffle(suborder);
+            makeValidKnowledgeOrder(suborder);
+
+            double s1, s2;
+            s1 = update(prefix, suborder);
+            do {
+                s2 = s1;
+                if (graspDfs()) s1 = update(prefix, suborder);
+            } while (s1 > s2);
+
+            if (s1 > bestScore) {
+                bestSuborder = new ArrayList<>(suborder);
+                bestScore = s1;
+            }
+        }
+
+        for (int i = 0; i < suborder.size(); i++) {
+            suborder.set(i, bestSuborder.get(i));
+        }
+        update(prefix, suborder);
+    }
+
+
+
+    private boolean graspDfs() {
+
+
+        //        THIS NEEDS TO NOT VIOLATE KNOWLEDGE!!!
+
+
+        return false;
 
     }
+
+
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
@@ -60,6 +101,17 @@ public class GraspNew implements SuborderSearch {
         }
 
         return score;
+    }
+
+    private void makeValidKnowledgeOrder(List<Node> order) {
+        if (!this.knowledge.isEmpty()) {
+            order.sort((a, b) -> {
+                if (a.getName().equals(b.getName())) return 0;
+                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
+                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
+                else return 0;
+            });
+        }
     }
 
     public void setNumStarts(int numStarts) {
