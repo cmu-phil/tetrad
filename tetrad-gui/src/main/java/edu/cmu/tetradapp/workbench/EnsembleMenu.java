@@ -24,11 +24,8 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.GraphSampling;
-import edu.cmu.tetradapp.util.CopyLayoutAction;
-import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 import java.util.List;
-import java.util.Set;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
