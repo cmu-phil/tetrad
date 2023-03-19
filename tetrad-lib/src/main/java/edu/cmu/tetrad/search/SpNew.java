@@ -1,13 +1,9 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.*;
-
-import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
  * Implements the BOSS algorithm.
@@ -67,7 +63,8 @@ public class SpNew implements SuborderSearch {
     }
 
     @Override
-    public void setKnowledge(Knowledge knowledge) {}
+    public void setKnowledge(Knowledge knowledge) {
+    }
 
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
@@ -156,7 +153,7 @@ class SwapIterator implements Iterator<int[]> {
         if (i == -1) return null;
 
         int k = i + this.dirs[i];
-        this.next = new int[] {i, k};
+        this.next = new int[]{i, k};
 
         swap(i, k, this.dirs);
         swap(i, k, this.perm);
@@ -178,6 +175,7 @@ class SwapIterator implements Iterator<int[]> {
         arr[i] = arr[j];
         arr[j] = e;
     }
+
 }
 
 
