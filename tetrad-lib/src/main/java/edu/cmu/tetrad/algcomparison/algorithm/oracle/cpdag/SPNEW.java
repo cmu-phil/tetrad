@@ -23,14 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BOSS-DC (Best Order Score Search Divide and Conquer)
+ * SP (Sparsest Permutation)
  *
  * @author bryanandrews
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-New2",
-        command = "boss-new2",
+        name = "SP-New",
+        command = "sp-new",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
@@ -52,10 +52,7 @@ public class SPNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         Score score = this.score.getScore(dataModel, parameters);
-
-        SpNew sp = new SpNew(score);
-
-        PermutationSearch2 permutationSearch2 = new PermutationSearch2(sp);
+        PermutationSearch2 permutationSearch2 = new PermutationSearch2(new SpNew(score));
 
 //        int numPerTier = 10;
 //        for (int tier = 0; tier < 2; tier++) {
@@ -65,7 +62,6 @@ public class SPNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
 //        }
 
         permutationSearch2.setKnowledge(this.knowledge);
-
         permutationSearch2.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         return permutationSearch2.search();
@@ -78,7 +74,7 @@ public class SPNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "SP (Sparsest Permutaion Score Search) using " + this.score.getDescription();
+        return "SP Nww (Sparsest Permutaion Score Search) using " + this.score.getDescription();
     }
 
     @Override
