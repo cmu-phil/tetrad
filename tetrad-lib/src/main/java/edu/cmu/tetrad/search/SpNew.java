@@ -17,6 +17,7 @@ public class SpNew implements SuborderSearch {
     private final Map<Node, Set<Node>> parents;
     private final Map<Node, Double> scores;
     private Map<Node, GrowShrinkTree> gsts;
+    private Knowledge knowledge;
 
 
     public SpNew(Score score) {
@@ -33,6 +34,7 @@ public class SpNew implements SuborderSearch {
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
         this.gsts = gsts;
+        makeValidKnowledgeOrder(suborder);
         List<Node> bestSuborder = new ArrayList<>(suborder);
         double bestScore = update(prefix, suborder);
 
@@ -45,6 +47,9 @@ public class SpNew implements SuborderSearch {
             suborder.set(swap[0], suborder.get(swap[1]));
             suborder.set(swap[1], x);
             s = update(prefix, suborder);
+
+//            ADD CHECK TO MAKE SURE THAT KNOWLEDGE IS NOT VIOLATED!
+
             if (s > bestScore) {
                 bestSuborder = new ArrayList<>(suborder);
                 bestScore = s;
@@ -57,8 +62,21 @@ public class SpNew implements SuborderSearch {
         update(prefix, suborder);
     }
 
+    private void makeValidKnowledgeOrder(List<Node> order) {
+        if (!this.knowledge.isEmpty()) {
+            order.sort((a, b) -> {
+                if (a.getName().equals(b.getName())) return 0;
+                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
+                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
+                else return 0;
+            });
+        }
+    }
+
     @Override
-    public void setKnowledge(Knowledge knowledge) {}
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
 
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;

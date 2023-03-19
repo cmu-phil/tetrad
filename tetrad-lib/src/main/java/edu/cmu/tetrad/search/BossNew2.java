@@ -23,6 +23,7 @@ public class BossNew2 implements SuborderSearch {
     private final Map<Node, Double> scores;
     private Map<Node, GrowShrinkTree> gsts;
     private int numStarts;
+    private Knowledge knowledge;
 
 
     public BossNew2(Score score) {
@@ -43,11 +44,12 @@ public class BossNew2 implements SuborderSearch {
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
         this.gsts = gsts;
-        List<Node> bestSuborder = new ArrayList<>(suborder);
+        List<Node> bestSuborder = null;
         double bestScore = Double.NEGATIVE_INFINITY;
 
         for (int i = 0; i < this.numStarts; i++) {
             shuffle(suborder);
+            makeValidKnowledgeOrder(suborder);
             double s1, s2, s3;
             s1 = update(prefix, suborder);
             do {
@@ -82,6 +84,9 @@ public class BossNew2 implements SuborderSearch {
     }
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
+
+//        THIS NEEDS TO BE UPDATE TO NOT VIOLATE KNOWLEDGE!!!
+
         ListIterator<Node> itr = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
         int i = 0;
@@ -139,6 +144,17 @@ public class BossNew2 implements SuborderSearch {
         return score;
     }
 
+    private void makeValidKnowledgeOrder(List<Node> order) {
+        if (!this.knowledge.isEmpty()) {
+            order.sort((a, b) -> {
+                if (a.getName().equals(b.getName())) return 0;
+                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
+                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
+                else return 0;
+            });
+        }
+    }
+
     public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
         this.bes.setDepth(depth);
@@ -146,6 +162,7 @@ public class BossNew2 implements SuborderSearch {
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
         this.bes.setKnowledge(knowledge);
     }
 

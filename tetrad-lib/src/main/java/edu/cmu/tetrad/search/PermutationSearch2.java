@@ -76,7 +76,7 @@ public class PermutationSearch2 {
         for (int[] task : tasks) {
             List<Node> prefix = new ArrayList<>(this.order.subList(0, task[0]));
             List<Node> suborder = this.order.subList(task[0], task[1]);
-            makeValidKnowledgeOrder(suborder);
+//            makeValidKnowledgeOrder(suborder);
             this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
         }
 
@@ -101,16 +101,16 @@ public class PermutationSearch2 {
         return graph;
     }
 
-    private void makeValidKnowledgeOrder(List<Node> order) {
-        if (!this.knowledge.isEmpty()) {
-            order.sort((a, b) -> {
-                if (a.getName().equals(b.getName())) return 0;
-                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
-                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
-                else return 0;
-            });
-        }
-    }
+//    private void makeValidKnowledgeOrder(List<Node> order) {
+//        if (!this.knowledge.isEmpty()) {
+//            order.sort((a, b) -> {
+//                if (a.getName().equals(b.getName())) return 0;
+//                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
+//                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
+//                else return 0;
+//            });
+//        }
+//    }
 
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
