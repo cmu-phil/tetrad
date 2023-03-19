@@ -1166,6 +1166,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
+        if (modelEdge.isNull()) {
+            return;
+        }
+
         if (modelEdge.getNode1() == modelEdge.getNode2()) {
             return;
         }
