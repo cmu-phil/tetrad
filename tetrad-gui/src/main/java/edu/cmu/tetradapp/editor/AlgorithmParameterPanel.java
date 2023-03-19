@@ -112,7 +112,6 @@ public class AlgorithmParameterPanel extends JPanel {
 
             Set<String> params = new LinkedHashSet<>();
             params.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
-            params.add(Params.RESAMPLING_ENSEMBLE);
             params.add(Params.VERBOSE);
             this.mainPanel.add(createSubPanel(title, params, parameters));
             this.mainPanel.add(Box.createVerticalStrut(10));
