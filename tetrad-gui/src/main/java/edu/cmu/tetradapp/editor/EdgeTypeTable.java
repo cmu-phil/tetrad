@@ -26,6 +26,7 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Apr 30, 2019 2:30:18 PM
@@ -37,35 +38,37 @@ public class EdgeTypeTable extends JPanel {
     private static final long serialVersionUID = -9104061917163909746L;
 
     private static final String[] EDGES = {
-            "",
-            "Node 1",
-            "Interaction",
-            "Node 2"
+        "",
+        "Node 1",
+        "Interaction",
+        "Node 2"
     };
 
     private static final String[] EDGES_AND_EDGE_TYPES = {
-            "",
-            "Node 1",
-            "Interaction",
-            "Node 2",
-            "Ensemble",
-            "Edge",
-            "No edge",
-            "\u2192",
-            "\u2190",
-            "---",
-            "\u2192", // -G> pd nl
-            "\u2190", // <G- pd nl
-            "\u2192", // =G> dd nl
-            "\u2190", // <G= dd nl
-            "o->",
-            "<-o",
-            "o-o",
-            "<->"
+        "",
+        "Node 1",
+        "Interaction",
+        "Node 2",
+        "Ensemble",
+        "Edge",
+        "No edge",
+        "\u2192",
+        "\u2190",
+        "---",
+        "\u2192", // -G> pd nl
+        "\u2190", // <G- pd nl
+        "\u2192", // =G> dd nl
+        "\u2190", // <G= dd nl
+        "o->",
+        "<-o",
+        "o-o",
+        "<->"
     };
 
     private final JLabel title = new JLabel();
     private final JTable table = new EdgeInfoTable(new DefaultTableModel());
+
+    private Graph graph;
 
     public EdgeTypeTable() {
         initComponents();
@@ -81,7 +84,9 @@ public class EdgeTypeTable extends JPanel {
     }
 
     public void update(Graph graph) {
-        List<Edge> edges = new ArrayList<>(graph.getEdges());
+        List<Edge> edges = graph.getEdges().stream()
+                .filter(edge -> !edge.isNull())
+                .collect(Collectors.toList());
         Edges.sortEdges(edges);
 
         DefaultTableModel tableModel = (DefaultTableModel) this.table.getModel();
@@ -129,6 +134,8 @@ public class EdgeTypeTable extends JPanel {
         }
 
         tableModel.fireTableDataChanged();
+
+        this.graph = graph;
     }
 
     private void addEdgeProbabilityData(Edge edge, String[] rowData) {
@@ -253,6 +260,10 @@ public class EdgeTypeTable extends JPanel {
         }
 
         return false;
+    }
+
+    public Graph getGraph() {
+        return graph;
     }
 
     class EdgeInfoTable extends JTable {
