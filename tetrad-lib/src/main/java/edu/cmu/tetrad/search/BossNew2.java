@@ -139,8 +139,6 @@ public class BossNew2 implements SuborderSearch {
         return score;
     }
 
-
-
     public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
         this.bes.setDepth(depth);
@@ -154,7 +152,6 @@ public class BossNew2 implements SuborderSearch {
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
-
 
     @Override
     public List<Node> getVariables() {
