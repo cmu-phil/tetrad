@@ -21,7 +21,8 @@ public class GraspNew implements SuborderSearch {
     private final Map<Node, Set<Node>> parents;
     private final Map<Node, Double> scores;
     private Map<Node, GrowShrinkTree> gsts;
-    private int numStarts;
+    private int numStarts = 1;
+    private int depth = 4;
     private Knowledge knowledge;
 
 
@@ -34,8 +35,6 @@ public class GraspNew implements SuborderSearch {
         for (Node node : this.variables) {
             this.parents.put(node, new HashSet<>());
         }
-
-        this.numStarts = 1;
     }
 
     @Override
@@ -53,7 +52,7 @@ public class GraspNew implements SuborderSearch {
             s1 = update(prefix, suborder);
             do {
                 s2 = s1;
-                if (graspDfs()) s1 = update(prefix, suborder);
+                if (graspDfs(prefix, suborder)) s1 = update(prefix, suborder);
             } while (s1 > s2);
 
             if (s1 > bestScore) {
@@ -70,15 +69,148 @@ public class GraspNew implements SuborderSearch {
 
 
 
-    private boolean graspDfs() {
+    private boolean graspDfs(List<Node> prefix, List<Node> suborder) {
 
 
         //        THIS NEEDS TO NOT VIOLATE KNOWLEDGE!!!
 
+        List<Node> tuck = new ArrayList<>(suborder);
 
+        for (int i = suborder.size(); i > 0; i--) {
+
+            Set<Node> ancestors = new HashSet<>();
+            collectAncestorsVisit(suborder.get(i), ancestors);
+
+            for (int j = i; j > 0; j--) {
+
+                if (this.parents.get(suborder.get(i)).contains(suborder.get(j))) {
+
+                }
+                if (ancestors.contains(suborder.get(j))) {
+
+
+
+                }
+
+
+            boolean covered;
+            boolean singular;
+
+
+        }
+
+
+        }
         return false;
 
     }
+
+
+    private boolean covered(Node x, Node y) {
+        for (Node parent : this.parents.get(x)) {
+            if (parent == y) continue;
+            if (!this.parents.get(y).contains(parent)) return false;
+        }
+
+        return true;
+    }
+
+
+    private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
+        if (!ancestors.contains(node)) {
+            for (Node parent : this.parents.get(node)) {
+                collectAncestorsVisit(parent, ancestors);
+            }
+        }
+    }
+
+
+
+    private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth) {
+        for (Node y : scorer.getShuffledVariables()) {
+            Set<Node> ancestors = scorer.getAncestors(y);
+            List<Node> parents = new ArrayList<>(scorer.getParents(y));
+            Collections.shuffle(parents);
+            for (Node x : parents) {
+
+                boolean covered = scorer.coveredEdge(x, y);
+                boolean singular = true;
+
+                if (currentDepth > depth[1] && !covered) continue;
+
+                int i = scorer.index(x);
+                int j = scorer.index(y);
+                scorer.bookmark(currentDepth);
+
+
+//                THIS IS THE TUCK!
+
+                boolean first = true;
+                List<Node> Z = new ArrayList<>(scorer.getOrderShallow().subList(i + 1, j));
+                Iterator<Node> zItr = Z.iterator();
+                do {
+                    if (first) {
+                        scorer.moveTo(y, i);
+                        first = false;
+                    } else {
+                        Node z = zItr.next();
+                        if (ancestors.contains(z)) {
+                            if (scorer.getParents(z).contains(x)) {
+                                singular = false;
+                            }
+                            scorer.moveTo(z, i++);
+                        }
+                    }
+                } while (zItr.hasNext());
+
+
+                if (currentDepth > depth[2] && !singular) {
+                    scorer.goToBookmark(currentDepth);
+                    continue;
+                }
+
+                double sNew = scorer.score();
+                if (sNew > sOld) {
+                    return;
+                }
+
+                if (sNew == sOld && currentDepth < depth[0]) {
+                    if (currentDepth > depth[1]) {
+                        graspDfs(scorer, sOld, depth, currentDepth + 1);
+                    } else {
+                        graspDfs(scorer, sOld, depth, currentDepth + 1);
+                    }
+                }
+
+                if (scorer.score() > sOld) return;
+
+                scorer.goToBookmark(currentDepth);
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -133,4 +265,7 @@ public class GraspNew implements SuborderSearch {
         return score;
     }
 
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
 }

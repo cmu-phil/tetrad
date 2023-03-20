@@ -85,9 +85,6 @@ public class BossNew2 implements SuborderSearch {
     }
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
-
-//        THIS NEEDS TO BE UPDATE TO NOT VIOLATE KNOWLEDGE!!!
-
         ListIterator<Node> itr = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
         int i = 0;
@@ -117,7 +114,7 @@ public class BossNew2 implements SuborderSearch {
                 score += gsts.get(z).trace(new HashSet<>(Z), new HashSet<>());
             }
             scores[--i] += score;
-            if (scores[i] > scores[best]) best = i;
+            if (scores[i] > scores[best] && does_not_violate_knowlegde) best = i;
         }
 
         if (best == curr) return false;

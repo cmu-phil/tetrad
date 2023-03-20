@@ -47,10 +47,7 @@ public class SpNew implements SuborderSearch {
             suborder.set(swap[0], suborder.get(swap[1]));
             suborder.set(swap[1], x);
             s = update(prefix, suborder);
-
-//            ADD CHECK TO MAKE SURE THAT KNOWLEDGE IS NOT VIOLATED!
-
-            if (s > bestScore) {
+            if (s > bestScore && does_not_violate_knowledge) {
                 bestSuborder = new ArrayList<>(suborder);
                 bestScore = s;
             }
