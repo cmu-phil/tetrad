@@ -85,6 +85,18 @@ public class BossNew2 implements SuborderSearch {
     }
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
+
+        Map<Node, List<Node>> required = new HashMap<>();
+
+        for (Node y : suborder) {
+            for (Node z : suborder) {
+                if (this.knowledge.isRequired(y.getName(), z.getName())) {
+                    if (!required.containsKey(y)) required.put(y, new ArrayList<>());
+                    required.get(y).add(z);
+                }
+            }
+        }
+
         ListIterator<Node> itr = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
         int i = 0;
@@ -114,7 +126,7 @@ public class BossNew2 implements SuborderSearch {
                 score += gsts.get(z).trace(new HashSet<>(Z), new HashSet<>());
             }
             scores[--i] += score;
-            if (scores[i] > scores[best] && does_not_violate_knowlegde) best = i;
+            if (scores[i] > scores[best] && !violatesKnowledge(suborder, required)) best = i;
         }
 
         if (best == curr) return false;
@@ -140,6 +152,20 @@ public class BossNew2 implements SuborderSearch {
         }
 
         return score;
+    }
+
+    private boolean violatesKnowledge(List<Node> suborder, Map<Node, List<Node>> required) {
+        for (int i = 0; i < suborder.size(); i++) {
+            Node y = suborder.get(i);
+            if (required.containsKey(y)) {
+                for (Node z : required.get(y)) {
+                    if (suborder.subList(0, i).contains(z)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private void makeValidKnowledgeOrder(List<Node> order) {
