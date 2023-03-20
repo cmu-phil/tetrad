@@ -65,9 +65,22 @@ public class GraphCard extends JPanel {
 
         Graph graph = this.algorithmRunner.getGraph();
 
+        PaddingPanel graphPanel = new PaddingPanel(createGraphPanel(graph));
+        EdgeTypeTable edgePanel = createEdgeTypeTable(graph);
+
         JTabbedPane tabbedPane = new JTabbedPane(SwingConstants.RIGHT);
-        tabbedPane.addTab("Graph", new PaddingPanel(createGraphPanel(graph)));
-        tabbedPane.addTab("Edges", createEdgeTypeTable(graph));
+        tabbedPane.addTab("Graph", graphPanel);
+        tabbedPane.addTab("Edges", edgePanel);
+        tabbedPane.addChangeListener(event -> {
+            // update edgetype table with new graph
+            if (tabbedPane.getSelectedComponent() == edgePanel) {
+                Graph workbenchGraph = this.workbench.getGraph();
+                Graph edgePanelGraph = edgePanel.getGraph();
+                if (edgePanelGraph != workbenchGraph) {
+                    edgePanel.update(workbenchGraph);
+                }
+            }
+        });
         add(tabbedPane, BorderLayout.CENTER);
 
         add(menuBar(), BorderLayout.NORTH);

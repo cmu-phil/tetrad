@@ -235,22 +235,26 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         buf.append(getNode1());
         buf.append(" ");
 
-        if (endptTypeA == Endpoint.TAIL) {
-            buf.append("-");
-        } else if (endptTypeA == Endpoint.ARROW) {
-            buf.append("<");
-        } else if (endptTypeA == Endpoint.CIRCLE) {
-            buf.append("o");
-        }
+        if (isNull()) {
+            buf.append("...");
+        } else {
+            if (endptTypeA == Endpoint.TAIL) {
+                buf.append("-");
+            } else if (endptTypeA == Endpoint.ARROW) {
+                buf.append("<");
+            } else if (endptTypeA == Endpoint.CIRCLE) {
+                buf.append("o");
+            }
 
-        buf.append("-");
-
-        if (endptTypeB == Endpoint.TAIL) {
             buf.append("-");
-        } else if (endptTypeB == Endpoint.ARROW) {
-            buf.append(">");
-        } else if (endptTypeB == Endpoint.CIRCLE) {
-            buf.append("o");
+
+            if (endptTypeB == Endpoint.TAIL) {
+                buf.append("-");
+            } else if (endptTypeB == Endpoint.ARROW) {
+                buf.append(">");
+            } else if (endptTypeB == Endpoint.CIRCLE) {
+                buf.append("o");
+            }
         }
 
         buf.append(" ");

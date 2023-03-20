@@ -38,8 +38,8 @@ import java.util.prefs.Preferences;
 
 /**
  * The functionality of the workbench which is shared between the workbench
- * workbench and the session (and any other workbenches which want to
- * use this functionality).
+ * workbench and the session (and any other workbenches which want to use this
+ * functionality).
  *
  * @author Aaron Powell
  * @author Joseph Ramsey
@@ -203,14 +203,13 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Returns the current displayed mouseover equation label. Returns null if
      * none is displayed. Used for removing the label.
      */
-
     private boolean enableEditing = true;
 
     private boolean doPagColoring = false;
 
+    private Graph samplingGraph;
 
     // ==============================CONSTRUCTOR============================//
-
     /**
      * Constructs a new workbench workbench.
      *
@@ -235,7 +234,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     // ============================PUBLIC METHODS==========================//
-
     /**
      * Deletes all selected nodes in the workbench plus any edges that have had
      * one of their nodes deleted in the process.
@@ -488,12 +486,20 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         firePropertyChange("modelChanged", null, null);
     }
 
+    public final void setSamplingGraph(Graph graph) {
+        samplingGraph = graph;
+    }
+    
+    public final Graph getSamplingGraph() {
+        return samplingGraph;
+    }
+
     /**
      * Sets the label for an edge to a particular JComponent. The label will be
      * displayed halfway along the edge slightly off to the side.
      *
      * @param modelEdge the edge for the label.
-     * @param label     the label for the component.
+     * @param label the label for the component.
      */
     public final void setEdgeLabel(Edge modelEdge, JComponent label) {
         if (modelEdge == null) {
@@ -589,9 +595,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     /**
      * Sets the stoke width for an edge.
      *
-     * @param edge  The edge in question.
+     * @param edge The edge in question.
      * @param width The stroke width. By detault this is 1.0f. 5.0f is pretty
-     *              thick.
+     * thick.
      */
     public final void setStrokeWidth(Edge edge, float width) {
         IDisplayEdge displayEdge = (IDisplayEdge) getModelEdgesToDisplay().get(edge);
@@ -914,7 +920,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     public abstract IDisplayEdge getNewTrackingEdge(DisplayNode displayNode, Point mouseLoc);
 
     // ============================PRIVATE METHODS=========================//
-
     /**
      * Sets the display workbench model to the indicated model. (Called when the
      * workbench is first constructed as well as whenever the workbench model is
@@ -1161,6 +1166,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
             return;
         }
 
+        if (modelEdge.isNull()) {
+            return;
+        }
+
         if (modelEdge.getNode1() == modelEdge.getNode2()) {
             return;
         }
@@ -1207,7 +1216,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 //            Color green = Color.green.darker();
 //            Color lineColor = modelEdge.getProperties().contains(Edge.Property.nl) ? green
 //                    : this.graph.isHighlighted(modelEdge) ? displayEdge.getHighlightedColor() : modelEdge.getLineColor();
-
 //            displayEdge.setLineColor(lineColor);
             displayEdge.setSolid(solid);
             displayEdge.setThick(thick);
@@ -1625,7 +1633,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * selected nodes.
      *
      * @param rubberband The rubberband shape appearing in the GUI.
-     * @param edgesOnly  Whether the shift key is down.
+     * @param edgesOnly Whether the shift key is down.
      */
     private void selectAllInRubberband(Rubberband rubberband, boolean edgesOnly) {
         if (!isAllowNodeEdgeSelection()) {
@@ -1675,7 +1683,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Starts a tracked edge by anchoring it to one node and specifying the
      * initial mouse track point.
      *
-     * @param node     the initial anchored node.
+     * @param node the initial anchored node.
      * @param mouseLoc the initial tracking mouse location.
      */
     private void startEdge(DisplayNode node, Point mouseLoc) {
@@ -1914,6 +1922,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private void launchPopup(MouseEvent e) {
         JPopupMenu popup = new JPopupMenu();
         popup.add(new LayoutMenu(this));
+        if (this instanceof GraphWorkbench) {
+            popup.add(new EnsembleMenu((GraphWorkbench) this));
+        }
         popup.show(this, e.getX(), e.getY());
     }
 
@@ -2352,13 +2363,14 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     private void setMouseDragging() {
         /**
          * TEMPORARY bug fix added 4/15/2005. The bug is that in JDK 1.5.0_02
-         * (without this bug fix) groups of nodes cannot be selected, because if you
-         * click and drag, an extra mouseClicked event is fired when you release the
-         * mouse. This is a known bug, #5039416 in Sun's bug database. To get around
-         * the problem, we set this flag to true when a mouseDragged event is fired
-         * and ignore the first click (and reset this flag to false) on the first
-         * mouseClicked event after any mouseDragged event. When this bug is fixed
-         * in JDK 1.5, this temporary bug fix shold be removed. jdramsey 4/15/2005
+         * (without this bug fix) groups of nodes cannot be selected, because if
+         * you click and drag, an extra mouseClicked event is fired when you
+         * release the mouse. This is a known bug, #5039416 in Sun's bug
+         * database. To get around the problem, we set this flag to true when a
+         * mouseDragged event is fired and ignore the first click (and reset
+         * this flag to false) on the first mouseClicked event after any
+         * mouseDragged event. When this bug is fixed in JDK 1.5, this temporary
+         * bug fix shold be removed. jdramsey 4/15/2005
          */
         boolean mouseDragging = true;
     }
@@ -2446,7 +2458,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         /**
          * Constructs a new label wrapper for the given JComponent and edge.
          *
-         * @param edge  the edge with which the label is associated.
+         * @param edge the edge with which the label is associated.
          * @param label the JComponent which serves as the label.
          */
         public GraphEdgeLabel(IDisplayEdge edge, JComponent label) {
@@ -2556,7 +2568,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         /**
          * Constructs a new label wrapper for the given JComponent and node.
          *
-         * @param node  the node with which the label is associated.
+         * @param node the node with which the label is associated.
          * @param label the JComponent which serves as the label.
          */
         public GraphNodeLabel(DisplayNode node, JComponent label, int xOffset, int yOffset) {
@@ -2592,7 +2604,6 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     //
     // Event handler classes
     //
-
     /**
      * Handles <code>ComponentEvent</code>s. We use an inner class instead of
      * the workbench itself since we don't want to expose the handler methods on

@@ -39,7 +39,6 @@ public class PagSamplingRfci implements Algorithm, HasKnowledge {
     static {
         // algorithm parameters
         PAG_SAMPLING_RFCI_PARAMETERS.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
-        PAG_SAMPLING_RFCI_PARAMETERS.add(Params.RESAMPLING_ENSEMBLE);
         PAG_SAMPLING_RFCI_PARAMETERS.add(Params.VERBOSE);
 
         // Rfci parameters
@@ -62,7 +61,6 @@ public class PagSamplingRfci implements Algorithm, HasKnowledge {
 
         // PAG-Sampling-RFCI parameters
         pagSamplingRfci.setNumRandomizedSearchModels(parameters.getInt(Params.NUM_RANDOMIZED_SEARCH_MODELS));
-        pagSamplingRfci.setEdgeEnsemble(parameters.getInt(Params.RESAMPLING_ENSEMBLE));
         pagSamplingRfci.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         // Rfic parameters
