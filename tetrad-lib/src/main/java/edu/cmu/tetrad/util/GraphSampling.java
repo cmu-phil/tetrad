@@ -55,26 +55,31 @@ public final class GraphSampling {
      * @return
      */
     public static Graph createDisplayGraph(Graph graph, ResamplingEdgeEnsemble ensemble) {
-        Graph myGraph = new EdgeListGraph(graph.getNodes());
+        Graph ensembleGraph = new EdgeListGraph(graph.getNodes());
 
         for (Edge edge : graph.getEdges()) {
             List<EdgeTypeProbability> edgeTypeProbabilities = edge.getEdgeTypeProbabilities();
-            EdgeTypeProbability highestEdgeTypeProbability = getHighestEdgeTypeProbability(edgeTypeProbabilities, ensemble);
-            Edge highestProbEdge = createEdge(highestEdgeTypeProbability, edge.getNode1(), edge.getNode2());
-            if (highestProbEdge != null) {
-                // copy over edge-type probabilities
-                edgeTypeProbabilities.forEach(highestProbEdge::addEdgeTypeProbability);
+            if (edgeTypeProbabilities == null || edgeTypeProbabilities.isEmpty()) {
+                ensembleGraph.addEdge(edge);
+            } else {
+                EdgeTypeProbability highestEdgeTypeProbability = getHighestEdgeTypeProbability(edgeTypeProbabilities, ensemble);
+                Edge highestProbEdge = createEdge(highestEdgeTypeProbability, edge.getNode1(), edge.getNode2());
+                if (highestProbEdge != null) {
+                    // copy over edge-type probabilities
+                    edgeTypeProbabilities.forEach(highestProbEdge::addEdgeTypeProbability);
 
-                // copy over edge-type properties
-                highestEdgeTypeProbability.getProperties().forEach(highestProbEdge::addProperty);
+                    // copy over edge-type properties
+                    highestEdgeTypeProbability.getProperties().forEach(highestProbEdge::addProperty);
 
-                myGraph.addEdge(highestProbEdge);
+                    ensembleGraph.addEdge(highestProbEdge);
+                }
             }
+
         }
 
-        setEdgeProbabilitiesOfNonNullEdges(myGraph);
+        setEdgeProbabilitiesOfNonNullEdges(ensembleGraph);
 
-        return myGraph;
+        return ensembleGraph;
     }
 
     public static Graph createGraphWithHighProbabilityEdges(List<Graph> graphs, ResamplingEdgeEnsemble ensemble) {
@@ -112,29 +117,36 @@ public final class GraphSampling {
             Edge highestProbEdge = createEdge(highestEdgeTypeProbability, graph.getNode(node1), graph.getNode(node2));
             if (highestProbEdge != null) {
                 // copy over edge-type probabilities
-                edgeTypeProbabilities.forEach(highestProbEdge::addEdgeTypeProbability);
-
-                // copy over edge-type properties
-                highestEdgeTypeProbability.getProperties().forEach(highestProbEdge::addProperty);
+                if (node1.equals(highestProbEdge.getNode1().getName()) && node2.equals(highestProbEdge.getNode2().getName())) {
+                    edgeTypeProbabilities.forEach(highestProbEdge::addEdgeTypeProbability);
+                } else {
+                    // reverse the edge type if the nodes of the edge does not line up with the input nodes
+                    edgeTypeProbabilities.forEach(etp -> {
+                        etp.setEdgeType(getReversed(etp.getEdgeType()));
+                        highestProbEdge.addEdgeTypeProbability(etp);
+                    });
+                }
 
                 graph.addEdge(highestProbEdge);
             }
         }
 
         setEdgeProbabilitiesOfNonNullEdges(graph);
-
         return graph;
     }
 
     private static void setEdgeProbabilitiesOfNonNullEdges(Graph graph) {
         graph.getEdges().forEach(edge -> {
-            // add up all the probabilities of non-null edges
-            double probability = edge.getEdgeTypeProbabilities().stream()
-                    .filter(etp -> etp.getEdgeType() != EdgeTypeProbability.EdgeType.nil)
-                    .mapToDouble(EdgeTypeProbability::getProbability)
-                    .sum();
+            List<EdgeTypeProbability> etps = edge.getEdgeTypeProbabilities();
+            if (!(etps == null && etps.isEmpty())) {
+                // add up all the probabilities of non-null edges
+                double probability = edge.getEdgeTypeProbabilities().stream()
+                        .filter(etp -> etp.getEdgeType() != EdgeTypeProbability.EdgeType.nil)
+                        .mapToDouble(EdgeTypeProbability::getProbability)
+                        .sum();
 
-            edge.setProbability(probability);
+                edge.setProbability(probability);
+            }
         });
     }
 
@@ -255,7 +267,7 @@ public final class GraphSampling {
             edgeTypeProbabilities.add(new EdgeTypeProbability(edgeType, properties, probability));
         }
         if ((numOfNullEdges > 0) && (numOfNullEdges < graphs.size())) {
-            edgeTypeProbabilities.add(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.nil, (double) numOfNullEdges / graphs.size()));
+            edgeTypeProbabilities.add(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.nil, ((double) numOfNullEdges) / graphs.size()));
         }
 
         // sort by edge probabilities in descending order
@@ -271,6 +283,21 @@ public final class GraphSampling {
         });
 
         return Arrays.asList(etps);
+    }
+
+    private static EdgeType getReversed(EdgeType edgeType) {
+        switch (edgeType) {
+            case ac:
+                return EdgeType.ca;
+            case at:
+                return EdgeType.ta;
+            case ca:
+                return EdgeType.ac;
+            case ta:
+                return EdgeType.at;
+            default:
+                return edgeType;
+        }
     }
 
     private static EdgeType getEdgeType(Edge edge, Node node1, Node node2) {
@@ -301,7 +328,9 @@ public final class GraphSampling {
 
         graphs.forEach(graph -> {
             graph.getEdges().forEach(edge -> {
-                nodePairs.add(new NodePair(edge.getNode1().toString(), edge.getNode2().toString()));
+                String node1Name = edge.getNode1().getName();
+                String node2Name = edge.getNode2().getName();
+                nodePairs.add(new NodePair(node1Name, node2Name));
             });
         });
 
