@@ -38,6 +38,16 @@ public class SpNew implements SuborderSearch {
         List<Node> bestSuborder = new ArrayList<>(suborder);
         double bestScore = update(prefix, suborder);
 
+        Map<Node, List<Node>> required = new HashMap<>();
+        for (Node y : suborder) {
+            for (Node z : suborder) {
+                if (this.knowledge.isRequired(y.getName(), z.getName())) {
+                    if (!required.containsKey(y)) required.put(y, new ArrayList<>());
+                    required.get(y).add(z);
+                }
+            }
+        }
+
         int[] swap;
         double s;
         SwapIterator itr = new SwapIterator(suborder.size());
@@ -47,7 +57,7 @@ public class SpNew implements SuborderSearch {
             suborder.set(swap[0], suborder.get(swap[1]));
             suborder.set(swap[1], x);
             s = update(prefix, suborder);
-            if (s > bestScore && does_not_violate_knowledge) {
+            if (s > bestScore && !violatesKnowledge(suborder, required)) {
                 bestSuborder = new ArrayList<>(suborder);
                 bestScore = s;
             }
@@ -68,6 +78,20 @@ public class SpNew implements SuborderSearch {
                 else return 0;
             });
         }
+    }
+
+    private boolean violatesKnowledge(List<Node> suborder, Map<Node, List<Node>> required) {
+        for (int i = 0; i < suborder.size(); i++) {
+            Node y = suborder.get(i);
+            if (required.containsKey(y)) {
+                for (Node z : required.get(y)) {
+                    if (suborder.subList(0, i).contains(z)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @Override

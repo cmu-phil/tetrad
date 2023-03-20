@@ -48,6 +48,16 @@ public class BossNew2 implements SuborderSearch {
         List<Node> bestSuborder = new ArrayList<>(suborder);
         double bestScore = update(prefix, suborder);
 
+        Map<Node, List<Node>> required = new HashMap<>();
+        for (Node y : suborder) {
+            for (Node z : suborder) {
+                if (this.knowledge.isRequired(y.getName(), z.getName())) {
+                    if (!required.containsKey(y)) required.put(y, new ArrayList<>());
+                    required.get(y).add(z);
+                }
+            }
+        }
+
         for (int i = 0; i < this.numStarts; i++) {
             shuffle(suborder);
             makeValidKnowledgeOrder(suborder);
@@ -58,7 +68,9 @@ public class BossNew2 implements SuborderSearch {
                 do {
                     s3 = s1;
                     for (Node x : new ArrayList<>(suborder)) {
-                        if (betterMutation(prefix, suborder, x)) s1 = update(prefix, suborder);
+                        if (betterMutation(prefix, suborder, required, x)) {
+                            s1 = update(prefix, suborder);
+                        }
                     }
                 } while (s1 > s3);
                 do {
@@ -84,19 +96,7 @@ public class BossNew2 implements SuborderSearch {
         update(prefix, suborder);
     }
 
-    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
-
-        Map<Node, List<Node>> required = new HashMap<>();
-
-        for (Node y : suborder) {
-            for (Node z : suborder) {
-                if (this.knowledge.isRequired(y.getName(), z.getName())) {
-                    if (!required.containsKey(y)) required.put(y, new ArrayList<>());
-                    required.get(y).add(z);
-                }
-            }
-        }
-
+    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Map<Node, List<Node>> required, Node x) {
         ListIterator<Node> itr = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
         int i = 0;
