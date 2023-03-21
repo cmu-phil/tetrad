@@ -16,7 +16,7 @@ All of our code is public and we welcome suggestions, especially suggestions tha
 ## Tetrad GUI Application
 
 To download the current jar you can use to launch the Tetrad GUI,
-click [here](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.2.2/tetrad-gui-7.2.2-launch.jar).
+click [here](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.3.0/tetrad-gui-7.3.0-launch.jar).
 Please delete any old ones you're not using.
 
 The application will work on all major platforms once a recent version of the Java JRE/JCK is installed, certainly *
