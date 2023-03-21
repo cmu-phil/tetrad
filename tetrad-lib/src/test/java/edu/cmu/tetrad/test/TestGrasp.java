@@ -1259,15 +1259,15 @@ public final class TestGrasp {
             while ((perm = gen.next()) != null) {
                 List<Node> pi = GraphUtils.asList(perm, variables);
 
-                BossOrig grasp = new BossOrig(new GraphScore(facts.getFacts()));
+                BossOrig boss = new BossOrig(new GraphScore(facts.getFacts()));
 
-                grasp.setUseRaskuttiUhler(true);
-                grasp.setDepth(100);
-//                grasp.setOrdered(true);
-                grasp.setVerbose(false);
+                boss.setUseRaskuttiUhler(true);
+                boss.setDepth(100);
+//                boss.setOrdered(true);
+                boss.setVerbose(false);
 
-                grasp.bestOrder(pi);
-                Graph estCpdagGrasp = grasp.getGraph(true);
+                boss.bestOrder(pi);
+                Graph estCpdagGrasp = boss.getGraph(true);
 
                 if (estCpdagGrasp.getNumEdges() == facts.truth) {
                     count1++;

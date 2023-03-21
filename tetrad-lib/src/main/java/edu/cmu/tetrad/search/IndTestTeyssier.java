@@ -59,8 +59,7 @@ public final class IndTestTeyssier implements IndependenceTest {
      * The correlation matrix.
      */
     private final ICovarianceMatrix cor;
-    private double penaltyDiscount = 0.5;
-    private TeyssierScorer scorer;
+    private final TeyssierScorer scorer;
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
@@ -77,7 +76,7 @@ public final class IndTestTeyssier implements IndependenceTest {
     private double p = NaN;
     private double r = NaN;
 
-    private BossOrig bossOrig;
+    private final BossOrig bossOrig;
 
 
     //==========================CONSTRUCTORS=============================//
@@ -203,7 +202,6 @@ public final class IndTestTeyssier implements IndependenceTest {
      * @param x the one variable being compared.
      * @param y the second variable being compared.
      * @param z the list of conditioning variables.
-     * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
@@ -214,21 +212,10 @@ public final class IndTestTeyssier implements IndependenceTest {
 
         bossOrig.bestOrder(perm);
 
-//        scorer.score(perm);
-//        boss.betterMutationTuck(scorer);
-
         boolean independent = scorer.adjacent(x, y);
 
-//        boolean independent = sepsets.isIndependent(x, y, z);
-
-//        if (Double.isNaN(p)) {
-//            return new IndependenceResult(new IndependenceFact(x, y, z),
-//                    false, NaN);
-//
-//        } else {
         return new IndependenceResult(new IndependenceFact(x, y, z),
                 independent, independent ? 0.0 : 1.0);
-//        }
     }
 
     /**

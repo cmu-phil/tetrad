@@ -12,7 +12,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.PermutationSearch2;
+import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.search.Sp;
 import edu.cmu.tetrad.util.Parameters;
@@ -51,7 +51,7 @@ public class SP implements Algorithm, UsesScoreWrapper, HasKnowledge {
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         Score score = this.score.getScore(dataModel, parameters);
-        PermutationSearch2 permutationSearch2 = new PermutationSearch2(new Sp(score));
+        PermutationSearch permutationSearch = new PermutationSearch(new Sp(score));
 
 //        int numPerTier = 10;
 //        for (int tier = 0; tier < 2; tier++) {
@@ -60,10 +60,10 @@ public class SP implements Algorithm, UsesScoreWrapper, HasKnowledge {
 //            }
 //        }
 
-        permutationSearch2.setKnowledge(this.knowledge);
-        permutationSearch2.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        permutationSearch.setKnowledge(this.knowledge);
+        permutationSearch.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-        return permutationSearch2.search();
+        return permutationSearch.search();
     }
 
     @Override

@@ -105,7 +105,7 @@ public final class SpFci implements GraphSearch {
 
         // SP CPDAG learning step
         Sp subAlg = new Sp(this.score);
-        PermutationSearch2 alg = new PermutationSearch2(subAlg);
+        PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
         alg.setVerbose(this.verbose);
 

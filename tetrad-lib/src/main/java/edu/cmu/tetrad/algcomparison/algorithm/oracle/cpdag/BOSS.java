@@ -13,7 +13,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.PermutationSearch2;
+import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -55,7 +55,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper, HasKnowledge {
         Boss boss = new Boss(score);
         boss.setDepth(parameters.getInt(Params.DEPTH));
         boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
-        PermutationSearch2 permutationSearch2 = new PermutationSearch2(boss);
+        PermutationSearch permutationSearch = new PermutationSearch(boss);
 
 //        Knowledge knowledge = new Knowledge();
 //        for (int tier = 0; tier < 10; tier++) {
@@ -63,11 +63,11 @@ public class BOSS implements Algorithm, UsesScoreWrapper, HasKnowledge {
 //                knowledge.addToTier(tier, "X" + (100 * tier + i));
 //            }
 //        }
-        permutationSearch2.setKnowledge(this.knowledge);
+        permutationSearch.setKnowledge(this.knowledge);
 
-        permutationSearch2.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        permutationSearch.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-        return permutationSearch2.search();
+        return permutationSearch.search();
     }
 
     @Override

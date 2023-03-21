@@ -109,7 +109,7 @@ public final class BFci implements GraphSearch {
         Boss subAlg = new Boss(this.score);
         subAlg.setDepth(this.depth);
         subAlg.setNumStarts(this.numStarts);
-        PermutationSearch2 alg = new PermutationSearch2(subAlg);
+        PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
         alg.setVerbose(this.verbose);
 

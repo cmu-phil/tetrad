@@ -12,30 +12,23 @@ import java.util.*;
  *
  * @author bryanandrews
  */
-
-abstract class PermutationSearch {
+public class PermutationSearch {
     private final Score score;
     private final List<Node> order;
     private final Map<String, Node> nodeMap;
     private final Map<Node, Integer> index;
+    private final SuborderSearch suborderSearch;
     private Knowledge knowledge = new Knowledge();
+    private final List<Node> variables;
+    private final Map<Node, GrowShrinkTree> gsts;
+    private boolean verbose = true;
 
-    protected final List<Node> variables;
-    protected final Map<Node, Set<Node>> parents;
-    protected final Map<Node, Double> scores;
-    protected final Map<Node, GrowShrinkTree> gsts;
-    protected int numStarts = 1;
-    protected boolean verbose = true;
-
-
-    public PermutationSearch(Score score) {
-        this.score = score;
-        this.variables = score.getVariables();
+    public PermutationSearch(SuborderSearch suborderSearch) {
+        this.suborderSearch = suborderSearch;
+        this.variables = suborderSearch.getVariables();
+        this.score = suborderSearch.getScore();
         this.nodeMap = new HashMap<>();
-
         this.order = new ArrayList<>();
-        this.parents = new HashMap<>();
-        this.scores = new HashMap<>();
 
         int i = 0;
         this.index = new HashMap<>();
@@ -43,7 +36,6 @@ abstract class PermutationSearch {
         for (Node node : this.variables) {
             this.index.put(node, i++);
             this.nodeMap.put(node.getName(), node);
-            this.parents.put(node, new HashSet<>());
         }
     }
 
@@ -84,20 +76,19 @@ abstract class PermutationSearch {
         for (int[] task : tasks) {
             List<Node> prefix = new ArrayList<>(this.order.subList(0, task[0]));
             List<Node> suborder = this.order.subList(task[0], task[1]);
-            makeValidKnowledgeOrder(suborder);
-            subroutine(prefix, suborder);
+//            makeValidKnowledgeOrder(suborder);
+            this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
         }
 
-        return this.getGraph(this.variables, true);
+        return getGraph(this.variables, this.suborderSearch.getParents(), true);
     }
 
-    public abstract void subroutine(List<Node> prefix, List<Node> suborder);
-
-    protected Graph getGraph(List<Node> nodes, boolean cpDag) {
+    // This would have to be moved to a better place like GraphUtils maybe...
+    public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, boolean cpDag) {
         Graph graph = new EdgeListGraph(nodes);
 
         for (Node a : nodes) {
-            for (Node b : this.parents.get(a)) {
+            for (Node b : parents.get(a)) {
                 graph.addDirectedEdge(b, a);
             }
         }
@@ -110,20 +101,16 @@ abstract class PermutationSearch {
         return graph;
     }
 
-    private void makeValidKnowledgeOrder(List<Node> order) {
-        if (!this.knowledge.isEmpty()) {
-            order.sort((a, b) -> {
-                if (a.getName().equals(b.getName())) return 0;
-                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
-                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
-                else return 0;
-            });
-        }
-    }
-
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
+//    private void makeValidKnowledgeOrder(List<Node> order) {
+//        if (!this.knowledge.isEmpty()) {
+//            order.sort((a, b) -> {
+//                if (a.getName().equals(b.getName())) return 0;
+//                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
+//                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
+//                else return 0;
+//            });
+//        }
+//    }
 
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
@@ -139,5 +126,6 @@ abstract class PermutationSearch {
 
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
+        this.suborderSearch.setKnowledge(knowledge);
     }
 }
