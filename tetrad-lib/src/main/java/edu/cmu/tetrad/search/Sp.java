@@ -6,12 +6,12 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.*;
 
 /**
- * Implements the BOSS algorithm.
+ * Implements the SP algorithm.
  *
  * @author bryanandrews
  * @author josephramsey
  */
-public class SpNew implements SuborderSearch {
+public class Sp implements SuborderSearch {
     private final Score score;
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
@@ -20,7 +20,7 @@ public class SpNew implements SuborderSearch {
     private Knowledge knowledge;
 
 
-    public SpNew(Score score) {
+    public Sp(Score score) {
         this.score = score;
         this.variables = score.getVariables();
         this.parents = new HashMap<>();

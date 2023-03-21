@@ -123,7 +123,7 @@ public final class SpFci implements GraphSearch {
 ////        alg.setKnowledge(knowledge);
 //        alg.setVerbose(false);
 
-        SP sp = new SP(independenceTest, score);
+        SP_Old sp = new SP_Old(independenceTest, score);
         sp.setKnowledge(knowledge);
 
         sp.bestOrder(score.getVariables());

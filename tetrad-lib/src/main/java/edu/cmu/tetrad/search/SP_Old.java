@@ -21,7 +21,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  *
  * @author josephramsey
  */
-public class SP {
+public class SP_Old {
     private final List<Node> variables;
     private long start;
     private Score score;
@@ -35,19 +35,19 @@ public class SP {
     private boolean verbose = false;
     private boolean useDataOrder = false;
 
-    public SP(@NotNull Score score) {
+    public SP_Old(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
     }
 
-    public SP(@NotNull IndependenceTest test) {
+    public SP_Old(@NotNull IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
     }
 
-    public SP(@NotNull IndependenceTest test, Score score) {
+    public SP_Old(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());

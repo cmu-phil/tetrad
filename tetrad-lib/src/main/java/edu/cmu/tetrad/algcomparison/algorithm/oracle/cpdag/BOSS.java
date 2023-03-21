@@ -12,7 +12,8 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BossNew;
+import edu.cmu.tetrad.search.Boss;
+import edu.cmu.tetrad.search.PermutationSearch2;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -27,22 +28,22 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS-New",
-        command = "boss-new",
+        name = "BOSS",
+        command = "boss",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
 @Experimental
-public class BOSSNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
+public class BOSS implements Algorithm, UsesScoreWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public BOSSNEW() {
+    public BOSS() {
         // Used in reflection; do not delete.
     }
 
-    public BOSSNEW(ScoreWrapper score) {
+    public BOSS(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -50,7 +51,11 @@ public class BOSSNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         Score score = this.score.getScore(dataModel, parameters);
-        BossNew boss = new BossNew(score);
+
+        Boss boss = new Boss(score);
+        boss.setDepth(parameters.getInt(Params.DEPTH));
+        boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        PermutationSearch2 permutationSearch2 = new PermutationSearch2(boss);
 
 //        Knowledge knowledge = new Knowledge();
 //        for (int tier = 0; tier < 10; tier++) {
@@ -58,13 +63,11 @@ public class BOSSNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
 //                knowledge.addToTier(tier, "X" + (100 * tier + i));
 //            }
 //        }
-        boss.setKnowledge(this.knowledge);
+        permutationSearch2.setKnowledge(this.knowledge);
 
-        boss.setDepth(parameters.getInt(Params.DEPTH));
-        boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
-        boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        permutationSearch2.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
-        return boss.search();
+        return permutationSearch2.search();
     }
 
     @Override
@@ -74,7 +77,7 @@ public class BOSSNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "BOSSNEW (Best Order Score Search) using " + this.score.getDescription();
+        return "BOSS (Best Order Score Search) using " + this.score.getDescription();
     }
 
     @Override

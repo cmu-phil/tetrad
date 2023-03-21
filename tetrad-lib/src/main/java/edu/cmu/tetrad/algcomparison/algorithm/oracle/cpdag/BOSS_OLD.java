@@ -12,10 +12,8 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BossNew2;
-import edu.cmu.tetrad.search.PermutationSearch2;
+import edu.cmu.tetrad.search.BossNew;
 import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.SpNew;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -23,28 +21,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SP (Sparsest Permutation)
+ * BOSS-New (Best Order Score Search Divide and Conquer)
  *
  * @author bryanandrews
  * @author josephramsey
  */
-@edu.cmu.tetrad.annotation.Algorithm(
-        name = "SP-New",
-        command = "sp-new",
-        algoType = AlgType.forbid_latent_common_causes
-)
+//@edu.cmu.tetrad.annotation.Algorithm(
+//        name = "BOSS-OLD",
+//        command = "boss-old",
+//        algoType = AlgType.forbid_latent_common_causes
+//)
 @Bootstrapping
 @Experimental
-public class SPNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
+public class BOSS_OLD implements Algorithm, UsesScoreWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public SPNEW() {
+    public BOSS_OLD() {
         // Used in reflection; do not delete.
     }
 
-    public SPNEW(ScoreWrapper score) {
+    public BOSS_OLD(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -52,19 +50,21 @@ public class SPNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         Score score = this.score.getScore(dataModel, parameters);
-        PermutationSearch2 permutationSearch2 = new PermutationSearch2(new SpNew(score));
+        BossNew boss = new BossNew(score);
 
-//        int numPerTier = 10;
-//        for (int tier = 0; tier < 2; tier++) {
-//            for (int i = 1; i <= numPerTier; i++) {
-//                this.knowledge.addToTier(tier, "X" + (numPerTier * tier + i));
+//        Knowledge knowledge = new Knowledge();
+//        for (int tier = 0; tier < 10; tier++) {
+//            for (int i = 1; i <= 100; i++) {
+//                knowledge.addToTier(tier, "X" + (100 * tier + i));
 //            }
 //        }
+        boss.setKnowledge(this.knowledge);
 
-        permutationSearch2.setKnowledge(this.knowledge);
-        permutationSearch2.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        boss.setDepth(parameters.getInt(Params.DEPTH));
+        boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
 
-        return permutationSearch2.search();
+        return boss.search();
     }
 
     @Override
@@ -74,7 +74,7 @@ public class SPNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
 
     @Override
     public String getDescription() {
-        return "SP New (Sparsest Permutation) using " + this.score.getDescription();
+        return "BOSS-OLD (Best Order Score Search) using " + this.score.getDescription();
     }
 
     @Override
@@ -89,6 +89,10 @@ public class SPNEW implements Algorithm, UsesScoreWrapper, HasKnowledge {
         // Flags
         params.add(Params.VERBOSE);
 
+        // Parameters
+        params.add(Params.BOSS_ALG);
+        params.add(Params.NUM_STARTS);
+        params.add(Params.DEPTH);
 
         return params;
     }

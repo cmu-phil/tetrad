@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
@@ -15,7 +14,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @author bryanandrews
  * @author josephramsey
  */
-public class BossNew2 implements SuborderSearch {
+public class Boss implements SuborderSearch {
     private final Bes bes;
     private final Score score;
     private final List<Node> variables;
@@ -26,7 +25,7 @@ public class BossNew2 implements SuborderSearch {
     private Knowledge knowledge;
 
 
-    public BossNew2(Score score) {
+    public Boss(Score score) {
         this.score = score;
         this.variables = score.getVariables();
         this.parents = new HashMap<>();
