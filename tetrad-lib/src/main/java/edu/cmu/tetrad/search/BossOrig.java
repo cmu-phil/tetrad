@@ -22,7 +22,7 @@ import static java.lang.Double.NEGATIVE_INFINITY;
  * @author bryanandrews
  * @author josephramsey
  */
-public class BossOld {
+public class BossOrig {
     private final List<Node> variables;
     private final Score score;
     private IndependenceTest test;
@@ -40,7 +40,7 @@ public class BossOld {
     private boolean caching = true;
     private double epsilon = 1e-10;
 
-    public BossOld(@NotNull IndependenceTest test, Score score) {
+    public BossOrig(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
@@ -48,7 +48,7 @@ public class BossOld {
         this.scorer = new TeyssierScorer(this.test, this.score);
     }
 
-    public BossOld(Score score) {
+    public BossOrig(Score score) {
         this.test = null;
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
@@ -56,7 +56,7 @@ public class BossOld {
         this.scorer = new TeyssierScorer(null, this.score);
     }
 
-    public BossOld(TeyssierScorer scorer) {
+    public BossOrig(TeyssierScorer scorer) {
         this.scorer = scorer;
         this.score = scorer.getScoreObject();
         this.variables = new ArrayList<>(scorer.getPi());

@@ -116,9 +116,9 @@ public class SepsetsTeyssier implements SepsetProducer {
         nodes.add(a);
         nodes.add(b);
 
-        BossOld bossOld = new BossOld(scorer);
-        bossOld.setAlgType(BossOld.AlgType.BOSS1);
-        bossOld.bestOrder(nodes);
+        BossOrig bossOrig = new BossOrig(scorer);
+        bossOrig.setAlgType(BossOrig.AlgType.BOSS1);
+        bossOrig.bestOrder(nodes);
 
 //        this.scorer.score(nodes);
         boolean adjacent = this.scorer.adjacent(a, b);

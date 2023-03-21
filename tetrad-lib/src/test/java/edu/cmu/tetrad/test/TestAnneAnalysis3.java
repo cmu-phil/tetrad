@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.BossOld;
+import edu.cmu.tetrad.search.BossOrig;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
@@ -97,8 +97,8 @@ public class TestAnneAnalysis3 {
                         score.setLambda(vars.size() / 2.);
 
 //                        Grasp alg = new Grasp(score);
-                        BossOld alg = new BossOld(score);
-                        alg.setAlgType(BossOld.AlgType.BOSS2);
+                        BossOrig alg = new BossOrig(score);
+                        alg.setAlgType(BossOrig.AlgType.BOSS2);
 
                         List<Node> nodes = alg.bestOrder(score.getVariables());
                         Graph estCpdag = alg.getGraph(true);

@@ -72,7 +72,7 @@ public final class BfciFoo implements GraphSearch {
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private Knowledge knowledge = new Knowledge();
-    private BossOld.AlgType algType = BossOld.AlgType.BOSS1;
+    private BossOrig.AlgType algType = BossOrig.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BfciFoo(IndependenceTest test, Score score) {
@@ -88,20 +88,20 @@ public final class BfciFoo implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-        BossOld bossOld = new BossOld(scorer);
-        bossOld.setAlgType(algType);
-        bossOld.setUseScore(useScore);
-        bossOld.setUseRaskuttiUhler(useRaskuttiUhler);
-        bossOld.setUseDataOrder(useDataOrder);
-        bossOld.setDepth(depth);
-        bossOld.setNumStarts(numStarts);
-        bossOld.setVerbose(false);
+        BossOrig bossOrig = new BossOrig(scorer);
+        bossOrig.setAlgType(algType);
+        bossOrig.setUseScore(useScore);
+        bossOrig.setUseRaskuttiUhler(useRaskuttiUhler);
+        bossOrig.setUseDataOrder(useDataOrder);
+        bossOrig.setDepth(depth);
+        bossOrig.setNumStarts(numStarts);
+        bossOrig.setVerbose(false);
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        bossOld.bestOrder(variables);
-        Graph graph = bossOld.getGraph(false);  // Get the DAG
+        bossOrig.bestOrder(variables);
+        Graph graph = bossOrig.getGraph(false);  // Get the DAG
 
         if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
             ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
@@ -436,7 +436,7 @@ public final class BfciFoo implements GraphSearch {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
-    public void setAlgType(BossOld.AlgType algType) {
+    public void setAlgType(BossOrig.AlgType algType) {
         this.algType = algType;
     }
 }

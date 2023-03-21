@@ -81,10 +81,10 @@ public class SimpleDemoGA {
         Score score2 = ((SemBicScore) score).subset(pi2);
 
         // Run BOSS on pi2.
-        BossOld bossOld = new BossOld(score2);
-        bossOld.setAlgType(BossOld.AlgType.BOSS1);
-        bossOld.setVerbose(true);
-        List<Node> pi3 = bossOld.bestOrder(pi2);
+        BossOrig bossOrig = new BossOrig(score2);
+        bossOrig.setAlgType(BossOrig.AlgType.BOSS1);
+        bossOrig.setVerbose(true);
+        List<Node> pi3 = bossOrig.bestOrder(pi2);
 
         List<Node> pi4 = new ArrayList<>(pi);
 

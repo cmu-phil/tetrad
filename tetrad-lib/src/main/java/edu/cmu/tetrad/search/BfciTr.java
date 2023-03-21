@@ -77,7 +77,7 @@ public final class BfciTr implements GraphSearch {
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
     private Knowledge knowledge = new Knowledge();
-    private BossOld.AlgType algType = BossOld.AlgType.BOSS1;
+    private BossOrig.AlgType algType = BossOrig.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BfciTr(IndependenceTest test, Score score) {
@@ -93,21 +93,21 @@ public final class BfciTr implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-        BossOld bossOld = new BossOld(scorer);
-        bossOld.setAlgType(algType);
-        bossOld.setUseScore(useScore);
-        bossOld.setUseRaskuttiUhler(useRaskuttiUhler);
-        bossOld.setUseDataOrder(useDataOrder);
-        bossOld.setDepth(depth);
-        bossOld.setNumStarts(numStarts);
-        bossOld.setCaching(true);
-        bossOld.setVerbose(false); // Get the DAG
+        BossOrig bossOrig = new BossOrig(scorer);
+        bossOrig.setAlgType(algType);
+        bossOrig.setUseScore(useScore);
+        bossOrig.setUseRaskuttiUhler(useRaskuttiUhler);
+        bossOrig.setUseDataOrder(useDataOrder);
+        bossOrig.setDepth(depth);
+        bossOrig.setNumStarts(numStarts);
+        bossOrig.setCaching(true);
+        bossOrig.setVerbose(false); // Get the DAG
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        bossOld.bestOrder(variables);
-        Graph graph = bossOld.getGraph(false);
+        bossOrig.bestOrder(variables);
+        Graph graph = bossOrig.getGraph(false);
 
 //        if (true) return graph;
 
@@ -350,7 +350,7 @@ public final class BfciTr implements GraphSearch {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
-    public void setAlgType(BossOld.AlgType algType) {
+    public void setAlgType(BossOrig.AlgType algType) {
         this.algType = algType;
     }
 }

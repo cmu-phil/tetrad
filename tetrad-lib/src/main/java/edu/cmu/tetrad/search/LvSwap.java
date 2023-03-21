@@ -64,7 +64,7 @@ public final class LvSwap implements GraphSearch {
 
     private AlgType algType = AlgType.LVSwap1;
 
-    private BossOld.AlgType bossAlgType = BossOld.AlgType.BOSS1;
+    private BossOrig.AlgType bossAlgType = BossOrig.AlgType.BOSS1;
 
     // The score used, if GS is used to build DAGs.
     private final Score score;
@@ -114,7 +114,7 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap1() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        BossOld alg = new BossOld(scorer);
+        BossOrig alg = new BossOrig(scorer);
         alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -190,7 +190,7 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap2a() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        BossOld alg = new BossOld(scorer);
+        BossOrig alg = new BossOrig(scorer);
         alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -264,7 +264,7 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap2b() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        BossOld alg = new BossOld(scorer);
+        BossOrig alg = new BossOrig(scorer);
         alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -347,7 +347,7 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap3() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        BossOld alg = new BossOld(scorer);
+        BossOrig alg = new BossOrig(scorer);
         alg.setAlgType(bossAlgType);
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
@@ -620,7 +620,7 @@ public final class LvSwap implements GraphSearch {
         this.algType = bossAlgType;
     }
 
-    public void setBossAlgType(BossOld.AlgType algType) {
+    public void setBossAlgType(BossOrig.AlgType algType) {
         this.bossAlgType = algType;
     }
 

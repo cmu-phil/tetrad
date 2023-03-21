@@ -12,7 +12,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.BfciFoo;
-import edu.cmu.tetrad.search.BossOld;
+import edu.cmu.tetrad.search.BossOrig;
 import edu.cmu.tetrad.search.TimeSeriesUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -75,9 +75,9 @@ public class BFCIFinalOrientationOnly implements Algorithm, UsesScoreWrapper, Ta
             BfciFoo search = new BfciFoo(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
             if (parameters.getInt(Params.BOSS_ALG) == 1) {
-                search.setAlgType(BossOld.AlgType.BOSS1);
+                search.setAlgType(BossOrig.AlgType.BOSS1);
             } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
-                search.setAlgType(BossOld.AlgType.BOSS2);
+                search.setAlgType(BossOrig.AlgType.BOSS2);
             } else {
                 throw new IllegalArgumentException("Unrecognized boss algorithm type.");
             }

@@ -24,10 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSSOLD;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BRIDGES_OLD;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GFCI;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.LVSWAP_1;
@@ -50,6 +47,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
@@ -262,7 +260,7 @@ public final class TestGrasp {
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BRIDGES_OLD(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -635,7 +633,7 @@ public final class TestGrasp {
     public void doNewAgsHeadToHead(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BOSSOLD(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
 //        if (doPcFges) {
@@ -1261,7 +1259,7 @@ public final class TestGrasp {
             while ((perm = gen.next()) != null) {
                 List<Node> pi = GraphUtils.asList(perm, variables);
 
-                BossOld grasp = new BossOld(new GraphScore(facts.getFacts()));
+                BossOrig grasp = new BossOrig(new GraphScore(facts.getFacts()));
 
                 grasp.setUseRaskuttiUhler(true);
                 grasp.setDepth(100);
@@ -2938,13 +2936,11 @@ public final class TestGrasp {
 
             Algorithms algorithms = new Algorithms();
 
-            IndependenceWrapper test = new FisherZ();
-
-            algorithms.add(new BOSSOLD(test, new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-            algorithms.add(new BOSSOLD(test, new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
-            algorithms.add(new BOSSOLD(test, new edu.cmu.tetrad.algcomparison.score.EbicScore()));
-            algorithms.add(new BOSSOLD(test, new edu.cmu.tetrad.algcomparison.score.KimEtAlScores()));
-            algorithms.add(new BOSSOLD(test, new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.EbicScore()));
+            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.KimEtAlScores()));
+            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
 
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new RandomForward()));
@@ -3007,9 +3003,7 @@ public final class TestGrasp {
 
             Algorithms algorithms = new Algorithms();
 
-            IndependenceWrapper test = new FisherZ();
-
-            algorithms.add(new BOSSOLD(test, new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
 
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new RandomForward()));
