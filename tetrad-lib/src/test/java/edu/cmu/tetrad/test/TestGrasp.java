@@ -27,8 +27,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GFCI;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.LVSWAP_1;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.LVSWAP_2a;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
@@ -83,8 +81,6 @@ public final class TestGrasp {
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
 
-//        new TestGrasp().testLvSwap();
-//        new TestGrasp().testLvSwapFromDsep();
 //        new TestGrasp().testDsep();
 
         new TestGrasp().testCgScore();
@@ -2536,7 +2532,7 @@ public final class TestGrasp {
     }
 
     //    @Test
-    public void testLvSwap() {
+    public void testFciAlgs() {
         RandomUtil.getInstance().setSeed(38482838482L);
 
         Parameters params = new Parameters();
@@ -2596,33 +2592,10 @@ public final class TestGrasp {
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax(test));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci(test));
 //
-////        for (ScoreWrapper score : scores) {
-////            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS(test, score));
-////        }
-//
         for (ScoreWrapper score : scores) {
             algorithms.add(new GFCI(test, score));
         }
 //
-//        for (ScoreWrapper score : scores) {
-//            algorithms.add(new BFCI(test, score));
-//        }
-//
-//        for (ScoreWrapper score : scores) {
-//            algorithms.add(new LVSWAP_1(test, score));
-//        }
-
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_2a(test, score));
-        }
-
-//        for (ScoreWrapper score : scores) {
-//            algorithms.add(new LVSWAP_2b(test, score));
-//        }
-
-
-//            RandomUtil.shuffle(algorithms);
-
         Algorithms _algorithms = new Algorithms();
 
         for (Algorithm algorithm : algorithms) {
@@ -2680,13 +2653,13 @@ public final class TestGrasp {
         comparison.setParallelized(true);
 
         comparison.compareFromSimulations(
-                "/Users/josephramsey/Downloads/grasp/testLvSwap", simulations,
+                "/Users/josephramsey/Downloads/grasp/testFciAlgs", simulations,
                 _algorithms, statistics, params);
 
     }
 
     // Test algs from dsep
-    public void testLvSwapFromDsep() {
+    public void testFcoAlgsFromDsep() {
         RandomUtil.getInstance().setSeed(38482838482L);
 
         Parameters params = new Parameters();
@@ -2695,6 +2668,7 @@ public final class TestGrasp {
 //        params.set(Params.AVG_DEGREE, 4;
 //        params.set(Params.NUM_LATENTS, 8);
         params.set(Params.RANDOMIZE_COLUMNS, true);
+
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.VAR_LOW, 1);
@@ -2790,9 +2764,6 @@ public final class TestGrasp {
 //            algorithms.add(new Rfci(test));
 //            algorithms.add(new GFCI(test, score));
 //            algorithms.add(new BFCI(test, score));
-            algorithms.add(new LVSWAP_1(test, score));
-            algorithms.add(new LVSWAP_2a(test, score));
-//            algorithms.add(new LVSWAP_3(test, score));
 
             algNames = new ArrayList<>();
 

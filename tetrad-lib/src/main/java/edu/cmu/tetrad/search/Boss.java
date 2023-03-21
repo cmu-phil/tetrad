@@ -22,7 +22,7 @@ public class Boss implements SuborderSearch {
     private final Map<Node, Double> scores;
     private Map<Node, GrowShrinkTree> gsts;
     private int numStarts;
-    private Knowledge knowledge;
+    private Knowledge knowledge = new Knowledge();
 
 
     public Boss(Score score) {
