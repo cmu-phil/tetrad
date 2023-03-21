@@ -77,23 +77,10 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
 
             BFci search = new BFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
-            if (parameters.getInt(Params.BOSS_ALG) == 1) {
-                search.setAlgType(BossOld.AlgType.BOSS1);
-            } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
-                search.setAlgType(BossOld.AlgType.BOSS2);
-            } else if (parameters.getInt(Params.BOSS_ALG) == 3) {
-                search.setAlgType(BossOld.AlgType.BOSS3);
-            } else {
-                throw new IllegalArgumentException("Unrecognized boss algorithm type.");
-            }
-
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-            search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
-            search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             search.setKnowledge(knowledge);
@@ -138,13 +125,9 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
-        params.add(Params.BOSS_ALG);
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
-        params.add(Params.GRASP_USE_SCORE);
-        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
-        params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);

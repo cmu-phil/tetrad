@@ -42,18 +42,18 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class SPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public SPPFCI() {
+    public SPFCI() {
         // Used for reflection; do not delete.
     }
 
-    public SPPFCI(ScoreWrapper score, IndependenceWrapper test) {
+    public SPFCI(ScoreWrapper score, IndependenceWrapper test) {
         this.test = test;
         this.score = score;
     }
@@ -65,7 +65,6 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
             search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-            search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(search.getKnowledge());
 
@@ -77,7 +76,7 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
             return search.search();
         } else {
-            SPPFCI algorithm = new SPPFCI(this.score, this.test);
+            SPFCI algorithm = new SPFCI(this.score, this.test);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
@@ -109,11 +108,12 @@ public class SPPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
 
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
-        params.add(Params.MAX_PATH_LENGTH);
+        params.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        params.add(Params.DEPTH);
+        params.add(Params.TIME_LAG);
+        params.add(Params.VERBOSE);
 
         // Flags
-        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
-        params.add(Params.GRASP_USE_DATA_ORDER);
         params.add(Params.VERBOSE);
 
         return params;
