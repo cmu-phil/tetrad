@@ -47,8 +47,7 @@ which shows how to integrate arbitrary Java code in the Tetrad project into a Py
 the [JPype Python project](https://jpype.readthedocs.io/en/latest/).
 
 Also, please see the [causal-learn Python package](https://causal-learn.readthedocs.io/en/latest/), translating some
-Tetrad algorithms into Python and adding some algorithms not in Tetrad, now part of the
-awesome [py-why space](https://github.com/py-why).
+Tetrad algorithms into Python and adding some algorithms not in Tetrad, now part of the [py-why space](https://github.com/py-why).
 
 ## Documentation
 
