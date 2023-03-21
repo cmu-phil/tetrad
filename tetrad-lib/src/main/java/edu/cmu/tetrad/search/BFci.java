@@ -70,7 +70,7 @@ public final class BFci implements GraphSearch {
     // True iff verbose output should be printed.
     private boolean verbose;
 
-    // The covariance matrix beign searched over. Assumes continuous data.
+    // The covariance matrix being searched over. Assumes continuous data.
     ICovarianceMatrix covarianceMatrix;
 
     // The sample size.
@@ -83,12 +83,8 @@ public final class BFci implements GraphSearch {
     private final Score score;
     private int numStarts = 1;
     private int depth = -1;
-    private boolean useRaskuttiUhler = false;
-    private boolean useDataOrder = true;
-    private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
-    private BossOld.AlgType bossType = BossOld.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BFci(IndependenceTest test, Score score) {
@@ -109,30 +105,21 @@ public final class BFci implements GraphSearch {
 
         this.graph = new EdgeListGraph(nodes);
 
-        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
+        // BOSS CPDAG learning step
+        Boss subAlg = new Boss(this.score);
+        subAlg.setDepth(this.depth);
+        subAlg.setNumStarts(this.numStarts);
+        PermutationSearch2 alg = new PermutationSearch2(subAlg);
+        alg.setKnowledge(this.knowledge);
+        alg.setVerbose(this.verbose);
 
-        // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-        BossOld alg = new BossOld(scorer);
-        alg.setAlgType(bossType);
-        alg.setUseScore(useScore);
-        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-        alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(depth);
-        alg.setNumStarts(numStarts);
-        alg.setVerbose(verbose);
-
-        List<Node> variables = this.score.getVariables();
-        assert variables != null;
-
-        alg.bestOrder(variables);
-        this.graph = alg.getGraph(true); // Get the DAG
+        this.graph = alg.search();
 
         Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(this.graph);
-
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
 
-        // GFCI extra edge removal step...
+        // FCI extra edge removal step
         gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
         modifiedR0(referenceDag, sepsets);
 
@@ -391,18 +378,6 @@ public final class BFci implements GraphSearch {
         this.depth = depth;
     }
 
-    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
-        this.useRaskuttiUhler = useRaskuttiUhler;
-    }
-
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
-    }
-
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
@@ -411,7 +386,4 @@ public final class BFci implements GraphSearch {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
-    public void setAlgType(BossOld.AlgType type) {
-        this.bossType = type;
-    }
 }

@@ -82,14 +82,9 @@ public final class SpFci implements GraphSearch {
 
     // The score.
     private final Score score;
-    private int numStarts = 1;
     private int depth = -1;
-    private boolean useRaskuttiUhler = false;
-    private boolean useDataOrder = true;
-    private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
-    private BossOld.AlgType bossType = BossOld.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public SpFci(IndependenceTest test, Score score) {
@@ -112,16 +107,13 @@ public final class SpFci implements GraphSearch {
 
         TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
 
-        // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-//        Boss alg = new Boss(scorer);
-//        alg.setAlgType(bossType);
-//        alg.setUseScore(useScore);
-//        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-//        alg.setUseDataOrder(useDataOrder);
-//        alg.setDepth(depth);
-//        alg.setNumStarts(numStarts);
-////        alg.setKnowledge(knowledge);
-//        alg.setVerbose(false);
+        // SP CPDAG learning step
+        Sp subAlg = new Sp(this.score);
+        PermutationSearch2 alg = new PermutationSearch2(subAlg);
+        alg.setKnowledge(this.knowledge);
+        alg.setVerbose(this.verbose);
+
+        this.graph = alg.search();
 
         SP_Old sp = new SP_Old(independenceTest, score);
         sp.setKnowledge(knowledge);
@@ -404,25 +396,10 @@ public final class SpFci implements GraphSearch {
         this.logger.log("info", "Finishing BK Orientation.");
     }
 
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
-    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
-        this.useRaskuttiUhler = useRaskuttiUhler;
-    }
-
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
-    }
 
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
@@ -430,9 +407,5 @@ public final class SpFci implements GraphSearch {
 
     public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
-    }
-
-    public void setAlgType(BossOld.AlgType type) {
-        this.bossType = type;
     }
 }
