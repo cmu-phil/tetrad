@@ -114,7 +114,7 @@ public class LogisticRegressionEditor extends JPanel {
 
             comp.addActionListener((e) -> {
                 Object selectedItem = comp.getSelectedItem();
-                if (selectedItem instanceof  Integer) {
+                if (selectedItem instanceof Integer) {
                     regressionRunner.setModelIndex(((Integer) selectedItem) - 1);
                 }
             });

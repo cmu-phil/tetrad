@@ -1,7 +1,10 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.*;
-import java.util.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
 
@@ -43,8 +46,8 @@ public class Bdce {
             do {
 //                System.out.println("dividing...");
 //                do {
-                    s1 = s2;
-                    divide(0, this.scorer.size() / 2, this.scorer.size());
+                s1 = s2;
+                divide(0, this.scorer.size() / 2, this.scorer.size());
 //                    s2 = this.scorer.getScore();
 //                } while (s2 > s1);
 //                System.out.println("bes...");

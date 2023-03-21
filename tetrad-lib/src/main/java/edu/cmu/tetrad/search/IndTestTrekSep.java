@@ -228,17 +228,6 @@ public final class IndTestTrekSep implements IndependenceTest {
         return this.nameMap.get(name);
     }
 
-    /**
-     * @return the list of variable varNames.
-     */
-    public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
-            variableNames.add(variable1.getName());
-        }
-        return variableNames;
-    }
 
     /**
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
@@ -353,10 +342,6 @@ public final class IndTestTrekSep implements IndependenceTest {
         return this.covMatrix.getSampleSize();
     }
 
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
 
     @Override
     public double getScore() {

@@ -312,7 +312,7 @@ public class GeneralResamplingTest {
         }
 
         start = MillisecondTimes.timeMillis();
-        Graph graph = GraphTools.createHighEdgeProbabilityGraph(this.graphs, edgeEnsemble);
+        Graph graph = GraphSampling.createGraphWithHighProbabilityEdges(this.graphs);
         stop = MillisecondTimes.timeMillis();
 
 //        if (this.verbose) {

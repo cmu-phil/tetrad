@@ -78,6 +78,48 @@ import static org.apache.commons.math3.util.FastMath.*;
  * is alternatively known in the literature as Pairwise LiNGAM--see Hyvärinen, A., and Smith, S. M. (2013). Pairwise
  * likelihood ratios for estimation of non-Gaussian structural equation models. Journal of Machine Learning Research,
  * 14(Jan), 111-152. We include some of these methods here for comparison.
+ * <p>
+ * Parameters:
+ * <p>
+ * faskAdjacencyMethod: 1 # this run FAS-Stable (the one used in the paper). See Algorithm 2.
+ * <p>
+ * depth: -1. # control the size of the conditional set in the independence tests, setting this
+ * to a small integer may reduce the running time, but can also result in false positives. -1
+ * means that it will check "all" possible sizes.
+ * <p>
+ * test: sem-bic-test # test for FAS adjacency
+ * <p>
+ * score: sem-bic-score
+ * <p>
+ * semBicRule: 1 # to set the Chickering Rule, used in the original Fask
+ * <p>
+ * penaltyDiscount: 2 # if using sem-bic as independence test (as in the paper). In the paper this
+ * is referred as c. Check step 1 and 10 in Algorithm 2 FAS stable.
+ * <p>
+ * skewEdgeThreshold: 0.3 # See description of Fask algorithm, and step 11 in Algorithm 1 FASK.
+ * Threshold to add edges that may have been non-inferred because there was a positive/negative
+ * cycle that result in a non-zero observed relation.
+ * <p>
+ * faskLeftRightRule: 1 # this run FASK v1, the original FASK from the paper
+ * <p>
+ * faskDelta: -0.3 # See step 1 and 11 in Algorithm 4 (this is the value set in the paper)
+ * <p>
+ * twoCycleScreeningThreshold: 0 # not used in the original paper implementation. Added afterwards.
+ * You can set it to 0.3, for example, to use it as a filter to run Algorithm 3 2-cycle detection,
+ * which may take some time to run.
+ * <p>
+ * orientationAlpha: 0.1 # this was referred in the paper as TwoCycle Alpha or just alpha, the lower
+ * it is, the lower the chance of inferring a two cycle. Check steps 17 to 28 in Algorithm 3: 2 Cycle Detection Rule.
+ * <p>
+ * structurePrior: 0 # prior on the number of parents. Not used in the paper implementation.
+ * <p>
+ * So a run of command line would look like this:
+ * <p>
+ * java -jar -Xmx10G causal-cmd-1.4.1-jar-with-dependencies.jar --delimiter tab --data-type continuous
+ * --dataset concat_BOLDfslfilter_60_FullMacaque.txt --prefix Fask_Test_MacaqueFull --algorithm fask
+ * --faskAdjacencyMethod 1 --depth -1 --test sem-bic-test --score sem-bic-score --semBicRule 1
+ * --penaltyDiscount 2 --skewEdgeThreshold 0.3 --faskLeftRightRule 1 --faskDelta -0.3
+ * --twoCycleScreeningThreshold 0 --orientationAlpha 0.1 -structurePrior 0
  *
  * @author Joseph Ramsey
  */
@@ -202,7 +244,7 @@ public final class Fask implements GraphSearch {
      * and some of the adjacencies may be two-cycles.
      */
     public Graph search() {
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         NumberFormat nf = new DecimalFormat("0.000");
 
         DataSet dataSet = DataUtils.standardizeData(this.dataSet);
@@ -390,7 +432,7 @@ public final class Fask implements GraphSearch {
             }
         }
 
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
         this.elapsed = stop - start;
 
         this.graph = graph;

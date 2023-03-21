@@ -73,7 +73,7 @@ public final class Dag implements Graph {
 
         transferNodesAndEdges(graph);
 
-        for (Node node :this.graph.getNodes()) {
+        for (Node node : this.graph.getNodes()) {
             node.getAllAttributes().clear();
         }
     }

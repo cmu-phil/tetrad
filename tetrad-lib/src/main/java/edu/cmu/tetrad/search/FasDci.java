@@ -323,7 +323,7 @@ public class FasDci {
                                 }
                                 boolean inconsistency = false;
                                 for (IndependenceTest testWithVars : testsWithVars) {
-                                    if (testWithVars.checkIndependence(x, y, condSet) .independent()!= independent) {
+                                    if (testWithVars.checkIndependence(x, y, condSet).independent() != independent) {
                                         inconsistency = true;
                                         break;
                                     }

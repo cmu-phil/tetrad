@@ -80,10 +80,6 @@ public class ScoredIndTest implements Score {
         return this.test.getScore();
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScoreDiff(x, y, new int[0]);
-    }
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
@@ -92,9 +88,7 @@ public class ScoredIndTest implements Score {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
+
     public double localScore(int i) {
         throw new UnsupportedOperationException();
     }
@@ -129,16 +123,6 @@ public class ScoredIndTest implements Score {
         return false;
     }
 
-    @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
 
     @Override
     public int getMaxDegree() {

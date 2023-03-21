@@ -5,21 +5,21 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+
 import java.util.LinkedList;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+
 /**
- *
  * Jan 29, 2023 3:45:09 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
@@ -39,7 +39,6 @@ public class PagSamplingRfci implements Algorithm, HasKnowledge {
     static {
         // algorithm parameters
         PAG_SAMPLING_RFCI_PARAMETERS.add(Params.NUM_RANDOMIZED_SEARCH_MODELS);
-        PAG_SAMPLING_RFCI_PARAMETERS.add(Params.RESAMPLING_ENSEMBLE);
         PAG_SAMPLING_RFCI_PARAMETERS.add(Params.VERBOSE);
 
         // Rfci parameters
@@ -62,7 +61,6 @@ public class PagSamplingRfci implements Algorithm, HasKnowledge {
 
         // PAG-Sampling-RFCI parameters
         pagSamplingRfci.setNumRandomizedSearchModels(parameters.getInt(Params.NUM_RANDOMIZED_SEARCH_MODELS));
-        pagSamplingRfci.setEdgeEnsemble(parameters.getInt(Params.RESAMPLING_ENSEMBLE));
         pagSamplingRfci.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         // Rfic parameters

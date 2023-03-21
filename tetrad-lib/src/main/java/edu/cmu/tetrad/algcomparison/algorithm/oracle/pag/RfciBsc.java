@@ -23,7 +23,6 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  * Jan 4, 2019 4:32:05 PM
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
- *
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "RFCI-BSC",

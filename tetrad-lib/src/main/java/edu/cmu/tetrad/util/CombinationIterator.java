@@ -87,6 +87,7 @@ public class CombinationIterator implements Iterator {
     }
 
     /**
+     *
      */
     public void remove() {
         throw new UnsupportedOperationException();

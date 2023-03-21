@@ -257,7 +257,7 @@ public class GraphPersistence {
                 }
             }
 
-            return  graph;
+            return graph;
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalStateException();
@@ -943,6 +943,8 @@ public class GraphPersistence {
             return Endpoint.CIRCLE;
         } else if (endpoint == '-') {
             return Endpoint.TAIL;
+        } else if (endpoint == '.') {
+            return Endpoint.NULL;
         } else {
             throw new IllegalArgumentException(String.format("Unrecognized endpoint: %s.", endpoint));
         }

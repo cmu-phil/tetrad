@@ -41,7 +41,7 @@ public class ConditionalGaussianScore implements Score {
 
     private final DataSet dataSet;
 
-    // The variables of the continuousData set.
+    // The variables of the dataset.
     private final List<Node> variables;
 
     // Likelihood function
@@ -49,12 +49,12 @@ public class ConditionalGaussianScore implements Score {
 
     private double penaltyDiscount;
     private int numCategoriesToDiscretize = 3;
-    private final double structurePrior;
+    private double structurePrior = 0;
 
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, double structurePrior, boolean discretize) {
+    public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, boolean discretize) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -62,7 +62,6 @@ public class ConditionalGaussianScore implements Score {
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
         this.penaltyDiscount = penaltyDiscount;
-        this.structurePrior = structurePrior;
 
         this.likelihood = new ConditionalGaussianLikelihood(dataSet);
 
@@ -132,31 +131,11 @@ public class ConditionalGaussianScore implements Score {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScore(y, x) - localScore(y);
-    }
-
-    private int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
-    }
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(int i, int parent) {
-        return localScore(i, new int[]{parent});
-    }
 
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
-    public double localScore(int i) {
-        return localScore(i, new int[0]);
-    }
 
     public int getSampleSize() {
         return this.dataSet.getNumRows();
@@ -170,17 +149,6 @@ public class ConditionalGaussianScore implements Score {
     @Override
     public List<Node> getVariables() {
         return this.variables;
-    }
-
-    @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
     }
 
     @Override
@@ -209,6 +177,10 @@ public class ConditionalGaussianScore implements Score {
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
         return "Conditional Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
+    }
+
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
     }
 }
 

@@ -213,18 +213,13 @@ public class SemBicScore implements Score {
         return rows;
     }
 
-    private static int[] append(int[] z, int x) {
-        int[] _z = Arrays.copyOf(z, z.length + 1);
-        _z[z.length] = x;
-        return _z;
-    }
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         if (this.ruleType == RuleType.NANDY) {
             return nandyBic(x, y, z);
         } else {
-            return localScore(y, SemBicScore.append(z, x)) - localScore(y, z);
+            return localScore(y, append(z, x)) - localScore(y, z);
         }
     }
 
@@ -250,10 +245,6 @@ public class SemBicScore implements Score {
                 - 2.0 * (sp1 - sp2);
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScoreDiff(x, y, new int[0]);
-    }
 
 //    private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
 
@@ -334,16 +325,7 @@ public class SemBicScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(int i, int parent) {
-        return localScore(i, new int[]{parent});
-    }
 
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
-    public double localScore(int i) {
-        return localScore(i, new int[0]);
-    }
 
     public double getPenaltyDiscount() {
         return this.penaltyDiscount;
@@ -407,16 +389,6 @@ public class SemBicScore implements Score {
         this.variables = variables;
     }
 
-    @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
 
     @Override
     public int getMaxDegree() {

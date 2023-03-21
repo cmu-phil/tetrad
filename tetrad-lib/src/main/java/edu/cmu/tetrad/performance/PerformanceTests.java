@@ -1382,7 +1382,7 @@ public class PerformanceTests {
             dag = RandomGraph.randomGraph(vars, 0, numEdges, 100, 100, 100, false);
             Paths paths = dag.paths();
             List<Node> initialOrder = dag.getNodes();
-            List<Node> ordering = paths.validOrder(initialOrder, true);
+            List<Node> ordering = paths.getValidOrder(initialOrder, true);
         }
         System.out.println("DAG = " + dag);
 

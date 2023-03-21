@@ -701,7 +701,7 @@ public final class MlBayesImObs implements BayesIm {
         Graph contemporaneousDag = timeSeriesGraph.subgraph(lag0Nodes);
         Paths paths = contemporaneousDag.paths();
         List<Node> initialOrder = contemporaneousDag.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {
@@ -856,7 +856,7 @@ public final class MlBayesImObs implements BayesIm {
         Dag dag = new Dag(graph);
         Paths paths = dag.paths();
         List<Node> initialOrder = dag.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
 
         for (int i = 0; i < tierOrdering.size(); i++) {

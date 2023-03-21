@@ -65,14 +65,9 @@ public final class BfciFoo implements GraphSearch {
     private PrintStream out = System.out;
 
     // GRaSP parameters
-    private int numStarts = 1;
     private int depth = -1;
-    private boolean useRaskuttiUhler;
-    private boolean useDataOrder = true;
-    private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private Knowledge knowledge = new Knowledge();
-    private Boss.AlgType algType = Boss.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BfciFoo(IndependenceTest test, Score score) {
@@ -85,59 +80,25 @@ public final class BfciFoo implements GraphSearch {
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + getTest() + ".");
 
-        TeyssierScorer scorer = new TeyssierScorer(test, score);
-
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-        Boss boss = new Boss(scorer);
-        boss.setAlgType(algType);
-        boss.setUseScore(useScore);
-        boss.setUseRaskuttiUhler(useRaskuttiUhler);
-        boss.setUseDataOrder(useDataOrder);
-        boss.setDepth(depth);
-        boss.setNumStarts(numStarts);
-        boss.setVerbose(false);
+        PermutationSearch bossOrig = new PermutationSearch(new Boss(score));
+        bossOrig.setVerbose(false);
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        boss.bestOrder(variables);
-        Graph graph = boss.getGraph(false);  // Get the DAG
+        Graph graph = bossOrig.search();
 
         if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
             ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
         }
 
-        Knowledge knowledge2 = new Knowledge((Knowledge) knowledge);
-//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
+        Knowledge knowledge = new Knowledge(this.knowledge);
 
-        // Remove edges by conditioning on subsets of variables in triangles, orienting more colliders
-//        triangleReduce2(graph, scorer, knowledge); // Adds <-> edges to the DAG
-
-
-//        LvBesJoe lvBesJoe = new LvBesJoe(score);
-//        lvBesJoe.setDepth(depth);
-//        lvBesJoe.setKnowledge(knowledge2);
-//        lvBesJoe.bes(graph, variables);
-//
-//        for (Edge edge : graph.getEdges()) {
-//            if (Edges.isPartiallyOrientedEdge(edge)) {
-//                if (edge.pointsTowards(edge.getNode2()) && knowledge.isForbidden(edge.getNode1().getName(), edge.getNode2().getName())) {
-//                    graph.setEndpoint(edge.getNode2(), edge.getNode1(), Endpoint.ARROW);
-//                } else if (edge.pointsTowards(edge.getNode1()) && knowledge.isForbidden(edge.getNode2().getName(), edge.getNode1().getName())) {
-//                    graph.setEndpoint(edge.getNode2(), edge.getNode2(), Endpoint.ARROW);
-//                }
-//            }
-//        }
-
-//        graph = SearchGraphUtils.cpdagForDag(graph);
-////
         for (Edge edge : graph.getEdges()) {
             if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
             if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
         }
-
-        // Retain only the unshielded colliders.
-//        retainUnshieldedColliders(graph);
 
         // Do final FCI orientation rules app
         SepsetProducer sepsets = new SepsetsGreedy(graph, test, null, depth);
@@ -146,7 +107,7 @@ public final class BfciFoo implements GraphSearch {
         fciOrient.setDoDiscriminatingPathColliderRule(this.doDiscriminatingPathRule);
         fciOrient.setDoDiscriminatingPathTailRule(this.doDiscriminatingPathRule);
         fciOrient.setMaxPathLength(this.maxPathLength);
-        fciOrient.setKnowledge(knowledge2);
+        fciOrient.setKnowledge(knowledge);
         fciOrient.doFinalOrientation(graph);
 
         return graph;
@@ -408,24 +369,17 @@ public final class BfciFoo implements GraphSearch {
         this.out = out;
     }
 
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
     public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
-        this.useRaskuttiUhler = useRaskuttiUhler;
     }
 
     public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
     }
 
     public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
     }
 
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
@@ -434,9 +388,5 @@ public final class BfciFoo implements GraphSearch {
 
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    public void setAlgType(Boss.AlgType algType) {
-        this.algType = algType;
     }
 }

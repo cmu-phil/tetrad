@@ -164,7 +164,7 @@ public class TestPc {
 
         // Run search
 //        Graph resultGraph = pc.search();
-        Graph resultGraph = pc.search(new Fas(independence), independence.getVariables());
+        Graph resultGraph = pc.search();
 
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert(outputGraph);
@@ -352,7 +352,7 @@ public class TestPc {
                     throw new IllegalStateException();
             }
 
-            long start =  MillisecondTimes.timeMillis();
+            long start = MillisecondTimes.timeMillis();
 
             Graph out = search.search();
 
@@ -745,7 +745,7 @@ public class TestPc {
 
             out = trim(out, target);
 
-            long start =  MillisecondTimes.timeMillis();
+            long start = MillisecondTimes.timeMillis();
 
             long stop = MillisecondTimes.timeMillis();
 

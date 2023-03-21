@@ -87,7 +87,7 @@ public final class LargeScaleSimulation {
 
         Paths paths = graph.paths();
         List<Node> initialOrder = graph.getNodes();
-        List<Node> causalOrdering = paths.validOrder(initialOrder, true);
+        List<Node> causalOrdering = paths.getValidOrder(initialOrder, true);
         this.tierIndices = new int[causalOrdering.size()];
         for (int i = 0; i < this.tierIndices.length; i++) {
             this.tierIndices[i] = this.variableNodes.indexOf(causalOrdering.get(i));

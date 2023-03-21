@@ -142,7 +142,7 @@ public class SaveGraph extends AbstractAction {
                 // Probably not a directed graph.
                 JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
             }
-        }else if (this.type == Type.pcalg) {
+        } else if (this.type == Type.pcalg) {
             File file = EditorUtils.getSaveFile("graph", "pcalg.csv", parent, false, this.title);
             try {
                 String text = GraphPersistence.graphToPcalg(graph);

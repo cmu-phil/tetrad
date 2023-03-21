@@ -33,7 +33,7 @@ import java.util.*;
 /**
  * @author Bryan Andrews
  */
-public class MagSemBicScore implements Score{
+public class MagSemBicScore implements Score {
 
     private final SemBicScore score;
 
@@ -129,7 +129,7 @@ public class MagSemBicScore implements Score{
                 }
 
                 int[] parents = new int[j];
-                for (int k = 0 ; k < j ; k++){
+                for (int k = 0; k < j; k++) {
                     parents[k] = this.score.getVariables().indexOf(condSet.get(k));
                 }
 
@@ -187,9 +187,9 @@ public class MagSemBicScore implements Score{
         List<Node> mb = new ArrayList<>(mbo);
         mb.removeAll(in);
 
-        for (Node v3 : in.subList(0,in.size())) {
+        for (Node v3 : in.subList(0, in.size())) {
             for (Node v2 : mb) {
-                Edge e = this.mag.getEdge(v2,v3);
+                Edge e = this.mag.getEdge(v2, v3);
                 if (e != null && e.getEndpoint1() == Endpoint.ARROW && e.getEndpoint2() == Endpoint.ARROW) {
                     if (an.contains(v2)) {
                         updateIntrinsics(in, sib, an, v2, mbo);
@@ -209,31 +209,10 @@ public class MagSemBicScore implements Score{
         this.score.setPenaltyDiscount(penaltyDiscount);
     }
 
-    private int[] append(int[] parents, int extra) {
-        int[] all = new int[parents.length + 1];
-        System.arraycopy(parents, 0, all, 0, parents.length);
-        all[parents.length] = extra;
-        return all;
-    }
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
-    }
-
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScore(y, x) - localScore(y);
-    }
-
-    @Override
-    public double localScore(int i, int parent) {
-        return localScore(i, new int[]{parent});
-    }
-
-    @Override
-    public double localScore(int i) {
-        return localScore(i, new int[0]);
     }
 
     @Override
@@ -249,16 +228,6 @@ public class MagSemBicScore implements Score{
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
-    }
-
-    @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.score.getVariables()) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-        return null;
     }
 
     @Override

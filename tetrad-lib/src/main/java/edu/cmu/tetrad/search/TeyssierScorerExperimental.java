@@ -4,8 +4,6 @@ import edu.cmu.tetrad.graph.*;
 import org.apache.commons.lang3.RandomUtils;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.min;
@@ -26,7 +24,7 @@ public class TeyssierScorerExperimental {
     private final List<Node> variables;
     private final int n;
     private final int[] order;
-//    private final ConcurrentMap<Integer, Set<Integer>> parents;
+    //    private final ConcurrentMap<Integer, Set<Integer>> parents;
     private final Map<Integer, Set<Integer>> parents;
     private final double[] scores;
 
@@ -221,7 +219,7 @@ public class TeyssierScorerExperimental {
                 z = y;
             }
             if (z != -1) parents.add(z);
-        } while(z != -1);
+        } while (z != -1);
 
         do {
             z = -1;
@@ -234,7 +232,7 @@ public class TeyssierScorerExperimental {
                 z = remove;
             }
             if (z != -1) parents.remove(z);
-        } while(z != -1);
+        } while (z != -1);
 
         return sMax;
     }

@@ -45,7 +45,6 @@ import edu.cmu.tetrad.util.Unmarshallable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Stores an algorithms in the format of the algorithm comparison API.
@@ -656,7 +655,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             return null;
         } else {
             Graph graph = this.graphList.get(0);
-            LayoutUtil.circleLayout( graph,225, 225, 180);
+            LayoutUtil.circleLayout(graph, 225, 225, 180);
             return graph;
         }
     }

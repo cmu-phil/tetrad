@@ -631,8 +631,8 @@ public class Cstar {
         } else if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof ConditionalGaussianScore) {
             ConditionalGaussianScore score = (ConditionalGaussianScore) ((IndTestScore) test).getWrappedScore();
             double penaltyDiscount = score.getPenaltyDiscount();
-            ConditionalGaussianScore _score = new ConditionalGaussianScore(sample, 1, 0, false);
-            _score.setPenaltyDiscount(penaltyDiscount);
+            ConditionalGaussianScore _score = new ConditionalGaussianScore(sample, penaltyDiscount, false);
+            _score.setStructurePrior(0);
             return new IndTestScore(_score);
         } else {
             throw new IllegalArgumentException("That test is not configured: " + test);

@@ -41,7 +41,7 @@ import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * LOFS = Ling Orientation Fixed Structure. Some additional algorithm.
- *
+ * <p>
  * Expands the set of algorithm from Lofs.
  *
  * @author Joseph Ramsey

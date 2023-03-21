@@ -85,6 +85,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation matrix implied by the
      * given data set (must be continuous). The given significance level is used.
+     *
      * @param dataSet A data set containing only continuous columns.
      * @param alpha   The alpha level of the test.
      */
@@ -257,17 +258,6 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         return this.nameMap.get(name);
     }
 
-    /**
-     * @return the list of variable varNames.
-     */
-    public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
-            variableNames.add(variable1.getName());
-        }
-        return variableNames;
-    }
 
     /**
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
@@ -362,10 +352,6 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         return this.covMatrix.getSampleSize();
     }
 
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
 
     @Override
     public double getScore() {

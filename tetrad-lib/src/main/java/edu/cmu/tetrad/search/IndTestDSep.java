@@ -22,13 +22,11 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
@@ -248,17 +246,6 @@ public class IndTestDSep implements IndependenceTest {
         return Collections.unmodifiableList(_observedVars);
     }
 
-    /**
-     * @return the list of variable varNames.
-     */
-    public List<String> getVariableNames() {
-        List<Node> nodes = _observedVars;
-        List<String> nodeNames = new ArrayList<>();
-        for (Node var : nodes) {
-            nodeNames.add(var.getName());
-        }
-        return nodeNames;
-    }
 
     public boolean determines(List<Node> z, Node x1) {
         return false;
@@ -298,28 +285,9 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     public DataSet getData() {
-        return null;
+        throw new UnsupportedOperationException("This is a d-separation test, no data available.");
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
-
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
-
-    @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
 
     @Override
     public double getScore() {

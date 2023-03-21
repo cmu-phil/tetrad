@@ -685,7 +685,7 @@ public final class SemIm implements IM, ISemIm {
         semGraph.setShowErrorTerms(false);
         Paths paths = new Paths(semGraph);
         List<Node> initialOrder = semGraph.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
 
         double[] intercepts = new double[tierOrdering.size()];
 
@@ -1191,7 +1191,7 @@ public final class SemIm implements IM, ISemIm {
 
         Paths paths = contemporaneousDag.paths();
         List<Node> initialOrder = contemporaneousDag.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
 
         for (int currentStep = 0; currentStep < sampleSize; currentStep++) {
             for (Node to : tierOrdering) {
@@ -1355,7 +1355,7 @@ public final class SemIm implements IM, ISemIm {
         Graph graph = new EdgeListGraph(getSemPm().getGraph());
         Paths paths = graph.paths();
         List<Node> initialOrder = graph.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
 
         int[] tierIndices = new int[variableNodes.size()];
 
@@ -1938,8 +1938,8 @@ public final class SemIm implements IM, ISemIm {
 
         if (parameter.isInitializedRandomly()) {
             if (parameter.getType() == ParamType.COEF) {
-                double coefLow = getParams().getDouble("coefLow", .5);
-                double coefHigh = getParams().getDouble("coefHigh", 1.5);
+                double coefLow = getParams().getDouble("coefLow", 0.0);
+                double coefHigh = getParams().getDouble("coefHigh", 1.0);
                 double value = new Split(coefLow, coefHigh).nextRandom();
                 if (getParams().getBoolean("coefSymmetric", true)) {
                     return value;

@@ -320,7 +320,7 @@ public class GeneralizedSemIm implements IM, Simulator {
 
         Paths paths = contemporaneousDag.paths();
         List<Node> initialOrder = contemporaneousDag.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
 
         tierOrdering.removeIf(node -> node.getNodeType() == NodeType.ERROR);
 

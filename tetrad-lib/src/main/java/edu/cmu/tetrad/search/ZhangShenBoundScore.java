@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.*;
@@ -109,11 +108,6 @@ public class ZhangShenBoundScore implements Score {
         return 2. - pow((1. + (exp(-(lambda - 1.) / 2.)) * sqrt(lambda)), pn - m0);
     }
 
-    private static int[] append(int[] z, int x) {
-        int[] _z = Arrays.copyOf(z, z.length + 1);
-        _z[z.length] = x;
-        return _z;
-    }
 
     private int[] indices(List<Node> __adj) {
         int[] indices = new int[__adj.size()];
@@ -126,10 +120,6 @@ public class ZhangShenBoundScore implements Score {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScoreDiff(x, y, new int[0]);
-    }
 
     public double localScore(int i, int... parents) throws RuntimeException {
         int pn = variables.size() - 1;
@@ -183,16 +173,7 @@ public class ZhangShenBoundScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-    public double localScore(int i, int parent) {
-        return localScore(i, new int[]{parent});
-    }
 
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
-    public double localScore(int i) {
-        return localScore(i, new int[0]);
-    }
 
     public ICovarianceMatrix getCovariances() {
         return covariances;
@@ -244,17 +225,6 @@ public class ZhangShenBoundScore implements Score {
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
-    }
-
-    @Override
-    public Node getVariable(String targetName) {
-        for (Node node : variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
     }
 
     @Override

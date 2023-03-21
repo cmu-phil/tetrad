@@ -23,14 +23,11 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BDCE;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSSDC;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SP;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
-import edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -47,8 +44,8 @@ public class TestBoss {
         Parameters parameters = new Parameters();
         parameters.set(Params.NUM_RUNS, 1);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
-        parameters.set(Params.NUM_MEASURES, 500);
-        parameters.set(Params.AVG_DEGREE, 10);
+        parameters.set(Params.NUM_MEASURES, 10);
+        parameters.set(Params.AVG_DEGREE, 5);
         parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.COEF_LOW, 0);
         parameters.set(Params.COEF_HIGH, 1);
@@ -69,10 +66,9 @@ public class TestBoss {
         statistics.add(new ElapsedCpuTime());
 
         Algorithms algorithms = new Algorithms();
-//        algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new BOSS(new FisherZ(), new SemBicScore()));
-//        algorithms.add(new BDCE(new SemBicScore()));
-//        algorithms.add(new BOSSDC(new SemBicScore()));
+        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new BOSS(new SemBicScore()));
+        algorithms.add(new SP(new SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));

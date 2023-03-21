@@ -19,12 +19,14 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
+import org.apache.commons.math3.util.FastMath;
+
+import javax.swing.*;
+import javax.swing.table.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.*;
-import javax.swing.table.*;
-import org.apache.commons.math3.util.FastMath;
+import java.util.stream.Collectors;
 
 /**
  * Apr 30, 2019 2:30:18 PM
@@ -66,6 +68,8 @@ public class EdgeTypeTable extends JPanel {
     private final JLabel title = new JLabel();
     private final JTable table = new EdgeInfoTable(new DefaultTableModel());
 
+    private Graph graph;
+
     public EdgeTypeTable() {
         initComponents();
     }
@@ -80,7 +84,9 @@ public class EdgeTypeTable extends JPanel {
     }
 
     public void update(Graph graph) {
-        List<Edge> edges = new ArrayList<>(graph.getEdges());
+        List<Edge> edges = graph.getEdges().stream()
+                .filter(edge -> !edge.isNull())
+                .collect(Collectors.toList());
         Edges.sortEdges(edges);
 
         DefaultTableModel tableModel = (DefaultTableModel) this.table.getModel();
@@ -128,6 +134,8 @@ public class EdgeTypeTable extends JPanel {
         }
 
         tableModel.fireTableDataChanged();
+
+        this.graph = graph;
     }
 
     private void addEdgeProbabilityData(Edge edge, String[] rowData) {
@@ -252,6 +260,10 @@ public class EdgeTypeTable extends JPanel {
         }
 
         return false;
+    }
+
+    public Graph getGraph() {
+        return graph;
     }
 
     class EdgeInfoTable extends JTable {

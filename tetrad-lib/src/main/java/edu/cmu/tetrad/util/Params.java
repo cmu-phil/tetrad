@@ -233,7 +233,7 @@ public final class Params {
     public static final String TIME_LAG = "timeLag";
     public static final String PRECOMPUTE_COVARIANCES = "precomputeCovariances";
     public static final String IMAGES_META_ALG = "imagesMetaAlg";
-    
+
     public static final String SEED = "seed";
     public static final String SIGNIFICANCE_CHECKED = "significanceChecked";
 
@@ -280,7 +280,7 @@ public final class Params {
             Params.ADD_ORIGINAL_DATASET,
             Params.NUMBER_RESAMPLING,
             Params.PERCENT_RESAMPLE_SIZE,
-            Params.RESAMPLING_ENSEMBLE,
+//            Params.RESAMPLING_ENSEMBLE,
             Params.RESAMPLING_WITH_REPLACEMENT,
             Params.SEED
     ));

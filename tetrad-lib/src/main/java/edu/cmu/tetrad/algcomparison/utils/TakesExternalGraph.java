@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.utils;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.graph.Graph;
 
 /**
  * Tags an algorithm that can take an external graph as input.

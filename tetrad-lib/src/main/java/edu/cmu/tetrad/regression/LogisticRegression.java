@@ -396,7 +396,8 @@ public class LogisticRegression implements TetradSerializable {
 
         /**
          * Constructs a new LinRegrResult.
-         *  @param numRegressors the number of regressors
+         *
+         * @param numRegressors the number of regressors
          * @param ny0           the number of cases with target = 0.
          * @param ny1           the number of cases with target = 1.
          * @param coefs         the array of regression coefficients.
@@ -578,7 +579,6 @@ public class LogisticRegression implements TetradSerializable {
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
      * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
-     *
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

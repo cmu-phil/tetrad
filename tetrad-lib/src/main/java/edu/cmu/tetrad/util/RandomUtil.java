@@ -66,7 +66,7 @@ public class RandomUtil {
      */
     public static RandomUtil getInstance() {
         if (!randomUtils.containsKey(Thread.currentThread())) {
-            System.out.println("new thread");
+//            System.out.println("new thread");
             randomUtils.put(Thread.currentThread(), new RandomUtil());
         }
         return randomUtils.get(Thread.currentThread());

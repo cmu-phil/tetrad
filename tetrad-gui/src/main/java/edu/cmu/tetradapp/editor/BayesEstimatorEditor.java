@@ -25,7 +25,6 @@ import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.BayesProperties;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.BayesEstimatorWrapper;
 import edu.cmu.tetradapp.model.BayesImWrapper;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -33,6 +32,7 @@ import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
 import java.awt.*;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 /**
@@ -149,19 +149,17 @@ public class BayesEstimatorEditor extends JPanel {
 
         JScrollPane wizardScroll = new JScrollPane(getWizard());
 
-        BayesProperties properties = new BayesProperties(this.wrapper.getDataSet());
-
+        DataSet dataSet = this.wrapper.getDataSet();
+        BayesProperties properties = new BayesProperties(dataSet);
         StringBuilder buf = new StringBuilder();
-//        buf.append("\nP-value = ").append(properties.getLikelihoodRatioP(graph));
+        BayesProperties.LikelihoodRet ret = properties.getLikelihoodRatioP(graph);
+        NumberFormat nf = new DecimalFormat("0.00");
+        buf.append("\nP-value = ").append(nf.format(ret.p));
 //        buf.append("\nP-value = ").append(properties.getVuongP());
-        buf.append("\nDf = ").append(properties.getDof());
-        /*
-      Formats numbers.
-         */
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        buf.append("\nChi square = ")
-                .append(nf.format(properties.getChisq()));
-        buf.append("\nBIC score = ").append(nf.format(properties.getBic()));
+        buf.append("\nDf = ").append(nf.format(ret.dof));
+        buf.append("\nChi square = ").append(nf.format(ret.chiSq));
+        buf.append("\nBIC score = ").append(nf.format(ret.bic));
+
         buf.append("\n\nH0: Complete graph.");
 
         JTextArea modelParametersText = new JTextArea();

@@ -143,8 +143,9 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
                     score.setStructurePrior(structurePrior);
                     this.fges = new Fges(score);
                 } else {
-                    ConditionalGaussianScore gesScore = new ConditionalGaussianScore(dataSet, 1, 1, false);
+                    ConditionalGaussianScore gesScore = new ConditionalGaussianScore(dataSet, 1, false);
                     gesScore.setPenaltyDiscount(penaltyDiscount);
+                    gesScore.setStructurePrior(1);
                     this.fges = new Fges(gesScore);
                 }
             } else if (model instanceof ICovarianceMatrix) {

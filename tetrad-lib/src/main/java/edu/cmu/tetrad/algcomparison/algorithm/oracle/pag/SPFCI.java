@@ -6,14 +6,14 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.annotation.AlgType;
+import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BfciFoo;
-import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.search.SpFci;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -26,7 +26,7 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 
 
 /**
- * Adjusts GFCI to use a permutation algorithm (such as BOSS-Tuck) to do the initial
+ * Adjusts GFCI to use a permutation algorithm (in this case SP) to do the initial
  * steps of finding adjacencies and unshielded colliders.
  * <p>
  * GFCI reference is this:
@@ -36,25 +36,24 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  *
  * @author jdramsey
  */
-//@edu.cmu.tetrad.annotation.Algorithm(
-//        name = "BFCI Final Orientation Only",
-//        command = "bfcifoo",
-//        algoType = AlgType.allow_latent_common_causes
-//)
-//@Bootstrapping
-//@Experimental
-public class BFCIFinalOrientationOnly implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+@edu.cmu.tetrad.annotation.Algorithm(
+        name = "SP-FCI",
+        command = "spfci",
+        algoType = AlgType.allow_latent_common_causes
+)
+@Bootstrapping
+public class SPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public BFCIFinalOrientationOnly() {
+    public SPFCI() {
         // Used for reflection; do not delete.
     }
 
-    public BFCIFinalOrientationOnly(IndependenceWrapper test, ScoreWrapper score) {
+    public SPFCI(ScoreWrapper score, IndependenceWrapper test) {
         this.test = test;
         this.score = score;
     }
@@ -62,40 +61,12 @@ public class BFCIFinalOrientationOnly implements Algorithm, UsesScoreWrapper, Ta
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                DataSet dataSet = (DataSet) dataModel;
-                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                if (dataSet.getName() != null) {
-                    timeSeries.setName(dataSet.getName());
-                }
-                dataModel = timeSeries;
-                knowledge = timeSeries.getKnowledge();
-            }
-
-            BfciFoo search = new BfciFoo(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
-
-            if (parameters.getInt(Params.BOSS_ALG) == 1) {
-                search.setAlgType(Boss.AlgType.BOSS1);
-            } else if (parameters.getInt(Params.BOSS_ALG) == 2) {
-                search.setAlgType(Boss.AlgType.BOSS2);
-            } else {
-                throw new IllegalArgumentException("Unrecognized boss algorithm type.");
-            }
-
+            SpFci search = new SpFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
+            search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
-//            search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
-
-            search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
-            search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
-            search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-            search.setKnowledge(knowledge);
-
-            search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+            search.setKnowledge(search.getKnowledge());
 
             Object obj = parameters.get(Params.PRINT_STREAM);
 
@@ -105,7 +76,7 @@ public class BFCIFinalOrientationOnly implements Algorithm, UsesScoreWrapper, Ta
 
             return search.search();
         } else {
-            BFCIFinalOrientationOnly algorithm = new BFCIFinalOrientationOnly(this.test, this.score);
+            SPFCI algorithm = new SPFCI(this.score, this.test);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
@@ -122,8 +93,8 @@ public class BFCIFinalOrientationOnly implements Algorithm, UsesScoreWrapper, Ta
 
     @Override
     public String getDescription() {
-        return "BFCIFOO (BOSS + FINAL FCI ORIENTATION ONLY using " + this.test.getDescription()
-                + " and " + this.score.getDescription();
+        return "SP-FCI (SP-based FCI) using " + this.test.getDescription()
+                + " or " + this.score.getDescription();
     }
 
     @Override
@@ -135,20 +106,15 @@ public class BFCIFinalOrientationOnly implements Algorithm, UsesScoreWrapper, Ta
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
-        params.add(Params.BOSS_ALG);
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
-        params.add(Params.GRASP_USE_SCORE);
-        params.add(Params.GRASP_USE_RASKUTTI_UHLER);
-        params.add(Params.GRASP_USE_DATA_ORDER);
-        params.add(Params.POSSIBLE_DSEP_DONE);
         params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 
-        // Parameters
-        params.add(Params.NUM_STARTS);
+        // Flags
+        params.add(Params.VERBOSE);
 
         return params;
     }

@@ -24,7 +24,6 @@ package edu.pitt.csb.mgm;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
@@ -33,7 +32,6 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.SearchLogUtils;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
@@ -45,7 +43,7 @@ import java.util.*;
 /**
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
  * This test is valid for both ordinal and non-ordinal discrete searchVariables.
- *
+ * <p>
  * This logisticRegression makes multiple assumptions: 1. IIA 2. Large sample size (multiple regressions needed on subsets of
  * sample)
  *
@@ -364,28 +362,6 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         return this.searchVariables; // Make sure the variables from the ORIGINAL data set are returned, not the modified dataset!
     }
 
-    /**
-     * @return the list of variable varNames.
-     */
-    public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
-            variableNames.add(variable1.getName());
-        }
-        return variableNames;
-    }
-
-    public Node getVariable(String name) {
-        for (int i = 0; i < getVariables().size(); i++) {
-            Node variable = getVariables().get(i);
-            if (variable.getName().equals(name)) {
-                return variable;
-            }
-        }
-
-        return null;
-    }
 
     /**
      * @return true if y is determined the variable in z.
@@ -413,25 +389,6 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         return this.originalData;
     }
 
-    @Override
-    public ICovarianceMatrix getCov() {
-        return null;
-    }
-
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
-
-    @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
 
     @Override
     public double getScore() {

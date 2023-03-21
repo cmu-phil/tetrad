@@ -50,7 +50,7 @@ public final class BfciTr implements GraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     // The covariance matrix being searched over, if continuous data is supplied. This is
-    // no used by the algorithm but can be retrieved by another method if desired
+    // not used by the algorithm but can be retrieved by another method if desired
     ICovarianceMatrix covarianceMatrix;
 
     // The test used if Pearl's method is used ot build DAGs
@@ -68,16 +68,7 @@ public final class BfciTr implements GraphSearch {
     // The print stream that output is directed to.
     private PrintStream out = System.out;
 
-    // GRaSP parameters
-    private int numStarts = 1;
-    private int depth = 4;
-    private boolean useRaskuttiUhler;
-    private boolean useDataOrder = true;
-    private boolean useScore = true;
-    private boolean doDiscriminatingPathRule = true;
-    private boolean possibleDsepSearchDone = true;
     private Knowledge knowledge = new Knowledge();
-    private Boss.AlgType algType = Boss.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BfciTr(IndependenceTest test, Score score) {
@@ -93,30 +84,13 @@ public final class BfciTr implements GraphSearch {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
         // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-        Boss boss = new Boss(scorer);
-        boss.setAlgType(algType);
-        boss.setUseScore(useScore);
-        boss.setUseRaskuttiUhler(useRaskuttiUhler);
-        boss.setUseDataOrder(useDataOrder);
-        boss.setDepth(depth);
-        boss.setNumStarts(numStarts);
-        boss.setCaching(true);
-        boss.setVerbose(false); // Get the DAG
+        PermutationSearch bossOrig = new PermutationSearch(new Boss(score));
+        bossOrig.setVerbose(false); // Get the DAG
 
         List<Node> variables = this.score.getVariables();
         assert variables != null;
 
-        boss.bestOrder(variables);
-        Graph graph = boss.getGraph(false);
-
-//        if (true) return graph;
-
-//        for (Edge edge : graph.getEdges()) {
-//            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
-//            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
-//        }
-
-//        retainUnshieldedColliders(graph, knowledge);
+        Graph graph = bossOrig.search();
 
         test = new IndTestScore(score);
 
@@ -126,15 +100,11 @@ public final class BfciTr implements GraphSearch {
         retainUnshieldedColliders(graph, knowledge);
         triangleReduce(graph, scorer, knowledge); // Adds <-> edges to the DAG
 
-//        if (this.possibleDsepSearchDone) {
-//            removeByPossibleDsep(graph, test, null); // ...On the above graph with --> and <-> edges
-//        }
-
         // Retain only the unshielded colliders.
         retainUnshieldedColliders(graph, knowledge);
 
         // Do final FCI orientation rules app
-        SepsetProducer sepsets = new SepsetsGreedy(graph, test, null, depth);
+        SepsetProducer sepsets = new SepsetsGreedy(graph, test, null, -1);
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(true);//this.doDiscriminatingPathRule);
@@ -221,14 +191,6 @@ public final class BfciTr implements GraphSearch {
                     graph.removeEdge(a, b);
                     graph.setEndpoint(a, x, Endpoint.ARROW);
                     graph.setEndpoint(b, x, Endpoint.ARROW);
-
-//                    if (graph.getEndpoint(x, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), x.getName())) {
-//                        graph.setEndpoint(x, a, Endpoint.ARROW);
-//                    }
-//
-//                    if (graph.getEndpoint(x, b) == Endpoint.CIRCLE && knowledge.isForbidden(b.getName(), x.getName())) {
-//                        graph.setEndpoint(x, b, Endpoint.ARROW);
-//                    }
 
                     return true;
                 }
@@ -318,39 +280,7 @@ public final class BfciTr implements GraphSearch {
         this.out = out;
     }
 
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
-        this.useRaskuttiUhler = useRaskuttiUhler;
-    }
-
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
-    }
-
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
-    }
-
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    public void setAlgType(Boss.AlgType algType) {
-        this.algType = algType;
+        this.knowledge = new Knowledge(knowledge);
     }
 }

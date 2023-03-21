@@ -409,11 +409,11 @@ public class TimeSeriesUtils {
                 int lag;
                 if (varName.indexOf(':') == -1) {
                     lag = 0;
-    //                laglist.add(lag);
+                    //                laglist.add(lag);
                 } else {
                     tmp = varName.substring(varName.indexOf(':') + 1);
                     lag = Integer.parseInt(tmp);
-    //                laglist.add(lag);
+                    //                laglist.add(lag);
                 }
                 knowledge.addToTier(numLags - lag, node.getName());
             }

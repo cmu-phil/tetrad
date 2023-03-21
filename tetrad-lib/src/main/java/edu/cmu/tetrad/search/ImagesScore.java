@@ -75,10 +75,6 @@ public class ImagesScore implements Score {
         return sum;
     }
 
-    @Override
-    public double localScoreDiff(int x, int y) {
-        return localScoreDiff(x, y, new int[0]);
-    }
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
@@ -132,9 +128,7 @@ public class ImagesScore implements Score {
         return sum / count;
     }
 
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
+
     public double localScore(int i) {
         double sum = 0.0;
         int count = 0;
@@ -184,16 +178,6 @@ public class ImagesScore implements Score {
 
     // Prints a smallest subset of parents that causes a singular matrix exception.
 
-    @Override
-    public Node getVariable(String targetName) {
-        for (Node node : this.variables) {
-            if (node.getName().equals(targetName)) {
-                return node;
-            }
-        }
-
-        return null;
-    }
 
     @Override
     public int getMaxDegree() {

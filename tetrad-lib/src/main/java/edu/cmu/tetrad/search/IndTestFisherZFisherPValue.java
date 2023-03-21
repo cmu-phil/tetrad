@@ -184,28 +184,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     /**
      * @return the variable with the given name.
      */
-    public Node getVariable(String name) {
-        for (int i = 0; i < getVariables().size(); i++) {
-            Node variable = getVariables().get(i);
-            if (variable.getName().equals(name)) {
-                return variable;
-            }
-        }
 
-        return null;
-    }
-
-    /**
-     * @return the list of variable varNames.
-     */
-    public List<String> getVariableNames() {
-        List<Node> variables = getVariables();
-        List<String> variableNames = new ArrayList<>();
-        for (Node variable1 : variables) {
-            variableNames.add(variable1.getName());
-        }
-        return variableNames;
-    }
 
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
@@ -225,20 +204,6 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
     }
 
-    @Override
-    public List<DataSet> getDataSets() {
-        return null;
-    }
-
-    @Override
-    public int getSampleSize() {
-        return 0;
-    }
-
-    @Override
-    public List<Matrix> getCovMatrices() {
-        return null;
-    }
 
     @Override
     public double getScore() {

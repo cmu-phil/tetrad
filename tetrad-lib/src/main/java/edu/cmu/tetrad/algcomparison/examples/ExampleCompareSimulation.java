@@ -42,9 +42,9 @@ public class ExampleCompareSimulation {
         Parameters parameters = new Parameters();
         //https:arxiv.org/abs/1607.08110
         parameters.set("numRuns", 10);
-        parameters.set("numMeasures", 10);
-        parameters.set("avgDegree", 2);
-        parameters.set("sampleSize", 500);
+        parameters.set("numMeasures", 20);
+        parameters.set("avgDegree", 4);
+        parameters.set("sampleSize", 1000);
         parameters.set("alpha", 1e-2);
 
         Statistics statistics = new Statistics();

@@ -1,552 +1,230 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.MillisecondTimes;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.TetradLogger;
-import org.jetbrains.annotations.NotNull;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 
-import java.text.NumberFormat;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
-import static java.lang.Double.NEGATIVE_INFINITY;
 
 /**
- * Implements the BOSS algorithm.
+ * <p>Implements the BOSS (Best Order Permutation Search) algorithm. This procedure uses
+ * an optimization of the BOSS algorithm (reference to be included in a future version),
+ * looking for a permutation such that when a DAG is built it has the fewest number of
+ * edges (i.e., is a most 'frugal' or a 'sparsest' DAG). Returns the CPDAG of this discovered
+ * frugal DAG.</p>
+ *
+ * <p>Knowledge can be used with this search. If tiered knowledge is used, then the procedure
+ * is carried out for each tier separately, given the variable preceding that tier, which
+ * allows the SP algorithm to address tiered (e.g., time series) problems with larger numbers of
+ * variables.</p>
+ *
+ * <p>This class is meant to be used in the context of the PermutationSearch class (see).
+ * the proper use is PermutationSearch search = new PermutationSearch(new Sp(score));</p>
  *
  * @author bryanandrews
  * @author josephramsey
+ * @see PermutationSearch
  */
-public class Boss {
-    private final List<Node> variables;
+public class Boss implements SuborderSearch {
+    private final Bes bes;
     private final Score score;
-    private IndependenceTest test;
+    private final List<Node> variables;
+    private final Map<Node, Set<Node>> parents;
+    private final Map<Node, Double> scores;
+    private Map<Node, GrowShrinkTree> gsts;
+    private int numStarts;
     private Knowledge knowledge = new Knowledge();
-    private final TeyssierScorer scorer;
-    private long start;
-    long stop;
-    private boolean useScore = true;
-    private boolean useRaskuttiUhler;
-    private boolean useDataOrder = true;
-    private boolean verbose = true;
-    private int depth = -1;
-    private int numStarts = 1;
-    private AlgType algType = AlgType.BOSS1;
-    private boolean caching = true;
-    private double epsilon = 1e-10;
 
-    public Boss(@NotNull IndependenceTest test, Score score) {
-        this.test = test;
-        this.score = score;
-        this.variables = new ArrayList<>(score.getVariables());
-        this.useScore = true;
-        this.scorer = new TeyssierScorer(this.test, this.score);
-    }
 
+    /**
+     * This algorithm will work with an arbitrary score.
+     * @param score The Score to use.
+     */
     public Boss(Score score) {
-        this.test = null;
         this.score = score;
-        this.variables = new ArrayList<>(score.getVariables());
-        this.useScore = true;
-        this.scorer = new TeyssierScorer(null, this.score);
-    }
+        this.variables = score.getVariables();
+        this.parents = new HashMap<>();
+        this.scores = new HashMap<>();
 
-    public Boss(TeyssierScorer scorer) {
-        this.scorer = scorer;
-        this.score = scorer.getScoreObject();
-        this.variables = new ArrayList<>(scorer.getPi());
-    }
-
-    public List<Node> bestOrder(@NotNull List<Node> order) {
-
-        scorer.setCachingScores(caching);
-        scorer.setKnowledge(knowledge);
-
-        List<Node> bestPerm;
-        long start = MillisecondTimes.timeMillis();
-        order = new ArrayList<>(order);
-
-        this.scorer.setUseRaskuttiUhler(this.useRaskuttiUhler);
-
-        if (this.useRaskuttiUhler) {
-            this.scorer.setUseScore(false);
-        } else {
-            this.scorer.setUseScore(this.useScore && !(this.score instanceof GraphScore));
+        for (Node x : this.variables) {
+            this.parents.put(x, new HashSet<>());
         }
 
-        this.scorer.setKnowledge(this.knowledge);
-        this.scorer.clearBookmarks();
+        this.bes = new Bes(score);
+        this.bes.setVerbose(false);
+        this.numStarts = 1;
+    }
 
-        bestPerm = null;
-        double best = NEGATIVE_INFINITY;
+    @Override
+    public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
+        this.gsts = gsts;
+        makeValidKnowledgeOrder(suborder);
+        List<Node> bestSuborder = new ArrayList<>(suborder);
+        double bestScore = update(prefix, suborder);
 
-        this.scorer.score(order);
-
-        for (int r = 0; r < this.numStarts; r++) {
-            if ((r == 0 && !this.useDataOrder) || r > 0) {
-                shuffle(order);
+        Map<Node, Set<Node>> required = new HashMap<>();
+        for (Node y : suborder) {
+            for (Node z : suborder) {
+                if (this.knowledge.isRequired(y.getName(), z.getName())) {
+                    if (!required.containsKey(y)) required.put(y, new HashSet<>());
+                    required.get(y).add(z);
+                }
             }
+        }
 
-            this.start = MillisecondTimes.timeMillis();
-
-            makeValidKnowledgeOrder(order);
-
-            double s1, s2;
-
-            int count = 0;
-//            boolean ensureMinimumCount = score instanceof ZhangShenBoundScore;
-
-            if (algType == AlgType.BOSS1) {
-                betterMutation1(scorer);
-            } else if (algType == AlgType.BOSS2) {
-                betterMutation2(scorer);
-            } else if (algType == AlgType.BOSS3) {
-                betterMutationBryan(scorer);
-            }
-
+        for (int i = 0; i < this.numStarts; i++) {
+            shuffle(suborder);
+            makeValidKnowledgeOrder(suborder);
+            double s1, s2, s3;
+            s1 = update(prefix, suborder);
             do {
-                s1 = scorer.score();
-
-                if (algType == AlgType.BOSS1) {
-                    besMutation(scorer);
-                    betterMutation1(scorer);
-                } else if (algType == AlgType.BOSS2) {
-                    besMutation(scorer);
-                    betterMutation2(scorer);
-                } else if (algType == AlgType.BOSS3) {
-                    besMutation(scorer);
-                    betterMutationBryan(scorer);
-                }
-
-                s2 = scorer.score();
-            } while (s2 > s1);
-
-            if (this.scorer.score() > best) {
-                best = this.scorer.score();
-                bestPerm = scorer.getPi();
-            }
-        }
-
-        this.scorer.score(bestPerm);
-
-        this.stop = MillisecondTimes.timeMillis();
-
-        if (this.verbose) {
-            TetradLogger.getInstance().forceLogMessage("\nFinal " + algType + " order = " + this.scorer.getPi());
-            TetradLogger.getInstance().forceLogMessage("Final score = " + this.scorer.score());
-            TetradLogger.getInstance().forceLogMessage("Elapsed time = " + (stop - start) / 1000.0 + " s");
-        }
-
-        return bestPerm;
-    }
-
-//    public void betterMutation1(@NotNull TeyssierScorer scorer) {
-//        double bestScore = scorer.score();
-//        scorer.bookmark();
-//        double s1, s2;
-//
-//        Set<Node> introns1;
-//        Set<Node> introns2;
-//
-//        introns2 = new HashSet<>(scorer.getPi());
-//
-//        int[] range = new int[2];
-//
-//        do {
-//            s1 = scorer.score();
-//
-//            introns1 = introns2;
-//            introns2 = new HashSet<>();
-//
-//            for (int i = 1; i < scorer.size(); i++) {
-//                Node x = scorer.get(i);
-//                if (!introns1.contains(x)) continue;
-//
-//                scorer.bookmark(1);
-//
-//                for (int j = i - 1; j >= 0; j--) {
-//                    if (!scorer.adjacent(scorer.get(j), x)) continue;
-//
-//                    tuck(x, j, scorer, range);
-//
-//                    if (scorer.score() < bestScore || violatesKnowledge(scorer.getPi())) {
-//                        scorer.goToBookmark();
-//                    } else {
-//                        bestScore = scorer.score();
-//
-//                        for (int l = range[0]; l <= range[1]; l++) {
-//                            introns2.add(scorer.get(l));
-//                        }
-//                    }
-//
-//                    scorer.bookmark();
-//
-//                    if (verbose) {
-//                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutation1)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
-//                    }
-//                }
-//            }
-//
-//            if (verbose) {
-//                System.out.println();
-//            }
-//
-//            s2 = scorer.score();
-//        } while (s2 > s1);
-//
-//        scorer.goToBookmark(1);
-//    }
-
-    public void betterMutation1(@NotNull TeyssierScorer scorer) {
-        double bestScore = scorer.score();
-        double originalScore;
-        scorer.bookmark();
-
-        Set<Node> introns1;
-        Set<Node> introns2;
-
-        introns2 = new HashSet<>(scorer.getPi());
-        int[] range = new int[2];
-
-        do {
-            originalScore = bestScore;
-
-            introns1 = introns2;
-            introns2 = new HashSet<>();
-
-            for (int i = 1; i < scorer.size(); i++) {
-                Node x = scorer.get(i);
-                if (!introns1.contains(x)) continue;
-
-                for (int j = i - 1; j >= 0; j--) {
-                    if (!scorer.adjacent(scorer.get(j), x)) continue;
-
-                    tuck(x, j, scorer, range);
-
-                    if (scorer.score() > bestScore + epsilon || violatesKnowledge(scorer.getPi())) {
-                        for (int l = range[0]; l <= range[1]; l++) {
-                            introns2.add(scorer.get(l));
+                s2 = s1;
+                do {
+                    s3 = s1;
+                    for (Node x : new ArrayList<>(suborder)) {
+                        if (betterMutation(prefix, suborder, required, x)) {
+                            s1 = update(prefix, suborder);
                         }
-                        bestScore = scorer.score();
-                        scorer.bookmark();
-                    } else {
-                        scorer.goToBookmark();
                     }
+                } while (s1 > s3);
+                do {
+                    s3 = s1;
+                    List<Node> Z = new ArrayList<>(prefix);
+                    Z.addAll(suborder);
+                    Graph graph = PermutationSearch.getGraph(Z, parents, true);
+                    this.bes.bes(graph, Z);
+                    graph.paths().makeValidOrder(suborder);
+                    s1 = update(prefix, suborder);
+                } while (s1 > s3);
+            } while (s1 > s2);
 
-                    if (verbose) {
-                        System.out.print("\rIndex = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
-                        System.out.print("\r# Edges = " + scorer.getNumEdges() + " Index = " + (i + 1) + " Score = " + scorer.score() + " (betterMutationTuck)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
-                    }
-                }
-            }
-            if (verbose) {
-                System.out.println();
-            }
-        } while (bestScore > originalScore + epsilon);
-    }
-
-
-    public void betterMutation2(@NotNull TeyssierScorer scorer) {
-        scorer.bookmark();
-        double s1, s2;
-
-        do {
-            s1 = scorer.score();
-            scorer.bookmark(1);
-
-            for (Node k : scorer.getPi()) {
-                double _sp = NEGATIVE_INFINITY;
-                scorer.bookmark();
-
-                for (int j = 0; j < scorer.size(); j++) {
-                    scorer.moveTo(k, j);
-
-                    if (scorer.score() >= _sp + epsilon) {
-                        if (!violatesKnowledge(scorer.getPi())) {
-                            _sp = scorer.score();
-                            scorer.bookmark();
-
-                            if (verbose) {
-                                System.out.print("\rIndex = " + (scorer.index(k) + 1) + " Score = " + scorer.score() + " (betterMutation2)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
-                            }
-                        }
-                   }
-
-                }
-
-                scorer.goToBookmark();
-            }
-
-            if (verbose) {
-                System.out.println();
-            }
-
-            s2 = scorer.score();
-        } while (s2 > s1 + epsilon);
-
-        scorer.goToBookmark(1);
-    }
-
-    public void betterMutationBryan(@NotNull TeyssierScorer scorer) {
-        double bestScore = scorer.score();
-        scorer.bookmark();
-        double s1, s2;
-
-        Set<Node> introns1;
-        Set<Node> introns2;
-
-        introns2 = new HashSet<>(scorer.getPi());
-
-        int[] range = new int[2];
-
-        do {
-            s1 = scorer.score();
-
-            introns1 = introns2;
-            introns2 = new HashSet<>();
-
-            List<OrderedPair<Node>> edges = scorer.getEdges();
-            int m = 0;
-            int all = edges.size();
-
-            for (OrderedPair<Node> edge : edges) {
-                m++;
-                Node x = edge.getFirst();
-                Node y = edge.getSecond();
-                if (scorer.index(x) > scorer.index(y)) continue;
-                if (!scorer.adjacent(y, x)) continue;
-                if (!introns1.contains(y) && !introns1.contains(x)) continue;
-
-                tuck(y, scorer.index(x), scorer, range);
-
-                if (scorer.score() < bestScore || violatesKnowledge(scorer.getPi())) {
-                    scorer.goToBookmark();
-                } else {
-                    bestScore = scorer.score();
-
-                    for (int l = range[0]; l <= range[1]; l++) {
-                        introns2.add(scorer.get(l));
-                    }
-
-                    if (verbose) {
-                        System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
-                    }
-                }
-
-                scorer.bookmark();
-
-                if (verbose) {
-                    System.out.print("\r Score " + m + " / " + all + " = " + scorer.score() + " (boss)" + " Elapsed " + ((MillisecondTimes.timeMillis() - start) / 1000.0 + " s"));
-                }
-            }
-
-            if (verbose) {
-                System.out.println();
-            }
-
-            s2 = scorer.score();
-        } while (s2 > s1);
-    }
-
-
-    public void tubes(@NotNull TeyssierScorer scorer) {
-        double s;
-
-        do {
-            s = scorer.score();
-
-            for (NodePair edge : scorer.getAdjacencies()) {
-                Node x = edge.getFirst();
-                Node y = edge.getSecond();
-                if (!scorer.adjacent(x, y)) continue;
-
-                scorer.bookmark();
-
-                tuck(y, scorer.index(x), scorer, new int[2]);
-
-                if (scorer.score() >= s) {
-                    besMutation(scorer);
-                } else {
-                    scorer.goToBookmark();
-                }
-            }
-
-        } while (scorer.score() > s);
-    }
-
-
-    private void tuck(Node k, int j, TeyssierScorer scorer, int[] range) {
-        if (scorer.index(k) < j) return;
-        Set<Node> ancestors = scorer.getAncestors(k);
-
-        int minIndex = j;
-
-        for (int i = j + 1; i <= scorer.index(k); i++) {
-            if (ancestors.contains(scorer.get(i))) {
-                scorer.moveTo(scorer.get(i), j++);
+            if (s1 > bestScore) {
+                bestSuborder = new ArrayList<>(suborder);
+                bestScore = s1;
             }
         }
 
-        range[0] = minIndex;
-        range[1] = scorer.index(k);
+        for (int i = 0; i < suborder.size(); i++) {
+            suborder.set(i, bestSuborder.get(i));
+        }
+        update(prefix, suborder);
     }
 
-    public void besMutation(TeyssierScorer scorer) {
-        Graph graph = scorer.getGraph(true);
-        Bes bes = new Bes(score);
-        bes.setDepth(depth);
-        bes.setVerbose(false);
-        bes.setKnowledge(knowledge);
-        bes.bes(graph, scorer.getPi());
-        List<Node> pi = graph.paths().validOrder(scorer.getPi(), true);
-        scorer.score(pi);
+    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Map<Node, Set<Node>> required, Node x) {
+        ListIterator<Node> itr = suborder.listIterator();
+        double[] scores = new double[suborder.size() + 1];
+        int i = 0;
+
+        Set<Node> Z = new HashSet<>(prefix);
+        double score = 0;
+        int curr = 0;
+
+        while (itr.hasNext()) {
+            Node z = itr.next();
+            scores[i++] = gsts.get(x).trace(new HashSet<>(Z), new HashSet<>()) + score;
+            if (z != x) {
+                score += gsts.get(z).trace(new HashSet<>(Z), new HashSet<>());
+                Z.add(z);
+            } else curr = i - 1;
+        }
+        scores[i] = gsts.get(x).trace(new HashSet<>(Z), new HashSet<>()) + score;
+
+        Z.add(x);
+        score = 0;
+        int best = i;
+
+        while (itr.hasPrevious()) {
+            Node z = itr.previous();
+            if (z != x) {
+                Z.remove(z);
+                score += gsts.get(z).trace(new HashSet<>(Z), new HashSet<>());
+            }
+            scores[--i] += score;
+            if (scores[i] > scores[best] && !violatesKnowledge(suborder, required)) best = i;
+        }
+
+        if (best == curr) return false;
+        else if (best > curr) best--;
+
+        suborder.remove(curr);
+        suborder.add(best, x);
+
+        return true;
     }
 
-    public int getNumEdges() {
-        return this.scorer.getNumEdges();
+    private double update(List<Node> prefix, List<Node> suborder) {
+        double score = 0;
+
+        Iterator<Node> itr = suborder.iterator();
+        Set<Node> Z = new HashSet<>(prefix);
+        while (itr.hasNext()) {
+            Node x = itr.next();
+            parents.get(x).clear();
+            scores.put(x, gsts.get(x).trace(new HashSet<>(Z), parents.get(x)));
+            score += scores.get(x);
+            Z.add(x);
+        }
+
+        return score;
+    }
+
+    private boolean violatesKnowledge(List<Node> suborder, Map<Node, Set<Node>> required) {
+        for (int i = 0; i < suborder.size(); i++) {
+            Node y = suborder.get(i);
+            if (required.containsKey(y)) {
+                for (Node z : required.get(y)) {
+                    if (suborder.subList(0, i).contains(z)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
-            order.sort((o1, o2) -> {
-                if (o1.getName().equals(o2.getName())) {
-                    return 0;
-                } else if (this.knowledge.isRequired(o1.getName(), o2.getName())) {
-                    return -1;
-                } else if (this.knowledge.isRequired(o2.getName(), o1.getName())) {
-                    return 1;
-                } else if (this.knowledge.isForbidden(o1.getName(), o2.getName())) {
-                    return 1;
-                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
-                    return -1;
-                } else {
-                    return 0;
-                }
+            order.sort((a, b) -> {
+                if (a.getName().equals(b.getName())) return 0;
+                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
+                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
+                else return 0;
             });
         }
-
-        System.out.println("Initial knowledge sort order = " + order);
-
-        if (violatesKnowledge(order)) {
-            throw new IllegalArgumentException("The initial sorting procedure could not find a permutation " +
-                    "consistent with that knowledge.");
-        }
     }
 
-    public Graph getGraph(boolean cpDag) {
-        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-        Graph graph = this.scorer.getGraph(cpDag);
-
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        graph.addAttribute("score ", nf.format(this.scorer.score()));
-        return graph;
+    public void setDepth(int depth) {
+        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
+        this.bes.setDepth(depth);
     }
 
-    public void orientbk(Knowledge bk, Graph graph, List<Node> variables) {
-        for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*-&gt;from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-        }
-
-        for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*-&gt;from
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-        }
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+        this.bes.setKnowledge(knowledge);
     }
 
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
 
+    @Override
     public List<Node> getVariables() {
-        return this.variables;
+        return variables;
     }
 
-    public boolean isVerbose() {
-        return this.verbose;
+    @Override
+    public Map<Node, Set<Node>> getParents() {
+        return parents;
     }
 
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
+    @Override
+    public Score getScore() {
+        return score;
     }
-
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-        this.depth = depth;
-    }
-
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
-    }
-
-    private boolean violatesKnowledge(List<Node> order) {
-        if (!this.knowledge.isEmpty()) {
-            for (int i = 0; i < order.size(); i++) {
-                for (int j = i + 1; j < order.size(); j++) {
-                    if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName())) {
-                        return true;
-                    }
-
-                    if (this.knowledge.isRequired(order.get(j).getName(), order.get(i).getName())) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
-        this.useRaskuttiUhler = useRaskuttiUhler;
-    }
-
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
-    public void setAlgType(AlgType algType) {
-        this.algType = algType;
-    }
-
-    public void setCaching(boolean caching) {
-        this.caching = caching;
-    }
-
-    public enum AlgType {BOSS1, BOSS2, BOSS3}
 }
+
+
+

@@ -53,14 +53,14 @@ public class BossMB2 {
      * Prints local graphs for all variables and returns the one of them.
      */
     public Graph search(@NotNull List<Node> order) {
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
 
         TeyssierScorer2 scorer0 = new TeyssierScorer2(this.score);
         scorer0.setKnowledge(this.knowledge);
         scorer0.score(order);
 
-        this.start =  MillisecondTimes.timeMillis();
+        this.start = MillisecondTimes.timeMillis();
 
         makeValidKnowledgeOrder(order);
 
@@ -112,7 +112,7 @@ public class BossMB2 {
             }
         }
 
-        long stop =  MillisecondTimes.timeMillis();
+        long stop = MillisecondTimes.timeMillis();
 
         System.out.println("Elapsed time = " + (stop - start) / 1000.0 + " s");
 
@@ -246,7 +246,7 @@ public class BossMB2 {
         bes.setVerbose(verbose);
         bes.setKnowledge(knowledge);
         bes.bes(graph, scorer.getPi());
-        return graph.paths().validOrder(scorer.getPi(), true);
+        return graph.paths().getValidOrder(scorer.getPi(), true);
     }
 
     private void makeValidKnowledgeOrder(List<Node> order) {

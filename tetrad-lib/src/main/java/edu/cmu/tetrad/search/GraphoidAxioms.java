@@ -525,56 +525,56 @@ public class GraphoidAxioms {
         }
     }
 
-public static class GraphoidIndFact {
-    private final Set<Node> X;
-    private final Set<Node> Y;
-    private final Set<Node> Z;
+    public static class GraphoidIndFact {
+        private final Set<Node> X;
+        private final Set<Node> Y;
+        private final Set<Node> Z;
 
-    public GraphoidIndFact(Set<Node> X, Set<Node> Y, Set<Node> Z) {
-        if (X.isEmpty() || Y.isEmpty()) throw new IllegalArgumentException("X or Y is empty");
-        if (!disjoint(X, Y, Z)) throw new IllegalArgumentException();
+        public GraphoidIndFact(Set<Node> X, Set<Node> Y, Set<Node> Z) {
+            if (X.isEmpty() || Y.isEmpty()) throw new IllegalArgumentException("X or Y is empty");
+            if (!disjoint(X, Y, Z)) throw new IllegalArgumentException();
 
-        this.X = new HashSet<>(X);
-        this.Y = new HashSet<>(Y);
-        this.Z = new HashSet<>(Z);
+            this.X = new HashSet<>(X);
+            this.Y = new HashSet<>(Y);
+            this.Z = new HashSet<>(Z);
+        }
+
+        public Set<Node> getX() {
+            return new HashSet<>(X);
+        }
+
+        public Set<Node> getY() {
+            return new HashSet<>(Y);
+        }
+
+        public Set<Node> getZ() {
+            return new HashSet<>(Z);
+        }
+
+        public int hashCode() {
+            return 1;
+        }
+
+        public boolean equals(Object o) {
+            if (!(o instanceof GraphoidIndFact)) return false;
+            GraphoidIndFact _fact = (GraphoidIndFact) o;
+            return X.equals(_fact.X) && Y.equals(_fact.Y) && Z.equals(_fact.Z);
+        }
+
+        public String toString() {
+            return X + " : " + Y + " | " + Z;
+        }
+
+        private boolean disjoint(Set<Node> set1, Set<Node> set2, Set<Node> set3) {
+            return intersection(set1, set2).isEmpty()
+                    && intersection(set1, set3).isEmpty()
+                    || !intersection(set2, set3).isEmpty();
+        }
+
+        private Set<Node> intersection(Set<Node> set1, Set<Node> set2) {
+            Set<Node> W = new HashSet<>(set1);
+            W.retainAll(set2);
+            return W;
+        }
     }
-
-    public Set<Node> getX() {
-        return new HashSet<>(X);
-    }
-
-    public Set<Node> getY() {
-        return new HashSet<>(Y);
-    }
-
-    public Set<Node> getZ() {
-        return new HashSet<>(Z);
-    }
-
-    public int hashCode() {
-        return 1;
-    }
-
-    public boolean equals(Object o) {
-        if (!(o instanceof GraphoidIndFact)) return false;
-        GraphoidIndFact _fact = (GraphoidIndFact) o;
-        return X.equals(_fact.X) && Y.equals(_fact.Y) && Z.equals(_fact.Z);
-    }
-
-    public String toString() {
-        return X + " : " + Y + " | " + Z;
-    }
-
-    private boolean disjoint(Set<Node> set1, Set<Node> set2, Set<Node> set3) {
-        return intersection(set1, set2).isEmpty()
-                && intersection(set1, set3).isEmpty()
-                || !intersection(set2, set3).isEmpty();
-    }
-
-    private Set<Node> intersection(Set<Node> set1, Set<Node> set2) {
-        Set<Node> W = new HashSet<>(set1);
-        W.retainAll(set2);
-        return W;
-    }
-}
 }

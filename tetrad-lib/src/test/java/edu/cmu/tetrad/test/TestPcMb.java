@@ -61,7 +61,7 @@ public class TestPcMb {
         assertTrue(mbDags.size() == 5);
     }
 
-//    @Test
+    //    @Test
     public void testRandom() {
         RandomUtil.getInstance().setSeed(83888832L);
 

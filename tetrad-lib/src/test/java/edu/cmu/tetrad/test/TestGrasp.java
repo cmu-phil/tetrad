@@ -24,14 +24,9 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BRIDGES_OLD;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GFCI;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.LVSWAP_1;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.LVSWAP_2a;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
@@ -39,18 +34,18 @@ import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulation;
-import edu.cmu.tetrad.algcomparison.simulation.Simulations;
+import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.ContinuousVariable;
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
@@ -86,9 +81,96 @@ public final class TestGrasp {
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
 
-        new TestGrasp().testLvSwap();
-//        new TestGrasp().testLvSwapFromDsep();
 //        new TestGrasp().testDsep();
+
+        new TestGrasp().testCgScore();
+
+    }
+
+    private void testExampleBnSim() {
+
+        Parameters params = new Parameters();
+
+        params.set(Params.NUM_MEASURES, 20);
+        params.set(Params.NUM_LATENTS, 0);
+        params.set(Params.AVG_DEGREE, 6);
+
+        params.set(Params.MIN_CATEGORIES, 3);
+        params.set(Params.MAX_CATEGORIES, 3);
+
+        params.set(Params.RANDOMIZE_COLUMNS, true);
+        params.set(Params.SAMPLE_SIZE, 500);
+        params.set(Params.SAVE_LATENT_VARS, false);
+        params.set(Params.SEED, 29493L);
+
+        params.set(Params.NUM_RUNS, 1);
+
+        BayesNetSimulation sim_ = new BayesNetSimulation(new RandomForward());
+        sim_.createData(params, true);
+        DataModel data_model = sim_.getDataModel(0);
+        Graph graph = sim_.getTrueGraph(0);
+
+    }
+
+    private void testCgScore() {
+
+        Parameters params = new Parameters();
+
+        params.set(Params.NUM_MEASURES, 20);
+        params.set(Params.NUM_LATENTS, 0);
+        params.set(Params.AVG_DEGREE, 6);
+
+        params.set(Params.MIN_CATEGORIES, 3);
+        params.set(Params.MAX_CATEGORIES, 3);
+        params.set(Params.PERCENT_DISCRETE, 50);
+        params.set(Params.DIFFERENT_GRAPHS, false);
+
+        params.set(Params.RANDOMIZE_COLUMNS, true);
+        params.set(Params.SAMPLE_SIZE, 500);
+        params.set(Params.SAVE_LATENT_VARS, false);
+        params.set(Params.SEED, 29493L);
+
+        params.set(Params.NUM_RUNS, 1);
+
+        LeeHastieSimulation sim_ = new LeeHastieSimulation(new RandomForward());
+        sim_.createData(params, true);
+        DataSet data = (DataSet) sim_.getDataModel(0);
+        Graph graph = sim_.getTrueGraph(0);
+
+        double penaltyDiscount = 2.0;
+        double structurePrior = 1.0;
+        boolean discretize = true;
+
+        DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data);
+        score.setStructurePrior(structurePrior);
+
+        IndTestDegenerateGaussianLRT test = new IndTestDegenerateGaussianLRT((DataSet) data);
+        test.setAlpha(0.01);
+
+
+        Fges alg = new Fges(score);
+        Graph pat = alg.search();
+
+        System.out.println("FGES" + pat);
+
+        Pc pc = new Pc(test);
+        Graph pat2 = alg.search();
+
+        System.out.println("PC" + pat2);
+
+        Parameters parameters = new Parameters();
+
+//        GRaSP grasp = new GRaSP(new ConditionalGaussianBicScore(), new ConditionalGaussianLRT());
+//        Graph pat3 = grasp.search(data, parameters);
+
+        Grasp boss = new Grasp(test, score);
+        boss.setUseDataOrder(true);
+        boss.setNumStarts(1);
+        boss.bestOrder(score.getVariables());
+        Graph pat3 = boss.getGraph(true);
+
+        System.out.println("GRaSP" + pat3);
+
     }
 
     @NotNull
@@ -174,7 +256,7 @@ public final class TestGrasp {
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BRIDGES_OLD(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -547,7 +629,7 @@ public final class TestGrasp {
     public void doNewAgsHeadToHead(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BOSS(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
 //        if (doPcFges) {
@@ -1173,15 +1255,15 @@ public final class TestGrasp {
             while ((perm = gen.next()) != null) {
                 List<Node> pi = GraphUtils.asList(perm, variables);
 
-                Boss grasp = new Boss(new GraphScore(facts.getFacts()));
+                BossOrig boss = new BossOrig(new GraphScore(facts.getFacts()));
 
-                grasp.setUseRaskuttiUhler(true);
-                grasp.setDepth(100);
-//                grasp.setOrdered(true);
-                grasp.setVerbose(false);
+                boss.setUseRaskuttiUhler(true);
+                boss.setDepth(100);
+//                boss.setOrdered(true);
+                boss.setVerbose(false);
 
-                grasp.bestOrder(pi);
-                Graph estCpdagGrasp = grasp.getGraph(true);
+                boss.bestOrder(pi);
+                Graph estCpdagGrasp = boss.getGraph(true);
 
                 if (estCpdagGrasp.getNumEdges() == facts.truth) {
                     count1++;
@@ -1201,7 +1283,7 @@ public final class TestGrasp {
     public void bryanCheckDensityClaims() {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
-        long start =  MillisecondTimes.timeMillis();
+        long start = MillisecondTimes.timeMillis();
         boolean usePearl = true;
         int numVars = 5; // Will change this in OtherParams.sp() too
 
@@ -2450,7 +2532,7 @@ public final class TestGrasp {
     }
 
     //    @Test
-    public void testLvSwap() {
+    public void testFciAlgs() {
         RandomUtil.getInstance().setSeed(38482838482L);
 
         Parameters params = new Parameters();
@@ -2510,33 +2592,10 @@ public final class TestGrasp {
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax(test));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci(test));
 //
-////        for (ScoreWrapper score : scores) {
-////            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS(test, score));
-////        }
-//
         for (ScoreWrapper score : scores) {
             algorithms.add(new GFCI(test, score));
         }
 //
-//        for (ScoreWrapper score : scores) {
-//            algorithms.add(new BFCI(test, score));
-//        }
-//
-//        for (ScoreWrapper score : scores) {
-//            algorithms.add(new LVSWAP_1(test, score));
-//        }
-
-        for (ScoreWrapper score : scores) {
-            algorithms.add(new LVSWAP_2a(test, score));
-        }
-
-//        for (ScoreWrapper score : scores) {
-//            algorithms.add(new LVSWAP_2b(test, score));
-//        }
-
-
-//            RandomUtil.shuffle(algorithms);
-
         Algorithms _algorithms = new Algorithms();
 
         for (Algorithm algorithm : algorithms) {
@@ -2594,13 +2653,13 @@ public final class TestGrasp {
         comparison.setParallelized(true);
 
         comparison.compareFromSimulations(
-                "/Users/josephramsey/Downloads/grasp/testLvSwap", simulations,
+                "/Users/josephramsey/Downloads/grasp/testFciAlgs", simulations,
                 _algorithms, statistics, params);
 
     }
 
     // Test algs from dsep
-    public void testLvSwapFromDsep() {
+    public void testFcoAlgsFromDsep() {
         RandomUtil.getInstance().setSeed(38482838482L);
 
         Parameters params = new Parameters();
@@ -2609,6 +2668,7 @@ public final class TestGrasp {
 //        params.set(Params.AVG_DEGREE, 4;
 //        params.set(Params.NUM_LATENTS, 8);
         params.set(Params.RANDOMIZE_COLUMNS, true);
+
         params.set(Params.COEF_LOW, 0);
         params.set(Params.COEF_HIGH, 1);
         params.set(Params.VAR_LOW, 1);
@@ -2704,9 +2764,6 @@ public final class TestGrasp {
 //            algorithms.add(new Rfci(test));
 //            algorithms.add(new GFCI(test, score));
 //            algorithms.add(new BFCI(test, score));
-            algorithms.add(new LVSWAP_1(test, score));
-            algorithms.add(new LVSWAP_2a(test, score));
-//            algorithms.add(new LVSWAP_3(test, score));
 
             algNames = new ArrayList<>();
 
@@ -2850,13 +2907,11 @@ public final class TestGrasp {
 
             Algorithms algorithms = new Algorithms();
 
-            IndependenceWrapper test = new FisherZ();
-
-            algorithms.add(new BOSS(test, new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-            algorithms.add(new BOSS(test, new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
-            algorithms.add(new BOSS(test, new edu.cmu.tetrad.algcomparison.score.EbicScore()));
-            algorithms.add(new BOSS(test, new edu.cmu.tetrad.algcomparison.score.KimEtAlScores()));
-            algorithms.add(new BOSS(test, new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.EbicScore()));
+            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.KimEtAlScores()));
+            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
 
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new RandomForward()));
@@ -2919,9 +2974,7 @@ public final class TestGrasp {
 
             Algorithms algorithms = new Algorithms();
 
-            IndependenceWrapper test = new FisherZ();
-
-            algorithms.add(new BOSS(test, new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
 
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new RandomForward()));
@@ -3309,7 +3362,7 @@ public final class TestGrasp {
 
             Paths paths = cpdag1.paths();
             List<Node> initialOrder = cpdag1.getNodes();
-            List<Node> pi = paths.validOrder(initialOrder, true);
+            List<Node> pi = paths.getValidOrder(initialOrder, true);
 
             TeyssierScorer scorer = new TeyssierScorer(test, score);
             scorer.setUseScore(false);
@@ -3347,7 +3400,7 @@ public final class TestGrasp {
 
             Paths paths = cpdag.paths();
             List<Node> initialOrder = cpdag.getNodes();
-            List<Node> pi1 = paths.validOrder(initialOrder, true);
+            List<Node> pi1 = paths.getValidOrder(initialOrder, true);
 
             List<Node> pi2 = new ArrayList<>(pi1);
             shuffle(pi2);

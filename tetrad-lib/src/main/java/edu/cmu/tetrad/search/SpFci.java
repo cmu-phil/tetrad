@@ -29,21 +29,27 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
+ * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
- * FGES.
+ * FGES.</p>
+ *
+ * <p>This uses PermutationSearch (see), calling the Sp algorithm (see).</p>
+ *
+ * <p>An independence test must be provided for the definite discriminating path step
+ * of FCI. Otherwise, the provided score is used throughout.</p>
  *
  * @author Juan Miguel Ogarrio
  * @author ps7z
  * @author jdramsey
  * @author bryan andrews
+ * @see PermutationSearch
+ * @see Sp
  */
 public final class SpFci implements GraphSearch {
 
@@ -56,7 +62,7 @@ public final class SpFci implements GraphSearch {
     // The conditional independence test.
     private IndependenceTest independenceTest;
 
-    // Flag for complete rule set, true if should use complete rule set, false otherwise.
+    // Flag for complete rule set, true if you should use complete rule set, false otherwise.
     private boolean completeRuleSetUsed = true;
 
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
@@ -82,14 +88,8 @@ public final class SpFci implements GraphSearch {
 
     // The score.
     private final Score score;
-    private int numStarts = 1;
     private int depth = -1;
-    private boolean useRaskuttiUhler = false;
-    private boolean useDataOrder = true;
-    private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
-    private boolean possibleDsepSearchDone = true;
-    private Boss.AlgType bossType = Boss.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public SpFci(IndependenceTest test, Score score) {
@@ -102,6 +102,10 @@ public final class SpFci implements GraphSearch {
     }
 
     //========================PUBLIC METHODS==========================//
+
+    /**
+     * @return the discovered CPDAG.
+     */
     public Graph search() {
         List<Node> nodes = getIndependenceTest().getVariables();
 
@@ -110,31 +114,19 @@ public final class SpFci implements GraphSearch {
 
         this.graph = new EdgeListGraph(nodes);
 
-        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
+        // SP CPDAG learning step
+        Sp subAlg = new Sp(this.score);
+        PermutationSearch alg = new PermutationSearch(subAlg);
+        alg.setKnowledge(this.knowledge);
+        alg.setVerbose(this.verbose);
 
-        // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-//        Boss alg = new Boss(scorer);
-//        alg.setAlgType(bossType);
-//        alg.setUseScore(useScore);
-//        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-//        alg.setUseDataOrder(useDataOrder);
-//        alg.setDepth(depth);
-//        alg.setNumStarts(numStarts);
-////        alg.setKnowledge(knowledge);
-//        alg.setVerbose(false);
-
-        SP sp = new SP(independenceTest, score);
-        sp.setKnowledge(knowledge);
-
-        sp.bestOrder(score.getVariables());
-        Graph graph = sp.getGraph(false);
-        this.graph = graph;
+        this.graph = alg.search();
 
         if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
             ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
         }
 
-        Knowledge knowledge2 = new Knowledge((Knowledge) knowledge);
+        Knowledge knowledge2 = new Knowledge(knowledge);
         addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
@@ -145,17 +137,6 @@ public final class SpFci implements GraphSearch {
         // GFCI extra edge removal step...
         gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
         modifiedR0(referenceDag, sepsets);
-//        retainUnshieldedColliders(this.graph);
-
-//        graph = SearchGraphUtils.cpdagForDag(graph);
-////
-//        for (Edge edge : graph.getEdges()) {
-//            if (edge.getEndpoint1() == Endpoint.TAIL) edge.setEndpoint1(Endpoint.CIRCLE);
-//            if (edge.getEndpoint2() == Endpoint.TAIL) edge.setEndpoint2(Endpoint.CIRCLE);
-//        }
-
-
-//        removeByPossibleDsep(graph, independenceTest, null);
 
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
@@ -172,31 +153,6 @@ public final class SpFci implements GraphSearch {
         return this.graph;
     }
 
-    private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       Knowledge knowledge, Node y) {
-        List<Node> possibleParents = new LinkedList<>();
-        String _x = x.getName();
-
-        for (Node z : adjx) {
-            if (z == x) continue;
-            if (z == y) continue;
-            String _z = z.getName();
-
-            if (possibleParentOf(_z, _x, knowledge)) {
-                possibleParents.add(z);
-            }
-        }
-
-        return possibleParents;
-    }
-
-    private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
-        return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
-    }
-
-    /**
-     * @param maxDegree The maximum indegree of the output graph.
-     */
     public void setMaxDegree(int maxDegree) {
         if (maxDegree < -1) {
             throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0: " + maxDegree);
@@ -237,14 +193,6 @@ public final class SpFci implements GraphSearch {
                 if (fgesGraph.isDefCollider(a, b, c)) {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
-
-//                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
-//                        graph.setEndpoint(b, a, Endpoint.ARROW);
-//                    }
-//
-//                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
-//                        graph.setEndpoint(b, c, Endpoint.ARROW);
-//                    }
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
                     List<Node> sepset = sepsets.getSepset(a, c);
 
@@ -252,14 +200,6 @@ public final class SpFci implements GraphSearch {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);
                         this.graph.setEndpoint(c, b, Endpoint.ARROW);
                     }
-
-//                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
-//                        graph.setEndpoint(b, a, Endpoint.ARROW);
-//                    }
-//
-//                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
-//                        graph.setEndpoint(b, c, Endpoint.ARROW);
-//                    }
                 }
             }
         }
@@ -270,7 +210,7 @@ public final class SpFci implements GraphSearch {
     }
 
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
@@ -404,35 +344,12 @@ public final class SpFci implements GraphSearch {
         this.logger.log("info", "Finishing BK Orientation.");
     }
 
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
-    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
-        this.useRaskuttiUhler = useRaskuttiUhler;
-    }
-
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
-    }
 
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
-    }
-
-    public void setAlgType(Boss.AlgType type) {
-        this.bossType = type;
     }
 }
