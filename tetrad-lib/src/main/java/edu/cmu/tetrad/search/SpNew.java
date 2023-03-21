@@ -38,11 +38,11 @@ public class SpNew implements SuborderSearch {
         List<Node> bestSuborder = new ArrayList<>(suborder);
         double bestScore = update(prefix, suborder);
 
-        Map<Node, List<Node>> required = new HashMap<>();
+        Map<Node, Set<Node>> required = new HashMap<>();
         for (Node y : suborder) {
             for (Node z : suborder) {
                 if (this.knowledge.isRequired(y.getName(), z.getName())) {
-                    if (!required.containsKey(y)) required.put(y, new ArrayList<>());
+                    if (!required.containsKey(y)) required.put(y, new HashSet<>());
                     required.get(y).add(z);
                 }
             }
@@ -80,7 +80,7 @@ public class SpNew implements SuborderSearch {
         }
     }
 
-    private boolean violatesKnowledge(List<Node> suborder, Map<Node, List<Node>> required) {
+    private boolean violatesKnowledge(List<Node> suborder, Map<Node, Set<Node>> required) {
         for (int i = 0; i < suborder.size(); i++) {
             Node y = suborder.get(i);
             if (required.containsKey(y)) {
