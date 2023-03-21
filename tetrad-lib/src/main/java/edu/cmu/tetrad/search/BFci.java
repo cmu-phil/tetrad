@@ -29,20 +29,26 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
+ * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
- * FGES.
+ * FGES.</p>
+ *
+ * <p>This uses PermutationSearch (see), calling the BOSS algorithm (see).</p>
+ *
+ * <p>An independence test must be provided for the definite discriminating path step
+ * of FCI. Otherwise, the provided score is used throughout.</p>
  *
  * @author Juan Miguel Ogarrio
  * @author ps7z
  * @author jdramsey
  * @author bryan andrews
+ * @see PermutationSearch
+ * @see Boss
  */
 public final class BFci implements GraphSearch {
 
@@ -70,7 +76,7 @@ public final class BFci implements GraphSearch {
     // True iff verbose output should be printed.
     private boolean verbose;
 
-    // The covariance matrix beign searched over. Assumes continuous data.
+    // The covariance matrix being searched over. Assumes continuous data.
     ICovarianceMatrix covarianceMatrix;
 
     // The sample size.
@@ -83,12 +89,7 @@ public final class BFci implements GraphSearch {
     private final Score score;
     private int numStarts = 1;
     private int depth = -1;
-    private boolean useRaskuttiUhler = false;
-    private boolean useDataOrder = true;
-    private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
-    private boolean possibleDsepSearchDone = true;
-    private BossOld.AlgType bossType = BossOld.AlgType.BOSS1;
 
     //============================CONSTRUCTORS============================//
     public BFci(IndependenceTest test, Score score) {
@@ -101,6 +102,10 @@ public final class BFci implements GraphSearch {
     }
 
     //========================PUBLIC METHODS==========================//
+
+    /**
+     * @return the discovered CPDAG.
+     */
     public Graph search() {
         List<Node> nodes = getIndependenceTest().getVariables();
 
@@ -109,30 +114,21 @@ public final class BFci implements GraphSearch {
 
         this.graph = new EdgeListGraph(nodes);
 
-        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
+        // BOSS CPDAG learning step
+        Boss subAlg = new Boss(this.score);
+        subAlg.setDepth(this.depth);
+        subAlg.setNumStarts(this.numStarts);
+        PermutationSearch alg = new PermutationSearch(subAlg);
+        alg.setKnowledge(this.knowledge);
+        alg.setVerbose(this.verbose);
 
-        // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
-        BossOld alg = new BossOld(scorer);
-        alg.setAlgType(bossType);
-        alg.setUseScore(useScore);
-        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-        alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(depth);
-        alg.setNumStarts(numStarts);
-        alg.setVerbose(verbose);
-
-        List<Node> variables = this.score.getVariables();
-        assert variables != null;
-
-        alg.bestOrder(variables);
-        this.graph = alg.getGraph(true); // Get the DAG
+        this.graph = alg.search();
 
         Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(this.graph);
-
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
 
-        // GFCI extra edge removal step...
+        // FCI extra edge removal step
         gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
         modifiedR0(referenceDag, sepsets);
 
@@ -149,28 +145,6 @@ public final class BFci implements GraphSearch {
         GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
 
         return this.graph;
-    }
-
-    private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       Knowledge knowledge, Node y) {
-        List<Node> possibleParents = new LinkedList<>();
-        String _x = x.getName();
-
-        for (Node z : adjx) {
-            if (z == x) continue;
-            if (z == y) continue;
-            String _z = z.getName();
-
-            if (possibleParentOf(_z, _x, knowledge)) {
-                possibleParents.add(z);
-            }
-        }
-
-        return possibleParents;
-    }
-
-    private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
-        return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
     /**
@@ -216,14 +190,6 @@ public final class BFci implements GraphSearch {
                 if (fgesGraph.isDefCollider(a, b, c)) {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
-
-//                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
-//                        graph.setEndpoint(b, a, Endpoint.ARROW);
-//                    }
-//
-//                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
-//                        graph.setEndpoint(b, c, Endpoint.ARROW);
-//                    }
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
                     List<Node> sepset = sepsets.getSepset(a, c);
 
@@ -231,14 +197,6 @@ public final class BFci implements GraphSearch {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);
                         this.graph.setEndpoint(c, b, Endpoint.ARROW);
                     }
-
-//                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
-//                        graph.setEndpoint(b, a, Endpoint.ARROW);
-//                    }
-//
-//                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
-//                        graph.setEndpoint(b, c, Endpoint.ARROW);
-//                    }
                 }
             }
         }
@@ -249,7 +207,7 @@ public final class BFci implements GraphSearch {
     }
 
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
@@ -391,27 +349,7 @@ public final class BFci implements GraphSearch {
         this.depth = depth;
     }
 
-    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
-        this.useRaskuttiUhler = useRaskuttiUhler;
-    }
-
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
-    }
-
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
-    }
-
-    public void setAlgType(BossOld.AlgType type) {
-        this.bossType = type;
     }
 }

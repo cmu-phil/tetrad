@@ -152,7 +152,7 @@ public class LinearSineSimulation implements Simulation {
 
         Paths paths = G.paths();
         List<Node> initialOrder = G.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
         int[] tiers = new int[tierOrdering.size()];
         for (int t = 0; t < tierOrdering.size(); t++) {
             tiers[t] = nodes.indexOf(tierOrdering.get(t));

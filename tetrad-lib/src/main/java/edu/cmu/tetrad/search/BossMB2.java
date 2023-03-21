@@ -246,7 +246,7 @@ public class BossMB2 {
         bes.setVerbose(verbose);
         bes.setKnowledge(knowledge);
         bes.bes(graph, scorer.getPi());
-        return graph.paths().validOrder(scorer.getPi(), true);
+        return graph.paths().getValidOrder(scorer.getPi(), true);
     }
 
     private void makeValidKnowledgeOrder(List<Node> order) {

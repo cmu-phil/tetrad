@@ -688,7 +688,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         // tier ordering
         Paths paths = graphH.paths();
         List<Node> initialOrder = graphH.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
 
         // convert to the indices of the original graph
         // (from which the subgraph was obtained)

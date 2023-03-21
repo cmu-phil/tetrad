@@ -2,15 +2,18 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Boss;
+import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -31,9 +34,10 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class BOSS implements Algorithm, UsesScoreWrapper {
+public class BOSS implements Algorithm, UsesScoreWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
+    private Knowledge knowledge = new Knowledge();
 
     public BOSS() {
         // Used in reflection; do not delete.
@@ -47,13 +51,16 @@ public class BOSS implements Algorithm, UsesScoreWrapper {
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         Score score = this.score.getScore(dataModel, parameters);
+
         Boss boss = new Boss(score);
-
         boss.setDepth(parameters.getInt(Params.DEPTH));
-        boss.setVerbose(parameters.getBoolean(Params.VERBOSE));
         boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+        PermutationSearch permutationSearch = new PermutationSearch(boss);
+        permutationSearch.setKnowledge(this.knowledge);
 
-        return boss.search();
+        permutationSearch.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+        return permutationSearch.search();
     }
 
     @Override
@@ -63,7 +70,7 @@ public class BOSS implements Algorithm, UsesScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "BOSSNEW (Best Order Score Search) using " + this.score.getDescription();
+        return "BOSS (Best Order Score Search) using " + this.score.getDescription();
     }
 
     @Override
@@ -79,7 +86,6 @@ public class BOSS implements Algorithm, UsesScoreWrapper {
         params.add(Params.VERBOSE);
 
         // Parameters
-        params.add(Params.BOSS_ALG);
         params.add(Params.NUM_STARTS);
         params.add(Params.DEPTH);
 
@@ -96,4 +102,13 @@ public class BOSS implements Algorithm, UsesScoreWrapper {
         this.score = score;
     }
 
+    @Override
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
 }

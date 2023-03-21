@@ -111,7 +111,7 @@ public class TestLingamPattern {
         SemGraph graph = semIm.getSemPm().getGraph();
 
 
-        List<Node> tierOrdering = graph.paths().validOrder(graph.getNodes(), true);
+        List<Node> tierOrdering = graph.paths().getValidOrder(graph.getNodes(), true);
 
         System.out.println(graph);
 

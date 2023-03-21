@@ -219,7 +219,7 @@ public class ConditionalGaussianSimulation implements Simulation {
 
         Paths paths = G.paths();
         List<Node> initialOrder = G.getNodes();
-        List<Node> tierOrdering = paths.validOrder(initialOrder, true);
+        List<Node> tierOrdering = paths.getValidOrder(initialOrder, true);
 
         int[] tiers = new int[tierOrdering.size()];
 
