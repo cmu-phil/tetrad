@@ -52,14 +52,6 @@ public class SP implements Algorithm, UsesScoreWrapper, HasKnowledge {
     public Graph search(DataModel dataModel, Parameters parameters) {
         Score score = this.score.getScore(dataModel, parameters);
         PermutationSearch permutationSearch = new PermutationSearch(new Sp(score));
-
-//        int numPerTier = 10;
-//        for (int tier = 0; tier < 2; tier++) {
-//            for (int i = 1; i <= numPerTier; i++) {
-//                this.knowledge.addToTier(tier, "X" + (numPerTier * tier + i));
-//            }
-//        }
-
         permutationSearch.setKnowledge(this.knowledge);
         permutationSearch.setVerbose(parameters.getBoolean(Params.VERBOSE));
 

@@ -56,13 +56,6 @@ public class BOSS implements Algorithm, UsesScoreWrapper, HasKnowledge {
         boss.setDepth(parameters.getInt(Params.DEPTH));
         boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
         PermutationSearch permutationSearch = new PermutationSearch(boss);
-
-//        Knowledge knowledge = new Knowledge();
-//        for (int tier = 0; tier < 10; tier++) {
-//            for (int i = 1; i <= 100; i++) {
-//                knowledge.addToTier(tier, "X" + (100 * tier + i));
-//            }
-//        }
         permutationSearch.setKnowledge(this.knowledge);
 
         permutationSearch.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -93,7 +86,6 @@ public class BOSS implements Algorithm, UsesScoreWrapper, HasKnowledge {
         params.add(Params.VERBOSE);
 
         // Parameters
-        params.add(Params.BOSS_ALG);
         params.add(Params.NUM_STARTS);
         params.add(Params.DEPTH);
 

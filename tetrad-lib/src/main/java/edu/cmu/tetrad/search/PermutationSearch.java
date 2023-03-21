@@ -80,7 +80,7 @@ public class PermutationSearch {
             this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
         }
 
-        return getGraph(this.variables, this.suborderSearch.getParents(), true);
+        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
     }
 
     // This would have to be moved to a better place like GraphUtils maybe...
@@ -95,6 +95,24 @@ public class PermutationSearch {
 
         if (cpDag) {
             MeekRules rules = new MeekRules();
+            rules.orientImplied(graph);
+        }
+
+        return graph;
+    }
+
+    public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, Knowledge knowledge, boolean cpDag) {
+        Graph graph = new EdgeListGraph(nodes);
+
+        for (Node a : nodes) {
+            for (Node b : parents.get(a)) {
+                graph.addDirectedEdge(b, a);
+            }
+        }
+
+        if (cpDag) {
+            MeekRules rules = new MeekRules();
+            rules.setKnowledge(knowledge);
             rules.orientImplied(graph);
         }
 
