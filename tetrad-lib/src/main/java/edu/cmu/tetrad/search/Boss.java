@@ -17,7 +17,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  *
  * <p>Knowledge can be used with this search. If tiered knowledge is used, then the procedure
  * is carried out for each tier separately, given the variable preceding that tier, which
- * allows the SP algorithm to address tiered (e.g., time series) problems with more than 11
+ * allows the SP algorithm to address tiered (e.g., time series) problems with larger numbers of
  * variables.</p>
  *
  * <p>This class is meant to be used in the context of the PermutationSearch class (see).
