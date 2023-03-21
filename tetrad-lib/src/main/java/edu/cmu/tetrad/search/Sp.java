@@ -17,7 +17,7 @@ public class Sp implements SuborderSearch {
     private final Map<Node, Set<Node>> parents;
     private final Map<Node, Double> scores;
     private Map<Node, GrowShrinkTree> gsts;
-    private Knowledge knowledge;
+    private Knowledge knowledge = new Knowledge();
 
 
     public Sp(Score score) {
