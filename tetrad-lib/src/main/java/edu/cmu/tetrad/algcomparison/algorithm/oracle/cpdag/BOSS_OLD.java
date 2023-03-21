@@ -4,7 +4,6 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
-import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
@@ -12,7 +11,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.BossNew;
+import edu.cmu.tetrad.search.BossOld2;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -50,7 +49,7 @@ public class BOSS_OLD implements Algorithm, UsesScoreWrapper, HasKnowledge {
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         Score score = this.score.getScore(dataModel, parameters);
-        BossNew boss = new BossNew(score);
+        BossOld2 boss = new BossOld2(score);
 
 //        Knowledge knowledge = new Knowledge();
 //        for (int tier = 0; tier < 10; tier++) {

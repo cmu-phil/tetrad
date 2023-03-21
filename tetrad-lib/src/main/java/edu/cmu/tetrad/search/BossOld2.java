@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
@@ -15,11 +14,11 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @author bryanandrews
  * @author josephramsey
  */
-public class BossNew extends PermutationSearch {
+public class BossOld2 extends PermutationSearch {
     private final Bes bes;
 
 
-    public BossNew(Score score) {
+    public BossOld2(Score score) {
         super(score);
 
         this.bes = new Bes(score);
