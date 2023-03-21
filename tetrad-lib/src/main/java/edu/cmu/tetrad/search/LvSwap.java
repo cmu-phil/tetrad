@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
-import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
@@ -64,8 +63,6 @@ public final class LvSwap implements GraphSearch {
 
     private AlgType algType = AlgType.LVSwap1;
 
-    private BossOrig.AlgType bossAlgType = BossOrig.AlgType.BOSS1;
-
     // The score used, if GS is used to build DAGs.
     private final Score score;
 
@@ -81,11 +78,6 @@ public final class LvSwap implements GraphSearch {
 
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
-    private int numStarts = 1;
-    private int depth = -1;
-    private boolean useRaskuttiUhler;
-    private boolean useDataOrder = true;
-    private boolean useScore = true;
     private Knowledge knowledge = new Knowledge();
     private boolean verbose = false;
     private PrintStream out = System.out;
@@ -114,17 +106,9 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap1() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        BossOrig alg = new BossOrig(scorer);
-        alg.setAlgType(bossAlgType);
-        alg.setUseScore(useScore);
-        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-        alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(depth);
-        alg.setNumStarts(numStarts);
+        PermutationSearch alg = new PermutationSearch(new Boss(score));
         alg.setVerbose(verbose);
-
-        alg.bestOrder(this.score.getVariables());
-        Graph G = alg.getGraph(true);
+        Graph G = alg.search();
 
         Graph GBoss = new EdgeListGraph(G);
 
@@ -140,11 +124,8 @@ public final class LvSwap implements GraphSearch {
 
             List<Node> xParents = GBoss.getParents(x);
 
-            int _depth = depth < 0 ? xParents.size() : depth;
-            _depth = FastMath.min(_depth, xParents.size());
-
             // Order of increasing size
-            SublistGenerator gen = new SublistGenerator(xParents.size(), _depth);
+            SublistGenerator gen = new SublistGenerator(xParents.size(), 10);
             int[] choice;
 
             while ((choice = gen.next()) != null) {
@@ -190,22 +171,11 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap2a() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        BossOrig alg = new BossOrig(scorer);
-        alg.setAlgType(bossAlgType);
-        alg.setUseScore(useScore);
-        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-        alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(depth);
-        alg.setNumStarts(numStarts);
+        PermutationSearch alg = new PermutationSearch(new Boss(score));
         alg.setVerbose(verbose);
-
-        alg.bestOrder(this.score.getVariables());
-        Graph G = alg.getGraph(true);
+        Graph G = alg.search();
 
         retainUnshieldedColliders(G);
-
-//        removeByPossibleDsep(G, test, new SepsetMap());
-
 
         scorer.bookmark();
 
@@ -214,22 +184,12 @@ public final class LvSwap implements GraphSearch {
         List<Node> pi = scorer.getPi();
 
         for (int i = 0; i < 3; i++) {
-//            for (Node y : pi) {
-////            List<Node> adjy = G.getAdjacentNodes(y);
-//
-//                for (Node x : pi) {
-//                    for (Node z : pi) {
-//                        if (y == x) continue;
-//                        if (y == z) continue;
-//                        if (x == z) continue;
-
             for (Node y : pi) {
                 List<Node> adjy = G.getAdjacentNodes(y);
 
                 for (Node x : adjy) {
                     for (Node z : adjy) {
                         if (x == z) continue;
-//                    if (!G.isAdjacentTo(x, z)) continue;
                         if (T.contains(new Triple(x, y, z))) continue;
 
                         scorer.goToBookmark();
@@ -264,17 +224,9 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap2b() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        BossOrig alg = new BossOrig(scorer);
-        alg.setAlgType(bossAlgType);
-        alg.setUseScore(useScore);
-        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-        alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(depth);
-        alg.setNumStarts(numStarts);
+        PermutationSearch alg = new PermutationSearch(new Boss(score));
         alg.setVerbose(verbose);
-
-        alg.bestOrder(this.score.getVariables());
-        Graph G = alg.getGraph(false);
+        Graph G = alg.search();
 
         retainUnshieldedColliders(G);
 
@@ -347,17 +299,9 @@ public final class LvSwap implements GraphSearch {
     public Graph lvswap3() {
         TeyssierScorer scorer = new TeyssierScorer(test, score);
 
-        BossOrig alg = new BossOrig(scorer);
-        alg.setAlgType(bossAlgType);
-        alg.setUseScore(useScore);
-        alg.setUseRaskuttiUhler(useRaskuttiUhler);
-        alg.setUseDataOrder(useDataOrder);
-        alg.setDepth(depth);
-        alg.setNumStarts(numStarts);
+        PermutationSearch alg = new PermutationSearch(new Boss(score));
         alg.setVerbose(verbose);
-
-        alg.bestOrder(this.score.getVariables());
-        Graph G = alg.getGraph(true);
+        Graph G = alg.search();
 
         retainUnshieldedColliders(G);
 
@@ -393,11 +337,8 @@ public final class LvSwap implements GraphSearch {
 
                         List<Node> children = new ArrayList<>(scorer.getAdjacentNodes(y));
 
-                        int _depth = depth < 0 ? children.size() : depth;
-                        _depth = FastMath.min(_depth, children.size());
-
                         // Order of increasing size
-                        SublistGenerator gen = new SublistGenerator(children.size(), _depth);
+                        SublistGenerator gen = new SublistGenerator(children.size(), -1);
                         int[] choice;
 
                         while ((choice = gen.next()) != null) {
@@ -471,52 +412,8 @@ public final class LvSwap implements GraphSearch {
         }
     }
 
-    public static void retainColliders(Graph graph) {
-        Graph orig = new EdgeListGraph(graph);
-        graph.reorientAllWith(Endpoint.CIRCLE);
-        List<Node> nodes = graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (orig.isDefCollider(a, b, c)) {
-                    graph.setEndpoint(a, b, Endpoint.ARROW);
-                    graph.setEndpoint(c, b, Endpoint.ARROW);
-                }
-            }
-        }
-    }
-
-
-    public static void retainArrows(Graph graph) {
-        Graph orig = new EdgeListGraph(graph);
-        graph.reorientAllWith(Endpoint.CIRCLE);
-
-        List<Node> nodes = graph.getNodes();
-
-        for (Node x : nodes) {
-            for (Node y : nodes) {
-                if (x == y) continue;
-                if (orig.getEndpoint(x, y) == Endpoint.ARROW) {
-                    graph.setEndpoint(x, y, Endpoint.ARROW);
-                }
-            }
-        }
-    }
-
     private void finalOrientation(Knowledge knowledge2, Graph G) {
-        SepsetProducer sepsets = new SepsetsGreedy(G, test, null, depth);
+        SepsetProducer sepsets = new SepsetsGreedy(G, test, null, -1);
         FciOrient fciOrient = new FciOrient(sepsets);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setDoDiscriminatingPathColliderRule(false);
@@ -584,26 +481,6 @@ public final class LvSwap implements GraphSearch {
         this.covarianceMatrix = covarianceMatrix;
     }
 
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
-        this.useRaskuttiUhler = useRaskuttiUhler;
-    }
-
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
-    }
-
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
@@ -618,10 +495,6 @@ public final class LvSwap implements GraphSearch {
 
     public void setAlgType(AlgType bossAlgType) {
         this.algType = bossAlgType;
-    }
-
-    public void setBossAlgType(BossOrig.AlgType algType) {
-        this.bossAlgType = algType;
     }
 
     public void setDoDefiniteDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {

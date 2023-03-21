@@ -7,7 +7,6 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.BossOrig;
 import edu.cmu.tetrad.search.PermutationSearch;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
