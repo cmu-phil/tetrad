@@ -9,10 +9,23 @@ import java.util.*;
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
- * Implements the BOSS algorithm.
+ * <p>Implements the BOSS (Best Order Permutation Search) algorithm. This procedure uses
+ * an optimization of the BOSS algorithm (reference to be included in a future version),
+ * looking for a permutation such that when a DAG is built it has the fewest number of
+ * edges (i.e., is a most 'frugal' or a 'sparsest' DAG). Returns the CPDAG of this discovered
+ * frugal DAG.</p>
+ *
+ * <p>Knowledge can be used with this search. If tiered knowledge is used, then the procedure
+ * is carried out for each tier separately, given the variable preceding that tier, which
+ * allows the SP algorithm to address tiered (e.g., time series) problems with more than 11
+ * variables.</p>
+ *
+ * <p>This class is meant to be used in the context of the PermutationSearch class (see).
+ * the proper use is PermutationSearch search = new PermutationSearch(new Sp(score));</p>
  *
  * @author bryanandrews
  * @author josephramsey
+ * @see PermutationSearch
  */
 public class Boss implements SuborderSearch {
     private final Bes bes;
@@ -25,6 +38,10 @@ public class Boss implements SuborderSearch {
     private Knowledge knowledge = new Knowledge();
 
 
+    /**
+     * This algorithm will work with an arbitrary score.
+     * @param score The Score to use.
+     */
     public Boss(Score score) {
         this.score = score;
         this.variables = score.getVariables();

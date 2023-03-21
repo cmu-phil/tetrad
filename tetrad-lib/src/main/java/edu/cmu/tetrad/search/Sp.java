@@ -6,10 +6,24 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.*;
 
 /**
- * Implements the SP algorithm.
+ * <p>Implements the SP (Sparsest Permutation) algorithm. This procedure goes through every
+ * permutation of the variables (so can be slow for more than 11 variables with no knowledge)
+ * looking for a permutation such that when a DAG is built it has the fewest number of
+ * edges (i.e., is a most 'frugal' or a 'sparsest' DAG). The procedure can in principle
+ * return all such sparsest permutations and their corresponding DAGs, but in this version
+ * it return one of them, and converts the result into a CPDAG.</p>
+ *
+ * <p>Knowledge can be used with this search. If tiered knowledge is used, then the procedure
+ * is carried out for each tier separately, given the variable preceding that tier, which
+ * allows the SP algorithm to address tiered (e.g., time series) problems with more than 11
+ * variables.</p>
+ *
+ * <p>This class is meant to be used in the context of the PermutationSearch class (see).
+ * the proper use is PermutationSearch search = new PermutationSearch(new Sp(score));</p>
  *
  * @author bryanandrews
  * @author josephramsey
+ * @see PermutationSearch
  */
 public class Sp implements SuborderSearch {
     private final Score score;
@@ -20,6 +34,10 @@ public class Sp implements SuborderSearch {
     private Knowledge knowledge = new Knowledge();
 
 
+    /**
+     * This algorithm will work with an arbitrary score.
+     * @param score The Score to use.
+     */
     public Sp(Score score) {
         this.score = score;
         this.variables = score.getVariables();
@@ -31,6 +49,14 @@ public class Sp implements SuborderSearch {
         }
     }
 
+    /**
+     * This is the method called by PermutationSearch per tier.
+     * @param prefix The variable preceding the suborder variables in the permutation, including
+     *               all variables from previous tiers.
+     * @param suborder The suborder of the variables list beign searched over. Only the order of the
+     *                 variables in this suborder will be modified.
+     * @param gsts The GrowShrinkTree used for the search. This is an optimized score-caching class.
+     */
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
         this.gsts = gsts;

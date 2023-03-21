@@ -35,14 +35,21 @@ import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirecte
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
+ * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
- * FGES.
+ * FGES.</p>
+ *
+ * <p>This uses PermutationSearch (see), calling the Sp algorithm (see).</p>
+ *
+ * <p>An independence test must be provided for the definite discriminating path step
+ * of FCI. Otherwise, the provided score is used throughout.</p>
  *
  * @author Juan Miguel Ogarrio
  * @author ps7z
  * @author jdramsey
  * @author bryan andrews
+ * @see PermutationSearch
+ * @see Sp
  */
 public final class SpFci implements GraphSearch {
 
@@ -95,6 +102,10 @@ public final class SpFci implements GraphSearch {
     }
 
     //========================PUBLIC METHODS==========================//
+
+    /**
+     * @return the discovered CPDAG.
+     */
     public Graph search() {
         List<Node> nodes = getIndependenceTest().getVariables();
 
