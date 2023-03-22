@@ -1077,8 +1077,7 @@ public final class SemEstimatorEditor extends JPanel {
                         if (this.editor.nodeParamDisplay() == 2) {
                             double intercept = semIm().getIntercept(node);
                             return asString(intercept);
-                        }
-                        if (this.editor.nodeParamDisplay() == 1) {
+                        } else if (this.editor.nodeParamDisplay() == 1) {
                             return asString(mean);
                         }
                     case 4:
