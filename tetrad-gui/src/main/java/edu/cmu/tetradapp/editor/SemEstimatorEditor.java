@@ -396,13 +396,14 @@ public final class SemEstimatorEditor extends JPanel {
         /**
          * True iff covariance parameters are edited as correlations.
          */
-        private boolean editIntercepts;
+        private int editIntercepts = 1;
         private JTabbedPane tabbedPane;
         private String graphicalEditorTitle = "Graphical Editor";
         private String tabularEditorTitle = "Tabular Editor";
         private boolean editable = true;
         private JCheckBoxMenuItem meansItem;
         private JCheckBoxMenuItem interceptsItem;
+        private JCheckBoxMenuItem noMeansOrIntercepts;
         private JMenuItem errorTerms;
 
         public OneEditor(SemEstimatorWrapper wrapper, String graphicalEditorTitle, String tabularEditorTitle,
@@ -515,21 +516,29 @@ public final class SemEstimatorEditor extends JPanel {
 
             this.meansItem = new JCheckBoxMenuItem("Show means");
             this.interceptsItem = new JCheckBoxMenuItem("Show intercepts");
+            this.noMeansOrIntercepts = new JCheckBoxMenuItem("Don't show means or intercepts");
 
             ButtonGroup meansGroup = new ButtonGroup();
             meansGroup.add(this.meansItem);
             meansGroup.add(this.interceptsItem);
+            meansGroup.add(this.noMeansOrIntercepts);
             this.meansItem.setSelected(true);
 
             this.meansItem.addActionListener((e) -> {
                 if (this.meansItem.isSelected()) {
-                    setEditIntercepts(false);
+                    setEditIntercepts(1);
                 }
             });
 
             this.interceptsItem.addActionListener((e) -> {
                 if (this.interceptsItem.isSelected()) {
-                    setEditIntercepts(true);
+                    setEditIntercepts(2);
+                }
+            });
+
+            this.noMeansOrIntercepts.addActionListener((e) -> {
+                if (this.noMeansOrIntercepts.isSelected()) {
+                    setEditIntercepts(3);
                 }
             });
 
@@ -543,6 +552,7 @@ public final class SemEstimatorEditor extends JPanel {
             if (!SemEstimatorEditor.this.wrapper.getEstimatedSemIm().isCyclic()) {
                 params.add(this.meansItem);
                 params.add(this.interceptsItem);
+                params.add(this.noMeansOrIntercepts);
             }
 
             menuBar.add(params);
@@ -710,17 +720,28 @@ public final class SemEstimatorEditor extends JPanel {
             tabularEditor().getTableModel().fireTableDataChanged();
         }
 
-        public boolean isEditIntercepts() {
+        public int nodeParamDisplay() {
             return this.editIntercepts;
         }
 
-        private void setEditIntercepts(boolean editIntercepts) {
+        private void setEditIntercepts(int editIntercepts) {
             this.editIntercepts = editIntercepts;
             graphicalEditor().resetLabels();
             tabularEditor().getTableModel().fireTableDataChanged();
 
-            this.meansItem.setSelected(!editIntercepts);
-            this.interceptsItem.setSelected(editIntercepts);
+            if (this.editIntercepts == 1) {
+                this.meansItem.setSelected(true);
+                this.interceptsItem.setSelected(false);
+                this.noMeansOrIntercepts.setSelected(false);
+            } else if (this.editIntercepts == 2) {
+                this.meansItem.setSelected(false);
+                this.interceptsItem.setSelected(true);
+                this.noMeansOrIntercepts.setSelected(false);
+            } else {
+                this.meansItem.setSelected(false);
+                this.interceptsItem.setSelected(false);
+                this.noMeansOrIntercepts.setSelected(true);
+            }
         }
 
         private String getGraphicalEditorTitle() {
@@ -1044,16 +1065,19 @@ public final class SemEstimatorEditor extends JPanel {
                     case 1:
                         return nodes.get(index);
                     case 2:
-                        if (this.editor.isEditIntercepts()) {
+                        if (this.editor.nodeParamDisplay() == 2) {
                             return "Intercept";
-                        } else {
+                        } else if (this.editor.nodeParamDisplay() == 1) {
                             return "Mean";
+
+                        } else {
+                            return "Don't display means or intercepts";
                         }
                     case 3:
-                        if (this.editor.isEditIntercepts()) {
+                        if (this.editor.nodeParamDisplay() == 2) {
                             double intercept = semIm().getIntercept(node);
                             return asString(intercept);
-                        } else {
+                        } else if (this.editor.nodeParamDisplay() == 1) {
                             return asString(mean);
                         }
                     case 4:
@@ -1127,7 +1151,7 @@ public final class SemEstimatorEditor extends JPanel {
 
                             double intercept = semIm().getIntercept(y);
 
-                            if (this.editor.isEditIntercepts()) {
+                            if (this.editor.nodeParamDisplay() == 2) {
                                 semIm().setIntercept(y, intercept);
                             }
                         }
@@ -1139,9 +1163,9 @@ public final class SemEstimatorEditor extends JPanel {
                         Node node = semIm().getVariableNodes().get(index);
 
                         if (semIm().getMean(semIm().getVariableNodes().get(index)) != value) {
-                            if (this.editor.isEditIntercepts()) {
+                            if (this.editor.nodeParamDisplay() == 2) {
                                 semIm().setIntercept(node, value);
-                            } else {
+                            } else if (this.editor.nodeParamDisplay() == 1) {
                                 semIm().setMean(node, value);
                             }
                             this.editor.firePropertyChange("modelChanged", 0, 0);
@@ -1397,15 +1421,15 @@ public final class SemEstimatorEditor extends JPanel {
                 return;
             }
 
-            double d;
+            double d = Double.NaN;
             String prefix;
             String postfix = "";
 
             if (parameter.getType() == ParamType.MEAN) {
-                if (this.editor.isEditIntercepts()) {
+                if (this.editor.nodeParamDisplay() == 2) {
                     d = semIm().getIntercept(node);
                     prefix = "B0_" + node.getName() + " = ";
-                } else {
+                } else if (this.editor.nodeParamDisplay() == 1) {
                     d = semIm().getMean(node);
                     prefix = "Mean(" + node.getName() + ") = ";
                 }
@@ -1415,61 +1439,62 @@ public final class SemEstimatorEditor extends JPanel {
                 postfix = ")";
             }
 
-            DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
-            field.setFilter((value, oldValue) -> {
-                try {
-                    setNodeValue(node, "" + value);
-                    return value;
-                } catch (IllegalArgumentException e) {
-                    return oldValue;
-                }
-            });
-
-            Box box = Box.createHorizontalBox();
-            box.add(Box.createHorizontalGlue());
-            box.add(new JLabel("New value: "));
-            box.add(field);
-            box.add(Box.createHorizontalGlue());
-
-            field.addAncestorListener(new AncestorListener() {
-                @Override
-                public void ancestorMoved(AncestorEvent ancestorEvent) {
-                }
-
-                @Override
-                public void ancestorRemoved(AncestorEvent ancestorEvent) {
-                }
-
-                @Override
-                public void ancestorAdded(AncestorEvent ancestorEvent) {
-                    Container ancestor = ancestorEvent.getAncestor();
-
-                    if (ancestor instanceof JDialog) {
-                        SemImGraphicalEditor.this.dialog = ancestor;
+            if (!Double.isNaN(d)) {
+                DoubleTextField field = new DoubleTextField(d, 10, NumberFormatUtil.getInstance().getNumberFormat());
+                field.setFilter((value, oldValue) -> {
+                    try {
+                        setNodeValue(node, "" + value);
+                        return value;
+                    } catch (IllegalArgumentException e) {
+                        return oldValue;
                     }
-                }
-            });
+                });
 
-            field.addActionListener((e) -> {
-                if (this.dialog != null) {
-                    this.dialog.setVisible(false);
-                }
-            });
+                Box box = Box.createHorizontalBox();
+                box.add(Box.createHorizontalGlue());
+                box.add(new JLabel("New value: "));
+                box.add(field);
+                box.add(Box.createHorizontalGlue());
 
-            String s;
+                field.addAncestorListener(new AncestorListener() {
+                    @Override
+                    public void ancestorMoved(AncestorEvent ancestorEvent) {
+                    }
 
-            if (parameter.getType() == ParamType.MEAN) {
-                if (this.editor.isEditIntercepts()) {
-                    s = "Intercept for " + node;
+                    @Override
+                    public void ancestorRemoved(AncestorEvent ancestorEvent) {
+                    }
+
+                    @Override
+                    public void ancestorAdded(AncestorEvent ancestorEvent) {
+                        Container ancestor = ancestorEvent.getAncestor();
+
+                        if (ancestor instanceof JDialog) {
+                            SemImGraphicalEditor.this.dialog = ancestor;
+                        }
+                    }
+                });
+
+                field.addActionListener((e) -> {
+                    if (this.dialog != null) {
+                        this.dialog.setVisible(false);
+                    }
+                });
+
+                String s;
+
+                if (parameter.getType() == ParamType.MEAN) {
+                    if (this.editor.nodeParamDisplay() == 2) {
+                        s = "Intercept for " + node;
+                    } else if (this.editor.nodeParamDisplay() == 1) {
+                        s = "Mean for " + node;
+                    } else {
+                        s = "";
+                    }
                 } else {
-                    s = "Mean for " + node;
+                    s = "Standard Deviation for " + node;
                 }
-            } else {
-                s = "Standard Deviation for " + node;
             }
-
-            JOptionPane.showMessageDialog(this.workbench.getComponent(node), box, s, JOptionPane.PLAIN_MESSAGE);
-
         }
 
         private void finishEdit() {
@@ -1612,10 +1637,10 @@ public final class SemEstimatorEditor extends JPanel {
             String tooltip = "";
             NodeType nodeType = node.getNodeType();
 
-            if (nodeType == NodeType.MEASURED || nodeType == NodeType.LATENT) {
-                if (this.editor.isEditIntercepts()) {
+            if (nodeType != NodeType.ERROR) {
+                if (this.editor.nodeParamDisplay() == 2) {
                     meanOrIntercept = semIm().getIntercept(node);
-                } else {
+                } else if (this.editor.nodeParamDisplay() == 1) {
                     meanOrIntercept = semIm().getMean(node);
                 }
             }
@@ -1638,18 +1663,18 @@ public final class SemEstimatorEditor extends JPanel {
                         + asString(tValue) + ", P=" + asString(pValue);
             }
 
-            if (!Double.isNaN(meanOrIntercept)) {
+            if (nodeType != NodeType.ERROR && !Double.isNaN(meanOrIntercept)) {
                 label.setForeground(Color.GREEN.darker());
                 label.setText(asString(meanOrIntercept));
 
-                if (this.editor.isEditIntercepts()) {
+                if (this.editor.nodeParamDisplay() == 2) {
                     tooltip = "<html>" + "B0_" + node.getName() + " = "
                             + asString(meanOrIntercept) + "</html>";
-                } else {
+                } else if (this.editor.nodeParamDisplay() == 1) {
                     tooltip = "<html>" + "Mean(" + node.getName() + ") = "
                             + asString(meanOrIntercept) + "</html>";
                 }
-            } else if (!this.editor.isEditCovariancesAsCorrelations()
+            } else if (nodeType == NodeType.ERROR && !this.editor.isEditCovariancesAsCorrelations()
                     && !Double.isNaN(stdDev)) {
                 label.setForeground(Color.BLUE);
                 label.setText(asString(stdDev));
@@ -1657,25 +1682,33 @@ public final class SemEstimatorEditor extends JPanel {
                 tooltip = "<html>" + node.getName() + " ~ N(0," + asString(stdDev)
                         + ")" + "<br><br>" + tooltip + "</html>";
 
-            } else if (this.editor.isEditCovariancesAsCorrelations()) {
+            } else if (nodeType == NodeType.ERROR && this.editor.isEditCovariancesAsCorrelations()) {
                 label.setForeground(Color.GRAY);
                 label.setText(asString(stdDev));
+            } else {
+                label = null;
             }
 
-            if (parameter != null && parameter.isFixed()) {
-                label.setForeground(Color.RED);
-            }
+            if (label != null) {
+                if (parameter != null && parameter.isFixed()) {
+                    label.setForeground(Color.RED);
+                }
 
-            label.setToolTipText(tooltip);
+                label.setToolTipText(tooltip);
+            }
 
             // Offset the nodes slightly differently depending on whether
             // they're error nodes or not.
-            if (nodeType == NodeType.ERROR) {
-                label.setOpaque(false);
-                workbench().setNodeLabel(node, label, -10, -10);
+            if (label != null) {
+                if (nodeType == NodeType.ERROR) {
+                    label.setOpaque(false);
+                    workbench().setNodeLabel(node, label, -10, -10);
+                } else {
+                    label.setOpaque(false);
+                    workbench().setNodeLabel(node, label, 0, 0);
+                }
             } else {
-                label.setOpaque(false);
-                workbench().setNodeLabel(node, label, 0, 0);
+                workbench.setNodeLabel(node, null, 0, 0);
             }
         }
 
@@ -1738,7 +1771,7 @@ public final class SemEstimatorEditor extends JPanel {
 
                     semIm().setEdgeCoef(x, y, d);
 
-                    if (this.editor.isEditIntercepts()) {
+                    if (this.editor.nodeParamDisplay() == 2) {
                         double intercept = semIm().getIntercept(y);
                         semIm().setIntercept(y, intercept);
                     }
@@ -1763,9 +1796,9 @@ public final class SemEstimatorEditor extends JPanel {
                     semIm().setParamValue(node, node, d * d);
                     this.firePropertyChange("modelChanged", null, null);
                 } else if (parameter.getType() == ParamType.MEAN) {
-                    if (this.editor.isEditIntercepts()) {
+                    if (this.editor.nodeParamDisplay() == 2) {
                         semIm().setIntercept(node, d);
-                    } else {
+                    } else if (this.editor.nodeParamDisplay() == 1) {
                         semIm().setMean(node, d);
                     }
 
