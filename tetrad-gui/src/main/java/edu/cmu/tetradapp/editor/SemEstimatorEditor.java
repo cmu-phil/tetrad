@@ -720,7 +720,7 @@ public final class SemEstimatorEditor extends JPanel {
             tabularEditor().getTableModel().fireTableDataChanged();
         }
 
-        public int isEditIntercepts() {
+        public int nodeParamDisplay() {
             return this.editIntercepts;
         }
 
@@ -1065,19 +1065,20 @@ public final class SemEstimatorEditor extends JPanel {
                     case 1:
                         return nodes.get(index);
                     case 2:
-                        if (this.editor.isEditIntercepts() == 2) {
+                        if (this.editor.nodeParamDisplay() == 2) {
                             return "Intercept";
-                        } else if (this.editor.isEditIntercepts() == 1) {
+                        } else if (this.editor.nodeParamDisplay() == 1) {
                             return "Mean";
+
                         } else {
                             return "Don't display means or intercepts";
                         }
                     case 3:
-                        if (this.editor.isEditIntercepts() == 2) {
+                        if (this.editor.nodeParamDisplay() == 2) {
                             double intercept = semIm().getIntercept(node);
                             return asString(intercept);
                         }
-                        if (this.editor.isEditIntercepts() == 1) {
+                        if (this.editor.nodeParamDisplay() == 1) {
                             return asString(mean);
                         }
                     case 4:
@@ -1151,7 +1152,7 @@ public final class SemEstimatorEditor extends JPanel {
 
                             double intercept = semIm().getIntercept(y);
 
-                            if (this.editor.isEditIntercepts() == 2) {
+                            if (this.editor.nodeParamDisplay() == 2) {
                                 semIm().setIntercept(y, intercept);
                             }
                         }
@@ -1163,9 +1164,9 @@ public final class SemEstimatorEditor extends JPanel {
                         Node node = semIm().getVariableNodes().get(index);
 
                         if (semIm().getMean(semIm().getVariableNodes().get(index)) != value) {
-                            if (this.editor.isEditIntercepts() == 2) {
+                            if (this.editor.nodeParamDisplay() == 2) {
                                 semIm().setIntercept(node, value);
-                            } else if (this.editor.isEditIntercepts() == 1) {
+                            } else if (this.editor.nodeParamDisplay() == 1) {
                                 semIm().setMean(node, value);
                             }
                             this.editor.firePropertyChange("modelChanged", 0, 0);
@@ -1426,10 +1427,10 @@ public final class SemEstimatorEditor extends JPanel {
             String postfix = "";
 
             if (parameter.getType() == ParamType.MEAN) {
-                if (this.editor.isEditIntercepts() == 2) {
+                if (this.editor.nodeParamDisplay() == 2) {
                     d = semIm().getIntercept(node);
                     prefix = "B0_" + node.getName() + " = ";
-                } else if (this.editor.isEditIntercepts() == 1) {
+                } else if (this.editor.nodeParamDisplay() == 1) {
                     d = semIm().getMean(node);
                     prefix = "Mean(" + node.getName() + ") = ";
                 }
@@ -1484,9 +1485,9 @@ public final class SemEstimatorEditor extends JPanel {
                 String s;
 
                 if (parameter.getType() == ParamType.MEAN) {
-                    if (this.editor.isEditIntercepts() == 2) {
+                    if (this.editor.nodeParamDisplay() == 2) {
                         s = "Intercept for " + node;
-                    } else if (this.editor.isEditIntercepts() == 1) {
+                    } else if (this.editor.nodeParamDisplay() == 1) {
                         s = "Mean for " + node;
                     } else {
                         s = "";
@@ -1638,9 +1639,9 @@ public final class SemEstimatorEditor extends JPanel {
             NodeType nodeType = node.getNodeType();
 
             if (nodeType != NodeType.ERROR) {
-                if (this.editor.isEditIntercepts() == 2) {
+                if (this.editor.nodeParamDisplay() == 2) {
                     meanOrIntercept = semIm().getIntercept(node);
-                } else if (this.editor.isEditIntercepts() == 1) {
+                } else if (this.editor.nodeParamDisplay() == 1) {
                     meanOrIntercept = semIm().getMean(node);
                 }
             }
@@ -1667,10 +1668,10 @@ public final class SemEstimatorEditor extends JPanel {
                 label.setForeground(Color.GREEN.darker());
                 label.setText(asString(meanOrIntercept));
 
-                if (this.editor.isEditIntercepts() == 2) {
+                if (this.editor.nodeParamDisplay() == 2) {
                     tooltip = "<html>" + "B0_" + node.getName() + " = "
                             + asString(meanOrIntercept) + "</html>";
-                } else if (this.editor.isEditIntercepts() == 1) {
+                } else if (this.editor.nodeParamDisplay() == 1) {
                     tooltip = "<html>" + "Mean(" + node.getName() + ") = "
                             + asString(meanOrIntercept) + "</html>";
                 }
@@ -1771,7 +1772,7 @@ public final class SemEstimatorEditor extends JPanel {
 
                     semIm().setEdgeCoef(x, y, d);
 
-                    if (this.editor.isEditIntercepts() == 2) {
+                    if (this.editor.nodeParamDisplay() == 2) {
                         double intercept = semIm().getIntercept(y);
                         semIm().setIntercept(y, intercept);
                     }
@@ -1796,9 +1797,9 @@ public final class SemEstimatorEditor extends JPanel {
                     semIm().setParamValue(node, node, d * d);
                     this.firePropertyChange("modelChanged", null, null);
                 } else if (parameter.getType() == ParamType.MEAN) {
-                    if (this.editor.isEditIntercepts() == 2) {
+                    if (this.editor.nodeParamDisplay() == 2) {
                         semIm().setIntercept(node, d);
-                    } else if (this.editor.isEditIntercepts() == 1) {
+                    } else if (this.editor.nodeParamDisplay() == 1) {
                         semIm().setMean(node, d);
                     }
 
