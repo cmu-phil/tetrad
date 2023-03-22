@@ -93,7 +93,7 @@ public class Boss implements SuborderSearch {
                     s3 = s1;
                     List<Node> Z = new ArrayList<>(prefix);
                     Z.addAll(suborder);
-                    Graph graph = PermutationSearch.getGraph(Z, parents, true);
+                    Graph graph = PermutationSearch.getGraph(Z, parents, this.knowledge, true);
                     this.bes.bes(graph, Z);
                     graph.paths().makeValidOrder(suborder);
                     s1 = update(prefix, suborder);
