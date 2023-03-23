@@ -90,11 +90,11 @@ our [Wish List
 
 Please cite as:
 
---
+```
 @inproceedings{ramsey2018tetrad,
   title={TETRAD—A toolbox for causal discovery},
   author={Ramsey, Joseph D and Zhang, Kun and Glymour, Madelyn and Romero, Ruben Sanchez and Huang, Biwei and Ebert-Uphoff, Imme and Samarasinghe, Savini and Barnes, Elizabeth A and Glymour, Clark},
   booktitle={8th international workshop on climate informatics},
   year={2018}
 }
---
+```
