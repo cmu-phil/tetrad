@@ -68,7 +68,7 @@ public class SP implements Algorithm, UsesScoreWrapper, HasKnowledge {
 
             return permutationSearch.search();
         } else {
-            BOSS algorithm = new BOSS(this.score);
+            SP algorithm = new SP(this.score);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
