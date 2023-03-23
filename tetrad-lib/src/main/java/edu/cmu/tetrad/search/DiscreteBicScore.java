@@ -27,6 +27,9 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
 
+import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.log;
+
 /**
  * Calculates the discrete BIC score.
  */
@@ -167,10 +170,19 @@ public class DiscreteBicScore implements LocalDiscreteScore, IBDeuScore {
         }
     }
 
-    private double getPriorForStructure(int numParents) {
-        double e = getStructurePrior();
-        int vm = this.data.length - 1;
-        return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
+//    private double getPriorForStructure(int numParents) {
+//        double e = getStructurePrior();
+//        int vm = this.data.length - 1;
+//        return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
+//    }
+
+    private double getPriorForStructure(int parents) {
+        if (abs(getStructurePrior()) <= 0) {
+            return 0;
+        } else {
+            double p = (getStructurePrior()) / (this.variables.size());
+            return -((parents) * log(p) + (this.variables.size() - (parents)) * log(1.0 - p));
+        }
     }
 
     @Override
@@ -213,6 +225,7 @@ public class DiscreteBicScore implements LocalDiscreteScore, IBDeuScore {
     public double getStructurePrior() {
         return this.structurePrior;
     }
+
 
     @Override
     public double getSamplePrior() {
