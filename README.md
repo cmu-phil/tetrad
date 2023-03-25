@@ -13,6 +13,10 @@ version of Tetrad and Causal Command.
 
 All of our code is public and we welcome suggestions, especially suggestions that improve clarity or performance of our code.
 
+## Setting up Java
+
+For setting up Java, see our [Wiki article on the topic](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Java:-Tutorial-for-Newbies-and-Experts-Alike).
+
 ## Tetrad GUI Application
 
 To download the current jar you can use to launch the Tetrad GUI, click this link:
