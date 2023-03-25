@@ -708,6 +708,59 @@ public class GraphPersistence {
         return out.toString();
     }
 
+    public static String graphToLavaan(Graph g) {
+        boolean includeIntercepts = true;
+        boolean includeErrors = true;
+
+        Map<Node, List<Node>> parents = new HashMap<>();
+        Map<Node, List<Node>> siblings = new HashMap<>();
+
+        StringBuilder lavaan = new StringBuilder();
+        for (Node a : g.getNodes()) {
+            if (includeIntercepts) lavaan.append(a.getName()).append(" ~ 1\n");
+            parents.put(a, new ArrayList<>());
+            siblings.put(a, new ArrayList<>());
+            for (Edge e : g.getEdges(a)) {
+                Node b = e.getDistalNode(a);
+                if (e.getProximalEndpoint(a) != Endpoint.ARROW) continue;
+                if (e.getProximalEndpoint(b) == Endpoint.TAIL) parents.get(a).add(b);
+                if (siblings.containsKey(b)) continue;
+                if (e.getProximalEndpoint(b) == Endpoint.ARROW) parents.get(a).add(b);
+            }
+        }
+
+        if (includeIntercepts) lavaan.append("\n");
+        boolean hasDirected = false;
+        for (Node a : g.getNodes()) {
+            Iterator<Node> itr = parents.get(a).iterator();
+            if (itr.hasNext()) {
+                hasDirected = true;
+                lavaan.append(a.getName()).append(" ~ ").append(itr.next().getName());
+            } else continue;
+            while (itr.hasNext()) lavaan.append(" + ").append(itr.next().getName());
+            lavaan.append("\n");
+        }
+
+        if (hasDirected) lavaan.append("\n");
+        boolean hasBidirected = false;
+        for (Node a : g.getNodes()) {
+            Iterator<Node> itr = siblings.get(a).iterator();
+            if (itr.hasNext()) {
+                hasBidirected = true;
+                lavaan.append(a.getName()).append(" ~~ ").append(itr.next().getName());
+            } else continue;
+            while (itr.hasNext()) lavaan.append(" + ").append(itr.next().getName());
+            lavaan.append("\n");
+        }
+
+        if (hasBidirected) lavaan.append("\n");
+        for (Node a : g.getNodes()) {
+            if (includeErrors) lavaan.append(a.getName()).append(" ~~ ").append(a.getName()).append("\n");
+        }
+
+        return lavaan.toString();
+    }
+
     public static String graphToPcalg(Graph g) {
         Map<Endpoint, Integer> mark2Int = new HashMap();
         mark2Int.put(Endpoint.NULL, 0);
