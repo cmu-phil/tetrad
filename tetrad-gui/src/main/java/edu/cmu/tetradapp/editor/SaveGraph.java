@@ -57,7 +57,7 @@ public class SaveGraph extends AbstractAction {
      */
     private final Type type;
 
-    public enum Type {text, xml, json, r, dot, pcalg}
+    public enum Type {text, xml, json, r, dot, pcalg, lavaan}
 
     public SaveGraph(GraphEditable graphEditable, String title, Type type) {
         super(title);
@@ -146,6 +146,23 @@ public class SaveGraph extends AbstractAction {
             File file = EditorUtils.getSaveFile("graph", "pcalg.csv", parent, false, this.title);
             try {
                 String text = GraphPersistence.graphToPcalg(graph);
+
+                PrintWriter out = new PrintWriter(file);
+                out.println(text);
+                Preferences.userRoot().put("fileSaveLocation", file.getParent());
+                out.close();
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+                throw new RuntimeException("Not a directed graph.", e1);
+            } catch (IllegalArgumentException e1) {
+
+                // Probably not a directed graph.
+                JOptionPane.showMessageDialog(getGraphEditable().getWorkbench(), e1.getMessage());
+            }
+        } else if (this.type == Type.lavaan) {
+            File file = EditorUtils.getSaveFile("graph", "lavaan.txt", parent, false, this.title);
+            try {
+                String text = GraphPersistence.graphToLavaan(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
