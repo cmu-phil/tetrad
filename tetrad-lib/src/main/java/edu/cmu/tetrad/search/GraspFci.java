@@ -87,7 +87,6 @@ public final class GraspFci implements GraphSearch {
     private boolean possibleDsepSearchDone = true;
 
     private boolean ordered = false;
-    private boolean cachingScores = true;
     private int graspDepth = 3;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
@@ -127,7 +126,6 @@ public final class GraspFci implements GraphSearch {
         alg.setSingularDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
-        alg.setCacheScores(cachingScores);
         alg.setVerbose(verbose);
 
         List<Node> variables = this.score.getVariables();
@@ -420,11 +418,6 @@ public final class GraspFci implements GraphSearch {
 
     public void setOrdered(boolean ordered) {
         this.ordered = ordered;
-    }
-
-
-    public void setCacheScores(boolean cachingScores) {
-        this.cachingScores = cachingScores;
     }
 
 }

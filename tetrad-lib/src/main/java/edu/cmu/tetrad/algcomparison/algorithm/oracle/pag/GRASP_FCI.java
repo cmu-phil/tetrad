@@ -88,7 +88,6 @@ public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependence
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
-            search.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
 
             // FCI
@@ -149,7 +148,6 @@ public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependence
         params.add(Params.GRASP_ORDERED_ALG);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
-        params.add(Params.CACHE_SCORES);
         params.add(Params.NUM_STARTS);
 
         // FCI

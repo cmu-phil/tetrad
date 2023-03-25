@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Node;
 import org.jetbrains.annotations.NotNull;
 
@@ -10,22 +11,18 @@ public class GrowShrinkTree {
     private final Map<Node, Integer> index;
     private final Node node;
     private final int nodeIndex;
-    private final List<Node> required;
-    private final List<Node> forbidden;
-    private final GSTNode root;
+    private List<Node> required;
+    private List<Node> forbidden;
+    private GSTNode root;
 
-    public GrowShrinkTree(Score score,  Map<Node, Integer> index, Node node, List<Node> required, List<Node> forbidden) {
+    public GrowShrinkTree(Score score,  Map<Node, Integer> index, Node node) {
         this.score = score;
         this.index = index;
         this.node = node;
         this.nodeIndex = index.get(node);
         this.root = new GSTNode(this);
-        this.required = required;
-        this.forbidden = forbidden;
-    }
-
-    public GrowShrinkTree(Score score, Map<Node, Integer> index, Node node) {
-        this(score, index, node, new ArrayList<>(), new ArrayList<>());
+        this.required = new ArrayList<>();
+        this.forbidden = new ArrayList<>();
     }
 
     public double trace(Set<Node> prefix, Set<Node> parents) {
@@ -58,6 +55,16 @@ public class GrowShrinkTree {
 
     public List<Node> getVariables() {
         return this.score.getVariables();
+    }
+
+    public List<Node> getRequired() { return this.required; }
+
+    public List<Node> getForbidden() { return this.forbidden; }
+
+    public void setKnowledge(List<Node> required, List<Node> forbidden) {
+        this.root = new GSTNode(this);
+        this.required = required;
+        this.forbidden = forbidden;
     }
 
     private static class GSTNode implements Comparable<GSTNode> {
