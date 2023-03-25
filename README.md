@@ -11,8 +11,6 @@ of contributors, and a bit of history.
 Here is the web page for the [Center for Causal Discovery](https://www.ccd.pitt.edu/), which also supports the latest
 version of Tetrad and Causal Command.
 
-All of our code is public and we welcome suggestions, especially suggestions that improve clarity or performance of our code.
-
 ## Setting up Java
 
 For setting up Java, see our [Wiki article on the topic](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Java:-Tutorial-for-Newbies-and-Experts-Alike).
@@ -91,6 +89,8 @@ our [Wish List
 ](https://github.com/cmu-phil/tetrad/wiki/Current-Wish-List).
 
 ## Open Code
+
+All of our code is public and we welcome suggestions, especially suggestions that improve clarity or performance of our code.
 
 If you're writing code using (or for!) Tetrad in either [Java](https://github.com/cmu-phil/tetrad) or [Python](https://github.com/cmu-phil/py-tetrad) (or R, which we're working toward!), thank you! Please contribute if you are doing amazing work, or publish and send us links to your papers. Please keep us abreast of how Tetrad could be improved for your applications; we will do what we can.
 
