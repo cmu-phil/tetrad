@@ -86,6 +86,10 @@ before [releasing new versions of Tetrad](https://github.com/cmu-phil/tetrad/rel
 our [Wish List
 ](https://github.com/cmu-phil/tetrad/wiki/Current-Wish-List).
 
+## Towards More Openness
+
+If you're writing code using (or for!) Tetrad in either [Java](https://github.com/cmu-phil/tetrad) or [Python](https://github.com/cmu-phil/py-tetrad) (or R, which we're working toward!), we love you. We don't know you, but we love you. Please contribute if you are doing amazing work, or publish and send us links to your papers. Please keep us abreast of how Tetrad could be improved for your applications; we will do what we can.
+
 ## Citation
 
 Please cite as:
