@@ -40,7 +40,6 @@ public class OtherPermAlgs {
     private boolean useScore = true;
     private boolean usePearl = false;
     private boolean verbose = false;
-    private boolean cachingScores = true;
     private boolean useDataOrder = false;
     private int numVars;
 
@@ -83,8 +82,6 @@ public class OtherPermAlgs {
 
         scorer.setKnowledge(knowledge);
         scorer.clearBookmarks();
-
-        scorer.setCachingScores(cachingScores);
 
         List<Node> bestPerm = new ArrayList<>(order);
         double best = Float.NEGATIVE_INFINITY;
@@ -435,10 +432,6 @@ public class OtherPermAlgs {
         Graph graph = scorer.getGraph(cpDag);
         graph.addAttribute("# edges", graph.getNumEdges());
         return graph;
-    }
-
-    public void setCacheScores(boolean cachingScores) {
-        this.cachingScores = cachingScores;
     }
 
     public void setNumStarts(int numStarts) {

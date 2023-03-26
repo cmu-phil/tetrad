@@ -188,17 +188,17 @@ public final class BfciFoo implements GraphSearch {
         }
     }
 
-    private static void triangleReduce2(Graph graph, TeyssierScorer scorer0, Knowledge knowledge) {
-        TeyssierScorer scorer = new TeyssierScorer(scorer0);
-        Graph origGaph = new EdgeListGraph(graph);
-
-        for (Edge edge : graph.getEdges()) {
-            Node a = edge.getNode1();
-            Node b = edge.getNode2();
-            t2visit(origGaph, graph, scorer0, knowledge, scorer, a, b);
-            t2visit(origGaph, graph, scorer0, knowledge, scorer, b, a);
-        }
-    }
+//    private static void triangleReduce2(Graph graph, TeyssierScorer scorer0, Knowledge knowledge) {
+//        TeyssierScorer scorer = new TeyssierScorer(scorer0);
+//        Graph origGaph = new EdgeListGraph(graph);
+//
+//        for (Edge edge : graph.getEdges()) {
+//            Node a = edge.getNode1();
+//            Node b = edge.getNode2();
+//            t2visit(origGaph, graph, scorer0, knowledge, scorer, a, b);
+//            t2visit(origGaph, graph, scorer0, knowledge, scorer, b, a);
+//        }
+//    }
 
     private static boolean t2visit(Graph origGraph, Graph graph, TeyssierScorer scorer0, Knowledge knowledge, TeyssierScorer scorer,
                                    Node a, Node b) {

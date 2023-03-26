@@ -210,7 +210,6 @@ public final class TestGrasp {
 
         Grasp grasp = getGrasp(score, test);
 
-        grasp.setCacheScores(true);
         grasp.setNumStarts(1);
         grasp.setVerbose(true);
         List<Node> perm = grasp.bestOrder(order);
@@ -1541,7 +1540,6 @@ public final class TestGrasp {
                     grasp.setUseRaskuttiUhler(usePearl);
                     grasp.setOrdered(true);
                     grasp.setVerbose(false);
-                    grasp.setCacheScores(false);
 
                     int count = 0;
 
@@ -2096,7 +2094,6 @@ public final class TestGrasp {
         IndTestDSep test = new IndTestDSep(facts.getFacts());
 
         OtherPermAlgs otherPermAlgs = new OtherPermAlgs(test);
-        otherPermAlgs.setCacheScores(true);
         otherPermAlgs.setMethod(SP);
         otherPermAlgs.setNumStarts(1);
 

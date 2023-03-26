@@ -83,7 +83,6 @@ public class GRaSPTol implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             grasp.setToleranceDepth(parameters.getInt(Params.GRASP_TOLERANCE_DEPTH));
             grasp.setAllowRandomnessInsideAlgorithm(parameters.getBoolean(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM));
             grasp.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            grasp.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
 
             grasp.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             grasp.setKnowledge(this.knowledge);

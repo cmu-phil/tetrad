@@ -35,13 +35,12 @@ public class Grasp {
     private boolean useRaskuttiUhler;
     private boolean ordered;
     private boolean verbose;
-    private boolean cachingScores = true;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
     private boolean useDataOrder = true;
 
     // other params
-    private int depth = 4;
+    private int depth = 3;
     private int numStarts = 1;
 
     public Grasp(@NotNull Score score) {
@@ -78,8 +77,6 @@ public class Grasp {
         }
 
         this.scorer.clearBookmarks();
-
-        this.scorer.setCachingScores(this.cachingScores);
 
         List<Node> bestPerm = null;
         double best = NEGATIVE_INFINITY;
@@ -125,47 +122,61 @@ public class Grasp {
         return this.scorer.getNumEdges();
     }
 
+
     private void makeValidKnowledgeOrder(List<Node> order) {
         if (!this.knowledge.isEmpty()) {
-            order.sort((o1, o2) -> {
-                if (o1.getName().equals(o2.getName())) {
-                    return 0;
-                } else if (this.knowledge.isRequired(o1.getName(), o2.getName())) {
-                    return -1;
-                } else if (this.knowledge.isRequired(o2.getName(), o1.getName())) {
-                    return 1;
-                } else if (this.knowledge.isForbidden(o1.getName(), o2.getName())) {
-                    return 1;
-                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
-                    return -1;
-                } else {
-                    return 0;
-                }
+            order.sort((a, b) -> {
+                if (a.getName().equals(b.getName())) return 0;
+                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
+                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
+                else return 0;
             });
         }
-
-        System.out.println("Initial knowledge sort order = " + order);
-
-        if (violatesKnowledge(order)) {
-            Edge edge = violatesForbiddenKnowledge(order);
-
-            if (edge != null) {
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "The initial sorting procedure could not find a permutation consistent with that \n" +
-                                "knowledge; this edge was in the DAG: " + edge + " in the initial sort,\n" +
-                                "but this edge was forbidden.");
-            }
-
-            Edge edge2 = violatesRequiredKnowledge(order);
-
-            if (edge2 != null) {
-                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-                        "The initial sorting procedure could not find a permutation consistent with that \n" +
-                                "knowledge; this edge was not in the DAG: " + edge2 + " in the initial sorted," +
-                                "but this edge was required.");
-            }
-        }
     }
+
+
+//    private void makeValidKnowledgeOrder(List<Node> order) {
+//        if (!this.knowledge.isEmpty()) {
+//            order.sort((o1, o2) -> {
+//                if (o1.getName().equals(o2.getName())) {
+//                    return 0;
+//                } else if (this.knowledge.isRequired(o1.getName(), o2.getName())) {
+//                    return -1;
+//                } else if (this.knowledge.isRequired(o2.getName(), o1.getName())) {
+//                    return 1;
+//                } else if (this.knowledge.isForbidden(o1.getName(), o2.getName())) {
+//                    return 1;
+//                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
+//                    return -1;
+//                } else {
+//                    return 0;
+//                }
+//            });
+//        }
+//
+//        System.out.println("Initial knowledge sort order = " + order);
+//
+//        if (violatesKnowledge(order)) {
+//            Edge edge = violatesForbiddenKnowledge(order);
+//
+//            if (edge != null) {
+//                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+//                        "The initial sorting procedure could not find a permutation consistent with that \n" +
+//                                "knowledge; this edge was in the DAG: " + edge + " in the initial sort,\n" +
+//                                "but this edge was forbidden.");
+//            }
+//
+//            Edge edge2 = violatesRequiredKnowledge(order);
+//
+//            if (edge2 != null) {
+//                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
+//                        "The initial sorting procedure could not find a permutation consistent with that \n" +
+//                                "knowledge; this edge was not in the DAG: " + edge2 + " in the initial sorted," +
+//                                "but this edge was required.");
+//            }
+//        }
+//    }
+
 
     public List<Node> grasp(@NotNull TeyssierScorer scorer) {
         scorer.clearBookmarks();
@@ -249,7 +260,6 @@ public class Grasp {
                 } while (zItr.hasNext());
 //                scorer.updateScores(idcs[0], idcs[1]);
 
-
                 if (currentDepth > depth[2] && !singular) {
                     scorer.goToBookmark(currentDepth);
                     continue;
@@ -299,10 +309,6 @@ public class Grasp {
         return graph;
     }
 
-    public void setCacheScores(boolean cachingScores) {
-        this.cachingScores = cachingScores;
-    }
-
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;
     }
@@ -346,18 +352,12 @@ public class Grasp {
     }
 
     private boolean violatesKnowledge(List<Node> order) {
-        if (!this.knowledge.isEmpty()) {
-            scorer.score(order);
+        if (this.knowledge.isEmpty()) return false;
 
-            for (int i = 0; i < order.size(); i++) {
-                for (int j = i + 1; j < order.size(); j++) {
-                    if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName()) && scorer.parent(order.get(i), order.get(j))) {
-                        return true;
-                    }
-
-                    if (this.knowledge.isRequired(order.get(j).getName(), order.get(i).getName()) && !scorer.parent(order.get(i), order.get(j))) {
-                        return true;
-                    }
+        for (int i = 0; i < order.size(); i++) {
+            for (int j = 0; j < i; j++) {
+                if (this.knowledge.isRequired(order.get(i).getName(), order.get(j).getName())) {
+                    return true;
                 }
             }
         }
@@ -365,37 +365,37 @@ public class Grasp {
         return false;
     }
 
-    private Edge violatesForbiddenKnowledge(List<Node> order) {
-        if (!this.knowledge.isEmpty()) {
-            scorer.score(order);
+//    private Edge violatesForbiddenKnowledge(List<Node> order) {
+//        if (!this.knowledge.isEmpty()) {
+//            scorer.score(order);
+//
+//            for (int i = 0; i < order.size(); i++) {
+//                for (int j = i + 1; j < order.size(); j++) {
+//                    if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName()) && scorer.parent(order.get(i), order.get(j))) {
+//                        return Edges.directedEdge(order.get(i), order.get(j));
+//                    }
+//                }
+//            }
+//        }
+//
+//        return null;
+//    }
 
-            for (int i = 0; i < order.size(); i++) {
-                for (int j = i + 1; j < order.size(); j++) {
-                    if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName()) && scorer.parent(order.get(i), order.get(j))) {
-                        return Edges.directedEdge(order.get(i), order.get(j));
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private Edge violatesRequiredKnowledge(List<Node> order) {
-        if (!this.knowledge.isEmpty()) {
-            scorer.score(order);
-
-            for (int i = 0; i < order.size(); i++) {
-                for (int j = i + 1; j < order.size(); j++) {
-                    if (this.knowledge.isRequired(order.get(j).getName(), order.get(i).getName()) && !scorer.parent(order.get(i), order.get(j))) {
-                        return Edges.directedEdge(order.get(j), order.get(i));
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
+//    private Edge violatesRequiredKnowledge(List<Node> order) {
+//        if (!this.knowledge.isEmpty()) {
+//            scorer.score(order);
+//
+//            for (int i = 0; i < order.size(); i++) {
+//                for (int j = i + 1; j < order.size(); j++) {
+//                    if (this.knowledge.isRequired(order.get(j).getName(), order.get(i).getName()) && !scorer.parent(order.get(i), order.get(j))) {
+//                        return Edges.directedEdge(order.get(j), order.get(i));
+//                    }
+//                }
+//            }
+//        }
+//
+//        return null;
+//    }
 
     public void setOrdered(boolean ordered) {
         this.ordered = ordered;
@@ -411,137 +411,6 @@ public class Grasp {
 
     public void setUseDataOrder(boolean useDataOrder) {
         this.useDataOrder = useDataOrder;
-    }
-
-    public void orientbk(Knowledge bk, Graph graph, List<Node> variables) {
-        for (Iterator<KnowledgeEdge> it = bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*-&gt;from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-//            this.changeFlag = true;
-//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*-&gt;from
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-//            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-//            this.changeFlag = true;
-//            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-    }
-
-    private void addRequiredEdges(Graph graph) {
-        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext() && !Thread.currentThread().isInterrupted(); ) {
-            KnowledgeEdge next = it.next();
-
-            Node nodeA = graph.getNode(next.getFrom());
-            Node nodeB = graph.getNode(next.getTo());
-
-            if (!graph.paths().isAncestorOf(nodeB, nodeA)) {
-                graph.removeEdges(nodeA, nodeB);
-                graph.addDirectedEdge(nodeA, nodeB);
-
-                if (verbose) {
-                    TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeA, nodeB));
-                }
-            }
-        }
-        for (Edge edge : graph.getEdges()) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            final String A = edge.getNode1().getName();
-            final String B = edge.getNode2().getName();
-
-            if (knowledge.isForbidden(A, B)) {
-                Node nodeA = edge.getNode1();
-                Node nodeB = edge.getNode2();
-
-                if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
-                        graph.removeEdges(nodeA, nodeB);
-                        graph.addDirectedEdge(nodeB, nodeA);
-
-                        if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
-                        }
-                    }
-                }
-
-                if (!graph.isChildOf(nodeA, nodeB) && knowledge.isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
-                        graph.removeEdges(nodeA, nodeB);
-                        graph.addDirectedEdge(nodeB, nodeA);
-
-                        if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
-                        }
-                    }
-                }
-            } else if (knowledge.isForbidden(B, A)) {
-                Node nodeA = edge.getNode2();
-                Node nodeB = edge.getNode1();
-
-                if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
-                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
-                        graph.removeEdges(nodeA, nodeB);
-                        graph.addDirectedEdge(nodeB, nodeA);
-
-                        if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
-                        }
-                    }
-                }
-                if (!graph.isChildOf(nodeA, nodeB) && knowledge.isForbidden(nodeA.getName(), nodeB.getName())) {
-                    if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
-                        graph.removeEdges(nodeA, nodeB);
-                        graph.addDirectedEdge(nodeB, nodeA);
-
-                        if (verbose) {
-                            TetradLogger.getInstance().forceLogMessage("Adding edge by knowledge: " + graph.getEdge(nodeB, nodeA));
-                        }
-                    }
-                }
-            }
-        }
     }
 
 }
