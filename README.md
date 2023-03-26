@@ -13,7 +13,7 @@ version of Tetrad and Causal Command.
 
 ## Setting up Java
 
-For setting up Java, see our [Wiki article on the topic](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Java:-Tutorial-for-Newbies-and-Experts-Alike).
+You will need to set up Java on your machine. For setting up Java, see our [Wiki article on the topic](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Java:-Tutorial-for-Newbies-and-Experts-Alike).
 
 ## Tetrad GUI Application
 
