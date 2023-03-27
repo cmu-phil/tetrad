@@ -725,7 +725,7 @@ public class GraphPersistence {
                 if (e.getProximalEndpoint(a) != Endpoint.ARROW) continue;
                 if (e.getProximalEndpoint(b) == Endpoint.TAIL) parents.get(a).add(b);
                 if (siblings.containsKey(b)) continue;
-                if (e.getProximalEndpoint(b) == Endpoint.ARROW) parents.get(a).add(b);
+                if (e.getProximalEndpoint(b) == Endpoint.ARROW) siblings.get(a).add(b);
             }
         }
 
