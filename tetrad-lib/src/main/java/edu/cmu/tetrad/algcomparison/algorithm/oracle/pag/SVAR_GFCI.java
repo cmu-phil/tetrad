@@ -2,8 +2,10 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.TimeSeries;
@@ -26,30 +28,33 @@ import java.util.List;
  * SvarFCI.
  *
  * @author jdramsey
- * @author dmalinsky
+ * @author Daniel Malinsky
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "SvarFCI",
-        command = "svar-fci",
+        name = "SvarGFCI",
+        command = "svar-gfci",
         algoType = AlgType.allow_latent_common_causes
 )
 @TimeSeries
 @Bootstrapping
-public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
+public class SVAR_GFCI implements Algorithm, HasKnowledge, TakesIndependenceWrapper, UsesScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
+    private ScoreWrapper score;
     private Knowledge knowledge;
 
-    public SvarFci() {
+    public SVAR_GFCI() {
     }
 
-    public SvarFci(IndependenceWrapper test) {
-        this.test = test;
+    public SVAR_GFCI(IndependenceWrapper type, ScoreWrapper score) {
+        this.test = type;
+        this.score = score;
     }
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
+
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (parameters.getInt(Params.TIME_LAG) > 0) {
                 DataSet dataSet = (DataSet) dataModel;
@@ -64,17 +69,18 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
             if (this.knowledge != null) {
                 dataModel.setKnowledge(this.knowledge);
             }
-            edu.cmu.tetrad.search.SvarFci search = new edu.cmu.tetrad.search.SvarFci(this.test.getTest(dataModel, parameters));
-            search.setDepth(parameters.getInt(Params.DEPTH));
+            edu.cmu.tetrad.search.SvarGFci search = new edu.cmu.tetrad.search.SvarGFci(this.test.getTest(dataModel, parameters),
+                    this.score.getScore(dataModel, parameters));
             search.setKnowledge(this.knowledge);
+
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
         } else {
-            SvarFci svarFci = new SvarFci(this.test);
+            SVAR_GFCI algorithm = new SVAR_GFCI(this.test, this.score);
 
             DataSet data = (DataSet) dataModel;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, svarFci, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
@@ -89,7 +95,7 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
     }
 
     public String getDescription() {
-        return "SvarFCI (SVAR Fast Causal Inference) using " + this.test.getDescription();
+        return "SavrGFCI (SVAR GFCI) using " + this.test.getDescription() + " and " + this.score.getDescription();
     }
 
     @Override
@@ -101,7 +107,11 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
 
+        parameters.add(Params.FAITHFULNESS_ASSUMED);
+        parameters.add(Params.MAX_INDEGREE);
         parameters.add(Params.TIME_LAG);
+//        parameters.add(Params.PRINT_STREAM);
+
         parameters.add(Params.VERBOSE);
         return parameters;
     }
@@ -125,4 +135,15 @@ public class SvarFci implements Algorithm, HasKnowledge, TakesIndependenceWrappe
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
     }
+
+    @Override
+    public ScoreWrapper getScoreWrapper() {
+        return this.score;
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
+    }
+
 }
