@@ -23,6 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.CPC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FGES;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
@@ -399,7 +400,7 @@ public class TestFges {
         ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
         IndependenceWrapper test = new FisherZ();
 
-        Algorithm fges = new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score);
+        Algorithm fges = new FGES(score);
 
         Graph fgesGraph = fges.search(dataSet, parameters);
 
@@ -1676,7 +1677,7 @@ public class TestFges {
             LinearFisherModel sim = new LinearFisherModel(graph);
             sim.createData(parameters, false);
             ScoreWrapper score = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
-            Algorithm alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(score);
+            Algorithm alg = new FGES(score);
 
             parameters.set(Params.ALPHA, 1e-8);
 

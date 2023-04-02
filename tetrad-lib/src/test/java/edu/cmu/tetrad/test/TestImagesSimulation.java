@@ -23,8 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesPcStableMax;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.ImagesSemBic;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.IMAGES;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.simulation.LinearFisherModel;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -75,8 +74,7 @@ public class TestImagesSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new ImagesSemBic());
-        algorithms.add(new ImagesPcStableMax());
+        algorithms.add(new IMAGES());
 
         Simulations simulations = new Simulations();
 
