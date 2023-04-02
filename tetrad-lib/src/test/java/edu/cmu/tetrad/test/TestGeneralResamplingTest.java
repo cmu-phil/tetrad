@@ -19,8 +19,8 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FGES;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FCI;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GFCI;
 import edu.cmu.tetrad.algcomparison.independence.BDeuTest;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
@@ -92,7 +92,7 @@ public class TestGeneralResamplingTest {
         parameters.set(Params.VERBOSE, verbose);
 
         ScoreWrapper score = new BdeuScore();
-        Algorithm algorithm = new Fges(score);
+        Algorithm algorithm = new FGES(score);
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(
                 data, algorithm, numBootstrapSamples, 100.0,
@@ -148,7 +148,7 @@ public class TestGeneralResamplingTest {
         parameters.set(Params.VERBOSE, verbose);
 
         ScoreWrapper score = new BdeuScore();
-        Algorithm algorithm = new Fges(score);
+        Algorithm algorithm = new FGES(score);
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
                 numBootstrapSamples, 100.0,
@@ -331,7 +331,7 @@ public class TestGeneralResamplingTest {
         parameters.set(Params.VERBOSE, verbose);
 
         IndependenceWrapper test = new FisherZ();
-        Fci algorithm = new Fci(test);
+        FCI algorithm = new FCI(test);
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
                 numBootstrapSamples, 100.0,
@@ -393,7 +393,7 @@ public class TestGeneralResamplingTest {
         parameters.set(Params.VERBOSE, verbose);
 
         IndependenceWrapper test = new ChiSquare();
-        Algorithm algorithm = new Fci(test);
+        Algorithm algorithm = new FCI(test);
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
                 numBootstrapSamples, 100.0,

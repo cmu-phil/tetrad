@@ -24,14 +24,11 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.PrintStream;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -58,9 +55,6 @@ import java.util.concurrent.ConcurrentMap;
  */
 public final class SvarGFci implements GraphSearch {
 
-    // If a graph is provided.
-    private final Graph dag = null;
-
     // The PAG being constructed.
     private Graph graph;
 
@@ -68,7 +62,6 @@ public final class SvarGFci implements GraphSearch {
     private Knowledge knowledge = new Knowledge();
 
     // The variables to search over (optional)
-    private final List<Node> variables = new ArrayList<>();
 
     // The conditional independence test.
     private IndependenceTest independenceTest;
@@ -117,8 +110,6 @@ public final class SvarGFci implements GraphSearch {
 
     private SepsetProducer sepsets;
 
-    private final int depth = -1;
-
     //============================CONSTRUCTORS============================//
 
     /**
@@ -137,14 +128,12 @@ public final class SvarGFci implements GraphSearch {
 
 
     public Graph search() {
-        long time1 = MillisecondTimes.timeMillis();
 
-        List<Node> nodes = getIndependenceTest().getVariables();
 
         this.logger.log("info", "Starting svarGFCI algorithm.");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-        this.graph = new EdgeListGraph(nodes);
+        this.graph = new EdgeListGraph(independenceTest.getVariables());
 
         if (this.score == null) {
             setScore();
@@ -158,11 +147,9 @@ public final class SvarGFci implements GraphSearch {
         this.graph = fges.search();
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-//        System.out.println("GFCI: FGES done");
-
         this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxIndegree);
 
-        for (Node b : nodes) {
+        for (Node b : independenceTest.getVariables()) {
             List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
 
             if (adjacentNodes.size() < 2) {
@@ -213,7 +200,7 @@ public final class SvarGFci implements GraphSearch {
         Score score;
 
         if (this.independenceTest instanceof IndTestDSep) {
-            score = new GraphScore(this.dag);
+            score = new GraphScore(((IndTestDSep) independenceTest).getGraph());
         } else if (cov != null) {
             this.covarianceMatrix = cov;
             SemBicScore score0 = new SemBicScore(cov);
@@ -396,17 +383,6 @@ public final class SvarGFci implements GraphSearch {
 
     //===========================================PRIVATE METHODS=======================================//
 
-    private void buildIndexing(List<Node> nodes) {
-        // Map from variables to their column indices in the data set.
-        ConcurrentMap<Node, Integer> hashIndices = new ConcurrentHashMap<>();
-
-        int i = 0;
-
-        for (Node node : nodes) {
-            hashIndices.put(node, i++);
-        }
-    }
-
     /**
      * Orients according to background knowledge
      */
@@ -466,25 +442,6 @@ public final class SvarGFci implements GraphSearch {
         this.structurePrior = structurePrior;
     }
 
-    private int freeDegree(List<Node> nodes, Graph graph) {
-        int max = 0;
-
-        for (Node x : nodes) {
-            List<Node> opposites = graph.getAdjacentNodes(x);
-
-            for (Node y : opposites) {
-                Set<Node> adjx = new HashSet<>(opposites);
-                adjx.remove(y);
-
-                if (adjx.size() > max) {
-                    max = adjx.size();
-                }
-            }
-        }
-
-        return max;
-    }
-
     private void orientSimilarPairs(Graph graph, Knowledge knowledge, Node x, Node y) {
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return;
@@ -496,10 +453,8 @@ public final class SvarGFci implements GraphSearch {
         int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
-        List tier_x = knowledge.getTier(indx_tier);
-//        Collections.sort(tier_x);
-        List tier_y = knowledge.getTier(indy_tier);
-//        Collections.sort(tier_y);
+        List<String> tier_x = knowledge.getTier(indx_tier);
+        List<String> tier_y = knowledge.getTier(indy_tier);
 
         int i;
         for (i = 0; i < tier_x.size(); ++i) {
@@ -526,12 +481,10 @@ public final class SvarGFci implements GraphSearch {
             String B;
             Node y1;
             if (indx_tier >= indy_tier) {
-                List tmp_tier1 = knowledge.getTier(i + tier_diff);
-//                Collections.sort(tmp_tier1);
-                List tmp_tier2 = knowledge.getTier(i);
-//                Collections.sort(tmp_tier2);
-                A = (String) tmp_tier1.get(indx_comp);
-                B = (String) tmp_tier2.get(indy_comp);
+                List<String> tmp_tier1 = knowledge.getTier(i + tier_diff);
+                List<String> tmp_tier2 = knowledge.getTier(i);
+                A = tmp_tier1.get(indx_comp);
+                B = tmp_tier2.get(indy_comp);
                 if (A.equals(B)) continue;
                 if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
                 if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
@@ -543,8 +496,6 @@ public final class SvarGFci implements GraphSearch {
                     graph.setEndpoint(x1, y1, Endpoint.ARROW);
                     System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
                 }
-            } else {
-//                System.out.println("############## WARNING (orientSimilarPairs): did not catch x,y pair " + x + ", " + y);
             }
         }
 
@@ -570,10 +521,8 @@ public final class SvarGFci implements GraphSearch {
         int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
-        List tier_x = this.knowledge.getTier(indx_tier);
-//        Collections.sort(tier_x);
-        List tier_y = this.knowledge.getTier(indy_tier);
-//        Collections.sort(tier_y);
+        List<String> tier_x = this.knowledge.getTier(indx_tier);
+        List<String> tier_y = this.knowledge.getTier(indy_tier);
 
         int i;
         for (i = 0; i < tier_x.size(); ++i) {
@@ -606,19 +555,15 @@ public final class SvarGFci implements GraphSearch {
             String B;
             Node y1;
             if (indx_tier >= indy_tier) {
-                List tmp_tier1 = this.knowledge.getTier(i + tier_diff);
-//                Collections.sort(tmp_tier1);
-                List tmp_tier2 = this.knowledge.getTier(i);
-//                Collections.sort(tmp_tier2);
-                A = (String) tmp_tier1.get(indx_comp);
-                B = (String) tmp_tier2.get(indy_comp);
+                List<String> tmp_tier1 = this.knowledge.getTier(i + tier_diff);
+                List<String> tmp_tier2 = this.knowledge.getTier(i);
+                A = tmp_tier1.get(indx_comp);
+                B = tmp_tier2.get(indy_comp);
             } else {
-                List tmp_tier1 = this.knowledge.getTier(i);
-//                Collections.sort(tmp_tier1);
-                List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
-//                Collections.sort(tmp_tier2);
-                A = (String) tmp_tier1.get(indx_comp);
-                B = (String) tmp_tier2.get(indy_comp);
+                List<String> tmp_tier1 = this.knowledge.getTier(i);
+                List<String> tmp_tier2 = this.knowledge.getTier(i + tier_diff);
+                A = tmp_tier1.get(indx_comp);
+                B = tmp_tier2.get(indy_comp);
             }
             if (A.equals(B)) continue;
             if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
@@ -641,11 +586,11 @@ public final class SvarGFci implements GraphSearch {
         if (simList.isEmpty()) return;
         List<Node> x1List = simList.get(0);
         List<Node> y1List = simList.get(1);
-        Iterator itx = x1List.iterator();
-        Iterator ity = y1List.iterator();
+        Iterator<Node> itx = x1List.iterator();
+        Iterator<Node> ity = y1List.iterator();
         while (itx.hasNext() && ity.hasNext()) {
-            Node x1 = (Node) itx.next();
-            Node y1 = (Node) ity.next();
+            Node x1 = itx.next();
+            Node y1 = ity.next();
             System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
             System.out.println("removing edge between x = " + x1 + " and y = " + y1);
             Edge oldxy = this.graph.getEdge(x1, y1);
