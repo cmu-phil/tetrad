@@ -222,8 +222,11 @@ public class PermutationBes {
         diff.removeAll(H);
         if (!isClique(diff, graph)) return false;
 
-        graph = new EdgeListGraph(graph);
         if (existsKnowledge()) {
+            graph = new EdgeListGraph(graph);
+            Edge oldxy = graph.getEdge(x, y);
+            graph.removeEdge(oldxy);
+
             for (Node h : H) {
                 if (graph.isParentOf(h, y) || graph.isParentOf(h, x)) continue;
                 Edge oldyh = graph.getEdge(y, h);
@@ -235,20 +238,22 @@ public class PermutationBes {
                 graph.removeEdge(oldxh);
                 graph.addEdge(directedEdge(x, h));
             }
-        }
 
-        List<Node> initialOrder = new ArrayList<>(suborder);
-        Collections.reverse(initialOrder);
+            revertToCPDAG(graph);
+            List<Node> initialOrder = new ArrayList<>(suborder);
+            Collections.reverse(initialOrder);
 
-        while (!initialOrder.isEmpty()) {
-            Iterator<Node> itr = initialOrder.iterator();
-            Node b;
-            do {
-                if (itr.hasNext()) b = itr.next();
-                else return false;
-            } while (invalidSink(b, graph));
-            graph.removeNode(b);
-            itr.remove();
+            while (!initialOrder.isEmpty()) {
+                Iterator<Node> itr = initialOrder.iterator();
+                Node b;
+                do {
+                    if (itr.hasNext()) b = itr.next();
+                    else return false;
+                } while (invalidSink(b, graph));
+                graph.removeNode(b);
+                itr.remove();
+            }
+
         }
 
         return true;
