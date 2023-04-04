@@ -47,7 +47,7 @@ public final class Ccd implements GraphSearch {
     private boolean applyR1;
 
     public Ccd(IndependenceTest test) {
-        if (test == null) throw new NullPointerException();
+        if (test == null) throw new NullPointerException("Test is not provided");
         this.independenceTest = test;
         this.nodes = test.getVariables();
     }
