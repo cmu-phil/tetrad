@@ -46,7 +46,7 @@ the [JPype Python project](https://jpype.readthedocs.io/en/latest/).
 Also, please see the [causal-learn Python package](https://causal-learn.readthedocs.io/en/latest/), translating some
 Tetrad algorithms into Python and adding some algorithms not in Tetrad, now part of the [py-why space](https://github.com/py-why)
 
-We added [a method to use Tetrad algorithms in R via Py-Tetrad](https://github.com/cmu-phil/py-tetrad/blob/main/pytetrad/R/REAMDE.md). This is work in progress.
+We added [a method to use Tetrad algorithms in R via py-tetrad](https://github.com/cmu-phil/py-tetrad/blob/main/pytetrad/R/REAMDE.md). This is work in progress.
 
 ## Documentation
 
