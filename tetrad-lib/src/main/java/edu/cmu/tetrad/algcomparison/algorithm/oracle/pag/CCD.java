@@ -28,7 +28,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-@Experimental
+//@Experimental
 public class CCD implements Algorithm, TakesIndependenceWrapper {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
