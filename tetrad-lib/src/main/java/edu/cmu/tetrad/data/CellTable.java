@@ -23,6 +23,8 @@ package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.util.MultiDimIntTable;
 
+import java.util.Arrays;
+
 
 /**
  * Stores a cell count table of arbitrary dimension. Provides methods for
@@ -34,10 +36,10 @@ import edu.cmu.tetrad.util.MultiDimIntTable;
 public final class CellTable {
 
 
-    /**
-     * Stores a copy of coordinates for temporary use. (Reused.)
-     */
-    private int[] coordCopy;
+//    /**
+//     * Stores a copy of coordinates for temporary use. (Reused.)
+//     */
+//    private int[] coordCopy;
 
     /**
      * The value used in the data for missing values.
@@ -108,24 +110,24 @@ public final class CellTable {
      * @return the marginal sum specified.
      */
     public long calcMargin(int[] coords) {
-        internalCoordCopy(coords);
+        int[] coordCopy = internalCoordCopy(coords);
 
         int sum = 0;
         int i = -1;
 
-        while (++i < this.coordCopy.length) {
-            if (this.coordCopy[i] == -1) {
+        while (++i < coordCopy.length) {
+            if (coordCopy[i] == -1) {
                 for (int j = 0; j < this.table.getDimension(i); j++) {
-                    this.coordCopy[i] = j;
-                    sum += calcMargin(this.coordCopy);
+                    coordCopy[i] = j;
+                    sum += calcMargin(coordCopy);
                 }
 
-                this.coordCopy[i] = -1;
+                coordCopy[i] = -1;
                 return sum;
             }
         }
 
-        return this.table.getValue(this.coordCopy);
+        return this.table.getValue(coordCopy);
     }
 
     /**
@@ -141,26 +143,30 @@ public final class CellTable {
      * @return an <code>int</code> value
      */
     public long calcMargin(int[] coords, int[] marginVars) {
-        internalCoordCopy(coords);
+        int[] coordCopy = internalCoordCopy(coords);
 
         for (int marginVar : marginVars) {
-            this.coordCopy[marginVar] = -1;
+            coordCopy[marginVar] = -1;
         }
 
-        return calcMargin(this.coordCopy);
+        return calcMargin(coordCopy);
     }
 
     /**
      * Makes a copy of the coordinate array so that the original is not messed
      * up.
      */
-    private void internalCoordCopy(int[] coords) {
-        if ((this.coordCopy == null) ||
-                (this.coordCopy.length != coords.length)) {
-            this.coordCopy = new int[coords.length];
-        }
+    private int[] internalCoordCopy(int[] coords) {
+        int[] coordCopy = Arrays.copyOf(coords, coords.length);
 
-        System.arraycopy(coords, 0, this.coordCopy, 0, coords.length);
+//        if ((this.coordCopy == null) ||
+//                (this.coordCopy.length != coords.length)) {
+//            this.coordCopy = new int[coords.length];
+//        }
+//
+//        System.arraycopy(coords, 0, this.coordCopy, 0, coords.length);
+
+        return coordCopy;
     }
 
     private int getMissingValue() {
