@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.util.CombinationIterator;
 import edu.cmu.tetrad.util.ProbUtils;
+import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -171,7 +172,7 @@ public final class GSquareTest {
                 double expected = e.get(i) / (double) total;
 
                 if (o.get(i) != 0) {
-                    _gSquare += 2.0 * o.get(i) * log(o.get(i) / expected);
+                    _gSquare += 2.0 * o.get(i) * FastMath.log(o.get(i) / expected);
                 }
             }
 
