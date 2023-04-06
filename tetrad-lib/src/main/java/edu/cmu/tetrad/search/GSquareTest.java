@@ -21,7 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.CellTable;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.util.CombinationIterator;
 import edu.cmu.tetrad.util.ProbUtils;
 
@@ -38,11 +40,52 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @author Frank Wimberly original version
  * @author Joseph Ramsey revision 10/01
  */
-public final class GSquareTest extends ChiSquareTest {
+public final class GSquareTest {
+
+    /**
+     * The data set this test uses.
+     */
+    private final DataSet dataSet;
+
+    /**
+     * The number of values for each variable in the data.
+     */
+    private final int[] dims;
+
+    /**
+     * Stores the data in the form of a cell table.
+     */
+    private final CellTable cellTable;
+
+    /**
+     * The significance level of the test.
+     */
+    private double alpha;
+
 
     public GSquareTest(DataSet dataSet, double alpha) {
-        super(dataSet, alpha);
+        if (alpha < 0.0 || alpha > 1.0) {
+            throw new IllegalArgumentException("Significance level must be in " +
+                    "[0, 1]: " + alpha);
+        }
+
+        this.dims = new int[dataSet.getNumColumns()];
+
+        for (int i = 0; i < getDims().length; i++) {
+            DiscreteVariable variable =
+                    (DiscreteVariable) dataSet.getVariable(i);
+            this.getDims()[i] = variable.getNumCategories();
+        }
+
+        this.dataSet = dataSet;
+        this.alpha = alpha;
+        this.cellTable = new CellTable(null);
+        this.getCellTable().setMissingValue(DiscreteVariable.MISSING_VALUE);
     }
+
+//    public GSquareTest(DataSet dataSet, double alpha) {
+//        super(dataSet, alpha);
+//    }
 
     /**
      * Calculates g square for a conditional crosstabulation table for independence question 0 _||_ 1 | 2, 3, ...max by
@@ -221,6 +264,100 @@ public final class GSquareTest extends ChiSquareTest {
         public boolean isIndep() {
             return this.isIndep;
         }
+    }
+
+
+    public int[] getDims() {
+        return this.dims;
+    }
+
+    public CellTable getCellTable() {
+        return this.cellTable;
+    }
+
+    /**
+     * @return the getModel significance level being used for tests.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    /**
+     * Sets the significance level to be used for tests.
+     */
+    public void setAlpha(double alpha) {
+        if (alpha < 0.0 || alpha > 1.0) {
+            throw new IllegalArgumentException("Significance level must be in " +
+                    "[0, 1]: " + alpha);
+        }
+
+        this.alpha = alpha;
+    }
+
+    public int[] selectFromArray(int[] arr, int[] indices) {
+        int[] retArr = new int[indices.length];
+
+        for (int i = 0; i < indices.length; i++) {
+            retArr[i] = arr[indices[i]];
+        }
+
+        return retArr;
+    }
+
+    public DataSet getDataSet() {
+        return this.dataSet;
+    }
+
+    public boolean isDetermined(int[] testIndices, double p) {
+
+        // Reset the cell table for the columns referred to in
+        // 'testIndices.' Do cell coefs for those columns.
+        this.getCellTable().addToTable(getDataSet(), testIndices);
+
+        // Indicator arrays to tell the cell table which margins
+        // to calculate. For x _||_ y | z1, z2, ..., we want to
+        // calculate the margin for x, the margin for y, and the
+        // margin for x and y. (These will be used later.)
+        int[] firstVar = {0};
+
+        int[] condDims = new int[testIndices.length - 1];
+        System.arraycopy(selectFromArray(getDims(), testIndices), 1, condDims, 0,
+                condDims.length);
+
+        int[] coords = new int[testIndices.length];
+        int numValues = this.getCellTable().getNumValues(0);
+
+        CombinationIterator combinationIterator =
+                new CombinationIterator(condDims);
+
+        while (combinationIterator.hasNext()) {
+            int[] combination = combinationIterator.next();
+            System.arraycopy(combination, 0, coords, 1, combination.length);
+
+            long total = this.getCellTable().calcMargin(coords, firstVar);
+
+            if (total == 0) {
+                continue;
+            }
+
+            boolean dominates = false;
+
+            for (int i = 0; i < numValues; i++) {
+                coords[0] = i;
+
+                long numi = this.getCellTable().getValue(coords);
+
+                if ((double) numi / total >= p) {
+                    dominates = true;
+                }
+            }
+
+            if (!dominates) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 
