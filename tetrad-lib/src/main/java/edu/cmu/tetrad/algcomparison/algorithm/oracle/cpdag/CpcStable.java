@@ -53,7 +53,7 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(this.knowledge);
             search.setFasType(PcAll.FasType.STABLE);
-            search.setConcurrent(PcAll.Concurrent.NO);
+//            search.setConcurrent(PcAll.Concurrent.NO);
             search.setColliderDiscovery(PcAll.ColliderDiscovery.CONSERVATIVE);
             search.setConflictRule(PcAll.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));

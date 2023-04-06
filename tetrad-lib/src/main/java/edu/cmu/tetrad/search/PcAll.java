@@ -92,7 +92,7 @@ public final class PcAll implements GraphSearch {
     private boolean useHeuristic;
     private int maxPathLength;
     private FasType fasType = FasType.REGULAR;
-    private Concurrent concurrent = Concurrent.YES;
+//    private Concurrent concurrent = Concurrent.YES;
     private ColliderDiscovery colliderDiscovery = ColliderDiscovery.FAS_SEPSETS;
     private ConflictRule conflictRule = ConflictRule.OVERWRITE;
     private Graph externalGraph = null;
@@ -169,9 +169,9 @@ public final class PcAll implements GraphSearch {
         this.fasType = fasType;
     }
 
-    public void setConcurrent(Concurrent concurrent) {
-        this.concurrent = concurrent;
-    }
+//    public void setConcurrent(Concurrent concurrent) {
+//        this.concurrent = concurrent;
+//    }
 
     public void setHeuristic(int heuristic) {
         this.heuristic = heuristic;
@@ -320,21 +320,21 @@ public final class PcAll implements GraphSearch {
         IFas fas;
 
         if (this.fasType == FasType.REGULAR) {
-            if (this.concurrent == Concurrent.NO) {
+//            if (this.concurrent == Concurrent.NO) {
                 fas = new Fas(getIndependenceTest());
                 ((Fas) fas).setHeuristic(this.heuristic);
-            } else {
-                fas = new FasConcurrent(getIndependenceTest());
-                ((FasConcurrent) fas).setStable(false);
-            }
+//            } else {
+//                fas = new FasConcurrent(getIndependenceTest());
+//                ((FasConcurrent) fas).setStable(false);
+//            }
         } else {
-            if (this.concurrent == Concurrent.NO) {
+//            if (this.concurrent == Concurrent.NO) {
                 fas = new Fas(getIndependenceTest());
                 ((Fas) fas).setStable(true);
-            } else {
-                fas = new FasConcurrent(getIndependenceTest());
-                ((FasConcurrent) fas).setStable(true);
-            }
+//            } else {
+//                fas = new FasConcurrent(getIndependenceTest());
+//                ((FasConcurrent) fas).setStable(true);
+//            }
         }
 
         fas.setKnowledge(getKnowledge());
@@ -605,7 +605,7 @@ public final class PcAll implements GraphSearch {
 
     public enum FasType {REGULAR, STABLE}
 
-    public enum Concurrent {YES, NO}
+    public enum Concurrent {NO};//, NO}
 
     public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
 

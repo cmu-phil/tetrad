@@ -244,12 +244,12 @@ public class PcMax implements GraphSearch {
             search.setFasType(PcAll.FasType.REGULAR);
         }
 
-        if (concurrent) {
-            search.setConcurrent(PcAll.Concurrent.YES);
-        } else {
-            search.setConcurrent(PcAll.Concurrent.NO);
-        }
-
+//        if (concurrent) {
+//            search.setConcurrent(PcAll.Concurrent.YES);
+//        } else {
+//            search.setConcurrent(PcAll.Concurrent.NO);
+//        }
+//
         search.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
         search.setConflictRule(conflictRule);
         search.setUseHeuristic(useHeuristic);
@@ -311,9 +311,9 @@ public class PcMax implements GraphSearch {
         this.stable = stable;
     }
 
-    public void setConcurrent(boolean concurrent) {
-        this.concurrent = concurrent;
-    }
+//    public void setConcurrent(boolean concurrent) {
+//        this.concurrent = concurrent;
+//    }
 
     public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;

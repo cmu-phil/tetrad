@@ -101,7 +101,7 @@ public final class Cpc implements GraphSearch {
     private boolean verbose;
 
     private boolean stable;
-    private boolean concurrent;
+//    private boolean concurrent;
     private boolean useHeuristic = false;
     private int maxPPathLength = -1;
     private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
@@ -261,11 +261,11 @@ public final class Cpc implements GraphSearch {
             search.setFasType(PcAll.FasType.REGULAR);
         }
 
-        if (concurrent) {
-            search.setConcurrent(PcAll.Concurrent.YES);
-        } else {
-            search.setConcurrent(PcAll.Concurrent.NO);
-        }
+//        if (concurrent) {
+//            search.setConcurrent(PcAll.Concurrent.YES);
+//        } else {
+//            search.setConcurrent(PcAll.Concurrent.NO);
+//        }
 
         search.setColliderDiscovery(PcAll.ColliderDiscovery.CONSERVATIVE);
         search.setConflictRule(conflictRule);
@@ -358,9 +358,9 @@ public final class Cpc implements GraphSearch {
         this.stable = stable;
     }
 
-    public void setConcurrent(boolean concurrent) {
-        this.concurrent = concurrent;
-    }
+//    public void setConcurrent(boolean concurrent) {
+//        this.concurrent = concurrent;
+//    }
 
     public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;
