@@ -63,6 +63,7 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setAggressivelyPreventCycles(true);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setKnowledge(knowledge);
 //            search.setConcurrent(parameters.getBoolean(Params.CONCURRENT_FAS));
             search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
             search.setMaxPPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));

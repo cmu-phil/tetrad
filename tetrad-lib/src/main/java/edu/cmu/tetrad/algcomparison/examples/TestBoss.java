@@ -25,7 +25,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BOSS;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FGES;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRaSP;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.GRASP;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -69,7 +69,7 @@ public class TestBoss {
         Algorithms algorithms = new Algorithms();
         algorithms.add(new FGES(new SemBicScore()));
         algorithms.add(new BOSS(new SemBicScore()));
-        algorithms.add(new GRaSP(new SemBicScore(), new FisherZ()));
+        algorithms.add(new GRASP(new FisherZ(), new SemBicScore()));
 //        algorithms.add(new SP(new SemBicScore()));
 
         Simulations simulations = new Simulations();

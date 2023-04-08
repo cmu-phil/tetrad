@@ -42,18 +42,18 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class SPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class SP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
 
-    public SPFCI() {
+    public SP_FCI() {
         // Used for reflection; do not delete.
     }
 
-    public SPFCI(ScoreWrapper score, IndependenceWrapper test) {
+    public SP_FCI(IndependenceWrapper test, ScoreWrapper score) {
         this.test = test;
         this.score = score;
     }
@@ -76,7 +76,7 @@ public class SPFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
             return search.search();
         } else {
-            SPFCI algorithm = new SPFCI(this.score, this.test);
+            SP_FCI algorithm = new SP_FCI(this.test, this.score);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setKnowledge(data.getKnowledge());
