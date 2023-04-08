@@ -62,7 +62,6 @@ public class TestKnowledge {
         testKnowledge(dataSet, knowledge, parameters, new FCI(test));
         testKnowledge(dataSet, knowledge, parameters, new FCI_MAX(test));
         testKnowledge(dataSet, knowledge, parameters, new GFCI(test, score));
-        testKnowledge(dataSet, knowledge, parameters, new SP(score));
         testKnowledge(dataSet, knowledge, parameters, new GRASP_FCI(test, score));
         testKnowledge(dataSet, knowledge, parameters, new RFCI(test));
         testKnowledge(dataSet, knowledge, parameters, new SP_FCI(test, score));
