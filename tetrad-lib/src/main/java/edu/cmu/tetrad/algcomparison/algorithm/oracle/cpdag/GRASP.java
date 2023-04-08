@@ -37,17 +37,17 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class GRASP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
 
-    public GRaSP() {
+    public GRASP() {
         // Used in reflection; do not delete.
     }
 
-    public GRaSP(ScoreWrapper score, IndependenceWrapper test) {
+    public GRASP(IndependenceWrapper test, ScoreWrapper score) {
         this.score = score;
         this.test = test;
     }
@@ -85,7 +85,7 @@ public class GRaSP implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             grasp.bestOrder(score.getVariables());
             return grasp.getGraph(parameters.getBoolean(Params.OUTPUT_CPDAG));
         } else {
-            GRaSP algorithm = new GRaSP(this.score, this.test);
+            GRASP algorithm = new GRASP(this.test, this.score);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));

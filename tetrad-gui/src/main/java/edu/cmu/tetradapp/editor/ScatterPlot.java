@@ -119,7 +119,7 @@ public class ScatterPlot {
     }
 
     private double fisherz(double r) {
-        return 0.5 * FastMath.sqrt(getSampleSize() - 3.0) * (log(1.0 + r) - log(1.0 - r));
+        return 0.5 * FastMath.sqrt(getSampleSize() - 3.0) * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
     }
 
     /**

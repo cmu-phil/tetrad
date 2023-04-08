@@ -126,7 +126,7 @@ public class MeekRules implements ImpliedOrientation {
     }
 
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
 
@@ -275,11 +275,6 @@ public class MeekRules implements ImpliedOrientation {
 
         Edge before = graph.getEdge(a, c);
         graph.removeEdge(before);
-
-//        if (aggressivelyPreventCycles && GraphUtils.existsSemidirectedPath(c, a, graph)) {
-//            graph.addEdge(before);
-//            return false;
-//        }
 
         if (aggressivelyPreventCycles && graph.paths().existsDirectedPathFromTo(c, a)) {
             graph.addEdge(before);

@@ -26,21 +26,21 @@ import java.util.List;
  * @author jdramsey
  */
 @Bootstrapping
-public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
+public class CPC_STABLE implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Algorithm algorithm;
     private Knowledge knowledge = new Knowledge();
 
-    public CpcStable() {
+    public CPC_STABLE() {
     }
 
-    public CpcStable(IndependenceWrapper test) {
+    public CPC_STABLE(IndependenceWrapper test) {
         this.test = test;
     }
 
-    public CpcStable(IndependenceWrapper test, Algorithm algorithm) {
+    public CPC_STABLE(IndependenceWrapper test, Algorithm algorithm) {
         this.test = test;
         this.algorithm = algorithm;
     }
@@ -53,13 +53,14 @@ public class CpcStable implements Algorithm, HasKnowledge, TakesIndependenceWrap
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(this.knowledge);
             search.setFasType(PcAll.FasType.STABLE);
-            search.setConcurrent(PcAll.Concurrent.NO);
+            search.setKnowledge(knowledge);
+//            search.setConcurrent(PcAll.Concurrent.NO);
             search.setColliderDiscovery(PcAll.ColliderDiscovery.CONSERVATIVE);
             search.setConflictRule(PcAll.ConflictRule.PRIORITY);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
         } else {
-            CpcStable cpcStable = new CpcStable(this.test, this.algorithm);
+            CPC_STABLE cpcStable = new CPC_STABLE(this.test, this.algorithm);
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, cpcStable, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));

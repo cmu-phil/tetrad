@@ -216,7 +216,7 @@ public class GeneralResamplingSearch {
 
         int numNoGraph = 0;
 
-        if (false) {//this.runParallel) {
+        if (this.runParallel) {
             List<Future<Graph>> futures = this.pool.invokeAll(tasks);
             for (Future<Graph> future : futures) {
                 Graph graph;

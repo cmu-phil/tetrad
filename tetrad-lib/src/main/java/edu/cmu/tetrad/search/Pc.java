@@ -91,7 +91,7 @@ public class Pc implements GraphSearch {
 
     private boolean verbose;
     private boolean stable;
-    private boolean concurrent;
+//    private boolean concurrent;
     private boolean useMaxP = false;
     private int maxPPathLength = -1;
     private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
@@ -244,11 +244,11 @@ public class Pc implements GraphSearch {
             search.setFasType(PcAll.FasType.REGULAR);
         }
 
-        if (concurrent) {
-            search.setConcurrent(PcAll.Concurrent.YES);
-        } else {
-            search.setConcurrent(PcAll.Concurrent.NO);
-        }
+//        if (concurrent) {
+//            search.setConcurrent(PcAll.Concurrent.YES);
+//        } else {
+//            search.setConcurrent(PcAll.Concurrent.NO);
+//        }
 
         search.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
         search.setConflictRule(conflictRule);
@@ -315,9 +315,9 @@ public class Pc implements GraphSearch {
         this.stable = stable;
     }
 
-    public void setConcurrent(boolean concurrent) {
-        this.concurrent = concurrent;
-    }
+//    public void setConcurrent(boolean concurrent) {
+//        this.concurrent = concurrent;
+//    }
 
     public void setUseMaxP(boolean useMaxP) {
         this.useMaxP = useMaxP;
