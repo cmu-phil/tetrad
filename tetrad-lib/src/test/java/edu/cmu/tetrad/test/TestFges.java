@@ -534,8 +534,8 @@ public class TestFges {
     @Test
     public void testSearch5() {
         Knowledge knowledge = new Knowledge();
-        knowledge.setTier(1, Collections.singletonList("A"));
-        knowledge.setTier(2, Collections.singletonList("B"));
+        knowledge.setTier(0, Collections.singletonList("A"));
+        knowledge.setTier(1, Collections.singletonList("B"));
 
         checkWithKnowledge("A-->B", "A-->B", knowledge);
     }
@@ -608,6 +608,7 @@ public class TestFges {
      * graph.
      */
     private void checkSearch(String inputGraph, String outputGraph) {
+        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
         // Set up graph and node objects.
         Graph graph = GraphUtils.convert(inputGraph);
