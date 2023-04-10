@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.DegenerateGaussianScore;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +52,8 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add("penaltyDiscount");
-        parameters.add("structurePrior");
+        parameters.add(Params.PENALTY_DISCOUNT);
+        parameters.add(Params.STRUCTURE_PRIOR);
         return parameters;
     }
 
