@@ -32,7 +32,7 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "GRaSP",
+        name = "GRASP",
         command = "grasp",
         algoType = AlgType.forbid_latent_common_causes
 )
