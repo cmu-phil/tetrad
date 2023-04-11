@@ -26,7 +26,7 @@ public class GeneralResamplingTest {
     private Parameters parameters;
     private Algorithm algorithm;
     private MultiDataSetAlgorithm multiDataSetAlgorithm;
-    private List<Graph> graphs;
+    private List<Graph> graphs = new ArrayList<>();
     private boolean verbose;
     /**
      * Specification of forbidden and required edges.
@@ -328,4 +328,11 @@ public class GeneralResamplingTest {
         this.scoreWrapper = scoreWrapper;
     }
 
+    /**
+     * Returns the individual bootstrap result graphs.
+     * @return A list of these Graphs.
+     */
+    public List<Graph> getGraphs() {
+        return graphs == null ? new ArrayList<>() : this.graphs;
+    }
 }

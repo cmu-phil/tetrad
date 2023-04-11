@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
@@ -31,11 +32,14 @@ import java.util.List;
 //)
 //@Bootstrapping
 //@Experimental
-public class BOSS_MB2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
+public class BOSS_MB2 implements Algorithm, HasKnowledge, UsesScoreWrapper,
+        ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public BOSS_MB2() {
     }
@@ -65,7 +69,9 @@ public class BOSS_MB2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
             search.setKnowledge(this.knowledge);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -117,4 +123,8 @@ public class BOSS_MB2 implements Algorithm, HasKnowledge, UsesScoreWrapper {
         this.score = score;
     }
 
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
+    }
 }

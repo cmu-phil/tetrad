@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScoreDeterministic;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -30,11 +31,13 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 @Bootstrapping
 @Experimental
-public class GES_ME implements Algorithm {
+public class GES_ME implements Algorithm, ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
     private boolean compareToTrue;
     private final ScoreWrapper score = new SemBicScoreDeterministic();
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public GES_ME() {
         setCompareToTrue(false);
@@ -177,7 +180,9 @@ public class GES_ME implements Algorithm {
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -244,4 +249,8 @@ public class GES_ME implements Algorithm {
 
     }
 
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
+    }
 }

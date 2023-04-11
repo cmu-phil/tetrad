@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
@@ -35,12 +36,15 @@ import java.util.List;
         algoType = AlgType.search_for_Markov_blankets
 )
 @Bootstrapping
-public class FGES_MB implements Algorithm, HasKnowledge, UsesScoreWrapper {
+public class FGES_MB implements Algorithm, HasKnowledge, UsesScoreWrapper,
+        ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
     private String targetName;
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public FGES_MB() {
     }
@@ -76,7 +80,9 @@ public class FGES_MB implements Algorithm, HasKnowledge, UsesScoreWrapper {
             search.setKnowledge(this.knowledge);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -127,4 +133,8 @@ public class FGES_MB implements Algorithm, HasKnowledge, UsesScoreWrapper {
         this.score = score;
     }
 
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
+    }
 }

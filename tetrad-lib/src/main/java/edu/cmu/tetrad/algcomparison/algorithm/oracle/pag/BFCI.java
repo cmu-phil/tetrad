@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -45,12 +46,15 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
 )
 @Bootstrapping
 @Experimental
-public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class BFCI implements Algorithm, UsesScoreWrapper,
+        TakesIndependenceWrapper, HasKnowledge, ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public BFCI() {
         // Used for reflection; do not delete.
@@ -100,7 +104,9 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
             search.setKnowledge(data.getKnowledge());
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -168,4 +174,8 @@ public class BFCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapp
         this.score = score;
     }
 
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
+    }
 }

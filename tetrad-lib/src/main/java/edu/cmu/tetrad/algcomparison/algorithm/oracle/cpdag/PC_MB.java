@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -35,12 +36,14 @@ import java.util.List;
         algoType = AlgType.search_for_Markov_blankets
 )
 @Bootstrapping
-public class PC_MB implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
+public class PC_MB implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
+        ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
     private List<Node> targets;
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     public PC_MB() {
     }
@@ -69,7 +72,9 @@ public class PC_MB implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -129,5 +134,10 @@ public class PC_MB implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
+    }
+
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
     }
 }

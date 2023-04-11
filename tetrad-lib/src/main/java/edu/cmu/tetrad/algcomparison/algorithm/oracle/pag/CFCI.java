@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -14,6 +15,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,11 +27,13 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
  * @author jdramsey
  */
 @Bootstrapping
-public class CFCI implements Algorithm, HasKnowledge {
+public class CFCI implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
     private final IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public CFCI(IndependenceWrapper test) {
         this.test = test;
@@ -54,7 +58,9 @@ public class CFCI implements Algorithm, HasKnowledge {
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -95,5 +101,10 @@ public class CFCI implements Algorithm, HasKnowledge {
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
     }
 }

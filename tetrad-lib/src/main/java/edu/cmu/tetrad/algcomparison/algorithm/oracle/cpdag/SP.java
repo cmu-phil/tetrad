@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
@@ -34,10 +35,12 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class SP implements Algorithm, UsesScoreWrapper, HasKnowledge {
+public class SP implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBootstrapGraphs {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public SP() {
         // Used in reflection; do not delete.
@@ -77,7 +80,9 @@ public class SP implements Algorithm, UsesScoreWrapper, HasKnowledge {
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -125,5 +130,10 @@ public class SP implements Algorithm, UsesScoreWrapper, HasKnowledge {
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
     }
 }

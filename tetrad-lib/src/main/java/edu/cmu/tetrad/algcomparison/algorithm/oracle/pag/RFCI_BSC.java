@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -36,6 +37,8 @@ public class RFCI_BSC implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private final IndependenceWrapper test = new ProbabilisticTest();
     private Knowledge knowledge = new Knowledge();
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     @Override
     public Knowledge getKnowledge() {
@@ -108,5 +111,4 @@ public class RFCI_BSC implements Algorithm, HasKnowledge {
 
         return parameters;
     }
-
 }

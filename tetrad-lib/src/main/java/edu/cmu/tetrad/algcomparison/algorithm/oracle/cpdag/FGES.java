@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
@@ -34,7 +35,7 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class FGES implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph {
+public class FGES implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExternalGraph, ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
 
@@ -44,6 +45,7 @@ public class FGES implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
     private Graph externalGraph = null;
 
     private Algorithm algorithm = null;
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     public FGES() {
 
@@ -111,7 +113,10 @@ public class FGES implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
             search.setKnowledge(this.knowledge);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -168,5 +173,10 @@ public class FGES implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesExt
     @Override
     public void setExternalGraph(Algorithm algorithm) {
         this.algorithm = algorithm;
+    }
+
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
     }
 }

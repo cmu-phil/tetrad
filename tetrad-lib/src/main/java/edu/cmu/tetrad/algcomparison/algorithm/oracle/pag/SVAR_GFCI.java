@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -37,12 +38,15 @@ import java.util.List;
 )
 @TimeSeries
 @Bootstrapping
-public class SVAR_GFCI implements Algorithm, HasKnowledge, TakesIndependenceWrapper, UsesScoreWrapper {
+public class SVAR_GFCI implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
+        UsesScoreWrapper, ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge;
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public SVAR_GFCI() {
     }
@@ -85,7 +89,9 @@ public class SVAR_GFCI implements Algorithm, HasKnowledge, TakesIndependenceWrap
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -146,4 +152,8 @@ public class SVAR_GFCI implements Algorithm, HasKnowledge, TakesIndependenceWrap
         this.score = score;
     }
 
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
+    }
 }

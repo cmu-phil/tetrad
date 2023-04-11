@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -35,11 +36,14 @@ import java.util.List;
 )
 @TimeSeries
 @Bootstrapping
-public class SVAR_FCI implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
+public class SVAR_FCI implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
+        ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Knowledge knowledge;
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public SVAR_FCI() {
     }
@@ -79,7 +83,9 @@ public class SVAR_FCI implements Algorithm, HasKnowledge, TakesIndependenceWrapp
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -124,5 +130,10 @@ public class SVAR_FCI implements Algorithm, HasKnowledge, TakesIndependenceWrapp
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
+    }
+
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
     }
 }

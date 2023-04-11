@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.ProbabilisticTest;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -14,6 +15,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -30,7 +32,7 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
         algoType = AlgType.allow_latent_common_causes
 )
 //@Experimental
-public class PAG_SAMPLING_RFCI implements Algorithm, HasKnowledge {
+public class PAG_SAMPLING_RFCI implements Algorithm, HasKnowledge{
 
     public static final List<String> PAG_SAMPLING_RFCI_PARAMETERS = new LinkedList<>();
     public static final List<String> RFCI_PARAMETERS = new LinkedList<>();
@@ -54,6 +56,8 @@ public class PAG_SAMPLING_RFCI implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
     private final IndependenceWrapper test = new ProbabilisticTest();
     private Knowledge knowledge;
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
@@ -111,5 +115,4 @@ public class PAG_SAMPLING_RFCI implements Algorithm, HasKnowledge {
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
-
 }

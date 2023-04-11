@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -33,6 +34,8 @@ import java.util.List;
 public class BDCE implements Algorithm, UsesScoreWrapper {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public BDCE() {
         // Used in reflection; do not delete.
@@ -93,5 +96,4 @@ public class BDCE implements Algorithm, UsesScoreWrapper {
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
     }
-
 }

@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -33,13 +34,16 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class PCMAX implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
+public class PCMAX implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
+        ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
 
     private Graph externalGraph = null;
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public PCMAX() {
     }
@@ -79,7 +83,9 @@ public class PCMAX implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -137,5 +143,10 @@ public class PCMAX implements Algorithm, HasKnowledge, TakesIndependenceWrapper 
 
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
+    }
+
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
     }
 }

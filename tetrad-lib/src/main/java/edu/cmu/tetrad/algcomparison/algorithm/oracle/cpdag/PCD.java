@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
@@ -21,9 +22,10 @@ import java.util.List;
  * @author jdramsey
  */
 @Bootstrapping
-public class PCD implements Algorithm, HasKnowledge {
+public class PCD implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
     static final long serialVersionUID = 23L;
     private Knowledge knowledge = new Knowledge();
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     public PCD() {
     }
@@ -61,7 +63,9 @@ public class PCD implements Algorithm, HasKnowledge {
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -100,5 +104,10 @@ public class PCD implements Algorithm, HasKnowledge {
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
     }
 }

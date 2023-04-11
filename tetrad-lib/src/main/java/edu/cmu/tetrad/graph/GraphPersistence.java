@@ -9,6 +9,8 @@ import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 import nu.xom.*;
 
 import java.io.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -518,15 +520,19 @@ public class GraphPersistence {
             Endpoint end1 = edge.getEndpoint1();
             Endpoint end2 = edge.getEndpoint2();
 
-            if (n1.compareTo(n2) > 0) {
-                String temp = n1;
-                n1 = n2;
-                n2 = temp;
+            // These may be in the graph but they represent edges not in the ensemble for which
+            // bootstrap information is available.
+            if (end1 == Endpoint.NULL || end2 == Endpoint.NULL) continue;
 
-                Endpoint tmp = end1;
-                end1 = end2;
-                end2 = tmp;
-            }
+//            if (n1.compareTo(n2) > 0) {
+//                String temp = n1;
+//                n1 = n2;
+//                n2 = temp;
+//
+//                Endpoint tmp = end1;
+//                end1 = end2;
+//                end2 = tmp;
+//            }
             builder.append(" \"").append(n1).append("\" -> \"").append(n2).append("\" [");
 
             if (end1 != Endpoint.TAIL) {
@@ -540,6 +546,8 @@ public class GraphPersistence {
                 builder.append("none");
             } else if (end1 == Endpoint.CIRCLE) {
                 builder.append("odot");
+            } else {
+                builder.append("xdot");
             }
             builder.append(", arrowhead=");
             if (end2 == Endpoint.ARROW) {
@@ -548,6 +556,8 @@ public class GraphPersistence {
                 builder.append("none");
             } else if (end2 == Endpoint.CIRCLE) {
                 builder.append("odot");
+            } else {
+                builder.append("xdot");
             }
 
             // Bootstrapping
@@ -593,7 +603,9 @@ public class GraphPersistence {
                             }
                         }
 
-                        label.append("\\n[").append(edgeTypeString).append("]:").append(edgeTypeProbability.getProbability());
+                        NumberFormat nf = new DecimalFormat("0.000");
+
+                        label.append("\\n[").append(edgeTypeString).append("]:").append(nf.format(edgeTypeProbability.getProbability()));
                     }
                 }
                 builder.append(", label=\"").append(label).append("\", fontname=courier");

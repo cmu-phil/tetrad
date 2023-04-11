@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -15,6 +16,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,9 +31,11 @@ import java.util.List;
 )
 @Bootstrapping
 //@Experimental
-public class CCD implements Algorithm, TakesIndependenceWrapper {
+public class CCD implements Algorithm, TakesIndependenceWrapper, ReturnsBootstrapGraphs {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public CCD() {
         // Used in reflection; do not delete.
@@ -58,7 +62,9 @@ public class CCD implements Algorithm, TakesIndependenceWrapper {
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -96,5 +102,10 @@ public class CCD implements Algorithm, TakesIndependenceWrapper {
     @Override
     public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
         this.test = independenceWrapper;
+    }
+
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
     }
 }
