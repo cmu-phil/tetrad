@@ -513,7 +513,10 @@ public class GraphPersistence {
     public static String graphToDot(Graph graph) {
         StringBuilder builder = new StringBuilder();
         builder.append("digraph g {\n");
-        for (Edge edge : graph.getEdges()) {
+        List<Edge> edges = new ArrayList<>(graph.getEdges());
+        Collections.sort(edges);
+
+        for (Edge edge : edges) {
             String n1 = edge.getNode1().getName();
             String n2 = edge.getNode2().getName();
 

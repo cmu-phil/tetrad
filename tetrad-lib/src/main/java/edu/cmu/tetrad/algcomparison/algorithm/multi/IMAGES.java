@@ -79,33 +79,14 @@ public class IMAGES implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 
             if (meta == 1) {
                 edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
-                search.setKnowledge(new Knowledge((Knowledge) knowledge));
+                search.setKnowledge(this.knowledge);
                 search.setVerbose(parameters.getBoolean(Params.VERBOSE));
                 return search.search();
-            }
-//            else if (meta == 2) {
-//                Grasp search = new edu.cmu.tetrad.search.Grasp(score);
-//                search.setKnowledge(this.knowledge);
-//                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-//                search.bestOrder(score.getVariables());
-//                search.setDepth(6);
-//                search.setSingularDepth(1);
-//                search.setNonSingularDepth(1);
-//                return search.getGraph(true);
-//            }
-            else if (meta == 2) {
+            } else if (meta == 2) {
                 PermutationSearch search = new PermutationSearch(new Boss(score));
-                search.setKnowledge(new Knowledge((Knowledge) knowledge));
+                search.setKnowledge(this.knowledge);
                 return search.search();
-            }
-//            else if (meta == 4) {
-//                Boss search = new edu.cmu.tetrad.search.Boss(score);
-//                search.setKnowledge(this.knowledge);
-//                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-//                search.bestOrder(score.getVariables());
-//                return search.getGraph();
-//            }
-            else if (meta == 3) {
+            } else if (meta == 3) {
                 BridgesOld search = new edu.cmu.tetrad.search.BridgesOld(score);
                 search.setKnowledge(this.knowledge);
                 search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -144,7 +125,7 @@ public class IMAGES implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setKnowledge(dataSets.get(0).getKnowledge());
+            search.setKnowledge(this.knowledge);
             search.setScoreWrapper(score);
             return search.search();
         }
@@ -162,8 +143,9 @@ public class IMAGES implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                     images,
                     parameters.getInt(Params.NUMBER_RESAMPLING),
                     parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-//            search.setKnowledge(this.knowledge);
+                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT),
+                    parameters.getInt(Params.RESAMPLING_ENSEMBLE),
+                    parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             if (score == null) {
                 System.out.println();

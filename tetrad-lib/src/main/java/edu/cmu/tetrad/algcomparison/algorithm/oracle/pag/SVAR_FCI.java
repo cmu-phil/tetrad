@@ -65,9 +65,7 @@ public class SVAR_FCI implements Algorithm, HasKnowledge, TakesIndependenceWrapp
                 knowledge = timeSeries.getKnowledge();
             }
 
-            if (this.knowledge != null) {
-                dataModel.setKnowledge(this.knowledge);
-            }
+            dataModel.setKnowledge(this.knowledge);
             edu.cmu.tetrad.search.SvarFci search = new edu.cmu.tetrad.search.SvarFci(this.test.getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(this.knowledge);
