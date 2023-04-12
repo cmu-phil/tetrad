@@ -49,7 +49,6 @@ public class IMAGES implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-        this.knowledge = dataSets.get(0).getKnowledge();
         int meta = parameters.getInt(Params.IMAGES_META_ALG);
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -65,7 +64,6 @@ public class IMAGES implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                 }
 
                 dataSets = _dataSets;
-                this.knowledge = _dataSets.get(0).getKnowledge();
             }
 
             List<Score> scores = new ArrayList<>();
