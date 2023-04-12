@@ -80,7 +80,7 @@ public class BFCITR implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setKnowledge(knowledge);
+            dataModel.setKnowledge(this.knowledge);
 
             Object obj = parameters.get(Params.PRINT_STREAM);
 
@@ -93,7 +93,7 @@ public class BFCITR implements Algorithm, UsesScoreWrapper, TakesIndependenceWra
             BFCITR algorithm = new BFCITR(this.test, this.score);
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(data.getKnowledge());
+            search.setKnowledge(this.knowledge);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();

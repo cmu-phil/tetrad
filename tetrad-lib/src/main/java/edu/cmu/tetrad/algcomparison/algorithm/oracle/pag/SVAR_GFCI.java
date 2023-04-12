@@ -70,9 +70,7 @@ public class SVAR_GFCI implements Algorithm, HasKnowledge, TakesIndependenceWrap
                 knowledge = timeSeries.getKnowledge();
             }
 
-            if (this.knowledge != null) {
-                dataModel.setKnowledge(this.knowledge);
-            }
+            dataModel.setKnowledge(this.knowledge);
             edu.cmu.tetrad.search.SvarGFci search = new edu.cmu.tetrad.search.SvarGFci(this.test.getTest(dataModel, parameters),
                     this.score.getScore(dataModel, parameters));
             search.setKnowledge(this.knowledge);
