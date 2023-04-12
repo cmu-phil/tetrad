@@ -37,7 +37,6 @@ public class BossOrig {
     private int depth = -1;
     private int numStarts = 1;
     private AlgType algType = AlgType.BOSS1;
-    private boolean caching = true;
     private double epsilon = 1e-10;
 
     public BossOrig(@NotNull IndependenceTest test, Score score) {
@@ -64,7 +63,6 @@ public class BossOrig {
 
     public List<Node> bestOrder(@NotNull List<Node> order) {
 
-        scorer.setCachingScores(caching);
         scorer.setKnowledge(knowledge);
 
         List<Node> bestPerm;
@@ -596,10 +594,6 @@ public class BossOrig {
 
     public void setAlgType(AlgType algType) {
         this.algType = algType;
-    }
-
-    public void setCaching(boolean caching) {
-        this.caching = caching;
     }
 
     public enum AlgType {BOSS1, BOSS2, BOSS3}

@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.pag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
@@ -45,12 +46,15 @@ import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
         algoType = AlgType.allow_latent_common_causes
 )
 @Bootstrapping
-public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper, HasKnowledge {
+public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper,
+        HasKnowledge, ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public GRASP_FCI() {
         // Used for reflection; do not delete.
@@ -88,7 +92,6 @@ public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependence
             search.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             search.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             search.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
-            search.setCacheScores(parameters.getBoolean(Params.CACHE_SCORES));
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
 
             // FCI
@@ -114,11 +117,13 @@ public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependence
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(data.getKnowledge());
+            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -149,7 +154,6 @@ public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependence
         params.add(Params.GRASP_ORDERED_ALG);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
-        params.add(Params.CACHE_SCORES);
         params.add(Params.NUM_STARTS);
 
         // FCI
@@ -197,4 +201,8 @@ public class GRASP_FCI implements Algorithm, UsesScoreWrapper, TakesIndependence
         this.score = score;
     }
 
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
+    }
 }

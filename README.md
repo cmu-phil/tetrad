@@ -11,18 +11,15 @@ of contributors, and a bit of history.
 Here is the web page for the [Center for Causal Discovery](https://www.ccd.pitt.edu/), which also supports the latest
 version of Tetrad and Causal Command.
 
-All of our code is public and we welcome suggestions, especially suggestions that improve clarity or performance of our code.
+## Setting up Java
+
+You will need to set up Java on your machine. For setting up Java, see our Wiki artible, [Setting up Java for Tetrad](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Java-for-Tetrad).
 
 ## Tetrad GUI Application
 
-To download the current jar you can use to launch the Tetrad GUI,
-click [here](https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.3.0/tetrad-gui-7.3.0-launch.jar).
-Please delete any old ones you're not using.
+To download the current jar you can use to launch the Tetrad GUI, click this link:
 
-The application will work on all major platforms once a recent version of the Java JRE/JCK is installed, certainly *
-*_greater than version 1.8 (version 8)_**. We find that the most
-recent [Corretto JRE/JDK](https://aws.amazon.com/corretto/?filtered-posts.sort-by=item.additionalFields.createdDate&filtered-posts.sort-order=desc)
-with long term support (LTS) works well cross-platform.
+https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.3.0/tetrad-gui-7.3.0-launch.jar.
 
 You may be able to launch this jar by double clicking the jar file name, though on a Mac, this presents
 some [security challenges](https://github.com/cmu-phil/tetrad/wiki/Dealing-with-Tetrad-on-a-Mac:--Security-Issues). In
@@ -40,14 +37,16 @@ where [g] is the maximum number of Gigabytes you wish to allocate to the process
 We have a tool, [Causal Command](https://github.com/bd2kccd/causal-cmd), that lets you run Tetrad algorithms at the
 command line.
 
-## Python Integration
+## Python and R Integration
 
 For Python integration, please see our (still new) [py-tetrad Python project](https://github.com/cmu-phil/py-tetrad),
 which shows how to integrate arbitrary Java code in the Tetrad project into a Python workflow using
 the [JPype Python project](https://jpype.readthedocs.io/en/latest/).
 
 Also, please see the [causal-learn Python package](https://causal-learn.readthedocs.io/en/latest/), translating some
-Tetrad algorithms into Python and adding some algorithms not in Tetrad, now part of the [py-why space](https://github.com/py-why).
+Tetrad algorithms into Python and adding some algorithms not in Tetrad, now part of the [py-why space](https://github.com/py-why)
+
+We added [a method to use Tetrad algorithms in R via py-tetrad](https://github.com/cmu-phil/py-tetrad/blob/main/pytetrad/R/). This is work in progress.
 
 ## Documentation
 
@@ -57,6 +56,8 @@ Also, here is
 our [Manual](https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/blob/development/docs/manual/index.html).
 If you like to watch thought-provoking lectures, here are
 some [lectures on the Center for Causal Discovery site](https://www.ccd.pitt.edu/video-tutorials/).
+
+In addition, here are our [Javadocs](https://www.phil.cmu.edu/tetrad-javadocs/7.3.0/lib/).
 
 ## Install
 
@@ -83,3 +84,22 @@ try to the extent possible to resolve all reported issues
 before [releasing new versions of Tetrad](https://github.com/cmu-phil/tetrad/releases). This may involve moving items to
 our [Wish List
 ](https://github.com/cmu-phil/tetrad/wiki/Current-Wish-List).
+
+## Open Code
+
+All of our code is public and we welcome suggestions, especially suggestions that improve clarity or performance of our code.
+
+If you're writing code using (or for!) Tetrad in either [Java](https://github.com/cmu-phil/tetrad) or [Python](https://github.com/cmu-phil/py-tetrad) (or R, which we're working toward!), thank you! Please contribute if you are doing amazing work, or publish and send us links to your papers. Please keep us abreast of how Tetrad could be improved for your applications; we will do what we can.
+
+## Citation
+
+Please cite as:
+
+```
+@inproceedings{ramsey2018tetrad,
+  title={TETRAD—A toolbox for causal discovery},
+  author={Ramsey, Joseph D and Zhang, Kun and Glymour, Madelyn and Romero, Ruben Sanchez and Huang, Biwei and Ebert-Uphoff, Imme and Samarasinghe, Savini and Barnes, Elizabeth A and Glymour, Clark},
+  booktitle={8th international workshop on climate informatics},
+  year={2018}
+}
+```

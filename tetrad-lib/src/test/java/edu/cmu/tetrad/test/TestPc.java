@@ -182,6 +182,8 @@ public class TestPc {
      * graph.
      */
     private void checkWithKnowledge(Knowledge knowledge) {
+        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
+
         // Set up graph and node objects.
         Graph graph = GraphUtils.convert("A-->B,C-->B,B-->D");
 

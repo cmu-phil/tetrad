@@ -39,3 +39,8 @@ tetrad-gui.log
 /testboostrap/CalibrationConstraintBased/RFCI/RandomGraph-Vars20-Edges80-Cases1000-BS5-H0.1-a0.001/PAG_v20_e80_c1000_b5_-1.txt
 /testboostrap/CalibrationConstraintBased/RFCI/RandomGraph-Vars20-Edges80-Cases1000-BS5-H0.1-a0.001/probs_v20_e80_c1000_b5_-1.txt
 /target/
+
+.DS_Store
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store

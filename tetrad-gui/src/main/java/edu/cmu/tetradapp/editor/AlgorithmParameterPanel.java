@@ -19,8 +19,8 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.PagSamplingRfci;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RfciBsc;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.PAG_SAMPLING_RFCI;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RFCI_BSC;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.Score;
@@ -74,7 +74,7 @@ public class AlgorithmParameterPanel extends JPanel {
         Parameters parameters = algorithmRunner.getParameters();
 
         // Hard-coded parameter groups for Rfci-Bsc
-        if (algorithm instanceof RfciBsc) {
+        if (algorithm instanceof RFCI_BSC) {
             // Phase one: PAG and constraints candidates Searching
             String title = algorithm
                     .getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
@@ -107,7 +107,7 @@ public class AlgorithmParameterPanel extends JPanel {
             this.mainPanel.add(createSubPanel(title, params, parameters));
             this.mainPanel.add(Box.createVerticalStrut(10));
 
-        } else if (algorithm instanceof PagSamplingRfci) {
+        } else if (algorithm instanceof PAG_SAMPLING_RFCI) {
             String title = algorithm.getClass().getAnnotation(edu.cmu.tetrad.annotation.Algorithm.class).name();
 
             Set<String> params = new LinkedHashSet<>();
@@ -118,13 +118,13 @@ public class AlgorithmParameterPanel extends JPanel {
 
             title = "RFCI Parameters";
             params.clear();
-            params.addAll(PagSamplingRfci.RFCI_PARAMETERS);
+            params.addAll(PAG_SAMPLING_RFCI.RFCI_PARAMETERS);
             this.mainPanel.add(createSubPanel(title, params, parameters));
             this.mainPanel.add(Box.createVerticalStrut(10));
 
             title = "Probabilistic Test Parameters";
             params.clear();
-            params.addAll(PagSamplingRfci.PROBABILISTIC_TEST_PARAMETERS);
+            params.addAll(PAG_SAMPLING_RFCI.PROBABILISTIC_TEST_PARAMETERS);
             this.mainPanel.add(createSubPanel(title, params, parameters));
             this.mainPanel.add(Box.createVerticalStrut(10));
         } else {

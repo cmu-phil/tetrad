@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -33,11 +34,14 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
+public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
+        ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public CPC() {
     }
@@ -63,7 +67,8 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setAggressivelyPreventCycles(true);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setConcurrent(parameters.getBoolean(Params.CONCURRENT_FAS));
+            search.setKnowledge(knowledge);
+//            search.setConcurrent(parameters.getBoolean(Params.CONCURRENT_FAS));
             search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
             search.setMaxPPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             return search.search();
@@ -76,7 +81,9 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            return search.search();
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
         }
     }
 
@@ -99,7 +106,7 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
-        parameters.add(Params.CONCURRENT_FAS);
+//        parameters.add(Params.CONCURRENT_FAS);
 //        parameters.add(Params.COLLIDER_DISCOVERY_RULE);
         parameters.add(Params.CONFLICT_RULE);
         parameters.add(Params.DEPTH);
@@ -132,4 +139,8 @@ public class CPC implements Algorithm, HasKnowledge, TakesIndependenceWrapper {
         this.test = test;
     }
 
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
+    }
 }

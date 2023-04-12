@@ -28,7 +28,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @see PermutationSearch
  */
 public class Boss implements SuborderSearch {
-    private final Bes bes;
+    private final PermutationBes bes;
     private final Score score;
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
@@ -52,7 +52,7 @@ public class Boss implements SuborderSearch {
             this.parents.put(x, new HashSet<>());
         }
 
-        this.bes = new Bes(score);
+        this.bes = new PermutationBes(score);
         this.bes.setVerbose(false);
         this.numStarts = 1;
     }
@@ -93,8 +93,8 @@ public class Boss implements SuborderSearch {
                     s3 = s1;
                     List<Node> Z = new ArrayList<>(prefix);
                     Z.addAll(suborder);
-                    Graph graph = PermutationSearch.getGraph(Z, parents, true);
-                    this.bes.bes(graph, Z);
+                    Graph graph = PermutationSearch.getGraph(Z, parents, this.knowledge, true);
+                    this.bes.bes(graph, Z, suborder);
                     graph.paths().makeValidOrder(suborder);
                     s1 = update(prefix, suborder);
                 } while (s1 > s3);

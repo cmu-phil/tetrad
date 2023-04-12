@@ -33,7 +33,6 @@ public class GraspTol {
     private boolean usePearl;
     private boolean ordered;
     private boolean verbose;
-    private boolean cachingScores = true;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
     private int toleranceDepth;
@@ -81,8 +80,6 @@ public class GraspTol {
 
         this.scorer.setKnowledge(this.knowledge);
         this.scorer.clearBookmarks();
-
-        this.scorer.setCachingScores(this.cachingScores);
 
         List<Node> bestPerm = null;
         double best = NEGATIVE_INFINITY;
@@ -386,10 +383,6 @@ public class GraspTol {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         graph.addAttribute("score ", nf.format(this.scorer.score()));
         return graph;
-    }
-
-    public void setCacheScores(boolean cachingScores) {
-        this.cachingScores = cachingScores;
     }
 
     public void setNumStarts(int numStarts) {

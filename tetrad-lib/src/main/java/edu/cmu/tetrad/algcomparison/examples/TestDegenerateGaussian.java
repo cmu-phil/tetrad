@@ -23,8 +23,8 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcStable;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FGES;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC_STABLE;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.DegenerateGaussianLRT;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
@@ -77,9 +77,9 @@ public class TestDegenerateGaussian {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new Fges(new ConditionalGaussianBicScore()));
-        algorithms.add(new Fges(new DegenerateGaussianBicScore()));
-        algorithms.add(new PcStable(new DegenerateGaussianLRT()));
+        algorithms.add(new FGES(new ConditionalGaussianBicScore()));
+        algorithms.add(new FGES(new DegenerateGaussianBicScore()));
+        algorithms.add(new PC_STABLE(new DegenerateGaussianLRT()));
 
         Simulations simulations = new Simulations();
         simulations.add(new ConditionalGaussianSimulation(new RandomForward()));

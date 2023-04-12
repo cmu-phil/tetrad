@@ -43,6 +43,7 @@ import java.util.concurrent.*;
  * It uses a slightly different algorithm from FasStableConcurrent, probably better.
  *
  * @author Joseph Ramsey.
+ * @deprecated Use Fas instead; this is non-deterministic and gives problems with GSquare and ChiSquare.
  */
 public class FasConcurrent implements IFas {
 

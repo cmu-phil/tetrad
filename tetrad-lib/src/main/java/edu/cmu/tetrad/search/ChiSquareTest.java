@@ -91,7 +91,7 @@ public class ChiSquareTest {
      * by summing up chi square and degrees of freedom for each conditional table in turn, where rows or columns that
      * consist entirely of zeros have been removed.
      */
-    public synchronized Result calcChiSquare(int[] testIndices) {
+    public Result calcChiSquare(int[] testIndices) {
 
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.

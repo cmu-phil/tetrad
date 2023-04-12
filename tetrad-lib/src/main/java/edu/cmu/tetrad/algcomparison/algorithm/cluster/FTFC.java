@@ -27,7 +27,7 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class FTFC implements Algorithm, HasKnowledge, ClusterAlgorithm {
+public class FTFC implements Algorithm, HasKnowledge, CLUSTER_ALGORITHM {
 
     static final long serialVersionUID = 23L;
     private Knowledge knowledge = new Knowledge();

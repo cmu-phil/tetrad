@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
@@ -8,15 +9,15 @@ import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.PermutationSearch;
-import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.Sp;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +35,12 @@ import java.util.List;
 )
 @Bootstrapping
 @Experimental
-public class SP implements Algorithm, UsesScoreWrapper, HasKnowledge {
+public class SP implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBootstrapGraphs {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
+
 
     public SP() {
         // Used in reflection; do not delete.
@@ -50,12 +53,37 @@ public class SP implements Algorithm, UsesScoreWrapper, HasKnowledge {
 
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
-        Score score = this.score.getScore(dataModel, parameters);
-        PermutationSearch permutationSearch = new PermutationSearch(new Sp(score));
-        permutationSearch.setKnowledge(this.knowledge);
-        permutationSearch.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+            if (parameters.getInt(Params.TIME_LAG) > 0) {
+                DataSet dataSet = (DataSet) dataModel;
+                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
+                }
+                dataModel = timeSeries;
+                knowledge = timeSeries.getKnowledge();
+            }
 
-        return permutationSearch.search();
+            Score score = this.score.getScore(dataModel, parameters);
+            PermutationSearch permutationSearch = new PermutationSearch(new Sp(score));
+            permutationSearch.setKnowledge(this.knowledge);
+            permutationSearch.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+            return permutationSearch.search();
+        } else {
+            SP algorithm = new SP(this.score);
+
+            DataSet data = (DataSet) dataModel;
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            search.setKnowledge(this.knowledge);
+
+
+            search.setParameters(parameters);
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            Graph graph = search.search();
+            this.bootstrapGraphs = search.getGraphs();
+            return graph;
+        }
     }
 
     @Override
@@ -102,5 +130,10 @@ public class SP implements Algorithm, UsesScoreWrapper, HasKnowledge {
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
+    }
+
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
     }
 }

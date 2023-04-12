@@ -25,8 +25,9 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FCI;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GFCI;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RFCI;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
@@ -210,7 +211,6 @@ public final class TestGrasp {
 
         Grasp grasp = getGrasp(score, test);
 
-        grasp.setCacheScores(true);
         grasp.setNumStarts(1);
         grasp.setVerbose(true);
         List<Node> perm = grasp.bestOrder(order);
@@ -391,10 +391,10 @@ public final class TestGrasp {
 
     public void doPaperRun(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         if (doPcFges) {
-            algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
+            algorithms.add(new FGES(
                     new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
             algorithms.add(new PC(new FisherZ()));
         }
@@ -496,7 +496,7 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc(new FisherZ()));
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.LinearGaussianBicScore()));
 
@@ -705,8 +705,8 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
+        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new FGES(
                 new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(new FisherZ()));
 
@@ -771,7 +771,7 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.EbicScore(), new FisherZ()));
+        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.EbicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -825,7 +825,7 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -873,7 +873,7 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -934,7 +934,7 @@ public final class TestGrasp {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(
 //                new edu.cmu.tetrad.algcomparison.independence.FisherZ()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(
+        algorithms.add(new FGES(
                 new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
@@ -1002,9 +1002,9 @@ public final class TestGrasp {
         params.set(Params.CACHE_SCORES, true);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(new FisherZ()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new FGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -1062,9 +1062,9 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(new FisherZ()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new FGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -1130,9 +1130,9 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
+        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(new FisherZ()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new FGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -1541,7 +1541,6 @@ public final class TestGrasp {
                     grasp.setUseRaskuttiUhler(usePearl);
                     grasp.setOrdered(true);
                     grasp.setVerbose(false);
-                    grasp.setCacheScores(false);
 
                     int count = 0;
 
@@ -1615,7 +1614,7 @@ public final class TestGrasp {
 //        GraphScore score = new GraphScore(graph);
         List<Node> order = list(x1, x2, x3, x4, x5);
 
-        GRaSP boss = new GRaSP(new DSeparationScore(graph), new DSeparationTest(graph));
+        GRASP boss = new GRASP(new DSeparationTest(graph), new DSeparationScore(graph));
 
         Parameters parameters = new Parameters();
         parameters.set(Params.GRASP_USE_RASKUTTI_UHLER, true);
@@ -2021,12 +2020,11 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_DATA_ORDER, false);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.
-                EbicScore(), new FisherZ()));
+        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.
+                EbicScore()));
         algorithms.add(new edu.cmu.tetrad.algcomparison
-                .algorithm.oracle.cpdag.PcAll(new FisherZ()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison
-                .algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+                .algorithm.oracle.cpdag.CPC(new FisherZ()));
+        algorithms.add(new FGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Node x1 = new ContinuousVariable("X1");
         Node x2 = new ContinuousVariable("X2");
@@ -2096,7 +2094,6 @@ public final class TestGrasp {
         IndTestDSep test = new IndTestDSep(facts.getFacts());
 
         OtherPermAlgs otherPermAlgs = new OtherPermAlgs(test);
-        otherPermAlgs.setCacheScores(true);
         otherPermAlgs.setMethod(SP);
         otherPermAlgs.setNumStarts(1);
 
@@ -2147,7 +2144,7 @@ public final class TestGrasp {
 //        simulations.add(new SemSimulationTrueModel(new RandomForward()));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new DSeparationTest()));
+        algorithms.add(new GRASP(new DSeparationTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -2588,9 +2585,9 @@ public final class TestGrasp {
 
         List<Algorithm> algorithms = new ArrayList<>();
 
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci(test));
+        algorithms.add(new FCI(test));
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax(test));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci(test));
+        algorithms.add(new RFCI(test));
 //
         for (ScoreWrapper score : scores) {
             algorithms.add(new GFCI(test, score));
@@ -2759,7 +2756,7 @@ public final class TestGrasp {
 
             Algorithms algorithms = new Algorithms();
 
-            algorithms.add(new Fci(test));
+            algorithms.add(new FCI(test));
 //            algorithms.add(new FciMax(test));
 //            algorithms.add(new Rfci(test));
 //            algorithms.add(new GFCI(test, score));

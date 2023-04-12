@@ -57,6 +57,7 @@ public final class GraphFileMenu extends JMenu {
         save.add(new SaveGraph(editable, "R...", SaveGraph.Type.r));
         save.add(new SaveGraph(editable, "Dot...", SaveGraph.Type.dot));
         save.add(new SaveGraph(editable, "PCALG...", SaveGraph.Type.pcalg));
+        save.add(new SaveGraph(editable, "lavaan...", SaveGraph.Type.lavaan));
 
         addSeparator();
         add(new SaveComponentImage(comp, "Save Graph Image..."));
