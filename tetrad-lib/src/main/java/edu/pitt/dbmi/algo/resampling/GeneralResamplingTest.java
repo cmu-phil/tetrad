@@ -301,7 +301,7 @@ public class GeneralResamplingTest {
         int numNoGraphs = this.resamplingSearch.getNumNograph();
 
         TetradLogger.getInstance().forceLogMessage(
-                "Bootstrappiung: Number of searches that didn't return a graph = " + numNoGraphs);
+                "Bootstrapping: Number of searches that didn't return a graph = " + numNoGraphs);
 
         if (this.verbose) {
             this.out.println("Resampling number is : " + this.graphs.size());
@@ -333,6 +333,6 @@ public class GeneralResamplingTest {
      * @return A list of these Graphs.
      */
     public List<Graph> getGraphs() {
-        return graphs == null ? new ArrayList<>() : this.graphs;
+        return graphs == null ? new ArrayList<>() : new ArrayList<>(this.graphs);
     }
 }
