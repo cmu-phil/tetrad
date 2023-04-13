@@ -164,7 +164,7 @@ public class TimeSeriesUtils {
         Score score;
 
         if (timeLags.isDiscrete()) {
-            score = new BDeuScore(timeLags);
+            score = new BdeuScore(timeLags);
         } else if (timeLags.isContinuous()) {
             SemBicScore semBicScore = new SemBicScore(new CovarianceMatrix(timeLags));
             semBicScore.setPenaltyDiscount(2.0);

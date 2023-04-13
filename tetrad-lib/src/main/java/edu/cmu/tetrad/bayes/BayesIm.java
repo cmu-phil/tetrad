@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.Simulator;
 import edu.cmu.tetrad.data.VariableSource;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.IM;
+import edu.cmu.tetrad.util.Im;
 
 import java.util.List;
 
@@ -56,7 +56,7 @@ import java.util.List;
  * @see edu.cmu.tetrad.graph.Dag
  * @see BayesPm
  */
-public interface BayesIm extends VariableSource, IM, Simulator {
+public interface BayesIm extends VariableSource, Im, Simulator {
 
     /**
      * @return the underlying Bayes PM.

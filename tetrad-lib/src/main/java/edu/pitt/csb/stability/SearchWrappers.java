@@ -28,7 +28,7 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.search.PcStable;
 import edu.cmu.tetrad.search.SemBicScore;
-import edu.pitt.csb.mgm.MGM;
+import edu.pitt.csb.mgm.Mgm;
 import edu.pitt.csb.mgm.MixedUtils;
 
 /**
@@ -63,7 +63,7 @@ public class SearchWrappers {
         }
 
         public Graph search(DataSet ds) {
-            MGM m = new MGM(ds, this.searchParams);
+            Mgm m = new Mgm(ds, this.searchParams);
             return m.search();
         }
     }

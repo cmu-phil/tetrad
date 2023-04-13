@@ -27,7 +27,7 @@ import edu.cmu.tetrad.calculator.parser.ExpressionLexer;
 import edu.cmu.tetrad.calculator.parser.Token;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.IM;
+import edu.cmu.tetrad.util.Im;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Vector;
@@ -53,7 +53,7 @@ import static edu.cmu.tetrad.util.StatUtils.sd;
  *
  * @author Joseph Ramsey
  */
-public class GeneralizedSemIm implements IM, Simulator {
+public class GeneralizedSemIm implements Im, Simulator {
     static final long serialVersionUID = 23L;
 
     /**

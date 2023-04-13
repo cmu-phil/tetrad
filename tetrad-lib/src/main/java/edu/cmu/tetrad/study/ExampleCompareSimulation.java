@@ -23,7 +23,7 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FGES;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
@@ -116,7 +116,7 @@ public class ExampleCompareSimulation {
         Algorithms algorithms = new Algorithms();
 
 //        algorithms.add(new PcAll(new FisherZ()));
-        algorithms.add(new FGES(new SemBicScore()));
+        algorithms.add(new Fges(new SemBicScore()));
 //        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
 
         Simulations simulations = new Simulations();

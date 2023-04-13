@@ -22,7 +22,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.cluster.CLUSTER_ALGORITHM;
+import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
 import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.TakesGraph;
@@ -316,7 +316,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                     graphList.add(((MultiDataSetAlgorithm) algo).search(sub, this.parameters));
                 }
-            } else if (getAlgorithm() instanceof CLUSTER_ALGORITHM) {
+            } else if (getAlgorithm() instanceof ClusterAlgorithm) {
                 for (int k = 0; k < this.parameters.getInt("numRuns"); k++) {
                     getDataModelList().forEach(dataModel -> {
                         if (dataModel instanceof ICovarianceMatrix) {

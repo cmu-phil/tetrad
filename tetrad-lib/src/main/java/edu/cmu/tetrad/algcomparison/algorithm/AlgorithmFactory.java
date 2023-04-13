@@ -18,7 +18,7 @@
  */
 package edu.cmu.tetrad.algcomparison.algorithm;
 
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SINGLE_GRAPH_ALG;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
@@ -69,7 +69,7 @@ public class AlgorithmFactory {
             throws IllegalAccessException, InstantiationException {
         Algorithm algorithm = AlgorithmFactory.create(algoClass, test, score);
         if (externalGraph != null && algorithm instanceof TakesExternalGraph) {
-            ((TakesExternalGraph) algorithm).setExternalGraph(new SINGLE_GRAPH_ALG(externalGraph));
+            ((TakesExternalGraph) algorithm).setExternalGraph(new SingleGraphAlg(externalGraph));
         }
 
         return algorithm;
@@ -91,7 +91,7 @@ public class AlgorithmFactory {
             throws IllegalAccessException, InstantiationException {
         Algorithm algorithm = AlgorithmFactory.create(algoClass, indTestClass, scoreClass);
         if (externalGraph != null && algorithm instanceof TakesExternalGraph) {
-            ((TakesExternalGraph) algorithm).setExternalGraph(new SINGLE_GRAPH_ALG(externalGraph));
+            ((TakesExternalGraph) algorithm).setExternalGraph(new SingleGraphAlg(externalGraph));
         }
 
         return algorithm;

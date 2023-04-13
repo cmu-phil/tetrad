@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FGES;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.ConditionalGaussianSimulation;
@@ -74,7 +74,7 @@ public class TestConditionalGaussianSimulation {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new FGES(new ConditionalGaussianBicScore()));
+        algorithms.add(new Fges(new ConditionalGaussianBicScore()));
 
         Simulations simulations = new Simulations();
 

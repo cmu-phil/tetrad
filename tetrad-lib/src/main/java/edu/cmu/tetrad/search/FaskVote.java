@@ -1,8 +1,9 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.algorithm.multi.IMAGES;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Images;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
+import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -22,8 +23,8 @@ import static edu.cmu.tetrad.util.Params.*;
 public class FaskVote {
 
     private final IndependenceWrapper test;
-    private final ScoreWrapper score;
-    // Knowledge the the search will obey, of forbidden and required edges.
+    private ScoreWrapper score = new SemBicScore();
+    // Knowledge the search will obey, of forbidden and required edges.
     private Knowledge knowledge = new Knowledge();
 
     private final List<DataSet> dataSets;
@@ -43,7 +44,7 @@ public class FaskVote {
             _dataSets.add(DataUtils.standardizeData(dataSet));
         }
 
-        IMAGES imagesSemBic = new IMAGES();
+        Images imagesSemBic = new Images(score);
         imagesSemBic.setKnowledge(this.knowledge);
         Graph G0 = imagesSemBic.search(_dataSets, parameters);
 

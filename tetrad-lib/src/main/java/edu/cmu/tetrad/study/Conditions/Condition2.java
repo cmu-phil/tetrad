@@ -184,14 +184,14 @@ public class Condition2 {
         statistics2.add(new ParameterColumn("numMeasures"));
         statistics2.add(new ParameterColumn("avgDegree"));
         statistics2.add(new ParameterColumn("sampleSize"));
-        statistics2.add(new AdjacencyFP());
-        statistics2.add(new AdjacencyFN());
-        statistics2.add(new AdjacencyTP());
-        statistics2.add(new AdjacencyTN());
-        statistics2.add(new ArrowheadFP());
-        statistics2.add(new ArrowheadFN());
-        statistics2.add(new ArrowheadTP());
-        statistics2.add(new ArrowheadTN());
+        statistics2.add(new AdjacencyFp());
+        statistics2.add(new AdjacencyFn());
+        statistics2.add(new AdjacencyTp());
+        statistics2.add(new AdjacencyTn());
+        statistics2.add(new ArrowheadFp());
+        statistics2.add(new ArrowheadFn());
+        statistics2.add(new ArrowheadTp());
+        statistics2.add(new ArrowheadTn());
         statistics2.add(new ElapsedCpuTime());
 //
         comparison.generateReportFromExternalAlgorithms("/Users/user/comparison-data/condition_2",

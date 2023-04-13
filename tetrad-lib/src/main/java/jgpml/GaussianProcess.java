@@ -551,7 +551,7 @@ public class GaussianProcess {
 
         Matrix params0 = new Matrix(logtheta0);
 
-        Matrix[] data = CSVtoMatrix.load("../armdata.csv", 6, 1);
+        Matrix[] data = CsvtoMatrix.load("../armdata.csv", 6, 1);
         Matrix X = data[0];
         Matrix Y = data[1];
 
@@ -568,7 +568,7 @@ public class GaussianProcess {
         // half of the sinusoid uses points very close to each other and the other half uses
         // more sparse data
 
-        Matrix[] datastar = CSVtoMatrix.load("../armdatastar.csv", 6, 1);
+        Matrix[] datastar = CsvtoMatrix.load("../armdatastar.csv", 6, 1);
         Matrix Xstar = datastar[0];
         Matrix Ystar = datastar[1];
 
