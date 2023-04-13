@@ -43,6 +43,10 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     private ScoreWrapper score;
     private IndependenceWrapper test;
 
+    public FaskVote(ScoreWrapper score) {
+        this.score = score;
+    }
+
     public FaskVote() {
 
     }

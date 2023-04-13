@@ -42,7 +42,11 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     static final long serialVersionUID = 23L;
     private Knowledge knowledge = new Knowledge();
 
-    private ScoreWrapper score;
+    private ScoreWrapper score = new SemBicScore();
+
+    public Images(ScoreWrapper score) {
+        this.score = score;
+    }
 
     public Images() {
     }
