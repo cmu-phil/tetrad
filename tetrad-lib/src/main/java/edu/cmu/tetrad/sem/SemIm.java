@@ -70,7 +70,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author Ricardo Silva
  * @author Joseph Ramsey
  */
-public final class SemIm implements IM, ISemIm {
+public final class SemIm implements Im, ISemIm {
 
     static final long serialVersionUID = 23L;
     /**

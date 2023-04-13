@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.algcomparison.examples;
 
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FAS;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fas;
 import edu.cmu.tetrad.algcomparison.independence.SemBicTest;
 import edu.cmu.tetrad.data.BoxDataSet;
 import edu.cmu.tetrad.data.ContinuousVariable;
@@ -60,7 +60,7 @@ public class RunKemmeren {
             SemBicTest test = new SemBicTest();
 
 //            Fges search = new Fges(score);
-            FAS search = new FAS(test);
+            Fas search = new Fas(test);
 //            Gfci search = new Gfci(test, score);
             search.setKnowledge(knowledge);
             Graph graph = search.search(dataSet, parameters);

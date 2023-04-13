@@ -24,10 +24,15 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.*;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FCI;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GFCI;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.RFCI;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Bridges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Cpc;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Grasp;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
@@ -46,7 +51,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
@@ -149,12 +153,12 @@ public final class TestGrasp {
         test.setAlpha(0.01);
 
 
-        Fges alg = new Fges(score);
+        edu.cmu.tetrad.search.Fges alg = new edu.cmu.tetrad.search.Fges(score);
         Graph pat = alg.search();
 
         System.out.println("FGES" + pat);
 
-        Pc pc = new Pc(test);
+        edu.cmu.tetrad.search.Pc pc = new edu.cmu.tetrad.search.Pc(test);
         Graph pat2 = alg.search();
 
         System.out.println("PC" + pat2);
@@ -164,7 +168,7 @@ public final class TestGrasp {
 //        GRaSP grasp = new GRaSP(new ConditionalGaussianBicScore(), new ConditionalGaussianLRT());
 //        Graph pat3 = grasp.search(data, parameters);
 
-        Grasp boss = new Grasp(test, score);
+        edu.cmu.tetrad.search.Grasp boss = new edu.cmu.tetrad.search.Grasp(test, score);
         boss.setUseDataOrder(true);
         boss.setNumStarts(1);
         boss.bestOrder(score.getVariables());
@@ -175,13 +179,13 @@ public final class TestGrasp {
     }
 
     @NotNull
-    private static Grasp getGrasp(Score score, IndependenceTest test) {
-        Grasp grasp;
+    private static edu.cmu.tetrad.search.Grasp getGrasp(Score score, IndependenceTest test) {
+        edu.cmu.tetrad.search.Grasp grasp;
 
         if (true) {
-            grasp = new Grasp(test);
+            grasp = new edu.cmu.tetrad.search.Grasp(test);
         } else {
-            grasp = new Grasp(score);
+            grasp = new edu.cmu.tetrad.search.Grasp(score);
         }
 
         return grasp;
@@ -209,7 +213,7 @@ public final class TestGrasp {
         g = new EdgeListGraph(g);
         order = new ArrayList<>(order);
 
-        Grasp grasp = getGrasp(score, test);
+        edu.cmu.tetrad.search.Grasp grasp = getGrasp(score, test);
 
         grasp.setNumStarts(1);
         grasp.setVerbose(true);
@@ -256,7 +260,7 @@ public final class TestGrasp {
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Bridges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -391,12 +395,12 @@ public final class TestGrasp {
 
     public void doPaperRun(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         if (doPcFges) {
-            algorithms.add(new FGES(
+            algorithms.add(new Fges(
                     new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-            algorithms.add(new PC(new FisherZ()));
+            algorithms.add(new Pc(new FisherZ()));
         }
 
         Simulations simulations = new Simulations();
@@ -496,7 +500,7 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc(new FisherZ()));
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges(new edu.cmu.tetrad.algcomparison.score.LinearGaussianBicScore()));
 
@@ -629,7 +633,7 @@ public final class TestGrasp {
     public void doNewAgsHeadToHead(Parameters params, String dataPath, String resultsPath, boolean doPcFges) {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
 //        if (doPcFges) {
@@ -705,10 +709,10 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new FGES(
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Fges(
                 new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(new FisherZ()));
+        algorithms.add(new Pc(new FisherZ()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -771,7 +775,7 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.EbicScore()));
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.EbicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -825,7 +829,7 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -873,7 +877,7 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -934,7 +938,7 @@ public final class TestGrasp {
         Algorithms algorithms = new Algorithms();
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(
 //                new edu.cmu.tetrad.algcomparison.independence.FisherZ()));
-        algorithms.add(new FGES(
+        algorithms.add(new Fges(
                 new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 //        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
 //        algorithms.add(new BRIDGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
@@ -1002,9 +1006,9 @@ public final class TestGrasp {
         params.set(Params.CACHE_SCORES, true);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(new FisherZ()));
-        algorithms.add(new FGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Pc(new FisherZ()));
+        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -1019,7 +1023,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new SHD());
+        statistics.add(new Shd());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
         statistics.add(new ElapsedCpuTime());
@@ -1062,9 +1066,9 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(new FisherZ()));
-        algorithms.add(new FGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Pc(new FisherZ()));
+        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -1079,7 +1083,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new SHD());
+        statistics.add(new Shd());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
         statistics.add(new ElapsedCpuTime());
@@ -1130,9 +1134,9 @@ public final class TestGrasp {
 
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC(new FisherZ()));
-        algorithms.add(new FGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Pc(new FisherZ()));
+        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
@@ -1172,7 +1176,7 @@ public final class TestGrasp {
 
             List<Node> pi = new ArrayList<>(test.getVariables());
 
-            Grasp grasp = new Grasp(test);
+            edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test);
 
             grasp.setUseRaskuttiUhler(true);
             grasp.setOrdered(false);
@@ -1510,7 +1514,7 @@ public final class TestGrasp {
 //                    List<Node> variables = facts.getVariables();
                     IndTestDSep test = new IndTestDSep(facts, variables);
 
-                    Grasp boss = new Grasp(test, new GraphScore(facts));
+                    edu.cmu.tetrad.search.Grasp boss = new edu.cmu.tetrad.search.Grasp(test, new GraphScore(facts));
                     boss.setNonSingularDepth(1);
                     boss.setSingularDepth(1);
 
@@ -1533,7 +1537,7 @@ public final class TestGrasp {
                     List<List<Node>> pis = new ArrayList<>();
                     Map<List<Node>, Integer> ests = new HashMap<>();
 
-                    Grasp grasp = new Grasp(test);
+                    edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test);
 
                     grasp.setDepth(3);
                     grasp.setSingularDepth(1);
@@ -1614,7 +1618,7 @@ public final class TestGrasp {
 //        GraphScore score = new GraphScore(graph);
         List<Node> order = list(x1, x2, x3, x4, x5);
 
-        GRASP boss = new GRASP(new DSeparationTest(graph), new DSeparationScore(graph));
+        Grasp boss = new Grasp(new DSeparationTest(graph), new DSeparationScore(graph));
 
         Parameters parameters = new Parameters();
         parameters.set(Params.GRASP_USE_RASKUTTI_UHLER, true);
@@ -2020,11 +2024,10 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_DATA_ORDER, false);
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRASP(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.
                 EbicScore()));
-        algorithms.add(new edu.cmu.tetrad.algcomparison
-                .algorithm.oracle.cpdag.CPC(new FisherZ()));
-        algorithms.add(new FGES(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Cpc(new FisherZ()));
+        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Node x1 = new ContinuousVariable("X1");
         Node x2 = new ContinuousVariable("X2");
@@ -2068,7 +2071,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new SHD());
+        statistics.add(new Shd());
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
@@ -2136,7 +2139,7 @@ public final class TestGrasp {
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
         statistics.add(new NumberOfEdgesTrue());
         statistics.add(new NumberOfEdgesEst());
-        statistics.add(new SHD());
+        statistics.add(new Shd());
         statistics.add(new ElapsedCpuTime());
 
         Simulations simulations = new Simulations();
@@ -2144,7 +2147,7 @@ public final class TestGrasp {
 //        simulations.add(new SemSimulationTrueModel(new RandomForward()));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new GRASP(new DSeparationTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Grasp(new DSeparationTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -2585,12 +2588,12 @@ public final class TestGrasp {
 
         List<Algorithm> algorithms = new ArrayList<>();
 
-        algorithms.add(new FCI(test));
+        algorithms.add(new Fci(test));
 //        algorithms.add(new edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FciMax(test));
-        algorithms.add(new RFCI(test));
+        algorithms.add(new Rfci(test));
 //
         for (ScoreWrapper score : scores) {
-            algorithms.add(new GFCI(test, score));
+            algorithms.add(new Gfci(test, score));
         }
 //
         Algorithms _algorithms = new Algorithms();
@@ -2756,7 +2759,7 @@ public final class TestGrasp {
 
             Algorithms algorithms = new Algorithms();
 
-            algorithms.add(new FCI(test));
+            algorithms.add(new Fci(test));
 //            algorithms.add(new FciMax(test));
 //            algorithms.add(new Rfci(test));
 //            algorithms.add(new GFCI(test, score));
@@ -2904,11 +2907,11 @@ public final class TestGrasp {
 
             Algorithms algorithms = new Algorithms();
 
-            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
-            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.EbicScore()));
-            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.KimEtAlScores()));
-            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+            algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+            algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+            algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.EbicScore()));
+            algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.KimEtAlScores()));
+            algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
 
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new RandomForward()));
@@ -2971,7 +2974,7 @@ public final class TestGrasp {
 
             Algorithms algorithms = new Algorithms();
 
-            algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+            algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
 
             Simulations simulations = new Simulations();
             simulations.add(new SemSimulation(new RandomForward()));
@@ -3057,7 +3060,7 @@ public final class TestGrasp {
             while ((perm = gen.next()) != null) {
                 List<Node> p = GraphUtils.asList(perm, variables);
 
-                Grasp search = new Grasp(new IndTestDSep(facts.getFacts()));
+                edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new IndTestDSep(facts.getFacts()));
                 search.setDepth(depth);
                 List<Node> order = search.bestOrder(p);
 //                System.out.println(p + " " + order + " truth = " + facts.getTruth() + " found = " + search.getNumEdges());// + " " + search.getGraph(false));
@@ -3128,7 +3131,7 @@ public final class TestGrasp {
             while ((perm = gen.next()) != null) {
                 List<Node> p = GraphUtils.asList(perm, variables);
 
-                Grasp search = new Grasp(new IndTestDSep(facts.getFacts()));
+                edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new IndTestDSep(facts.getFacts()));
                 search.setDepth(depth);
                 search.setSingularDepth(depth);
                 search.setNonSingularDepth(depth);
@@ -3354,7 +3357,7 @@ public final class TestGrasp {
             IndTestDSep test = new IndTestDSep(g);
             GraphScore score = new GraphScore(g);
 
-            Fges fges = new Fges(score);
+            edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
             Graph cpdag1 = fges.search();
 
             Paths paths = cpdag1.paths();
@@ -3392,7 +3395,7 @@ public final class TestGrasp {
             edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(d);
             score.setPenaltyDiscount(2);
 
-            Fges fges = new Fges(score);
+            edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
             Graph cpdag = fges.search();
 
             Paths paths = cpdag.paths();
@@ -3492,7 +3495,7 @@ public final class TestGrasp {
 
             IndependenceTest test = new IndTestDSep(facts);
 
-            Grasp grasp = new Grasp(test);
+            edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test);
             grasp.bestOrder(test.getVariables());
             Graph other = grasp.getGraph(false);
 

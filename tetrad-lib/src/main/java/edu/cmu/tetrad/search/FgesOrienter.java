@@ -191,7 +191,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
             BoxDataSet dataSet1 = new BoxDataSet(box, dataSet.getVariables());
 
             setDataSet(dataSet1);
-            BDeuScore score = new BDeuScore(dataSet1);
+            BdeuScore score = new BdeuScore(dataSet1);
             score.setSamplePrior(10);
             score.setStructurePrior(0.001);
             setDiscreteScore(score);

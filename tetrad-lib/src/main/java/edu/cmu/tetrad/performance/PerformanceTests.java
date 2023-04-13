@@ -853,7 +853,7 @@ public class PerformanceTests {
 
                 long time3 = MillisecondTimes.timeMillis();
 
-                BDeuScore score = new BDeuScore(data);
+                BdeuScore score = new BdeuScore(data);
                 score.setStructurePrior(1);
                 score.setSamplePrior(1);
 
@@ -1074,7 +1074,7 @@ public class PerformanceTests {
 
             long time3 = MillisecondTimes.timeMillis();
 
-            BDeuScore score = new BDeuScore(data);
+            BdeuScore score = new BdeuScore(data);
             score.setStructurePrior(structurePrior);
             score.setSamplePrior(samplePrior);
 

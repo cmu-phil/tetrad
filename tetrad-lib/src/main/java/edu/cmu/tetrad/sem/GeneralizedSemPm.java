@@ -24,7 +24,7 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.parser.ExpressionParser;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.PM;
+import edu.cmu.tetrad.util.Pm;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.io.IOException;
@@ -40,7 +40,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class GeneralizedSemPm implements PM, TetradSerializable {
+public final class GeneralizedSemPm implements Pm, TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**

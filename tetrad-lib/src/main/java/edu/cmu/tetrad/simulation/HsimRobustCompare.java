@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.BDeuScore;
+import edu.cmu.tetrad.search.BdeuScore;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -55,7 +55,7 @@ public class HsimRobustCompare {
         //System.out.println(odag);
 
         //then run FGES
-        BDeuScore oscore = new BDeuScore(oData);
+        BdeuScore oscore = new BdeuScore(oData);
         Fges fges = new Fges(oscore);
         fges.setVerbose(false);
         Graph oGraphOut = fges.search();
@@ -85,7 +85,7 @@ public class HsimRobustCompare {
 
         //calculate errors for all simulated output graphs
         ////full simulation errors first
-        BDeuScore simscore = new BDeuScore(simData);
+        BdeuScore simscore = new BdeuScore(simData);
         Fges simfges = new Fges(simscore);
         simfges.setVerbose(false);
         Graph simGraphOut = simfges.search();

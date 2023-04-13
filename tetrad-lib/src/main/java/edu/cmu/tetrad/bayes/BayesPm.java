@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.VariableSource;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.PM;
+import edu.cmu.tetrad.util.Pm;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.apache.commons.math3.util.FastMath;
 
@@ -46,7 +46,7 @@ import java.util.*;
  * @see edu.cmu.tetrad.graph.Dag
  * @see BayesIm
  */
-public final class BayesPm implements PM, VariableSource {
+public final class BayesPm implements Pm, VariableSource {
     static final long serialVersionUID = 23L;
 
     /**

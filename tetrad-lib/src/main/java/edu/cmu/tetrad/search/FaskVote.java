@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.algcomparison.algorithm.multi.IMAGES;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Images;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataModel;
@@ -43,7 +43,7 @@ public class FaskVote {
             _dataSets.add(DataUtils.standardizeData(dataSet));
         }
 
-        IMAGES imagesSemBic = new IMAGES();
+        Images imagesSemBic = new Images();
         imagesSemBic.setKnowledge(this.knowledge);
         Graph G0 = imagesSemBic.search(_dataSets, parameters);
 

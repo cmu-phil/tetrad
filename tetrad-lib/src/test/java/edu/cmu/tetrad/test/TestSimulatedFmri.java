@@ -23,7 +23,7 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.FASK_CONCATENATED;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.FaskConcatenated;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -176,7 +176,7 @@ public class TestSimulatedFmri {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new FASK_CONCATENATED(new SemBicScore(), new FisherZ()));
+        algorithms.add(new FaskConcatenated(new SemBicScore(), new FisherZ()));
 
         Comparison comparison = new Comparison();
 
@@ -239,7 +239,7 @@ public class TestSimulatedFmri {
             simulations.add(new LoadContinuousDataSmithSim("/Users/user/Downloads/smithsim/", i));
         }
 
-        algorithms.add(new FASK_CONCATENATED(
+        algorithms.add(new FaskConcatenated(
                 new SemBicScore(),
                 new FisherZ() {
                 }));
@@ -305,7 +305,7 @@ public class TestSimulatedFmri {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new FASK_CONCATENATED(
+        algorithms.add(new FaskConcatenated(
                 new SemBicScore(),
                 new FisherZ()));
 

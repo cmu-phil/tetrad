@@ -19,10 +19,10 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FGES;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.FCI;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GFCI;
-import edu.cmu.tetrad.algcomparison.independence.BDeuTest;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Fci;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
+import edu.cmu.tetrad.algcomparison.independence.BdeuTest;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
@@ -92,7 +92,7 @@ public class TestGeneralResamplingTest {
         parameters.set(Params.VERBOSE, verbose);
 
         ScoreWrapper score = new BdeuScore();
-        Algorithm algorithm = new FGES(score);
+        Algorithm algorithm = new Fges(score);
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(
                 data, algorithm, numBootstrapSamples, 100.0,
@@ -148,7 +148,7 @@ public class TestGeneralResamplingTest {
         parameters.set(Params.VERBOSE, verbose);
 
         ScoreWrapper score = new BdeuScore();
-        Algorithm algorithm = new FGES(score);
+        Algorithm algorithm = new Fges(score);
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
                 numBootstrapSamples, 100.0,
@@ -207,8 +207,8 @@ public class TestGeneralResamplingTest {
         parameters.set(Params.VERBOSE, verbose);
 
         ScoreWrapper score = new BdeuScore();
-        IndependenceWrapper test = new BDeuTest();
-        Algorithm algorithm = new GFCI(test, score);
+        IndependenceWrapper test = new BdeuTest();
+        Algorithm algorithm = new Gfci(test, score);
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
                 numBootstrapSamples, 100.0,
@@ -270,7 +270,7 @@ public class TestGeneralResamplingTest {
 
         ScoreWrapper score = new BdeuScore();
         IndependenceWrapper test = new ChiSquare();
-        Algorithm algorithm = new GFCI(test, score);
+        Algorithm algorithm = new Gfci(test, score);
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
                 numBootstrapSamples, 100.0,
@@ -331,7 +331,7 @@ public class TestGeneralResamplingTest {
         parameters.set(Params.VERBOSE, verbose);
 
         IndependenceWrapper test = new FisherZ();
-        FCI algorithm = new FCI(test);
+        Fci algorithm = new Fci(test);
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
                 numBootstrapSamples, 100.0,
@@ -393,7 +393,7 @@ public class TestGeneralResamplingTest {
         parameters.set(Params.VERBOSE, verbose);
 
         IndependenceWrapper test = new ChiSquare();
-        Algorithm algorithm = new FCI(test);
+        Algorithm algorithm = new Fci(test);
 
         GeneralResamplingTest bootstrapTest = new GeneralResamplingTest(data, algorithm,
                 numBootstrapSamples, 100.0,

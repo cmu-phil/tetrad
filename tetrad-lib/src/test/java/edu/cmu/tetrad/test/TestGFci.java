@@ -242,7 +242,7 @@ public class TestGFci {
         DataSet data = bayesIm.simulateData(sampleSize, false);
 
         IndependenceTest test = new IndTestChiSquare(data, 0.05);
-        BDeuScore bDeuScore = new BDeuScore(data);
+        BdeuScore bDeuScore = new BdeuScore(data);
         bDeuScore.setSamplePrior(1.0);
         bDeuScore.setStructurePrior(1.0);
 
@@ -269,7 +269,7 @@ public class TestGFci {
 
         IndependenceTest indTest = new IndTestChiSquare(dataSet, alpha);
 
-        BDeuScore score = new BDeuScore(dataSet);
+        BdeuScore score = new BdeuScore(dataSet);
         score.setStructurePrior(1.0);
         score.setSamplePrior(1.0);
 

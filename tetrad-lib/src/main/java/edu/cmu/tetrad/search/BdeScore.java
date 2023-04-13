@@ -1,0 +1,204 @@
+///////////////////////////////////////////////////////////////////////////////
+// For information as to what this class does, see the Javadoc, below.       //
+// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
+// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
+// Scheines, Joseph Ramsey, and Clark Glymour.                               //
+//                                                                           //
+// This program is free software; you can redistribute it and/or modify      //
+// it under the terms of the GNU General Public License as published by      //
+// the Free Software Foundation; either version 2 of the License, or         //
+// (at your option) any later version.                                       //
+//                                                                           //
+// This program is distributed in the hope that it will be useful,           //
+// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
+// GNU General Public License for more details.                              //
+//                                                                           //
+// You should have received a copy of the GNU General Public License         //
+// along with this program; if not, write to the Free Software               //
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
+///////////////////////////////////////////////////////////////////////////////
+
+package edu.cmu.tetrad.search;
+
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.graph.Node;
+import org.apache.commons.math3.special.Gamma;
+
+import java.util.List;
+
+/**
+ * Calculates the BDe score.
+ */
+public class BdeScore implements LocalDiscreteScore {
+    private final DataSet dataSet;
+
+    public BdeScore(DataSet dataSet) {
+        if (dataSet == null) {
+            throw new NullPointerException();
+        }
+
+        if (!dataSet.isDiscrete()) {
+            throw new IllegalArgumentException("Need a discrete data set.");
+        }
+
+        this.dataSet = dataSet;
+    }
+
+    /**
+     * @return the score, or NaN if the score can't be calculated.
+     */
+    public double localScore(int i, int[] parents) {
+
+        // Number of categories for i.
+        int r = numCategories(i);
+
+        // Numbers of categories of parents.
+        int[] dims = new int[parents.length];
+
+        for (int p = 0; p < parents.length; p++) {
+            dims[p] = numCategories(parents[p]);
+        }
+
+        // Number of parent states.
+        int q = 1;
+        for (int p = 0; p < parents.length; p++) {
+            q *= dims[p];
+        }
+
+        // Conditional cell coefs of data for i given parents(i).
+        int[][] n_ijk = new int[q][r];
+        int[] n_ij = new int[q];
+
+        int[] values = new int[parents.length];
+
+        for (int n = 0; n < sampleSize(); n++) {
+            for (int p = 0; p < parents.length; p++) {
+                int parentValue = dataSet().getInt(n, parents[p]);
+
+                if (parentValue == -99) {
+                    throw new IllegalStateException("Please remove or impute " +
+                            "missing values.");
+                }
+
+                values[p] = parentValue;
+            }
+
+            int childValue = dataSet().getInt(n, i);
+
+            if (childValue == -99) {
+                throw new IllegalStateException("Please remove or impute missing " +
+                        "values (record " + n + " column " + i + ")");
+
+            }
+
+            int rowIndex = getRowIndex(dims, values);
+
+//            for (int m = 0; m < dataSet().getMultiplier(n); m++) {
+            n_ijk[rowIndex][childValue]++;
+//            }
+        }
+
+        // Row sums.
+        for (int j = 0; j < q; j++) {
+            for (int k = 0; k < r; k++) {
+                n_ij[j] += n_ijk[j][k];
+            }
+        }
+
+        //Finally, compute the score
+        double score = 0;
+
+        for (int j = 0; j < q; j++) {
+            for (int k = 0; k < r; k++) {
+                double nPrimeijk = 1. / (r * q);
+                score += Gamma.logGamma(n_ijk[j][k] + nPrimeijk);
+                score -= Gamma.logGamma(nPrimeijk);
+            }
+
+            double nPrimeij = 1. / q;
+
+            score += Gamma.logGamma(nPrimeij);
+            score -= Gamma.logGamma(n_ij[j] + nPrimeij);
+        }
+
+        if (Double.isNaN(score) || Double.isInfinite(score)) {
+            return Double.NaN;
+        } else {
+            return score;
+        }
+    }
+
+    @Override
+    public double localScoreDiff(int x, int y, int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
+    }
+
+
+    @Override
+
+
+    public DataSet getDataSet() {
+        return this.dataSet;
+    }
+
+    private int getRowIndex(int[] dim, int[] values) {
+        int rowIndex = 0;
+        for (int i = 0; i < dim.length; i++) {
+            rowIndex *= dim[i];
+            rowIndex += values[i];
+        }
+        return rowIndex;
+    }
+
+    private int sampleSize() {
+        return dataSet().getNumRows();
+    }
+
+    private int numCategories(int i) {
+        return ((DiscreteVariable) dataSet().getVariable(i)).getNumCategories();
+    }
+
+    private DataSet dataSet() {
+        return this.dataSet;
+    }
+
+    public void setStructurePrior(double structurePrior) {
+    }
+
+    public void setSamplePrior(double samplePrior) {
+    }
+
+    @Override
+    public List<Node> getVariables() {
+        return this.dataSet.getVariables();
+    }
+
+    public int getSampleSize() {
+        return this.dataSet.getNumRows();
+    }
+
+    @Override
+    public boolean isEffectEdge(double bump) {
+        return bump > -20;
+    }
+
+    @Override
+    public int getMaxDegree() {
+        return 1000;
+    }
+
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "BDe Score";
+    }
+
+}
+
+

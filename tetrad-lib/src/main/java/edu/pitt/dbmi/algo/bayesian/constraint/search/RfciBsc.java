@@ -241,7 +241,7 @@ public class RfciBsc implements GraphSearch {
         shutdownAndAwaitTermination(pool);
 
         // learn structure of constraints using empirical data => constraint data
-        BDeuScore sd = new BDeuScore(depData);
+        BdeuScore sd = new BdeuScore(depData);
         sd.setSamplePrior(1.0);
         sd.setStructurePrior(1.0);
 
