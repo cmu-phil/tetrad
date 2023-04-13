@@ -204,6 +204,8 @@ public final class PcMb implements MbSearch, GraphSearch {
         this.logger.log("info", "BEGINNING step 1 (prune targets).");
 
         for (Node target : getTargets()) {
+            if (target == null) throw new NullPointerException("Target not specified");
+
             graph.addNode(target);
             constructFan(target, graph);
 

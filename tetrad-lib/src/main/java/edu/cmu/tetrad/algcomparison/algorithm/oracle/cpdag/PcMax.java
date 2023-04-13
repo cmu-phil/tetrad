@@ -23,13 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * CPC.
+ * PC-Max.
  *
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "PC-Max",
-        command = "pcmax",
+        command = "pc-max",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
@@ -68,9 +68,9 @@ public class PcMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setAggressivelyPreventCycles(true);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            dataModel.setKnowledge(this.knowledge);
+            search.setKnowledge(this.knowledge);
 //            search.setConcurrent(parameters.getBoolean(Params.CONCURRENT_FAS));
-            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
+            search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
             search.setMaxPPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             return search.search();
         } else {
@@ -95,7 +95,7 @@ public class PcMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     @Override
     public String getDescription() {
-        return "PCMAX using " + this.test.getDescription();
+        return "PC-Max using " + this.test.getDescription();
     }
 
     @Override
@@ -127,7 +127,7 @@ public class PcMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     @Override

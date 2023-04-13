@@ -91,8 +91,8 @@ public class PcMax implements GraphSearch {
 
     private boolean verbose;
     private boolean stable;
-    private boolean concurrent;
-    private boolean useHeuristic = false;
+    //    private boolean concurrent;
+    private boolean useMaxP = false;
     private int maxPPathLength = -1;
     private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
 
@@ -233,7 +233,7 @@ public class PcMax implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        PcAll search = new PcAll(independenceTest);
+        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(independenceTest);
         search.setDepth(depth);
         search.setHeuristic(1);
         search.setKnowledge(this.knowledge);
@@ -249,13 +249,17 @@ public class PcMax implements GraphSearch {
 //        } else {
 //            search.setConcurrent(PcAll.Concurrent.NO);
 //        }
-//
+
         search.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
         search.setConflictRule(conflictRule);
-        search.setUseHeuristic(useHeuristic);
+        search.setUseHeuristic(useMaxP);
         search.setMaxPathLength(maxPPathLength);
 //        search.setExternalGraph(externalGraph);
         search.setVerbose(verbose);
+
+//        fas.setKnowledge(getKnowledge());
+//        fas.setDepth(getDepth());
+//        fas.setVerbose(this.verbose);
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
@@ -315,8 +319,8 @@ public class PcMax implements GraphSearch {
 //        this.concurrent = concurrent;
 //    }
 
-    public void setUseHeuristic(boolean useHeuristic) {
-        this.useHeuristic = useHeuristic;
+    public void setUseMaxP(boolean useMaxP) {
+        this.useMaxP = useMaxP;
     }
 
     public void setMaxPPathLength(int maxPPathLength) {

@@ -143,6 +143,11 @@ public final class OrientCollidersMaxP {
         adja.remove(c);
         adjc.remove(a);
 
+        if (!(PcAll.isArrowpointAllowed(a, b, knowledge)
+                && (PcAll.isArrowpointAllowed(c, b, knowledge)))) {
+            return;
+        }
+
         double p = 0;
         List<Node> S = null;
 
