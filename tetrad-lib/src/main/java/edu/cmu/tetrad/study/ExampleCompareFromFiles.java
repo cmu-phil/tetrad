@@ -23,7 +23,7 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.GFCI;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -66,7 +66,7 @@ public class ExampleCompareFromFiles {
         statistics.add(new MathewsCorrArrow());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
-        statistics.add(new SHD());
+        statistics.add(new Shd());
         statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
@@ -76,7 +76,7 @@ public class ExampleCompareFromFiles {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new GFCI(new FisherZ(), new SemBicScore()));
+        algorithms.add(new Gfci(new FisherZ(), new SemBicScore()));
 //        algorithms.add(new Fges(new BdeuScore(),true));
 //        algorithms.add(new Fges(new DiscreteBicScore(),true));
 //        algorithms.add(new Fges(new SemBicScore()));

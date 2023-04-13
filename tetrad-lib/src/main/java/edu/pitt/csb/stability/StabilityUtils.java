@@ -32,7 +32,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.pitt.csb.mgm.MGM;
+import edu.pitt.csb.mgm.Mgm;
 import edu.pitt.csb.mgm.MixedUtils;
 
 import java.io.File;
@@ -153,13 +153,13 @@ public class StabilityUtils {
         int[] contInds = MixedUtils.getContinuousInds(vars);
         int p = contInds.length;
         int q = discInds.length;
-        double temp = MGM.upperTri(xiu.copy(), 1).zSum();
+        double temp = Mgm.upperTri(xiu.copy(), 1).zSum();
         D[0] = temp / ((p + q - 1.0) * (p + q) / 2.0);
-        temp = MGM.upperTri(xiu.viewSelection(contInds, contInds).copy(), 1).zSum();
+        temp = Mgm.upperTri(xiu.viewSelection(contInds, contInds).copy(), 1).zSum();
         D[1] = temp / (p * (p - 1.0) / 2.0);
         temp = xiu.viewSelection(contInds, discInds).zSum();
         D[2] = temp / (p * q);
-        temp = MGM.upperTri(xiu.viewSelection(discInds, discInds).copy(), 1).zSum();
+        temp = Mgm.upperTri(xiu.viewSelection(discInds, discInds).copy(), 1).zSum();
         D[3] = temp / (q * (q - 1.0) / 2.0);
 
         return D;

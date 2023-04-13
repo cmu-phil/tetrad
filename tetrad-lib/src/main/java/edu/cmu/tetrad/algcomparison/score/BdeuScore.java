@@ -29,8 +29,8 @@ public class BdeuScore implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.BDeuScore score
-                = new edu.cmu.tetrad.search.BDeuScore(SimpleDataLoader.getDiscreteDataSet(dataSet));
+        edu.cmu.tetrad.search.BdeuScore score
+                = new edu.cmu.tetrad.search.BdeuScore(SimpleDataLoader.getDiscreteDataSet(dataSet));
         score.setSamplePrior(parameters.getDouble(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
         return score;

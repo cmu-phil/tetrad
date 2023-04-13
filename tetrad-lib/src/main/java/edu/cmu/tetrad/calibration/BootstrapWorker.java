@@ -16,7 +16,7 @@ class BootstrapWorker extends Thread {
 
     public static double alpha;
     public static int BootstrapNum = -1; // total number of bootstrap instances that must be executed
-    public static DataForCalibration_RFCI DFC;
+    public static DataForCalibrationRfci DFC;
     public static Graph truePag;
     public static List<Graph> BNfromBootstrap;
     public static List<BootstrapWorker> waitingList = new ArrayList<BootstrapWorker>(); //MP: List of processes that are waiting to run

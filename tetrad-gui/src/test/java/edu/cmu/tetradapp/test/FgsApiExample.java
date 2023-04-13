@@ -2,7 +2,7 @@ package edu.cmu.tetradapp.test;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FGES;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
@@ -71,7 +71,7 @@ public class FgsApiExample {
         //Algorithm fges = AlgorithmFactory.create(Fges.class, null, BdeuScore.class);
 
         // for mixed data can use Conditional Gaussian
-        Algorithm fges = AlgorithmFactory.create(FGES.class, null, ConditionalGaussianBicScore.class);
+        Algorithm fges = AlgorithmFactory.create(Fges.class, null, ConditionalGaussianBicScore.class);
 
 
         // Set algorithm parameters

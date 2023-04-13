@@ -164,9 +164,9 @@ public class Comparison {
                 throw new IllegalArgumentException("Structure prior not set.");
             }
 
-            score = new BDeuScore(dataSet);
-            ((BDeuScore) score).setSamplePrior(params.getSamplePrior());
-            ((BDeuScore) score).setStructurePrior(params.getStructurePrior());
+            score = new BdeuScore(dataSet);
+            ((BdeuScore) score).setSamplePrior(params.getSamplePrior());
+            ((BdeuScore) score).setStructurePrior(params.getStructurePrior());
 
             params.setDataType(ComparisonParameters.DataType.Discrete);
 

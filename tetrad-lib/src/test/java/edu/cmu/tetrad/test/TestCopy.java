@@ -23,8 +23,8 @@ package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PCMAX;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcMax;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
@@ -67,7 +67,7 @@ public final class TestCopy {
         statistics.add(new MathewsCorrArrow());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
-        statistics.add(new SHD());
+        statistics.add(new Shd());
         statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
@@ -75,8 +75,8 @@ public final class TestCopy {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new PC(new FisherZ()));
-        algorithms.add(new PCMAX(new FisherZ()));
+        algorithms.add(new Pc(new FisherZ()));
+        algorithms.add(new PcMax(new FisherZ()));
 
         Simulations simulations = new Simulations();
 

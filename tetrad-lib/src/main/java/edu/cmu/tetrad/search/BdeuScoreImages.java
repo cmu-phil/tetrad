@@ -36,7 +36,7 @@ import java.util.List;
 public class BdeuScoreImages implements IBDeuScore {
 
     // The covariance matrix.
-    private final List<BDeuScore> scores;
+    private final List<BdeuScore> scores;
 
     // The variables of the covariance matrix.
     private final List<Node> variables;
@@ -59,7 +59,7 @@ public class BdeuScoreImages implements IBDeuScore {
             throw new NullPointerException();
         }
 
-        List<BDeuScore> scores = new ArrayList<>();
+        List<BdeuScore> scores = new ArrayList<>();
 
         for (DataModel model : dataModels) {
             if (model instanceof DataSet) {
@@ -69,7 +69,7 @@ public class BdeuScoreImages implements IBDeuScore {
                     throw new IllegalArgumentException("Datasets must be discrete.");
                 }
 
-                scores.add(new BDeuScore(dataSet));
+                scores.add(new BdeuScore(dataSet));
             } else {
                 throw new IllegalArgumentException("Only continuous data sets and covariance matrices may be used as input.");
             }
@@ -89,7 +89,7 @@ public class BdeuScoreImages implements IBDeuScore {
     public double localScoreDiff(int x, int y, int[] z) {
         double sum = 0.0;
 
-        for (BDeuScore score : this.scores) {
+        for (BdeuScore score : this.scores) {
             sum += score.localScoreDiff(x, y, z);
         }
 
@@ -103,7 +103,7 @@ public class BdeuScoreImages implements IBDeuScore {
     public double localScore(int i, int[] parents) {
         double sum = 0.0;
 
-        for (BDeuScore score : this.scores) {
+        for (BdeuScore score : this.scores) {
             sum += score.localScore(i, parents);
         }
 
@@ -131,7 +131,7 @@ public class BdeuScoreImages implements IBDeuScore {
     public double localScore(int i, int parent) {
         double sum = 0.0;
 
-        for (BDeuScore score : this.scores) {
+        for (BdeuScore score : this.scores) {
             sum += score.localScore(i, parent);
         }
 
@@ -144,7 +144,7 @@ public class BdeuScoreImages implements IBDeuScore {
     public double localScore(int i) {
         double sum = 0.0;
 
-        for (BDeuScore score : this.scores) {
+        for (BdeuScore score : this.scores) {
             sum += score.localScore(i);
         }
 
@@ -179,7 +179,7 @@ public class BdeuScoreImages implements IBDeuScore {
     }
 
     public void setSamplePrior(double samplePrior) {
-        for (BDeuScore score : this.scores) {
+        for (BdeuScore score : this.scores) {
             score.setSamplePrior(samplePrior);
         }
         this.samplePrior = samplePrior;
@@ -190,7 +190,7 @@ public class BdeuScoreImages implements IBDeuScore {
     }
 
     public void setStructurePrior(double structurePrior) {
-        for (BDeuScore score : this.scores) {
+        for (BdeuScore score : this.scores) {
             score.setStructurePrior(structurePrior);
         }
         this.structurePrior = structurePrior;

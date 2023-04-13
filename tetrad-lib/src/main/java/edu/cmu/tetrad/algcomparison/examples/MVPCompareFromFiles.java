@@ -23,7 +23,7 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FGES;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.score.MVPBicScore;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
@@ -72,7 +72,7 @@ public class MVPCompareFromFiles {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new FGES(new MVPBicScore()));
+        algorithms.add(new Fges(new MVPBicScore()));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);

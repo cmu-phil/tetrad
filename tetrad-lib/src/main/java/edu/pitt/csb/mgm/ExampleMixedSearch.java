@@ -46,7 +46,7 @@ public class ExampleMixedSearch {
             final double tolerance = 1e-7; //convergeance tolerance
             final int iterLimit = 1000; //iteration limit
 
-            MGM model = new MGM(data, lambda);
+            Mgm model = new Mgm(data, lambda);
             model.learn(tolerance, iterLimit);
             Graph mgmGraph = model.graphFromMGM();
 

@@ -638,7 +638,7 @@ public class RBExperiments {
     }
 
     private Graph runFGS(DataSet data) {
-        BDeuScore sd = new BDeuScore(data);
+        BdeuScore sd = new BdeuScore(data);
         sd.setSamplePrior(1.0);
         sd.setStructurePrior(1.0);
         Fges fgs = new Fges(sd);

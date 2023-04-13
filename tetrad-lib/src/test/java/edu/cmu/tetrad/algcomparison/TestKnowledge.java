@@ -47,24 +47,24 @@ public class TestKnowledge {
         ScoreWrapper score = new SemBicScore();
         Parameters parameters = new Parameters();
 
-        testKnowledge(dataSet, knowledge, parameters, new BOSS(score));
-        testKnowledge(dataSet, knowledge, parameters, new CPC(test));
-        testKnowledge(dataSet, knowledge, parameters, new CPC_STABLE(test));
-        testKnowledge(dataSet, knowledge, parameters, new FGES(score));
-        testKnowledge(dataSet, knowledge, parameters, new GRASP(test, score));
-        testKnowledge(dataSet, knowledge, parameters, new PC_STABLE(test));
-        testKnowledge(dataSet, knowledge, parameters, new PC(test));
-        testKnowledge(dataSet, knowledge, parameters, new PCMAX(test));
-        testKnowledge(dataSet, knowledge, parameters, new SP(score));
+        testKnowledge(dataSet, knowledge, parameters, new Boss(score));
+        testKnowledge(dataSet, knowledge, parameters, new Cpc(test));
+        testKnowledge(dataSet, knowledge, parameters, new CpcStable(test));
+        testKnowledge(dataSet, knowledge, parameters, new Fges(score));
+        testKnowledge(dataSet, knowledge, parameters, new Grasp(test, score));
+        testKnowledge(dataSet, knowledge, parameters, new PcStable(test));
+        testKnowledge(dataSet, knowledge, parameters, new Pc(test));
+        testKnowledge(dataSet, knowledge, parameters, new PcMax(test));
+        testKnowledge(dataSet, knowledge, parameters, new Sp(score));
 
-        testKnowledge(dataSet, knowledge, parameters, new BFCI(test, score));
-        testKnowledge(dataSet, knowledge, parameters, new CFCI(test));
-        testKnowledge(dataSet, knowledge, parameters, new FCI(test));
-        testKnowledge(dataSet, knowledge, parameters, new FCI_MAX(test));
-        testKnowledge(dataSet, knowledge, parameters, new GFCI(test, score));
-        testKnowledge(dataSet, knowledge, parameters, new GRASP_FCI(test, score));
-        testKnowledge(dataSet, knowledge, parameters, new RFCI(test));
-        testKnowledge(dataSet, knowledge, parameters, new SP_FCI(test, score));
+        testKnowledge(dataSet, knowledge, parameters, new Bfci(test, score));
+        testKnowledge(dataSet, knowledge, parameters, new Cfci(test));
+        testKnowledge(dataSet, knowledge, parameters, new Fci(test));
+        testKnowledge(dataSet, knowledge, parameters, new FciMax(test));
+        testKnowledge(dataSet, knowledge, parameters, new Gfci(test, score));
+        testKnowledge(dataSet, knowledge, parameters, new GraspFci(test, score));
+        testKnowledge(dataSet, knowledge, parameters, new Rfci(test));
+        testKnowledge(dataSet, knowledge, parameters, new SpFci(test, score));
     }
 
     private static void testKnowledge(DataSet dataSet, Knowledge knowledge, Parameters parameters, HasKnowledge algorithm) {

@@ -19,7 +19,7 @@ You will need to set up Java on your machine. For setting up Java, see our Wiki 
 
 To download the current jar you can use to launch the Tetrad GUI, click this link:
 
-https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.3.0/tetrad-gui-7.3.0-launch.jar.
+https://s01.oss.sonatype.org/content/repositories/releases/io/github/cmu-phil/tetrad-gui/7.3.3/tetrad-gui-7.3.3-launch.jar.
 
 You may be able to launch this jar by double clicking the jar file name, though on a Mac, this presents
 some [security challenges](https://github.com/cmu-phil/tetrad/wiki/Dealing-with-Tetrad-on-a-Mac:--Security-Issues). In

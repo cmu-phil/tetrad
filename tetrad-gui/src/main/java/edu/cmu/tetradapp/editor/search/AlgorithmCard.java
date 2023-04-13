@@ -20,7 +20,7 @@ package edu.cmu.tetradapp.editor.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.AlgorithmFactory;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SINGLE_GRAPH_ALG;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.SingleGraphAlg;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.annotation.*;
@@ -391,7 +391,7 @@ public class AlgorithmCard extends JPanel {
 
         // Those pairwise algos (R3, RShew, Skew..) require source graph to initialize - Zhou
         if (algorithm != null && algorithm instanceof TakesExternalGraph && this.algorithmRunner.getSourceGraph() != null && !this.algorithmRunner.getDataModelList().isEmpty()) {
-            Algorithm externalGraph = new SINGLE_GRAPH_ALG(this.algorithmRunner.getSourceGraph());
+            Algorithm externalGraph = new SingleGraphAlg(this.algorithmRunner.getSourceGraph());
             ((TakesExternalGraph) algorithm).setExternalGraph(externalGraph);
         }
 

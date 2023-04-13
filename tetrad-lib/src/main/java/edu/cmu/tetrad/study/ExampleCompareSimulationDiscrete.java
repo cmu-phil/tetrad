@@ -23,11 +23,11 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FGES;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PC;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
-import edu.cmu.tetrad.algcomparison.independence.GSquare;
+import edu.cmu.tetrad.algcomparison.independence.Gsquare;
 import edu.cmu.tetrad.algcomparison.score.BdeuScore;
 import edu.cmu.tetrad.algcomparison.score.ConditionalGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.DiscreteBicScore;
@@ -81,18 +81,18 @@ public class ExampleCompareSimulationDiscrete {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new SHD());
+        statistics.add(new Shd());
 
         statistics.setWeight("SHD", 1.0);
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new PC(new ChiSquare()));
-        algorithms.add(new PC(new GSquare()));
+        algorithms.add(new Pc(new ChiSquare()));
+        algorithms.add(new Pc(new Gsquare()));
 //
-        algorithms.add(new FGES(new BdeuScore()));
-        algorithms.add(new FGES(new DiscreteBicScore()));
-        algorithms.add(new FGES(new ConditionalGaussianBicScore()));
+        algorithms.add(new Fges(new BdeuScore()));
+        algorithms.add(new Fges(new DiscreteBicScore()));
+        algorithms.add(new Fges(new ConditionalGaussianBicScore()));
 
         Simulations simulations = new Simulations();
 

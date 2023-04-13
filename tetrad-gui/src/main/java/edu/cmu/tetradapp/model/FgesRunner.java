@@ -138,7 +138,7 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
                 } else if (dataSet.isDiscrete()) {
                     double samplePrior = getParams().getDouble("samplePrior", 1);
                     double structurePrior = getParams().getDouble("structurePrior", 1);
-                    BDeuScore score = new BDeuScore(dataSet);
+                    BdeuScore score = new BdeuScore(dataSet);
                     score.setSamplePrior(samplePrior);
                     score.setStructurePrior(structurePrior);
                     this.fges = new Fges(score);

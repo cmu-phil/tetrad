@@ -23,11 +23,11 @@ package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
-import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.LINGAM;
-import edu.cmu.tetrad.algcomparison.algorithm.multi.FASK;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.FAS;
+import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam;
+import edu.cmu.tetrad.algcomparison.algorithm.multi.Fask;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fas;
 import edu.cmu.tetrad.algcomparison.algorithm.pairwise.R3;
-import edu.cmu.tetrad.algcomparison.algorithm.pairwise.RSKEW;
+import edu.cmu.tetrad.algcomparison.algorithm.pairwise.Rskew;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
@@ -63,10 +63,10 @@ public class LingamStudy {
 
         Algorithms algorithms = new Algorithms();
 
-        algorithms.add(new LINGAM());
-        algorithms.add(new R3(new FAS(new FisherZ())));
-        algorithms.add(new RSKEW(new FAS(new FisherZ())));
-        algorithms.add(new FASK(new FisherZ(), new SemBicScore()));
+        algorithms.add(new Lingam());
+        algorithms.add(new R3(new Fas(new FisherZ())));
+        algorithms.add(new Rskew(new Fas(new FisherZ())));
+        algorithms.add(new Fask(new FisherZ(), new SemBicScore()));
 
         Comparison comparison = new Comparison();
 
