@@ -57,7 +57,7 @@ our [Manual](https://htmlpreview.github.io/?https:///github.com/cmu-phil/tetrad/
 If you like to watch thought-provoking lectures, here are
 some [lectures on the Center for Causal Discovery site](https://www.ccd.pitt.edu/video-tutorials/).
 
-In addition, here are our [Javadocs](https://www.phil.cmu.edu/tetrad-javadocs/7.3.4/).
+In addition, here are our [Javadocs](https://www.phil.cmu.edu/tetrad-javadocs/7.3.4/lib/).
 
 ## Install
 
