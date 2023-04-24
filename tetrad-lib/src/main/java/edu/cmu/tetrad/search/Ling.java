@@ -63,7 +63,7 @@ public class Ling {
     private double threshold = .5;
 
     private double fastIcaA = 1.1;
-    private int fastIcaMaxIter = 2000;
+    private int fastIcaMaxIter = 5000;
     private double fastIcaTolerance = 1e-6;
 
     //=============================CONSTRUCTORS============================//
@@ -126,10 +126,10 @@ public class Ling {
 
         for (int i = 0; i < realEigenvalues.length; i++) {
             double realEigenvalue = realEigenvalues[i];
-//            double imagEigenvalue = imagEigenvalues[i];
-            double modulus = sqrt(pow(realEigenvalue, 2) /*+ pow(imagEigenvalue, 2)*/);
+            double imagEigenvalue = imagEigenvalues[i];
+            double modulus = sqrt(pow(realEigenvalue, 2) + pow(imagEigenvalue, 2));
 
-            System.out.println("modulus" + " " + modulus);
+//            System.out.println("modulus" + " " + modulus);
 
             if (realEigenvalue >= 1.0) {
                 return false;
@@ -277,18 +277,6 @@ public class Ling {
     }
 
     private Matrix getWFastIca() {
-//        Matrix data = new Matrix(this.dataSet.getDoubleData().toArray()).transpose();
-//        FastIca fastIca = new FastIca(data, 30);
-//        fastIca.setVerbose(false);
-//        fastIca.setAlgorithmType(FastIca.DEFLATION);
-//        fastIca.setFunction(FastIca.LOGCOSH);
-//        fastIca.setTolerance(.001);
-//        fastIca.setMaxIterations(5000);
-//        fastIca.setAlpha(1.0);
-//        FastIca.IcaResult result = fastIca.findComponents();
-//        Matrix W = new Matrix(result.getW());
-
-
         Matrix X = dataSet.getDoubleData();
         X = DataUtils.centerData(X).transpose();
         FastIca fastIca = new FastIca(X, X.rows());
@@ -296,13 +284,11 @@ public class Ling {
         fastIca.setMaxIterations(this.fastIcaMaxIter);
         fastIca.setAlgorithmType(FastIca.PARALLEL);
         fastIca.setTolerance(this.fastIcaTolerance);
-        fastIca.setFunction(FastIca.EXP);
+        fastIca.setFunction(FastIca.LOGCOSH);
         fastIca.setRowNorm(false);
         fastIca.setAlpha(this.fastIcaA);
         FastIca.IcaResult result11 = fastIca.findComponents();
-        Matrix W = result11.getW();
-
-        return W;
+        return result11.getW();
     }
 
     /**

@@ -53,8 +53,8 @@ public class TestLing {
 
         for (double[][] model : models) {
             Graph graph = Ling.getGraph(model, dataSet.getVariables());
-//            boolean stable = Ling.isStable(model);
-//            System.out.println((stable ? "Is Stable" : "Not stable") + " cyclic = " + graph.paths().existsDirectedCycle());
+            boolean stable = Ling.isStable(model);
+            System.out.println((stable ? "Is Stable" : "Not stable") + " cyclic = " + graph.paths().existsDirectedCycle());
             System.out.println(graph);
         }
     }

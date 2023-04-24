@@ -37,11 +37,11 @@ public class PermutationMatrixPair {
     }
 
     public Matrix getW() {
-        return this.w.copy();
+        return this.w;
     }
 
     public List<Integer> getPermutation() {
-        return new ArrayList<>(this.permutation);
+        return this.permutation;
     }
 
     public String toString() {
