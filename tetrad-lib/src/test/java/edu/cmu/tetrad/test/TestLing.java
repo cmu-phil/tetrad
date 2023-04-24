@@ -19,41 +19,55 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.graph;
+package edu.cmu.tetrad.test;
+
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.search.Ling;
+import edu.cmu.tetrad.search.NRooks;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemPm;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
- * I couldn't find a mechanism in place to manage algorithm that return
- * potentially more than 1 graph. As such, this interface helps with that.
- * <p>
- * Created by IntelliJ IDEA.
- * User: Mark Whitehouse
- * Date: Nov 28, 2008
- * Time: 7:55:55 PM
- * To change this template use File | Settings | File Templates.
+ * @author Joseph Ramsey
  */
+public class TestLing {
 
-public interface GraphGroup {
+    @Test
+    public void test1() {
+        Graph g = RandomGraph.randomGraph(6, 0, 6, 100, 100, 100, false);
 
-    /**
-     * @return int
-     */
-    int getNumGraphs();
+        System.out.println("True graph = " + g);
 
-    /**
-     * Gets a graph at a specific index
-     *
-     * @param g The index of the graph to return
-     * @return Graph
-     */
-    Graph getGraph(int g);
+        SemPm pm = new SemPm(g);
+        SemIm im = new SemIm(pm);
+        DataSet dataSet = im.simulateData(5000, false);
+        Ling alg = new Ling(dataSet);
+        alg.setThreshold(0.5);
+        List<double[][]> models = alg.search();
 
-    /**
-     * Adds a graph to the class.
-     *
-     * @param g The graph to add to the class.
-     */
-    void addGraph(Graph g);
+        for (double[][] model : models) {
+            Graph graph = Ling.getGraph(model, dataSet.getVariables());
+//            boolean stable = Ling.isStable(model);
+//            System.out.println((stable ? "Is Stable" : "Not stable") + " cyclic = " + graph.paths().existsDirectedCycle());
+            System.out.println(graph);
+        }
+    }
 
+    @Test
+    public void testNRooks() {
+        int p = 3;
+        boolean[][] allowableBoard = new boolean[p][p];
+        for (boolean[] row : allowableBoard) Arrays.fill(row, true);
+        allowableBoard[0][2] = false;
+        List<int[]> solutions = NRooks.nRooks(allowableBoard);
+        NRooks.printSolutions(solutions);
+    }
 }
 
 

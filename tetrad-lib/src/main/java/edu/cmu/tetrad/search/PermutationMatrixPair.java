@@ -21,40 +21,31 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.Matrix;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PermutationMatrixPair {
 
-    private final Matrix matrixW;
-    private DataSet matrixBhat;
+    private final Matrix w;
     private final List<Integer> permutation;
 
-    public PermutationMatrixPair(List<Integer> permutation, Matrix matrixW) {
-        this.permutation = permutation;
-        this.matrixW = matrixW;
+    public PermutationMatrixPair(List<Integer> permutation, Matrix w) {
+        this.permutation = new ArrayList<>(permutation);
+        this.w = w.copy();
     }
 
-    public Matrix getMatrixW() {
-        return this.matrixW;
-    }
-
-    public DataSet getMatrixBhat() {
-        return this.matrixBhat;
-    }
-
-    public void setMatrixBhat(DataSet matrixBhat) {
-        this.matrixBhat = matrixBhat;
+    public Matrix getW() {
+        return this.w.copy();
     }
 
     public List<Integer> getPermutation() {
-        return this.permutation;
+        return new ArrayList<>(this.permutation);
     }
 
     public String toString() {
-        return "Permutation: " + this.permutation + "matrix W : " + this.matrixW;
+        return "Permutation: " + this.permutation + "\nmatrix W : " + this.w;
     }
 }
 

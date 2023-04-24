@@ -641,12 +641,22 @@ public final class MatrixUtils {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isPositiveDefinite(Matrix matrix) {
 
-        try {
-            new RectangularCholeskyDecomposition(new BlockRealMatrix(matrix.toArray()));
-        } catch (NonPositiveDefiniteMatrixException e) {
-            return false;
-        }
+//        try {
+//            new CholeskyDecomposition(new BlockRealMatrix(matrix.toArray()));
+//        } catch (NonPositiveDefiniteMatrixException e) {
+//            return false;
+//        }
 
+//        return true;
+
+        RealMatrix realMatrix = new Array2DRowRealMatrix(matrix.toArray());
+        EigenDecomposition eigenDecomposition = new EigenDecomposition(realMatrix);
+        double[] eigenvalues = eigenDecomposition.getRealEigenvalues();
+        for (double eigenvalue : eigenvalues) {
+            if (eigenvalue <= 0) {
+                return false;
+            }
+        }
         return true;
     }
 

@@ -28,24 +28,19 @@ import cern.colt.matrix.linalg.CholeskyDecomposition;
  * Sundry utilities for the Ling algorithm.
  */
 public class LingUtils {
-    //Gustavo 7 May 2007
-    //
-    //makes the diagonal 1, scaling the remainder of each row appropriately
-    //pre: 'matrix' must be square
+    /**
+     * Makes the diagonal 1, scaling the remainder of each row appropriately.
+     * @param matrix A square matrix
+     */
     public static Matrix normalizeDiagonal(Matrix matrix) {
         Matrix resultMatrix = matrix.copy();
         for (int i = 0; i < resultMatrix.rows(); i++) {
-            double factor = 1 / resultMatrix.get(i, i);
+            double factor = 1.0 / resultMatrix.get(i, i);
             for (int j = 0; j < resultMatrix.columns(); j++)
                 resultMatrix.set(i, j, factor * resultMatrix.get(i, j));
         }
         return resultMatrix;
     }
-
-    public static boolean isPositiveDefinite(Matrix matrix) {
-        return new CholeskyDecomposition(new DenseDoubleMatrix2D(matrix.toArray())).isSymmetricPositiveDefinite();
-    }
-
 }
 
 
