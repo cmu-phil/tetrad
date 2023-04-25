@@ -23,29 +23,50 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.util.Matrix;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 public class PermutationMatrixPair {
 
+    private final int[] rowPerm;
+    private final int[] colPerm;
     private final Matrix w;
-    private final List<Integer> permutation;
 
-    public PermutationMatrixPair(List<Integer> permutation, Matrix w) {
-        this.permutation = new ArrayList<>(permutation);
-        this.w = w.copy();
+    public PermutationMatrixPair(int[] rowPerm, int[] colPerm, Matrix w) {
+        if (rowPerm == null) {
+            rowPerm = new int[w.rows()];
+            for (int i = 0; i < w.rows(); i++) rowPerm[i] = i;
+        }
+
+        if (colPerm == null) {
+            colPerm = new int[w.columns()];
+            for (int i = 0; i < w.columns(); i++) colPerm[i] = i;
+        }
+
+        this.rowPerm = Arrays.copyOf(rowPerm, rowPerm.length);
+        this.colPerm = Arrays.copyOf(colPerm, colPerm.length);
+        this.w = w.getSelection(rowPerm, colPerm);
     }
 
-    public Matrix getW() {
+    /**
+     * Returns W, permuted rowwise by the permutation passed in throught he constructor.
+     * @return The row-permuted W.
+     */
+    public Matrix getPermutedMatrix() {
         return this.w;
     }
 
-    public List<Integer> getPermutation() {
-        return this.permutation;
+    public String toString() {
+        return "Row perm " + Arrays.toString(this.rowPerm)
+                + "\nCol perm = " + Arrays.toString(this.colPerm)
+                + "\nmatrix W : " + this.w;
     }
 
-    public String toString() {
-        return "Permutation: " + this.permutation + "\nmatrix W : " + this.w;
+    public int[] getRowPerm() {
+        return Arrays.copyOf(rowPerm, rowPerm.length);
+    }
+
+    public int[] getColPerm() {
+        return Arrays.copyOf(colPerm, colPerm.length);
     }
 }
 

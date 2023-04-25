@@ -29,8 +29,7 @@ import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.util.FastMath;
 
-import static org.apache.commons.math3.util.FastMath.exp;
-import static org.apache.commons.math3.util.FastMath.tanh;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * A Java implementation of FastIca following the R package fastICA. The only
@@ -299,8 +298,8 @@ public class FastIca {
      * A logical value indicating whether rows of the data matrix 'X' should be
      * standardized beforehand.
      */
-    public void setRowNorm(boolean colNorm) {
-        this.rowNorm = colNorm;
+    public void setRowNorm(boolean rowNorm) {
+        this.rowNorm = rowNorm;
     }
 
     /**
@@ -551,7 +550,7 @@ public class FastIca {
                     _tolerance += w1.get(k) * w.get(k);
                 }
 
-                _tolerance = FastMath.abs(FastMath.abs(_tolerance) - 1.0);
+                _tolerance = abs(abs(_tolerance) - 1.0);
 
                 if (verbose) {
                     TetradLogger.getInstance().log("fastIcaDetails", "Iteration " + it + " tol = " + _tolerance);
@@ -671,7 +670,7 @@ public class FastIca {
             _tolerance = Double.NEGATIVE_INFINITY;
 
             for (int i = 0; i < d.size(); i++) {
-                double m = FastMath.abs(FastMath.abs(d.get(i)) - 1);
+                double m = abs(abs(d.get(i)) - 1);
                 if (m > _tolerance) _tolerance = m;
             }
 

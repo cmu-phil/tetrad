@@ -9,6 +9,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -35,12 +36,10 @@ public class Lingam implements Algorithm {
 
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+            DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
+            Matrix W = edu.cmu.tetrad.search.Lingam.estimateW(data, 5000, 1e-6, 1.2);
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
-            lingam.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-            lingam.setFastIcaA(parameters.getDouble(Params.FAST_ICA_A));
-            lingam.setFastMaxIter(parameters.getInt(Params.FAST_ICA_MAX_ITER));
-            lingam.setFastIcaTolerance(parameters.getDouble(Params.FAST_ICA_TOLERANCE));
-            return lingam.search(SimpleDataLoader.getContinuousDataSet(dataSet));
+            return lingam.search(W, data.getVariables());
         } else {
             Lingam algorithm = new Lingam();
 
