@@ -114,14 +114,11 @@ public class TestLing {
         boolean[][] allowableBoard = new boolean[p][p];
         for (boolean[] row : allowableBoard) Arrays.fill(row, true);
         allowableBoard[0][0] = false;
-//        allowableBoard[1][0] = false;
-//        allowableBoard[2][0] = false;
 
-
-        for (int i = 0; i < allowableBoard.length; i++) {
+        for (boolean[] booleans : allowableBoard) {
             System.out.println();
             for (int j = 0; j < allowableBoard[0].length; j++) {
-                System.out.print((allowableBoard[i][j] ? 1 : 0) + " ");
+                System.out.print((booleans[j] ? 1 : 0) + " ");
             }
         }
 

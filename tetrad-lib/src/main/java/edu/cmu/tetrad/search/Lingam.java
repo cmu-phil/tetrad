@@ -21,7 +21,8 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
@@ -54,10 +55,11 @@ public class Lingam {
 
     /**
      * Estimates the W matrix using FastICA.
-     * @param data The dataset to estimate W for.
-     * @param fastIcaMaxIter Maximum number of iterations of ICA.
+     *
+     * @param data             The dataset to estimate W for.
+     * @param fastIcaMaxIter   Maximum number of iterations of ICA.
      * @param fastIcaTolerance Tolerance for ICA.
-     * @param fastIcaA Alpha for ICA.
+     * @param fastIcaA         Alpha for ICA.
      * @return The estimated W matrix.
      */
     public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA) {
@@ -77,6 +79,7 @@ public class Lingam {
 
     /**
      * Searches given the W matrix from ICA.
+     *
      * @param W the W matrix from ICA.
      * @return The graph returned.
      */
@@ -147,6 +150,7 @@ public class Lingam {
 
     /**
      * Scares the given matrix M by diving each entry (i, j) by M(j, j)
+     *
      * @param M The matrix to scale.
      * @return The scaled matrix.
      */
@@ -164,7 +168,8 @@ public class Lingam {
 
     /**
      * Thresholds the givem matrix, sending any small entries to zero.
-     * @param M The matrix to threshold.
+     *
+     * @param M         The matrix to threshold.
      * @param threshold The value such that M(i, j) is set to zero if |M(i, j)| < threshold.
      * @return The thresholded matrix.
      */
@@ -184,6 +189,7 @@ public class Lingam {
 
     /**
      * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
+     *
      * @param pruneFactor Some value >= 0.
      */
     public void setPruneFactor(double pruneFactor) {
