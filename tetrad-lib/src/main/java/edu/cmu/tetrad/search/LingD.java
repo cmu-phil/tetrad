@@ -38,7 +38,6 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * Lacerda, G., Spirtes, P. L., Ramsey, J., & Hoyer, P. O. (2012). Discovering cyclic causal models
  * by independent components analysis. arXiv preprint arXiv:1206.3273.
  *
- * @author lacerda
  * @author josephramsey
  */
 public class LingD {
