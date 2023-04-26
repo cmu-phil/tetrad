@@ -19,7 +19,7 @@ import java.util.List;
 public class NRooks {
 
     /**
-     * Solves the N-Rooks problem for the given allowable board.
+     * Solves the N-Rooks problem for the given board or allowable positions.
      * @param allowablePositions A matrix of allowable rook positions, should be
      *                       true iff the position is allowable.
      * @return A list of row indices for where to place the rooks for each solution.
@@ -39,7 +39,7 @@ public class NRooks {
     }
 
     /**
-     * Prints the discovered N Rooks solutions.
+     * Prints the discovered N Rooks solutions given the constraint.
      * @param solutions The solutions.
      */
     public static void printSolutions(List<int[]> solutions) {
@@ -51,9 +51,9 @@ public class NRooks {
     }
 
     private static void dfs(boolean[][] board, boolean[][] allowablePositions, int row, ArrayList<int[]> solutions) {
-        if (row == board.length) {
 
-            // Base case: all rooks have been placed
+        // Base case: all rooks have been placed
+        if (row == board.length) {
             int[] solution = new int[board.length];
             for (int i = 0; i < board.length; i++) {
                 for (int j = 0; j < board.length; j++) {
@@ -67,11 +67,21 @@ public class NRooks {
             return;
         }
 
+        // Otherwise, for each column
         for (int col = 0; col < board.length; col++) {
+
+            // If the current row is a valid position to place a rook (i.e., it can't attack
+            // any other rook)...
             if (isValid(board, row, col)) {
+
+                // This constrains the problem to allowable positions on the board.
                 if (!allowablePositions[row][col]) continue;
+
+                // Otherwise place the rook and recurse through the rows of the board.
                 board[row][col] = true;
                 dfs(board, allowablePositions, row+1, solutions);
+
+                // Backtrack and try another case...
                 board[row][col] = false;
             }
         }
@@ -79,7 +89,8 @@ public class NRooks {
 
     private static boolean isValid(boolean[][] board, int row, int col) {
 
-        // check if the current position is valid
+        // Check if the current position is valid. ChatGPT had some clever condition here
+        // that didn't work, sorry ChatGPT. This is the non-clever condition.
         for (int i = 0; i < row; i++) {
             if (board[i][col]) {
                 for (boolean[] booleans : board) {
