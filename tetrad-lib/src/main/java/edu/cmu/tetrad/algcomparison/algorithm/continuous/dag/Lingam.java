@@ -79,7 +79,7 @@ public class Lingam implements Algorithm {
             Matrix W = LingD.estimateW(data, maxIter, tol, alpha);
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
             lingam.setPruneFactor(pruneFactor);
-            return lingam.search(W, data.getVariables(), 0.1);
+            return lingam.search(W, data.getVariables(), pruneFactor);
         } else {
             Lingam algorithm = new Lingam();
 

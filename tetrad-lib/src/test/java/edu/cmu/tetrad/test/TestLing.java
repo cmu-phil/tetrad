@@ -95,34 +95,34 @@ public class TestLing {
         Graph g2 = lingam.search(W, dataSet.getVariables(), wThreshold);
         System.out.println("Lingam graph = " + g2);
 
-//        // Next we try LiNG-D.
-//        System.out.println("LiNG-D");
-//
-//        LingD ling = new LingD();
-//
-//        // We generate pairs of column permutations (solving the constriained N Rooks problem) with their
-//        // associated column-permuted W thresholded W matrices. For the constrained N rooks problme we
-//        // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
-//        List<PermutationMatrixPair> pairs = ling.search(W, wThreshold);
-//
-//        System.out.println("Then, for each constrained N Rooks solution, a column permutation of thresholded W:");
-//        for (PermutationMatrixPair pair : pairs) {
-//
-//            // We print the B Hat matrix; this is the matrix of coefficients for the implied linear moodel.
-//            System.out.println("\nPermuted Variables = " + LingD.getPermutedVariables(pair, dataSet.getVariables()));
-//            System.out.println("\nPermuted Thresholded W matrix = \n" + LingD.getPermutedThresholdedW(pair));
-//            System.out.println("\nPermuted Unscaled BHat = \n" + LingD.getPermutedUnscaledBHat(pair));
-//            System.out.println("\nPermuted Scaled BHat = \n" + LingD.getPermutedScaledBHat(pair));
-//
-//            // We print the corresponding graph.
-//            Graph graph = LingD.getGraph(pair, dataSet.getVariables());
-//
-//            System.out.println("\nGraph = " + graph);
-//            boolean stable = edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam.isStable(pair);
-//
-//            // Finally we print a judgment of whether the BHat model is stable and cyclic.
-//            System.out.println(stable ? "Is Stable" : "Not stable");
-//        }
+        // Next we try LiNG-D.
+        System.out.println("LiNG-D");
+
+        LingD ling = new LingD();
+
+        // We generate pairs of column permutations (solving the constriained N Rooks problem) with their
+        // associated column-permuted W thresholded W matrices. For the constrained N rooks problme we
+        // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
+        List<PermutationMatrixPair> pairs = ling.search(W, wThreshold);
+
+        System.out.println("Then, for each constrained N Rooks solution, a column permutation of thresholded W:");
+        for (PermutationMatrixPair pair : pairs) {
+
+            // We print the B Hat matrix; this is the matrix of coefficients for the implied linear moodel.
+            System.out.println("\nPermuted Variables = " + LingD.getPermutedVariables(pair, dataSet.getVariables()));
+            System.out.println("\nPermuted Thresholded W matrix = \n" + LingD.getPermutedThresholdedW(pair));
+            System.out.println("\nPermuted Unscaled BHat = \n" + LingD.getPermutedUnscaledBHat(pair));
+            System.out.println("\nPermuted Scaled BHat = \n" + LingD.getPermutedScaledBHat(pair));
+
+            // We print the corresponding graph.
+            Graph graph = LingD.getGraph(pair, dataSet.getVariables());
+
+            System.out.println("\nGraph = " + graph);
+            boolean stable = edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Lingam.isStable(pair);
+
+            // Finally we print a judgment of whether the BHat model is stable and cyclic.
+            System.out.println(stable ? "Is Stable" : "Not stable");
+        }
     }
 
     @Test

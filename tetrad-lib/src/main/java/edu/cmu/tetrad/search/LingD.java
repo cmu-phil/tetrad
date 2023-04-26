@@ -60,7 +60,7 @@ public class LingD {
      * @return the LiNGAM graph.
      */
     public List<PermutationMatrixPair> search(Matrix W, double wThreshold) {
-        return nRooks(threshold(W, wThreshold));
+        return nRooks(threshold(W.transpose(), wThreshold));
     }
 
     /**
@@ -103,7 +103,7 @@ public class LingD {
 
         printAllowablePositions(W, allowablePositions);
 
-        List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
+        List<int[]> colPermutations = NRooks2.nRooks(allowablePositions);
 
         //for each assignment, add the corresponding permutation to 'pairs'
         for (int[] colPermutation : colPermutations) {

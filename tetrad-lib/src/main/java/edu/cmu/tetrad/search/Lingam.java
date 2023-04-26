@@ -63,15 +63,10 @@ public class Lingam {
      * @return The graph returned.
      */
     public Graph search(Matrix W, List<Node> variables, double wThreshold) {
-
-        wThreshold = 0.1;
         Matrix thresholded = threshold(W, wThreshold);
         W = thresholded;
 
         System.out.println("Thresholded W = " + thresholded);
-
-        //////// ONE WAY
-
 
         List<PermutationMatrixPair> pairs = LingD.nRooks(thresholded.transpose());
 
@@ -81,8 +76,6 @@ public class Lingam {
         P:
         for (PermutationMatrixPair pair : pairs) {
             Matrix permutedMatrix = pair.getPermutedMatrix();
-
-//            System.out.println("Permuted = " + permutedMatrix);
 
             double sum = 0.0;
             for (int j = 0; j < permutedMatrix.rows(); j++) {
@@ -106,43 +99,6 @@ public class Lingam {
         }
 
         Matrix WTilde = bestPair.getPermutedMatrix().transpose();
-
-
-        //////// OTHER WAY
-
-//        PermutationGenerator gen1 = new PermutationGenerator(W.rows());
-//
-//        // The first task is to find a row permutation of the W matrix that maximizes
-//        // the absolute values on its diagonal. We do this by minimizing SUM(1 / |Wii|).
-//        int[] rowPerm = new int[0];
-//        double sum1 = Double.POSITIVE_INFINITY;
-//        int[] choice1;
-//
-//        P:
-//        while ((choice1 = gen1.next()) != null) {
-//            double sum = 0.0;
-//
-//            for (int j = 0; j < W.rows(); j++) {
-////                double a = W.get(choice1[j], j);
-////                sum += a == 0 ? Double.POSITIVE_INFINITY : 1.0 / abs(a);
-//
-//                double a = W.get(choice1[j], j);
-//
-//                if (a == 0) {
-//                    continue P;
-//                }
-//
-//                sum += 1.0 / abs(a);
-//            }
-//
-//            if (sum < sum1) {
-//                sum1 = sum;
-//                rowPerm = Arrays.copyOf(choice1, choice1.length);
-//            }
-//        }
-//
-//        Matrix WTilde = new PermutationMatrixPair(W, rowPerm, null).getPermutedMatrix();
-
 
         // We calculate BHat as I - WTilde.
         WTilde = LingD.scale(WTilde);
