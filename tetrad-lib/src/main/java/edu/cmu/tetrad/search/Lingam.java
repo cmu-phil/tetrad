@@ -21,19 +21,17 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.PermutationGenerator;
-import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static edu.cmu.tetrad.search.LingD.threshold;
 import static java.lang.StrictMath.abs;
 
 /**
@@ -44,6 +42,7 @@ import static java.lang.StrictMath.abs;
  */
 public class Lingam {
     private double pruneFactor = 0.3;
+    private double wThreshold = 0.0;
     private Matrix permutedBHat = null;
     private List<Node> permutedVars = null;
 
@@ -56,65 +55,97 @@ public class Lingam {
     }
 
     /**
-     * Estimates the W matrix using FastICA.
-     *
-     * @param data             The dataset to estimate W for.
-     * @param fastIcaMaxIter   Maximum number of iterations of ICA.
-     * @param fastIcaTolerance Tolerance for ICA.
-     * @param fastIcaA         Alpha for ICA.
-     * @return The estimated W matrix.
-     */
-    public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA) {
-        Matrix X = data.getDoubleData();
-        X = DataUtils.centerData(X).transpose();
-        FastIca fastIca = new FastIca(X, X.rows());
-        fastIca.setVerbose(false);
-        fastIca.setMaxIterations(fastIcaMaxIter);
-        fastIca.setAlgorithmType(FastIca.DEFLATION);
-        fastIca.setTolerance(fastIcaTolerance);
-        fastIca.setFunction(FastIca.EXP);
-        fastIca.setRowNorm(false);
-        fastIca.setAlpha(fastIcaA);
-        FastIca.IcaResult result11 = fastIca.findComponents();
-        return result11.getW();
-    }
-
-    /**
      * Searches given the W matrix from ICA.
      *
-     * @param W the W matrix from ICA.
+     * @param W         the W matrix from ICA.
      * @param variables The variables from the original dataset used to generate the W matrix,
      *                  in the order they occur in that dataset.
      * @return The graph returned.
      */
-    public Graph search(Matrix W, List<Node> variables) {
-        PermutationGenerator gen1 = new PermutationGenerator(W.rows());
+    public Graph search(Matrix W, List<Node> variables, double wThreshold) {
 
-        // The first task is to find a row permutation of the W matrix that maximizes
-        // the absolute values on its diagonal. We do this by minimizing SUM(1 / |Wii|).
-        int[] rowPerm = new int[0];
+        wThreshold = 0.1;
+        Matrix thresholded = threshold(W, wThreshold);
+        W = thresholded;
+
+        System.out.println("Thresholded W = " + thresholded);
+
+        //////// ONE WAY
+
+
+        List<PermutationMatrixPair> pairs = LingD.nRooks(thresholded.transpose());
+
+        PermutationMatrixPair bestPair = null;
         double sum1 = Double.POSITIVE_INFINITY;
-        int[] choice1;
 
-        while ((choice1 = gen1.next()) != null) {
+        P:
+        for (PermutationMatrixPair pair : pairs) {
+            Matrix permutedMatrix = pair.getPermutedMatrix();
+
+//            System.out.println("Permuted = " + permutedMatrix);
+
             double sum = 0.0;
+            for (int j = 0; j < permutedMatrix.rows(); j++) {
+                double a = permutedMatrix.get(j, j);
 
-            for (int j = 0; j < W.rows(); j++) {
-                sum += 1.0 / abs(W.get(choice1[j], j));
+                if (a == 0) {
+                    continue P;
+                }
+
+                sum += 1.0 / abs(a);
             }
 
             if (sum < sum1) {
                 sum1 = sum;
-                rowPerm = Arrays.copyOf(choice1, choice1.length);
+                bestPair = pair;
             }
         }
 
-        // We grab the resulting diagonal-optimized matrix and scale it by divind each entry Wij
-        // by Wjj. How the diagonal should consist only of 1's.
-        Matrix WTilde = new PermutationMatrixPair(rowPerm, null, W).getPermutedMatrix();
-        WTilde = scale(WTilde);
+        if (bestPair == null) {
+            throw new NullPointerException("Could not find an N Rooks solution with that threshold.");
+        }
+
+        Matrix WTilde = bestPair.getPermutedMatrix().transpose();
+
+
+        //////// OTHER WAY
+
+//        PermutationGenerator gen1 = new PermutationGenerator(W.rows());
+//
+//        // The first task is to find a row permutation of the W matrix that maximizes
+//        // the absolute values on its diagonal. We do this by minimizing SUM(1 / |Wii|).
+//        int[] rowPerm = new int[0];
+//        double sum1 = Double.POSITIVE_INFINITY;
+//        int[] choice1;
+//
+//        P:
+//        while ((choice1 = gen1.next()) != null) {
+//            double sum = 0.0;
+//
+//            for (int j = 0; j < W.rows(); j++) {
+////                double a = W.get(choice1[j], j);
+////                sum += a == 0 ? Double.POSITIVE_INFINITY : 1.0 / abs(a);
+//
+//                double a = W.get(choice1[j], j);
+//
+//                if (a == 0) {
+//                    continue P;
+//                }
+//
+//                sum += 1.0 / abs(a);
+//            }
+//
+//            if (sum < sum1) {
+//                sum1 = sum;
+//                rowPerm = Arrays.copyOf(choice1, choice1.length);
+//            }
+//        }
+//
+//        Matrix WTilde = new PermutationMatrixPair(W, rowPerm, null).getPermutedMatrix();
+
 
         // We calculate BHat as I - WTilde.
+        WTilde = LingD.scale(WTilde);
         Matrix BHat = Matrix.identity(W.columns()).minus(WTilde);
 
         // The second task is to rearrange the BHat matrix by permuting rows and columns
@@ -145,7 +176,7 @@ public class Lingam {
         }
 
         // Grab that lower-triangle maximized version of the BHat matrix.
-        Matrix BHatTilde = new PermutationMatrixPair(perm, perm, BHat).getPermutedMatrix();
+        Matrix BHatTilde = new PermutationMatrixPair(BHat, perm, perm).getPermutedMatrix();
 
         // Set the upper triangle now to zero, since we are ignoring it for this DAG algorithm.
         for (int i = 0; i < BHatTilde.rows(); i++) {
@@ -153,7 +184,6 @@ public class Lingam {
                 BHatTilde.set(i, j, 0.0);
             }
         }
-
 
         // Permute the variables too for that order.
         List<Node> varPerm = new ArrayList<>();
@@ -178,46 +208,8 @@ public class Lingam {
     }
 
     /**
-     * Scares the given matrix M by diving each entry (i, j) by M(j, j)
-     *
-     * @param M The matrix to scale.
-     * @return The scaled matrix.
-     */
-    public static Matrix scale(Matrix M) {
-        Matrix _M = M.like();
-
-        for (int i = 0; i < _M.rows(); i++) {
-            for (int j = 0; j < _M.columns(); j++) {
-                _M.set(i, j, M.get(i, j) / M.get(j, j));
-            }
-        }
-
-        return _M;
-    }
-
-    /**
-     * Thresholds the givem matrix, sending any small entries to zero.
-     *
-     * @param M         The matrix to threshold.
-     * @param threshold The value such that M(i, j) is set to zero if |M(i, j)| < threshold.
-     * @return The thresholded matrix.
-     */
-    public static Matrix threshold(Matrix M, double threshold) {
-        if (threshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + threshold);
-
-        Matrix _M = M.copy();
-
-        for (int i = 0; i < M.rows(); i++) {
-            for (int j = 0; j < M.columns(); j++) {
-                if (FastMath.abs(M.get(i, j)) < threshold) _M.set(i, j, 0.0);
-            }
-        }
-
-        return _M;
-    }
-
-    /**
      * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
+     *
      * @param pruneFactor Some value >= 0.
      */
     public void setPruneFactor(double pruneFactor) {
@@ -227,6 +219,7 @@ public class Lingam {
 
     /**
      * After search the permuted BHat matrix can be retrieved using this method.
+     *
      * @return The permutated (lower triangle) BHat matrix. Here, BHat(i, j) != 0 means that
      * there is an edge vars(j)-->vars(i) in the graph, where 'vars' means the permuted variables.
      */
@@ -236,6 +229,7 @@ public class Lingam {
 
     /**
      * The permuted variables of the graph. This is the estimated causal order of the models.
+     *
      * @return This list of variables.
      */
     public List<Node> getPermutedVars() {

@@ -21,18 +21,18 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import org.apache.commons.math3.linear.BlockRealMatrix;
-import org.apache.commons.math3.linear.EigenDecomposition;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.pow;
-import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * Lacerda, G., Spirtes, P. L., Ramsey, J., & Hoyer, P. O. (2012). Discovering
@@ -43,10 +43,6 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public class LingD {
 
-    private double wThreshold = .5;
-
-    //=============================CONSTRUCTORS============================//
-
     /**
      * Constructor. The W matrix needs to be estimated separately (e.g., using
      * the Lingam.estimateW(.) method using the ICA method in Tetrad, or some
@@ -55,24 +51,105 @@ public class LingD {
     public LingD() {
     }
 
-    //==============================PUBLIC METHODS=========================//
-
     /**
      * Searches given the W matrix.
      *
      * @param W the W matrix.
+     * @param wThreshold The threshold below which entries in the W matrix are send to
+     *                   zero.
      * @return the LiNGAM graph.
      */
-    public List<PermutationMatrixPair> search(Matrix W) {
-        return nRooks(Lingam.threshold(W, wThreshold));
+    public List<PermutationMatrixPair> search(Matrix W, double wThreshold) {
+        return nRooks(threshold(W, wThreshold));
     }
 
     /**
-     * Sets the value at which thresholding occurs for the W matrix.
-     * @param wThreshold The value at which the thresholding is set.
+     * Estimates the W matrix using FastICA.
+     *
+     * @param data             The dataset to estimate W for.
+     * @param fastIcaMaxIter   Maximum number of iterations of ICA.
+     * @param fastIcaTolerance Tolerance for ICA.
+     * @param fastIcaA         Alpha for ICA.
+     * @return The estimated W matrix.
      */
-    public void setWThreshold(double wThreshold) {
-        this.wThreshold = wThreshold;
+    public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA) {
+        Matrix X = data.getDoubleData();
+        X = DataUtils.centerData(X).transpose();
+        FastIca fastIca = new FastIca(X, X.rows());
+        fastIca.setVerbose(false);
+        fastIca.setMaxIterations(fastIcaMaxIter);
+        fastIca.setAlgorithmType(FastIca.DEFLATION);
+        fastIca.setTolerance(fastIcaTolerance);
+        fastIca.setFunction(FastIca.EXP);
+        fastIca.setRowNorm(false);
+        fastIca.setAlpha(fastIcaA);
+        FastIca.IcaResult result11 = fastIca.findComponents();
+        return result11.getW();
+    }
+
+    public static List<PermutationMatrixPair> nRooks(Matrix W) {
+        List<PermutationMatrixPair> pairs = new ArrayList<>();
+
+        System.out.println("\nThresholded W = \n" + W);
+
+        //returns all zeroless-diagonal column-pairs
+        boolean[][] allowablePositions = new boolean[W.rows()][W.columns()];
+
+        for (int i = 0; i < W.rows(); i++) {
+            for (int j = 0; j < W.columns(); j++) {
+                allowablePositions[i][j] = W.get(i, j) != 0;
+            }
+        }
+
+        printAllowablePositions(W, allowablePositions);
+
+        List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
+
+        //for each assignment, add the corresponding permutation to 'pairs'
+        for (int[] colPermutation : colPermutations) {
+            pairs.add(new PermutationMatrixPair(W, null, colPermutation));
+        }
+
+        return pairs;
+    }
+
+    /**
+     * Scares the given matrix M by diving each entry (i, j) by M(j, j)
+     *
+     * @param M The matrix to scale.
+     * @return The scaled matrix.
+     */
+    public static Matrix scale(Matrix M) {
+        Matrix _M = M.like();
+
+        for (int i = 0; i < _M.rows(); i++) {
+            for (int j = 0; j < _M.columns(); j++) {
+                _M.set(i, j, M.get(i, j) / M.get(j, j));
+            }
+        }
+
+        return _M;
+    }
+
+    /**
+     * Thresholds the givem matrix, sending any small entries to zero.
+     *
+     * @param M         The matrix to threshold.
+     * @param threshold The value such that M(i, j) is set to zero if |M(i, j)| < threshold.
+     * @return The thresholded matrix.
+     */
+    public static Matrix threshold(Matrix M, double threshold) {
+        if (threshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + threshold);
+
+        Matrix _M = M.copy();
+
+        for (int i = 0; i < M.rows(); i++) {
+            for (int j = 0; j < M.columns(); j++) {
+                if (abs(M.get(i, j)) < threshold) _M.set(i, j, 0.0);
+            }
+        }
+
+        return _M;
     }
 
     /**
@@ -85,7 +162,7 @@ public class LingD {
     public static Matrix getPermutedScaledBHat(PermutationMatrixPair pair) {
         Matrix _w = pair.getPermutedMatrix();
         Matrix bHat = Matrix.identity(_w.rows()).minus(_w);
-        return Lingam.scale(bHat);
+        return scale(bHat);
     }
 
     /**
@@ -151,59 +228,6 @@ public class LingD {
         return graph;
     }
 
-    /**
-     * Whether the BHat matrix represents a stable model. The eigenvalues are checked ot make sure they are
-     * all less than 1.
-     * @param pair The permutation pair.
-     * @return True iff the model is stable.
-     */
-    public static boolean isStable(PermutationMatrixPair pair) {
-        EigenDecomposition eigen = new EigenDecomposition(new BlockRealMatrix(getPermutedScaledBHat(pair).toArray()));
-        double[] realEigenvalues = eigen.getRealEigenvalues();
-        double[] imagEigenvalues = eigen.getImagEigenvalues();
-
-        for (int i = 0; i < realEigenvalues.length; i++) {
-            double realEigenvalue = realEigenvalues[i];
-            double imagEigenvalue = imagEigenvalues[i];
-            double modulus = sqrt(pow(realEigenvalue, 2) + pow(imagEigenvalue, 2));
-
-            System.out.println("modulus" + " " + modulus);
-
-            if (modulus >= 1.0) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    //==============================PRIVATE METHODS=========================//
-
-    private List<PermutationMatrixPair> nRooks(Matrix W) {
-        List<PermutationMatrixPair> pairs = new java.util.ArrayList<>();
-
-        System.out.println("\nThresholded W = \n" + W);
-
-        //returns all zeroless-diagonal column-pairs
-        boolean[][] allowablePositions = new boolean[W.rows()][W.columns()];
-
-        for (int i = 0; i < W.rows(); i++) {
-            for (int j = 0; j < W.columns(); j++) {
-                allowablePositions[i][j] = W.get(i, j) != 0;
-            }
-        }
-
-        printAllowablePositions(W, allowablePositions);
-
-        List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
-
-        //for each assignment, add the corresponding permutation to 'pairs'
-        for (int[] colPermutation : colPermutations) {
-            pairs.add(new PermutationMatrixPair(null, colPermutation, W));
-        }
-
-        return pairs;
-    }
 
     private static void printAllowablePositions(Matrix W, boolean[][] allowablePositions) {
         System.out.println("\nAllowable rook positions");

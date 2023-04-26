@@ -25,48 +25,73 @@ import edu.cmu.tetrad.util.Matrix;
 
 import java.util.Arrays;
 
+/**
+ * Stores a matrix together with a row and column permutation. (if either
+ * of these is null, the identity permtuation will be used.) Returns
+ * the permuted matrix.
+ *
+ * @author josephramsey
+ */
 public class PermutationMatrixPair {
-
     private final int[] rowPerm;
     private final int[] colPerm;
-    private final Matrix w;
+    private final Matrix M;
 
-    public PermutationMatrixPair(int[] rowPerm, int[] colPerm, Matrix w) {
+    /**
+     * Constructs with a given matrix M and a row and column permutation (which
+     * may be null).
+     * @param M The matrix to be permuted.
+     * @param rowPerm The row permutation for M; if null the identity permutation
+     *                ([0 1 2...#rows]) will be used.
+     * @param colPerm The row permutation for M; if null the identity permutation
+     *                ([0 1 2...#cols]) will be used.
+     */
+    public PermutationMatrixPair(Matrix M, int[] rowPerm, int[] colPerm) {
         if (rowPerm == null) {
-            rowPerm = new int[w.rows()];
-            for (int i = 0; i < w.rows(); i++) rowPerm[i] = i;
+            rowPerm = new int[M.rows()];
+            for (int i = 0; i < M.rows(); i++) rowPerm[i] = i;
         }
 
         if (colPerm == null) {
-            colPerm = new int[w.columns()];
-            for (int i = 0; i < w.columns(); i++) colPerm[i] = i;
+            colPerm = new int[M.columns()];
+            for (int i = 0; i < M.columns(); i++) colPerm[i] = i;
         }
 
         this.rowPerm = Arrays.copyOf(rowPerm, rowPerm.length);
         this.colPerm = Arrays.copyOf(colPerm, colPerm.length);
-        this.w = w.getSelection(rowPerm, colPerm);
+        this.M = M.copy();
     }
 
     /**
-     * Returns W, permuted rowwise by the permutation passed in throught he constructor.
+     * Returns W, permuted rowwise by the permutation passed in through the constructor.
      * @return The row-permuted W.
      */
     public Matrix getPermutedMatrix() {
-        return this.w;
+        return M.getSelection(rowPerm, colPerm);
     }
 
-    public String toString() {
-        return "Row perm " + Arrays.toString(this.rowPerm)
-                + "\nCol perm = " + Arrays.toString(this.colPerm)
-                + "\nmatrix W : " + this.w;
-    }
-
+    /**
+     * @return The row permutation.
+     */
     public int[] getRowPerm() {
         return Arrays.copyOf(rowPerm, rowPerm.length);
     }
 
+    /**
+     * @return The column permutation.
+     */
     public int[] getColPerm() {
         return Arrays.copyOf(colPerm, colPerm.length);
+    }
+
+    /**
+     * Prints a string representation of this.
+     * @return The row and columns permutations, followed by the permuted matrix.
+     */
+    public String toString() {
+        return "Row perm " + Arrays.toString(this.rowPerm)
+                + "\nCol perm = " + Arrays.toString(this.colPerm)
+                + "\nPermuted matrix : " + getPermutedMatrix();
     }
 }
 
