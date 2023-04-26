@@ -74,12 +74,29 @@ public class LingD {
         this.wThreshold = wThreshold;
     }
 
+    /**
+     * Returns the scaled BHat matrix (i.e., coefficient matrix for the linear
+     * model) for the given column permutation of the thresholded W matrix.
+     * @param pair The (column permutation, thresholded, column permuted W matrix)
+     *             pair.
+     * @return The estimated B Hat matrix for this pair.
+     */
     public static Matrix getBHat(PermutationMatrixPair pair) {
         Matrix _w = pair.getPermutedMatrix();
         Matrix bHat = Matrix.identity(_w.rows()).minus(_w);
         return Lingam.scale(bHat);
     }
 
+    /**
+     * Returns the estimated graph for the given column permutation of the
+     * thresholded W matrix, with self-loops. (We are assuming for purposes of
+     * the LiNG-D algorithm that all variables have self-loops.)
+     * @param pair The (column permutation, thresholded, column permuted W matrix)
+     *        pair.
+     * @param variables The variables in the order in which they occur in the
+     *                  original dataset being analyzed.
+     * @return The estimated graph for this pair.
+     */
     public static Graph getGraph(PermutationMatrixPair pair, List<Node> variables) {
         int[] perm = pair.getColPerm();
 
@@ -162,7 +179,8 @@ public class LingD {
     }
 
     /**
-     * Returns the graph for the givem model.
+     * Returns the graph for the givem model, with self-loops. (We are assuming
+     * for purposes of the LiNG-D algorithm that all variables have self-loops.)
      * @param bHat The B Hat for the model.
      * @param variables The variables for the model.
      * @return The graph.
@@ -172,7 +190,7 @@ public class LingD {
 
         for (int i = 0; i < variables.size(); i++) {
             for (int j = 0; j < variables.size(); j++) {
-                if (i != j && bHat.get(j, i) != 0) {
+                if (bHat.get(j, i) != 0) {
                     graph.addDirectedEdge(variables.get(i), variables.get(j));
                 }
             }
