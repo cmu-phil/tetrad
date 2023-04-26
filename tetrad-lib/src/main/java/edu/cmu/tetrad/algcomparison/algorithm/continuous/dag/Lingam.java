@@ -37,14 +37,24 @@ public class Lingam implements Algorithm {
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
-            Matrix W = edu.cmu.tetrad.search.Lingam.estimateW(data, 5000, 1e-6, 1.2);
+
+            int maxIter = parameters.getInt(Params.FAST_ICA_MAX_ITER);
+            double alpha = parameters.getDouble(Params.FAST_ICA_A);
+            double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
+            double pruneFactor = parameters.getDouble(Params.PRUNE_FACTOR);
+
+            Matrix W = edu.cmu.tetrad.search.Lingam.estimateW(data, maxIter, tol, alpha);
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
+            lingam.setPruneFactor(pruneFactor);
             return lingam.search(W, data.getVariables());
         } else {
             Lingam algorithm = new Lingam();
 
             DataSet data = (DataSet) dataSet;
-            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
+            GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
+                    parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
+                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE),
+                    parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -71,9 +81,10 @@ public class Lingam implements Algorithm {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.VERBOSE);
-//        parameters.add(Params.FAST_ICA_A);
+        parameters.add(Params.FAST_ICA_A);
         parameters.add(Params.FAST_ICA_MAX_ITER);
         parameters.add(Params.FAST_ICA_TOLERANCE);
+        parameters.add(Params.PRUNE_FACTOR);
         return parameters;
     }
 }

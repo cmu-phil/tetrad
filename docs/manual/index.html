@@ -5546,6 +5546,28 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
+            id="pruneFactor">pruneFactor</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="pruneFactor_short_desc">LiNGAM Prune Factor.
+        </span></li>
+            <li>Long Description: <span
+                    id="pruneFactor_long_desc">The estimated coefficient matrix, BHat,
+                    is pruned by setting small coefficients less than 'pruneFactor'
+                    to zero.</span>
+            </li>
+            <li>Default Value: <span
+                    id="pruneFactor_default_value">0.3</span></li>
+            <li>Lower Bound:
+                <span id="pruneFactor_lower_bound">0.0</span></li>
+            <li>Upper
+                Bound: <span id="pruneFactor_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="pruneFactor_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
             id="fisherEpsilon">fisherEpsilon</h3>
         <ul
                 class="parameter_description_list">
@@ -9034,6 +9056,7 @@ ga.q = [];
 ga.l = +new Date;
 ga('create', 'UA-XXXXX-Y', 'auto');
 ga('send', 'pageview')
+
 
 
 
