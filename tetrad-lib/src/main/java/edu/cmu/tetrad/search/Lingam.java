@@ -43,7 +43,7 @@ import static java.lang.StrictMath.abs;
  * @author Joseph Ramsey
  */
 public class Lingam {
-    private double pruneFactor = 0.5;
+    private double pruneFactor = 0.3;
 
     //================================CONSTRUCTORS==========================//
 
