@@ -106,20 +106,21 @@ public class TestLing {
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
         List<PermutationMatrixPair> pairs = ling.search(W);
 
-        // Then for each N Rook solution we print stuff.
+        System.out.println("Then, for each constrained N Rooks solution (a column permutation of thresholded W:");
         for (PermutationMatrixPair pair : pairs) {
 
             // We print the B Hat matrix; this is the matrix of coefficients for the implied linear moodel.
-            System.out.println("Model = " + LingD.getBHat(pair));
+            System.out.println("\nPermuted Variables = " + LingD.getPermutedVariables(pair, dataSet.getVariables()));
+            System.out.println("\nPermuted Model = \n" + LingD.getPermutedBHat(pair));
 
             // We print the corresponding graph.
             Graph graph = LingD.getGraph(pair, dataSet.getVariables());
 
-            System.out.println("Graph = " + graph);
+            System.out.println("\nGraph = " + graph);
             boolean stable = LingD.isStable(pair);
 
             // Finally we print a judgment of whether the BHat model is stable and cyclic.
-            System.out.println((stable ? "Is Stable" : "Not stable") + " cyclic = " + graph.paths().existsDirectedCycle());
+            System.out.println(stable ? "Is Stable" : "Not stable");
         }
     }
 

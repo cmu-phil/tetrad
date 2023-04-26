@@ -82,10 +82,23 @@ public class LingD {
      *             pair.
      * @return The estimated B Hat matrix for this pair.
      */
-    public static Matrix getBHat(PermutationMatrixPair pair) {
+    public static Matrix getPermutedBHat(PermutationMatrixPair pair) {
         Matrix _w = pair.getPermutedMatrix();
         Matrix bHat = Matrix.identity(_w.rows()).minus(_w);
         return Lingam.scale(bHat);
+    }
+
+    public static List<Node> getPermutedVariables(PermutationMatrixPair pair,
+            List<Node> variables) {
+        int[] perm = pair.getColPerm();
+
+        List<Node> permVars = new ArrayList<>();
+
+        for (int i = 0; i < variables.size(); i++) {
+            permVars.add(variables.get(perm[i]));
+        }
+
+        return permVars;
     }
 
     /**
@@ -99,15 +112,9 @@ public class LingD {
      * @return The estimated graph for this pair.
      */
     public static Graph getGraph(PermutationMatrixPair pair, List<Node> variables) {
-        int[] perm = pair.getColPerm();
+        List<Node> permVars = getPermutedVariables(pair, variables);
 
-        List<Node> permVars = new ArrayList<>();
-
-        for (int i = 0; i < variables.size(); i++) {
-            permVars.add(variables.get(perm[i]));
-        }
-
-        Matrix bHat = getBHat(pair);
+        Matrix bHat = getPermutedBHat(pair);
         Graph graph = new EdgeListGraph(permVars);
 
         for (int i = 0; i < permVars.size(); i++) {
@@ -128,7 +135,7 @@ public class LingD {
      * @return True iff the model is stable.
      */
     public static boolean isStable(PermutationMatrixPair pair) {
-        EigenDecomposition eigen = new EigenDecomposition(new BlockRealMatrix(getBHat(pair).toArray()));
+        EigenDecomposition eigen = new EigenDecomposition(new BlockRealMatrix(getPermutedBHat(pair).toArray()));
         double[] realEigenvalues = eigen.getRealEigenvalues();
         double[] imagEigenvalues = eigen.getImagEigenvalues();
 
