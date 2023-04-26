@@ -6,9 +6,10 @@ import java.util.IllformedLocaleException;
 import java.util.List;
 
 /**
- * <p>Returns row positions for placing rooks for an n x n matrix with a given
- * boolean[][] specification of where rooks are allowed to be placed. For
- * this spec, spec[i][j] = false iff a rook can be placed there.</p>
+ * <p>Returns row positions for placing rooks for an n x n matrix so the rooks
+ * cannot attach each other, with a given boolean[][] specification of where rooks
+ * are allowed to be placed. For this spec, spec[i][j] = true iff a rook can be
+ * placed there.</p>
  * <p>Had some help from ChatGPT for this but it messed up one of the methods,
  * so taking some credit.</p>
  *
