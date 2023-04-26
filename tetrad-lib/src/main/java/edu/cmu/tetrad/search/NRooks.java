@@ -37,6 +37,10 @@ public class NRooks {
         return solutions;
     }
 
+    /**
+     * Prints the discovered N Rooks solutions.
+     * @param solutions The solutions.
+     */
     public static void printSolutions(List<int[]> solutions) {
         System.out.println("Number of solutions: " + solutions.size());
         for (int i = 0; i < solutions.size(); i++) {
