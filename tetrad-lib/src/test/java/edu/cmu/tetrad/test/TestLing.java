@@ -60,7 +60,9 @@ public class TestLing {
         Parameters parameters = new Parameters();
         parameters.set(Params.NUM_MEASURES, 6);
         parameters.set(Params.AVG_DEGREE, 2);
-        parameters.set(Params.SIMULATION_ERROR_TYPE, 3); // Exp(1)
+
+        // Using Exp(1) for the non-Gaussian error for all variables.
+        parameters.set(Params.SIMULATION_ERROR_TYPE, 3);
         parameters.set(Params.SIMULATION_PARAM1, 1);
 //        parameters.set(Params.SIMULATION_PARAM2, 1);
 
