@@ -159,7 +159,7 @@ public class LingD {
     private List<PermutationMatrixPair> nRooks(Matrix W) {
         List<PermutationMatrixPair> pairs = new java.util.ArrayList<>();
 
-        System.out.println("Listing permutation pairs, W = " + W);
+        System.out.println("\nThresholded W = \n" + W);
 
         //returns all zeroless-diagonal column-pairs
         boolean[][] allowablePositions = new boolean[W.rows()][W.columns()];

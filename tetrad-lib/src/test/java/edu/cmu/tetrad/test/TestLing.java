@@ -106,7 +106,7 @@ public class TestLing {
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
         List<PermutationMatrixPair> pairs = ling.search(W);
 
-        System.out.println("Then, for each constrained N Rooks solution (a column permutation of thresholded W:");
+        System.out.println("Then, for each constrained N Rooks solution, a column permutation of thresholded W:");
         for (PermutationMatrixPair pair : pairs) {
 
             // We print the B Hat matrix; this is the matrix of coefficients for the implied linear moodel.
