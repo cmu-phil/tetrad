@@ -82,10 +82,22 @@ public class LingD {
      *             pair.
      * @return The estimated B Hat matrix for this pair.
      */
-    public static Matrix getPermutedBHat(PermutationMatrixPair pair) {
+    public static Matrix getPermutedScaledBHat(PermutationMatrixPair pair) {
         Matrix _w = pair.getPermutedMatrix();
         Matrix bHat = Matrix.identity(_w.rows()).minus(_w);
         return Lingam.scale(bHat);
+    }
+
+    /**
+     * Returns the BHat matrix, permuted to causal order (lower triangle),
+     * unscaled.
+     * @param pair The (column permutation, thresholded, column permuted W matrix)
+     *             pair.
+     * @return The estimated B Hat matrix for this pair.
+     */
+    public static Matrix getPermutedUnscaledBHat(PermutationMatrixPair pair) {
+        Matrix _w = pair.getPermutedMatrix();
+        return Matrix.identity(_w.rows()).minus(_w);
     }
 
     public static List<Node> getPermutedVariables(PermutationMatrixPair pair,
@@ -114,7 +126,7 @@ public class LingD {
     public static Graph getGraph(PermutationMatrixPair pair, List<Node> variables) {
         List<Node> permVars = getPermutedVariables(pair, variables);
 
-        Matrix bHat = getPermutedBHat(pair);
+        Matrix bHat = getPermutedScaledBHat(pair);
         Graph graph = new EdgeListGraph(permVars);
 
         for (int i = 0; i < permVars.size(); i++) {
@@ -135,7 +147,7 @@ public class LingD {
      * @return True iff the model is stable.
      */
     public static boolean isStable(PermutationMatrixPair pair) {
-        EigenDecomposition eigen = new EigenDecomposition(new BlockRealMatrix(getPermutedBHat(pair).toArray()));
+        EigenDecomposition eigen = new EigenDecomposition(new BlockRealMatrix(getPermutedScaledBHat(pair).toArray()));
         double[] realEigenvalues = eigen.getRealEigenvalues();
         double[] imagEigenvalues = eigen.getImagEigenvalues();
 

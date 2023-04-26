@@ -111,7 +111,8 @@ public class TestLing {
 
             // We print the B Hat matrix; this is the matrix of coefficients for the implied linear moodel.
             System.out.println("\nPermuted Variables = " + LingD.getPermutedVariables(pair, dataSet.getVariables()));
-            System.out.println("\nPermuted Model = \n" + LingD.getPermutedBHat(pair));
+            System.out.println("\nPermuted Scaled Model = \n" + LingD.getPermutedScaledBHat(pair));
+            System.out.println("\nPermuted Unscaled Model = \n" + LingD.getPermutedUnscaledBHat(pair));
 
             // We print the corresponding graph.
             Graph graph = LingD.getGraph(pair, dataSet.getVariables());
