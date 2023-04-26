@@ -76,8 +76,8 @@ public class LingD {
     }
 
     /**
-     * Returns the scaled BHat matrix (i.e., coefficient matrix for the linear
-     * model) for the given column permutation of the thresholded W matrix.
+     * Returns the BHat matrix, permuted to causal order (lower triangle) and
+     * scaled so that the diagonal consists only of 1's.
      * @param pair The (column permutation, thresholded, column permuted W matrix)
      *             pair.
      * @return The estimated B Hat matrix for this pair.
@@ -107,7 +107,18 @@ public class LingD {
             permVars.add(variables.get(perm[i]));
         }
 
-        return getGraph(getBHat(pair), permVars);
+        Matrix bHat = getBHat(pair);
+        Graph graph = new EdgeListGraph(permVars);
+
+        for (int i = 0; i < permVars.size(); i++) {
+            for (int j = 0; j < permVars.size(); j++) {
+                if (bHat.get(j, i) != 0) {
+                    graph.addDirectedEdge(permVars.get(i), permVars.get(j));
+                }
+            }
+        }
+
+        return graph;
     }
 
     /**
@@ -179,26 +190,6 @@ public class LingD {
         System.out.println();
     }
 
-    /**
-     * Returns the graph for the givem model, with self-loops. (We are assuming
-     * for purposes of the LiNG-D algorithm that all variables have self-loops.)
-     * @param bHat The B Hat for the model.
-     * @param variables The variables for the model.
-     * @return The graph.
-     */
-    private static Graph getGraph(Matrix bHat, List<Node> variables) {
-        Graph graph = new EdgeListGraph(variables);
-
-        for (int i = 0; i < variables.size(); i++) {
-            for (int j = 0; j < variables.size(); j++) {
-                if (bHat.get(j, i) != 0) {
-                    graph.addDirectedEdge(variables.get(i), variables.get(j));
-                }
-            }
-        }
-
-        return graph;
-    }
 }
 
 
