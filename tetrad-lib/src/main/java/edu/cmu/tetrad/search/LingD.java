@@ -35,8 +35,9 @@ import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * Lacerda, G., Spirtes, P. L., Ramsey, J., & Hoyer, P. O. (2012). Discovering cyclic causal models
- * by independent components analysis. arXiv preprint arXiv:1206.3273.
+ * Lacerda, G., Spirtes, P. L., Ramsey, J., & Hoyer, P. O. (2012). Discovering
+ * cyclic causal models by independent components analysis. arXiv preprint
+ * arXiv:1206.3273.
  *
  * @author josephramsey
  */
@@ -47,8 +48,9 @@ public class LingD {
     //=============================CONSTRUCTORS============================//
 
     /**
-     * The algorithm only requires a DataSet to process. Passing in a Dataset and then running the search algorithm is
-     * an effetive way to use LiNG.
+     * Constructor. The W matrix needs to be estimated separately (e.g., using
+     * the Lingam.estimateW(.) method using the ICA method in Tetrad, or some
+     * method in Python or R) and passed into the search(W) method.
      */
     public LingD() {
     }
@@ -56,9 +58,9 @@ public class LingD {
     //==============================PUBLIC METHODS=========================//
 
     /**
-     * Searches given the W matrix from ICA.
+     * Searches given the W matrix.
      *
-     * @param W the W matrix from ICA
+     * @param W the W matrix.
      * @return the LiNGAM graph.
      */
     public List<PermutationMatrixPair> search(Matrix W) {
