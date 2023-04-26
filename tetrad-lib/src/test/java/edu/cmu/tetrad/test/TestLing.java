@@ -53,7 +53,7 @@ public class TestLing {
         Parameters parameters = new Parameters();
         parameters.set(Params.NUM_MEASURES, 6);
         parameters.set(Params.AVG_DEGREE, 2);
-        parameters.set(Params.SIMULATION_ERROR_TYPE, 3);
+        parameters.set(Params.SIMULATION_ERROR_TYPE, 3); // Exp(3)
         parameters.set(Params.SIMULATION_PARAM1, 1);
 //        parameters.set(Params.SIMULATION_PARAM2, 1);
         parameters.set(Params.PENALTY_DISCOUNT, 1);
