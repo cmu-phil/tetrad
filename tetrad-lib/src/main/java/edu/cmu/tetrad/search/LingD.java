@@ -189,7 +189,6 @@ public class LingD {
         System.out.println();
         System.out.println();
     }
-
 }
 
 
