@@ -134,6 +134,19 @@ public class LingD {
             }
         }
 
+        printAllowablePositions(W, allowablePositions);
+
+        List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
+
+        //for each assignment, add the corresponding permutation to 'pairs'
+        for (int[] colPermutation : colPermutations) {
+            pairs.add(new PermutationMatrixPair(null, colPermutation, W));
+        }
+
+        return pairs;
+    }
+
+    private static void printAllowablePositions(Matrix W, boolean[][] allowablePositions) {
         System.out.println("\nAllowable rook positions");
 
         // Print allowable board.
@@ -146,15 +159,6 @@ public class LingD {
 
         System.out.println();
         System.out.println();
-
-        List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
-
-        //for each assignment, add the corresponding permutation to 'pairs'
-        for (int[] colPermutation : colPermutations) {
-            pairs.add(new PermutationMatrixPair(null, colPermutation, W));
-        }
-
-        return pairs;
     }
 
 
