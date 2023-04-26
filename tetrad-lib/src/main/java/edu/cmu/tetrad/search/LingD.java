@@ -161,7 +161,6 @@ public class LingD {
         System.out.println();
     }
 
-
     /**
      * Returns the graph for the givem model.
      * @param bHat The B Hat for the model.
