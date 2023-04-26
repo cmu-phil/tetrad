@@ -44,6 +44,8 @@ import static java.lang.StrictMath.abs;
  */
 public class Lingam {
     private double pruneFactor = 0.3;
+    private Matrix permutedBHat = null;
+    private List<Node> permutedVars = null;
 
     //================================CONSTRUCTORS==========================//
 
@@ -81,10 +83,15 @@ public class Lingam {
      * Searches given the W matrix from ICA.
      *
      * @param W the W matrix from ICA.
+     * @param variables The variables from the original dataset used to generate the W matrix,
+     *                  in the order they occur in that dataset.
      * @return The graph returned.
      */
     public Graph search(Matrix W, List<Node> variables) {
         PermutationGenerator gen1 = new PermutationGenerator(W.rows());
+
+        // The first task is to find a row permutation of the W matrix that maximizes
+        // the absolute values on its diagonal. We do this by minimizing SUM(1 / |Wii|).
         int[] rowPerm = new int[0];
         double sum1 = Double.POSITIVE_INFINITY;
         int[] choice1;
@@ -102,12 +109,20 @@ public class Lingam {
             }
         }
 
-        Matrix perm1W = new PermutationMatrixPair(rowPerm, null, W).getPermutedMatrix();
-        perm1W = scale(perm1W);
+        // We grab the resulting diagonal-optimized matrix and scale it by divind each entry Wij
+        // by Wjj. How the diagonal should consist only of 1's.
+        Matrix WTilde = new PermutationMatrixPair(rowPerm, null, W).getPermutedMatrix();
+        WTilde = scale(WTilde);
 
-        int m = W.columns();
-        Matrix BHat = Matrix.identity(m).minus(perm1W);
+        // We calculate BHat as I - WTilde.
+        Matrix BHat = Matrix.identity(W.columns()).minus(WTilde);
 
+        // The second task is to rearrange the BHat matrix by permuting rows and columns
+        // simultaneously so that the lower triangle is maximal--i.e., so that SUM(WTilde(i, j)^2)
+        // is maximal for j > i. The goal of this is to find a causal order for the variables.
+        // If all the big coefficients are in the lower triangle, we can interpret it as a
+        // DAG model. We will ignore any big coefficients left over in the upper triangle.
+        // We will assume the diagonal of the BHat matrix is zero--i.e., no self-loops.
         PermutationGenerator gen2 = new PermutationGenerator(BHat.rows());
         int[] perm = new int[0];
         double sum2 = Double.NEGATIVE_INFINITY;
@@ -129,19 +144,33 @@ public class Lingam {
             }
         }
 
-        Matrix permBHat = new PermutationMatrixPair(perm, perm, BHat).getPermutedMatrix();
+        // Grab that lower-triangle maximized version of the BHat matrix.
+        Matrix BHatTilde = new PermutationMatrixPair(perm, perm, BHat).getPermutedMatrix();
 
+        // Set the upper triangle now to zero, since we are ignoring it for this DAG algorithm.
+        for (int i = 0; i < BHatTilde.rows(); i++) {
+            for (int j = i + 1; j < BHatTilde.columns(); j++) {
+                BHatTilde.set(i, j, 0.0);
+            }
+        }
+
+
+        // Permute the variables too for that order.
         List<Node> varPerm = new ArrayList<>();
         for (int k : perm) varPerm.add(variables.get(k));
 
+        // Grab the permuted BHat and variables.
+        this.permutedBHat = BHatTilde;
+        this.permutedVars = varPerm;
+
+        // Make the graph and return it.
         Graph g = new EdgeListGraph(varPerm);
 
-        for (int j = 0; j < permBHat.columns(); j++) {
-            for (int i = j + 1; i < permBHat.rows(); i++) {
-                if (abs(permBHat.get(i, j)) > pruneFactor) {
-                    g.addDirectedEdge(varPerm.get(j), varPerm.get(i));
+        for (int j = 0; j < getPermutedBHat().columns(); j++) {
+            for (int i = j + 1; i < getPermutedBHat().rows(); i++) {
+                if (abs(getPermutedBHat().get(i, j)) > pruneFactor) {
+                    g.addDirectedEdge(getPermutedVars().get(j), getPermutedVars().get(i));
                 }
-
             }
         }
 
@@ -189,12 +218,28 @@ public class Lingam {
 
     /**
      * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
-     *
      * @param pruneFactor Some value >= 0.
      */
     public void setPruneFactor(double pruneFactor) {
         if (pruneFactor < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + pruneFactor);
         this.pruneFactor = pruneFactor;
+    }
+
+    /**
+     * After search the permuted BHat matrix can be retrieved using this method.
+     * @return The permutated (lower triangle) BHat matrix. Here, BHat(i, j) != 0 means that
+     * there is an edge vars(j)-->vars(i) in the graph, where 'vars' means the permuted variables.
+     */
+    public Matrix getPermutedBHat() {
+        return permutedBHat;
+    }
+
+    /**
+     * The permuted variables of the graph. This is the estimated causal order of the models.
+     * @return This list of variables.
+     */
+    public List<Node> getPermutedVars() {
+        return permutedVars;
     }
 }
 
