@@ -89,7 +89,18 @@ public class LingD {
     }
 
     /**
-     * Returns the BHat matrix, permuted to causal order (lower triangle),
+     * Returns the thresholded W matrix, permuted to causal order (lower triangle),
+     * unscaled.
+     * @param pair The (column permutation, thresholded, column permuted W matrix)
+     *             pair.
+     * @return The thresholded W matrix for this pair.
+     */
+    public static Matrix getPermutedThresholdedW(PermutationMatrixPair pair) {
+        return pair.getPermutedMatrix();
+    }
+
+    /**
+     * Returns the BHat matrix, permuted to causal order (lower triangle) and
      * unscaled.
      * @param pair The (column permutation, thresholded, column permuted W matrix)
      *             pair.
