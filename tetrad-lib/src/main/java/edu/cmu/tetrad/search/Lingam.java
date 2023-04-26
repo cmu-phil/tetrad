@@ -40,7 +40,7 @@ import static java.lang.StrictMath.abs;
  * <p>Implements the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen, and Kerminen, A linear
  * nongaussian acyclic model for causal discovery, JMLR 7 (2006).</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Lingam {
     private double pruneFactor = 0.3;
