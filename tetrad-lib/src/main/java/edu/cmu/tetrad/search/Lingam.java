@@ -103,15 +103,6 @@ public class Lingam {
     }
 
     /**
-     * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
-     *
-     * @param pruneFactor Some value >= 0.
-     */
-    public void setPruneFactor(double pruneFactor) {
-        if (pruneFactor < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + pruneFactor);
-    }
-
-    /**
      * After search the permuted BHat matrix can be retrieved using this method.
      *
      * @return The permutated (lower triangle) BHat matrix. Here, BHat(i, j) != 0 means that

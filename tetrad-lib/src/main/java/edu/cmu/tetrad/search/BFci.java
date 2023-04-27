@@ -116,7 +116,7 @@ public final class BFci implements GraphSearch {
 
         // BOSS CPDAG learning step
         Boss subAlg = new Boss(this.score);
-        subAlg.setDepth(this.depth);
+//        subAlg.setDepth(this.depth);
         subAlg.setNumStarts(this.numStarts);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);

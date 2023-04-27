@@ -195,10 +195,10 @@ public class Boss implements SuborderSearch {
         }
     }
 
-    public void setDepth(int depth) {
-        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-        this.bes.setDepth(depth);
-    }
+//    public void setDepth(int depth) {
+//        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
+//        this.bes.setDepth(depth);
+//    }
 
     @Override
     public void setKnowledge(Knowledge knowledge) {

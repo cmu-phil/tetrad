@@ -27,7 +27,7 @@ public class PermutationBes {
     private final Score score;
     private Knowledge knowledge = new Knowledge();
     private boolean verbose = true;
-    private int depth = 4;
+    private int depth = -1;
 
     public PermutationBes(@NotNull Score score) {
         this.score = score;
@@ -47,10 +47,10 @@ public class PermutationBes {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
-    public void setDepth(int depth) {
-        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-        this.depth = depth;
-    }
+//    public void setDepth(int depth) {
+//        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
+//        this.depth = depth;
+//    }
 
     private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
 

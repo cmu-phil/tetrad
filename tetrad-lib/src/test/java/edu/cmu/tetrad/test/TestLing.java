@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.LingD;
+import edu.cmu.tetrad.search.Lingam;
 import edu.cmu.tetrad.search.NRooks;
 import edu.cmu.tetrad.search.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
@@ -59,7 +60,7 @@ public class TestLing {
 //        System.out.println();
 
         Parameters parameters = new Parameters();
-        parameters.set(Params.NUM_MEASURES, 40);
+        parameters.set(Params.NUM_MEASURES, 10);
         parameters.set(Params.AVG_DEGREE, 2);
 
         // Using Exp(1) for the non-Gaussian error for all variables.
@@ -79,7 +80,7 @@ public class TestLing {
         System.out.println("B threshold = " + bThreshold);
 
         // First we use ICA to estimate the W matrix.
-        Matrix W = LingD.estimateW(dataSet, 5000, 1e-8, 1.2);
+        Matrix W = LingD.estimateW(dataSet, 5000, 1e-4, 2);
 
         // We then apply LiNGAM with a prune factor of .3. We should get a mostly correct DAG
         // back. The "prune factor" is a threshold for the B Hat matrix below which values are
@@ -88,20 +89,20 @@ public class TestLing {
         // in the printed graphs but are assumed ot exist for purposes of this algorithm. The
         // B Hat matrices are scaled so that self-loops always have strength 1.
         System.out.println("=====LiNGAM");
-//
-//        // We send any small value in W to 0 that has absolute value below a given threshold.
-//        // We do no further pruning on the B matrix. (The algorithm spec wants us to do both
-//        // but pruning the W matrix seems to be giving better results, and besides in LiNG-D
-//        // the W matrix is pruned. Could switch though.)
-//
-//        Lingam lingam = new Lingam();
+
+        // We send any small value in W to 0 that has absolute value below a given threshold.
+        // We do no further pruning on the B matrix. (The algorithm spec wants us to do both
+        // but pruning the W matrix seems to be giving better results, and besides in LiNG-D
+        // the W matrix is pruned. Could switch though.)
+
+        Lingam lingam = new Lingam();
 //        lingam.setPruneFactor(bThreshold);
-//        Graph g2 = lingam.search(W, dataSet.getVariables(), wThreshold);
-//        System.out.println("Lingam graph = " + g2);
-//
-//        Matrix lingamBhat = lingam.getPermutedBHat();
-//        boolean lingamStable = LingD.isStable(lingamBhat);
-//        System.out.println(lingamStable ? "Is Stable" : "Not stable");
+        Graph g2 = lingam.search(W, dataSet.getVariables(), wThreshold);
+        System.out.println("Lingam graph = " + g2);
+
+        Matrix lingamBhat = lingam.getPermutedBHat();
+        boolean lingamStable = LingD.isStable(lingamBhat);
+        System.out.println(lingamStable ? "Is Stable" : "Not stable");
 
         // For LiNG-D, we can just call the relevant public static methods. This was obviously written
         // by a Matlab person.
