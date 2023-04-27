@@ -21,14 +21,11 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.PermutationGenerator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static edu.cmu.tetrad.search.LingD.threshold;
@@ -66,33 +63,7 @@ public class Lingam {
         Matrix thresholded = threshold(W, wThreshold);
         W = thresholded;
 
-        System.out.println("Thresholded W = " + thresholded);
-
-        List<PermutationMatrixPair> pairs = LingD.nRooks(thresholded.transpose());
-
-        PermutationMatrixPair bestPair = null;
-        double sum1 = Double.POSITIVE_INFINITY;
-
-        P:
-        for (PermutationMatrixPair pair : pairs) {
-            Matrix permutedMatrix = pair.getPermutedMatrix();
-
-            double sum = 0.0;
-            for (int j = 0; j < permutedMatrix.rows(); j++) {
-                double a = permutedMatrix.get(j, j);
-
-                if (a == 0) {
-                    continue P;
-                }
-
-                sum += 1.0 / abs(a);
-            }
-
-            if (sum < sum1) {
-                sum1 = sum;
-                bestPair = pair;
-            }
-        }
+        PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(thresholded);
 
         if (bestPair == null) {
             throw new NullPointerException("Could not find an N Rooks solution with that threshold.");
@@ -110,34 +81,15 @@ public class Lingam {
         // If all the big coefficients are in the lower triangle, we can interpret it as a
         // DAG model. We will ignore any big coefficients left over in the upper triangle.
         // We will assume the diagonal of the BHat matrix is zero--i.e., no self-loops.
-        PermutationGenerator gen2 = new PermutationGenerator(BHat.rows());
-        int[] perm = new int[0];
-        double sum2 = Double.NEGATIVE_INFINITY;
-        int[] choice2;
-
-        while ((choice2 = gen2.next()) != null) {
-            double sum = 0.0;
-
-            for (int i = 0; i < W.rows(); i++) {
-                for (int j = 0; j < i; j++) {
-                    double b = BHat.get(choice2[i], choice2[j]);
-                    sum += b * b;
-                }
-            }
-
-            if (sum > sum2) {
-                sum2 = sum;
-                perm = Arrays.copyOf(choice2, choice2.length);
-            }
-        }
+        int[] perm = LingD.encourageLowerTriangular(W, BHat);
 
         // Grab that lower-triangle maximized version of the BHat matrix.
-        Matrix BHatTilde = new PermutationMatrixPair(BHat, perm, perm).getPermutedMatrix();
+        Matrix bHatPerm = new PermutationMatrixPair(BHat, perm, perm).getPermutedMatrix();
 
         // Set the upper triangle now to zero, since we are ignoring it for this DAG algorithm.
-        for (int i = 0; i < BHatTilde.rows(); i++) {
-            for (int j = i + 1; j < BHatTilde.columns(); j++) {
-                BHatTilde.set(i, j, 0.0);
+        for (int i = 0; i < bHatPerm.rows(); i++) {
+            for (int j = i + 1; j < bHatPerm.columns(); j++) {
+                bHatPerm.set(i, j, 0.0);
             }
         }
 
@@ -146,21 +98,12 @@ public class Lingam {
         for (int k : perm) varPerm.add(variables.get(k));
 
         // Grab the permuted BHat and variables.
-        this.permutedBHat = BHatTilde;
+        this.permutedBHat = bHatPerm;
         this.permutedVars = varPerm;
 
         // Make the graph and return it.
-        Graph g = new EdgeListGraph(varPerm);
-
-        for (int j = 0; j < getPermutedBHat().columns(); j++) {
-            for (int i = j + 1; i < getPermutedBHat().rows(); i++) {
-                if (abs(getPermutedBHat().get(i, j)) > pruneFactor) {
-                    g.addDirectedEdge(getPermutedVars().get(j), getPermutedVars().get(i));
-                }
-            }
-        }
-
-        return g;
+        return LingD.makeGraph(bHatPerm, varPerm);
+//        return LingD.makeGraph(LingD.threshold(bHatPerm, pruneFactor), varPerm);
     }
 
     /**

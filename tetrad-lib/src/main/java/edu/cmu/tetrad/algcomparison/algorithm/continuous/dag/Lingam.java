@@ -10,19 +10,15 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.LingD;
-import edu.cmu.tetrad.search.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
-import org.apache.commons.math3.linear.BlockRealMatrix;
-import org.apache.commons.math3.linear.EigenDecomposition;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.pow;
-import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * LiNGAM.
@@ -40,32 +36,6 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 public class Lingam implements Algorithm {
 
     static final long serialVersionUID = 23L;
-
-    /**
-     * Whether the BHat matrix represents a stable model. The eigenvalues are checked ot make sure they are
-     * all less than 1.
-     * @param pair The permutation pair.
-     * @return True iff the model is stable.
-     */
-    public static boolean isStable(PermutationMatrixPair pair) {
-        EigenDecomposition eigen = new EigenDecomposition(new BlockRealMatrix(LingD.getPermutedScaledBHat(pair).toArray()));
-        double[] realEigenvalues = eigen.getRealEigenvalues();
-        double[] imagEigenvalues = eigen.getImagEigenvalues();
-
-        for (int i = 0; i < realEigenvalues.length; i++) {
-            double realEigenvalue = realEigenvalues[i];
-            double imagEigenvalue = imagEigenvalues[i];
-            double modulus = sqrt(pow(realEigenvalue, 2) + pow(imagEigenvalue, 2));
-
-            System.out.println("modulus" + " " + modulus);
-
-            if (modulus >= 1.0) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {

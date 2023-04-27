@@ -27,12 +27,17 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.PermutationGenerator;
+import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.pow;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * Lacerda, G., Spirtes, P. L., Ramsey, J., & Hoyer, P. O. (2012). Discovering
@@ -51,16 +56,128 @@ public class LingD {
     public LingD() {
     }
 
+    @NotNull
+    public static Graph makeGraph(Matrix bHat, List<Node> varPerm) {
+        Graph g = new EdgeListGraph(varPerm);
+
+        for (int j = 0; j < bHat.columns(); j++) {
+            for (int i = 0; i < bHat.rows(); i++) {
+                if (i == j) continue;
+                if (bHat.get(i, j) != 0) {
+                    g.addDirectedEdge(varPerm.get(j), varPerm.get(i));
+                }
+            }
+        }
+        return g;
+    }
+
     /**
-     * Searches given the W matrix.
-     *
-     * @param W the W matrix.
-     * @param wThreshold The threshold below which entries in the W matrix are send to
-     *                   zero.
-     * @return the LiNGAM graph.
+     * Returns the estimated graph for the given column permutation of the
+     * thresholded W matrix, with self-loops. (We are assuming for purposes of
+     * the LiNG-D algorithm that all variables have self-loops.)
+     * @param pair The (column permutation, thresholded, column permuted W matrix)
+     *        pair.
+     * @param variables The variables in the order in which they occur in the
+     *                  original dataset being analyzed.
+     * @return The estimated graph for this pair.
      */
-    public List<PermutationMatrixPair> search(Matrix W, double wThreshold) {
-        return nRooks(threshold(W.transpose(), wThreshold));
+    public static Graph makeGraph1(PermutationMatrixPair pair, List<Node> variables) {
+        List<Node> permVars = getPermutedVariables(pair, variables);
+        Matrix bHat = getPermutedScaledBHat(pair);
+        Graph g = new EdgeListGraph(permVars);
+
+        for (int i = 0; i < permVars.size(); i++) {
+            for (int j = 0; j < permVars.size(); j++) {
+                if (i == j) continue;
+                if (bHat.get(i, j) != 0) {
+                    g.addDirectedEdge(permVars.get(j), permVars.get(i));
+                }
+            }
+        }
+
+        return g;
+    }
+
+    @NotNull
+    public static int[] encourageLowerTriangular(Matrix W, Matrix BHat) {
+        PermutationGenerator gen2 = new PermutationGenerator(BHat.rows());
+        int[] perm = new int[0];
+        double sum2 = Double.NEGATIVE_INFINITY;
+        int[] choice2;
+
+        while ((choice2 = gen2.next()) != null) {
+            double sum = 0.0;
+
+            for (int i = 0; i < W.rows(); i++) {
+                for (int j = 0; j < i; j++) {
+                    double b = BHat.get(choice2[i], choice2[j]);
+                    sum += b * b;
+                }
+            }
+
+            if (sum > sum2) {
+                sum2 = sum;
+                perm = Arrays.copyOf(choice2, choice2.length);
+            }
+        }
+        return perm;
+    }
+
+    @Nullable
+    static PermutationMatrixPair strongestDiagonalByCols(Matrix thresholded) {
+        List<PermutationMatrixPair> pairs = nRooks(thresholded.transpose());
+
+        PermutationMatrixPair bestPair = null;
+        double sum1 = Double.POSITIVE_INFINITY;
+
+        P:
+        for (PermutationMatrixPair pair : pairs) {
+            Matrix permutedMatrix = pair.getPermutedMatrix();
+
+            double sum = 0.0;
+            for (int j = 0; j < permutedMatrix.rows(); j++) {
+                double a = permutedMatrix.get(j, j);
+
+                if (a == 0) {
+                    continue P;
+                }
+
+                sum += 1.0 / StrictMath.abs(a);
+            }
+
+            if (sum < sum1) {
+                sum1 = sum;
+                bestPair = pair;
+            }
+        }
+
+        return bestPair;
+    }
+
+    /**
+     * Whether the BHat matrix represents a stable model. The eigenvalues are checked ot make sure they are
+     * all less than 1.
+     * @param bHat The bHat matrix.
+     * @return True iff the model is stable.
+     */
+    public static boolean isStable(Matrix bHat) {
+        EigenDecomposition eigen = new EigenDecomposition(new BlockRealMatrix(bHat.toArray()));
+        double[] realEigenvalues = eigen.getRealEigenvalues();
+        double[] imagEigenvalues = eigen.getImagEigenvalues();
+
+        for (int i = 0; i < realEigenvalues.length; i++) {
+            double realEigenvalue = realEigenvalues[i];
+            double imagEigenvalue = imagEigenvalues[i];
+            double modulus = sqrt(pow(realEigenvalue, 2) + pow(imagEigenvalue, 2));
+
+            System.out.println("Modulus for eigenvalue " + (i + 1) + " = " + modulus);
+
+            if (modulus >= 1.0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -90,9 +207,6 @@ public class LingD {
     public static List<PermutationMatrixPair> nRooks(Matrix W) {
         List<PermutationMatrixPair> pairs = new ArrayList<>();
 
-        System.out.println("\nThresholded W = \n" + W);
-
-        //returns all zeroless-diagonal column-pairs
         boolean[][] allowablePositions = new boolean[W.rows()][W.columns()];
 
         for (int i = 0; i < W.rows(); i++) {
@@ -101,9 +215,9 @@ public class LingD {
             }
         }
 
-        printAllowablePositions(W, allowablePositions);
+//        printAllowablePositions(W, allowablePositions);
 
-        List<int[]> colPermutations = NRooks2.nRooks(allowablePositions);
+        List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
 
         //for each assignment, add the corresponding permutation to 'pairs'
         for (int[] colPermutation : colPermutations) {
@@ -201,32 +315,7 @@ public class LingD {
         return permVars;
     }
 
-    /**
-     * Returns the estimated graph for the given column permutation of the
-     * thresholded W matrix, with self-loops. (We are assuming for purposes of
-     * the LiNG-D algorithm that all variables have self-loops.)
-     * @param pair The (column permutation, thresholded, column permuted W matrix)
-     *        pair.
-     * @param variables The variables in the order in which they occur in the
-     *                  original dataset being analyzed.
-     * @return The estimated graph for this pair.
-     */
-    public static Graph getGraph(PermutationMatrixPair pair, List<Node> variables) {
-        List<Node> permVars = getPermutedVariables(pair, variables);
 
-        Matrix bHat = getPermutedScaledBHat(pair);
-        Graph graph = new EdgeListGraph(permVars);
-
-        for (int i = 0; i < permVars.size(); i++) {
-            for (int j = 0; j < permVars.size(); j++) {
-                if (bHat.get(j, i) != 0) {
-                    graph.addDirectedEdge(permVars.get(i), permVars.get(j));
-                }
-            }
-        }
-
-        return graph;
-    }
 
 
     private static void printAllowablePositions(Matrix W, boolean[][] allowablePositions) {
