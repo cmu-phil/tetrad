@@ -48,6 +48,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class LingD {
 
+    private double wThreshold;
+
     /**
      * Constructor. The W matrix needs to be estimated separately (e.g., using
      * the Lingam.estimateW(.) method using the ICA method in Tetrad, or some
@@ -55,6 +57,32 @@ public class LingD {
      */
     public LingD() {
     }
+
+    public List<PermutationMatrixPair> search(Matrix W) {
+        W = LingD.threshold(W, wThreshold);
+        return nRooks(W);
+    }
+
+    @NotNull
+    private static List<PermutationMatrixPair> nRooks(Matrix W) {
+        List<PermutationMatrixPair> pairs = new ArrayList<>();
+        boolean[][] allowablePositions = new boolean[W.rows()][W.columns()];
+
+        for (int i = 0; i < W.rows(); i++) {
+            for (int j = 0; j < W.columns(); j++) {
+                allowablePositions[i][j] = W.get(i, j) != 0;
+            }
+        }
+
+        List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
+
+        for (int[] colPermutation : colPermutations) {
+            pairs.add(new PermutationMatrixPair(W, null, colPermutation));
+        }
+
+        return pairs;
+    }
+
 
     @NotNull
     public static Graph makeGraph(Matrix bHat, List<Node> varPerm) {
@@ -71,34 +99,6 @@ public class LingD {
         return g;
     }
 
-    /**
-     * Returns the estimated graph for the given column permutation of the
-     * thresholded W matrix, with self-loops. (We are assuming for purposes of
-     * the LiNG-D algorithm that all variables have self-loops.)
-     * @param pair The (column permutation, thresholded, column permuted W matrix)
-     *        pair.
-     * @param variables The variables in the order in which they occur in the
-     *                  original dataset being analyzed.
-     * @return The estimated graph for this pair.
-     */
-    public static Graph makeGraph1(PermutationMatrixPair pair, List<Node> variables) {
-        List<Node> permVars = getPermutedVariables(pair, variables);
-        Matrix bHat = getPermutedScaledBHat(pair);
-        Graph g = new EdgeListGraph(permVars);
-
-        for (int i = 0; i < permVars.size(); i++) {
-            for (int j = 0; j < permVars.size(); j++) {
-                if (i == j) continue;
-                if (bHat.get(i, j) != 0) {
-                    g.addDirectedEdge(permVars.get(j), permVars.get(i));
-                }
-            }
-        }
-
-        return g;
-    }
-
-    @NotNull
     public static int[] encourageLowerTriangular(Matrix W, Matrix BHat) {
         PermutationGenerator gen2 = new PermutationGenerator(BHat.rows());
         int[] perm = new int[0];
@@ -125,7 +125,7 @@ public class LingD {
 
     @Nullable
     static PermutationMatrixPair strongestDiagonalByCols(Matrix thresholded) {
-        List<PermutationMatrixPair> pairs = search(thresholded.transpose());
+        List<PermutationMatrixPair> pairs = nRooks(thresholded.transpose());
 
         PermutationMatrixPair bestPair = null;
         double sum1 = Double.POSITIVE_INFINITY;
@@ -202,25 +202,6 @@ public class LingD {
         fastIca.setAlpha(fastIcaA);
         FastIca.IcaResult result11 = fastIca.findComponents();
         return result11.getW();
-    }
-
-    public static List<PermutationMatrixPair> search(Matrix W) {
-        List<PermutationMatrixPair> pairs = new ArrayList<>();
-        boolean[][] allowablePositions = new boolean[W.rows()][W.columns()];
-
-        for (int i = 0; i < W.rows(); i++) {
-            for (int j = 0; j < W.columns(); j++) {
-                allowablePositions[i][j] = W.get(i, j) != 0;
-            }
-        }
-
-        List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
-
-        for (int[] colPermutation : colPermutations) {
-            pairs.add(new PermutationMatrixPair(W, null, colPermutation));
-        }
-
-        return pairs;
     }
 
     /**
@@ -311,9 +292,6 @@ public class LingD {
         return permVars;
     }
 
-
-
-
     private static void printAllowablePositions(Matrix W, boolean[][] allowablePositions) {
         System.out.println("\nAllowable rook positions");
 
@@ -327,6 +305,10 @@ public class LingD {
 
         System.out.println();
         System.out.println();
+    }
+
+    public void setWThreshold(double wThreshold) {
+        this.wThreshold = wThreshold;
     }
 }
 

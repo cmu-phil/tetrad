@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static edu.cmu.tetrad.search.LingD.threshold;
-import static java.lang.StrictMath.abs;
 
 /**
  * <p>Implements the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen, and Kerminen, A linear
@@ -38,8 +37,6 @@ import static java.lang.StrictMath.abs;
  * @author josephramsey
  */
 public class Lingam {
-    private double pruneFactor = 0.3;
-    private double wThreshold = 0.0;
     private Matrix permutedBHat = null;
     private List<Node> permutedVars = null;
 
@@ -103,7 +100,6 @@ public class Lingam {
 
         // Make the graph and return it.
         return LingD.makeGraph(bHatPerm, varPerm);
-//        return LingD.makeGraph(LingD.threshold(bHatPerm, pruneFactor), varPerm);
     }
 
     /**
@@ -113,7 +109,6 @@ public class Lingam {
      */
     public void setPruneFactor(double pruneFactor) {
         if (pruneFactor < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + pruneFactor);
-        this.pruneFactor = pruneFactor;
     }
 
     /**
