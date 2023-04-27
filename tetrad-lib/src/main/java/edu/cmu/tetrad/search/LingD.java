@@ -125,7 +125,7 @@ public class LingD {
 
     @Nullable
     static PermutationMatrixPair strongestDiagonalByCols(Matrix thresholded) {
-        List<PermutationMatrixPair> pairs = nRooks(thresholded.transpose());
+        List<PermutationMatrixPair> pairs = search(thresholded.transpose());
 
         PermutationMatrixPair bestPair = null;
         double sum1 = Double.POSITIVE_INFINITY;
@@ -204,9 +204,8 @@ public class LingD {
         return result11.getW();
     }
 
-    public static List<PermutationMatrixPair> nRooks(Matrix W) {
+    public static List<PermutationMatrixPair> search(Matrix W) {
         List<PermutationMatrixPair> pairs = new ArrayList<>();
-
         boolean[][] allowablePositions = new boolean[W.rows()][W.columns()];
 
         for (int i = 0; i < W.rows(); i++) {
@@ -215,11 +214,8 @@ public class LingD {
             }
         }
 
-//        printAllowablePositions(W, allowablePositions);
-
         List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
 
-        //for each assignment, add the corresponding permutation to 'pairs'
         for (int[] colPermutation : colPermutations) {
             pairs.add(new PermutationMatrixPair(W, null, colPermutation));
         }

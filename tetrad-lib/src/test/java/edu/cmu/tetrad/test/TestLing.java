@@ -103,16 +103,15 @@ public class TestLing {
         boolean lingamStable = LingD.isStable(lingamBhat);
         System.out.println(lingamStable ? "Is Stable" : "Not stable");
 
-        // Next we try LiNG-D.
-        System.out.println("LiNG-D");
-
         // For LiNG-D, we can just call the relevant public static methods. This was obviously written
         // by a Matlab person.
         //
         // We generate pairs of column permutations (solving the constriained N Rooks problem) with their
         // associated column-permuted W thresholded W matrices. For the constrained N rooks problme we
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
-        List<PermutationMatrixPair> pairs = LingD.nRooks(LingD.threshold(W, wThreshold));
+        System.out.println("LiNG-D");
+
+        List<PermutationMatrixPair> pairs = LingD.search(LingD.threshold(W, wThreshold));
 
         System.out.println("Then, for each constrained N Rooks solution, a column permutation of thresholded W:");
         for (PermutationMatrixPair pair : pairs) {
