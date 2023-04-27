@@ -58,7 +58,7 @@ public class Lingam {
      */
     public Graph search(Matrix W, List<Node> variables, double wThreshold) {
         Matrix thresholded = threshold(W, wThreshold);
-        W = thresholded;
+//        W = thresholded;
 
         PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(thresholded);
 

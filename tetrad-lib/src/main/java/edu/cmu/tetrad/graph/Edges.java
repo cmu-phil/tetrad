@@ -317,8 +317,8 @@ public final class Edges {
                 return compareProperty;
             }
 
-            int compareLeft = left1.toString().compareTo(left2.toString());
-            int compareRight = right1.toString().compareTo(right2.toString());
+            int compareLeft = left1.compareTo(left2);
+            int compareRight = right1.compareTo(right2);
 
             if (compareLeft != 0) {
                 return compareLeft;
