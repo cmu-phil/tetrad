@@ -58,49 +58,60 @@ public class LingD {
     public LingD() {
     }
 
+    /**
+     * Performs the LiNG-D algorithm given a W matrix, which needs to be discovered
+     * elsewhere. The local algorithm is assumed--in fact, the W matrix is simply
+     * thresholded without bootstrapping.
+     * @param W The W matrix to be used.
+     * @return A list of models, as PermutationMatrixPairs (see).
+     * @see PermutationMatrixPair
+     */
     public List<PermutationMatrixPair> search(Matrix W) {
         W = LingD.threshold(W, pruneThreshold);
         return nRooks(W);
     }
 
-    @NotNull
-    private static List<PermutationMatrixPair> nRooks(Matrix W) {
-        List<PermutationMatrixPair> pairs = new ArrayList<>();
-        boolean[][] allowablePositions = new boolean[W.rows()][W.columns()];
-
-        for (int i = 0; i < W.rows(); i++) {
-            for (int j = 0; j < W.columns(); j++) {
-                allowablePositions[i][j] = W.get(i, j) != 0;
-            }
-        }
-
-        List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
-
-        for (int[] colPermutation : colPermutations) {
-            pairs.add(new PermutationMatrixPair(W, null, colPermutation));
-        }
-
-        return pairs;
+    /**
+     * Sets the threshold used to prune the W matrix for the local algorithms.
+     * @param pruneFactor The treshold, a non-negative number.
+     */
+    public void setPruneFactor(double pruneFactor) {
+        this.pruneThreshold = pruneFactor;
     }
 
-
+    /**
+     * Returns a graph given a coefficient matrix and a list of variables. It is
+     * assumed that any non-zero entry in B corresponds to a directed edges, so
+     * that Bij != 0 implies that j->i in the graph.
+     * @param B The coefficient matrix.
+     * @param variables The list of variables.
+     * @return The built graph.
+     */
     @NotNull
-    public static Graph makeGraph(Matrix bHat, List<Node> varPerm) {
-        Graph g = new EdgeListGraph(varPerm);
+    public static Graph makeGraph(Matrix B, List<Node> variables) {
+        Graph g = new EdgeListGraph(variables);
 
-        for (int j = 0; j < bHat.columns(); j++) {
-            for (int i = 0; i < bHat.rows(); i++) {
-//                if (i == j) continue;
-                if (bHat.get(i, j) != 0) {
-                    g.addDirectedEdge(varPerm.get(j), varPerm.get(i));
+        for (int j = 0; j < B.columns(); j++) {
+            for (int i = 0; i < B.rows(); i++) {
+                if (B.get(i, j) != 0) {
+                    g.addDirectedEdge(variables.get(j), variables.get(i));
                 }
             }
         }
         return g;
     }
 
-    public static int[] encourageLowerTriangular(Matrix W, Matrix BHat) {
-        PermutationGenerator gen2 = new PermutationGenerator(BHat.rows());
+    /**
+     * Finds a permutation of rows and columns simultaneously for a
+     * coefficient matrix B that maximizes the sum of Bij^2 values in
+     * the lower triangle. This is to help find a causal order for the
+     * variables assuming a DAG model.
+     * @param B The coefficient matrix B
+     * @return The permutation of rows and columns simultaneously that
+     * maximizes the lower triangle.
+     */
+    public static int[] encourageLowerTriangular(Matrix B) {
+        PermutationGenerator gen2 = new PermutationGenerator(B.rows());
         int[] perm = new int[0];
         double sum2 = Double.NEGATIVE_INFINITY;
         int[] choice2;
@@ -108,9 +119,9 @@ public class LingD {
         while ((choice2 = gen2.next()) != null) {
             double sum = 0.0;
 
-            for (int i = 0; i < W.rows(); i++) {
+            for (int i = 0; i < B.rows(); i++) {
                 for (int j = 0; j < i; j++) {
-                    double b = BHat.get(choice2[i], choice2[j]);
+                    double b = B.get(choice2[i], choice2[j]);
                     sum += b * b;
                 }
             }
@@ -120,12 +131,21 @@ public class LingD {
                 perm = Arrays.copyOf(choice2, choice2.length);
             }
         }
+
         return perm;
     }
 
+    /**
+     * Finds a column permutation of the W matrix that maximizes the sum
+     * of 1 / |Wii| for diagonal elements Wii in W. This will be speeded up
+     * if W is a thresholded matrix.
+     * @param W The (possibly thresholded) W matrix.
+     * @return The model with the strongest diagonal, as a permutation matrix pair.
+     * @see PermutationMatrixPair
+     */
     @Nullable
-    static PermutationMatrixPair strongestDiagonalByCols(Matrix thresholded) {
-        List<PermutationMatrixPair> pairs = nRooks(thresholded.transpose());
+    static PermutationMatrixPair strongestDiagonalByCols(Matrix W) {
+        List<PermutationMatrixPair> pairs = nRooks(W.transpose());
 
         PermutationMatrixPair bestPair = null;
         double sum1 = Double.POSITIVE_INFINITY;
@@ -155,8 +175,8 @@ public class LingD {
     }
 
     /**
-     * Whether the BHat matrix represents a stable model. The eigenvalues are checked ot make sure they are
-     * all less than 1.
+     * Whether the BHat matrix represents a stable model. The eigenvalues are
+     * checked ot make sure they are all less than 1 in modulus.
      * @param bHat The bHat matrix.
      * @return True iff the model is stable.
      */
@@ -181,7 +201,8 @@ public class LingD {
     }
 
     /**
-     * Estimates the W matrix using FastICA.
+     * Estimates the W matrix using FastICA. Assumes the "parallel" option, using
+     * the "exp" function.
      *
      * @param data             The dataset to estimate W for.
      * @param fastIcaMaxIter   Maximum number of iterations of ICA.
@@ -189,7 +210,8 @@ public class LingD {
      * @param fastIcaA         Alpha for ICA.
      * @return The estimated W matrix.
      */
-    public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance, double fastIcaA) {
+    public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance,
+                                   double fastIcaA) {
         Matrix X = data.getDoubleData();
         X = DataUtils.centerData(X).transpose();
         FastIca fastIca = new FastIca(X, X.rows());
@@ -206,7 +228,6 @@ public class LingD {
 
     /**
      * Scares the given matrix M by diving each entry (i, j) by M(j, j)
-     *
      * @param M The matrix to scale.
      * @return The scaled matrix.
      */
@@ -224,9 +245,9 @@ public class LingD {
 
     /**
      * Thresholds the givem matrix, sending any small entries to zero.
-     *
      * @param M         The matrix to threshold.
      * @param threshold The value such that M(i, j) is set to zero if |M(i, j)| < threshold.
+     *                  Should be non-negative.
      * @return The thresholded matrix.
      */
     public static Matrix threshold(Matrix M, double threshold) {
@@ -249,6 +270,7 @@ public class LingD {
      * @param pair The (column permutation, thresholded, column permuted W matrix)
      *             pair.
      * @return The estimated B Hat matrix for this pair.
+     * @see PermutationMatrixPair
      */
     public static Matrix getPermutedScaledBHat(PermutationMatrixPair pair) {
         Matrix _w = pair.getPermutedMatrix();
@@ -279,6 +301,13 @@ public class LingD {
         return Matrix.identity(_w.rows()).minus(_w);
     }
 
+    /**
+     * Returns the lsit of variables, permuted using the column permutation of
+     * the given PermutationMatrixPair.
+     * @param pair The pair whose column permutation is used.
+     * @param variables The list of variables.
+     * @return The permuted list of variables.
+     */
     public static List<Node> getPermutedVariables(PermutationMatrixPair pair,
                                                   List<Node> variables) {
         int[] perm = pair.getColPerm();
@@ -292,13 +321,19 @@ public class LingD {
         return permVars;
     }
 
-    private static void printAllowablePositions(Matrix W, boolean[][] allowablePositions) {
+    /**
+     * Prints the allowable positions board for the NRooks class.
+     * @param allowablePositions The (boolean, rectangular) matrix of allowable
+     *                           positions. The (i, j) entry it true just in case
+     *                           a rook can be placed there.
+     */
+    private static void printAllowablePositions(boolean[][] allowablePositions) {
         System.out.println("\nAllowable rook positions");
 
         // Print allowable board.
-        for (int i = 0; i < W.rows(); i++) {
+        for (int i = 0; i < allowablePositions[0].length; i++) {
             System.out.println();
-            for (int j = 0; j < W.columns(); j++) {
+            for (int j = 0; j < allowablePositions.length; j++) {
                 System.out.print((allowablePositions[i][j] ? 1 : 0) + " ");
             }
         }
@@ -307,9 +342,26 @@ public class LingD {
         System.out.println();
     }
 
-    public void setPruneFactor(double pruneFactor) {
-        this.pruneThreshold = pruneFactor;
+    @NotNull
+    private static List<PermutationMatrixPair> nRooks(Matrix W) {
+        List<PermutationMatrixPair> pairs = new ArrayList<>();
+        boolean[][] allowablePositions = new boolean[W.rows()][W.columns()];
+
+        for (int i = 0; i < W.rows(); i++) {
+            for (int j = 0; j < W.columns(); j++) {
+                allowablePositions[i][j] = W.get(i, j) != 0;
+            }
+        }
+
+        List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
+
+        for (int[] colPermutation : colPermutations) {
+            pairs.add(new PermutationMatrixPair(W, null, colPermutation));
+        }
+
+        return pairs;
     }
+
 }
 
 

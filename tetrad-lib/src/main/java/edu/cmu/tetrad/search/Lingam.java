@@ -78,7 +78,7 @@ public class Lingam {
         // If all the big coefficients are in the lower triangle, we can interpret it as a
         // DAG model. We will ignore any big coefficients left over in the upper triangle.
         // We will assume the diagonal of the BHat matrix is zero--i.e., no self-loops.
-        int[] perm = LingD.encourageLowerTriangular(W, BHat);
+        int[] perm = LingD.encourageLowerTriangular(BHat);
 
         // Grab that lower-triangle maximized version of the BHat matrix.
         Matrix bHatPerm = new PermutationMatrixPair(BHat, perm, perm).getPermutedMatrix();
