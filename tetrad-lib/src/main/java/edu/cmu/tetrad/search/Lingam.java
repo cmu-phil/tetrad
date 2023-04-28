@@ -39,7 +39,7 @@ import static edu.cmu.tetrad.search.LingD.threshold;
 public class Lingam {
     private Matrix permutedBHat = null;
     private List<Node> permutedVars = null;
-    private double wThreshold;
+    private double pruneFactor;
 
     //================================CONSTRUCTORS==========================//
 
@@ -58,7 +58,7 @@ public class Lingam {
      * @return The graph returned.
      */
     public Graph search(Matrix W, List<Node> variables) {
-        W = threshold(W, wThreshold);
+        W = threshold(W, pruneFactor);
 
         PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W);
 
@@ -109,6 +109,7 @@ public class Lingam {
      */
     public void setPruneFactor(double pruneFactor) {
         if (pruneFactor < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + pruneFactor);
+        this.pruneFactor = pruneFactor;
     }
 
     /**
@@ -128,10 +129,6 @@ public class Lingam {
      */
     public List<Node> getPermutedVars() {
         return permutedVars;
-    }
-
-    public void setWThreshold(double wThreshold) {
-        this.wThreshold = wThreshold;
     }
 }
 
