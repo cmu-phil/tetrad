@@ -363,7 +363,6 @@ public class LingD {
 
         return pairs;
     }
-
 }
 
 
