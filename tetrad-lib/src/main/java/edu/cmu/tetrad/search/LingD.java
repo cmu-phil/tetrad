@@ -84,7 +84,6 @@ public class LingD {
     /**
      * Estimates the W matrix using FastICA. Assumes the "parallel" option, using
      * the "exp" function.
-     *
      * @param data             The dataset to estimate W for.
      * @param fastIcaMaxIter   Maximum number of iterations of ICA.
      * @param fastIcaTolerance Tolerance for ICA.
