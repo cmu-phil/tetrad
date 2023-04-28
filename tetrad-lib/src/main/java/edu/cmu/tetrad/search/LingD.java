@@ -50,7 +50,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class LingD {
 
-    private double pruneThreshold;
+    private double pruneFactor;
 
     /**
      * Constructor. The W matrix needs to be estimated separately (e.g., using
@@ -69,7 +69,7 @@ public class LingD {
      * @see PermutationMatrixPair
      */
     public List<PermutationMatrixPair> search(Matrix W) {
-        W = LingD.threshold(W, pruneThreshold);
+        W = LingD.threshold(W, pruneFactor);
         return nRooks(W);
     }
 
@@ -78,7 +78,7 @@ public class LingD {
      * @param pruneFactor The treshold, a non-negative number.
      */
     public void setPruneFactor(double pruneFactor) {
-        this.pruneThreshold = pruneFactor;
+        this.pruneFactor = pruneFactor;
     }
 
     /**
