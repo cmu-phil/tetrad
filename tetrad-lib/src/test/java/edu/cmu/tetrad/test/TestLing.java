@@ -89,11 +89,11 @@ public class TestLing {
         // We do no further pruning on the B matrix. (The algorithm spec wants us to do both
         // but pruning the W matrix seems to be giving better results, and besides in LiNG-D
         // the W matrix is pruned. Could switch though.)
-        double pruneThreshold = 0.25;
-        System.out.println("Prune threshold = " + pruneThreshold);
+        double pruneFactor = 0.25;
+        System.out.println("Prune factor = " + pruneFactor);
 
         Lingam lingam = new Lingam();
-        lingam.setPruneFactor(pruneThreshold);
+        lingam.setPruneFactor(pruneFactor);
         Graph g2 = lingam.search(W, dataSet.getVariables());
         System.out.println("Lingam graph = " + g2);
 
@@ -109,7 +109,7 @@ public class TestLing {
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
         System.out.println("LiNG-D");
         LingD lingD = new LingD();
-        lingD.setPruneFactor(pruneThreshold);
+        lingD.setPruneFactor(pruneFactor);
         List<PermutationMatrixPair> pairs = lingD.search(W);
 
         System.out.println("Then, for each constrained N Rooks solution, a column permutation of thresholded W:");
