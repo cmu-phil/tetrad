@@ -54,8 +54,8 @@ public class TestLing {
 
         // Testing LiNGAM and LiNG-D on a simple 6-node 6-edge example. This
         // uses Exp(1) non-Gaussian errors and otherwise default parameters.
-        // We're not using bootstrapping yet here, which could make the result
-        // more accurate.
+        // Please don't change this seed--this is set up as an actual unit test
+        // for this example.
         long seed = 402030204L;
         RandomUtil.getInstance().setSeed(seed);
         System.out.println("Seed = " + seed + "L");
