@@ -40,9 +40,11 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Lacerda, G., Spirtes, P. L., Ramsey, J., & Hoyer, P. O. (2012). Discovering
+ * <p>This class implements the LiNG-D algorithm as well as a number of ancillary
+ * methods for LiNG-D and LiNGAM.</p>
+ * <p>Lacerda, G., Spirtes, P. L., Ramsey, J., & Hoyer, P. O. (2012). Discovering
  * cyclic causal models by independent components analysis. arXiv preprint
- * arXiv:1206.3273.
+ * arXiv:1206.3273.</p>
  *
  * @author josephramsey
  */
