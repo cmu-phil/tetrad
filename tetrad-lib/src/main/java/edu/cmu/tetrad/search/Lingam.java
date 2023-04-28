@@ -67,39 +67,28 @@ public class Lingam {
         }
 
         Matrix WTilde = bestPair.getPermutedMatrix().transpose();
-
-        // We calculate BHat as I - WTilde.
         WTilde = LingD.scale(WTilde);
         Matrix BHat = Matrix.identity(W.columns()).minus(WTilde);
-
-        // The second task is to rearrange the BHat matrix by permuting rows and columns
-        // simultaneously so that the lower triangle is maximal--i.e., so that SUM(WTilde(i, j)^2)
-        // is maximal for j > i. The goal of this is to find a causal order for the variables.
-        // If all the big coefficients are in the lower triangle, we can interpret it as a
-        // DAG model. We will ignore any big coefficients left over in the upper triangle.
-        // We will assume the diagonal of the BHat matrix is zero--i.e., no self-loops.
         int[] perm = LingD.encourageLowerTriangular(BHat);
-
-        // Grab that lower-triangle maximized version of the BHat matrix.
-        Matrix bHatPerm = new PermutationMatrixPair(BHat, perm, perm).getPermutedMatrix();
+        Matrix permutedBHat = new PermutationMatrixPair(BHat, perm, perm).getPermutedMatrix();
 
         // Set the upper triangle now to zero, since we are ignoring it for this DAG algorithm.
-        for (int i = 0; i < bHatPerm.rows(); i++) {
-            for (int j = i + 1; j < bHatPerm.columns(); j++) {
-                bHatPerm.set(i, j, 0.0);
+        for (int i = 0; i < permutedBHat.rows(); i++) {
+            for (int j = i + 1; j < permutedBHat.columns(); j++) {
+                permutedBHat.set(i, j, 0.0);
             }
         }
 
         // Permute the variables too for that order.
-        List<Node> varPerm = new ArrayList<>();
-        for (int k : perm) varPerm.add(variables.get(k));
+        List<Node> permutedVars = new ArrayList<>();
+        for (int k : perm) permutedVars.add(variables.get(k));
 
         // Grab the permuted BHat and variables.
-        this.permutedBHat = bHatPerm;
-        this.permutedVars = varPerm;
+        this.permutedBHat = permutedBHat;
+        this.permutedVars = permutedVars;
 
         // Make the graph and return it.
-        return LingD.makeGraph(bHatPerm, varPerm);
+        return LingD.makeGraph(permutedBHat, permutedVars);
     }
 
     /**
