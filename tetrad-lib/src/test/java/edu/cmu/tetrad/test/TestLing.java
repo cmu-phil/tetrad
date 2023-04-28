@@ -115,7 +115,6 @@ public class TestLing {
         System.out.println("Then, for each constrained N Rooks solution, a column permutation of thresholded W:");
         for (PermutationMatrixPair pair : pairs) {
             Matrix bHat = getPermutedScaledBHat(pair);
-
             System.out.println("BHat = " + bHat);
 
             List<Node> permVars = getPermutedVariables(pair, dataSet.getVariables());
