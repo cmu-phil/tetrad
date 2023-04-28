@@ -55,7 +55,8 @@ public class LingD {
      * the Lingam.estimateW(.) method using the ICA method in Tetrad, or some
      * method in Python or R) and passed into the search(W) method.
      */
-    public LingD() {
+    public LingD(double wThreshold) {
+        this.wThreshold = wThreshold;
     }
 
     public List<PermutationMatrixPair> search(Matrix W) {

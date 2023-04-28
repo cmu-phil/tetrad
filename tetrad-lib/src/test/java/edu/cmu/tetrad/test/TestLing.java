@@ -64,8 +64,9 @@ public class TestLing {
         parameters.set(Params.AVG_DEGREE, 2);
 
         // Using Exp(1) for the non-Gaussian error for all variables.
-        parameters.set(Params.SIMULATION_ERROR_TYPE, 3);
+        parameters.set(Params.SIMULATION_ERROR_TYPE, 4);
         parameters.set(Params.SIMULATION_PARAM1, 1);
+        parameters.set(Params.SIMULATION_PARAM2, 1);
 
         SemSimulation sim = new SemSimulation(new RandomForward());
         sim.createData(parameters, true);
@@ -73,7 +74,7 @@ public class TestLing {
         Graph g = sim.getTrueGraph(0);
         System.out.println("True graph = " + g);
 
-        double wThreshold = 0.4;
+        double wThreshold = 0.3;
         double bThreshold = 0;
 
         System.out.println("W Threshold = " + wThreshold);
@@ -111,8 +112,7 @@ public class TestLing {
         // associated column-permuted W thresholded W matrices. For the constrained N rooks problme we
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
         System.out.println("\n\n=====LiNG-D");
-        LingD lingD = new LingD();
-        lingD.setWThreshold(wThreshold);
+        LingD lingD = new LingD(wThreshold);
         List<PermutationMatrixPair> pairs = lingD.search(W);
 
         System.out.println("Then, for each constrained N Rooks solution, a column permutation of thresholded W:");
