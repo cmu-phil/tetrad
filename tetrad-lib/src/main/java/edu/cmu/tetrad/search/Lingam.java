@@ -39,6 +39,7 @@ import static edu.cmu.tetrad.search.LingD.threshold;
 public class Lingam {
     private Matrix permutedBHat = null;
     private List<Node> permutedVars = null;
+    private double wThreshold;
 
     //================================CONSTRUCTORS==========================//
 
@@ -56,11 +57,10 @@ public class Lingam {
      *                  in the order they occur in that dataset.
      * @return The graph returned.
      */
-    public Graph search(Matrix W, List<Node> variables, double wThreshold) {
-        Matrix thresholded = threshold(W, wThreshold);
-//        W = thresholded;
+    public Graph search(Matrix W, List<Node> variables) {
+        W = threshold(W, wThreshold);
 
-        PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(thresholded);
+        PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W);
 
         if (bestPair == null) {
             throw new NullPointerException("Could not find an N Rooks solution with that threshold.");
@@ -103,6 +103,15 @@ public class Lingam {
     }
 
     /**
+     * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
+     *
+     * @param pruneFactor Some value >= 0.
+     */
+    public void setPruneFactor(double pruneFactor) {
+        if (pruneFactor < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + pruneFactor);
+    }
+
+    /**
      * After search the permuted BHat matrix can be retrieved using this method.
      *
      * @return The permutated (lower triangle) BHat matrix. Here, BHat(i, j) != 0 means that
@@ -119,6 +128,10 @@ public class Lingam {
      */
     public List<Node> getPermutedVars() {
         return permutedVars;
+    }
+
+    public void setWThreshold(double wThreshold) {
+        this.wThreshold = wThreshold;
     }
 }
 

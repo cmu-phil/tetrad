@@ -55,8 +55,7 @@ public class LingD {
      * the Lingam.estimateW(.) method using the ICA method in Tetrad, or some
      * method in Python or R) and passed into the search(W) method.
      */
-    public LingD(double wThreshold) {
-        this.wThreshold = wThreshold;
+    public LingD() {
     }
 
     public List<PermutationMatrixPair> search(Matrix W) {
@@ -91,7 +90,7 @@ public class LingD {
 
         for (int j = 0; j < bHat.columns(); j++) {
             for (int i = 0; i < bHat.rows(); i++) {
-                if (i == j) continue;
+//                if (i == j) continue;
                 if (bHat.get(i, j) != 0) {
                     g.addDirectedEdge(varPerm.get(j), varPerm.get(i));
                 }
@@ -196,7 +195,7 @@ public class LingD {
         FastIca fastIca = new FastIca(X, X.rows());
         fastIca.setVerbose(false);
         fastIca.setMaxIterations(fastIcaMaxIter);
-        fastIca.setAlgorithmType(FastIca.DEFLATION);
+        fastIca.setAlgorithmType(FastIca.PARALLEL);
         fastIca.setTolerance(fastIcaTolerance);
         fastIca.setFunction(FastIca.EXP);
         fastIca.setRowNorm(false);
@@ -253,8 +252,8 @@ public class LingD {
      */
     public static Matrix getPermutedScaledBHat(PermutationMatrixPair pair) {
         Matrix _w = pair.getPermutedMatrix();
-        Matrix bHat = Matrix.identity(_w.rows()).minus(_w);
-        return scale(bHat);
+        _w = scale(_w);
+        return Matrix.identity(_w.rows()).minus(_w);
     }
 
     /**
@@ -281,7 +280,7 @@ public class LingD {
     }
 
     public static List<Node> getPermutedVariables(PermutationMatrixPair pair,
-            List<Node> variables) {
+                                                  List<Node> variables) {
         int[] perm = pair.getColPerm();
 
         List<Node> permVars = new ArrayList<>();

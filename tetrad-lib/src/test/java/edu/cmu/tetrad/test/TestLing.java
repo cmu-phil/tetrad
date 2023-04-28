@@ -33,6 +33,7 @@ import edu.cmu.tetrad.search.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -54,19 +55,18 @@ public class TestLing {
         // uses Exp(1) non-Gaussian errors and otherwise default parameters.
         // We're not using bootstrapping yet here, which could make the result
         // more accurate.
-//        long seed = 402030204L;
-//        RandomUtil.getInstance().setSeed(seed);
-//        System.out.println("Seed = " + seed + "L");
-//        System.out.println();
+        long seed = 402030204L;
+        RandomUtil.getInstance().setSeed(seed);
+        System.out.println("Seed = " + seed + "L");
+        System.out.println();
 
         Parameters parameters = new Parameters();
-        parameters.set(Params.NUM_MEASURES, 10);
+        parameters.set(Params.NUM_MEASURES, 6);
         parameters.set(Params.AVG_DEGREE, 2);
 
         // Using Exp(1) for the non-Gaussian error for all variables.
-        parameters.set(Params.SIMULATION_ERROR_TYPE, 4);
+        parameters.set(Params.SIMULATION_ERROR_TYPE, 3);
         parameters.set(Params.SIMULATION_PARAM1, 1);
-        parameters.set(Params.SIMULATION_PARAM2, 1);
 
         SemSimulation sim = new SemSimulation(new RandomForward());
         sim.createData(parameters, true);
@@ -74,14 +74,8 @@ public class TestLing {
         Graph g = sim.getTrueGraph(0);
         System.out.println("True graph = " + g);
 
-        double wThreshold = 0.3;
-        double bThreshold = 0;
-
-        System.out.println("W Threshold = " + wThreshold);
-        System.out.println("B threshold = " + bThreshold);
-
         // First we use ICA to estimate the W matrix.
-        Matrix W = LingD.estimateW(dataSet, 5000, 1e-4, 2);
+        Matrix W = LingD.estimateW(dataSet, 5000, 1e-6, 1.2);
 
         // We then apply LiNGAM with a prune factor of .3. We should get a mostly correct DAG
         // back. The "prune factor" is a threshold for the B Hat matrix below which values are
@@ -89,16 +83,18 @@ public class TestLing {
         // exceed the prune factor are reported as edges in the model. Self-loops are not reported
         // in the printed graphs but are assumed ot exist for purposes of this algorithm. The
         // B Hat matrices are scaled so that self-loops always have strength 1.
-        System.out.println("=====LiNGAM");
+        System.out.println("LiNGAM");
 
         // We send any small value in W to 0 that has absolute value below a given threshold.
         // We do no further pruning on the B matrix. (The algorithm spec wants us to do both
         // but pruning the W matrix seems to be giving better results, and besides in LiNG-D
         // the W matrix is pruned. Could switch though.)
+        double wThreshold = 0.25;
+        System.out.println("W Threshold = " + wThreshold);
 
         Lingam lingam = new Lingam();
-//        lingam.setPruneFactor(bThreshold);
-        Graph g2 = lingam.search(W, dataSet.getVariables(), wThreshold);
+        lingam.setWThreshold(wThreshold);
+        Graph g2 = lingam.search(W, dataSet.getVariables());
         System.out.println("Lingam graph = " + g2);
 
         Matrix lingamBhat = lingam.getPermutedBHat();
@@ -111,19 +107,23 @@ public class TestLing {
         // We generate pairs of column permutations (solving the constriained N Rooks problem) with their
         // associated column-permuted W thresholded W matrices. For the constrained N rooks problme we
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
-        System.out.println("\n\n=====LiNG-D");
-        LingD lingD = new LingD(wThreshold);
+        System.out.println("LiNG-D");
+        LingD lingD = new LingD();
+        lingD.setWThreshold(wThreshold);
         List<PermutationMatrixPair> pairs = lingD.search(W);
 
         System.out.println("Then, for each constrained N Rooks solution, a column permutation of thresholded W:");
         for (PermutationMatrixPair pair : pairs) {
             Matrix bHat = getPermutedScaledBHat(pair);
+
+            System.out.println("BHat = " + bHat);
+
             List<Node> permVars = getPermutedVariables(pair, dataSet.getVariables());
             Graph graph = LingD.makeGraph(bHat, permVars);
             System.out.println("\nGraph = " + graph);
 
-//            boolean stable = LingD.isStable(LingD.getPermutedScaledBHat(pair));
-//            System.out.println(stable ? "Is Stable" : "Not stable");
+            boolean stable = LingD.isStable(LingD.getPermutedScaledBHat(pair));
+            System.out.println(stable ? "Is Stable" : "Not stable");
         }
     }
 
