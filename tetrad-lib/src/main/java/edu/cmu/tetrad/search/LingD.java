@@ -82,6 +82,32 @@ public class LingD {
     }
 
     /**
+     * Estimates the W matrix using FastICA. Assumes the "parallel" option, using
+     * the "exp" function.
+     *
+     * @param data             The dataset to estimate W for.
+     * @param fastIcaMaxIter   Maximum number of iterations of ICA.
+     * @param fastIcaTolerance Tolerance for ICA.
+     * @param fastIcaA         Alpha for ICA.
+     * @return The estimated W matrix.
+     */
+    public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance,
+                                   double fastIcaA) {
+        Matrix X = data.getDoubleData();
+        X = DataUtils.centerData(X).transpose();
+        FastIca fastIca = new FastIca(X, X.rows());
+        fastIca.setVerbose(false);
+        fastIca.setMaxIterations(fastIcaMaxIter);
+        fastIca.setAlgorithmType(FastIca.PARALLEL);
+        fastIca.setTolerance(fastIcaTolerance);
+        fastIca.setFunction(FastIca.EXP);
+        fastIca.setRowNorm(false);
+        fastIca.setAlpha(fastIcaA);
+        FastIca.IcaResult result11 = fastIca.findComponents();
+        return result11.getW();
+    }
+
+    /**
      * Returns a graph given a coefficient matrix and a list of variables. It is
      * assumed that any non-zero entry in B corresponds to a directed edges, so
      * that Bij != 0 implies that j->i in the graph.
@@ -200,32 +226,6 @@ public class LingD {
         }
 
         return true;
-    }
-
-    /**
-     * Estimates the W matrix using FastICA. Assumes the "parallel" option, using
-     * the "exp" function.
-     *
-     * @param data             The dataset to estimate W for.
-     * @param fastIcaMaxIter   Maximum number of iterations of ICA.
-     * @param fastIcaTolerance Tolerance for ICA.
-     * @param fastIcaA         Alpha for ICA.
-     * @return The estimated W matrix.
-     */
-    public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance,
-                                   double fastIcaA) {
-        Matrix X = data.getDoubleData();
-        X = DataUtils.centerData(X).transpose();
-        FastIca fastIca = new FastIca(X, X.rows());
-        fastIca.setVerbose(false);
-        fastIca.setMaxIterations(fastIcaMaxIter);
-        fastIca.setAlgorithmType(FastIca.PARALLEL);
-        fastIca.setTolerance(fastIcaTolerance);
-        fastIca.setFunction(FastIca.EXP);
-        fastIca.setRowNorm(false);
-        fastIca.setAlpha(fastIcaA);
-        FastIca.IcaResult result11 = fastIca.findComponents();
-        return result11.getW();
     }
 
     /**
