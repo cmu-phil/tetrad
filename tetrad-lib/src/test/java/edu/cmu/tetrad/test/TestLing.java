@@ -112,6 +112,10 @@ public class TestLing {
         lingD.setPruneFactor(pruneFactor);
         List<PermutationMatrixPair> pairs = lingD.search(W);
 
+        if (pairs.isEmpty()) {
+            throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
+        }
+
         System.out.println("Then, for each constrained N Rooks solution, a column permutation of thresholded W:");
         for (PermutationMatrixPair pair : pairs) {
             Matrix bHat = getPermutedScaledBHat(pair);

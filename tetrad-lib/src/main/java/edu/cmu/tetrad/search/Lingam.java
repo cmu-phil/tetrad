@@ -63,7 +63,7 @@ public class Lingam {
         PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W);
 
         if (bestPair == null) {
-            throw new NullPointerException("Could not find an N Rooks solution with that threshold.");
+            throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
         }
 
         Matrix WTilde = bestPair.getPermutedMatrix().transpose();
