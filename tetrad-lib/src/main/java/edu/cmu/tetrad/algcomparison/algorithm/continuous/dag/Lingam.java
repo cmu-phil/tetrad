@@ -18,8 +18,6 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.pow;
-
 /**
  * LiNGAM.
  *
