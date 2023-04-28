@@ -25,6 +25,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.LingD;
 import edu.cmu.tetrad.search.Lingam;
@@ -71,8 +72,8 @@ public class TestLing {
         SemSimulation sim = new SemSimulation(new RandomForward());
         sim.createData(parameters, true);
         DataSet dataSet = (DataSet) sim.getDataModel(0);
-        Graph g = sim.getTrueGraph(0);
-        System.out.println("True graph = " + g);
+        Graph trueGraph = sim.getTrueGraph(0);
+        System.out.println("True graph = " + trueGraph);
 
         // First we use ICA to estimate the W matrix.
         Matrix W = LingD.estimateW(dataSet, 5000, 1e-6, 1.2);
@@ -94,12 +95,15 @@ public class TestLing {
 
         Lingam lingam = new Lingam();
         lingam.setPruneFactor(pruneFactor);
-        Graph g2 = lingam.search(W, dataSet.getVariables());
-        System.out.println("Lingam graph = " + g2);
+        Graph lingamGraph = lingam.search(W, dataSet.getVariables());
+        System.out.println("Lingam graph = " + lingamGraph);
 
         Matrix lingamBhat = lingam.getPermutedBHat();
         boolean lingamStable = LingD.isStable(lingamBhat);
         System.out.println(lingamStable ? "Is Stable" : "Not stable");
+
+        lingamGraph = GraphUtils.replaceNodes(lingamGraph, trueGraph.getNodes());
+        assertEquals(trueGraph, lingamGraph);
 
         // For LiNG-D, we can just call the relevant public static methods. This was obviously written
         // by a Matlab person.
@@ -122,11 +126,15 @@ public class TestLing {
             System.out.println("BHat = " + bHat);
 
             List<Node> permVars = getPermutedVariables(pair, dataSet.getVariables());
-            Graph graph = LingD.makeGraph(bHat, permVars);
-            System.out.println("\nGraph = " + graph);
+            Graph lingGraph = LingD.makeGraph(bHat, permVars);
+            System.out.println("\nGraph = " + lingGraph);
 
             boolean stable = LingD.isStable(LingD.getPermutedScaledBHat(pair));
             System.out.println(stable ? "Is Stable" : "Not stable");
+
+            // For this example, there is exactly one one graph (or should be, unless the example was changed).
+            lingGraph = GraphUtils.replaceNodes(lingGraph, trueGraph.getNodes());
+            assertEquals(trueGraph, lingGraph);
         }
     }
 
