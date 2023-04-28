@@ -133,7 +133,7 @@ public class TestLing {
             boolean stable = LingD.isStable(LingD.getPermutedScaledBHat(pair));
             System.out.println(stable ? "Is Stable" : "Not stable");
 
-            // For this example, there is exactly one one graph (or should be, unless the example was changed).
+            // For this example, there is exactly one graph (or should be, unless the example was changed).
             lingGraph = GraphUtils.replaceNodes(lingGraph, trueGraph.getNodes());
             assertEquals(trueGraph, lingGraph);
         }
