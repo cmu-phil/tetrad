@@ -146,7 +146,7 @@ public class LingD {
      * @see PermutationMatrixPair
      */
     @Nullable
-    static PermutationMatrixPair strongestDiagonalByCols(Matrix W) {
+    public static PermutationMatrixPair strongestDiagonalByCols(Matrix W) {
         List<PermutationMatrixPair> pairs = nRooks(W.transpose());
 
         PermutationMatrixPair bestPair = null;
