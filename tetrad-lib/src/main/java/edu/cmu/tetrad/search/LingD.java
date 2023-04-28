@@ -323,27 +323,6 @@ public class LingD {
         return permVars;
     }
 
-    /**
-     * Prints the allowable positions board for the NRooks class.
-     * @param allowablePositions The (boolean, rectangular) matrix of allowable
-     *                           positions. The (i, j) entry it true just in case
-     *                           a rook can be placed there.
-     */
-    private static void printAllowablePositions(boolean[][] allowablePositions) {
-        System.out.println("\nAllowable rook positions");
-
-        // Print allowable board.
-        for (int i = 0; i < allowablePositions[0].length; i++) {
-            System.out.println();
-            for (int j = 0; j < allowablePositions.length; j++) {
-                System.out.print((allowablePositions[i][j] ? 1 : 0) + " ");
-            }
-        }
-
-        System.out.println();
-        System.out.println();
-    }
-
     @NotNull
     private static List<PermutationMatrixPair> nRooks(Matrix W) {
         List<PermutationMatrixPair> pairs = new ArrayList<>();
