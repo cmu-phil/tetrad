@@ -40,8 +40,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.LingD.getPermutedScaledBHat;
-import static edu.cmu.tetrad.search.LingD.getPermutedVariables;
+import static edu.cmu.tetrad.search.LingD.getScaledBHat;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -123,14 +122,13 @@ public class TestLing {
         System.out.println("Then, for each constrained N Rooks solution, a column permutation of thresholded W:");
 
         for (PermutationMatrixPair pair : pairs) {
-            Matrix bHat = getPermutedScaledBHat(pair);
+            Matrix bHat = getScaledBHat(pair);
             System.out.println("BHat = " + bHat);
 
-            List<Node> permVars = getPermutedVariables(pair, dataSet.getVariables());
-            Graph lingGraph = LingD.makeGraph(bHat, permVars);
+            Graph lingGraph = LingD.makeGraph(bHat, dataSet.getVariables());
             System.out.println("\nGraph = " + lingGraph);
 
-            boolean stable = LingD.isStable(LingD.getPermutedScaledBHat(pair));
+            boolean stable = LingD.isStable(bHat);
             System.out.println(stable ? "Is Stable" : "Not stable");
 
             // For this example, there is exactly one graph (or should be, unless the example was changed).
