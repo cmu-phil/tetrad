@@ -26,7 +26,6 @@ import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.LingD;
 import edu.cmu.tetrad.search.Lingam;
 import edu.cmu.tetrad.search.NRooks;
@@ -97,7 +96,7 @@ public class TestLing {
         Graph lingamGraph = lingam.search(W, dataSet.getVariables());
         System.out.println("Lingam graph = " + lingamGraph);
 
-        Matrix lingamBhat = lingam.getPermutedBHat();
+        Matrix lingamBhat = lingam.getbHat();
         boolean lingamStable = LingD.isStable(lingamBhat);
         System.out.println(lingamStable ? "Is Stable" : "Not stable");
 

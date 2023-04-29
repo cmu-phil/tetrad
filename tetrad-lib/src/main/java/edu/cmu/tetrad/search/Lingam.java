@@ -37,8 +37,7 @@ import static edu.cmu.tetrad.search.LingD.threshold;
  * @author josephramsey
  */
 public class Lingam {
-    private Matrix permutedBHat = null;
-    private List<Node> permutedVars = null;
+    private Matrix bHat = null;
     private double pruneFactor;
 
     //================================CONSTRUCTORS==========================//
@@ -78,16 +77,13 @@ public class Lingam {
             }
         }
 
-        // Permute the variables too for that order.
-        List<Node> permutedVars = new ArrayList<>();
-        for (int k : perm) permutedVars.add(variables.get(k));
-
         // Grab the permuted BHat and variables.
-        this.permutedBHat = permutedBHat;
-        this.permutedVars = permutedVars;
+        int[] inverse = LingD.inversePermutation(perm);
+        PermutationMatrixPair inversePair = new PermutationMatrixPair(permutedBHat, inverse, inverse);
+        this.bHat = inversePair.getPermutedMatrix();
 
         // Make the graph and return it.
-        return LingD.makeGraph(permutedBHat, permutedVars);
+        return LingD.makeGraph(this.bHat, variables);
     }
 
     /**
@@ -104,16 +100,8 @@ public class Lingam {
      * @return The permutated (lower triangle) BHat matrix. Here, BHat(i, j) != 0 means that
      * there is an edge vars(j)-->vars(i) in the graph, where 'vars' means the permuted variables.
      */
-    public Matrix getPermutedBHat() {
-        return permutedBHat;
-    }
-
-    /**
-     * The permuted variables of the graph. This is the estimated causal order of the models.
-     * @return This list of variables.
-     */
-    public List<Node> getPermutedVars() {
-        return permutedVars;
+    public Matrix getbHat() {
+        return bHat;
     }
 }
 
