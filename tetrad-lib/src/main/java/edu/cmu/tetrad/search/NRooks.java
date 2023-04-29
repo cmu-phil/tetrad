@@ -7,8 +7,7 @@ import java.util.*;
  * cannot attach each other, with a given boolean[][] specification of where rooks
  * are allowed to be placed. For this spec, spec[i][j] = true iff a rook can be
  * placed there.</p>
- * <p>Had some help from ChatGPT for this but it messed up one of the methods,
- * so taking some credit.</p>
+ * <p>Had some help from ChatGPT for this.</p>
  *
  * @author josephramsey
  * @author ChatGPT
