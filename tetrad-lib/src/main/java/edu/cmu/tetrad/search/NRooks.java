@@ -90,7 +90,7 @@ public class NRooks {
      *                           positions. The (i, j) entry it true just in case
      *                           a rook can be placed there.
      */
-    private static void printAllowablePositions(boolean[][] allowablePositions) {
+    public static void printAllowablePositions(boolean[][] allowablePositions) {
         System.out.println("\nAllowable rook positions");
 
         // Print allowable board.

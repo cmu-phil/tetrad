@@ -158,10 +158,6 @@ public class TestLing {
 
         List<int[]> solutions = NRooks.nRooks(allowableBoard);
 
-        // Each solution is a permutation of the columns of the board, one integer
-        // for each row indicating where to place the rook in that row.
-        NRooks.printSolutions(solutions);
-
         // There should be 4 solutions.
         assertEquals(4, solutions.size());
     }
