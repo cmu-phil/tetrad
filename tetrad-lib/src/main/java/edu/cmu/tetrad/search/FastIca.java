@@ -380,10 +380,10 @@ public class FastIca {
         int n = this.X.columns();
         int p = this.X.rows();
 
-        if (this.numComponents > FastMath.min(n, p)) {
+        if (this.numComponents > min(n, p)) {
             TetradLogger.getInstance().log("info", "Requested number of components is too large.");
-            TetradLogger.getInstance().log("info", "Reset to " + FastMath.min(n, p));
-            this.numComponents = FastMath.min(n, p);
+            TetradLogger.getInstance().log("info", "Reset to " + min(n, p));
+            this.numComponents = min(n, p);
         }
 
         if (this.wInit == null) {
@@ -654,9 +654,9 @@ public class FastIca {
             v2 = v2.times(W);
             W1 = v1.minus(v2);
 
-            SingularValueDecomposition sW1 = new SingularValueDecomposition(new BlockRealMatrix(W1.toArray()));
-            Matrix U = new Matrix(sW1.getU().getData());
-            Matrix sD = new Matrix(sW1.getS().getData());
+            SingularValueDecomposition sW1 = new SingularValueDecomposition(W1.getApacheData());
+            Matrix U = new Matrix(sW1.getU());
+            Matrix sD = new Matrix(sW1.getS());
             for (int i = 0; i < sD.rows(); i++)
                 sD.set(i, i, 1.0 / sD.get(i, i));
 

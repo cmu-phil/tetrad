@@ -1,9 +1,6 @@
 package edu.cmu.tetrad.search;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.IllformedLocaleException;
-import java.util.List;
+import java.util.*;
 
 /**
  * <p>Returns row positions for placing rooks for an n x n matrix so the rooks
@@ -27,78 +24,63 @@ public class NRooks {
     public static ArrayList<int[]> nRooks(boolean[][] allowablePositions) {
         for (boolean[] positions : allowablePositions) {
             if (positions.length != allowablePositions[0].length) {
-                throw new IllformedLocaleException("Expecting a square matrix.");
+                throw new IllegalArgumentException("Expecting a square matrix.");
             }
         }
 
         int p = allowablePositions.length;
-        boolean[][] _allowable = new boolean[p][p];
+        boolean[][] board = new boolean[p][p];
         ArrayList<int[]> solutions = new ArrayList<>();
-        dfs(_allowable, allowablePositions, 0, solutions);
+
+        Stack<Integer> rows = new Stack<>();
+        Stack<Integer> cols = new Stack<>();
+        int row = 0;
+        int col = 0;
+
+        while (row < p) {
+            if (col >= p) {
+                if (rows.isEmpty()) {
+                    break;
+                }
+                row = rows.pop();
+                col = cols.pop() + 1;
+                board[row][col - 1] = false;
+                continue;
+            }
+            if (allowablePositions[row][col] && isValid(board, row, col)) {
+                board[row][col] = true;
+                rows.push(row);
+                cols.push(col);
+                row++;
+                col = 0;
+                if (row == p) {
+                    int[] solution = new int[p];
+                    for (int i = 0; i < p; i++) {
+                        for (int j = 0; j < p; j++) {
+                            if (board[i][j]) {
+                                solution[i] = j;
+                                break;
+                            }
+                        }
+                    }
+                    solutions.add(solution);
+                    row = p - 1;
+                    col = p;
+                }
+            } else {
+                col++;
+            }
+        }
+
         return solutions;
     }
 
-    /**
-     * Prints the discovered N Rooks solutions given the constraint.
-     * @param solutions The solutions.
-     */
-    public static void printSolutions(List<int[]> solutions) {
-        System.out.println("Number of solutions: " + solutions.size());
-        for (int i = 0; i < solutions.size(); i++) {
-            int[] solution = solutions.get(i);
-            System.out.println((i + 1) + ". " + Arrays.toString(solution));
-        }
-    }
-
-    private static void dfs(boolean[][] board, boolean[][] allowablePositions, int row, ArrayList<int[]> solutions) {
-
-        // Base case: all rooks have been placed
-        if (row == board.length) {
-            int[] solution = new int[board.length];
-            for (int i = 0; i < board.length; i++) {
-                for (int j = 0; j < board.length; j++) {
-                    if (board[i][j]) {
-                        solution[i] = j;
-                        break;
-                    }
-                }
-            }
-            solutions.add(solution);
-            return;
-        }
-
-        // Otherwise, for each column
-        for (int col = 0; col < board.length; col++) {
-
-            // If the current row is a valid position to place a rook (i.e., it can't attack
-            // any other rook)...
-            if (isValid(board, row, col)) {
-
-                // This constrains the problem to allowable positions on the board.
-                if (!allowablePositions[row][col]) continue;
-
-                // Otherwise place the rook and recurse through the rows of the board.
-                board[row][col] = true;
-                dfs(board, allowablePositions, row+1, solutions);
-
-                // Backtrack and try another case...
-                board[row][col] = false;
-            }
-        }
-    }
-
     private static boolean isValid(boolean[][] board, int row, int col) {
-
-        // Check if the current position is valid. ChatGPT had some clever condition here
-        // that didn't work, sorry ChatGPT. This is the non-clever condition.
         for (int i = 0; i < row; i++) {
             if (board[i][col]) {
-                for (boolean[] booleans : board) {
-                    if (booleans[col]) return false;
-                }
+                return false;
             }
         }
-
         return true;
     }
 

@@ -53,6 +53,13 @@ public class Matrix implements TetradSerializable {
         this.n = this.m == 0 ? 0 : data[0].length;
     }
 
+    public Matrix(RealMatrix data) {
+        this.apacheData = data;
+
+        this.m = data.getRowDimension();
+        this.n = data.getColumnDimension();
+    }
+
     public Matrix(int m, int n) {
         if (m == 0 || n == 0) {
             this.apacheData = new Array2DRowRealMatrix();
@@ -65,7 +72,7 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix(Matrix m) {
-        this(m.apacheData.copy().getData());
+        this(m.apacheData.copy());
     }
 
     public void assign(Matrix matrix) {
@@ -115,7 +122,7 @@ public class Matrix implements TetradSerializable {
 
     public Matrix copy() {
         if (zeroDimension()) return new Matrix(rows(), columns());
-        return new Matrix(this.apacheData.copy().getData());
+        return new Matrix(this.apacheData.copy());
     }
 
     public Vector getColumn(int j) {
@@ -130,7 +137,7 @@ public class Matrix implements TetradSerializable {
         if (this.zeroDimension() || m.zeroDimension())
             return new Matrix(this.rows(), m.columns());
         else {
-            return new Matrix(this.apacheData.multiply(m.apacheData).getData());
+            return new Matrix(this.apacheData.multiply(m.apacheData));
         }
     }
 
@@ -158,6 +165,10 @@ public class Matrix implements TetradSerializable {
         return this.apacheData.getData();
     }
 
+    public RealMatrix getApacheData() {
+        return this.apacheData;
+    }
+
     public double get(int i, int j) {
         return this.apacheData.getEntry(i, j);
     }
@@ -179,7 +190,7 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix getPart(int i, int j, int k, int l) {
-        return new Matrix(this.apacheData.getSubMatrix(i, j, k, l).getData());
+        return new Matrix(this.apacheData.getSubMatrix(i, j, k, l));
     }
 
     public Matrix inverse() throws SingularMatrixException {
@@ -189,14 +200,14 @@ public class Matrix implements TetradSerializable {
             return new Matrix(0, 0);
         }
 
-        return new Matrix(new LUDecomposition(this.apacheData, 1e-10).getSolver().getInverse().getData());
+        return new Matrix(new LUDecomposition(this.apacheData, 1e-10).getSolver().getInverse());
     }
 
     public Matrix symmetricInverse() {
         if (!isSquare()) throw new IllegalArgumentException();
         if (rows() == 0) return new Matrix(0, 0);
 
-        return new Matrix(new CholeskyDecomposition(this.apacheData).getSolver().getInverse().getData());
+        return new Matrix(new CholeskyDecomposition(this.apacheData).getSolver().getInverse());
     }
 
     public Matrix ginverse() {
@@ -233,7 +244,7 @@ public class Matrix implements TetradSerializable {
 
     public Matrix transpose() {
         if (zeroDimension()) return new Matrix(columns(), rows());
-        return new Matrix(this.apacheData.transpose().getData());
+        return new Matrix(this.apacheData.transpose());
     }
 
 
@@ -260,7 +271,7 @@ public class Matrix implements TetradSerializable {
 
     public Matrix minus(Matrix mb) {
         if (mb.rows() == 0 || mb.columns() == 0) return this;
-        return new Matrix(this.apacheData.subtract(mb.apacheData).getData());
+        return new Matrix(this.apacheData.subtract(mb.apacheData));
     }
 
     public double norm1() {
@@ -269,7 +280,7 @@ public class Matrix implements TetradSerializable {
 
     public Matrix plus(Matrix mb) {
         if (mb.rows() == 0 || mb.columns() == 0) return this;
-        return new Matrix(this.apacheData.add(mb.apacheData).getData());
+        return new Matrix(this.apacheData.add(mb.apacheData));
     }
 
     public int rank() {
@@ -301,7 +312,7 @@ public class Matrix implements TetradSerializable {
         RealMatrix S = new BlockRealMatrix(s.length, s.length);
         for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
         RealMatrix sqrt = U.multiply(S).multiply(V);
-        return new Matrix(sqrt.getData());
+        return new Matrix(sqrt);
     }
 
 
