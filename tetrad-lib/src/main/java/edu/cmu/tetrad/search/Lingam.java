@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static edu.cmu.tetrad.search.LingD.threshold;
@@ -50,6 +49,7 @@ public class Lingam {
 
     /**
      * Searches given the W matrix from ICA.
+     *
      * @param W         the W matrix from ICA.
      * @param variables The variables from the original dataset used to generate the W matrix,
      *                  in the order they occur in that dataset.
@@ -88,6 +88,7 @@ public class Lingam {
 
     /**
      * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
+     *
      * @param pruneFactor Some value >= 0.
      */
     public void setPruneFactor(double pruneFactor) {
@@ -97,6 +98,7 @@ public class Lingam {
 
     /**
      * After search the permuted BHat matrix can be retrieved using this method.
+     *
      * @return The permutated (lower triangle) BHat matrix. Here, BHat(i, j) != 0 means that
      * there is an edge vars(j)-->vars(i) in the graph, where 'vars' means the permuted variables.
      */
