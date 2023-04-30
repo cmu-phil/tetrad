@@ -51,18 +51,14 @@ public class LingD implements Algorithm {
             int count = 0;
 
             for (edu.cmu.tetrad.search.LingD.Result result : results) {
-                Matrix bHat = result.getBHat();
-                Graph graph = result.getGraph();
-
                 System.out.println("LiNG-D Model #" + (++count));
                 System.out.println();
-                System.out.println("BHat = " + bHat);
-                System.out.println("Graph = " + graph);
+                System.out.println("BHat = " + result.getBHat());
+                System.out.println("Graph = " + result.getGraph());
             }
 
             if (results.size() > 0) {
-                edu.cmu.tetrad.search.LingD.Result result = results.get(0);
-                return result.getGraph();
+                return results.get(0).getGraph();
             } else {
                 throw new IllegalArgumentException("LiNG-D couldn't find a model.");
             }
