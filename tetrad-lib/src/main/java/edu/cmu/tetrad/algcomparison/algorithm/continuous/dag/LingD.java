@@ -3,7 +3,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
@@ -30,7 +29,6 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
-@Experimental
 public class LingD implements Algorithm {
 
     static final long serialVersionUID = 23L;
