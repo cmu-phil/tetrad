@@ -27,13 +27,11 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.PermutationGenerator;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.*;
@@ -165,41 +163,6 @@ public class LingD {
     }
 
     /**
-     * Finds a permutation of rows and columns simultaneously for a
-     * coefficient matrix B that maximizes the sum of Bij^2 values in
-     * the lower triangle. This is to help find a causal order for the
-     * variables assuming a DAG model.
-     *
-     * @param B The coefficient matrix B
-     * @return The permutation of rows and columns simultaneously that
-     * maximizes the lower triangle.
-     */
-    public static int[] encourageLowerTriangular(Matrix B) {
-        PermutationGenerator gen2 = new PermutationGenerator(B.rows());
-        int[] perm = new int[0];
-        double sum2 = Double.NEGATIVE_INFINITY;
-        int[] choice2;
-
-        while ((choice2 = gen2.next()) != null) {
-            double sum = 0.0;
-
-            for (int i = 0; i < B.rows(); i++) {
-                for (int j = 0; j < i; j++) {
-                    double b = B.get(choice2[i], choice2[j]);
-                    sum += b * b;
-                }
-            }
-
-            if (sum > sum2) {
-                sum2 = sum;
-                perm = Arrays.copyOf(choice2, choice2.length);
-            }
-        }
-
-        return perm;
-    }
-
-    /**
      * Finds a column permutation of the W matrix that maximizes the sum
      * of 1 / |Wii| for diagonal elements Wii in W. This will be speeded up
      * if W is a thresholded matrix.
@@ -325,39 +288,6 @@ public class LingD {
     public static Matrix getScaledBHat(PermutationMatrixPair pair) {
         Matrix _w = pair.getPermutedMatrix();
         _w = scale(_w);
-        Matrix bHat = Matrix.identity(_w.rows()).minus(_w);
-        int[] perm = pair.getColPerm();
-        int[] inverse = LingD.inversePermutation(perm);
-        PermutationMatrixPair inversePair = new PermutationMatrixPair(bHat, inverse, inverse);
-        return inversePair.getPermutedMatrix();
-    }
-
-    /**
-     * Returns the thresholded W matrix, permuted to causal order (lower triangle),
-     * unscaled.
-     *
-     * @param pair The (column permutation, thresholded, column permuted W matrix)
-     *             pair.
-     * @return The thresholded W matrix for this pair.
-     */
-    public static Matrix getThresholdedW(PermutationMatrixPair pair) {
-        Matrix permutedMatrix = pair.getPermutedMatrix();
-        int[] perm = pair.getColPerm();
-        int[] inverse = LingD.inversePermutation(perm);
-        PermutationMatrixPair inversePair = new PermutationMatrixPair(permutedMatrix, inverse, inverse);
-        return inversePair.getPermutedMatrix();
-    }
-
-    /**
-     * Returns the BHat matrix, permuted to causal order (lower triangle) and
-     * unscaled.
-     *
-     * @param pair The (column permutation, thresholded, column permuted W matrix)
-     *             pair.
-     * @return The estimated B Hat matrix for this pair.
-     */
-    public static Matrix getUnscaledBHat(PermutationMatrixPair pair) {
-        Matrix _w = pair.getPermutedMatrix();
         Matrix bHat = Matrix.identity(_w.rows()).minus(_w);
         int[] perm = pair.getColPerm();
         int[] inverse = LingD.inversePermutation(perm);
