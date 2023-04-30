@@ -44,11 +44,11 @@ public class Lingam implements Algorithm {
             int maxIter = parameters.getInt(Params.FAST_ICA_MAX_ITER);
             double alpha = parameters.getDouble(Params.FAST_ICA_A);
             double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
-            double pruneFactor = parameters.getDouble(Params.PRUNE_FACTOR);
+            double wThreshold = parameters.getDouble(Params.PRUNE_FACTOR);
 
             Matrix W = LingD.estimateW(data, maxIter, tol, alpha);
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
-            lingam.setPruneFactor(pruneFactor);
+            lingam.setPruneFactor(wThreshold);
 
             LingD.Result result = lingam.search(W, data.getVariables());
             TetradLogger.getInstance().forceLogMessage(result.getBHat().toString());

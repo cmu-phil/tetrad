@@ -35,7 +35,7 @@ import static edu.cmu.tetrad.search.LingD.threshold;
  * @author josephramsey
  */
 public class Lingam {
-    private double pruneFactor;
+    private double wThreshold;
 
     //================================CONSTRUCTORS==========================//
 
@@ -54,7 +54,7 @@ public class Lingam {
      * @return The graph returned.
      */
     public LingD.Result search(Matrix W, List<Node> variables) {
-        W = threshold(W, pruneFactor);
+        W = threshold(W, wThreshold);
         PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W);
         Matrix WTilde = bestPair.getPermutedMatrix().transpose();
         WTilde = LingD.scale(WTilde);
@@ -73,11 +73,11 @@ public class Lingam {
     /**
      * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
      *
-     * @param pruneFactor Some value >= 0.
+     * @param wThreshold Some value >= 0.
      */
-    public void setPruneFactor(double pruneFactor) {
-        if (pruneFactor < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + pruneFactor);
-        this.pruneFactor = pruneFactor;
+    public void setPruneFactor(double wThreshold) {
+        if (wThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + wThreshold);
+        this.wThreshold = wThreshold;
     }
 }
 

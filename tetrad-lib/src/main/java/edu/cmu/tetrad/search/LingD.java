@@ -47,7 +47,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class LingD {
 
-    private double pruneFactor;
+    private double wThreshold;
 
     /**
      * Constructor. The W matrix needs to be estimated separately (e.g., using
@@ -67,7 +67,7 @@ public class LingD {
      */
     public List<LingD.Result> search(Matrix W, List<Node> variables) {
         System.out.println("Starting LiNG-D");
-        W = LingD.threshold(W, pruneFactor);
+        W = LingD.threshold(W, wThreshold);
         List<PermutationMatrixPair> pairs = nRooks(W);
 
         if (pairs.isEmpty()) {
@@ -107,10 +107,10 @@ public class LingD {
     /**
      * Sets the threshold used to prune the W matrix for the local algorithms.
      *
-     * @param pruneFactor The treshold, a non-negative number.
+     * @param wThreshold The treshold, a non-negative number.
      */
-    public void setPruneFactor(double pruneFactor) {
-        this.pruneFactor = pruneFactor;
+    public void setPruneFactor(double wThreshold) {
+        this.wThreshold = wThreshold;
     }
 
     /**
