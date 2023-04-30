@@ -110,6 +110,7 @@ public class LingD {
      * @param wThreshold The treshold, a non-negative number.
      */
     public void setWThreshold(double wThreshold) {
+        if (wThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + wThreshold);
         this.wThreshold = wThreshold;
     }
 
