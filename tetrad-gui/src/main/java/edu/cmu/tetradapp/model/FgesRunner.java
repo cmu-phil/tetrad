@@ -102,8 +102,6 @@ public class FgesRunner extends AbstractAlgorithmRunner implements IFgesRunner,
      * implemented in the extending class.
      */
     public void execute() {
-        System.out.println("A");
-
         Object model = getDataModel();
 
         if (model == null && getSourceGraph() != null) {

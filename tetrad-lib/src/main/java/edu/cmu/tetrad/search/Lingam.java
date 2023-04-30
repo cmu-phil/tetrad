@@ -55,9 +55,7 @@ public class Lingam {
      */
     public LingD.Result search(Matrix W, List<Node> variables) {
         W = threshold(W, pruneFactor);
-
         PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W);
-
         Matrix WTilde = bestPair.getPermutedMatrix().transpose();
         WTilde = LingD.scale(WTilde);
         Matrix BHat = Matrix.identity(W.columns()).minus(WTilde);
