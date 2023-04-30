@@ -44,7 +44,7 @@ public class Lingam {
 
     /**
      * Searches given the W matrix from ICA.
-     * @param W         the W matrix from ICA.
+     * @param W the W matrix from ICA.
      * @return The estimated B Hat matrix.
      */
     public Matrix search(Matrix W) {
