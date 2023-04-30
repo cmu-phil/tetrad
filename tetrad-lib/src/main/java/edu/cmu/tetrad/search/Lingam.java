@@ -21,10 +21,7 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-
-import java.util.List;
 
 import static edu.cmu.tetrad.search.LingD.threshold;
 
@@ -47,13 +44,10 @@ public class Lingam {
 
     /**
      * Searches given the W matrix from ICA.
-     *
      * @param W         the W matrix from ICA.
-     * @param variables The variables from the original dataset used to generate the W matrix,
-     *                  in the order they occur in that dataset.
-     * @return The graph returned.
+     * @return The estimated B Hat matrix.
      */
-    public LingD.Result search(Matrix W, List<Node> variables) {
+    public Matrix search(Matrix W) {
         W = threshold(W, wThreshold);
         PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W);
         Matrix WTilde = bestPair.getPermutedMatrix().transpose();
@@ -64,10 +58,7 @@ public class Lingam {
         int[] perm = bestPair.getRowPerm();
         int[] inverse = LingD.inversePermutation(perm);
         PermutationMatrixPair inversePair = new PermutationMatrixPair(BHat, inverse, inverse);
-        Matrix _bHat = inversePair.getPermutedMatrix();
-
-        // Make the graph and return it.
-        return new LingD.Result(BHat, LingD.makeGraph(_bHat, variables));
+        return inversePair.getPermutedMatrix();
     }
 
     /**

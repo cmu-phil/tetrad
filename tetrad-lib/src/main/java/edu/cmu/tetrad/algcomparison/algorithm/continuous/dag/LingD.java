@@ -47,18 +47,19 @@ public class LingD implements Algorithm {
 
             edu.cmu.tetrad.search.LingD lingD = new edu.cmu.tetrad.search.LingD();
             lingD.setWThreshold(wThreshold);
-            List<edu.cmu.tetrad.search.LingD.Result> results = lingD.search(W, dataSet.getVariables());
+            List<Matrix> bHats = lingD.search(W);
 
             int count = 0;
 
-            for (edu.cmu.tetrad.search.LingD.Result result : results) {
+            for (Matrix bHat : bHats) {
                 TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count));
-                TetradLogger.getInstance().forceLogMessage(result.getBHat().toString());
-                TetradLogger.getInstance().forceLogMessage(result.getGraph().toString());
+                Graph graph = edu.cmu.tetrad.search.LingD.makeGraph(bHat, dataSet.getVariables());
+                TetradLogger.getInstance().forceLogMessage(bHat.toString());
+                TetradLogger.getInstance().forceLogMessage(graph.toString());
             }
 
-            if (results.size() > 0) {
-                return results.get(0).getGraph();
+            if (bHats.size() > 0) {
+                return edu.cmu.tetrad.search.LingD.makeGraph(bHats.get(0), dataSet.getVariables());
             } else {
                 throw new IllegalArgumentException("LiNG-D couldn't find a model.");
             }

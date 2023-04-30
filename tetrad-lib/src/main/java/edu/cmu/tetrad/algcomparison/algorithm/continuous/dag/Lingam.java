@@ -48,11 +48,12 @@ public class Lingam implements Algorithm {
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
             lingam.setWThreshold(wThreshold);
 
-            LingD.Result result = lingam.search(W, data.getVariables());
-            TetradLogger.getInstance().forceLogMessage(result.getBHat().toString());
-            TetradLogger.getInstance().forceLogMessage(result.getGraph().toString());
+            Matrix bHat = lingam.search(W);
+            Graph graph = LingD.makeGraph(bHat, data.getVariables());
+            TetradLogger.getInstance().forceLogMessage(bHat.toString());
+            TetradLogger.getInstance().forceLogMessage(graph.toString());
 
-            return result.getGraph();
+            return graph;
         } else {
             Lingam algorithm = new Lingam();
 

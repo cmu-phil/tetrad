@@ -84,18 +84,17 @@ public class TestLing {
 
         // We send any small value in W to 0 that has absolute value below a given threshold.
         // We do no further pruning on the B matrix. (The algorithm spec wants us to do both
-        // but pruning the W matrix seems to be giving better results, and besides in LiNG-D
+        // but pruning the W matrix seems to be giving better bHats, and besides in LiNG-D
         // the W matrix is pruned. Could switch though.)
         double wThreshold = 0.25;
         System.out.println("W threshold = " + wThreshold);
 
         Lingam lingam = new Lingam();
         lingam.setWThreshold(wThreshold);
-        LingD.Result result = lingam.search(W, dataSet.getVariables());
-        Graph lingamGraph = result.getGraph();
+        Matrix lingamBhat = lingam.search(W);
+        Graph lingamGraph = LingD.makeGraph(lingamBhat, dataSet.getVariables());
         System.out.println("Lingam graph = " + lingamGraph);
 
-        Matrix lingamBhat = result.getBHat();
         boolean lingamStable = LingD.isStable(lingamBhat);
         System.out.println(lingamStable ? "Is Stable" : "Not stable");
 
@@ -105,22 +104,21 @@ public class TestLing {
         // For LiNG-D, we can just call the relevant public static methods. This was obviously written
         // by a Matlab person.
         //
-        // We generate results of column permutations (solving the constriained N Rooks problem) with their
+        // We generate bHats of column permutations (solving the constriained N Rooks problem) with their
         // associated column-permuted W thresholded W matrices. For the constrained N rooks problme we
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
         System.out.println("LiNG-D");
         LingD lingD = new LingD();
         lingD.setWThreshold(wThreshold);
-        List<LingD.Result> results = lingD.search(W, dataSet.getVariables());
+        List<Matrix> bHats = lingD.search(W);
 
-        if (results.isEmpty()) {
+        if (bHats.isEmpty()) {
             throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
         }
 
         System.out.println("Then, for each constrained N Rooks solution, a column permutation of thresholded W:");
 
-        for (LingD.Result pair : results) {
-            Matrix bHat = pair.getBHat();
+        for (Matrix bHat : bHats) {
             System.out.println("BHat = " + bHat);
 
             Graph lingGraph = LingD.makeGraph(bHat, dataSet.getVariables());
