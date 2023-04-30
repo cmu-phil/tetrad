@@ -12,6 +12,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.util.ArrayList;
@@ -51,10 +52,9 @@ public class LingD implements Algorithm {
             int count = 0;
 
             for (edu.cmu.tetrad.search.LingD.Result result : results) {
-                System.out.println("LiNG-D Model #" + (++count));
-                System.out.println();
-                System.out.println("BHat = " + result.getBHat());
-                System.out.println("Graph = " + result.getGraph());
+                TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count));
+                TetradLogger.getInstance().forceLogMessage(result.getBHat().toString());
+                TetradLogger.getInstance().forceLogMessage(result.getGraph().toString());
             }
 
             if (results.size() > 0) {
