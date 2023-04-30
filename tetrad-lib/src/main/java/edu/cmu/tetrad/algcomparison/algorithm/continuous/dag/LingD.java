@@ -10,7 +10,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -49,13 +48,13 @@ public class LingD implements Algorithm {
 
             edu.cmu.tetrad.search.LingD lingD = new edu.cmu.tetrad.search.LingD();
             lingD.setPruneFactor(pruneFactor);
-            List<PermutationMatrixPair> pairs = lingD.search(W);
+            List<edu.cmu.tetrad.search.LingD.Result> results = lingD.search(W, dataSet.getVariables());
 
             int count = 0;
 
-            for (PermutationMatrixPair pair : pairs) {
-                Matrix bHat = edu.cmu.tetrad.search.LingD.getScaledBHat(pair);
-                Graph graph = edu.cmu.tetrad.search.LingD.makeGraph(bHat, data.getVariables());
+            for (edu.cmu.tetrad.search.LingD.Result result : results) {
+                Matrix bHat = result.getBHat();
+                Graph graph = result.getGraph();
 
                 System.out.println("LiNG-D Model #" + (++count));
                 System.out.println();
@@ -63,10 +62,9 @@ public class LingD implements Algorithm {
                 System.out.println("Graph = " + graph);
             }
 
-            if (pairs.size() > 0) {
-                PermutationMatrixPair pair = pairs.get(0);
-                Matrix bHat = edu.cmu.tetrad.search.LingD.getScaledBHat(pair);
-                return edu.cmu.tetrad.search.LingD.makeGraph(bHat, data.getVariables());
+            if (results.size() > 0) {
+                edu.cmu.tetrad.search.LingD.Result result = results.get(0);
+                return result.getGraph();
             } else {
                 throw new IllegalArgumentException("LiNG-D couldn't find a model.");
             }
@@ -102,7 +100,6 @@ public class LingD implements Algorithm {
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.VERBOSE);
         parameters.add(Params.FAST_ICA_A);
         parameters.add(Params.FAST_ICA_MAX_ITER);

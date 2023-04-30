@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 
@@ -36,7 +35,6 @@ import static edu.cmu.tetrad.search.LingD.threshold;
  * @author josephramsey
  */
 public class Lingam {
-    private Matrix bHat = null;
     private double pruneFactor;
 
     //================================CONSTRUCTORS==========================//
@@ -55,35 +53,23 @@ public class Lingam {
      *                  in the order they occur in that dataset.
      * @return The graph returned.
      */
-    public Graph search(Matrix W, List<Node> variables) {
+    public LingD.Result search(Matrix W, List<Node> variables) {
         W = threshold(W, pruneFactor);
 
         PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W);
 
-        if (bestPair == null) {
-            throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
-        }
-
         Matrix WTilde = bestPair.getPermutedMatrix().transpose();
         WTilde = LingD.scale(WTilde);
         Matrix BHat = Matrix.identity(W.columns()).minus(WTilde);
-        int[] perm = LingD.encourageLowerTriangular(BHat);
-        Matrix permutedBHat = new PermutationMatrixPair(BHat, perm, perm).getPermutedMatrix();
-
-        // Set the upper triangle now to zero, since we are ignoring it for this DAG algorithm.
-        for (int i = 0; i < permutedBHat.rows(); i++) {
-            for (int j = i + 1; j < permutedBHat.columns(); j++) {
-                permutedBHat.set(i, j, 0.0);
-            }
-        }
 
         // Grab the permuted BHat and variables.
+        int[] perm = bestPair.getRowPerm();
         int[] inverse = LingD.inversePermutation(perm);
-        PermutationMatrixPair inversePair = new PermutationMatrixPair(permutedBHat, inverse, inverse);
-        this.bHat = inversePair.getPermutedMatrix();
+        PermutationMatrixPair inversePair = new PermutationMatrixPair(BHat, inverse, inverse);
+        Matrix _bHat = inversePair.getPermutedMatrix();
 
         // Make the graph and return it.
-        return LingD.makeGraph(this.bHat, variables);
+        return new LingD.Result(BHat, LingD.makeGraph(_bHat, variables));
     }
 
     /**
@@ -94,16 +80,6 @@ public class Lingam {
     public void setPruneFactor(double pruneFactor) {
         if (pruneFactor < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + pruneFactor);
         this.pruneFactor = pruneFactor;
-    }
-
-    /**
-     * After search the permuted BHat matrix can be retrieved using this method.
-     *
-     * @return The permutated (lower triangle) BHat matrix. Here, BHat(i, j) != 0 means that
-     * there is an edge vars(j)-->vars(i) in the graph, where 'vars' means the permuted variables.
-     */
-    public Matrix getbHat() {
-        return bHat;
     }
 }
 

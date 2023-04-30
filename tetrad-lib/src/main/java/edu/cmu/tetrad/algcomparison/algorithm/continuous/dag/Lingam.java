@@ -14,6 +14,7 @@ import edu.cmu.tetrad.search.LingD;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.util.ArrayList;
@@ -48,7 +49,12 @@ public class Lingam implements Algorithm {
             Matrix W = LingD.estimateW(data, maxIter, tol, alpha);
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
             lingam.setPruneFactor(pruneFactor);
-            return lingam.search(W, data.getVariables());
+
+            LingD.Result result = lingam.search(W, data.getVariables());
+            TetradLogger.getInstance().forceLogMessage(result.getBHat().toString());
+            TetradLogger.getInstance().forceLogMessage(result.getGraph().toString());
+
+            return result.getGraph();
         } else {
             Lingam algorithm = new Lingam();
 
