@@ -394,7 +394,6 @@ public class LingD {
 
         return inverse;
     }
-
 }
 
 
