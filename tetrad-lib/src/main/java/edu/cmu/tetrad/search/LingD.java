@@ -173,10 +173,7 @@ public class LingD {
      * @see PermutationMatrixPair
      */
     public static PermutationMatrixPair strongestDiagonalByCols(Matrix W) {
-        System.out.println("nrooks starting");
-
         List<PermutationMatrixPair> pairs = nRooks(W.transpose());
-        System.out.println("nrooks finished");
 
         if (pairs.isEmpty()) {
             throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
