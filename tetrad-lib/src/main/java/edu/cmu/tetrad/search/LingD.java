@@ -31,7 +31,6 @@ import edu.cmu.tetrad.util.PermutationGenerator;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -209,7 +208,6 @@ public class LingD {
      * @return The model with the strongest diagonal, as a permutation matrix pair.
      * @see PermutationMatrixPair
      */
-    @Nullable
     public static PermutationMatrixPair strongestDiagonalByCols(Matrix W) {
         List<PermutationMatrixPair> pairs = nRooks(W.transpose());
 
@@ -239,6 +237,10 @@ public class LingD {
                 sum1 = sum;
                 bestPair = pair;
             }
+        }
+
+        if (bestPair == null) {
+            throw new IllegalArgumentException("Could not find a best N Rooks solution with that threshold.");
         }
 
         return bestPair;
