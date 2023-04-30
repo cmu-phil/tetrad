@@ -109,7 +109,7 @@ public class LingD {
      *
      * @param wThreshold The treshold, a non-negative number.
      */
-    public void setPruneFactor(double wThreshold) {
+    public void setWThreshold(double wThreshold) {
         this.wThreshold = wThreshold;
     }
 

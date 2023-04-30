@@ -42,12 +42,12 @@ public class LingD implements Algorithm {
             int maxIter = parameters.getInt(Params.FAST_ICA_MAX_ITER);
             double alpha = parameters.getDouble(Params.FAST_ICA_A);
             double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
-            double wThreshold = parameters.getDouble(Params.PRUNE_FACTOR);
+            double wThreshold = parameters.getDouble(Params.W_THRESHOLD);
 
             Matrix W = edu.cmu.tetrad.search.LingD.estimateW(data, maxIter, tol, alpha);
 
             edu.cmu.tetrad.search.LingD lingD = new edu.cmu.tetrad.search.LingD();
-            lingD.setPruneFactor(wThreshold);
+            lingD.setWThreshold(wThreshold);
             List<edu.cmu.tetrad.search.LingD.Result> results = lingD.search(W, dataSet.getVariables());
 
             int count = 0;
@@ -104,7 +104,7 @@ public class LingD implements Algorithm {
         parameters.add(Params.FAST_ICA_A);
         parameters.add(Params.FAST_ICA_MAX_ITER);
         parameters.add(Params.FAST_ICA_TOLERANCE);
-        parameters.add(Params.PRUNE_FACTOR);
+        parameters.add(Params.W_THRESHOLD);
         return parameters;
     }
 }

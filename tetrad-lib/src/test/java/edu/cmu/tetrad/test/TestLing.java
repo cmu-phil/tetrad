@@ -87,10 +87,10 @@ public class TestLing {
         // but pruning the W matrix seems to be giving better results, and besides in LiNG-D
         // the W matrix is pruned. Could switch though.)
         double wThreshold = 0.25;
-        System.out.println("Prune factor = " + wThreshold);
+        System.out.println("W threshold = " + wThreshold);
 
         Lingam lingam = new Lingam();
-        lingam.setPruneFactor(wThreshold);
+        lingam.setWThreshold(wThreshold);
         LingD.Result result = lingam.search(W, dataSet.getVariables());
         Graph lingamGraph = result.getGraph();
         System.out.println("Lingam graph = " + lingamGraph);
@@ -110,7 +110,7 @@ public class TestLing {
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
         System.out.println("LiNG-D");
         LingD lingD = new LingD();
-        lingD.setPruneFactor(wThreshold);
+        lingD.setWThreshold(wThreshold);
         List<LingD.Result> results = lingD.search(W, dataSet.getVariables());
 
         if (results.isEmpty()) {
