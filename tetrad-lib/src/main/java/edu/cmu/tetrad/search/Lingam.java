@@ -49,11 +49,12 @@ public class Lingam {
      * @return The estimated B Hat matrix.
      */
     public Matrix search(Matrix W) {
-        W = threshold(W, wThreshold);
+//        W = threshold(W, wThreshold);
         PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W, spineThreshold);
         Matrix WTilde = bestPair.getPermutedMatrix().transpose();
         WTilde = LingD.scale(WTilde);
         Matrix BHat = Matrix.identity(W.columns()).minus(WTilde);
+        BHat = threshold(BHat, wThreshold);
 
         // Grab the permuted BHat and variables.
         int[] perm = bestPair.getRowPerm();
