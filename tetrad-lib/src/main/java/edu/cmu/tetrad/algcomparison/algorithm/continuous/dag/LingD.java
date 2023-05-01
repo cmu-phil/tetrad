@@ -41,13 +41,13 @@ public class LingD implements Algorithm {
             int maxIter = parameters.getInt(Params.FAST_ICA_MAX_ITER);
             double alpha = parameters.getDouble(Params.FAST_ICA_A);
             double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
-            double wThreshold = parameters.getDouble(Params.W_THRESHOLD);
+            double bThreshold = parameters.getDouble(Params.W_THRESHOLD);
             double spineThreshold = parameters.getDouble(Params.SPINE_THRESHOLD);
 
             Matrix W = edu.cmu.tetrad.search.LingD.estimateW(data, maxIter, tol, alpha);
 
             edu.cmu.tetrad.search.LingD lingD = new edu.cmu.tetrad.search.LingD();
-            lingD.setWThreshold(wThreshold);
+            lingD.setBThreshold(bThreshold);
             lingD.setSpineThreshold(spineThreshold);
             List<Matrix> bHats = lingD.search(W);
 

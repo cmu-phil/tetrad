@@ -86,12 +86,12 @@ public class TestLing {
         // We do no further pruning on the B matrix. (The algorithm spec wants us to do both
         // but pruning the W matrix seems to be giving better bHats, and besides in LiNG-D
         // the W matrix is pruned. Could switch though.)
-        double wThreshold = 0.25;
+        double bThreshold = 0.25;
         double spineThreshold = 0.5;
-        System.out.println("W threshold = " + wThreshold);
+        System.out.println("W threshold = " + bThreshold);
 
         Lingam lingam = new Lingam();
-        lingam.setWThreshold(wThreshold);
+        lingam.setBThreshold(bThreshold);
         lingam.setSpineThreshold(spineThreshold);
         Matrix lingamBhat = lingam.search(W);
         Graph lingamGraph = LingD.makeGraph(lingamBhat, dataSet.getVariables());
@@ -111,7 +111,8 @@ public class TestLing {
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
         System.out.println("LiNG-D");
         LingD lingD = new LingD();
-        lingD.setWThreshold(wThreshold);
+        lingD.setBThreshold(bThreshold);
+        lingD.setSpineThreshold(spineThreshold);
         List<Matrix> bHats = lingD.search(W);
 
         if (bHats.isEmpty()) {

@@ -32,8 +32,8 @@ import static edu.cmu.tetrad.search.LingD.threshold;
  * @author josephramsey
  */
 public class Lingam {
-    private double wThreshold;
-    private double spineThreshold;
+    private double spineThreshold = 0.5;
+    private double bThreshold = 0.1;
 
     //================================CONSTRUCTORS==========================//
 
@@ -45,16 +45,15 @@ public class Lingam {
 
     /**
      * Searches given the W matrix from ICA.
-     * @param W the W matrix from ICA.
+     * @param W the W matrix from ICA, WX = e.
      * @return The estimated B Hat matrix.
      */
     public Matrix search(Matrix W) {
-//        W = threshold(W, wThreshold);
         PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W, spineThreshold);
         Matrix WTilde = bestPair.getPermutedMatrix().transpose();
         WTilde = LingD.scale(WTilde);
         Matrix BHat = Matrix.identity(W.columns()).minus(WTilde);
-        BHat = threshold(BHat, wThreshold);
+        BHat = threshold(BHat, bThreshold);
 
         // Grab the permuted BHat and variables.
         int[] perm = bestPair.getRowPerm();
@@ -66,17 +65,15 @@ public class Lingam {
     /**
      * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
      *
-     * @param wThreshold Some value >= 0.
+     * @param bThreshold Some value >= 0.
      */
-    public void setWThreshold(double wThreshold) {
-        if (wThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + wThreshold);
-        if (spineThreshold < this.wThreshold) throw new IllegalArgumentException("Spine threshold should be >= W threshold.");
-        this.wThreshold = wThreshold;
+    public void setBThreshold(double bThreshold) {
+        if (bThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + bThreshold);
+        this.bThreshold = bThreshold;
     }
 
     public void setSpineThreshold(double spineThreshold) {
         if (spineThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + spineThreshold);
-        if (spineThreshold < this.wThreshold) throw new IllegalArgumentException("Spine threshold should be >= W threshold.");
         this.spineThreshold = spineThreshold;
     }
 }
