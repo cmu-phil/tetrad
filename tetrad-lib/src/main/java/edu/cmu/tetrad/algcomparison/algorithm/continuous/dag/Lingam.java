@@ -43,10 +43,12 @@ public class Lingam implements Algorithm {
             double alpha = parameters.getDouble(Params.FAST_ICA_A);
             double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
             double wThreshold = parameters.getDouble(Params.W_THRESHOLD);
+            double spineThreshold = parameters.getDouble(Params.SPINE_THRESHOLD);
 
             Matrix W = LingD.estimateW(data, maxIter, tol, alpha);
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
             lingam.setWThreshold(wThreshold);
+            lingam.setSpineThreshold(spineThreshold);
 
             Matrix bHat = lingam.search(W);
             Graph graph = LingD.makeGraph(bHat, data.getVariables());
@@ -91,6 +93,7 @@ public class Lingam implements Algorithm {
         parameters.add(Params.FAST_ICA_MAX_ITER);
         parameters.add(Params.FAST_ICA_TOLERANCE);
         parameters.add(Params.W_THRESHOLD);
+        parameters.add(Params.SPINE_THRESHOLD);
         return parameters;
     }
 }

@@ -33,6 +33,7 @@ import static edu.cmu.tetrad.search.LingD.threshold;
  */
 public class Lingam {
     private double wThreshold;
+    private double spineThreshold;
 
     //================================CONSTRUCTORS==========================//
 
@@ -49,7 +50,7 @@ public class Lingam {
      */
     public Matrix search(Matrix W) {
         W = threshold(W, wThreshold);
-        PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W);
+        PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W, spineThreshold);
         Matrix WTilde = bestPair.getPermutedMatrix().transpose();
         WTilde = LingD.scale(WTilde);
         Matrix BHat = Matrix.identity(W.columns()).minus(WTilde);
@@ -68,7 +69,14 @@ public class Lingam {
      */
     public void setWThreshold(double wThreshold) {
         if (wThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + wThreshold);
+        if (spineThreshold < this.wThreshold) throw new IllegalArgumentException("Spine threshold should be >= W threshold.");
         this.wThreshold = wThreshold;
+    }
+
+    public void setSpineThreshold(double spineThreshold) {
+        if (spineThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + spineThreshold);
+        if (spineThreshold < this.wThreshold) throw new IllegalArgumentException("Spine threshold should be >= W threshold.");
+        this.spineThreshold = spineThreshold;
     }
 }
 

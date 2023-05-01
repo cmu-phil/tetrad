@@ -48,6 +48,7 @@ import static org.apache.commons.math3.util.FastMath.*;
 public class LingD {
 
     private double wThreshold;
+    private double spineThreshold;
 
     /**
      * Constructor. The W matrix needs to be estimated separately (e.g., using
@@ -68,7 +69,7 @@ public class LingD {
     public List<Matrix> search(Matrix W) {
         System.out.println("Starting LiNG-D");
         W = LingD.threshold(W, wThreshold);
-        List<PermutationMatrixPair> pairs = nRooks(W);
+        List<PermutationMatrixPair> pairs = nRooks(W, spineThreshold);
 
         if (pairs.isEmpty()) {
             throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
@@ -91,8 +92,16 @@ public class LingD {
      */
     public void setWThreshold(double wThreshold) {
         if (wThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + wThreshold);
+        if (spineThreshold < this.wThreshold) throw new IllegalArgumentException("Spine threshold should be >= W threshold.");
         this.wThreshold = wThreshold;
     }
+
+    public void setSpineThreshold(double spineThreshold) {
+        if (spineThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + spineThreshold);
+        if (spineThreshold < this.wThreshold) throw new IllegalArgumentException("Spine threshold should be >= W threshold.");
+        this.spineThreshold = spineThreshold;
+    }
+
 
     /**
      * Estimates the W matrix using FastICA. Assumes the "parallel" option, using
@@ -152,8 +161,8 @@ public class LingD {
      * @return The model with the strongest diagonal, as a permutation matrix pair.
      * @see PermutationMatrixPair
      */
-    public static PermutationMatrixPair strongestDiagonalByCols(Matrix W) {
-        List<PermutationMatrixPair> pairs = nRooks(W.transpose());
+    public static PermutationMatrixPair strongestDiagonalByCols(Matrix W, double spineThrehold) {
+        List<PermutationMatrixPair> pairs = nRooks(W.transpose(), spineThrehold);
 
         if (pairs.isEmpty()) {
             throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
@@ -277,13 +286,13 @@ public class LingD {
     }
 
     @NotNull
-    private static List<PermutationMatrixPair> nRooks(Matrix W) {
+    private static List<PermutationMatrixPair> nRooks(Matrix W, double spineThreshold) {
         List<PermutationMatrixPair> pairs = new ArrayList<>();
         boolean[][] allowablePositions = new boolean[W.rows()][W.columns()];
 
         for (int i = 0; i < W.rows(); i++) {
             for (int j = 0; j < W.columns(); j++) {
-                allowablePositions[i][j] = W.get(i, j) != 0;
+                allowablePositions[i][j] = abs(W.get(i, j)) > spineThreshold;// W.get(i, j) != 0;
             }
         }
 
@@ -305,6 +314,7 @@ public class LingD {
 
         return inverse;
     }
+
 }
 
 

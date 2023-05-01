@@ -87,10 +87,12 @@ public class TestLing {
         // but pruning the W matrix seems to be giving better bHats, and besides in LiNG-D
         // the W matrix is pruned. Could switch though.)
         double wThreshold = 0.25;
+        double spineThreshold = 0.5;
         System.out.println("W threshold = " + wThreshold);
 
         Lingam lingam = new Lingam();
         lingam.setWThreshold(wThreshold);
+        lingam.setSpineThreshold(spineThreshold);
         Matrix lingamBhat = lingam.search(W);
         Graph lingamGraph = LingD.makeGraph(lingamBhat, dataSet.getVariables());
         System.out.println("Lingam graph = " + lingamGraph);
