@@ -21,16 +21,21 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,7 +101,8 @@ public class LingD {
     }
 
     public void setSpineThreshold(double spineThreshold) {
-        if (spineThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + spineThreshold);
+        if (spineThreshold < 0)
+            throw new IllegalArgumentException("Expecting a non-negative number: " + spineThreshold);
         this.spineThreshold = spineThreshold;
     }
 
@@ -113,6 +119,22 @@ public class LingD {
      */
     public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance,
                                    double fastIcaA) {
+        data = data.copy();
+
+        double[][] _data = data.getDoubleData().transpose().toArray();
+        TetradLogger.getInstance().forceLogMessage("Anderson Darling P-values Per Variables (p < alpha means Non-Guassian)");
+        TetradLogger.getInstance().forceLogMessage("");
+
+        for (int i = 0; i < _data.length; i++) {
+            Node node = data.getVariable(i);
+            AndersonDarlingTest test = new AndersonDarlingTest(_data[i]);
+            double p = test.getP();
+            NumberFormat nf = new DecimalFormat("0.000");
+            TetradLogger.getInstance().forceLogMessage(node.getName() + ": p = " + nf.format(p));
+        }
+
+        TetradLogger.getInstance().forceLogMessage("");
+
         Matrix X = data.getDoubleData();
         X = DataUtils.centerData(X).transpose();
         FastIca fastIca = new FastIca(X, X.rows());
@@ -167,7 +189,7 @@ public class LingD {
         }
 
         PermutationMatrixPair bestPair = null;
-        double sum1 = Double.POSITIVE_INFINITY;
+        double sum1 = Double.NEGATIVE_INFINITY;
 
         P:
         for (PermutationMatrixPair pair : pairs) {
@@ -181,10 +203,10 @@ public class LingD {
                     continue P;
                 }
 
-                sum += 1.0 / StrictMath.abs(a);
+                sum += FastMath.abs(a);//= 1.0 / StrictMath.abs(a);
             }
 
-            if (sum < sum1) {
+            if (sum > sum1) {
                 sum1 = sum;
                 bestPair = pair;
             }
@@ -285,7 +307,41 @@ public class LingD {
 
     @NotNull
     private static List<PermutationMatrixPair> nRooks(Matrix W, double spineThreshold) {
+        List<PermutationMatrixPair> pairs = pairNRook(W);
+//        List<PermutationMatrixPair> pairs = pairsNRook(W, spineThreshold);
+
+        return pairs;
+    }
+
+    @NotNull
+    private static List<PermutationMatrixPair> pairNRook(Matrix W) {
+        double[][] costMatrix = new double[W.rows()][W.columns()];
+
+        for (int i = 0; i < W.rows(); i++) {
+            for (int j = 0; j < W.columns(); j++) {
+                if (W.get(i, j) != 0) {
+                    costMatrix[i][j] = 1.0 / abs(W.get(i, j));
+                } else {
+                    costMatrix[i][j] = 1000.0;
+                }
+            }
+        }
+
+        HungarianAlgorithm alg = new HungarianAlgorithm(costMatrix);
+        int[][] assignment = alg.findOptimalAssignment();
+
         List<PermutationMatrixPair> pairs = new ArrayList<>();
+
+        int[] perm = new int[assignment.length];
+        for (int i = 0; i < perm.length; i++) perm[i] = assignment[i][1];
+
+        PermutationMatrixPair pair = new PermutationMatrixPair(W, perm, null);
+        pairs.add(pair);
+        return pairs;
+    }
+
+    @NotNull
+    private static List<PermutationMatrixPair> pairsNRook(Matrix W, double spineThreshold) {
         boolean[][] allowablePositions = new boolean[W.rows()][W.columns()];
 
         for (int i = 0; i < W.rows(); i++) {
@@ -294,12 +350,12 @@ public class LingD {
             }
         }
 
+        List<PermutationMatrixPair> pairs = new ArrayList<>();
         List<int[]> colPermutations = NRooks.nRooks(allowablePositions);
 
         for (int[] colPermutation : colPermutations) {
             pairs.add(new PermutationMatrixPair(W, null, colPermutation));
         }
-
         return pairs;
     }
 

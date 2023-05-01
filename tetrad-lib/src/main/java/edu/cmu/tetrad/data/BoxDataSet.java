@@ -1018,7 +1018,7 @@ public final class BoxDataSet implements DataSet {
             retainedVars.add(this.variables.get(retainedCol));
         }
 
-        this.dataBox = viewSelection(rows, cols);
+        this.dataBox = viewSelection(rows, retainedCols);
         this.variables = retainedVars;
         this.selection = new HashSet<>();
         this.multipliers = new HashMap<>(this.multipliers);

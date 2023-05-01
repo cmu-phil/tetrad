@@ -37,7 +37,7 @@ public class NRooks {
         int col = 0;
 
         while (row < p) {
-            if (col >= p) {
+            if (col == p) {
                 if (rows.isEmpty()) {
                     break;
                 }
@@ -80,6 +80,7 @@ public class NRooks {
                 return false;
             }
         }
+
         return true;
     }
 }

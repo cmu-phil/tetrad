@@ -41,8 +41,8 @@ public class LingD implements Algorithm {
             int maxIter = parameters.getInt(Params.FAST_ICA_MAX_ITER);
             double alpha = parameters.getDouble(Params.FAST_ICA_A);
             double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
-            double bThreshold = parameters.getDouble(Params.W_THRESHOLD);
-            double spineThreshold = parameters.getDouble(Params.SPINE_THRESHOLD);
+            double bThreshold = parameters.getDouble(Params.THRESHOLD_W);
+            double spineThreshold = parameters.getDouble(Params.THRESHOLD_SPINE);
 
             Matrix W = edu.cmu.tetrad.search.LingD.estimateW(data, maxIter, tol, alpha);
 
@@ -58,6 +58,7 @@ public class LingD implements Algorithm {
                 Graph graph = edu.cmu.tetrad.search.LingD.makeGraph(bHat, dataSet.getVariables());
                 TetradLogger.getInstance().forceLogMessage(bHat.toString());
                 TetradLogger.getInstance().forceLogMessage(graph.toString());
+                TetradLogger.getInstance().forceLogMessage("Stable = " + edu.cmu.tetrad.search.LingD.isStable(bHat));
             }
 
             if (bHats.size() > 0) {
@@ -101,8 +102,8 @@ public class LingD implements Algorithm {
         parameters.add(Params.FAST_ICA_A);
         parameters.add(Params.FAST_ICA_MAX_ITER);
         parameters.add(Params.FAST_ICA_TOLERANCE);
-        parameters.add(Params.W_THRESHOLD);
-        parameters.add(Params.SPINE_THRESHOLD);
+        parameters.add(Params.THRESHOLD_W);
+        parameters.add(Params.THRESHOLD_SPINE);
         return parameters;
     }
 }
