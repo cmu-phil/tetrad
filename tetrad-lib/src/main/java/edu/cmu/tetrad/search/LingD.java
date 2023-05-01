@@ -88,7 +88,7 @@ public class LingD {
     /**
      * Sets the threshold used to prune the B matrix for the local algorithms.
      *
-     * @param bThreshold The treshold, a non-negative number.
+     * @param bThreshold The threshold, a non-negative number.
      */
     public void setBThreshold(double bThreshold) {
         if (bThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + bThreshold);
