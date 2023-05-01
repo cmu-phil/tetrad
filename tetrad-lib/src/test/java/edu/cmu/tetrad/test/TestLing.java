@@ -106,7 +106,7 @@ public class TestLing {
         // For LiNG-D, we can just call the relevant public static methods. This was obviously written
         // by a Matlab person.
         //
-        // We generate bHats of column permutations (solving the constriained N Rooks problem) with their
+        // We generate bHats of column permutations (solving the constrained N Rooks problem) with their
         // associated column-permuted W thresholded W matrices. For the constrained N rooks problme we
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
         System.out.println("LiNG-D");
