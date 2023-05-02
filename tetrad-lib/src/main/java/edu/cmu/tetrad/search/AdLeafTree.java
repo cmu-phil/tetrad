@@ -33,6 +33,10 @@ public class AdLeafTree {
     // Dimensions of the discrete variables (otherwise 0).
     private final int[] dims;
 
+    /**
+     * Constructs an AD Leaf Tree for the given dataset.
+     * @param dataSet A discrete dataset.
+     */
     public AdLeafTree(DataSet dataSet) {
         this.dataSet = dataSet;
 
@@ -128,10 +132,6 @@ public class AdLeafTree {
         }
 
         return rows;
-    }
-
-    public void setColumn(DiscreteVariable var, int[] col) {
-        this.discreteData[this.dataSet.getColumn(var)] = col;
     }
 
     private List<Vary> getVaries(List<Vary> varies, int v) {

@@ -13,6 +13,12 @@ import java.util.Map;
 public class AdTrees {
     private static final Map<DataSet, AdLeafTree> adTrees = new HashMap<>();
 
+    /**
+     * Returns an ADLeafTree for the given dataset.
+     * @param dataSet A discrete dataset.
+     * @return The AdLeafTree
+     * @see AdLeafTree
+     */
     public static AdLeafTree getAdLeafTree(DataSet dataSet) {
         AdLeafTree tree = AdTrees.adTrees.get(dataSet);
 
