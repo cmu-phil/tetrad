@@ -23,6 +23,10 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.util.Matrix;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static edu.cmu.tetrad.search.LingD.nRooks;
 import static edu.cmu.tetrad.search.LingD.threshold;
 
 /**
@@ -50,16 +54,7 @@ public class Lingam {
      */
     public Matrix search(Matrix W) {
         PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W, spineThreshold);
-        Matrix WTilde = bestPair.getPermutedMatrix().transpose();
-        WTilde = LingD.scale(WTilde);
-        Matrix BHat = Matrix.identity(W.columns()).minus(WTilde);
-        BHat = threshold(BHat, bThreshold);
-
-        // Grab the permuted BHat and variables.
-        int[] perm = bestPair.getRowPerm();
-        int[] inverse = LingD.inversePermutation(perm);
-        PermutationMatrixPair inversePair = new PermutationMatrixPair(BHat, inverse, inverse);
-        return inversePair.getPermutedMatrix();
+        return LingD.getScaledBHat(bestPair, bThreshold);
     }
 
     /**
