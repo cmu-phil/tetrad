@@ -204,7 +204,7 @@ public class LingD {
      * @return The model with the strongest diagonal, as a permutation matrix pair.
      * @see PermutationMatrixPair
      */
-    public static PermutationMatrixPair strongestDiagonalByCols(Matrix W, double spineThrehold) {
+    public static PermutationMatrixPair strongestDiagonal(Matrix W, double spineThrehold) {
         List<PermutationMatrixPair> pairs = nRooks(W.transpose(), spineThrehold);
 
         if (pairs.isEmpty()) {

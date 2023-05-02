@@ -68,7 +68,7 @@ public class Lingam {
      * @return The estimated B Hat matrix.
      */
     public Matrix fitW(Matrix W) {
-        PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W, spineThreshold);
+        PermutationMatrixPair bestPair = LingD.strongestDiagonal(W, spineThreshold);
         return LingD.getScaledBHat(bestPair, bThreshold);
     }
 
