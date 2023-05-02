@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.Matrix;
  * because the method was trivial (it's not) but out of an attempt to compartmentalize.
  * Bootstrapping and other forms of improving the estimate of BHat were not addressed,
  * and not attempt was made here to ensure that LiNGAM outputs a DAG. For high sample sizes
- * for an acyclic model it does not tend to. No attempt was made to implement DirectLiNGAM
+ * for an acyclic model it does tend to. No attempt was made to implement DirectLiNGAM
  * since it was tangential to my effort to get LiNG-D to work. Also, only a passing effort
  * to get either of these algorithms to handle real data. There are two tuning parameters--a
  * threshold for finding a strong diagonal and a threshold on the B matrix for finding edges
