@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -30,22 +29,25 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * This class provides the data structures and methods for carrying out the Cyclic Causal Discovery algorithm (CCD)
+ * <p>This class provides the data structures and methods for carrying out the Cyclic Causal Discovery algorithm (CCD)
  * described by Thomas Richardson and Peter Spirtes in Chapter 7 of Computation, Causation, and Discovery by Glymour and
  * Cooper eds.  The comments that appear below are keyed to the algorithm specification on pp. 269-271. The search
  * method returns an instance of a Graph but it also constructs two lists of node triples which represent the underlines
- * and dotted underlines that the algorithm discovers.
+ * and dotted underlines that the algorithm discovers.</p>
  *
  * @author Frank C. Wimberly
  * @author Joseph Ramsey
  */
 public final class Ccd implements GraphSearch {
     private final IndependenceTest independenceTest;
-    private int depth = -1;
-    private Knowledge knowledge;
     private final List<Node> nodes;
     private boolean applyR1;
 
+    /**
+     * Construct a CCD algorithm with the given independence test.
+     * @param test The test to be used.
+     * @see IndependenceTest
+     */
     public Ccd(IndependenceTest test) {
         if (test == null) throw new NullPointerException("Test is not provided");
         this.independenceTest = test;
@@ -83,6 +85,26 @@ public final class Ccd implements GraphSearch {
         return psi;
     }
 
+    /**
+     * Returns true iff the R1 rule should be applied.
+     *
+     * @return True if the case.
+     */
+    public boolean isApplyR1() {
+        return this.applyR1;
+    }
+
+    /**
+     * Sets whether the R1 rule should be applied.
+     *
+     * @param applyR1 True if the case.
+     */
+    public void setApplyR1(boolean applyR1) {
+        this.applyR1 = applyR1;
+    }
+
+    //======================================== PRIVATE METHODS ====================================//
+
     private void orientAwayFromArrow(Graph graph) {
         for (Edge edge : graph.getEdges()) {
             Node n1 = edge.getNode1();
@@ -97,31 +119,6 @@ public final class Ccd implements GraphSearch {
             }
         }
     }
-
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public int getDepth() {
-        return this.depth;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-        this.knowledge = knowledge;
-    }
-
-    public long getElapsedTime() {
-        return 0;
-    }
-
-    //======================================== PRIVATE METHODS ====================================//
 
     private void stepB(Graph graph) {
         Map<Triple, Double> colliders = new HashMap<>();
@@ -488,14 +485,6 @@ public final class Ccd implements GraphSearch {
         }
 
         return true;
-    }
-
-    public boolean isApplyR1() {
-        return this.applyR1;
-    }
-
-    public void setApplyR1(boolean applyR1) {
-        this.applyR1 = applyR1;
     }
 }
 
