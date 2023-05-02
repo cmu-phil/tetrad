@@ -49,7 +49,6 @@ public class Ccd implements Algorithm, TakesIndependenceWrapper, ReturnsBootstra
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.Ccd search = new edu.cmu.tetrad.search.Ccd(
                     test.getTest(dataSet, parameters));
-            search.setDepth(parameters.getInt(Params.DEPTH));
             search.setApplyR1(parameters.getBoolean(Params.APPLY_R1));
 
             return search.search();
