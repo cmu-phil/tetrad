@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
+import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.DataModel;
@@ -30,9 +31,11 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class Lingam implements Algorithm {
+public class Lingam implements Algorithm, ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
+
+    private List<Graph> bootstrapGraphs = new ArrayList<>();
 
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
@@ -66,6 +69,7 @@ public class Lingam implements Algorithm {
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            this.bootstrapGraphs = search.getGraphs();
             return search.search();
         }
     }
@@ -95,4 +99,10 @@ public class Lingam implements Algorithm {
         parameters.add(Params.THRESHOLD_SPINE);
         return parameters;
     }
+
+    @Override
+    public List<Graph> getBootstrapGraphs() {
+        return this.bootstrapGraphs;
+    }
+
 }
