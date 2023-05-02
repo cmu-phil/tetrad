@@ -57,7 +57,7 @@ public class Lingam {
      * @param W the W matrix from ICA, WX = e.
      * @return The estimated B Hat matrix.
      */
-    public Matrix search(Matrix W) {
+    public Matrix fit(Matrix W) {
         PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W, spineThreshold);
         return LingD.getScaledBHat(bestPair, bThreshold);
     }

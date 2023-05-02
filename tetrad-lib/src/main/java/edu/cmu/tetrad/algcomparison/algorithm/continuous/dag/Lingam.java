@@ -49,7 +49,7 @@ public class Lingam implements Algorithm {
             lingam.setBThreshold(bThreshold);
             lingam.setSpineThreshold(spineThreshold);
 
-            Matrix bHat = lingam.search(W);
+            Matrix bHat = lingam.fit(W);
             Graph graph = LingD.makeGraph(bHat, data.getVariables());
             TetradLogger.getInstance().forceLogMessage(bHat.toString());
             TetradLogger.getInstance().forceLogMessage(graph.toString());
