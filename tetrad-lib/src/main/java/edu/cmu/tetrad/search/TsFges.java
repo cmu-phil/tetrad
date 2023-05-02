@@ -52,7 +52,7 @@ import java.util.concurrent.*;
  * @author Joseph Ramsey, Revisions 5/2015
  * @author Daniel Malinsky
  */
-public final class TsFges2 implements GraphSearch, GraphScorer {
+public final class TsFges implements GraphSearch, GraphScorer {
 
 
     /**
@@ -181,7 +181,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
      * values in case of conditional independence. See Chickering (2002),
      * locally consistent scoring criterion.
      */
-    public TsFges2(Score score) {
+    public TsFges(Score score) {
         if (score == null) throw new NullPointerException();
         setScore(score);
         this.graph = new EdgeListGraph(getVariables());
@@ -529,12 +529,12 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
         protected Boolean compute() {
             for (int i = this.from; i < this.to; i++) {
                 if ((i + 1) % 1000 == 0) {
-                    TsFges2.this.count[0] += 1000;
-                    TsFges2.this.out.println("Initializing effect edges: " + (TsFges2.this.count[0]));
+                    TsFges.this.count[0] += 1000;
+                    TsFges.this.out.println("Initializing effect edges: " + (TsFges.this.count[0]));
                 }
 
                 Node y = this.nodes.get(i);
-                TsFges2.this.neighbors.put(y, this.emptySet);
+                TsFges.this.neighbors.put(y, this.emptySet);
 
                 for (int j = i + 1; j < this.nodes.size(); j++) {
                     if (Thread.currentThread().isInterrupted()) {
@@ -553,19 +553,19 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                         }
                     }
 
-                    if (TsFges2.this.adjacencies != null && !TsFges2.this.adjacencies.isAdjacentTo(x, y)) {
+                    if (TsFges.this.adjacencies != null && !TsFges.this.adjacencies.isAdjacentTo(x, y)) {
                         continue;
                     }
 
-                    int child = TsFges2.this.hashIndices.get(y);
-                    int parent = TsFges2.this.hashIndices.get(x);
-                    double bump = TsFges2.this.score.localScoreDiff(parent, child);
+                    int child = TsFges.this.hashIndices.get(y);
+                    int parent = TsFges.this.hashIndices.get(x);
+                    double bump = TsFges.this.score.localScoreDiff(parent, child);
 
-                    if (TsFges2.this.boundGraph != null && !TsFges2.this.boundGraph.isAdjacentTo(x, y)) continue;
+                    if (TsFges.this.boundGraph != null && !TsFges.this.boundGraph.isAdjacentTo(x, y)) continue;
 
                     if (bump > 0) {
                         Edge edge = Edges.undirectedEdge(x, y);
-                        TsFges2.this.effectEdgesGraph.addEdge(edge);
+                        TsFges.this.effectEdgesGraph.addEdge(edge);
                     }
 
                     if (bump > 0.0) {
@@ -598,7 +598,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
             protected Boolean compute() {
                 Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
 
-                int numNodesPerTask = FastMath.max(100, nodes.size() / TsFges2.this.maxThreads);
+                int numNodesPerTask = FastMath.max(100, nodes.size() / TsFges.this.maxThreads);
 
                 for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
                     NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, FastMath.min(nodes.size(), i + numNodesPerTask),
@@ -613,7 +613,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                         }
                     }
 
-                    while (tasks.size() > TsFges2.this.maxThreads) {
+                    while (tasks.size() > TsFges.this.maxThreads) {
                         NodeTaskEmptyGraph _task = tasks.poll();
                         _task.join();
                     }
@@ -676,21 +676,21 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                 if (this.to - this.from <= this.chunk) {
                     for (int i = this.from; i < this.to; i++) {
                         if ((i + 1) % 1000 == 0) {
-                            TsFges2.this.count[0] += 1000;
-                            TsFges2.this.out.println("Initializing effect edges: " + (TsFges2.this.count[0]));
+                            TsFges.this.count[0] += 1000;
+                            TsFges.this.out.println("Initializing effect edges: " + (TsFges.this.count[0]));
                         }
 
                         Node y = nodes.get(i);
 
                         Set<Node> g = new HashSet<>();
 
-                        for (Node n : TsFges2.this.graph.getAdjacentNodes(y)) {
-                            for (Node m : TsFges2.this.graph.getAdjacentNodes(n)) {
-                                if (TsFges2.this.graph.isAdjacentTo(y, m)) {
+                        for (Node n : TsFges.this.graph.getAdjacentNodes(y)) {
+                            for (Node m : TsFges.this.graph.getAdjacentNodes(n)) {
+                                if (TsFges.this.graph.isAdjacentTo(y, m)) {
                                     continue;
                                 }
 
-                                if (TsFges2.this.graph.isDefCollider(m, n, y)) {
+                                if (TsFges.this.graph.isDefCollider(m, n, y)) {
                                     continue;
                                 }
 
@@ -709,11 +709,11 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                                 }
                             }
 
-                            if (TsFges2.this.adjacencies != null && !TsFges2.this.adjacencies.isAdjacentTo(x, y)) {
+                            if (TsFges.this.adjacencies != null && !TsFges.this.adjacencies.isAdjacentTo(x, y)) {
                                 continue;
                             }
 
-                            if (TsFges2.this.removedEdges.contains(Edges.undirectedEdge(x, y))) {
+                            if (TsFges.this.removedEdges.contains(Edges.undirectedEdge(x, y))) {
                                 continue;
                             }
 
@@ -783,15 +783,15 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                         }
 
                         if ((i + 1) % 1000 == 0) {
-                            TsFges2.this.count[0] += 1000;
-                            TsFges2.this.out.println("Initializing effect edges: " + (TsFges2.this.count[0]));
+                            TsFges.this.count[0] += 1000;
+                            TsFges.this.out.println("Initializing effect edges: " + (TsFges.this.count[0]));
                         }
 
                         Node y = nodes.get(i);
                         List<Node> cond = new ArrayList<>();
-                        Set<Node> D = new HashSet<>(TsFges2.this.graph.paths().getDconnectedVars(y, cond));
+                        Set<Node> D = new HashSet<>(TsFges.this.graph.paths().getDconnectedVars(y, cond));
                         D.remove(y);
-                        TsFges2.this.effectEdgesGraph.getAdjacentNodes(y).forEach(D::remove);
+                        TsFges.this.effectEdgesGraph.getAdjacentNodes(y).forEach(D::remove);
 
                         for (Node x : D) {
                             if (existsKnowledge()) {
@@ -804,7 +804,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                                 }
                             }
 
-                            if (TsFges2.this.adjacencies != null && !TsFges2.this.adjacencies.isAdjacentTo(x, y)) {
+                            if (TsFges.this.adjacencies != null && !TsFges.this.adjacencies.isAdjacentTo(x, y)) {
                                 continue;
                             }
 
@@ -1044,18 +1044,18 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
 
                         List<Node> adj;
 
-                        if (TsFges2.this.mode == Mode.heuristicSpeedup) {
-                            adj = TsFges2.this.effectEdgesGraph.getAdjacentNodes(x);
-                        } else if (TsFges2.this.mode == Mode.coverNoncolliders) {
+                        if (TsFges.this.mode == Mode.heuristicSpeedup) {
+                            adj = TsFges.this.effectEdgesGraph.getAdjacentNodes(x);
+                        } else if (TsFges.this.mode == Mode.coverNoncolliders) {
                             Set<Node> g = new HashSet<>();
 
-                            for (Node n : TsFges2.this.graph.getAdjacentNodes(x)) {
-                                for (Node m : TsFges2.this.graph.getAdjacentNodes(n)) {
-                                    if (TsFges2.this.graph.isAdjacentTo(x, m)) {
+                            for (Node n : TsFges.this.graph.getAdjacentNodes(x)) {
+                                for (Node m : TsFges.this.graph.getAdjacentNodes(n)) {
+                                    if (TsFges.this.graph.isAdjacentTo(x, m)) {
                                         continue;
                                     }
 
-                                    if (TsFges2.this.graph.isDefCollider(m, n, x)) {
+                                    if (TsFges.this.graph.isDefCollider(m, n, x)) {
                                         continue;
                                     }
 
@@ -1064,8 +1064,8 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                             }
 
                             adj = new ArrayList<>(g);
-                        } else if (TsFges2.this.mode == Mode.allowUnfaithfulness) {
-                            HashSet<Node> D = new HashSet<>(TsFges2.this.graph.paths().getDconnectedVars(x, new ArrayList<>()));
+                        } else if (TsFges.this.mode == Mode.allowUnfaithfulness) {
+                            HashSet<Node> D = new HashSet<>(TsFges.this.graph.paths().getDconnectedVars(x, new ArrayList<>()));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {
@@ -1073,13 +1073,13 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                         }
 
                         for (Node w : adj) {
-                            if (TsFges2.this.adjacencies != null && !(TsFges2.this.adjacencies.isAdjacentTo(w, x))) {
+                            if (TsFges.this.adjacencies != null && !(TsFges.this.adjacencies.isAdjacentTo(w, x))) {
                                 continue;
                             }
 
                             if (w == x) continue;
 
-                            if (!TsFges2.this.graph.isAdjacentTo(w, x)) {
+                            if (!TsFges.this.graph.isAdjacentTo(w, x)) {
                                 clearArrow(w, x);
                                 calculateArrowsForward(w, x);
                             }
@@ -1204,7 +1204,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                 if (this.to - this.from <= this.chunk) {
                     for (int _w = this.from; _w < this.to; _w++) {
                         Node w = this.adj.get(_w);
-                        Edge e = TsFges2.this.graph.getEdge(w, this.r);
+                        Edge e = TsFges.this.graph.getEdge(w, this.r);
 
                         if (e != null) {
                             if (e.pointsTowards(this.r)) {
@@ -1212,7 +1212,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                                 clearArrow(this.r, w);
 
                                 calculateArrowsBackward(w, this.r);
-                            } else if (Edges.isUndirectedEdge(TsFges2.this.graph.getEdge(w, this.r))) {
+                            } else if (Edges.isUndirectedEdge(TsFges.this.graph.getEdge(w, this.r))) {
                                 clearArrow(w, this.r);
                                 clearArrow(this.r, w);
 
@@ -1736,7 +1736,7 @@ public final class TsFges2 implements GraphSearch, GraphScorer {
                 }
 
                 Edge edge = this.graph.getEdge(t, u);
-                Node c = TsFges2.traverseSemiDirected(t, edge);
+                Node c = TsFges.traverseSemiDirected(t, edge);
                 if (c == null) continue;
                 if (cond.contains(c)) continue;
 

@@ -173,8 +173,6 @@ public class ZhangShenBoundScore implements Score {
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
      */
-
-
     public ICovarianceMatrix getCovariances() {
         return covariances;
     }

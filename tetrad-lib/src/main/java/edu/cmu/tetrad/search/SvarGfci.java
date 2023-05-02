@@ -139,7 +139,7 @@ public final class SvarGfci implements GraphSearch {
             setScore();
         }
 
-        TsFges2 fges = new TsFges2(this.score);
+        TsFges fges = new TsFges(this.score);
         fges.setKnowledge(getKnowledge());
         fges.setVerbose(this.verbose);
         fges.setNumCPDAGsToStore(0);

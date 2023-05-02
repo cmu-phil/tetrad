@@ -30,9 +30,9 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Searches for a CPDAG representing all the Markov blankets for a given target T consistent with the given
+ * <p>Searches for a CPDAG representing all the Markov blankets for a given target T consistent with the given
  * independence information. This CPDAG may be used to generate the actual list of DAG's that might be Markov
- * blankets. Note that this code has been converted to be consistent with the CPC algorithm.
+ * blankets. Note that this code has been converted to be consistent with the CPC algorithm.</p>
  *
  * @author Joseph Ramsey
  */

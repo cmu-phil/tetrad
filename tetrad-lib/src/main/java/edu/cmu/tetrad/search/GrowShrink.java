@@ -27,8 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Implements the Grow-Shrink algorithm of Margaritis and Thrun. Reference: "Bayesian Network Induction via Local
- * Neighborhoods."
+ * <p>Implements the Grow-Shrink algorithm of Margaritis and Thrun. Reference: "Bayesian Network
+ * Induction via LocalmNeighborhoods."</p>
  *
  * @author Joseph Ramsey
  */
