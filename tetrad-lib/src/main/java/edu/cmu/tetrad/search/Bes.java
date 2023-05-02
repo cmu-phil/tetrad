@@ -21,6 +21,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @see Fges
  */
 public class Bes {
     private final List<Node> variables;
@@ -34,33 +35,46 @@ public class Bes {
         this.variables = score.getVariables();
     }
 
+    /**
+     * Returns the variables being searched over.
+     * @return These variables as a list.
+     */
     @NotNull
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True iff so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the knowledge for the search.
+     * @param knowledge This knowledge.
+     * @see Knowledge
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
+    /**
+     * Sets the depth for the search, which is the maximum number of variables conditioned on.
+     * @param depth This maximum; for unlimited depth use -1; otherwise, give a nonzero integer.
+     */
     public void setDepth(int depth) {
         if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
         this.depth = depth;
     }
 
-    private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
-
-        int i = -1;
-
-        for (Node n : nodes) {
-            hashIndices.put(n, ++i);
-        }
-    }
-
+    /**
+     * Runs BES for a graph over the given list of variables
+     * @param graph The graph.
+     * @param variables The variables the search should be restricted to.
+     */
     public void bes(Graph graph, List<Node> variables) {
         Map<Node, Integer> hashIndices = new HashMap<>();
         SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
@@ -117,6 +131,10 @@ public class Bes {
         }
     }
 
+    private Knowledge getKnowledge() {
+        return knowledge;
+    }
+
     private void delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX, Graph graph) {
         Edge oldxy = graph.getEdge(x, y);
 
@@ -166,15 +184,6 @@ public class Bes {
         }
     }
 
-    private double deleteEval(Node x, Node
-            y, Set<Node> complement, Set<Node> parents, Map<Node, Integer> hashIndices) {
-        Set<Node> set = new HashSet<>(complement);
-        set.addAll(parents);
-        set.remove(x);
-
-        return -scoreGraphChange(x, y, set, hashIndices);
-    }
-
     private double scoreGraphChange(Node x, Node y, Set<Node> parents, Map<Node, Integer> hashIndices) {
         int xIndex = hashIndices.get(x);
         int yIndex = hashIndices.get(y);
@@ -197,8 +206,13 @@ public class Bes {
         return score.localScoreDiff(xIndex, yIndex, parentIndices);
     }
 
-    public Knowledge getKnowledge() {
-        return knowledge;
+    private double deleteEval(Node x, Node
+            y, Set<Node> complement, Set<Node> parents, Map<Node, Integer> hashIndices) {
+        Set<Node> set = new HashSet<>(complement);
+        set.addAll(parents);
+        set.remove(x);
+
+        return -scoreGraphChange(x, y, set, hashIndices);
     }
 
     private Set<Node> revertToCPDAG(Graph graph) {
@@ -208,6 +222,15 @@ public class Bes {
         boolean meekVerbose = false;
         rules.setVerbose(meekVerbose);
         return rules.orientImplied(graph);
+    }
+
+    private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
+
+        int i = -1;
+
+        for (Node n : nodes) {
+            hashIndices.put(n, ++i);
+        }
     }
 
     private boolean validDelete(Node x, Node y, Set<Node> H, Set<Node> naYX, Graph graph) {
