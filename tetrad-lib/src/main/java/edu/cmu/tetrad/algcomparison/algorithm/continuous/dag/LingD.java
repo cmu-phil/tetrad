@@ -9,7 +9,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.LingD;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -20,17 +19,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * LiNGAM.
+ * LiNG-D.
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LiNGAM",
-        command = "lingam",
+        name = "LiNG-D",
+        command = "ling-d",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class Lingam implements Algorithm {
+public class LingD implements Algorithm {
 
     static final long serialVersionUID = 23L;
 
@@ -44,19 +43,30 @@ public class Lingam implements Algorithm {
             double bThreshold = parameters.getDouble(Params.THRESHOLD_W);
             double spineThreshold = parameters.getDouble(Params.THRESHOLD_SPINE);
 
-            Matrix W = LingD.estimateW(data, maxIter, tol, alpha);
-            edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
-            lingam.setBThreshold(bThreshold);
-            lingam.setSpineThreshold(spineThreshold);
+            Matrix W = edu.cmu.tetrad.search.LingD.estimateW(data, maxIter, tol, alpha);
 
-            Matrix bHat = lingam.search(W);
-            Graph graph = LingD.makeGraph(bHat, data.getVariables());
-            TetradLogger.getInstance().forceLogMessage(bHat.toString());
-            TetradLogger.getInstance().forceLogMessage(graph.toString());
+            edu.cmu.tetrad.search.LingD lingD = new edu.cmu.tetrad.search.LingD();
+            lingD.setBThreshold(bThreshold);
+            lingD.setSpineThreshold(spineThreshold);
+            List<Matrix> bHats = lingD.search(W);
 
-            return graph;
+            int count = 0;
+
+            for (Matrix bHat : bHats) {
+                TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count));
+                Graph graph = edu.cmu.tetrad.search.LingD.makeGraph(bHat, dataSet.getVariables());
+                TetradLogger.getInstance().forceLogMessage(bHat.toString());
+                TetradLogger.getInstance().forceLogMessage(graph.toString());
+                TetradLogger.getInstance().forceLogMessage("Stable = " + edu.cmu.tetrad.search.LingD.isStable(bHat));
+            }
+
+            if (bHats.size() > 0) {
+                return edu.cmu.tetrad.search.LingD.makeGraph(bHats.get(0), dataSet.getVariables());
+            } else {
+                throw new IllegalArgumentException("LiNG-D couldn't find a model.");
+            }
         } else {
-            Lingam algorithm = new Lingam();
+            LingD algorithm = new LingD();
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
@@ -76,7 +86,7 @@ public class Lingam implements Algorithm {
     }
 
     public String getDescription() {
-        return "LiNGAM (Linear Non-Gaussian Acyclic Model";
+        return "LiNG-D (Linear Non-Gaussian Discovery";
     }
 
     @Override

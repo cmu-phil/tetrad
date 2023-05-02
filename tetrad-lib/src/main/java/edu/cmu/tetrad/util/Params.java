@@ -80,6 +80,8 @@ public final class Params {
     public static final String FAST_ICA_TOLERANCE = "fastIcaTolerance";
     public static final String ICA_ALGORITHM = "icaAlgorithm";
     public static final String ICA_FUNCTION = "icaFunction";
+    public static final String THRESHOLD_W = "thresholdBHat";
+    public static final String THRESHOLD_SPINE = "thresholdSpine";
     public static final String ORIENTATION_ALPHA = "orientationAlpha";
     public static final String FISHER_EPSILON = "fisherEpsilon";
     public static final String GENERAL_SEM_ERROR_TEMPLATE = "generalSemErrorTemplate";

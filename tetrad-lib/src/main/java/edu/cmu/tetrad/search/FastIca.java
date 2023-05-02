@@ -25,12 +25,10 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.util.FastMath;
 
-import static org.apache.commons.math3.util.FastMath.exp;
-import static org.apache.commons.math3.util.FastMath.tanh;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * A Java implementation of FastIca following the R package fastICA. The only
@@ -299,8 +297,8 @@ public class FastIca {
      * A logical value indicating whether rows of the data matrix 'X' should be
      * standardized beforehand.
      */
-    public void setRowNorm(boolean colNorm) {
-        this.rowNorm = colNorm;
+    public void setRowNorm(boolean rowNorm) {
+        this.rowNorm = rowNorm;
     }
 
     /**
@@ -381,10 +379,10 @@ public class FastIca {
         int n = this.X.columns();
         int p = this.X.rows();
 
-        if (this.numComponents > FastMath.min(n, p)) {
+        if (this.numComponents > min(n, p)) {
             TetradLogger.getInstance().log("info", "Requested number of components is too large.");
-            TetradLogger.getInstance().log("info", "Reset to " + FastMath.min(n, p));
-            this.numComponents = FastMath.min(n, p);
+            TetradLogger.getInstance().log("info", "Reset to " + min(n, p));
+            this.numComponents = min(n, p);
         }
 
         if (this.wInit == null) {
@@ -415,7 +413,7 @@ public class FastIca {
         // Whiten.
         Matrix cov = this.X.times(this.X.transpose()).scalarMult(1.0 / n);
 
-        SingularValueDecomposition s = new SingularValueDecomposition(new BlockRealMatrix(cov.toArray()));
+        SingularValueDecomposition s = new SingularValueDecomposition(cov.getApacheData());
         Matrix D = new Matrix(s.getS().getData());
         Matrix U = new Matrix(s.getU().getData());
 
@@ -428,6 +426,7 @@ public class FastIca {
         K = K.getPart(0, this.numComponents - 1, 0, p - 1);
 
         Matrix X1 = K.times(this.X);
+
         Matrix b;
 
         if (this.algorithmType == FastIca.DEFLATION) {
@@ -551,7 +550,7 @@ public class FastIca {
                     _tolerance += w1.get(k) * w.get(k);
                 }
 
-                _tolerance = FastMath.abs(FastMath.abs(_tolerance) - 1.0);
+                _tolerance = abs(abs(_tolerance) - 1.0);
 
                 if (verbose) {
                     TetradLogger.getInstance().log("fastIcaDetails", "Iteration " + it + " tol = " + _tolerance);
@@ -607,12 +606,12 @@ public class FastIca {
         int p = X.columns();
         Matrix W = wInit;
 
-        SingularValueDecomposition sW = new SingularValueDecomposition(new BlockRealMatrix(W.toArray()));
+        SingularValueDecomposition sW = new SingularValueDecomposition(W.getApacheData());
         Matrix D = new Matrix(sW.getS().getData());
         for (int i = 0; i < D.rows(); i++) D.set(i, i, 1.0 / D.get(i, i));
 
-        Matrix WTemp = new Matrix(sW.getU().getData()).times(D);
-        WTemp = WTemp.times(new Matrix(sW.getU().getData()).transpose());
+        Matrix WTemp = new Matrix(sW.getU()).times(D);
+        WTemp = WTemp.times(new Matrix(sW.getU()).transpose());
         WTemp = WTemp.times(W);
         W = WTemp;
 
@@ -655,9 +654,9 @@ public class FastIca {
             v2 = v2.times(W);
             W1 = v1.minus(v2);
 
-            SingularValueDecomposition sW1 = new SingularValueDecomposition(new BlockRealMatrix(W1.toArray()));
-            Matrix U = new Matrix(sW1.getU().getData());
-            Matrix sD = new Matrix(sW1.getS().getData());
+            SingularValueDecomposition sW1 = new SingularValueDecomposition(W1.getApacheData());
+            Matrix U = new Matrix(sW1.getU());
+            Matrix sD = new Matrix(sW1.getS());
             for (int i = 0; i < sD.rows(); i++)
                 sD.set(i, i, 1.0 / sD.get(i, i));
 
@@ -671,7 +670,7 @@ public class FastIca {
             _tolerance = Double.NEGATIVE_INFINITY;
 
             for (int i = 0; i < d.size(); i++) {
-                double m = FastMath.abs(FastMath.abs(d.get(i)) - 1);
+                double m = abs(abs(d.get(i)) - 1);
                 if (m > _tolerance) _tolerance = m;
             }
 

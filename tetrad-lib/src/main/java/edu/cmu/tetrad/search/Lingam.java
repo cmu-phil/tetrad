@@ -21,36 +21,17 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CovarianceMatrix;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
-import edu.cmu.tetrad.util.PermutationGenerator;
-
-import java.util.Arrays;
-import java.util.List;
-
-import static java.lang.StrictMath.abs;
 
 /**
- * Implements the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen, and Kerminen, A linear nongaussian acyclic model for
- * causal discovery, JMLR 7 (2006). Largely follows the Matlab code.
- * <p>
- * We use FGES with knowledge of causal order for the pruning step.
+ * <p>Implements the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen, and Kerminen, A linear
+ * nongaussian acyclic model for causal discovery, JMLR 7 (2006).</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Lingam {
-    private double penaltyDiscount = 2;
-    private double fastIcaA = 1.1;
-    private int fastIcaMaxIter = 2000;
-    private double fastIcaTolerance = 1e-6;
-//    private double pruneFactor = 1;
-
-    //================================CONSTRUCTORS==========================//
+    private double spineThreshold = 0.5;
+    private double bThreshold = 0.1;
 
     /**
      * Constructs a new LiNGAM algorithm with the given alpha level (used for pruning).
@@ -58,123 +39,33 @@ public class Lingam {
     public Lingam() {
     }
 
-    public Graph search(DataSet data) {
-        for (int j = 0; j < data.getNumColumns(); j++) {
-            for (int i = 0; i < data.getNumRows(); i++) {
-                if (Double.isNaN(data.getDouble(i, j))) {
-                    throw new IllegalArgumentException("Please remove or impute missing values.");
-                }
-            }
-        }
-
-
-        Matrix X = data.getDoubleData();
-        X = DataUtils.centerData(X).transpose();
-        FastIca fastIca = new FastIca(X, X.rows());
-        fastIca.setVerbose(false);
-        fastIca.setMaxIterations(this.fastIcaMaxIter);
-        fastIca.setAlgorithmType(FastIca.PARALLEL);
-        fastIca.setTolerance(this.fastIcaTolerance);
-        fastIca.setFunction(FastIca.EXP);
-        fastIca.setRowNorm(false);
-        fastIca.setAlpha(this.fastIcaA);
-        FastIca.IcaResult result11 = fastIca.findComponents();
-        Matrix W = result11.getW();
-
-        PermutationGenerator gen1 = new PermutationGenerator(W.columns());
-        int[] perm1 = new int[0];
-        double sum1 = Double.NEGATIVE_INFINITY;
-        int[] choice1;
-
-        while ((choice1 = gen1.next()) != null) {
-            double sum = 0.0;
-
-            for (int i = 0; i < W.columns(); i++) {
-                double wii = W.get(choice1[i], i);
-                sum += abs(wii);
-            }
-
-            if (sum > sum1) {
-                sum1 = sum;
-                perm1 = Arrays.copyOf(choice1, choice1.length);
-            }
-        }
-
-        int[] cols = new int[W.columns()];
-        for (int i = 0; i < cols.length; i++) cols[i] = i;
-
-        Matrix WTilde = W.getSelection(perm1, cols);
-
-        Matrix WPrime = WTilde.copy();
-
-        for (int i = 0; i < WPrime.rows(); i++) {
-            for (int j = 0; j < WPrime.columns(); j++) {
-                WPrime.assignRow(i, WTilde.getRow(i).scalarMult(1.0 / WTilde.get(i, i)));
-            }
-        }
-
-//        System.out.println("WPrime = " + WPrime);
-
-        int m = data.getNumColumns();
-        Matrix BHat = Matrix.identity(m).minus(WPrime);
-
-        PermutationGenerator gen2 = new PermutationGenerator(BHat.rows());
-        int[] perm2 = new int[0];
-        double sum2 = Double.NEGATIVE_INFINITY;
-        int[] choice2;
-
-        while ((choice2 = gen2.next()) != null) {
-            double sum = 0.0;
-
-            for (int i = 0; i < W.rows(); i++) {
-                for (int j = 0; j < i; j++) {
-                    double c = BHat.get(choice2[i], choice2[j]);
-                    sum += abs(c);
-                }
-            }
-
-            if (sum > sum2) {
-                sum2 = sum;
-                perm2 = Arrays.copyOf(choice2, choice2.length);
-            }
-        }
-
-        SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
-        score.setPenaltyDiscount(this.penaltyDiscount);
-        Fges fges = new Fges(score);
-
-        Knowledge knowledge = new Knowledge();
-        List<Node> variables = data.getVariables();
-
-        for (int i = 0; i < variables.size(); i++) {
-            knowledge.addToTier(i, variables.get(perm2[i]).getName());
-        }
-
-        fges.setKnowledge(knowledge);
-
-        Graph graph = fges.search();
-        System.out.println("graph Returning this graph: " + graph);
-
-        return graph;
+    /**
+     * Searches given the W matrix from ICA.
+     * @param W the W matrix from ICA, WX = e.
+     * @return The estimated B Hat matrix.
+     */
+    public Matrix search(Matrix W) {
+        PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W, spineThreshold);
+        return LingD.getScaledBHat(bestPair, bThreshold);
     }
 
-    //================================PUBLIC METHODS========================//
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
+    /**
+     * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
+     * @param bThreshold Some value >= 0.
+     */
+    public void setBThreshold(double bThreshold) {
+        if (bThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + bThreshold);
+        this.bThreshold = bThreshold;
     }
 
-    public void setFastIcaA(double fastIcaA) {
-        this.fastIcaA = fastIcaA;
+    /**
+     * Sets the threshold used to prune the matrix for purpose of searching for alterantive strong dia=gonals..
+     * @param spineThreshold The threshold, a non-negative number.
+     */
+    public void setSpineThreshold(double spineThreshold) {
+        if (spineThreshold < 0)
+            throw new IllegalArgumentException("Expecting a non-negative number: " + spineThreshold);
+        this.spineThreshold = spineThreshold;
     }
-
-    public void setFastMaxIter(int maxIter) {
-        this.fastIcaMaxIter = maxIter;
-    }
-
-    public void setFastIcaTolerance(double tolerance) {
-        this.fastIcaTolerance = tolerance;
-    }
-
 }
 

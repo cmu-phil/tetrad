@@ -5546,6 +5546,51 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
+            id="thresholdBHat">thresholdBHat</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="thresholdBHat_short_desc">Threshold on the B Hat matrix.
+        </span></li>
+            <li>Long Description: <span
+                    id="thresholdBHat_long_desc">The estimated B matrix
+                    is thresholded by setting small entries less than this threshold
+                    to zero.</span>
+            </li>
+            <li>Default Value: <span
+                    id="thresholdBHat_default_value">0.1</span></li>
+            <li>Lower Bound:
+                <span id="thresholdBHat_lower_bound">0.0</span></li>
+            <li>Upper
+                Bound: <span id="thresholdBHat_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="thresholdBHat_value_type">Double</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="thresholdSpine">thresholdSpine</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="thresholdSpine_short_desc">Threshold on the diagonal of the W matrix.
+        </span></li>
+            <li>Long Description: <span
+                    id="thresholdSpine_long_desc">The diagonal of the estimated W matrix
+                    is thresholded by setting small entries less than this threshold
+                    to zero. Should be >= W threshold.</span>
+            </li>
+            <li>Default Value: <span
+                    id="thresholdSpine_default_value">0.8</span></li>
+            <li>Lower Bound:
+                <span id="thresholdSpine_lower_bound">0.0</span></li>
+            <li>Upper
+                Bound: <span id="thresholdSpine_upper_bound">Infinity</span></li>
+            <li>Value Type: <span
+                    id="thresholdSpine_value_type">Double</span></li>
+        </ul>
+
+
+        <h3 class="parameter_description"
             id="fisherEpsilon">fisherEpsilon</h3>
         <ul
                 class="parameter_description_list">
@@ -9034,6 +9079,7 @@ ga.q = [];
 ga.l = +new Date;
 ga('create', 'UA-XXXXX-Y', 'auto');
 ga('send', 'pageview')
+
 
 
 
