@@ -37,8 +37,6 @@ import java.util.*;
  * The output is only the purified model. Future versions may include options to visualize the
  * measurement pattern in the GUI (it shows up in the console window, though.)
  * <p>
- * No background knowledge is allowed yet. Future versions of this algorithm will include it.
- * <p>
  * References:
  * <p>
  * Silva, R.; Scheines, R.; Spirtes, P.; Glymour, C. (2003). "Learning measurement models".

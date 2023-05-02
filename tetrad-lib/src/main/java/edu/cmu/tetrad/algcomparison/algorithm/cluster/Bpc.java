@@ -29,10 +29,9 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
+public class Bpc implements Algorithm, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
-    private Knowledge knowledge = new Knowledge();
 
     public Bpc() {
     }
@@ -111,7 +110,6 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                     parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT),
                     parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(this.knowledge);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -144,15 +142,5 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         parameters.add(Params.VERBOSE);
 
         return parameters;
-    }
-
-    @Override
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    @Override
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }
