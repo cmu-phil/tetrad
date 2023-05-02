@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
-import edu.pitt.dbmi.data.reader.Data;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.jetbrains.annotations.NotNull;
@@ -63,6 +62,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>This implementation has two parameters, a threshold (for N Rooks) on the minimum values
  * in absolute value for including entries in a possible strong diagonal for W, and a threshold
  * for BHat for including edges in the final graph.</p>
+ *
  * @author josephramsey
  */
 public class LingD {
@@ -109,6 +109,7 @@ public class LingD {
 
     /**
      * Sets the threshold used to prune the B matrix for the local algorithms.
+     *
      * @param bThreshold The threshold, a non-negative number.
      */
     public void setBThreshold(double bThreshold) {
@@ -118,6 +119,7 @@ public class LingD {
 
     /**
      * Sets the threshold used to prune the matrix for purpose of searching for alterantive strong dia=gonals..
+     *
      * @param spineThreshold The threshold, a non-negative number.
      */
     public void setSpineThreshold(double spineThreshold) {
@@ -129,6 +131,7 @@ public class LingD {
     /**
      * Estimates the W matrix using FastICA. Assumes the "parallel" option, using
      * the "exp" function.
+     *
      * @param data             The dataset to estimate W for.
      * @param fastIcaMaxIter   Maximum number of iterations of ICA.
      * @param fastIcaTolerance Tolerance for ICA.
@@ -171,6 +174,7 @@ public class LingD {
      * Returns a graph given a coefficient matrix and a list of variables. It is
      * assumed that any non-zero entry in B corresponds to a directed edges, so
      * that Bij != 0 implies that j->i in the graph.
+     *
      * @param B         The coefficient matrix.
      * @param variables The list of variables.
      * @return The built graph.
@@ -194,7 +198,8 @@ public class LingD {
      * Finds a column permutation of the W matrix that maximizes the sum
      * of 1 / |Wii| for diagonal elements Wii in W. This will be speeded up
      * if W is a thresholded matrix.
-     * @param W The W matrix, WX = e.
+     *
+     * @param W             The W matrix, WX = e.
      * @param spineThrehold The threshold used in NRooks to search for alternative strong diagonals.
      * @return The model with the strongest diagonal, as a permutation matrix pair.
      * @see PermutationMatrixPair
@@ -209,7 +214,6 @@ public class LingD {
         PermutationMatrixPair bestPair = null;
         double sum1 = Double.NEGATIVE_INFINITY;
 
-        P:
         for (PermutationMatrixPair pair : pairs) {
             Matrix permutedMatrix = pair.getPermutedMatrix();
 
@@ -261,6 +265,7 @@ public class LingD {
 
     /**
      * Scares the given matrix M by diving each entry (i, j) by M(j, j)
+     *
      * @param M The matrix to scale.
      * @return The scaled matrix.
      */
@@ -278,6 +283,7 @@ public class LingD {
 
     /**
      * Thresholds the givem matrix, sending any small entries to zero.
+     *
      * @param M         The matrix to threshold.
      * @param threshold The value such that M(i, j) is set to zero if |M(i, j)| < threshold.
      *                  Should be non-negative.
@@ -300,8 +306,9 @@ public class LingD {
     /**
      * Returns the BHat matrix, permuted to causal order (lower triangle) and
      * scaled so that the diagonal consists only of 1's.
-     * @param pair The (column permutation, thresholded, column permuted W matrix)
-     *             pair.
+     *
+     * @param pair       The (column permutation, thresholded, column permuted W matrix)
+     *                   pair.
      * @param bThreshold Valued in the BHat matrix less than this in absolute
      *                   value are set to 0.
      * @return The estimated B Hat matrix for this pair.
