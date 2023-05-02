@@ -83,9 +83,7 @@ public final class BuildPureClusters {
     private IndependenceTest independenceTest;
     private DataSet dataSet;
     private double alpha;
-    private boolean verbose;
     private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
-
 
     //**************************** INITIALIZATION ***********************************/
 
@@ -93,16 +91,6 @@ public final class BuildPureClusters {
      * Constructor BuildPureClusters
      */
     public BuildPureClusters(ICovarianceMatrix covarianceMatrix, double alpha,
-                             TestType sigTestType) {
-        if (covarianceMatrix == null) {
-            throw new IllegalArgumentException("Covariance matrix cannot be null.");
-        }
-
-        this.covarianceMatrix = covarianceMatrix;
-        initAlgorithm(alpha, sigTestType);
-    }
-
-    public BuildPureClusters(CovarianceMatrix covarianceMatrix, double alpha,
                              TestType sigTestType) {
         if (covarianceMatrix == null) {
             throw new IllegalArgumentException("Covariance matrix cannot be null.");
@@ -123,50 +111,6 @@ public final class BuildPureClusters {
         }
     }
 
-    private void initAlgorithm(double alpha, TestType sigTestType) {
-
-        // Check for missing values.
-        if (getCovarianceMatrix() != null && DataUtils.containsMissingValue(getCovarianceMatrix().getMatrix())) {
-            throw new IllegalArgumentException(
-                    "Please remove or impute missing values first.");
-        }
-
-        this.alpha = alpha;
-
-        this.outputMessage = true;
-        this.sigTestType = sigTestType;
-        this.scoreTestMode = (this.sigTestType == TestType.DISCRETE ||
-                this.sigTestType == TestType.GAUSSIAN_FACTOR);
-
-        if (sigTestType == TestType.DISCRETE) {
-            this.numVariables = this.dataSet.getNumColumns();
-            this.independenceTest = new IndTestGSquare(this.dataSet, alpha);
-            this.tetradTest = new DiscreteTetradTest(this.dataSet, alpha);
-        } else {
-            assert getCovarianceMatrix() != null;
-            this.numVariables = getCovarianceMatrix().getSize();
-            this.independenceTest = new IndTestFisherZ(getCovarianceMatrix(), .1);
-            TestType type;
-
-            if (sigTestType == TestType.TETRAD_WISHART || sigTestType == TestType.TETRAD_DELTA
-                    || sigTestType == TestType.GAUSSIAN_FACTOR) {
-                type = sigTestType;
-            } else {
-                throw new IllegalArgumentException("Expecting TETRAD_WISHART, TETRAD_DELTA, or GAUSSIAN FACTOR " +
-                        sigTestType);
-            }
-
-            if (this.dataSet != null) {
-                this.tetradTest = new ContinuousTetradTest(this.dataSet, type, alpha);
-            } else {
-                this.tetradTest = new ContinuousTetradTest(getCovarianceMatrix(), type, alpha);
-            }
-        }
-        this.labels = new int[numVariables()];
-        for (int i = 0; i < numVariables(); i++) {
-            this.labels[i] = i + 1;
-        }
-    }
 
     /**
      * @return the result search graph, or null if there is no model.
@@ -217,6 +161,77 @@ public final class BuildPureClusters {
 
 
         return graph;
+    }
+
+    /**
+     * Returns the wrapped covariance matrix.
+     */
+    public ICovarianceMatrix getCovarianceMatrix() {
+        return this.covarianceMatrix;
+    }
+
+    /**
+     * Sets the cluster significance type.
+     * @param checkType This type
+     * @see ClusterSignificance
+     */
+    public void setCheckType(ClusterSignificance.CheckType checkType) {
+        this.checkType = checkType;
+    }
+
+    // PRIVATE METHODS
+
+    private IndependenceTest getIndependenceTest() {
+        return this.independenceTest;
+    }
+
+    private int numVariables() {
+        return this.numVariables;
+    }
+
+    private void initAlgorithm(double alpha, TestType sigTestType) {
+
+        // Check for missing values.
+        if (getCovarianceMatrix() != null && DataUtils.containsMissingValue(getCovarianceMatrix().getMatrix())) {
+            throw new IllegalArgumentException(
+                    "Please remove or impute missing values first.");
+        }
+
+        this.alpha = alpha;
+
+        this.outputMessage = true;
+        this.sigTestType = sigTestType;
+        this.scoreTestMode = (this.sigTestType == TestType.DISCRETE ||
+                this.sigTestType == TestType.GAUSSIAN_FACTOR);
+
+        if (sigTestType == TestType.DISCRETE) {
+            this.numVariables = this.dataSet.getNumColumns();
+            this.independenceTest = new IndTestGSquare(this.dataSet, alpha);
+            this.tetradTest = new DiscreteTetradTest(this.dataSet, alpha);
+        } else {
+            assert getCovarianceMatrix() != null;
+            this.numVariables = getCovarianceMatrix().getSize();
+            this.independenceTest = new IndTestFisherZ(getCovarianceMatrix(), .1);
+            TestType type;
+
+            if (sigTestType == TestType.TETRAD_WISHART || sigTestType == TestType.TETRAD_DELTA
+                    || sigTestType == TestType.GAUSSIAN_FACTOR) {
+                type = sigTestType;
+            } else {
+                throw new IllegalArgumentException("Expecting TETRAD_WISHART, TETRAD_DELTA, or GAUSSIAN FACTOR " +
+                        sigTestType);
+            }
+
+            if (this.dataSet != null) {
+                this.tetradTest = new ContinuousTetradTest(this.dataSet, type, alpha);
+            } else {
+                this.tetradTest = new ContinuousTetradTest(getCovarianceMatrix(), type, alpha);
+            }
+        }
+        this.labels = new int[numVariables()];
+        for (int i = 0; i < numVariables(); i++) {
+            this.labels[i] = i + 1;
+        }
     }
 
     /**
@@ -1846,33 +1861,6 @@ public final class BuildPureClusters {
         }
 
         return new ArrayList<>();
-    }
-
-    /**
-     * Data storage
-     */
-    public ICovarianceMatrix getCovarianceMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public int numVariables() {
-        return this.numVariables;
-    }
-
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setCheckType(ClusterSignificance.CheckType checkType) {
-        this.checkType = checkType;
     }
 }
 

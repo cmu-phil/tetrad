@@ -53,7 +53,6 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
             }
 
             BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType);
-            bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             if (parameters.getInt(Params.CHECK_TYPE) == 1) {
                 bpc.setCheckType(ClusterSignificance.CheckType.Significance);
