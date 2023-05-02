@@ -64,7 +64,8 @@ public class PermutationMatrixPair {
 
     /**
      * Returns W, permuted rowwise by the permutation passed in through the constructor.
-     * @return The row-permuted W.
+     * @return The matrix, permuted columnwise and rowwise, by the specified column and
+     * row permutations.
      */
     public Matrix getPermutedMatrix() {
         return M.getSelection(rowPerm, colPerm);
