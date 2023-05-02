@@ -37,7 +37,6 @@ public class Boss implements SuborderSearch {
     private int numStarts;
     private Knowledge knowledge = new Knowledge();
 
-
     /**
      * This algorithm will work with an arbitrary score.
      * @param score The Score to use.
@@ -57,6 +56,13 @@ public class Boss implements SuborderSearch {
         this.numStarts = 1;
     }
 
+    /**
+     * Searches over the given suborder using the given prefix. Useful if tiered knowledge is available.
+     * @param prefix The prefix--variables alwasys allowed for conditioning.
+     * @param suborder The suborder--these are the variables being searched over.
+     * @param gsts The grow-shrink tree used for caching.
+     * @see GrowShrinkTree
+     */
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
         this.gsts = gsts;
@@ -110,6 +116,49 @@ public class Boss implements SuborderSearch {
             suborder.set(i, bestSuborder.get(i));
         }
         update(prefix, suborder);
+    }
+
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+        this.bes.setKnowledge(knowledge);
+    }
+
+    /**
+     * Sets the number of times the procedure should be restarted in search of a better
+     * score.
+     * @param numStarts This number.
+     */
+    public void setNumStarts(int numStarts) {
+        this.numStarts = numStarts;
+    }
+
+    /**
+     * Returns the variables.
+     * @return A list of these.
+     */
+    @Override
+    public List<Node> getVariables() {
+        return variables;
+    }
+
+    /**
+     * Returns a map from nodes to their parents.
+     * @return This map.
+     */
+    @Override
+    public Map<Node, Set<Node>> getParents() {
+        return parents;
+    }
+
+    /**
+     * Returns the score being used for the search.
+     * @return This score.
+     * @see Score
+     */
+    @Override
+    public Score getScore() {
+        return score;
     }
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Map<Node, Set<Node>> required, Node x) {
@@ -193,36 +242,6 @@ public class Boss implements SuborderSearch {
                 else return 0;
             });
         }
-    }
-
-//    public void setDepth(int depth) {
-//        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-//        this.bes.setDepth(depth);
-//    }
-
-    @Override
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
-        this.bes.setKnowledge(knowledge);
-    }
-
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return variables;
-    }
-
-    @Override
-    public Map<Node, Set<Node>> getParents() {
-        return parents;
-    }
-
-    @Override
-    public Score getScore() {
-        return score;
     }
 }
 
