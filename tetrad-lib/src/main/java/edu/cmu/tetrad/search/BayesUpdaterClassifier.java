@@ -429,7 +429,7 @@ public final class BayesUpdaterClassifier
     }
 
     /**
-     * Returns the variables of the Bayes IM.
+     * Returns the variables of the BayesIM.
      * @return These variables as a list.
      * @see BayesIm
      */
@@ -445,7 +445,7 @@ public final class BayesUpdaterClassifier
      * version to version. A readObject method of this form may be added to any
      * class, even if Tetrad sessions were previously saved out using a version
      * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.)
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
