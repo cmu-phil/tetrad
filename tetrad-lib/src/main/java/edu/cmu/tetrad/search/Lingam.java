@@ -24,8 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.Matrix;
 
-import java.util.List;
-
 /**
  * <p>Implements an interpretation of the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen,
  * and Kerminen, A linear nongaussian acyclic model for causal discovery, JMLR 7 (2006).</p>
@@ -65,6 +63,7 @@ public class Lingam {
 
     /**
      * Searches given the W matrix from ICA.
+     *
      * @param W the W matrix from ICA, WX = e.
      * @return The estimated B Hat matrix.
      */
@@ -75,6 +74,7 @@ public class Lingam {
 
     /**
      * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
+     *
      * @param bThreshold Some value >= 0.
      */
     public void setBThreshold(double bThreshold) {
@@ -84,6 +84,7 @@ public class Lingam {
 
     /**
      * Sets the threshold used to prune the matrix for purpose of searching for alterantive strong dia=gonals..
+     *
      * @param spineThreshold The threshold, a non-negative number.
      */
     public void setSpineThreshold(double spineThreshold) {
