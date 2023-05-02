@@ -39,13 +39,9 @@ import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * GesSearch is an implementation of the GES algorithm, as specified in
+ * FGES is an implementation of the GES algorithm, as specified in
  * Chickering (2002) "Optimal structure identification with greedy search"
  * Journal of Machine Learning Research. It works for both BayesNets and SEMs.
- * <p>
- * Some code optimization could be done for the scoring part of the graph for
- * discrete models (method scoreGraphChange). Some of Andrew Moore's approaches
- * for caching sufficient statistics, for instance.
  * <p>
  * To speed things up, it has been assumed that variables X and Y with zero
  * correlation do not correspond to edges in the graph. This is a restricted
@@ -60,10 +56,10 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @author Joseph Ramsey, Revisions 5/2015
  */
 public final class Fges implements GraphSearch, GraphScorer {
-
-    final Set<Node> emptySet = new HashSet<>();
-    final int[] count = new int[1];
+    private final Set<Node> emptySet = new HashSet<>();
+    private final int[] count = new int[1];
     private final int depth = 10000;
+
     /**
      * The logger for this class. The config needs to be set.
      */
@@ -144,6 +140,10 @@ public final class Fges implements GraphSearch, GraphScorer {
      * case of conditional independence. See Chickering (2002), locally
      * consistent scoring criterion. This by default uses all the processors on
      * the machine.
+     * @param score The score to use. The score should yield better scores for
+     *              more correct local models. The algorithm as given by
+     *              Chickering assumes the score will be a BIC score of some
+     *              sort.
      */
     public Fges(Score score) {
         if (score == null) {
@@ -152,21 +152,6 @@ public final class Fges implements GraphSearch, GraphScorer {
 
         setScore(score);
         this.graph = new EdgeListGraph(getVariables());
-    }
-
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-
-        return null;
     }
 
     //==========================PUBLIC METHODS==========================//
@@ -247,6 +232,10 @@ public final class Fges implements GraphSearch, GraphScorer {
         this.knowledge = knowledge;
     }
 
+    /**
+     * Returns the elapsed time of the search.
+     * @return This elapsed time.
+     */
     public long getElapsedTime() {
         return elapsedTime;
     }
@@ -267,6 +256,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     /**
      * Sets the initial graph.
+     * @param initialGraph This graph.
      */
     public void setInitialGraph(Graph initialGraph) {
         if (initialGraph == null) {
@@ -289,14 +279,18 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * Sets whether verbose output should be produced.
+     * Sets whether verbose output should be produced. Verbose output generated
+     * by the Meek rules is treated separately.
+     * @param verbose True iff the case.
+     * @see #setMeekVerbose(boolean)
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Sets whether verbose output should be produced.
+     * Sets whether verbose output should be produced for the Meek rules.
+     * @param meekVerbose True iff the case.
      */
     public void setMeekVerbose(boolean meekVerbose) {
         this.meekVerbose = meekVerbose;
@@ -313,6 +307,7 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * Sets the output stream that output (except for log output) should be sent
      * to. By detault System.out.
+     * @param out This print stream.
      */
     public void setOut(PrintStream out) {
         this.out = out;
@@ -320,6 +315,7 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     /**
      * If non-null, edges not adjacent in this graph will not be added.
+     * @param boundGraph This bound graph.
      */
     public void setBoundGraph(Graph boundGraph) {
         if (boundGraph == null) {
@@ -350,19 +346,49 @@ public final class Fges implements GraphSearch, GraphScorer {
         this.maxDegree = maxDegree;
     }
 
+    /**
+     * Sets whether the first step of the procedure will score both X->Y and Y->X and prefer the
+     * higher score (for adding X--Y to the graph).
+     * @param symmetricFirstStep True iff the case.
+     */
     public void setSymmetricFirstStep(boolean symmetricFirstStep) {
         this.symmetricFirstStep = symmetricFirstStep;
     }
 
+    /**
+     * Makes a string for the edge Bayes factors to log.
+     * @param dag The DAG to logs the factors for.
+     * @return The string to log.
+     */
     public String logEdgeBayesFactorsString(Graph dag) {
         Map<Edge, Double> factors = logEdgeBayesFactors(dag);
         return logBayesPosteriorFactorsString(factors);
     }
 
+    /**
+     * Returns the score of the final search model.
+     * @return This score.
+     */
+    public double getModelScore() {
+        return modelScore;
+    }
+
     //===========================PRIVATE METHODS========================//
 
-    double getModelScore() {
-        return modelScore;
+
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+
+        return null;
     }
 
     //Sets the discrete scoring function to use.
