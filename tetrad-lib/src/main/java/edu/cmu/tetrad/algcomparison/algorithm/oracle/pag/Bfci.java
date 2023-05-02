@@ -90,12 +90,6 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
 
             search.setNumStarts(parameters.getInt(Params.NUM_STARTS));
 
-            Object obj = parameters.get(Params.PRINT_STREAM);
-
-            if (obj instanceof PrintStream) {
-                search.setOut((PrintStream) obj);
-            }
-
             return search.search();
         } else {
             Bfci algorithm = new Bfci(this.test, this.score);

@@ -20,14 +20,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
 
@@ -49,6 +47,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @author bryan andrews
  * @see PermutationSearch
  * @see Boss
+ * @see GFci
  */
 public final class BFci implements GraphSearch {
 
@@ -59,16 +58,13 @@ public final class BFci implements GraphSearch {
     private Knowledge knowledge = new Knowledge();
 
     // The conditional independence test.
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
-    // Flag for complete rule set, true if should use complete rule set, false otherwise.
+    // Flag for complete rule set, true if it should use complete rule set, false otherwise.
     private boolean completeRuleSetUsed = true;
 
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
-
-    // The maxDegree for the fast adjacency search.
-    private int maxDegree = -1;
 
     // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
@@ -76,14 +72,8 @@ public final class BFci implements GraphSearch {
     // True iff verbose output should be printed.
     private boolean verbose;
 
-    // The covariance matrix being searched over. Assumes continuous data.
-    ICovarianceMatrix covarianceMatrix;
-
     // The sample size.
     int sampleSize;
-
-    // The print stream that output is directed to.
-    private PrintStream out = System.out;
 
     // The score.
     private final Score score;
@@ -104,7 +94,9 @@ public final class BFci implements GraphSearch {
     //========================PUBLIC METHODS==========================//
 
     /**
-     * @return the discovered CPDAG.
+     * Does the search and returns a PAG.
+     *
+     * @return The discovered graph.
      */
     public Graph search() {
         List<Node> nodes = getIndependenceTest().getVariables();
@@ -116,7 +108,6 @@ public final class BFci implements GraphSearch {
 
         // BOSS CPDAG learning step
         Boss subAlg = new Boss(this.score);
-//        subAlg.setDepth(this.depth);
         subAlg.setNumStarts(this.numStarts);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
@@ -148,58 +139,16 @@ public final class BFci implements GraphSearch {
     }
 
     /**
-     * @param maxDegree The maximum indegree of the output graph.
+     * Sets the maximum indegree of the output graph, to guide search.
+     *
+     * @param maxDegree This maximum.
      */
     public void setMaxDegree(int maxDegree) {
         if (maxDegree < -1) {
             throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0: " + maxDegree);
         }
 
-        this.maxDegree = maxDegree;
-    }
-
-    /**
-     * Returns The maximum indegree of the output graph.
-     */
-    public int getMaxDegree() {
-        return this.maxDegree;
-    }
-
-    // Due to Spirtes.
-    public void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
-        this.graph = new EdgeListGraph(graph);
-        this.graph.reorientAllWith(Endpoint.CIRCLE);
-        fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
-
-        List<Node> nodes = this.graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (fgesGraph.isDefCollider(a, b, c)) {
-                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
-
-                    if (sepset != null && !sepset.contains(b)) {
-                        this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                        this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                    }
-                }
-            }
-        }
+        // The maxDegree for the fast adjacency search.
     }
 
     public Knowledge getKnowledge() {
@@ -255,42 +204,60 @@ public final class BFci implements GraphSearch {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True iff the case
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * The independence test.
+     * The independence test being used for some steps in final orientation.
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
     }
 
-    public ICovarianceMatrix getCovMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public ICovarianceMatrix getCovarianceMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
-        this.covarianceMatrix = covarianceMatrix;
-    }
-
-    public PrintStream getOut() {
-        return this.out;
-    }
-
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    public void setIndependenceTest(IndependenceTest independenceTest) {
-        this.independenceTest = independenceTest;
-    }
-
     //===========================================PRIVATE METHODS=======================================//
+
+    // Due to Spirtes.
+    private void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
+        this.graph = new EdgeListGraph(graph);
+        this.graph.reorientAllWith(Endpoint.CIRCLE);
+        fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
+
+        List<Node> nodes = this.graph.getNodes();
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (fgesGraph.isDefCollider(a, b, c)) {
+                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
+                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
+                    List<Node> sepset = sepsets.getSepset(a, c);
+
+                    if (sepset != null && !sepset.contains(b)) {
+                        this.graph.setEndpoint(a, b, Endpoint.ARROW);
+                        this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * Orients according to background knowledge

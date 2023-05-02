@@ -167,8 +167,6 @@ public class TestFges {
 //        out.println("Finishing simulation");
 
         BdeScore score = new BdeScore(data);
-        score.setSamplePrior(samplePrior);
-        score.setStructurePrior(structurePrior);
 
         edu.cmu.tetrad.search.Fges ges = new edu.cmu.tetrad.search.Fges(score);
         ges.setVerbose(false);

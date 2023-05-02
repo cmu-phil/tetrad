@@ -1,5 +1,6 @@
 package edu.cmu.tetrad.calibration;
 
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Bfci;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -136,7 +137,7 @@ public class DataForCalibrationRfci {
 
         System.out.println("Starting search with all data");
 
-        BfciFoo fci = new BfciFoo(test, score);
+        BFci fci = new BFci(test, score);
         fci.setVerbose(false);
         fci.setCompleteRuleSetUsed(true);
         fci.setDepth(DFC.depth);
