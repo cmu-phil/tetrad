@@ -312,8 +312,8 @@ public class LingD {
 
     @NotNull
     public static List<PermutationMatrixPair> nRooks(Matrix W, double spineThreshold) {
-//        return pairsNRook(W, spineThreshold);
-        return pairsHungarian(W);
+        return pairsNRook(W, spineThreshold);
+//        return pairsHungarian(W);
     }
 
     @NotNull
