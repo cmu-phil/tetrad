@@ -35,9 +35,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Implements the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of Spirtes, Glymour, and Scheines, "Causation,
- * Prediction, and Search," 2nd edition, with a modified rule set in step D due to Chris Meek. For the modified rule
- * set, see Chris Meek (1995), "Causal inference and causal explanation with background knowledge."
+ * Implements the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of Spirtes,
+ * Glymour, and Scheines, "Causation, Prediction, and Search," 2nd edition, with a
+ * modified rule set in step D due to Chris Meek. For the modified rule set, see Chris
+ * Meek (1995), "Causal inference and causal explanation with background knowledge."
  *
  * @author Joseph Ramsey.
  */
@@ -217,7 +218,7 @@ public class Pc implements GraphSearch {
         return search(fas, nodes);
     }
 
-    public Graph search(IFas fas, List<Node> nodes) {
+    private Graph search(IFas fas, List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
@@ -244,22 +245,11 @@ public class Pc implements GraphSearch {
             search.setFasType(PcAll.FasType.REGULAR);
         }
 
-//        if (concurrent) {
-//            search.setConcurrent(PcAll.Concurrent.YES);
-//        } else {
-//            search.setConcurrent(PcAll.Concurrent.NO);
-//        }
-
         search.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
         search.setConflictRule(conflictRule);
         search.setUseHeuristic(useMaxP);
         search.setMaxPathLength(maxPPathLength);
-//        search.setExternalGraph(externalGraph);
         search.setVerbose(verbose);
-
-//        fas.setKnowledge(getKnowledge());
-//        fas.setDepth(getDepth());
-//        fas.setVerbose(this.verbose);
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
@@ -287,10 +277,16 @@ public class Pc implements GraphSearch {
         return this.elapsedTime;
     }
 
+    /**
+     * @return The edges of the searched graph.
+     */
     public Set<Edge> getAdjacencies() {
         return new HashSet<>(this.graph.getEdges());
     }
 
+    /**
+     * @return  the non-adjacencies of the searched graph.
+     */
     public Set<Edge> getNonadjacencies() {
         Graph complete = GraphUtils.completeGraph(this.graph);
         Set<Edge> nonAdjacencies = complete.getEdges();
@@ -299,36 +295,50 @@ public class Pc implements GraphSearch {
         return new HashSet<>(nonAdjacencies);
     }
 
+    /**
+     * @return  the number of independence tests performed in the search.
+     */
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
 
+    /**
+     * @return the nodes of the search graph.
+     */
     public List<Node> getNodes() {
         return this.graph.getNodes();
     }
 
+    /**
+     * Sets whether verbose output should be given.
+     * @param verbose True iff the case.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets whether the stable adjacency search should be used.
+     * @param stable True iff the case.
+     */
     public void setStable(boolean stable) {
         this.stable = stable;
     }
 
-//    public void setConcurrent(boolean concurrent) {
-//        this.concurrent = concurrent;
-//    }
-
+    /**
+     * Sets whether the max p method should be used in the adjacency searc h.
+     * @param useMaxP iff the case.
+     */
     public void setUseMaxP(boolean useMaxP) {
         this.useMaxP = useMaxP;
     }
 
+    /**
+     * Sets the maximum path length for the PC heuristic.
+     * @param maxPPathLength this length.
+     */
     public void setMaxPPathLength(int maxPPathLength) {
         this.maxPPathLength = maxPPathLength;
-    }
-
-    public void setConflictRule(PcAll.ConflictRule conflictRule) {
-        this.conflictRule = conflictRule;
     }
 }
 

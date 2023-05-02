@@ -5,7 +5,7 @@ import edu.cmu.tetrad.graph.Graph;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Prints the number of edges in the true graph.
+ * Prints the number of edges in the estimated graph.
  *
  * @author jdramsey
  */

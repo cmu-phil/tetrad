@@ -37,9 +37,6 @@ import java.util.Set;
  */
 public final class Cpc implements GraphSearch {
 
-//    private int NTHREDS = Runtime.getRuntime().availableProcessors() * 5;
-
-
     /**
      * The independence test used for the PC search.
      */
@@ -72,8 +69,6 @@ public final class Cpc implements GraphSearch {
      */
     private Set<Triple> noncolliderTriples;
 
-    private Graph externalGraph;
-
     /**
      * Set of ambiguous unshielded triples.
      */
@@ -101,7 +96,6 @@ public final class Cpc implements GraphSearch {
     private boolean verbose;
 
     private boolean stable;
-//    private boolean concurrent;
     private boolean useHeuristic = false;
     private int maxPPathLength = -1;
     private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
@@ -214,10 +208,18 @@ public final class Cpc implements GraphSearch {
         return new HashSet<>(this.noncolliderTriples);
     }
 
+    /**
+     * Returns the edges in the search graph.
+     * @return These edges.
+     */
     public Set<Edge> getAdjacencies() {
         return new HashSet<>(this.graph.getEdges());
     }
 
+    /**
+     * Returns the non-adjacencies in the seaarch graph.
+     * @return These non-adjacencies.
+     */
     public Set<Edge> getNonadjacencies() {
         Graph complete = GraphUtils.completeGraph(this.graph);
         Set<Edge> nonAdjacencies = complete.getEdges();
@@ -227,7 +229,7 @@ public final class Cpc implements GraphSearch {
     }
 
     /**
-     * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
+     * Runs CPC starting with a fully connected graph over all of the variables in the domain of the independence test.
      * See PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      */
     public Graph search() {
@@ -261,22 +263,11 @@ public final class Cpc implements GraphSearch {
             search.setFasType(PcAll.FasType.REGULAR);
         }
 
-//        if (concurrent) {
-//            search.setConcurrent(PcAll.Concurrent.YES);
-//        } else {
-//            search.setConcurrent(PcAll.Concurrent.NO);
-//        }
-
         search.setColliderDiscovery(PcAll.ColliderDiscovery.CONSERVATIVE);
         search.setConflictRule(conflictRule);
         search.setUseHeuristic(useHeuristic);
         search.setMaxPathLength(maxPPathLength);
-//        search.setExternalGraph(externalGraph);
         search.setVerbose(verbose);
-
-//        fas.setKnowledge(getKnowledge());
-//        fas.setDepth(getDepth());
-//        fas.setVerbose(this.verbose);
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
@@ -296,6 +287,46 @@ public final class Cpc implements GraphSearch {
 
         TetradLogger.getInstance().flush();
         return this.graph;
+    }
+
+    public SepsetMap getSepsets() {
+        return this.sepsets;
+    }
+
+    /**
+     * The graph that's constructed during the search.
+     */
+    public Graph getGraph() {
+        return this.graph;
+    }
+
+    /**
+     * @param verbose Whether verbose output should be printed.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * @param stable Whether the stable FAS search should be used.
+     */
+    public void setStable(boolean stable) {
+        this.stable = stable;
+    }
+
+    /**
+     * @param useHeuristic Whethe the heuristic should be used for max p.
+     */
+    public void setUseHeuristic(boolean useHeuristic) {
+        this.useHeuristic = useHeuristic;
+    }
+
+    /**
+     * Sets the max path length for the max p heuristic.
+     * @param maxPPathLength This length.
+     */
+    public void setMaxPPathLength(int maxPPathLength) {
+        this.maxPPathLength = maxPPathLength;
     }
 
     //==========================PRIVATE METHODS===========================//
@@ -319,59 +350,6 @@ public final class Cpc implements GraphSearch {
         for (Triple triple : getAmbiguousTriples()) {
             TetradLogger.getInstance().log("info", "Ambiguous: " + triple);
         }
-    }
-
-    public static boolean isArrowpointAllowed1(Node from, Node to,
-                                               Knowledge knowledge) {
-        return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
-    }
-
-    public SepsetMap getSepsets() {
-        return this.sepsets;
-    }
-
-    /**
-     * The graph that's constructed during the search.
-     */
-    public Graph getGraph() {
-        return this.graph;
-    }
-
-    public void setGraph(Graph graph) {
-        this.graph = graph;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    public Graph getExternalGraph() {
-        return this.externalGraph;
-    }
-
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
-    }
-
-    public void setStable(boolean stable) {
-        this.stable = stable;
-    }
-
-//    public void setConcurrent(boolean concurrent) {
-//        this.concurrent = concurrent;
-//    }
-
-    public void setUseHeuristic(boolean useHeuristic) {
-        this.useHeuristic = useHeuristic;
-    }
-
-    public void setMaxPPathLength(int maxPPathLength) {
-        this.maxPPathLength = maxPPathLength;
-    }
-
-    public void setConflictRule(PcAll.ConflictRule conflictRule) {
-        this.conflictRule = conflictRule;
     }
 
 }
