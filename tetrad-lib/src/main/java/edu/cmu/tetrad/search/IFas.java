@@ -63,8 +63,6 @@ public interface IFas {
 
     void setVerbose(boolean verbose);
 
-    int getNumDependenceJudgments();
-
     void setOut(PrintStream out);
 }
 

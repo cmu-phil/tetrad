@@ -690,11 +690,6 @@ public class FasStableConcurrentFdr implements IFas {
         this.verbose = verbose;
     }
 
-    @Override
-    public int getNumDependenceJudgments() {
-        return 0;
-    }
-
     public void setOut(PrintStream out) {
         if (out == null) throw new NullPointerException();
         this.out = out;

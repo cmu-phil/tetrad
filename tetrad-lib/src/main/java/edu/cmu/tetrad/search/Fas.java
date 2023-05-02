@@ -24,11 +24,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -56,10 +55,7 @@ public class Fas implements IFas {
      * The logger, by default the empty logger.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-    /**
-     * Number formatter.
-     */
-    private final NumberFormat nf = new DecimalFormat("0.00E0");
+
     /**
      * Specification of which edges are forbidden or required.
      */
@@ -73,10 +69,7 @@ public class Fas implements IFas {
      * The number of independence tests.
      */
     private int numIndependenceTests;
-    /**
-     * The number of dependence judgements. Temporary.
-     */
-    private int numDependenceJudgement;
+
     /**
      * The sepsets found during the search.
      */
@@ -95,6 +88,7 @@ public class Fas implements IFas {
      * FAS-Stable.
      */
     private boolean stable;
+    private long elapsedTime = 0L;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -118,6 +112,7 @@ public class Fas implements IFas {
      * @return a SepSet, which indicates which variables are independent conditional on which other variables
      */
     public Graph search(List<Node> nodes) {
+        long startTime = MillisecondTimes.timeMillis();
         nodes = new ArrayList<>(nodes);
 
         if (verbose) {
@@ -135,7 +130,6 @@ public class Fas implements IFas {
         this.sepset = new SepsetMap();
 
         List<Edge> edges = new ArrayList<>();
-//        List<Node> nodes = new ArrayList<>(this.test.getVariables());
         Map<Edge, Double> scores = new HashMap<>();
 
         if (this.heuristic == 1) {
@@ -220,13 +214,17 @@ public class Fas implements IFas {
             this.logger.log("info", "Finishing Fast Adjacency Search.");
         }
 
+        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
+
         return graph;
     }
 
-    public int getDepth() {
-        return this.depth;
-    }
-
+    /**
+     * Sets the depth of the search, which is the maximum number of variables that ben be conditioned
+     * on in any conditional independence test.
+     *
+     * @param depth This maximum.
+     */
     public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
@@ -236,12 +234,161 @@ public class Fas implements IFas {
         this.depth = depth;
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
+    /**
+     * Sets the knowledge to be used int the search.
+     *
+     * @param knowledge This knoweldge.
+     * @see Knowledge
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge(knowledge);
     }
 
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+    /**
+     * Returns the nubmer of independence tests that were done.
+     *
+     * @return This number.
+     */
+    public int getNumIndependenceTests() {
+        return this.numIndependenceTests;
+    }
+
+    /**
+     * Returns the sepsets that were discovered in the search. A 'sepset' for test X _||_ Y | Z1,...,Zm would be
+     * {Z1,...,Zm}
+     *
+     * @return A map of these sepsets indexed by {X, Y}.
+     */
+    public SepsetMap getSepsets() {
+        return this.sepset;
+    }
+
+    /**
+     * Returns the depth of the search, which is the maximum number of conditioning variables allowed
+     * for any conditional independence test.
+     *
+     * @return This maximum.
+     */
+    @Override
+    public int getDepth() {
+        return depth;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True iff the case.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * There are no cycles in this undirected result graph.
+     *
+     * @return False.
+     */
+    @Override
+    public boolean isAggressivelyPreventCycles() {
+        return false;
+    }
+
+    /**
+     * Returns the independence test being used to do the search.
+     *
+     * @return This test
+     */
+    @Override
+    public IndependenceTest getIndependenceTest() {
+        return test;
+    }
+
+    /**
+     * Returns the knowledge used in the search.
+     *
+     * @return this knowledge.
+     * @see Knowledge
+     */
+    @Override
+    public Knowledge getKnowledge() {
+        return knowledge;
+    }
+
+    /**
+     * Runs the search and returns the resulting (undirected) graph.
+     *
+     * @return This graph.
+     */
+    @Override
+    public Graph search() {
+        return search(test.getVariables());
+    }
+
+    /**
+     * Returns the elapsed time of the search.
+     *
+     * @return This elapsed time.
+     */
+    public long getElapsedTime() {
+        return elapsedTime;
+    }
+
+    /**
+     * Returns the nodes from the test.
+     *
+     * @return These nodes.
+     */
+    @Override
+    public List<Node> getNodes() {
+        return this.test.getVariables();
+    }
+
+    /**
+     * There are no ambiguous triples for this search, for any nodes.
+     *
+     * @param node The nodes in question.
+     * @return An empty list.
+     */
+    @Override
+    public List<Triple> getAmbiguousTriples(Node node) {
+        return new ArrayList<>();
+    }
+
+    /**
+     * Returns whether verbose output should be printed.
+     *
+     * @return True iff the case.
+     */
+    @Override
+    public boolean isVerbose() {
+        return verbose;
+    }
+
+    /**
+     * This is not used here.
+     * @param out This print stream.
+     */
+    @Override
+    public void setOut(PrintStream out) {
+        throw new UnsupportedOperationException("Print to out for FAS is not used.");
+    }
+
+    /**
+     * Sets the heuristic to use to fix variable order (1, 2, 3, or 0 = none).
+     *
+     * @param heuristic This heuristic.
+     */
+    public void setHeuristic(int heuristic) {
+        this.heuristic = heuristic;
+    }
+
+    /**
+     * Sets whether the stable algorithm shoudl be used.
+     *
+     * @param stable True iff the case.
+     */
+    public void setStable(boolean stable) {
+        this.stable = stable;
     }
 
     //==============================PRIVATE METHODS======================/
@@ -320,10 +467,6 @@ public class Fas implements IFas {
                 this.numIndependenceTests++;
                 boolean independent = test.checkIndependence(x, y, Z).independent();
 
-                if (!independent) {
-                    this.numDependenceJudgement++;
-                }
-
                 boolean noEdgeRequired =
                         this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
@@ -364,66 +507,5 @@ public class Fas implements IFas {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
-    public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
-    }
-
-    public int getNumDependenceJudgments() {
-        return this.numDependenceJudgement;
-    }
-
-    public SepsetMap getSepsets() {
-        return this.sepset;
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    @Override
-    public boolean isAggressivelyPreventCycles() {
-        return false;
-    }
-
-    @Override
-    public IndependenceTest getIndependenceTest() {
-        return null;
-    }
-
-    @Override
-    public Graph search() {
-        return search(test.getVariables());
-    }
-
-    @Override
-    public long getElapsedTime() {
-        return 0;
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        return this.test.getVariables();
-    }
-
-    @Override
-    public List<Triple> getAmbiguousTriples(Node node) {
-        return null;
-    }
-
-    @Override
-    public void setOut(PrintStream out) {
-    }
-
-    public void setHeuristic(int heuristic) {
-        this.heuristic = heuristic;
-    }
-
-    public void setStable(boolean stable) {
-        this.stable = stable;
-    }
 }
 
