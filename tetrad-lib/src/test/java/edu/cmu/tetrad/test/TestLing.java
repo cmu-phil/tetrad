@@ -93,7 +93,7 @@ public class TestLing {
         Lingam lingam = new Lingam();
         lingam.setBThreshold(bThreshold);
         lingam.setSpineThreshold(spineThreshold);
-        Matrix lingamBhat = lingam.search(W);
+        Matrix lingamBhat = lingam.fit(W);
         Graph lingamGraph = LingD.makeGraph(lingamBhat, dataSet.getVariables());
         System.out.println("Lingam graph = " + lingamGraph);
 
@@ -113,7 +113,7 @@ public class TestLing {
         LingD lingD = new LingD();
         lingD.setBThreshold(bThreshold);
         lingD.setSpineThreshold(spineThreshold);
-        List<Matrix> bHats = lingD.search(W);
+        List<Matrix> bHats = lingD.fit(W);
 
         if (bHats.isEmpty()) {
             throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
