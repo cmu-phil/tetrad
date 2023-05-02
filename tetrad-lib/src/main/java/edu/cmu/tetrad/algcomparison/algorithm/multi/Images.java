@@ -88,11 +88,6 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                 PermutationSearch search = new PermutationSearch(new Boss(score));
                 search.setKnowledge(this.knowledge);
                 return search.search();
-            } else if (meta == 3) {
-                BridgesOld search = new edu.cmu.tetrad.search.BridgesOld(score);
-                search.setKnowledge(this.knowledge);
-                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-                return search.search();
             } else {
                 throw new IllegalArgumentException("Unrecognized meta option: " + meta);
             }
