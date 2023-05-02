@@ -21,7 +21,10 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.util.Matrix;
+
+import java.util.List;
 
 /**
  * <p>Implements an interpretation of the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen,
@@ -39,6 +42,9 @@ import edu.cmu.tetrad.util.Matrix;
  * <p>Both N Rooks and Hungarian Algorithm were tested for finding the best strong diagonal;
  * these were not compared head to head, though the initial impression was that N Rooks was better,
  * so this version uses it.</p>
+ * <p>This implementation has two parameters, a threshold (for N Rooks) on the minimum values
+ * in absolute value for including entries in a possible strong diagonal for W, and a threshold
+ * for BHat for including edges in the final graph.</p>
  *
  * @author josephramsey
  */
@@ -52,12 +58,17 @@ public class Lingam {
     public Lingam() {
     }
 
+    public Matrix fit(DataSet D) {
+        Matrix W = LingD.estimateW(D, 5000, 1e-6, 1.2);
+        return fitW(W);
+    }
+
     /**
      * Searches given the W matrix from ICA.
      * @param W the W matrix from ICA, WX = e.
      * @return The estimated B Hat matrix.
      */
-    public Matrix fit(Matrix W) {
+    public Matrix fitW(Matrix W) {
         PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W, spineThreshold);
         return LingD.getScaledBHat(bestPair, bThreshold);
     }

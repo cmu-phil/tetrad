@@ -71,8 +71,8 @@ public class TestLing {
         Graph trueGraph = sim.getTrueGraph(0);
         System.out.println("True graph = " + trueGraph);
 
-        // First we use ICA to estimate the W matrix.
-        Matrix W = LingD.estimateW(dataSet, 5000, 1e-6, 1.2);
+//        // First we use ICA to estimate the W matrix.
+//        Matrix W = LingD.estimateW(dataSet, 5000, 1e-6, 1.2);
 
         // We then apply LiNGAM with a W threshold of .3. We should get a mostly correct DAG
         // back. The "W threshold" is a threshold for the B Hat matrix below which values are
@@ -93,7 +93,7 @@ public class TestLing {
         Lingam lingam = new Lingam();
         lingam.setBThreshold(bThreshold);
         lingam.setSpineThreshold(spineThreshold);
-        Matrix lingamBhat = lingam.fit(W);
+        Matrix lingamBhat = lingam.fit(dataSet);
         Graph lingamGraph = LingD.makeGraph(lingamBhat, dataSet.getVariables());
         System.out.println("Lingam graph = " + lingamGraph);
 
@@ -113,7 +113,7 @@ public class TestLing {
         LingD lingD = new LingD();
         lingD.setBThreshold(bThreshold);
         lingD.setSpineThreshold(spineThreshold);
-        List<Matrix> bHats = lingD.fit(W);
+        List<Matrix> bHats = lingD.fit(dataSet);
 
         if (bHats.isEmpty()) {
             throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");

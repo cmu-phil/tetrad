@@ -48,7 +48,7 @@ public class LingD implements Algorithm {
             edu.cmu.tetrad.search.LingD lingD = new edu.cmu.tetrad.search.LingD();
             lingD.setBThreshold(bThreshold);
             lingD.setSpineThreshold(spineThreshold);
-            List<Matrix> bHats = lingD.fit(W);
+            List<Matrix> bHats = lingD.fit(data);
 
             int count = 0;
 
