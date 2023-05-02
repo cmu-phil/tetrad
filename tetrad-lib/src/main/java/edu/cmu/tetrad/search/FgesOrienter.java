@@ -52,7 +52,7 @@ import java.util.concurrent.*;
  * of the edges in the oriented graph
  * @author AJ Sedgewick, 5/2015
  */
-public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter {
+public final class FgesOrienter implements GraphSearch, GraphScorer {
 
     /**
      * The covariance matrix for continuous data.
@@ -205,7 +205,6 @@ public final class FgesOrienter implements GraphSearch, GraphScorer, Reorienter 
     }
 
     // This will "orient" graph
-    @Override
     public void orient(Graph graph) {
         this.graphToOrient = new EdgeListGraph(graph);
         this.graphToOrient = GraphUtils.undirectedGraph(this.graphToOrient);
