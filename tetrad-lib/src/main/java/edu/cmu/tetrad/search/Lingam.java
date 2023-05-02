@@ -23,12 +23,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.util.Matrix;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static edu.cmu.tetrad.search.LingD.nRooks;
-import static edu.cmu.tetrad.search.LingD.threshold;
-
 /**
  * <p>Implements the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen, and Kerminen, A linear
  * nongaussian acyclic model for causal discovery, JMLR 7 (2006).</p>
@@ -38,8 +32,6 @@ import static edu.cmu.tetrad.search.LingD.threshold;
 public class Lingam {
     private double spineThreshold = 0.5;
     private double bThreshold = 0.1;
-
-    //================================CONSTRUCTORS==========================//
 
     /**
      * Constructs a new LiNGAM algorithm with the given alpha level (used for pruning).
@@ -59,7 +51,6 @@ public class Lingam {
 
     /**
      * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
-     *
      * @param bThreshold Some value >= 0.
      */
     public void setBThreshold(double bThreshold) {
@@ -67,8 +58,13 @@ public class Lingam {
         this.bThreshold = bThreshold;
     }
 
+    /**
+     * Sets the threshold used to prune the matrix for purpose of searching for alterantive strong dia=gonals..
+     * @param spineThreshold The threshold, a non-negative number.
+     */
     public void setSpineThreshold(double spineThreshold) {
-        if (spineThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + spineThreshold);
+        if (spineThreshold < 0)
+            throw new IllegalArgumentException("Expecting a non-negative number: " + spineThreshold);
         this.spineThreshold = spineThreshold;
     }
 }

@@ -19,8 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * LiNGAM.
- *
+ * LiNG-D.
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(

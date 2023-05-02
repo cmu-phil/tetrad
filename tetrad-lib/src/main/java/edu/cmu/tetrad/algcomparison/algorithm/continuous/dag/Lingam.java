@@ -21,7 +21,6 @@ import java.util.List;
 
 /**
  * LiNGAM.
- *
  * @author jdramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
