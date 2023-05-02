@@ -139,6 +139,10 @@ public final class BayesUpdaterClassifier
 
     //==========================PUBLIC METHODS========================//
 
+    /**
+     * Sets the target variable.
+     * @param target This variable.
+     */
     public void setTarget(String target) {
 
         //Find the target variable using its name.
@@ -162,8 +166,9 @@ public final class BayesUpdaterClassifier
     }
 
     /**
-     * Computes and returns the crosstabulation of observed versus estimated
+     * Computes and returns the cross-tabulation of observed versus estimated
      * values of the target variable as described above.
+     * @return this cross-tabulation.
      */
     public int[] classify() {
         if (this.targetVariable == null) {
@@ -255,24 +260,6 @@ public final class BayesUpdaterClassifier
             //Straw man values--to be replaced.
             int estimatedValue = -1;
 
-//            if (numTargetCategories == 2) {
-//                for (int j = 0; j < numTargetCategories; j++) {
-//                    double marginal =
-//                            bayesUpdater.getMarginal(indexTargetBN, j);
-//                    probOfClassifiedValues[j][i] = marginal;
-//                    probOfClassifiedValues[1 - j][i] = 1.0 - marginal;
-//
-//                    if (targetCategory == j) {
-//                        if (marginal > binaryCutoff) {
-//                            estimatedValue = j;
-//                        } else {
-//                            estimatedValue = 1 - j;
-//                        }
-//
-//                        break;
-//                    }
-//                }
-//            } else
             {
                 double highestProb = -0.1;
 
@@ -385,36 +372,67 @@ public final class BayesUpdaterClassifier
     }
 
     /**
-     * @return the DiscreteVariable which is the target variable.
+     * @return the discrete variables which is the target variable.
+     * @see DiscreteVariable
      */
     public DiscreteVariable getTargetVariable() {
         return this.targetVariable;
     }
 
+    /**
+     * Returns the Bayes IM being used.
+     * @return This IM
+     * @see BayesIm
+     */
     public BayesIm getBayesIm() {
         return this.bayesIm;
     }
 
+    /**
+     * Returns the test data being used.
+     * @return This data.
+     */
     public DataSet getTestData() {
         return this.testData;
     }
 
+    /**
+     * Returns the classification for the target variable.
+     * @return Thsi classification.
+     */
     public int[] getClassifications() {
         return this.classifications;
     }
 
+    /**
+     * Returns the marginals.
+     * @return This.
+     */
     public double[][] getMarginals() {
         return this.marginals;
     }
 
+    /**
+     * Returns the number of cases for the data.
+     * @return This number.
+     */
     public int getNumCases() {
         return this.numCases;
     }
 
+    /**
+     * Returns the number of usable cases for the data.
+     * @return Thsi number.
+     */
     public int getTotalUsableCases() {
         return this.totalUsableCases;
     }
 
+    /**
+     * Returns the variables of the Bayes IM.
+     * @return These variables as a list.
+     * @see BayesIm
+     */
     public List<Node> getBayesImVars() {
         return this.bayesImVars;
     }

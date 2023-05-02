@@ -30,10 +30,16 @@ import java.util.List;
 
 /**
  * Calculates the BDe score.
+ *
+ * @author josephramsey
  */
 public class BdeScore implements LocalDiscreteScore {
     private final DataSet dataSet;
 
+    /**
+     * Constructs a BDe score for the given dataset.
+     * @param dataSet A discrete dataset.
+     */
     public BdeScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
@@ -47,7 +53,11 @@ public class BdeScore implements LocalDiscreteScore {
     }
 
     /**
+     * Returns the score for the given parent given its parents, where these are
+     * specified as column indices into the dataset.
      * @return the score, or NaN if the score can't be calculated.
+     * @param i The index of the variable.
+     * @param parents The indices of the parents of the variables.
      */
     public double localScore(int i, int[] parents) {
 
@@ -130,15 +140,24 @@ public class BdeScore implements LocalDiscreteScore {
         }
     }
 
+    /**
+     * Returns the different between localScore(y | z, x) and localScore(y | z)
+     * @param x The index of the x variable
+     * @param y The index of the y variable.
+     * @param z The indices of the z variables
+     * @return The differnece in scores.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
 
+    /**
+     * Returns the dataset being analyzed.
+     * @return This dataset.
+     */
     @Override
-
-
     public DataSet getDataSet() {
         return this.dataSet;
     }
@@ -150,6 +169,85 @@ public class BdeScore implements LocalDiscreteScore {
             rowIndex += values[i];
         }
         return rowIndex;
+    }
+
+    /**
+     * BDe does not use a structure prior.
+     * @param structurePrior The structure prior (not used).
+     * @throws UnsupportedOperationException Since this method is not implemented for this score.
+     */
+    public void setStructurePrior(double structurePrior) {
+        throw new UnsupportedOperationException("BDe does not use a structure prior.");
+    }
+
+    /**
+     * BDe does not use a sample prior.
+     * @param samplePrior The structure prior (not used).
+     * @throws UnsupportedOperationException Since this method is not implemented for this score.
+     */
+    public void setSamplePrior(double samplePrior) {
+        throw new UnsupportedOperationException("BDe does not use a sample prior.");
+    }
+
+    /**
+     * Returns the variables of the dataset.
+     * @return These variables as  list.
+     */
+    @Override
+    public List<Node> getVariables() {
+        return this.dataSet.getVariables();
+    }
+
+    /**
+     * Returns the sample size of the data.
+     * @return This size.
+     */
+    public int getSampleSize() {
+        return this.dataSet.getNumRows();
+    }
+
+    /**
+     * Returns a judgment of whether the given bump in score allows one to conclude
+     * that the edge is an "effect edge" for FGES.
+     * @param bump The bump.
+     * @return True iff so.
+     * @see Fges
+     */
+    @Override
+    public boolean isEffectEdge(double bump) {
+        return bump > -20;
+    }
+
+    /**
+     * Returns the maximum degree of the graphs as they're searched.
+     * @return This maximum degree.
+     */
+    @Override
+    public int getMaxDegree() {
+        return 1000;
+    }
+
+    /**
+     * A judgment of whether a node given its parents is determined is not available for this
+     * score.
+     * @param z The parents.
+     * @param y The node.
+     * @return The judgment
+     * @throws UnsupportedOperationException Since this method is not implemented for this score.
+     */
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        throw new UnsupportedOperationException("The BDe score does not make judgments of " +
+                "determinacy of a node given its parents.");
+    }
+
+    /**
+     * Returns "BDe Score".
+     * @return This string.
+     */
+    @Override
+    public String toString() {
+        return "BDe Score";
     }
 
     private int sampleSize() {
@@ -164,40 +262,7 @@ public class BdeScore implements LocalDiscreteScore {
         return this.dataSet;
     }
 
-    public void setStructurePrior(double structurePrior) {
-    }
 
-    public void setSamplePrior(double samplePrior) {
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return this.dataSet.getVariables();
-    }
-
-    public int getSampleSize() {
-        return this.dataSet.getNumRows();
-    }
-
-    @Override
-    public boolean isEffectEdge(double bump) {
-        return bump > -20;
-    }
-
-    @Override
-    public int getMaxDegree() {
-        return 1000;
-    }
-
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        return false;
-    }
-
-    @Override
-    public String toString() {
-        return "BDe Score";
-    }
 
 }
 

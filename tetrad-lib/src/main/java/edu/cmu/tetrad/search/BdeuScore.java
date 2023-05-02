@@ -37,14 +37,21 @@ public class BdeuScore implements LocalDiscreteScore, IBDeuScore {
     private final int[][] data;
     private final int sampleSize;
     private final int[] numCategories;
+    private final DataSet dataSet;
     private List<Node> variables;
     private double samplePrior = 1;
     private double structurePrior = 1;
 
+    /**
+     * Constructs a BDe score for the given dataset.
+     * @param dataSet A discrete dataset.
+     */
     public BdeuScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException("Data was not provided.");
         }
+
+        this.dataSet = dataSet;
 
         if (dataSet instanceof BoxDataSet && ((BoxDataSet) dataSet).getDataBox() instanceof VerticalIntDataBox) {
             DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
@@ -75,19 +82,12 @@ public class BdeuScore implements LocalDiscreteScore, IBDeuScore {
         }
     }
 
-    private static int getRowIndex(int[] dim, int[] values) {
-        int rowIndex = 0;
-        for (int i = 0; i < dim.length; i++) {
-            rowIndex *= dim[i];
-            rowIndex += values[i];
-        }
-        return rowIndex;
-    }
-
-    private DiscreteVariable getVariable(int i) {
-        return (DiscreteVariable) this.variables.get(i);
-    }
-
+    /**
+     * Calculates the BDeu score of a node given its parents.
+     * @param node    The index of the node.
+     * @param parents The indices of the node's parents.
+     * @return The score.
+     */
     @Override
     public double localScore(int node, int[] parents) {
 
@@ -169,27 +169,107 @@ public class BdeuScore implements LocalDiscreteScore, IBDeuScore {
         }
     }
 
-    private double getPriorForStructure(int numParents, int N) {
-        double e = getStructurePrior();
-        if (e == 0) return 0.0;
-        else {
-            int vm = N - 1;
-            return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
-        }
-    }
-
+    /**
+     * Calculates localScore(y | z, x) - localScore(y | z).
+     * @param x The index of x.
+     * @param y The index of y.
+     * @param z The indeces of the z variables.
+     * @return The score difference.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
 
+    /**
+     * Returns the variables of the data.
+     * @return These variables as a list.
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
-    public void setVariables(List<Node> variables) {
+    /**
+     * Returns the sample size of the data.
+     * @return This size.
+     */
+    public int getSampleSize() {
+        return this.sampleSize;
+    }
+
+    /**
+     * For FGES, this determines whether an edge counts as an effect edge.
+     * @param  bump The bump for the edge.
+     * @return True if so.
+     * @see Fges
+     */
+    public boolean isEffectEdge(double bump) {
+        return bump > 0;
+    }
+
+    /**
+     * Returns the dataset being analyzed.
+     * @return This dataset
+     */
+    @Override
+    public DataSet getDataSet() {
+        return dataSet;
+    }
+
+    /**
+     * Returns the structure prior.
+     * @return This prior.
+     */
+    @Override
+    public double getStructurePrior() {
+        return this.structurePrior;
+    }
+
+    /**
+     * Sets the structure prior
+     * @param structurePrior This prior.
+     */
+    @Override
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
+    }
+
+    /**
+     * Returns the smaple prior.
+     * @return This prior.
+     */
+    @Override
+    public double getSamplePrior() {
+        return this.samplePrior;
+    }
+
+    /**
+     * Set the sample prior
+     * @param samplePrior This prior.
+     */
+    @Override
+    public void setSamplePrior(double samplePrior) {
+        this.samplePrior = samplePrior;
+    }
+
+    /**
+     * Returns a string representation of this score.
+     * @return This string.
+     */
+    @Override
+    public String toString() {
+        NumberFormat nf = new DecimalFormat("0.00");
+        return "BDeu Score SampP " + nf.format(this.samplePrior) + " StuctP " + nf.format(this.structurePrior);
+    }
+
+    /**
+     * Sets the variables to another of the same names, in the same order.
+     * @param variables The new varialbe list.
+     * @see edu.cmu.tetrad.algcomparison.algorithm.multi.Images
+     */
+    void setVariables(List<Node> variables) {
         for (int i = 0; i < variables.size(); i++) {
             if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
                 throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
@@ -200,56 +280,48 @@ public class BdeuScore implements LocalDiscreteScore, IBDeuScore {
         this.variables = variables;
     }
 
-    public int getSampleSize() {
-        return this.sampleSize;
-    }
-
     /**
-     * Must be called directly after the corresponding scoring call.
+     * Returns the needed max degree for some searches.
+     * @return This max degree.
      */
-    public boolean isEffectEdge(double bump) {
-        return bump > 0;//lastBumpThreshold;
-    }
-
-    @Override
-    public DataSet getDataSet() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public double getStructurePrior() {
-        return this.structurePrior;
-    }
-
-    @Override
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
-    }
-
-    @Override
-    public double getSamplePrior() {
-        return this.samplePrior;
-    }
-
-    @Override
-    public void setSamplePrior(double samplePrior) {
-        this.samplePrior = samplePrior;
-    }
-
-    @Override
-    public String toString() {
-        NumberFormat nf = new DecimalFormat("0.00");
-        return "BDeu Score SampP " + nf.format(this.samplePrior) + " StuctP " + nf.format(this.structurePrior);
-    }
-
     @Override
     public int getMaxDegree() {
         return (int) FastMath.ceil(FastMath.log(this.sampleSize));
     }
 
+    /**
+     * This score does not implement a method to decide whehter a node is determined
+     * by its parents.
+     * @param z The parents.
+     * @param y The node.
+     * @return This determination
+     * @throws UnsupportedOperationException Since this method not implemented for this core.
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
-        return false;
+        throw new UnsupportedOperationException("The BDeu score does not implement a 'determines' method.");
+    }
+
+    private DiscreteVariable getVariable(int i) {
+        return (DiscreteVariable) this.variables.get(i);
+    }
+
+    private double getPriorForStructure(int numParents, int N) {
+        double e = getStructurePrior();
+        if (e == 0) return 0.0;
+        else {
+            int vm = N - 1;
+            return numParents * FastMath.log(e / (vm)) + (vm - numParents) * FastMath.log(1.0 - (e / (vm)));
+        }
+    }
+
+    private static int getRowIndex(int[] dim, int[] values) {
+        int rowIndex = 0;
+        for (int i = 0; i < dim.length; i++) {
+            rowIndex *= dim[i];
+            rowIndex += values[i];
+        }
+        return rowIndex;
     }
 }
 
