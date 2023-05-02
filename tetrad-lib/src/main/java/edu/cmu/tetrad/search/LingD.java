@@ -165,6 +165,7 @@ public class LingD {
                 }
             }
         }
+
         return g;
     }
 
@@ -194,12 +195,7 @@ public class LingD {
             double sum = 0.0;
             for (int j = 0; j < permutedMatrix.rows(); j++) {
                 double a = permutedMatrix.get(j, j);
-
-                if (a == 0) {
-                    continue P;
-                }
-
-                sum += FastMath.abs(a);//= 1.0 / StrictMath.abs(a);
+                sum += abs(a);
             }
 
             if (sum > sum1) {
