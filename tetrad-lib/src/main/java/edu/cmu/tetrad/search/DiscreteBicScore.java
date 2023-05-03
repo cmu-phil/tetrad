@@ -33,7 +33,7 @@ import static org.apache.commons.math3.util.FastMath.log;
 /**
  * Calculates the discrete BIC score.
  */
-public class DiscreteBicScore implements LocalDiscreteScore, IBDeuScore {
+public class DiscreteBicScore implements LocalDiscreteScore {
     private List<Node> variables;
     private final int[][] data;
     private final int sampleSize;
@@ -205,13 +205,10 @@ public class DiscreteBicScore implements LocalDiscreteScore, IBDeuScore {
         return rowIndex;
     }
 
-    @Override
     public double getStructurePrior() {
         return this.structurePrior;
     }
 
-
-    @Override
     public double getSamplePrior() {
         throw new UnsupportedOperationException();
     }

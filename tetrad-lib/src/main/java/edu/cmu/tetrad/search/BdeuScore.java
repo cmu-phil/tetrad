@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Calculates the BDeu score.
  */
-public class BdeuScore implements LocalDiscreteScore, IBDeuScore {
+public class BdeuScore implements LocalDiscreteScore {
     private final int[][] data;
     private final int sampleSize;
     private final int[] numCategories;
@@ -222,7 +222,6 @@ public class BdeuScore implements LocalDiscreteScore, IBDeuScore {
      * Returns the structure prior.
      * @return This prior.
      */
-    @Override
     public double getStructurePrior() {
         return this.structurePrior;
     }
@@ -231,7 +230,6 @@ public class BdeuScore implements LocalDiscreteScore, IBDeuScore {
      * Sets the structure prior
      * @param structurePrior This prior.
      */
-    @Override
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
     }
@@ -240,7 +238,6 @@ public class BdeuScore implements LocalDiscreteScore, IBDeuScore {
      * Returns the smaple prior.
      * @return This prior.
      */
-    @Override
     public double getSamplePrior() {
         return this.samplePrior;
     }
