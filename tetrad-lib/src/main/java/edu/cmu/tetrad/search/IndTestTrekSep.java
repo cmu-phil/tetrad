@@ -42,46 +42,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Adam Brodie
  */
 public final class IndTestTrekSep implements IndependenceTest {
-
-    /**
-     * The covariance matrix.
-     */
     private final ICovarianceMatrix covMatrix;
     private final List<Node> latents;
-
     private boolean verbose;
-
-
-    /**
-     * The variables of the covariance matrix, in order. (Unmodifiable list.)
-     */
     private final List<List<Node>> clustering;
-
-    /**
-     * The variables of the covariance matrix, in order. (Unmodifiable list.)
-     */
     private List<Node> variables;
-
-    /**
-     * The significance level of the independence tests.
-     */
     private double alpha;
-
-    /**
-     * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
-     */
     private double pValue;
-
-    /**
-     * Formats as 0.0000.
-     */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-    /**
-     * Stores a reference to the dataset being analyzed.
-     */
     private DataSet dataSet;
-
     private final Map<Node, Integer> indexMap;
     private final Map<String, Node> nameMap;
 
