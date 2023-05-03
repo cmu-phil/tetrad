@@ -44,7 +44,7 @@ public class IndTestMVPLRT implements IndependenceTest {
     private double alpha;
 
     // Likelihood function
-    private final MVPLikelihood likelihood;
+    private final MvpLikelihood likelihood;
     private boolean verbose;
 
 
@@ -53,7 +53,7 @@ public class IndTestMVPLRT implements IndependenceTest {
 
     public IndTestMVPLRT(DataSet data, double alpha, int fDegree, boolean discretize) {
         this.data = data;
-        this.likelihood = new MVPLikelihood(data, -1, fDegree, discretize);
+        this.likelihood = new MvpLikelihood(data, -1, fDegree, discretize);
 
         this.nodesHash = new HashedMap<>();
 

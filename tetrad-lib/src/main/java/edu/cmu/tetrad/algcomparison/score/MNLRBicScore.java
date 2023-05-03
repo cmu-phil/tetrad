@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.MNLRScore;
+import edu.cmu.tetrad.search.MnlrScore;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -29,7 +29,7 @@ public class MNLRBicScore implements ScoreWrapper {
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
-        return new MNLRScore(SimpleDataLoader.getMixedDataSet(dataSet),
+        return new MnlrScore(SimpleDataLoader.getMixedDataSet(dataSet),
                 1,
                 parameters.getInt("fDegree", 1));
     }

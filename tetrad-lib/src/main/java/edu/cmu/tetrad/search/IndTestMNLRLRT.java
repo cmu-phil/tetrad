@@ -44,7 +44,7 @@ public class IndTestMNLRLRT implements IndependenceTest {
     private double alpha;
 
     // Likelihood function
-    private final MNLRLikelihood likelihood;
+    private final MnlrLikelihood likelihood;
     private boolean verbose;
 
 
@@ -53,7 +53,7 @@ public class IndTestMNLRLRT implements IndependenceTest {
 
     public IndTestMNLRLRT(DataSet data, double alpha) {
         this.data = data;
-        this.likelihood = new MNLRLikelihood(data, -1, 1);
+        this.likelihood = new MnlrLikelihood(data, -1, 1);
 
         this.nodesHash = new HashedMap<>();
 

@@ -32,7 +32,7 @@ import java.util.List;
  *
  * @author Bryan Andrews
  */
-public class MNLRScore implements Score {
+public class MnlrScore implements Score {
 
     private final DataSet dataSet;
 
@@ -40,12 +40,12 @@ public class MNLRScore implements Score {
     private final List<Node> variables;
 
     // Likelihood function
-    private final MNLRLikelihood likelihood;
+    private final MnlrLikelihood likelihood;
 
     // Log number of instances
     private final double logn;
 
-    public MNLRScore(DataSet dataSet, double structurePrior, int fDegree) {
+    public MnlrScore(DataSet dataSet, double structurePrior, int fDegree) {
 
         if (dataSet == null) {
             throw new NullPointerException();
@@ -53,7 +53,7 @@ public class MNLRScore implements Score {
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
-        this.likelihood = new MNLRLikelihood(dataSet, structurePrior, fDegree);
+        this.likelihood = new MnlrLikelihood(dataSet, structurePrior, fDegree);
         this.logn = FastMath.log(dataSet.getNumRows());
     }
 

@@ -32,7 +32,7 @@ import java.util.List;
  *
  * @author Bryan Andrews
  */
-public class MVPScore implements Score {
+public class MvpScore implements Score {
 
     private final DataSet dataSet;
 
@@ -40,12 +40,12 @@ public class MVPScore implements Score {
     private final List<Node> variables;
 
     // Likelihood function
-    private final MVPLikelihood likelihood;
+    private final MvpLikelihood likelihood;
 
     // Log number of instances
     private final double logn;
 
-    public MVPScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
+    public MvpScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
         if (dataSet == null) {
             throw new NullPointerException();
@@ -53,7 +53,7 @@ public class MVPScore implements Score {
 
         this.dataSet = dataSet;
         this.variables = dataSet.getVariables();
-        this.likelihood = new MVPLikelihood(dataSet, structurePrior, fDegree, discretize);
+        this.likelihood = new MvpLikelihood(dataSet, structurePrior, fDegree, discretize);
         this.logn = FastMath.log(dataSet.getNumRows());
     }
 
