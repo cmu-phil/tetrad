@@ -21,6 +21,8 @@
 
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -35,8 +37,8 @@ import java.util.*;
  * form an input PAG_of_the_true_DAG that are consistent (same d-separations and d-connections) with every input PAG_of_the_true_DAG.
  *
  * @author Robert Tillman
+ * @author Joseph Ramsey
  */
-
 public class Ion {
 
     // prune using path length
@@ -85,6 +87,9 @@ public class Ion {
     // maximum memory usage
     private double maxMemory;
 
+    // knowledge if available.
+    private Knowledge knowledge = new Knowledge();
+
     //============================= Constructor ============================//
 
 
@@ -123,6 +128,14 @@ public class Ion {
      */
     public void setAdjacencySearch(boolean b) {
         this.adjacencySearch = b;
+    }
+
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge == null) {
+            throw new NullPointerException("Knowledge must not be null.");
+        }
+
+        this.knowledge = knowledge;
     }
 
     /**
@@ -173,14 +186,15 @@ public class Ion {
         this.separations = sepAndAssoc.get(0);
         Set<IonIndependenceFacts> associations = sepAndAssoc.get(1);
         Map<Collection<Node>, List<PossibleDConnectingPath>> paths;
-        Queue<Graph> step3Pags = new LinkedList<>();
+//        Queue<Graph> step3PagsSet = new LinkedList<Graph>();
+        HashSet<Graph> step3PagsSet = new HashSet<>();
         Set<Graph> reject = new HashSet<>();
         // if no d-separations, nothing left to search
         if (this.separations.isEmpty()) {
             // makes orientations preventing definite noncolliders from becoming colliders
             // do final orientations
 //            doFinalOrientation(graph);
-            step3Pags.add(graph);
+            step3PagsSet.add(graph);
         }
         // sets length to iterate once if search over path lengths not enabled, otherwise set to 2
         int numNodes = graph.getNumNodes();
@@ -203,9 +217,9 @@ public class Ion {
                 seps--;
                 // uses two queues to keep up with which PAGs are being iterated and which have been
                 // accepted to be iterated over in the next iteration of the above for loop
-                searchPags.addAll(step3Pags);
+                searchPags.addAll(step3PagsSet);
                 this.recGraphs.add(searchPags.size());
-                step3Pags.clear();
+                step3PagsSet.clear();
                 while (!searchPags.isEmpty()) {
                     System.out.println("ION Step 3 size: " + searchPags.size());
                     double currentUsage = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -243,8 +257,7 @@ public class Ion {
                     }
                     // accept PAG_of_the_true_DAG go to next PAG_of_the_true_DAG if no possibly d-connecting undirectedPaths
                     if (dConnections.isEmpty()) {
-//                        doFinalOrientation(pag);
-                        step3Pags.add(pag);
+                        step3PagsSet.add(pag);
                         continue;
                     }
                     // maps conditioning sets to list of possibly d-connecting undirectedPaths
@@ -268,8 +281,8 @@ public class Ion {
                                 if (pag.underlines().isUnderlineTriple(collider.getX(), collider.getY(), collider.getZ())) {
                                     okay = false;
                                     break;
-
                                 }
+
                             }
                             if (!okay) {
                                 continue;
@@ -373,7 +386,7 @@ public class Ion {
                             continue;
                         }
                         // if graph change has already been accepted move on to next graph
-                        if (step3Pags.contains(changed)) {
+                        if (step3PagsSet.contains(changed)) {
                             continue;
                         }
                         // reject if null, predicts false independencies or has cycle
@@ -385,7 +398,8 @@ public class Ion {
                         // do final orientations
 //                        doFinalOrientation(changed);
                         // now add graph to queue
-                        step3Pags.add(changed);
+
+                        step3PagsSet.add(changed);
                     }
                 }
                 // exits loop if not looping over adjacencies
@@ -395,6 +409,7 @@ public class Ion {
             }
         }
         TetradLogger.getInstance().log("info", "Step 3: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
+        Queue<Graph> step3Pags = new LinkedList<>(step3PagsSet);
 
         /*
          * Step 4
@@ -405,6 +420,7 @@ public class Ion {
         steps = MillisecondTimes.timeMillis();
         Map<Edge, Boolean> necEdges;
         Set<Graph> outputPags = new HashSet<>();
+
         while (!step3Pags.isEmpty()) {
             Graph pag = step3Pags.poll();
             necEdges = new HashMap<>();
@@ -467,6 +483,7 @@ public class Ion {
             }
         }
         outputPags = removeMoreSpecific(outputPags);
+//        outputPags = applyKnowledge(outputPags);
 
         TetradLogger.getInstance().log("info", "Step 4: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
 
@@ -505,6 +522,10 @@ public class Ion {
                 }
             }
         }
+
+//        outputSet = applyKnowledge(outputSet);
+        outputSet = checkPaths(outputSet);
+
         this.output.addAll(outputSet);
         TetradLogger.getInstance().log("info", "Step 5: " + (MillisecondTimes.timeMillis() - steps) / 1000. + "s");
         this.runtime = ((MillisecondTimes.timeMillis() - start) / 1000.);
@@ -1135,15 +1156,58 @@ public class Ion {
                 Node C = adj.get(combination[1]);
 
                 //choice gen doesnt do diff orders, so must switch A & C around.
-                awayFromCollider(graph, A, B, C);
-                awayFromCollider(graph, C, B, A);
-                awayFromAncestor(graph, A, B, C);
-                awayFromAncestor(graph, C, B, A);
-                awayFromCycle(graph, A, B, C);
-                awayFromCycle(graph, C, B, A);
+                ruleR1(A, B, C, graph);
+                ruleR1(C, B, A, graph);
+                ruleR2(A, B, C, graph);
+                ruleR2(C, B, A, graph);
+
             }
         }
     }
+
+    /// R1, away from collider
+
+    private void ruleR1(Node a, Node b, Node c, Graph graph) {
+        if (graph.isAdjacentTo(a, c)) {
+            return;
+        }
+
+        if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
+            if (!isArrowpointAllowed(graph, b, c)) {
+                return;
+            }
+
+            graph.setEndpoint(c, b, Endpoint.TAIL);
+            graph.setEndpoint(b, c, Endpoint.ARROW);
+        }
+    }
+
+    //if Ao->c and a-->b-->c, then a-->c
+    // Zhang's rule R2, awy from ancestor.
+
+    private void ruleR2(Node a, Node b, Node c, Graph graph) {
+        if (!graph.isAdjacentTo(a, c)) {
+            return;
+        }
+
+        if (graph.getEndpoint(b, a) == Endpoint.TAIL && graph.getEndpoint(a, b) == Endpoint.ARROW
+                && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE) {
+            if (!isArrowpointAllowed(graph, a, c)) {
+                return;
+            }
+
+            graph.setEndpoint(a, c, Endpoint.ARROW);
+        } else if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.TAIL
+                && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE
+        ) {
+            if (!isArrowpointAllowed(graph, a, c)) {
+                return;
+            }
+
+            graph.setEndpoint(a, c, Endpoint.ARROW);
+        }
+    }
+
 
     private boolean isArrowpointAllowed(Graph graph, Node x, Node y) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
@@ -1422,6 +1486,41 @@ public class Ion {
         return outputPags;
     }
 
+    private Set<Graph> checkPaths(Set<Graph> pags) {
+        HashSet<Graph> pagsOut = new HashSet<>();
+
+        for (Graph pag : pags) {
+            boolean allAccountFor = true;
+
+            GRAPH:
+            for (Graph inGraph : this.input) {
+                for (Edge edge : inGraph.getEdges()) {
+                    Node node1 = pag.getNode(edge.getNode1().getName());
+                    Node node2 = pag.getNode(edge.getNode2().getName());
+
+                    if (Edges.isDirectedEdge(edge)) {
+                        if (!pag.paths().existsSemiDirectedPathFromTo(node1, Collections.singleton(node2))) {
+                            allAccountFor = false;
+                            break GRAPH;
+                        }
+                    }
+                    if (/*!pag.existsTrek(node1, node2) ||*/ Edges.isPartiallyOrientedEdge(edge)) {
+                        if (pag.paths().existsSemiDirectedPathFromTo(node2, Collections.singleton(node1))) {
+                            allAccountFor = false;
+                            break GRAPH;
+                        }
+                    }
+                }
+            }
+
+            if (allAccountFor) {
+                pagsOut.add(pag);
+            }
+        }
+
+        return pagsOut;
+    }
+
     /**
      * Exactly the same as edu.cmu.tetrad.graph.IndependenceFact excepting this class allows for multiple conditioning
      * sets to be associated with a single pair of nodes, which is necessary for the proper ordering of iterations in
@@ -1581,7 +1680,7 @@ public class Ion {
     }
 
     /**
-     * Constucts the list of treks between node1 and node2.
+     * Constructs the list of treks between node1 and node2.
      */
     private static void treks(Graph graph, Node node1, Node node2,
                               LinkedList<Node> path, List<List<Node>> paths) {
@@ -1622,6 +1721,80 @@ public class Ion {
 
         path.removeLast();
     }
+
+    private Graph screenForKnowledge(Graph pag) {
+        for (Iterator<KnowledgeEdge> it = this.knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge next = it.next();
+            Node y = pag.getNode(next.getFrom());
+            Node x = pag.getNode(next.getTo());
+
+            if (x == null || y == null) {
+                continue;
+            }
+
+            Edge edge = pag.getEdge(x, y);
+
+            if (edge == null) {
+                continue;
+            }
+
+            if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.TAIL) {
+                return null;
+            } else if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
+                pag.removeEdge(edge);
+                pag.addEdge(Edges.bidirectedEdge(x, y));
+            } else if (edge.getProximalEndpoint(x) == Endpoint.CIRCLE && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
+                pag.removeEdge(edge);
+                pag.addEdge(Edges.partiallyOrientedEdge(x, y));
+            }
+        }
+
+
+        for (Iterator<KnowledgeEdge> it = this.knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge next = it.next();
+            Node x = pag.getNode(next.getFrom());
+            Node y = pag.getNode(next.getTo());
+
+            if (x == null || y == null) {
+                continue;
+            }
+
+            Edge edge = pag.getEdge(x, y);
+
+            if (edge == null) {
+                return null;
+            } else if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.TAIL) {
+                return null;
+            } else if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
+                return null;
+            } else if (edge.getProximalEndpoint(x) == Endpoint.CIRCLE && edge.getProximalEndpoint(y) == Endpoint.ARROW) {
+                pag.removeEdge(edge);
+                pag.addEdge(Edges.directedEdge(x, y));
+            } else if (edge.getProximalEndpoint(x) == Endpoint.CIRCLE && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
+                pag.removeEdge(edge);
+                pag.addEdge(Edges.directedEdge(x, y));
+            }
+        }
+
+
+//        doFinalOrientation(pag);
+        return pag;
+    }
+
+    private Set<Graph> applyKnowledge(Set<Graph> outputSet) {
+        Set<Graph> _out = new HashSet<>();
+
+        for (Graph graph : outputSet) {
+            Graph _graph = screenForKnowledge(graph);
+
+            if (_graph != null) {
+                _out.add(_graph);
+            }
+        }
+
+        return _out;
+    }
+
 
 }
 
