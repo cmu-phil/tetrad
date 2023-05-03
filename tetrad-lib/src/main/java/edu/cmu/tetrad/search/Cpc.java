@@ -295,12 +295,17 @@ public final class Cpc implements GraphSearch {
         return this.graph;
     }
 
+    /**
+     * Returns a map for x _||_ y | z1,..,zn from {x, y} to {z1,...,zn}.
+     * @return This map.
+     */
     public SepsetMap getSepsets() {
         return this.sepsets;
     }
 
     /**
      * The graph that's constructed during the search.
+     * @return This graph.
      */
     public Graph getGraph() {
         return this.graph;
