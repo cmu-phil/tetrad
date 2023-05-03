@@ -233,10 +233,6 @@ public class DiscreteBicScore implements IDiscreteScore {
         this.variables = variables;
     }
 
-    public double getPenaltyDiscount() {
-        return this.penaltyDiscount;
-    }
-
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
