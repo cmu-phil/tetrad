@@ -33,7 +33,6 @@ import java.util.List;
  *
  * @author Ricardo Silva
  */
-
 public interface TetradTest {
     DataSet getDataSet();
 
@@ -70,8 +69,6 @@ public interface TetradTest {
     List<Node> getVariables();
 
     ICovarianceMatrix getCovMatrix();
-
-
 }
 
 

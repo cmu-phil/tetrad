@@ -29,7 +29,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Represents a tetrad of variables.
+ * Represents a tetrad of variables, (i, j, k, l).
+ *
+ * @author josephramsey
  */
 public class Tetrad {
     private final Node i;
@@ -39,7 +41,6 @@ public class Tetrad {
     private final double pValue;
 
     public Tetrad(Node i, Node j, Node k, Node l) {
-//        testDistinctness(i, j, k, l);
         this.i = i;
         this.j = j;
         this.k = k;
@@ -48,7 +49,6 @@ public class Tetrad {
     }
 
     public Tetrad(Node i, Node j, Node k, Node l, double pValue) {
-//        testDistinctness(i, j, k, l);
         this.i = i;
         this.j = j;
         this.k = k;
@@ -73,15 +73,14 @@ public class Tetrad {
     }
 
     public int hashCode() {
-
         int hash = 17 * this.i.hashCode() * this.j.hashCode();
         hash += 29 * this.k.hashCode() * this.l.hashCode();
-
         return hash;
     }
 
     public boolean equals(Object o) {
         if (o == null) return false;
+        if (!(o instanceof Tetrad)) return false;
         Tetrad tetrad = (Tetrad) o;
         return (this.i == tetrad.i && this.j == tetrad.j && this.k == tetrad.k && this.l == tetrad.l)
                 || (this.i == tetrad.j && this.j == tetrad.i && this.k == tetrad.k && this.l == tetrad.l)

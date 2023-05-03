@@ -94,7 +94,6 @@ public class TeyssierScorer {
         }
     }
 
-
     /**
      * @param useRaskuttiUhler True if Pearl's method for building a DAG should be used.
      */
@@ -102,7 +101,6 @@ public class TeyssierScorer {
         this.useRaskuttiUhler = useRaskuttiUhler;
         if (useRaskuttiUhler) this.useScore = false;
     }
-
 
     /**
      * Scores the given permutation. This needs to be done initially before any move or tuck
@@ -125,14 +123,12 @@ public class TeyssierScorer {
         return score();
     }
 
-
     /**
      * @return The score of the current permutation.
      */
     public double score() {
         return sum();
     }
-
 
     private double sum() {
         double score = 0;
@@ -147,7 +143,6 @@ public class TeyssierScorer {
 
         return score;
     }
-
 
     /**
      * Performs a tuck operation.
