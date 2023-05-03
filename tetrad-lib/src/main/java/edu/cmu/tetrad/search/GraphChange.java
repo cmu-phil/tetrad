@@ -27,15 +27,12 @@ import java.util.*;
 
 
 /**
- * **************************************************************************************
- *
+ * <p>GraphChange is a data structure created mainly for use in the ION search algorithm. However, it models a general
+ * concept: storage for a variety of seperate changes one could possibly apply to a PAG.</p>
+ * <p>By convention, the NodePairs in the orients ArrayList are ordered such that Node1 is the "from" node
+ * and Node2 is the "to" node (ie 1 o-&gt; 2).</p>
+*
  * @author Trevor Burns
- * <p>
- * GraphChange is a data structure created mainly for use in the ION search algorithm. However, it models a general
- * concept: storage for a variety of seperate changes one could possibly apply to a PAG.
- * <p>
- * By convention, the NodePairs in the orients ArrayList are ordered such that Node1 is the "from" node and Node2 is the
- * "to" node (ie 1 o-&gt; 2)
  */
 public class GraphChange {
     private final List<Edge> removes;
