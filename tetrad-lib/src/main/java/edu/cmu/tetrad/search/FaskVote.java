@@ -21,14 +21,17 @@ import static edu.cmu.tetrad.util.Params.*;
  * @author Joseph Ramsey 9/5/2020
  */
 public class FaskVote {
-
     private final IndependenceWrapper test;
     private ScoreWrapper score = new SemBicScore();
-    // Knowledge the search will obey, of forbidden and required edges.
     private Knowledge knowledge = new Knowledge();
-
     private final List<DataSet> dataSets;
 
+    /**
+     * Constructor.
+     * @param dataSets The datasets being searched over. A composite graph will be generated.
+     * @param score The score to use.
+     * @param test The test to use.
+     */
     public FaskVote(List<DataSet> dataSets, ScoreWrapper score, IndependenceWrapper test) {
         this.dataSets = dataSets;
         this.score = score;
@@ -37,6 +40,12 @@ public class FaskVote {
 
     //======================================== PUBLIC METHODS ====================================//
 
+    /**
+     * Does the search.
+     * @param parameters The parameers.
+     * @return The composite graph.
+     * @see Parameters
+     */
     public Graph search(Parameters parameters) {
         List<DataModel> _dataSets = new ArrayList<>();
 
@@ -126,6 +135,6 @@ public class FaskVote {
      * @param knowledge Knowledge of forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 }

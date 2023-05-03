@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;

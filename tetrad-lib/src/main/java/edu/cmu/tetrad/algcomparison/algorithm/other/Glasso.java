@@ -49,7 +49,7 @@ public class Glasso implements Algorithm {
         }
 
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            DoubleMatrix2D cov = new DenseDoubleMatrix2D(SimpleDataLoader.getContinuousDataSet(ds)
+            Matrix cov = new Matrix(SimpleDataLoader.getContinuousDataSet(ds)
                     .getCovarianceMatrix().toArray());
 
             edu.cmu.tetrad.search.Glasso glasso = new edu.cmu.tetrad.search.Glasso(cov);
