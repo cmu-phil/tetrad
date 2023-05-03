@@ -46,7 +46,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Description:
  * <p>
  * This is an R and C code implementation of the FastICA algorithm of Aapo
- * Hyvarinen et al. (URL: http://www.cis.hut.fi/aapo/) to perform Independent
+ * Hyvarinen et al. (URL: <a href="http://www.cis.hut.fi/aapo/">...</a>) to perform Independent
  * Component Analysis (ICA) and Projection Pursuit.
  * <p>
  * Usage:
@@ -304,13 +304,6 @@ public class FastIca {
     /**
      * Maximum number of iterations to perform.
      */
-    public int getMaxIterations() {
-        return this.maxIterations;
-    }
-
-    /**
-     * Maximum number of iterations to perform.
-     */
     public void setMaxIterations(int maxIterations) {
         if (maxIterations < 1) {
             TetradLogger.getInstance().log("info", "maxIterations should be positive.");
@@ -351,14 +344,6 @@ public class FastIca {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * Initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
-     * then a matrix of normal r.v.'s is used.
-     */
-    public Matrix getWInit() {
-        return this.wInit;
     }
 
     /**

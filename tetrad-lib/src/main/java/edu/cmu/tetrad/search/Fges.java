@@ -248,19 +248,12 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * @return the list of top scoring graphs.
-     */
-    public LinkedList<ScoredGraph> getTopGraphs() {
-        return topGraphs;
-    }
-
-    /**
      * Sets the initial graph.
      * @param initialGraph This graph.
      */
     public void setInitialGraph(Graph initialGraph) {
         if (initialGraph == null) {
-            this.initialGraph = initialGraph;
+            this.initialGraph = null;
             return;
         }
 
