@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public class BdeScore implements LocalDiscreteScore {
+public class BdeScore implements IDiscreteScore {
     private final DataSet dataSet;
 
     /**

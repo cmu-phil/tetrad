@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.DiscreteBicScore;
+import edu.cmu.tetrad.search.IDiscreteBicScore;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
@@ -270,7 +270,7 @@ public final class BayesProperties {
 
     private Ret getLikelihoodNode(int node, int[] parents) {
 
-        DiscreteBicScore bic = new DiscreteBicScore(dataSet);
+        IDiscreteBicScore bic = new IDiscreteBicScore(dataSet);
         double lik = bic.localScore(node, parents);
 
         int dof = (numCategories[node] - 1) * parents.length;

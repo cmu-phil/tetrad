@@ -108,7 +108,7 @@ public final class FgesOrienter implements GraphSearch, GraphScorer {
     /**
      * The score for discrete searches.
      */
-    private LocalDiscreteScore discreteScore;
+    private IDiscreteScore IDiscreteScore;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -379,15 +379,15 @@ public final class FgesOrienter implements GraphSearch, GraphScorer {
     /**
      * @return the discrete scoring function being used. By default, BDeu.
      */
-    public LocalDiscreteScore getDiscreteScore() {
-        return this.discreteScore;
+    public IDiscreteScore getDiscreteScore() {
+        return this.IDiscreteScore;
     }
 
     /**
      * Sets the discrete scoring function to use.
      */
-    public void setDiscreteScore(LocalDiscreteScore discreteScore) {
-        this.discreteScore = discreteScore;
+    public void setDiscreteScore(IDiscreteScore IDiscreteScore) {
+        this.IDiscreteScore = IDiscreteScore;
     }
 
     /**

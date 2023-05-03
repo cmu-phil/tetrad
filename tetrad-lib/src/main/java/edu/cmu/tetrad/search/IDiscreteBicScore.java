@@ -33,7 +33,7 @@ import static org.apache.commons.math3.util.FastMath.log;
 /**
  * Calculates the discrete BIC score.
  */
-public class DiscreteBicScore implements LocalDiscreteScore {
+public class IDiscreteBicScore implements IDiscreteScore {
     private List<Node> variables;
     private final int[][] data;
     private final int sampleSize;
@@ -43,7 +43,7 @@ public class DiscreteBicScore implements LocalDiscreteScore {
     private final int[] numCategories;
     private double structurePrior = 1;
 
-    public DiscreteBicScore(DataSet dataSet) {
+    public IDiscreteBicScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException("Data was not provided.");
         }
@@ -139,7 +139,7 @@ public class DiscreteBicScore implements LocalDiscreteScore {
                 continue;
             }
 
-            int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
+            int rowIndex = IDiscreteBicScore.getRowIndex(dims, parentValues);
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;

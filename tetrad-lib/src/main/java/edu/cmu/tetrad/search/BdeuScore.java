@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Calculates the BDeu score.
  */
-public class BdeuScore implements LocalDiscreteScore {
+public class BdeuScore implements IDiscreteScore {
     private final int[][] data;
     private final int sampleSize;
     private final int[] numCategories;

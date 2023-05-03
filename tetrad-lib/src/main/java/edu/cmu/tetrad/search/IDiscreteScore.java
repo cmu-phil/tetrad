@@ -27,11 +27,9 @@ import edu.cmu.tetrad.data.DataSet;
  * Created by IntelliJ IDEA. User: jdramsey Date: Jul 6, 2009 Time: 3:58:26 PM To change this template use File |
  * Settings | File Templates.
  */
-public interface LocalDiscreteScore extends Score {
+public interface IDiscreteScore extends Score {
     void setStructurePrior(double structurePrior);
-
     void setSamplePrior(double samplePrior);
-
     DataSet getDataSet();
 }
 
