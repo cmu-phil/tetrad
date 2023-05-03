@@ -125,6 +125,10 @@ public final class Cfci implements GraphSearch {
 
     //========================PUBLIC METHODS==========================//
 
+    /**
+     * Performs the search and returns the PAG.
+     * @return The search PAG.
+     */
     public Graph search() {
         long beginTime = MillisecondTimes.timeMillis();
         if (this.verbose) {

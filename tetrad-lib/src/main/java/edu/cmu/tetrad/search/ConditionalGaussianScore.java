@@ -71,7 +71,10 @@ public class ConditionalGaussianScore implements Score {
     }
 
     /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
+     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
+     * @param i The index of the child.
+     * @param parents The indices of the parents.
+     * @return The score.,
      */
     public double localScore(int i, int... parents) {
         List<Integer> rows = getRows(i, parents);
@@ -89,6 +92,103 @@ public class ConditionalGaussianScore implements Score {
         } else {
             return score;
         }
+    }
+
+    /**
+     * Calculates localScore(y | z, x) - localScore(z).
+     * @param x The index of the child.
+     * @param z The indices of the parents.
+     * @return The score difference.
+     */
+    public double localScoreDiff(int x, int y, int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
+    }
+
+    /**
+     * Reurns the sample size of the data.
+     * @return This size.
+     */
+    public int getSampleSize() {
+        return this.dataSet.getNumRows();
+    }
+
+    /**
+     * A method for FGES for determining whether an edge counts as an effect edges for this
+     * score bump.
+     * @param bump The bump in score.
+     * @return True iff so.
+     * @see Fges
+     */
+    @Override
+    public boolean isEffectEdge(double bump) {
+        return bump > 0;
+    }
+
+    /**
+     * Returns the variables of the data.
+     * @return This list.
+     */
+    @Override
+    public List<Node> getVariables() {
+        return this.variables;
+    }
+
+    /**
+     * Returns the max degree recommended for the search form the MagSemBicScore
+     * and Fges.
+     * @return This max degree.
+     * @see MagSemBicScore
+     * @see Fges
+     */
+    @Override
+    public int getMaxDegree() {
+        return (int) FastMath.ceil(FastMath.log(this.dataSet.getNumRows()));
+    }
+
+    /**
+     * This score does not implement a method to decide whether a given set of parents
+     * determines a given child, so an exception is thrown.
+     * @throws UnsupportedOperationException Since this method is not supported.
+     */
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        throw new UnsupportedOperationException("The 'determines' method is not supported for this score.");
+    }
+
+    /**
+     * Returns the penalty discount for this score, which is a multiplier on the penatly term of the BIC
+     * score.
+     * @return This penalty discount.
+     */
+    public double getPenaltyDiscount() {
+        return this.penaltyDiscount;
+    }
+
+    /**
+     * Sets the penalty discount for this score, which is a multiplier on the penalty discount of the
+     * BIC score.
+     * @param penaltyDiscount This penalty discount.
+     */
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
+    /**
+     * Sets tne number of categories used to discretize, when this optimization is used.
+     * @param numCategoriesToDiscretize This number.
+     */
+    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
+        this.numCategoriesToDiscretize = numCategoriesToDiscretize;
+    }
+
+    @Override
+    public String toString() {
+        NumberFormat nf = new DecimalFormat("0.00");
+        return "Conditional Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
+    }
+
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
     }
 
     private List<Integer> getRows(int i, int[] parents) {
@@ -127,61 +227,7 @@ public class ConditionalGaussianScore implements Score {
         }
     }
 
-    public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
-    }
 
-
-    /**
-     * Specialized scoring method for a single parent. Used to speed up the effect edges search.
-     */
-
-
-    public int getSampleSize() {
-        return this.dataSet.getNumRows();
-    }
-
-    @Override
-    public boolean isEffectEdge(double bump) {
-        return bump > 0;
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return this.variables;
-    }
-
-    @Override
-    public int getMaxDegree() {
-        return (int) FastMath.ceil(FastMath.log(this.dataSet.getNumRows()));
-    }
-
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        return false;
-    }
-
-    public double getPenaltyDiscount() {
-        return this.penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
-        this.numCategoriesToDiscretize = numCategoriesToDiscretize;
-    }
-
-    @Override
-    public String toString() {
-        NumberFormat nf = new DecimalFormat("0.00");
-        return "Conditional Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
-    }
 }
 
 
