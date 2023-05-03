@@ -453,6 +453,5 @@ public class Fas implements IFas {
     private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
-
 }
 
