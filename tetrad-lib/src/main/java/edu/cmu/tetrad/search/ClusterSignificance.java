@@ -17,7 +17,7 @@ import java.util.Set;
 
 /**
  * Some methods to check significance of clusters for clustering algroithms. It is assumed
- * that for each cluster there is a single latent that is a parent of all of the nodes
+ * that for each cluster there is a single latent that is a parent of all the nodes
  * in the cluster. Significance of these models is returned.
  *
  * @author josephramsey

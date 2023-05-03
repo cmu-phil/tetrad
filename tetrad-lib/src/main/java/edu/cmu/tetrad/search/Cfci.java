@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -73,7 +72,7 @@ public final class Cfci implements GraphSearch {
     private final IndependenceTest independenceTest;
 
     /**
-     * flag for complete rule set, true if should use complete rule set, false otherwise.
+     * Flag for complete rule set, true if you should use complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed = true;
 
@@ -86,16 +85,6 @@ public final class Cfci implements GraphSearch {
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
     private int maxReachablePathLength = -1;
-
-    /**
-     * Set of unshielded colliders from the triple orientation step.
-     */
-    private Set<Triple> colliderTriples;
-
-    /**
-     * Set of unshielded noncolliders from the triple orientation step.
-     */
-    private Set<Triple> noncolliderTriples;
 
     /**
      * Set of ambiguous unshielded triples.
@@ -132,28 +121,9 @@ public final class Cfci implements GraphSearch {
 
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
-
-        CorrelationMatrix corr = new CorrelationMatrix(independenceTest.getCov());
     }
 
     //========================PUBLIC METHODS==========================//
-
-    public int getDepth() {
-        return this.depth;
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + depth);
-        }
-
-        this.depth = depth;
-    }
-
-    public long getElapsedTime() {
-        return this.elapsedTime;
-    }
 
     public Graph search() {
         long beginTime = MillisecondTimes.timeMillis();
@@ -173,7 +143,7 @@ public final class Cfci implements GraphSearch {
 
 //        // Step FCI B.  (Zhang's step F2.)
         Fas adj = new Fas(this.independenceTest);
-        adj.setKnowledge(getKnowledge());
+        adj.setKnowledge(this.knowledge);
         adj.setDepth(this.depth);
         adj.setVerbose(this.verbose);
         this.graph = adj.search();
@@ -196,8 +166,8 @@ public final class Cfci implements GraphSearch {
             long time3 = MillisecondTimes.timeMillis();
 
             PossibleDsepFci possibleDSep = new PossibleDsepFci(this.graph, this.independenceTest);
-            possibleDSep.setDepth(getDepth());
-            possibleDSep.setKnowledge(getKnowledge());
+            possibleDSep.setDepth(this.depth);
+            possibleDSep.setKnowledge(this.knowledge);
             possibleDSep.setMaxPathLength(getMaxReachablePathLength());
 
             // We use these sepsets though.
@@ -214,7 +184,7 @@ public final class Cfci implements GraphSearch {
 
         // Step CI C (Zhang's step F3.)
         long time5 = MillisecondTimes.timeMillis();
-        fciOrientbk(getKnowledge(), this.graph, this.variables);
+        fciOrientbk(this.knowledge, this.graph, this.variables);
         ruleR0(this.independenceTest, this.depth, this.sepsets);
 
         long time6 = MillisecondTimes.timeMillis();
@@ -246,16 +216,47 @@ public final class Cfci implements GraphSearch {
         return this.graph;
     }
 
+    /**
+     * Sets the depth--i.e., the maximum number of variables conditioned on in any test.
+     *
+     * @param depth This maximum.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException(
+                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+        }
+
+        this.depth = depth;
+    }
+
+    /**
+     * Returns the elapsed time ot the search.
+     *
+     * @return This time.
+     */
+    public long getElapsedTime() {
+        return this.elapsedTime;
+    }
+
+    /**
+     * Returns the map from nodes to their sepsets. For x _||_ y | z1,...,zn, this
+     * would map {x, y} to {z1,..,zn}.
+     *
+     * @return This map.
+     */
     public SepsetMap getSepsets() {
         return this.sepsets;
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
+    /**
+     * Set the knowledge used in the search.
+     *
+     * @param knowledge This knowledge.
+     * @see Knowledge
+     */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
@@ -274,14 +275,12 @@ public final class Cfci implements GraphSearch {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
-    public Set<Triple> getColliderTriples() {
-        return new HashSet<>(this.colliderTriples);
-    }
-
-    public Set<Triple> getNoncolliderTriples() {
-        return new HashSet<>(this.noncolliderTriples);
-    }
-
+    /**
+     * Returns the ambiguous triples found in the search.
+     *
+     * @return This set.
+     * @see Cpc
+     */
     public Set<Triple> getAmbiguousTriples() {
         return new HashSet<>(this.ambiguousTriples);
     }
@@ -297,8 +296,6 @@ public final class Cfci implements GraphSearch {
             TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
         }
 
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
 
         for (Node y : getGraph().getNodes()) {
@@ -333,12 +330,6 @@ public final class Cfci implements GraphSearch {
                         }
                     }
 
-                    this.colliderTriples.add(new Triple(x, y, z));
-                } else if (type == TripleType.NONCOLLIDER || (sepset != null && sepset.contains(y))) {
-                    this.noncolliderTriples.add(new Triple(x, y, z));
-                    if (this.verbose) {
-                        TetradLogger.getInstance().log("tripleClassifications", "Noncollider: " + Triple.pathString(this.graph, x, y, z));
-                    }
                 } else {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
