@@ -3,7 +3,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.algcomparison.algorithm.multi.Images;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -22,15 +21,16 @@ import static edu.cmu.tetrad.util.Params.*;
  */
 public class FaskVote {
     private final IndependenceWrapper test;
-    private ScoreWrapper score = new SemBicScore();
+    private final ScoreWrapper score;
     private Knowledge knowledge = new Knowledge();
     private final List<DataSet> dataSets;
 
     /**
      * Constructor.
+     *
      * @param dataSets The datasets being searched over. A composite graph will be generated.
-     * @param score The score to use.
-     * @param test The test to use.
+     * @param score    The score to use.
+     * @param test     The test to use.
      */
     public FaskVote(List<DataSet> dataSets, ScoreWrapper score, IndependenceWrapper test) {
         this.dataSets = dataSets;
@@ -42,6 +42,7 @@ public class FaskVote {
 
     /**
      * Does the search.
+     *
      * @param parameters The parameers.
      * @return The composite graph.
      * @see Parameters
