@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.sem.SemIm;
 
 /**
- * Interface for Bff (Best Fit Finder) algorithm. See implementations.
+ * Interface for Bff (Heuristic Best Significant Model Search) algorithm. See implementations.
  */
 public interface Hbsms {
     void setAlpha(double alpha);

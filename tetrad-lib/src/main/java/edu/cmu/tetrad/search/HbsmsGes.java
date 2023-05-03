@@ -36,7 +36,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * <p>HBSMS using the GES algorithm.</p>
+ * <p>Heuristic Best Significant Model Search using the GES algorithm.</p>
  * <p>Improves the P value of a SEM IM by adding, removing, or reversing single edges.</p>
  *
  * @author Joseph Ramsey
