@@ -272,7 +272,7 @@ public class ChiSquareTest {
 
     //================================PRIVATE==============================//
 
-    public int[] selectFromArray(int[] arr, int[] indices) {
+    private int[] selectFromArray(int[] arr, int[] indices) {
         int[] retArr = new int[indices.length];
 
         for (int i = 0; i < indices.length; i++) {
@@ -282,15 +282,15 @@ public class ChiSquareTest {
         return retArr;
     }
 
-    public DataSet getDataSet() {
+    private DataSet getDataSet() {
         return this.dataSet;
     }
 
-    public int[] getDims() {
+    private int[] getDims() {
         return this.dims;
     }
 
-    public CellTable getCellTable() {
+    private CellTable getCellTable() {
         return this.cellTable;
     }
 

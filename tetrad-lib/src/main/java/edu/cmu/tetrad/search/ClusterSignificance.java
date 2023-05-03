@@ -16,18 +16,29 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Some methods to check significance of clusters for clustering algroithms. It is assumed
+ * <p>Some methods to check significance of clusters for clustering algroithms. It is assumed
  * that for each cluster there is a single latent that is a parent of all the nodes
- * in the cluster. Significance of these models is returned.
+ * in the cluster. Significance of these models is returned.</p>
+ * <p>The methods in this class are used only internally and so have package scope only.</p>
  *
  * @author josephramsey
  */
 public class ClusterSignificance {
+    public enum CheckType {Significance, Clique, None}
 
     private final List<Node> variables;
     private final DataModel dataModel;
 
-    public void printClusterPValues(Set<List<Integer>> out) {
+    private CheckType checkType = CheckType.Clique;
+
+    ClusterSignificance(List<Node> variables, DataModel dataModel) {
+        if (variables == null) throw new NullPointerException("Variable null.");
+        if (dataModel == null) throw new NullPointerException("Data model null.");
+        this.variables = variables;
+        this.dataModel = dataModel;
+    }
+
+    void printClusterPValues(Set<List<Integer>> out) {
         NumberFormat nf = new DecimalFormat("0.000");
 
         for (List<Integer> _out : out) {
@@ -44,7 +55,7 @@ public class ClusterSignificance {
         }
     }
 
-    public static List<Node> variablesForIndices(List<Integer> cluster, List<Node> variables) {
+    static List<Node> variablesForIndices(List<Integer> cluster, List<Node> variables) {
         List<Node> _cluster = new ArrayList<>();
 
         for (int c : cluster) {
@@ -64,17 +75,6 @@ public class ClusterSignificance {
         return variables;
     }
 
-    public enum CheckType {Significance, Clique, None}
-
-    private CheckType checkType = CheckType.Clique;
-
-    public ClusterSignificance(List<Node> variables, DataModel dataModel) {
-        if (variables == null) throw new NullPointerException("Variable null.");
-        if (dataModel == null) throw new NullPointerException("Data model null.");
-        this.variables = variables;
-        this.dataModel = dataModel;
-    }
-
     /**
      * Converts a list of indices into a list of Integers representing a cluster.
      *
@@ -87,8 +87,11 @@ public class ClusterSignificance {
         return cluster;
     }
 
+    void setCheckType(CheckType checkType) {
+        this.checkType = checkType;
+    }
 
-    public boolean significant(List<Integer> cluster, double alpha) {
+    boolean significant(List<Integer> cluster, double alpha) {
         if (checkType == CheckType.None) {
             return true;
         } else if (checkType == CheckType.Significance) {
@@ -98,6 +101,11 @@ public class ClusterSignificance {
         } else {
             throw new IllegalArgumentException("Unexpected check type: " + checkType);
         }
+    }
+
+    double getModelPValue(List<List<Integer>> clusters) {
+        SemIm im = estimateModel(clusters);
+        return im.getPValue();
     }
 
     private double significance(List<Integer> cluster) {
@@ -165,15 +173,6 @@ public class ClusterSignificance {
         }
 
         return est.estimate();
-    }
-
-    private double modelSignificance(List<List<Integer>> clusters) {
-        return getModelPValue(clusters);
-    }
-
-    public double getModelPValue(List<List<Integer>> clusters) {
-        SemIm im = estimateModel(clusters);
-        return im.getPValue();
     }
 
     private SemIm estimateModel(List<List<Integer>> clusters) {
@@ -245,10 +244,6 @@ public class ClusterSignificance {
         }
 
         return est.estimate();
-    }
-
-    public void setCheckType(CheckType checkType) {
-        this.checkType = checkType;
     }
 
 
