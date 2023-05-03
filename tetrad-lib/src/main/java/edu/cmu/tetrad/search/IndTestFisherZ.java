@@ -422,7 +422,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         indices[0] = this.indexMap.get(x.getName());
         indices[1] = this.indexMap.get(y.getName());
         for (int i = 0; i < z.size(); i++) indices[i + 2] = this.indexMap.get(z.get(i).getName());
-//
+
         Matrix cor;
 
         if (this.cor != null) {
@@ -431,8 +431,6 @@ public final class IndTestFisherZ implements IndependenceTest {
             Matrix cov = getCov(rows, indices);
             cor = MatrixUtils.convertCovToCorr(cov);
         }
-
-//        if (z.isEmpty()) return cor.get(0, 1);
 
         return StatUtils.partialCorrelationPrecisionMatrix(cor);
     }
