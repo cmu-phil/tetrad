@@ -36,7 +36,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey (this version).
  */
-public final class VcpcAlt implements GraphSearch {
+public final class VcPcAlt implements GraphSearch {
 
     /**
      * The independence test used for the PC search.
@@ -96,7 +96,7 @@ public final class VcpcAlt implements GraphSearch {
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
      */
-    public VcpcAlt(IndependenceTest independenceTest) {
+    public VcPcAlt(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -451,7 +451,7 @@ public final class VcpcAlt implements GraphSearch {
     private Set<Node> future(Node x, Graph graph) {
         Set<Node> futureNodes = new HashSet<>();
         LinkedList<Node> path = new LinkedList<>();
-        VcpcAlt.futureNodeVisit(graph, x, path, futureNodes);
+        VcPcAlt.futureNodeVisit(graph, x, path, futureNodes);
         futureNodes.remove(x);
         List<Node> adj = graph.getAdjacentNodes(x);
         for (Node y : adj) {
@@ -495,7 +495,7 @@ public final class VcpcAlt implements GraphSearch {
             } else {
                 Node a = path.get(size - 2);
                 Edge edge1 = graph.getEdge(a, b);
-                c = VcpcAlt.traverseFuturePath(b, edge1, edge2);
+                c = VcPcAlt.traverseFuturePath(b, edge1, edge2);
             }
             if (c == null) {
                 continue;
@@ -503,7 +503,7 @@ public final class VcpcAlt implements GraphSearch {
             if (path.contains(c)) {
                 continue;
             }
-            VcpcAlt.futureNodeVisit(graph, c, path, futureNodes);
+            VcPcAlt.futureNodeVisit(graph, c, path, futureNodes);
         }
         path.removeLast();
     }
@@ -585,8 +585,8 @@ public final class VcpcAlt implements GraphSearch {
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
-        return VcpcAlt.isArrowpointAllowed1(x, y, knowledge) &&
-                VcpcAlt.isArrowpointAllowed1(z, y, knowledge);
+        return VcPcAlt.isArrowpointAllowed1(x, y, knowledge) &&
+                VcPcAlt.isArrowpointAllowed1(z, y, knowledge);
     }
 
     public static boolean isArrowpointAllowed1(Node from, Node to,

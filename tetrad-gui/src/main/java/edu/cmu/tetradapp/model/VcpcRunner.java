@@ -171,7 +171,7 @@ public class VcpcRunner extends AbstractAlgorithmRunner
         Knowledge knowledge = (Knowledge) getParams().get("knowledge", new Knowledge());
 
 
-        Vcpc vcpc = new Vcpc(getIndependenceTest());
+        VcPc vcpc = new VcPc(getIndependenceTest());
         vcpc.setKnowledge(knowledge);
         vcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         vcpc.setDepth(getParams().getInt("depth", -1));
@@ -272,7 +272,7 @@ public class VcpcRunner extends AbstractAlgorithmRunner
         return false;
     }
 
-    private void setVcpcFields(Vcpc vcpc) {
+    private void setVcpcFields(VcPc vcpc) {
         this.vcpcAdjacent = vcpc.getAdjacencies();
         this.vcpcApparent = vcpc.getApparentNonadjacencies();
         this.vcpcDefinite = vcpc.getDefiniteNonadjacencies();

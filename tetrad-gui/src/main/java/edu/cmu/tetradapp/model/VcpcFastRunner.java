@@ -171,7 +171,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
         Knowledge knowledge = (Knowledge) getParams().get("knowledge", new Knowledge());
 
 
-        VcpcFast fvcpc = new VcpcFast(getIndependenceTest());
+        VcPcFast fvcpc = new VcPcFast(getIndependenceTest());
         fvcpc.setKnowledge(knowledge);
         fvcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         fvcpc.setDepth(getParams().getInt("depth", -1));
@@ -269,7 +269,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
         return params instanceof Parameters && params.getBoolean("aggressivelyPreventCycles", false);
     }
 
-    private void setVcpcFastFields(VcpcFast fvcpc) {
+    private void setVcpcFastFields(VcPcFast fvcpc) {
         this.fvcpcAdjacent = fvcpc.getAdjacencies();
         this.fvcpcApparent = fvcpc.getApparentNonadjacencies();
         this.fvcpcDefinite = fvcpc.getDefiniteNonadjacencies();
