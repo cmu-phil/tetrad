@@ -65,9 +65,6 @@ public class Fas implements IFas {
      * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
      */
     private int depth = 1000;
-    /**
-     * The number of independence tests.
-     */
     private int numIndependenceTests;
 
     /**
@@ -245,6 +242,8 @@ public class Fas implements IFas {
     }
 
     /**
+     * The number of independence tests.
+     */ /**
      * Returns the nubmer of independence tests that were done.
      *
      * @return This number.
@@ -264,54 +263,12 @@ public class Fas implements IFas {
     }
 
     /**
-     * Returns the depth of the search, which is the maximum number of conditioning variables allowed
-     * for any conditional independence test.
-     *
-     * @return This maximum.
-     */
-    @Override
-    public int getDepth() {
-        return depth;
-    }
-
-    /**
      * Sets whether verbose output should be printed.
      *
      * @param verbose True iff the case.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * There are no cycles in this undirected result graph.
-     *
-     * @return False.
-     */
-    @Override
-    public boolean isAggressivelyPreventCycles() {
-        return false;
-    }
-
-    /**
-     * Returns the independence test being used to do the search.
-     *
-     * @return This test
-     */
-    @Override
-    public IndependenceTest getIndependenceTest() {
-        return test;
-    }
-
-    /**
-     * Returns the knowledge used in the search.
-     *
-     * @return this knowledge.
-     * @see Knowledge
-     */
-    @Override
-    public Knowledge getKnowledge() {
-        return knowledge;
     }
 
     /**
@@ -352,16 +309,6 @@ public class Fas implements IFas {
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
         return new ArrayList<>();
-    }
-
-    /**
-     * Returns whether verbose output should be printed.
-     *
-     * @return True iff the case.
-     */
-    @Override
-    public boolean isVerbose() {
-        return verbose;
     }
 
     /**

@@ -33,17 +33,9 @@ import java.util.List;
  * An interface for fast adjacency searches (i.e. PC adjacency searches).
  */
 public interface IFas {
-    boolean isAggressivelyPreventCycles();
-
-    IndependenceTest getIndependenceTest();
-
-    Knowledge getKnowledge();
-
     void setKnowledge(Knowledge knowledge);
 
     SepsetMap getSepsets();
-
-    int getDepth();
 
     void setDepth(int depth);
 
@@ -58,8 +50,6 @@ public interface IFas {
     List<Node> getNodes();
 
     List<Triple> getAmbiguousTriples(Node node);
-
-    boolean isVerbose();
 
     void setVerbose(boolean verbose);
 

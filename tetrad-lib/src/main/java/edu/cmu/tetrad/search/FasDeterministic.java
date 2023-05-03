@@ -421,16 +421,6 @@ public class FasDeterministic implements IFas {
     }
 
     @Override
-    public boolean isAggressivelyPreventCycles() {
-        return false;
-    }
-
-    @Override
-    public IndependenceTest getIndependenceTest() {
-        return null;
-    }
-
-    @Override
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
         return null;

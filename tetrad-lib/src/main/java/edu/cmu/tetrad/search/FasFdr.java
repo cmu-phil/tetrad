@@ -48,77 +48,33 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author Joseph Ramsey.
  */
 public class FasFdr implements IFas {
-
     private final Matrix cov;
-
     private final double alpha;
-    /**
-     * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
-     * x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
-     */
     private final Graph graph;
-
-    /**
-     * The independence test. This should be appropriate to the types
-     */
     private final IndependenceTest test;
-
-    /**
-     * Specification of which edges are forbidden or required.
-     */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
-     * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
-     */
     private int depth = 1000;
-
-    /**
-     * The number of independence tests.
-     */
     private final int numIndependenceTests;
-
-
-    /**
-     * The logger, by default the empty logger.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * The number of dependence judgements. Temporary.
-     */
-    private final int numDependenceJudgement;
-
-    /**
-     * The sepsets found during the search.
-     */
     private SepsetMap sepset = new SepsetMap();
-
-    //    private List<Double> pValues = new ArrayList<Double>();
-
     private final NumberFormat nf = new DecimalFormat("0.00E0");
-
-    /**
-     * True iff verbose output should be printed.
-     */
     private boolean verbose;
     private final List<Double> pValueList = new ArrayList<>();
-
     private PrintStream out = System.out;
 
     //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new FastAdjacencySearch.
+     * @param test The independence test to use.
+     * @param numIndependenceTests The number of independence tests total done.
      */
-    public FasFdr(IndependenceTest test, int numIndependenceTests, int numDependenceJudgement) {
+    public FasFdr(IndependenceTest test, int numIndependenceTests) {
         this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
         this.alpha = test.getAlpha();
         this.cov = test.getCov().getMatrix();
         this.numIndependenceTests = numIndependenceTests;
-        this.numDependenceJudgement = numDependenceJudgement;
     }
 
     //==========================PUBLIC METHODS===========================//
@@ -192,6 +148,80 @@ public class FasFdr implements IFas {
         return this.graph;
     }
 
+    /**
+     * Returns the nubmer of independence tests done in the course of the search.
+     * @return This number.
+     */
+    public int getNumIndependenceTests() {
+        return this.numIndependenceTests;
+    }
+
+    /**
+     * Returns a map for x _||_ y | z1,...,zn of {x, y} to {z1,...,zn},
+     * @return This map.
+     */
+    public SepsetMap getSepsets() {
+        return this.sepset;
+    }
+
+    /**
+     * Sets whether verbose output will be printed.
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * @throws UnsupportedOperationException This method is not used.
+     */
+    @Override
+    public Graph search(List<Node> nodes) {
+        throw new UnsupportedOperationException("Method not used.");
+    }
+
+    @Override
+    public long getElapsedTime() {
+        return 0;
+    }
+
+    @Override
+    public List<Node> getNodes() {
+        return null;
+    }
+
+    @Override
+    public List<Triple> getAmbiguousTriples(Node node) {
+        return null;
+    }
+
+    @Override
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
+
+    /**
+     * Sets the depth of the search--i.e., the maximum number of variables conditioned on for any
+     * conditional independence test.
+     * @param depth This maximum.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException(
+                    "Depth must be -1 (unlimited) or >= 0.");
+        }
+
+        this.depth = depth;
+    }
+
+    /**
+     * Sets the knowledge to be used in the search.
+     * @param knowledge This knowledge.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
     private Map<Node, Set<Node>> emptyGraph(List<Node> nodes) {
         Map<Node, Set<Node>> adjacencies = new HashMap<>();
 
@@ -221,7 +251,6 @@ public class FasFdr implements IFas {
         } while (removed);
     }
 
-
     private Map<Node, Set<Node>> copy(Map<Node, Set<Node>> adjacencies) {
         Map<Node, Set<Node>> copy = new HashMap<>();
 
@@ -231,29 +260,6 @@ public class FasFdr implements IFas {
 
         return copy;
     }
-
-    public int getDepth() {
-        return this.depth;
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0.");
-        }
-
-        this.depth = depth;
-    }
-
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    //==============================PRIVATE METHODS======================/
 
     private boolean searchICov(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies,
                                boolean addDependencies) {
@@ -435,62 +441,6 @@ public class FasFdr implements IFas {
 
     private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
-    }
-
-    public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
-    }
-
-    public int getNumDependenceJudgments() {
-        return this.numDependenceJudgement;
-    }
-
-    public SepsetMap getSepsets() {
-        return this.sepset;
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    @Override
-    public boolean isAggressivelyPreventCycles() {
-        return false;
-    }
-
-    @Override
-    public IndependenceTest getIndependenceTest() {
-        return null;
-    }
-
-    @Override
-    public Graph search(List<Node> nodes) {
-        nodes = new ArrayList<>(nodes);
-        return null;
-    }
-
-    @Override
-    public long getElapsedTime() {
-        return 0;
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        return null;
-    }
-
-    @Override
-    public List<Triple> getAmbiguousTriples(Node node) {
-        return null;
-    }
-
-    @Override
-    public void setOut(PrintStream out) {
-        this.out = out;
     }
 }
 
