@@ -68,7 +68,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static edu.cmu.tetrad.search.Cstar.PatternAlgorithm.GRaSP;
 import static edu.cmu.tetrad.search.OtherPermAlgs.Method.SP;
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
