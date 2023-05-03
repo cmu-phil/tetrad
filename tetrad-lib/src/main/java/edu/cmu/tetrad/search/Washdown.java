@@ -63,24 +63,37 @@ import java.util.List;
  */
 
 public class Washdown {
-
     private ICovarianceMatrix cov;
     private DataSet dataSet;
     private final List<Node> variables;
     private final double alpha;
 
+    /**
+     * Constructor.
+     * @param cov The covaraince matrix.
+     * @param alpha The alpha cutoff level.
+     */
     public Washdown(ICovarianceMatrix cov, double alpha) {
         this.cov = cov;
         this.variables = cov.getVariables();
         this.alpha = alpha;
     }
 
+    /**
+     * Constructor.
+     * @param data The dataset.
+     * @param alpha The alpha cutoff level.
+     */
     public Washdown(DataSet data, double alpha) {
         this.dataSet = data;
         this.variables = data.getVariables();
         this.alpha = alpha;
     }
 
+    /**
+     * Runs the Washdown algorithm and return a graph.
+     * @return The graph.
+     */
     public Graph search() {
         List<List<Node>> clusters = new ArrayList<>();
         clusters.add(new ArrayList<>(this.variables));
