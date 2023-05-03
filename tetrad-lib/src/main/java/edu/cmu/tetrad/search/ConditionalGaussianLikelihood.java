@@ -39,8 +39,8 @@ import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * Implements a conditional Gaussian likelihood. Please note that this this likelihood will be maximal only if the
- * the continuous mixedVariables are jointly Gaussian conditional on the discrete mixedVariables; in all other cases, it will
+ * Implements a conditional Gaussian likelihood. Please note that this likelihood will be maximal only if the
+ * continuous mixedVariables are jointly Gaussian conditional on the discrete mixedVariables; in all other cases, it will
  * be less than maximal. For an algorithm like FGS this is fine.
  *
  * @author Joseph Ramsey
@@ -147,47 +147,6 @@ public class ConditionalGaussianLikelihood {
         for (int i = 0; i < dataSet.getNumRows(); i++) this.rows.add(i);
     }
 
-    private DataSet useErsatzVariables() {
-        List<Node> nodes = new ArrayList<>();
-        int numCategories = this.numCategoriesToDiscretize;
-
-        for (Node x : this.mixedVariables) {
-            if (x instanceof ContinuousVariable) {
-                nodes.add(new DiscreteVariable(x.getName(), numCategories));
-            } else {
-                nodes.add(x);
-            }
-        }
-
-        DataSet replaced = new BoxDataSet(new VerticalIntDataBox(this.mixedDataSet.getNumRows(), this.mixedDataSet.getNumColumns()), nodes);
-
-        for (int j = 0; j < this.mixedVariables.size(); j++) {
-            if (this.mixedVariables.get(j) instanceof DiscreteVariable) {
-                for (int i = 0; i < this.mixedDataSet.getNumRows(); i++) {
-                    replaced.setInt(i, j, this.mixedDataSet.getInt(i, j));
-                }
-            } else {
-                double[] column = this.continuousData[j];
-
-                double[] breakpoints = getEqualFrequencyBreakPoints(column, numCategories);
-
-                List<String> categoryNames = new ArrayList<>();
-
-                for (int i = 0; i < numCategories; i++) {
-                    categoryNames.add("" + i);
-                }
-
-                Discretization d = discretize(column, breakpoints, this.mixedVariables.get(j).getName(), categoryNames);
-
-                for (int i = 0; i < this.mixedDataSet.getNumRows(); i++) {
-                    replaced.setInt(i, j, d.getData()[i]);
-                }
-            }
-        }
-
-        return replaced;
-    }
-
     /**
      * Returns the likelihood of variable i conditional on the given parents, assuming the continuous mixedVariables
      * index by i or by the parents are jointly Gaussian conditional on the discrete comparison.
@@ -242,6 +201,48 @@ public class ConditionalGaussianLikelihood {
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
+
+    private DataSet useErsatzVariables() {
+        List<Node> nodes = new ArrayList<>();
+        int numCategories = this.numCategoriesToDiscretize;
+
+        for (Node x : this.mixedVariables) {
+            if (x instanceof ContinuousVariable) {
+                nodes.add(new DiscreteVariable(x.getName(), numCategories));
+            } else {
+                nodes.add(x);
+            }
+        }
+
+        DataSet replaced = new BoxDataSet(new VerticalIntDataBox(this.mixedDataSet.getNumRows(), this.mixedDataSet.getNumColumns()), nodes);
+
+        for (int j = 0; j < this.mixedVariables.size(); j++) {
+            if (this.mixedVariables.get(j) instanceof DiscreteVariable) {
+                for (int i = 0; i < this.mixedDataSet.getNumRows(); i++) {
+                    replaced.setInt(i, j, this.mixedDataSet.getInt(i, j));
+                }
+            } else {
+                double[] column = this.continuousData[j];
+
+                double[] breakpoints = getEqualFrequencyBreakPoints(column, numCategories);
+
+                List<String> categoryNames = new ArrayList<>();
+
+                for (int i = 0; i < numCategories; i++) {
+                    categoryNames.add("" + i);
+                }
+
+                Discretization d = discretize(column, breakpoints, this.mixedVariables.get(j).getName(), categoryNames);
+
+                for (int i = 0; i < this.mixedDataSet.getNumRows(); i++) {
+                    replaced.setInt(i, j, d.getData()[i]);
+                }
+            }
+        }
+
+        return replaced;
+    }
+
 
     // The likelihood of the joint over all of these mixedVariables, assuming conditional Gaussian,
     // continuous and discrete.
