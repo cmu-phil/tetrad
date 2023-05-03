@@ -47,7 +47,7 @@ import java.util.List;
  * @author Frank Wimberly
  * @author Joseph Ramsey
  */
-public class MbClassify implements DiscreteClassifier {
+public class MbClassify implements IDiscreteClassifier {
     private DataSet train;
     private DataSet test;
     private Node target;

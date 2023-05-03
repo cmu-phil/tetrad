@@ -32,35 +32,18 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Implements the extended BIC score (Chen and Chen)..
+ * Implements the extended BIC (EBIC) score (Chen and Chen)..
  *
  * @author Joseph Ramsey
  */
 public class EbicScore implements Score {
-
     private DataSet dataSet;
-    // The covariance matrix.
     private ICovarianceMatrix covariances;
-
-    // The variables of the covariance matrix.
     private final List<Node> variables;
-
-    // The sample size of the covariance matrix.
     private final int sampleSize;
-
-    // True if verbose output should be sent to out.
-    private boolean verbose;
-
-    // Sample size or equivalent sample size.
     private double N;
-
-    // The data, if it is set.
     private Matrix data;
-
-    // True if row subsets should be calculated.
     private boolean calculateRowSubsets;
-
-    // The gamma paramter for EBIC.
     private double gamma = 1;
 
     /**
@@ -78,6 +61,9 @@ public class EbicScore implements Score {
 
     /**
      * Constructs the score using a covariance matrix.
+     * @param dataSet The continuous dataset to analyze.
+     * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly.
+     *                              True if precomputed.
      */
     public EbicScore(DataSet dataSet, boolean precomputeCovariances) {
 
@@ -106,19 +92,16 @@ public class EbicScore implements Score {
 
     }
 
-    private int[] indices(List<Node> __adj) {
-        int[] indices = new int[__adj.size()];
-        for (int t = 0; t < __adj.size(); t++) indices[t] = this.variables.indexOf(__adj.get(t));
-        return indices;
-    }
-
+    /**
+     * @return localScore(y | z, x) - localScore(y | z).
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-
     /**
+     * Returns the score of the node i given its parents.
      * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
@@ -145,47 +128,49 @@ public class EbicScore implements Score {
         }
     }
 
-    public static double getP(int pn, int m0, double lambda) {
-        return 2 - pow(1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda), (double) pn - m0);
-    }
-
     /**
-     * Specialized scoring method for a single parent. Used to speed up the effect edges search.
+     * Returns the sample size.
+     * @return This size.
      */
-
-
-    public ICovarianceMatrix getCovariances() {
-        return this.covariances;
-    }
-
     public int getSampleSize() {
         return this.sampleSize;
     }
 
+    /**
+     * Returns a judgement for FGES of whether the given bump implies an effect edge.
+     * @param bump The bump
+     * @return True if so
+     * @see Fges
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
+    /**
+     * Returns the variables for this score.
+     * @return Thsi list.
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
-
+    /**
+     * Returns an estimate of max degree of the graph for some algorithms.
+     * @return This max degree.
+     * @see Fges
+     * @see MagSemBicScore
+     */
     @Override
     public int getMaxDegree() {
         return (int) ceil(log(this.sampleSize));
     }
 
+    /**
+     * Return a judgment of whether the variable in z determine y exactly.
+     * @return This judgment
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = this.variables.indexOf(y);
@@ -197,8 +182,12 @@ public class EbicScore implements Score {
         return Double.isNaN(v);
     }
 
-    public DataModel getData() {
-        return this.dataSet;
+    /**
+     * Sets the gamma parameter for EBIC.
+     * @param gamma The gamma parameter.
+     */
+    public void setGamma(double gamma) {
+        this.gamma = gamma;
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {
@@ -228,9 +217,10 @@ public class EbicScore implements Score {
         this.N = covariances.getSampleSize();
     }
 
-
-    public void setGamma(double gamma) {
-        this.gamma = gamma;
+    private int[] indices(List<Node> __adj) {
+        int[] indices = new int[__adj.size()];
+        for (int t = 0; t < __adj.size(); t++) indices[t] = this.variables.indexOf(__adj.get(t));
+        return indices;
     }
 }
 

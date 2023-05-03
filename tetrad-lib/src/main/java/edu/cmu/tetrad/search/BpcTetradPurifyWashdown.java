@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class BpcTetradPurifyWashdown {
     private final List<Node> variables;
-    private final TetradTest test;
+    private final ITetradTest test;
 
     /**
      * Construct the algorithm using a covariance matrix.

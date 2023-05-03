@@ -31,18 +31,9 @@ import java.util.Arrays;
  * Estimates the rank of a matrix.
  */
 public class EstimateRank {
-    double alpha;
-    double[][] A;
-    double[][] B;
-    int[] iA;
-    int[] iB;
-    double[][] cov;
-    int N;
 
     //Compute canonical correlations from data.
-    public double[] CanCor(double[][] A, double[][] B) {
-        this.A = A;
-        this.B = B;
+    public static double[] CanCor(double[][] A, double[][] B) {
         RealMatrix Ua = new SingularValueDecomposition(new BlockRealMatrix(A)).getU();
         RealMatrix UTa = Ua.transpose();
         RealMatrix Ub = new SingularValueDecomposition(new BlockRealMatrix(B)).getU();
@@ -50,10 +41,7 @@ public class EstimateRank {
     }
 
     //Compute canonical correlations from covariance matrix.
-    public double[] CanCor(int[] iA, int[] iB, double[][] cov) {
-        this.iA = iA;
-        this.iB = iB;
-        this.cov = cov;
+    public static double[] CanCor(int[] iA, int[] iB, double[][] cov) {
         RealMatrix covA = new BlockRealMatrix(cov).getSubMatrix(iA, iA);
         RealMatrix covB = new BlockRealMatrix(cov).getSubMatrix(iB, iB);
         RealMatrix covAB = new BlockRealMatrix(cov).getSubMatrix(iA, iB);
@@ -68,15 +56,8 @@ public class EstimateRank {
         return Cors;
     }
 
-    private RealMatrix getInverse(RealMatrix covA) {
-        return new LUDecomposition(covA).getSolver().getInverse();
-    }
-
     //Estimate rank from data.
-    public int Estimate(double[][] A, double[][] B, double alpha) {
-        this.alpha = alpha;
-        this.A = A;
-        this.B = B;
+    public static int Estimate(double[][] A, double[][] B, double alpha) {
         double[] Cors = CanCor(A, B);
         int rank = 0;
         boolean reject = true;
@@ -99,12 +80,7 @@ public class EstimateRank {
     }
 
     //Estimate rank from covariance matrix.
-    public int Estimate(int[] iA, int[] iB, double[][] cov, int N, double alpha) {
-        this.alpha = alpha;
-        this.iA = iA;
-        this.iB = iB;
-        this.cov = cov;
-        this.N = N;
+    public static int Estimate(int[] iA, int[] iB, double[][] cov, int N, double alpha) {
         double[] Cors = CanCor(iA, iB, cov);
         int rank = 0;
         boolean reject = true;
@@ -125,5 +101,9 @@ public class EstimateRank {
         }
 
         return rank;
+    }
+
+    private static RealMatrix getInverse(RealMatrix covA) {
+        return new LUDecomposition(covA).getSolver().getInverse();
     }
 }

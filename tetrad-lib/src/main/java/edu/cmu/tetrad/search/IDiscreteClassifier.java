@@ -21,54 +21,30 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.graph.Node;
-
-import java.util.List;
 
 /**
- * Interface implemented by classes that test tetrad constraints. For the continuous case, we have a variety of tests,
- * including a distribution-free one (which may not be currently practical when the number of variables is too large).
+ * Interface implemented by classes that do discrete classification.
  *
- * @author Ricardo Silva
+ * @author Frank Wimberly
  */
-public interface TetradTest {
-    DataSet getDataSet();
+public interface IDiscreteClassifier {
 
-    int tetradScore(int i, int j, int k, int q);
+    /**
+     * @return an array with a classification (estimated value) of a target variable for each case in a DataSet.
+     */
+    int[] classify();
 
-    boolean tetradScore3(int i, int j, int k, int q);
+    /**
+     * @return the double subscripted int array containing the "confusion matrix" of coefs of estimated versus observed
+     * values of the target variable.
+     */
+    int[][] crossTabulation();
 
-    boolean tetradScore1(int i, int j, int k, int q);
+    /**
+     * @return the percentage of cases where the target variable is correctly classified.
+     */
+    double getPercentCorrect();
 
-    boolean tetradHolds(int i, int j, int k, int q);
-
-    double tetradPValue(int i, int j, int k, int q);
-
-    double tetradPValue(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2);
-
-    boolean oneFactorTest(int a, int b, int c, int d);
-
-    boolean oneFactorTest(int a, int b, int c, int d, int e);
-
-    boolean oneFactorTest(int a, int b, int c, int d, int e, int f);
-
-    boolean twoFactorTest(int a, int b, int c, int d);
-
-    boolean twoFactorTest(int a, int b, int c, int d, int e);
-
-    boolean twoFactorTest(int a, int b, int c, int d, int e, int f);
-
-    double getSignificance();
-
-    void setSignificance(double sig);
-
-    String[] getVarNames();
-
-    List<Node> getVariables();
-
-    ICovarianceMatrix getCovMatrix();
 }
 
 

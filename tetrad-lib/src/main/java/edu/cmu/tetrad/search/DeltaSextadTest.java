@@ -57,6 +57,7 @@ public class DeltaSextadTest {
     /**
      * Constructs a test using a given data set. If a data set is provided (that is, a tabular data set), fourth moment
      * statistics can be calculated (p. 160); otherwise, it must be assumed that the data are multivariate Gaussian.
+     *
      * @param dataSet The dataset to use.
      */
     public DeltaSextadTest(DataSet dataSet) {
@@ -79,6 +80,7 @@ public class DeltaSextadTest {
     /**
      * Constructs a test using the given covariance matrix. Fourth moment statistics are not caculated; it is assumed
      * that the data are distributed as multivariate Gaussian.
+     *
      * @param cov The covariance matrix to use.
      */
     public DeltaSextadTest(ICovarianceMatrix cov) {
@@ -93,6 +95,7 @@ public class DeltaSextadTest {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
      * @return This instance.
      */
     public static DeltaSextadTest serializableInstance() {
@@ -105,6 +108,7 @@ public class DeltaSextadTest {
      * <p>
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
+     *
      * @param sextads The sextads for which a p-value is needed.
      * @return The p-value.
      */
@@ -121,6 +125,7 @@ public class DeltaSextadTest {
      * <p>
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
+     *
      * @param sextads The sextads for which a chi-square is needed
      * @return The chi-square.
      */
@@ -163,10 +168,10 @@ public class DeltaSextadTest {
                             - r(g, h) * (r(f, g) * r(e, g) + r(f, h) * r(e, h));
 
                     // General.
-                    double rr2 = r(e, f, g, h) + 0.25 * r(e, f) * r(g, h) *
-                            (r(e, e, g, g) * r(f, f, g, g) + r(e, e, h, h) + r(f, f, h, h))
-                            - 0.5 * r(e, f) * (r(e, e, g, h) + r(f, f, g, h))
-                            - 0.5 * r(g, h) * (r(e, f, g, g) + r(e, f, h, h));
+//                    double rr2 = r(e, f, g, h) + 0.25 * r(e, f) * r(g, h) *
+//                            (r(e, e, g, g) * r(f, f, g, g) + r(e, e, h, h) + r(f, f, h, h))
+//                            - 0.5 * r(e, f) * (r(e, e, g, h) + r(f, f, g, h))
+//                            - 0.5 * r(g, h) * (r(e, f, g, g) + r(e, f, h, h));
 
                     sigma_ss.set(i, j, rr);
                     sigma_ss.set(j, i, rr);
@@ -229,6 +234,7 @@ public class DeltaSextadTest {
 
     /**
      * Returns the variables of the data being used.
+     *
      * @return This list.
      */
     public List<Node> getVariables() {
@@ -368,11 +374,11 @@ public class DeltaSextadTest {
         return (1.0 / N) * sum;
     }
 
-    private int dofDrton(int n) {
-        int dof = ((n - 2) * (n - 3)) / 2 - 2;
-        if (dof < 1) dof = 1;
-        return dof;
-    }
+//    private int dofDrton(int n) {
+//        int dof = ((n - 2) * (n - 3)) / 2 - 2;
+//        if (dof < 1) dof = 1;
+//        return dof;
+//    }
 
     private int dofHarman(int n) {
         int dof = n * (n - 5) / 2 + 1;
