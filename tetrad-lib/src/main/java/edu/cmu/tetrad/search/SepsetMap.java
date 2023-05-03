@@ -45,20 +45,22 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class SepsetMap implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    /**
-     * @serial
-     */
     private Map<Set<Node>, List<Node>> sepsets = new ConcurrentHashMap<>();
     private Map<Set<Node>, Double> pValues = new ConcurrentHashMap<>();
     private final Map<Node, HashSet<Node>> parents = new HashMap<>();
-//    private Set<Set<Node>> correlations;
-//    private boolean returnEmptyIfNotSet = false;
 
     //=============================CONSTRUCTORS===========================//
 
+    /**
+     * Constructor.
+     */
     public SepsetMap() {
     }
 
+    /**
+     * Copy constructor.
+     * @param map A given sepset map.
+     */
     public SepsetMap(SepsetMap map) {
         this.sepsets = new HashMap<>(map.sepsets);
         this.pValues = new HashMap<>(map.pValues);
@@ -98,6 +100,9 @@ public final class SepsetMap implements TetradSerializable {
         return this.sepsets.get(pair);
     }
 
+    /**
+     * Looks up the p-value for {x, y}
+     */
     public double getPValue(Node x, Node y) {
         Set<Node> pair = new HashSet<>(2);
         pair.add(x);
@@ -106,6 +111,9 @@ public final class SepsetMap implements TetradSerializable {
         return this.pValues.get(pair);
     }
 
+    /**
+     * Sets the parents of x to the (ordered) set z.
+     */
     public void set(Node x, LinkedHashSet<Node> z) {
         if (this.parents.get(x) != null) {
             this.parents.get(x).addAll(z);
@@ -114,10 +122,16 @@ public final class SepsetMap implements TetradSerializable {
         }
     }
 
+    /**
+     * Returns the parents of the node x.
+     */
     public HashSet<Node> get(Node x) {
         return this.parents.get(x) == null ? new HashSet<>() : this.parents.get(x);
     }
 
+    /**
+     * Checks equality of this to another sepset map.
+     */
     public boolean equals(Object o) {
         if (o == null) {
             return false;
@@ -148,14 +162,23 @@ public final class SepsetMap implements TetradSerializable {
         }
     }
 
+    /**
+     * Returns the number of {x, y} in the keyset of the map.
+     */
     public int size() {
         return this.sepsets.keySet().size();
     }
 
+    /**
+     * Returns a string representation of this sepset map.
+     */
     public String toString() {
         return this.sepsets.toString();
     }
 
+    /**
+     * Adds all entries in the given sepset map to the current one.
+     */
     public void addAll(SepsetMap newSepsets) {
         this.sepsets.putAll(newSepsets.sepsets);
     }
