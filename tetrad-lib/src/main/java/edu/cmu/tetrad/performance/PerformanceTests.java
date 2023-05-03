@@ -509,10 +509,10 @@ public class PerformanceTests {
 
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
-        CpcStable cpcStable = new CpcStable(test);
+        Cpc cpcStable = new Cpc(test);
+        cpcStable.setStable(true);
         cpcStable.setVerbose(false);
         cpcStable.setDepth(depth);
-        cpcStable.setOut(this.out);
 
         Graph outGraph = cpcStable.search();
 

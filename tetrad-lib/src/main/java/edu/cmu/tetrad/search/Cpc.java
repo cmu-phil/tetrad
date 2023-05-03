@@ -98,7 +98,7 @@ public final class Cpc implements GraphSearch {
     private boolean stable;
     private boolean useHeuristic = false;
     private int maxPPathLength = -1;
-    private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
+    private final PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -125,6 +125,7 @@ public final class Cpc implements GraphSearch {
 
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
+     * @param aggressivelyPreventCycles True if so.
      */
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
@@ -133,6 +134,7 @@ public final class Cpc implements GraphSearch {
     /**
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
      * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
+     * @param depth This maximum.
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -282,6 +284,10 @@ public final class Cpc implements GraphSearch {
 
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
+
+        this.colliderTriples = search.getColliderTriples();
+        this.noncolliderTriples = search.getNoncolliderTriples();
+        this.ambiguousTriples = search.getAmbiguousTriples();
 
         logTriples();
 
