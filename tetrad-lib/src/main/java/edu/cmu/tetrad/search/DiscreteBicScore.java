@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.util.FastMath;
 
+import javax.help.UnsupportedOperationException;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.abs;
@@ -35,6 +36,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @author josephramsey
  */
 public class DiscreteBicScore implements IDiscreteScore {
+    private final DataSet dataSet;
     private List<Node> variables;
     private final int[][] data;
     private final int sampleSize;
@@ -42,10 +44,16 @@ public class DiscreteBicScore implements IDiscreteScore {
     private final int[] numCategories;
     private double structurePrior = 1;
 
+    /**
+     * Constructor.
+     * @param dataSet The discrete dataset to analyze.
+     */
     public DiscreteBicScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException("Data was not provided.");
         }
+
+        this.dataSet = dataSet;
 
         if (dataSet instanceof BoxDataSet && ((BoxDataSet) dataSet).getDataBox() instanceof VerticalIntDataBox) {
             DataBox dataBox = ((BoxDataSet) dataSet).getDataBox();
@@ -76,10 +84,12 @@ public class DiscreteBicScore implements IDiscreteScore {
         }
     }
 
-    private DiscreteVariable getVariable(int i) {
-        return (DiscreteVariable) this.variables.get(i);
-    }
-
+    /**
+     * Returns the score of the given nodes given its parents.
+     * @param node    The index of the node.
+     * @param parents The indices of the node's parents.
+     * @return The score.
+     */
     @Override
     public double localScore(int node, int[] parents) {
 
@@ -169,59 +179,72 @@ public class DiscreteBicScore implements IDiscreteScore {
         }
     }
 
+    /**
+     * Returns localScore(y | z, x) - localScore(y | z).
+     * @return This score.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
+    /**
+     * Returns the variables.
+     * @return This list.
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * Returns the sample size.
+     * @return This size.
+     */
     public int getSampleSize() {
         return this.sampleSize;
     }
 
     /**
-     * Must be called directly after the corresponding scoring call.
+     * Must be called directly after the corresponding scoring call. Used in FGES.
+     * @param bump The score bump.
+     * @see Fges
      */
     public boolean isEffectEdge(double bump) {
         return bump > 0;//lastBumpThreshold;
     }
 
+    /**
+     * Returns the dataset being analyzed.
+     * @return this dataset.
+     */
     @Override
     public DataSet getDataSet() {
-        throw new UnsupportedOperationException();
+        return this.dataSet;
     }
 
-    private static int getRowIndex(int[] dim, int[] values) {
-        int rowIndex = 0;
-        for (int i = 0; i < dim.length; i++) {
-            rowIndex *= dim[i];
-            rowIndex += values[i];
-        }
-        return rowIndex;
-    }
-
-    public double getStructurePrior() {
-        return this.structurePrior;
-    }
-
-    public double getSamplePrior() {
-        throw new UnsupportedOperationException();
-    }
-
+    /**
+     * Sets the structure prior.
+     * @param structurePrior This prior.
+     */
     @Override
     public void setStructurePrior(double structurePrior) {
         this.structurePrior = structurePrior;
     }
 
+    /**
+     * This method is not used for this score.
+     * @throws UnsupportedOperationException Since this method is not used.
+     */
     @Override
     public void setSamplePrior(double samplePrior) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("This method is not used.");
     }
 
+    /**
+     * Sets the variables to a new list of the same size.
+     * @param variables The new list of variables.
+     */
     public void setVariables(List<Node> variables) {
         for (int i = 0; i < variables.size(); i++) {
             if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
@@ -233,32 +256,62 @@ public class DiscreteBicScore implements IDiscreteScore {
         this.variables = variables;
     }
 
+    /**
+     * Sets the penalty discount, which is a multiplier on the penalty term of BIC.
+     * @param penaltyDiscount This discount.
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    /**
+     * Returns the maximum degree for some algorithms.
+     * @return 1000.
+     */
     @Override
     public int getMaxDegree() {
         return 1000;
     }
 
+    /**
+     * This method is not used; a method for calculating whether nodes Z determind node y has not
+     * been implemented here.
+     * @throws UnsupportedOperationException Since this method is not used.
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
-        return false;
+        throw new UnsupportedOperationException("This method is not used.");
     }
 
+    /**
+     * Returns a string representation of this score.
+     * @return This string.
+     */
     @Override
     public String toString() {
         return "BIC Score";
     }
 
+    private static int getRowIndex(int[] dim, int[] values) {
+        int rowIndex = 0;
+        for (int i = 0; i < dim.length; i++) {
+            rowIndex *= dim[i];
+            rowIndex += values[i];
+        }
+        return rowIndex;
+    }
+
     private double getPriorForStructure(int parents) {
-        if (abs(getStructurePrior()) <= 0) {
+        if (abs(this.structurePrior) <= 0) {
             return 0;
         } else {
-            double p = (getStructurePrior()) / (this.variables.size());
+            double p = (this.structurePrior) / (this.variables.size());
             return -((parents) * log(p) + (this.variables.size() - (parents)) * log(1.0 - p));
         }
+    }
+
+    private DiscreteVariable getVariable(int i) {
+        return (DiscreteVariable) this.variables.get(i);
     }
 }
 
