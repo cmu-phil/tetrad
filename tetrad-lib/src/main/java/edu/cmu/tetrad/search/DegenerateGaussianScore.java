@@ -39,9 +39,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * Implements a degenerate Gaussian BIC score for FGES.
- * <p>
- * http://proceedings.mlr.press/v104/andrews19a/andrews19a.pdf
+ * <p></->Implements a degenerate Gaussian BIC score for FGES.</p>
+ * <a href="http://proceedings.mlr.press/v104/andrews19a/andrews19a.pdf">...</a>
  *
  * @author Bryan Andrews
  */
@@ -66,7 +65,6 @@ public class DegenerateGaussianScore implements Score {
     private static final double L2PE = log(2.0 * FastMath.PI * FastMath.E);
 
     private final Map<Node, Integer> nodesHash;
-
 
     /**
      * Constructs the score using a covariance matrix.
@@ -159,7 +157,9 @@ public class DegenerateGaussianScore implements Score {
     }
 
     /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
+     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
+     * @param i The child indes.
+     * @param parents The indices of the parents.
      */
     public double localScore(int i, int... parents) {
 
@@ -187,13 +187,100 @@ public class DegenerateGaussianScore implements Score {
         double ldetB = log(getCov(rows, B_).det());
 
         double lik = N * (ldetB - ldetA + DegenerateGaussianScore.L2PE * (B_.length - A_.length));
-        double score = 2 * lik + 2 * calculateStructurePrior(parents.length) - dof * getPenaltyDiscount() * log(N);
+        double score = 2 * lik + 2 * calculateStructurePrior(parents.length) - dof * this.penaltyDiscount * log(N);
 
         if (Double.isNaN(score) || Double.isInfinite(score)) {
             return Double.NaN;
         } else {
             return score;
         }
+    }
+
+    /**
+     * Returns localScore(y | z, x) - localScore(y, z).
+     * @param x Node 1.
+     * @param y Node 2.
+     * @param z The conditioning variables
+     * @return This score difference.
+     */
+    public double localScoreDiff(int x, int y, int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
+    }
+
+    /**
+     * Returns the sample size for the data for this score.
+     * @return This sample size.
+     */
+    public int getSampleSize() {
+        return this.dataSet.getNumRows();
+    }
+
+    /**
+     * Returns a decision whether a given bump counts as an effect edge
+     * for this score.
+     * @param bump The bump.
+     * @return True if it counts as an effect edge.
+     * @see Fges
+     */
+    @Override
+    public boolean isEffectEdge(double bump) {
+        return bump > 0;
+    }
+
+    /**
+     * Returns the variables for this score.
+     * @return This list.
+     */
+    @Override
+    public List<Node> getVariables() {
+        return this.variables;
+    }
+
+    /**
+     * Returns an estimate of the max degree needed for certain algorithms.
+     * @return This estimate
+     * @see Fges
+     * @see MagSemBicScore
+     */
+    @Override
+    public int getMaxDegree() {
+        return (int) FastMath.ceil(log(this.dataSet.getNumRows()));
+    }
+
+    /**
+     * This score does not implement a method to determing whether a given set of parents determine
+     * a given child, so an exception is thrown.
+     * @throws UnsupportedOperationException Since this method is not implemented.
+     */
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        throw new UnsupportedOperationException("The 'determines' methods is not implemented for this score.");
+    }
+
+    /**
+     * Sets the penalty discount for this score, which is a multiplier on the BIC penalty term.
+     * @param penaltyDiscount This penalty.
+     */
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
+    /**
+     * Sets the structure prior for this score.
+     * @param structurePrior This prior.
+     */
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
+    }
+
+    /**
+     * Returns a string representation of this score.
+     * @return This string.
+     */
+    @Override
+    public String toString() {
+        NumberFormat nf = new DecimalFormat("0.00");
+        return "Degenerate Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
     }
 
     private double calculateStructurePrior(int k) {
@@ -204,58 +291,6 @@ public class DegenerateGaussianScore implements Score {
             double p = this.structurePrior / n;
             return k * log(p) + (n - k) * log(1.0 - p);
         }
-    }
-
-
-    public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
-    }
-
-
-    public int getSampleSize() {
-        return this.dataSet.getNumRows();
-    }
-
-    @Override
-    public boolean isEffectEdge(double bump) {
-        return bump > 0;
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return this.variables;
-    }
-
-    @Override
-    public int getMaxDegree() {
-        return (int) FastMath.ceil(log(this.dataSet.getNumRows()));
-    }
-
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        return false;
-    }
-
-    public double getPenaltyDiscount() {
-        return this.penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public double getStructurePrior() {
-        return this.structurePrior;
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
-    }
-
-    @Override
-    public String toString() {
-        NumberFormat nf = new DecimalFormat("0.00");
-        return "Degenerate Gaussian Score Penalty " + nf.format(this.penaltyDiscount);
     }
 
     // Subsample of the continuous mixedVariables conditioning on the given cols.

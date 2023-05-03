@@ -32,7 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Implements the DCI (Distributed Causal Inference) algorithm for learning causal structure over a set of variable from
- * multiple datasets that each may only measure proper overlapping subsets subsets of that sets, or datasets with some
+ * multiple datasets that each may only measure proper overlapping subsets of that sets, or datasets with some
  * variables in common and others not. The algorithm currently takes as input a set of PAGs (presumably learned using a
  * local learning algorithm such as FCI) and returns a complete set of PAGs over every variable included a dataset that
  * are consistent with all of the PAGs (same d-separations and d-connections)

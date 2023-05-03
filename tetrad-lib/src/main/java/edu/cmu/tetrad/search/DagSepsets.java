@@ -78,7 +78,6 @@ public class DagSepsets implements SepsetProducer {
      * @return True if the condition holds.
      */    @Override
     public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
-//        return true;
         List<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && sepset.contains(j);
     }
