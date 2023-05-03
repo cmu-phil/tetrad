@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Represents a tetrad of variables, (i, j, k, l).
+ * Represents a ordered tetrad of variables, (i, j, k, l).
  *
  * @author josephramsey
  */
