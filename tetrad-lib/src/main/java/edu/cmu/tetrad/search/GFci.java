@@ -42,44 +42,17 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @author jdramsey
  */
 public final class GFci implements GraphSearch {
-
-    // The PAG being constructed.
     private Graph graph;
-
-    // The background knowledge.
     private Knowledge knowledge = new Knowledge();
-
-    // The conditional independence test.
     private IndependenceTest independenceTest;
-
-    // Flag for complete rule set, true if should use complete rule set, false otherwise.
     private boolean completeRuleSetUsed = true;
-
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
-
-    // The maxDegree for the fast adjacency search.
     private int maxDegree = -1;
-
-    // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    // True iff verbose output should be printed.
     private boolean verbose;
-
-    // The covariance matrix beign searched over. Assumes continuous data.
-    ICovarianceMatrix covarianceMatrix;
-
-    // The sample size.
-    int sampleSize;
-
-    // The print stream that output is directed to.
+    private ICovarianceMatrix covarianceMatrix;
     private PrintStream out = System.out;
-
-    // True iff one-edge faithfulness is assumed. Speed up the algorith for very large searches. By default false.
     private boolean faithfulnessAssumed = true;
-
-    // The score.
     private final Score score;
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
@@ -90,7 +63,6 @@ public final class GFci implements GraphSearch {
         if (score == null) {
             throw new NullPointerException();
         }
-        this.sampleSize = score.getSampleSize();
         this.score = score;
         this.independenceTest = test;
     }
@@ -115,9 +87,6 @@ public final class GFci implements GraphSearch {
 
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-//        knowledge = new Knowledge(knowledge);
-//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
-
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
         gfciExtraEdgeRemovalStep(this.graph, fgesGraph, nodes, sepsets);
 
@@ -126,8 +95,6 @@ public final class GFci implements GraphSearch {
         if (this.possibleDsepSearchDone) {
             graph.paths().removeByPossibleDsep(independenceTest, null);
         }
-
-//        retainUnshieldedColliders(this.graph);
 
         FciOrient fciOrient = new FciOrient(sepsets);
 
