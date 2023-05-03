@@ -92,7 +92,46 @@ public class Sp implements SuborderSearch {
         for (int i = 0; i < suborder.size(); i++) {
             suborder.set(i, bestSuborder.get(i));
         }
+
         update(prefix, suborder);
+    }
+
+    /**
+     * Sets the knowledge to be used in the search.
+     * @param knowledge This knowledge.
+     * @see Knowledge
+     */
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
+    /**
+     * Returns the variables in the data.
+     * @return This list.
+     */
+    @Override
+    public List<Node> getVariables() {
+        return variables;
+    }
+
+    /**
+     * Returns the map from nodes to their parents.
+     * @return This map.
+     */
+    @Override
+    public Map<Node, Set<Node>> getParents() {
+        return parents;
+    }
+
+    /**
+     * Returns the score being used for this search.
+     * @return This score.
+     * @see Score
+     */
+    @Override
+    public Score getScore() {
+        return score;
     }
 
     private void makeValidKnowledgeOrder(List<Node> order) {
@@ -120,11 +159,6 @@ public class Sp implements SuborderSearch {
         return false;
     }
 
-    @Override
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
-    }
-
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
 
@@ -138,21 +172,6 @@ public class Sp implements SuborderSearch {
             Z.add(x);
         }
 
-        return score;
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return variables;
-    }
-
-    @Override
-    public Map<Node, Set<Node>> getParents() {
-        return parents;
-    }
-
-    @Override
-    public Score getScore() {
         return score;
     }
 
