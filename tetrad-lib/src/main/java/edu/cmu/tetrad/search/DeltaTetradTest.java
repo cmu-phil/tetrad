@@ -55,6 +55,7 @@ public class DeltaTetradTest {
     /**
      * Constructs a test using a given data set. If a data set is provided (that is, a tabular data set), fourth moment
      * statistics can be calculated (p. 160); otherwise, it must be assumed that the data are multivariate Gaussian.
+     * @param dataSet The dataset to use.
      */
     public DeltaTetradTest(DataSet dataSet) {
         if (dataSet == null) {
@@ -76,7 +77,6 @@ public class DeltaTetradTest {
         this.data = this.dataSet.getDoubleData().transpose().toArray();
         this.N = dataSet.getNumRows();
         this.variables = dataSet.getVariables();
-//        this.numVars = dataSet.getNumColumns();
 
         this.variablesHash = new HashMap<>();
 
@@ -89,6 +89,7 @@ public class DeltaTetradTest {
     /**
      * Constructs a test using the given covariance matrix. Fourth moment statistics are not caculated; it is assumed
      * that the data are distributed as multivariate Gaussian.
+     * @param cov The covaraince matrix to use.
      */
     public DeltaTetradTest(ICovarianceMatrix cov) {
         if (cov == null) {
@@ -112,6 +113,7 @@ public class DeltaTetradTest {
      * <p>
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
+     * @param tetrads The tetrads for which a chi-square is needed.
      */
     public double calcChiSquare(Tetrad... tetrads) {
         this.df = tetrads.length;
@@ -226,6 +228,11 @@ public class DeltaTetradTest {
         return 1.0 - cdf;
     }
 
+    /**
+     * Returns a p-value for the given list of tetrad.
+     * @param tetrads The tetrad for which a p-vaue is needed.
+     * @return The p-value.
+     */
     public double getPValue(Tetrad... tetrads) {
         calcChiSquare(tetrads);
         return getPValue();
@@ -245,22 +252,7 @@ public class DeltaTetradTest {
     }
 
     private double getForthMoment(int x, int y, int z, int w) {
-//        if (cacheFourthMoments) {
-//            if (fourthMoment == null) {
-//                initializeForthMomentMatrix(dataSet.getVariable());
-//            }
-//
-//            double sxyzw = fourthMoment[x][y][z][w];
-//
-//            if (sxyzw == 0.0) {
-//                sxyzw = sxyzw(x, y, z, w);
-////                setForthMoment(x, y, z, w, sxyzw);
-//            }
-//
-//            return sxyzw;
-//        } else {
         return sxyzw(x, y, z, w);
-//        }
     }
 
     /**
@@ -373,13 +365,11 @@ public class DeltaTetradTest {
         double sum = 0.0;
 
         for (i = 0; i < N; i++) {
-//            sum += (array1[i] - meanX) * (array2[i] - meanY);
             sum += array1[i] * array2[i];
         }
 
         return (1.0 / N) * sum;
     }
-
 }
 
 

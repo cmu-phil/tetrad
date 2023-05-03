@@ -57,6 +57,7 @@ public class DeltaSextadTest {
     /**
      * Constructs a test using a given data set. If a data set is provided (that is, a tabular data set), fourth moment
      * statistics can be calculated (p. 160); otherwise, it must be assumed that the data are multivariate Gaussian.
+     * @param dataSet The dataset to use.
      */
     public DeltaSextadTest(DataSet dataSet) {
         if (dataSet == null) {
@@ -78,6 +79,7 @@ public class DeltaSextadTest {
     /**
      * Constructs a test using the given covariance matrix. Fourth moment statistics are not caculated; it is assumed
      * that the data are distributed as multivariate Gaussian.
+     * @param cov The covariance matrix to use.
      */
     public DeltaSextadTest(ICovarianceMatrix cov) {
         if (cov == null) {
@@ -91,6 +93,7 @@ public class DeltaSextadTest {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     * @return This instance.
      */
     public static DeltaSextadTest serializableInstance() {
         return new DeltaSextadTest(BoxDataSet.serializableInstance());
@@ -102,12 +105,12 @@ public class DeltaSextadTest {
      * <p>
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
+     * @param sextads The sextads for which a p-value is needed.
+     * @return The p-value.
      */
     public double getPValue(IntSextad... sextads) {
-//        int df = sextads.length;
         int df = dofHarman(sextads.length);
         double chisq = calcChiSquare(sextads);
-//        double cdf = ProbUtils.chisqCdf(chisq, df);
         double cdf = new ChiSquaredDistribution(df).cumulativeProbability(chisq);
         return 1.0 - cdf;
     }
@@ -118,6 +121,8 @@ public class DeltaSextadTest {
      * <p>
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
+     * @param sextads The sextads for which a chi-square is needed
+     * @return The chi-square.
      */
     public double calcChiSquare(IntSextad[] sextads) {
         Set<Sigma> boldSigmaSet = new HashSet<>();
@@ -223,6 +228,14 @@ public class DeltaSextadTest {
     }
 
     /**
+     * Returns the variables of the data being used.
+     * @return This list.
+     */
+    public List<Node> getVariables() {
+        return this.variables;
+    }
+
+    /**
      * If using a covariance matrix or a correlation matrix, just returns the lookups. Otherwise calculates the
      * covariance.
      */
@@ -287,10 +300,6 @@ public class DeltaSextadTest {
         }
 
         return 0.0;
-    }
-
-    public List<Node> getVariables() {
-        return this.variables;
     }
 
     // Represents a single covariance symbolically.
