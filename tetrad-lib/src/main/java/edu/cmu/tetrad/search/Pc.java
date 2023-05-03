@@ -92,10 +92,9 @@ public class Pc implements GraphSearch {
 
     private boolean verbose;
     private boolean stable;
-//    private boolean concurrent;
     private boolean useMaxP = false;
     private int maxPPathLength = -1;
-    private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
+    private final PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -218,7 +217,7 @@ public class Pc implements GraphSearch {
         return search(fas, nodes);
     }
 
-    private Graph search(IFas fas, List<Node> nodes) {
+    public Graph search(IFas fas, List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
