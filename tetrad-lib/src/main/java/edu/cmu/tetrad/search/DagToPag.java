@@ -32,23 +32,15 @@ import java.util.WeakHashMap;
 
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
- * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
- * Insufficient Systems").
- * <p>
- * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
- * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * Converts a DAG (Directed acyclic graph) into the PAG (partial ancestral graph)
+ * which it is in the equivalence class of.
  *
- * @author Erin Korber, June 2004
- * @author Alex Smith, December 2008
- * @author Joseph Ramsey
- * @author Choh-Man Teng
+ * @author josephramsey
+ * @author peterspirtes
  */
 public final class DagToPag {
 
     private final Graph dag;
-//    private final IndTestDSep dsep;
 
     /*
      * The background knowledge.
@@ -70,7 +62,6 @@ public final class DagToPag {
      */
     private boolean verbose;
     private int maxPathLength = -1;
-    private Graph truePag;
     private boolean doDiscriminatingPathRule = true;
     private static final WeakHashMap<Graph, Graph> history = new WeakHashMap<>();
 
@@ -85,6 +76,11 @@ public final class DagToPag {
 
     //========================PUBLIC METHODS==========================//
 
+    /**
+     * This method does the convertion of DAG to PAG.
+     *
+     * @return Returns the converted PAG.
+     */
     public Graph convert() {
         this.logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
 
@@ -125,17 +121,82 @@ public final class DagToPag {
         return graph;
     }
 
+    public static boolean existsInducingPathInto(Node x, Node y, Graph graph) {
+        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
+        if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
+
+        LinkedList<Node> path = new LinkedList<>();
+        path.add(x);
+
+        for (Node b : graph.getAdjacentNodes(x)) {
+            Edge edge = graph.getEdge(x, b);
+            if (edge.getProximalEndpoint(x) != Endpoint.ARROW) continue;
+//            if (!edge.pointsTowards(x)) continue;
+
+            if (graph.paths().existsInducingPathVisit(x, b, x, y, path)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge == null) {
+            throw new NullPointerException();
+        }
+
+        this.knowledge = knowledge;
+    }
+
+    /**
+     * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
+     * should be used. False by default.
+     */
+    public boolean isCompleteRuleSetUsed() {
+        return this.completeRuleSetUsed;
+    }
+
+    /**
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
+     *                            set of the original FCI) should be used. False by default.
+     */
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
+    }
+
+    /**
+     * Setws whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Sets the maximum path length for some rules in the conversion.
+     *
+     * @param maxPathLength This length.
+     * @see FciOrient
+     */
+    public void setMaxPathLength(int maxPathLength) {
+        this.maxPathLength = maxPathLength;
+    }
+
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
     private Graph calcAdjacencyGraph() {
         List<Node> allNodes = this.dag.getNodes();
         List<Node> measured = new ArrayList<>(allNodes);
         measured.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-
-
-//        for (Node node : allNodes) {
-//            if (node.getNodeType() == NodeType.MEASURED) {
-//                measured.add(node);
-//            }
-//        }
 
         Graph graph = new EdgeListGraph(measured);
 
@@ -209,108 +270,7 @@ public final class DagToPag {
         boolean ipba = DagToPag.existsInducingPathInto(b, a, dag);
         boolean ipbc = DagToPag.existsInducingPathInto(b, c, dag);
 
-        if (!(ipba && ipbc)) {
-            printTrueDefCollider(a, b, c, false);
-            return false;
-        }
-
-        printTrueDefCollider(a, b, c, true);
-
-        return true;
-    }
-
-    private void printTrueDefCollider(Node a, Node b, Node c, boolean found) {
-        if (this.truePag != null) {
-            boolean defCollider = this.truePag.isDefCollider(a, b, c);
-
-            if (this.verbose) {
-                if (!found && defCollider) {
-                    System.out.println("FOUND COLLIDER FCI");
-                } else if (found && !defCollider) {
-                    System.out.println("DIDN'T FIND COLLIDER FCI");
-                }
-            }
-        }
-    }
-
-    public static boolean existsInducingPathInto(Node x, Node y, Graph graph) {
-        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-        if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-
-        LinkedList<Node> path = new LinkedList<>();
-        path.add(x);
-
-        for (Node b : graph.getAdjacentNodes(x)) {
-            Edge edge = graph.getEdge(x, b);
-            if (edge.getProximalEndpoint(x) != Endpoint.ARROW) continue;
-//            if (!edge.pointsTowards(x)) continue;
-
-            if (graph.paths().existsInducingPathVisit(x, b, x, y, path)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
-    }
-
-    /**
-     * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
-     * should be used. False by default.
-     */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
-    }
-
-    /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. False by default.
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    public int getMaxPathLength() {
-        return this.maxPathLength;
-    }
-
-    public void setMaxPathLength(int maxPathLength) {
-        this.maxPathLength = maxPathLength;
-    }
-
-    public Graph getTruePag() {
-        return this.truePag;
-    }
-
-    public void setTruePag(Graph truePag) {
-        this.truePag = truePag;
-    }
-
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+        return ipba && ipbc;
     }
 }
 

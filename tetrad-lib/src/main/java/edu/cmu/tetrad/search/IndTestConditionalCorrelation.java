@@ -92,7 +92,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
         this.variables = Collections.unmodifiableList(nodes);
 
-        this.cci = new ConditionalCorrelationIndependence(dataSet, alpha);
+        this.cci = new ConditionalCorrelationIndependence(dataSet);
         this.alpha = alpha;
         this.dataSet = dataSet;
     }

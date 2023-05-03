@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import javax.help.UnsupportedOperationException;
 import java.util.List;
 
 /**
@@ -35,54 +36,100 @@ import java.util.List;
  */
 public class DagSepsets implements SepsetProducer {
     private final EdgeListGraph dag;
-    private boolean verbose;
 
+    /**
+     * Constructs a new DagSepsets object for the given DAG.
+     * @param dag the DAG.
+     */
     public DagSepsets(Graph dag) {
         this.dag = new EdgeListGraph(dag);
     }
 
+    /**
+     * Returns the list of sepset for {a, b}.
+     * @param a One node.
+     * @param b The other node.
+     * @return The list of sepsets for {a, b}.
+     */
     @Override
     public List<Node> getSepset(Node a, Node b) {
         return this.dag.getSepset(a, b);
     }
 
+    /**
+     * True iff i*-*j*-*k is an unshielded collider.
+     * @param i Node 1
+     * @param j Node 2
+     * @param k Node 3
+     * @return True if the condition holds.
+     */
     @Override
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
         List<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && !sepset.contains(j);
     }
 
-    @Override
+
+    /**
+     * True iff i*-*j*-*k is an unshielded noncollider.
+     * @param i Node 1
+     * @param j Node 2
+     * @param k Node 3
+     * @return True if the condition holds.
+     */    @Override
     public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
 //        return true;
         List<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && sepset.contains(j);
     }
 
+    /**
+     * Not implemented; required for an interface.
+     * @throws UnsupportedOperationException Since this is not implemented.
+     */
     @Override
     public double getScore() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Returns true just in case dsep(a, b | c) in the DAG. Don't let
+     * the name isIndependent fool you; this is a d-separation method. We
+     * only use the name isIndependent so that this can be used in place
+     * of an independence check.
+     * @param a Node 1
+     * @param b NOde 2
+     * @param c A set of conditoning nodes.
+     * @return True if the condition holds.
+     */
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
         return this.dag.paths().isDSeparatedFrom(a, b, c);
     }
 
+    /**
+     * Returns the nodes in the DAG.
+     * @return This list.
+     */
     @Override
     public List<Node> getVariables() {
         return this.dag.getNodes();
     }
 
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
+    /**
+     * Thsi method is not used.
+     * @throws UnsupportedOperationException Since this method is not used (but is
+     * required by an interface).
+     */
     @Override
     public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
+        throw new UnsupportedOperationException("This method is not used for this class.");
     }
 
+    /**
+     * Returns the DAG being analyzed.
+     * @return This DAG.
+     */
     public Graph getDag() {
         return this.dag;
     }

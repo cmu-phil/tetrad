@@ -72,11 +72,6 @@ public final class ConditionalCorrelationIndependence {
     private final HashMap<Node, Integer> nodesHash;
 
     /**
-     * Alpha cutoff for this class.
-     */
-    private double alpha;
-
-    /**
      * The q value of the most recent test.
      */
     private double score;
@@ -119,11 +114,9 @@ public final class ConditionalCorrelationIndependence {
      * significance level is used.
      *
      * @param dataSet A data set containing only continuous columns.
-     * @param alpha   The alpha level of the test.
      */
-    public ConditionalCorrelationIndependence(DataSet dataSet, double alpha) {
+    public ConditionalCorrelationIndependence(DataSet dataSet) {
         if (dataSet == null) throw new NullPointerException();
-        this.alpha = alpha;
         this.dataSet = dataSet;
 
         this.variables = dataSet.getVariables();
@@ -137,7 +130,7 @@ public final class ConditionalCorrelationIndependence {
     //=================PUBLIC METHODS====================//
 
     /**
-     * @return true iff x is independent of y conditional on z.
+     * @return the p-value of the test. Can be compared to alpha.
      */
     public double isIndependent(Node x, Node y, List<Node> z) {
         try {
@@ -256,12 +249,12 @@ public final class ConditionalCorrelationIndependence {
 
                 double k;
 
-                if (getKernelMultiplier() == Kernel.Epinechnikov) {
+                if (this.kernelMultiplier == Kernel.Epinechnikov) {
                     k = kernelEpinechnikov(d, h);
-                } else if (getKernelMultiplier() == Kernel.Gaussian) {
+                } else if (this.kernelMultiplier == Kernel.Gaussian) {
                     k = kernelGaussian(d, h);
                 } else {
-                    throw new IllegalStateException("Unsupported kernel type: " + getKernelMultiplier());
+                    throw new IllegalStateException("Unsupported kernel type: " + this.kernelMultiplier);
                 }
 
                 _sumx[i] += k * xj;
@@ -284,39 +277,58 @@ public final class ConditionalCorrelationIndependence {
 
     /**
      * Number of functions to use in (truncated) basis
+     * @param numFunctions This number.
      */
-    public int getNumFunctions() {
-        return this.numFunctions;
-    }
-
     public void setNumFunctions(int numFunctions) {
         this.numFunctions = numFunctions;
     }
 
-    public Kernel getKernelMultiplier() {
-        return this.kernelMultiplier;
-    }
-
+    /**
+     * Sets the kernel multiplier.
+     * @param kernelMultiplier This multiplier.
+     */
     public void setKernelMultiplier(Kernel kernelMultiplier) {
         this.kernelMultiplier = kernelMultiplier;
     }
 
+    /**
+     * Sets the basis.
+     * @param basis This basis.
+     * @see Basis
+     */
     public void setBasis(Basis basis) {
         this.basis = basis;
     }
 
+    /**
+     * Returns the kernel width.
+     * @return This width.
+     */
     public double getWidth() {
         return this.width;
     }
 
+    /**
+     * Sets the kernel width.
+     * @param width This width.
+     */
     public void setWidth(double width) {
         this.width = width;
     }
 
+    /**
+     * Returns the p-value of the score.
+     * @return This p-value.
+     */
     public double getPValue() {
         return getPValue(this.score);
     }
 
+    /**
+     * Returns the p-value of the score.
+     * @param score The score.
+     * @return This p-value.
+     */
     public double getPValue(double score) {
         return 2.0 * (1.0 - new NormalDistribution(0, 1).cumulativeProbability(abs(score)));
     }
@@ -329,15 +341,18 @@ public final class ConditionalCorrelationIndependence {
         return abs(this.score) - this.cutoff;//  alpha - getPValue();
     }
 
+    /**
+     * Sets the alpha cutoff.
+     * @param alpha This cutoff.
+     */
     public void setAlpha(double alpha) {
-        this.alpha = alpha;
         this.cutoff = getZForAlpha(alpha);
     }
 
-    public double getAlpha() {
-        return this.alpha;
-    }
-
+    /**
+     * Sets the kernel regression sample size.
+     * @param kernelRegressionSapleSize This sample size
+     */
     public void setKernelRegressionSampleSize(int kernelRegressionSapleSize) {
         this.kernelRegressionSampleSize = kernelRegressionSapleSize;
     }
@@ -355,8 +370,8 @@ public final class ConditionalCorrelationIndependence {
 
         double maxScore = Double.NEGATIVE_INFINITY;
 
-        for (int m = 1; m <= getNumFunctions(); m++) {
-            for (int n = 1; n <= getNumFunctions(); n++) {
+        for (int m = 1; m <= this.numFunctions; m++) {
+            for (int n = 1; n <= this.numFunctions; n++) {
                 for (int i = 0; i < x.length; i++) {
                     _x[i] = function(m, x[i]);
                     _y[i] = function(n, y[i]);
