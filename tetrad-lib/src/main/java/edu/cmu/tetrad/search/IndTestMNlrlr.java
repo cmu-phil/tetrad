@@ -38,7 +38,7 @@ import java.util.Map;
  *
  * @author Bryan Andrews
  */
-public class IndTestMNLRLRT implements IndependenceTest {
+public class IndTestMNlrlr implements IndependenceTest {
     private final DataSet data;
     private final Map<Node, Integer> nodesHash;
     private double alpha;
@@ -51,7 +51,7 @@ public class IndTestMNLRLRT implements IndependenceTest {
     // P Values
     private double pValue = Double.NaN;
 
-    public IndTestMNLRLRT(DataSet data, double alpha) {
+    public IndTestMNlrlr(DataSet data, double alpha) {
         this.data = data;
         this.likelihood = new MnlrLikelihood(data, -1, 1);
 
