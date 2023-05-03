@@ -34,7 +34,6 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-@Experimental
 public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         ReturnsBootstrapGraphs {
     static final long serialVersionUID = 23L;
