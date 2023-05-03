@@ -152,7 +152,7 @@ public class TestPurify {
         partition.add(cluster3);
 
         TetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.05);
-        IPurify purify = new PurifyTetradBased2(test);
+        IPurify purify = new PurifyTetradBased(test);
         purify.setTrueGraph(graph);
 
         List<List<Node>> partition2 = purify.purify(partition);
@@ -249,7 +249,7 @@ public class TestPurify {
         partition.add(cluster2);
 
         TetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.0001);
-        IPurify purify = new PurifyTetradBased2(test);
+        IPurify purify = new PurifyTetradBased(test);
         purify.setTrueGraph(graph);
 
         List<List<Node>> clustering = purify.purify(partition);
@@ -288,7 +288,7 @@ public class TestPurify {
 
         ContinuousTetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.001);
 
-        IPurify purify = new PurifyTetradBased2(test);
+        IPurify purify = new PurifyTetradBased(test);
 
         List<List<Node>> purifiedClustering = purify.purify(clustering);
         List<String> latentsNames = new ArrayList<>();
