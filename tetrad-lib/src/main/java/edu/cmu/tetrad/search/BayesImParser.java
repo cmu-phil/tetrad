@@ -42,11 +42,11 @@ import java.util.Map;
  *
  * @author mattheweasterday
  */
-public class XdslXmlParser {
+public class BayesImParser {
 
     private boolean useDisplayNames;
 
-    public XdslXmlParser() {
+    public BayesImParser() {
     }
 
     /**

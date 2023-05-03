@@ -851,7 +851,7 @@ public class RBExperiments {
             File dir = new File(this.directory + "/xdsl");
             File file = new File(dir, filename);
             Document document = builder.build(file);
-            XdslXmlParser parser = new XdslXmlParser();
+            BayesImParser parser = new BayesImParser();
             parser.setUseDisplayNames(useDisplayNames);
             return parser.getBayesIm(document.getRootElement());
         } catch (ParsingException | IOException e) {

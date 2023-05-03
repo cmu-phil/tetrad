@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.search.XdslXmlParser;
+import edu.cmu.tetrad.search.BayesImParser;
 import edu.cmu.tetradapp.model.BayesImWrapper;
 import nu.xom.Builder;
 import nu.xom.Document;
@@ -72,7 +72,7 @@ class LoadBayesImXsdlXmlAction extends AbstractAction {
             Document document = builder.build(file);
             LoadBayesImXsdlXmlAction.printDocument(document);
 
-            XdslXmlParser parser = new XdslXmlParser();
+            BayesImParser parser = new BayesImParser();
             BayesIm bayesIm = parser.getBayesIm(document.getRootElement());
             System.out.println(bayesIm);
 
