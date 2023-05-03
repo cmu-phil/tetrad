@@ -32,7 +32,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class DagInCPDAGIterator {
+public class DagInCpcagIterator {
 
     /**
      * The stack of graphs, with annotations as to the arbitrary undirected edges chosen in them and whether or not
@@ -41,15 +41,27 @@ public class DagInCPDAGIterator {
     private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
     private Graph storedGraph;
     private boolean returnedOne;
-    private final Knowledge knowledge;
     private final LinkedList<Triple> colliders;
     private final boolean allowNewColliders;
 
-    public DagInCPDAGIterator(Graph CPDAG) {
+    /**
+     * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it
+     * is not acyclic, it is rejected.
+     *
+     * @param CPDAG The CPDAG for which DAGS are wanted. May result in cyclic outputs.
+     * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
+     */    public DagInCpcagIterator(Graph CPDAG) {
         this(CPDAG, new Knowledge(), false, true);
     }
 
-    public DagInCPDAGIterator(Graph CPDAG, Knowledge knowledge) {
+    /**
+     * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it
+     * is not acyclic, it is rejected.
+     *
+     * @param CPDAG  The CPDAG for which DAGS are wanted. May result in cyclic outputs.
+     * @param knowledge  The knowledge to be used to constrain the DAGs.
+     * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
+     */    public DagInCpcagIterator(Graph CPDAG, Knowledge knowledge) {
         this(CPDAG, knowledge, false, true);
     }
 
@@ -58,16 +70,19 @@ public class DagInCPDAGIterator {
      * is not acyclic, it is rejected.
      *
      * @param CPDAG                      The CPDAG for which DAGS are wanted.
+     * @param knowledge  The knowledge to be used to constrain the DAGs.
      * @param allowArbitraryOrientations True if arbitrary orientations are allowable when reasonable ones cannot be
      *                                   made. May result in cyclic outputs.
+     * @param allowNewColliders True if new colliders are allowed in teh graphs.
      * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
      */
-    public DagInCPDAGIterator(Graph CPDAG, Knowledge knowledge, boolean allowArbitraryOrientations,
+    public DagInCpcagIterator(Graph CPDAG, Knowledge knowledge, boolean allowArbitraryOrientations,
                               boolean allowNewColliders) {
+        Knowledge knowledge1;
         if (knowledge == null) {
-            this.knowledge = new Knowledge();
+            knowledge1 = new Knowledge();
         } else {
-            this.knowledge = knowledge;
+            knowledge1 = knowledge;
         }
 
         this.allowNewColliders = allowNewColliders;
@@ -81,7 +96,7 @@ public class DagInCPDAGIterator {
         HashMap<Graph, Set<Edge>> changedEdges = new HashMap<>();
         changedEdges.put(CPDAG, new HashSet<>());
 
-        this.decoratedGraphs.add(new DecoratedGraph(CPDAG, getKnowledge(), changedEdges,
+        this.decoratedGraphs.add(new DecoratedGraph(CPDAG, knowledge1, changedEdges,
                 allowArbitraryOrientations));
         this.colliders = GraphUtils.listColliderTriples(CPDAG);
     }
@@ -145,10 +160,6 @@ public class DagInCPDAGIterator {
         }
 
         return this.storedGraph != null;
-    }
-
-    public Knowledge getKnowledge() {
-        return this.knowledge;
     }
 
     //==============================CLASSES==============================//
@@ -239,7 +250,6 @@ public class DagInCPDAGIterator {
 
                 for (Edge edge : edges) {
                     edge.setHighlighted(true);
-//                    graph.setHighlighted(edge, true);
                 }
 
                 this.triedLeft = true;

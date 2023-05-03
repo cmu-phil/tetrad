@@ -57,7 +57,7 @@ public final class HbsmsGes implements Hbsms {
 
         final boolean allowArbitraryOrientations = true;
         final boolean allowNewColliders = true;
-        DagInCPDAGIterator iterator = new DagInCPDAGIterator(graph, getKnowledge(), allowArbitraryOrientations,
+        DagInCpcagIterator iterator = new DagInCpcagIterator(graph, getKnowledge(), allowArbitraryOrientations,
                 allowNewColliders);
         graph = iterator.next();
         graph = SearchGraphUtils.cpdagForDag(graph);

@@ -1207,7 +1207,7 @@ public final class SearchGraphUtils {
     }
 
     public static List<Graph> getDagsInCpdagMeek(Graph cpdag, Knowledge knowledge) {
-        DagInCPDAGIterator iterator = new DagInCPDAGIterator(cpdag, knowledge);
+        DagInCpcagIterator iterator = new DagInCpcagIterator(cpdag, knowledge);
         List<Graph> dags = new ArrayList<>();
 
         while (iterator.hasNext()) {

@@ -31,13 +31,14 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Some general utilities for dealing with clustering input and output.
+ * <p>Some general utilities for dealing with clustering input and output.</p>
+ * <p>The method of this class are used only internally and so are not documented
+ * for public use.</p>
  *
  * @author Joseph Ramsey
  */
 public class ClusterUtils {
     public static final String LATENT_PREFIX = "_L";
-
 
     public static List<int[]> convertListToInt(List<List<Node>> partition, List<Node> nodes) {
         List<int[]> _partition = new ArrayList<>();
@@ -59,7 +60,7 @@ public class ClusterUtils {
         return _partition;
     }
 
-    public static List<List<Node>> convertIntToList(List<int[]> partition, List<Node> nodes) {
+    static List<List<Node>> convertIntToList(List<int[]> partition, List<Node> nodes) {
         List<List<Node>> _partition = new ArrayList<>();
 
         for (int[] cluster : partition) {
@@ -179,7 +180,7 @@ public class ClusterUtils {
 
     }
 
-    public static void logClusters(Set<Set<Integer>> clusters, List<Node> variables) {
+    static void logClusters(Set<Set<Integer>> clusters, List<Node> variables) {
         int num = 1;
         StringBuilder buf = new StringBuilder();
         buf.append("\nClusters:\n");
