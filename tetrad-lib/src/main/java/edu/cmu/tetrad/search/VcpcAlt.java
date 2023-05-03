@@ -205,7 +205,7 @@ public final class VcpcAlt implements GraphSearch {
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
-        Vcfas fas = new Vcfas(getIndependenceTest());
+        VcFas fas = new VcFas(getIndependenceTest());
         this.definitelyNonadjacencies = new HashSet<>();
 
         long startTime = MillisecondTimes.timeMillis();

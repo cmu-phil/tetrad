@@ -232,7 +232,7 @@ public final class Vcpc implements GraphSearch {
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
-        Vcfas fas = new Vcfas(independenceTest);
+        VcFas fas = new VcFas(independenceTest);
         this.definitelyNonadjacencies = new HashSet<>();
 
         long startTime = MillisecondTimes.timeMillis();

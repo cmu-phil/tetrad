@@ -252,7 +252,7 @@ public final class SampleVcpc implements GraphSearch {
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
-        Vcfas fas = new Vcfas(getIndependenceTest());
+        VcFas fas = new VcFas(getIndependenceTest());
         this.definitelyNonadjacencies = new HashSet<>();
         long startTime = MillisecondTimes.timeMillis();
         List<Node> allNodes = getIndependenceTest().getVariables();

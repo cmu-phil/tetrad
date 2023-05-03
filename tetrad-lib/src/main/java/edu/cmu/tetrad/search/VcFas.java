@@ -39,7 +39,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey.
  */
-public class Vcfas {
+public class VcFas {
 
     /**
      * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
@@ -87,7 +87,7 @@ public class Vcfas {
 
     //==========================CONSTRUCTORS=============================//
 
-    public Vcfas(IndependenceTest test) {
+    public VcFas(IndependenceTest test) {
         this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
     }

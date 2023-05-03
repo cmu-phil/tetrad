@@ -231,7 +231,7 @@ public final class VcpcFast implements GraphSearch {
         this.ambiguousTriples = new HashSet<>();
         this.colliderTriples = new HashSet<>();
         this.noncolliderTriples = new HashSet<>();
-        Vcfas fas = new Vcfas(getIndependenceTest());
+        VcFas fas = new VcFas(getIndependenceTest());
         this.definitelyNonadjacencies = new HashSet<>();
 
 //        this.logger.log("info", "Variables " + independenceTest.getVariable());
