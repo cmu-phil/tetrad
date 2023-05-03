@@ -64,64 +64,34 @@ public class ZhangShenBoundScore implements Score {
 
     /**
      * Constructs the score using a covariance matrix.
+     * @param covMatrix The covariance matrix.
      */
-    public ZhangShenBoundScore(ICovarianceMatrix covariances) {
-        if (covariances == null) {
+    public ZhangShenBoundScore(ICovarianceMatrix covMatrix) {
+        if (covMatrix == null) {
             throw new NullPointerException();
         }
 
-        setCovariances(covariances);
-        this.variables = covariances.getVariables();
-        this.sampleSize = covariances.getSampleSize();
+        setCovariances(covMatrix);
+        this.variables = covMatrix.getVariables();
+        this.sampleSize = covMatrix.getSampleSize();
     }
 
     /**
      * Constructs the score using a covariance matrix.
+     * @param dataSet The data set.
      */
     public ZhangShenBoundScore(DataSet dataSet) {
         this(SimpleDataLoader.getCovarianceMatrix(dataSet));
         this.data = dataSet.getDoubleData();
     }
 
-    public static double zhangShenLambda(int m0, double pn, double riskBound) {
-        if (m0 > pn) throw new IllegalArgumentException("m0 should not be > pn; m0 = " + m0 + " pn = " + pn);
-
-        double high = 10000.0;
-        double low = 0.0;
-
-        while (high - low > 1e-13) {
-            double lambda = (high + low) / 2.0;
-
-            double p = getP(pn, m0, lambda);
-
-            if (p < 1.0 - riskBound) {
-                low = lambda;
-            } else {
-                high = lambda;
-            }
-        }
-
-        return low;
-    }
-
-    public static double getP(double pn, double m0, double lambda) {
-        return 2. - pow((1. + (exp(-(lambda - 1.) / 2.)) * sqrt(lambda)), pn - m0);
-    }
-
-
-    private int[] indices(List<Node> __adj) {
-        int[] indices = new int[__adj.size()];
-        for (int t = 0; t < __adj.size(); t++) indices[t] = variables.indexOf(__adj.get(t));
-        return indices;
-    }
-
-    @Override
-    public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
-    }
-
-
-    public double localScore(int i, int... parents) throws RuntimeException {
+    /**
+     * Returns the score for the child given the parents.
+     * @param i    The index of the node.
+     * @param parents The indices of the node's parents.
+     * @return The score
+     */
+    public double localScore(int i, int... parents) {
         int pn = variables.size() - 1;
 
         // True if row subsets should be calculated.
@@ -153,6 +123,49 @@ public class ZhangShenBoundScore implements Score {
         }
 
         return score;
+    }
+
+    /**
+     * Returns localScore(y | z, x) - localScore(y | z).
+     * @param x Node 1
+     * @param y Node 2
+     * @param z The conditioning nodes.
+     * @return The score.
+     */
+    @Override
+    public double localScoreDiff(int x, int y, int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
+    }
+
+    private static double getP(double pn, double m0, double lambda) {
+        return 2. - pow((1. + (exp(-(lambda - 1.) / 2.)) * sqrt(lambda)), pn - m0);
+    }
+
+    private int[] indices(List<Node> __adj) {
+        int[] indices = new int[__adj.size()];
+        for (int t = 0; t < __adj.size(); t++) indices[t] = variables.indexOf(__adj.get(t));
+        return indices;
+    }
+
+    private static double zhangShenLambda(int m0, double pn, double riskBound) {
+        if (m0 > pn) throw new IllegalArgumentException("m0 should not be > pn; m0 = " + m0 + " pn = " + pn);
+
+        double high = 10000.0;
+        double low = 0.0;
+
+        while (high - low > 1e-13) {
+            double lambda = (high + low) / 2.0;
+
+            double p = getP(pn, m0, lambda);
+
+            if (p < 1.0 - riskBound) {
+                low = lambda;
+            } else {
+                high = lambda;
+            }
+        }
+
+        return low;
     }
 
     private double getLambda(int m0, int pn) {
