@@ -48,26 +48,13 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
  */
 public final class IndTestFisherZ implements IndependenceTest {
-
     private final Map<String, Integer> indexMap;
     private final Map<String, Node> nameMap;
     private final NormalDistribution normal = new NormalDistribution(0, 1, 1e-15);
     private final Map<Node, Integer> nodesHash;
-    /**
-     * The correlation matrix.
-     */
     private final ICovarianceMatrix cor;
-    /**
-     * The variables of the covariance matrix, in order. (Unmodifiable list.)
-     */
     private List<Node> variables;
-    /**
-     * The significance level of the independence tests.
-     */
     private double alpha;
-    /**
-     * Stores a reference to the dataset being analyzed.
-     */
     private DataSet dataSet;
     private boolean verbose = true;
     private double p = Double.NaN;
