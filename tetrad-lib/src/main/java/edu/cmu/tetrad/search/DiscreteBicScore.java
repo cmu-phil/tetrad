@@ -33,17 +33,15 @@ import static org.apache.commons.math3.util.FastMath.log;
 /**
  * Calculates the discrete BIC score.
  */
-public class IDiscreteBicScore implements IDiscreteScore {
+public class DiscreteBicScore implements IDiscreteScore {
     private List<Node> variables;
     private final int[][] data;
     private final int sampleSize;
-
     private double penaltyDiscount = 1;
-
     private final int[] numCategories;
     private double structurePrior = 1;
 
-    public IDiscreteBicScore(DataSet dataSet) {
+    public DiscreteBicScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException("Data was not provided.");
         }
@@ -139,7 +137,7 @@ public class IDiscreteBicScore implements IDiscreteScore {
                 continue;
             }
 
-            int rowIndex = IDiscreteBicScore.getRowIndex(dims, parentValues);
+            int rowIndex = DiscreteBicScore.getRowIndex(dims, parentValues);
 
             n_jk[rowIndex][childValue]++;
             n_j[rowIndex]++;
