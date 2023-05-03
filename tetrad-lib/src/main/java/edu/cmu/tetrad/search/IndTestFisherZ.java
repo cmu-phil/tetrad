@@ -45,7 +45,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * Scheines, "Causation, Prediction and Search," 2nd edition, page 94.
  *
  * @author Joseph Ramsey
- * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
+ * @author Frank Wimberly
  */
 public final class IndTestFisherZ implements IndependenceTest {
     private final Map<String, Integer> indexMap;
