@@ -58,6 +58,11 @@ public class LingamPattern {
 
     //===============================CONSTRUCTOR============================//
 
+    /**
+     * Constructor.
+     * @param cpdag The CPDAG whose unoriented edges are to be oriented.
+     * @param dataSet Teh dataset to use.
+     */
     public LingamPattern(Graph cpdag, DataSet dataSet)
             throws IllegalArgumentException {
 
@@ -75,6 +80,10 @@ public class LingamPattern {
 
     //===============================PUBLIC METHODS========================//
 
+    /**
+     * Runs the search and returns the result graph.
+     * @return This graph.
+     */
     public Graph search() {
 
         Graph _cpdag = GraphUtils.bidirectedToUndirected(getCpdag());
@@ -139,8 +148,8 @@ public class LingamPattern {
             double p1 = getPValues()[nodes.indexOf(node1)];
             double p2 = getPValues()[nodes.indexOf(node2)];
 
-            boolean node1Nongaussian = p1 < getAlpha();
-            boolean node2Nongaussian = p2 < getAlpha();
+            boolean node1Nongaussian = p1 < this.alpha;
+            boolean node2Nongaussian = p2 < this.alpha;
 
             if (node1Nongaussian || node2Nongaussian) {
                 if (!Edges.isUndirectedEdge(edge)) {
@@ -166,6 +175,26 @@ public class LingamPattern {
 
         TetradLogger.getInstance().log("graph", "Returning: " + ngDagCPDAG);
         return ngDagCPDAG;
+    }
+
+    /**
+     * Returns the p-values of the search.
+     * @return This list as a double[] array.
+     */
+    public double[] getPValues() {
+        return this.pValues;
+    }
+
+    /**
+     * Sets the alpha level for the search.
+     * @param alpha This alpha level.
+     */
+    public void setAlpha(double alpha) {
+        if (alpha < 0.0 || alpha > 1.0) {
+            throw new IllegalArgumentException("Alpha is in range [0, 1]");
+        }
+
+        this.alpha = alpha;
     }
 
     //=============================PRIVATE METHODS=========================//
@@ -216,22 +245,6 @@ public class LingamPattern {
         }
 
         return new Score(score, pValues);
-    }
-
-    public double[] getPValues() {
-        return this.pValues;
-    }
-
-    public double getAlpha() {
-        return this.alpha;
-    }
-
-    public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Alpha is in range [0, 1]");
-        }
-
-        this.alpha = alpha;
     }
 
     private Graph getCpdag() {
