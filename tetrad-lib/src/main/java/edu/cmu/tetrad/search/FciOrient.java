@@ -46,38 +46,13 @@ import java.util.*;
  * @author Choh-Man Teng
  */
 public final class FciOrient {
-
-    /**
-     * The SepsetMap being constructed.
-     */
     private final SepsetProducer sepsets;
-
     private Knowledge knowledge = new Knowledge();
-
     private boolean changeFlag = true;
-
-    /**
-     * flag for complete rule set, true if should use complete rule set, false
-     * otherwise.
-     */
     private boolean completeRuleSetUsed = true;
-
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited;
-     * otherwise, a positive integer.
-     */
     private int maxPathLength = -1;
-
-    /**
-     * The logger to use.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * True iff verbose output should be printed.
-     */
     private boolean verbose;
-
     private Graph truePag;
     private boolean doDiscriminatingPathColliderRule = true;
     private boolean doDiscriminatingPathTailRule = true;
@@ -93,10 +68,14 @@ public final class FciOrient {
     }
 
     //========================PUBLIC METHODS==========================//
+
+    /**
+     * Performs final FCI orientation on the given graph.
+     * @param graph The graph to further orient.
+     * @return The oriented graph.
+     */
     public Graph orient(Graph graph) {
-
         this.logger.forceLogMessage("Starting FCI algorithm.");
-
         ruleR0(graph);
 
         if (this.verbose) {
@@ -106,7 +85,6 @@ public final class FciOrient {
         // Step CI D. (Zhang's step F4.)
         doFinalOrientation(graph);
 
-//        graph.closeInducingPaths();   //to make sure it's a legal PAG
         if (this.verbose) {
             this.logger.forceLogMessage("Returning graph: " + graph);
         }
@@ -114,17 +92,18 @@ public final class FciOrient {
         return graph;
     }
 
+    /**
+     * Returns the map from {x,y} to {z1,...,zn} for x _||_ y | z1,..,zn.
+     * @return Thia map.
+     */
     public SepsetProducer getSepsets() {
         return this.sepsets;
     }
 
     /**
-     * The background knowledge.
+     * Sets the knowledge to use for the final orientation.
+     * @param knowledge This knowledge.
      */
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -155,6 +134,7 @@ public final class FciOrient {
      * Orients colliders in the graph. (FCI Step C)
      * <p>
      * Zhang's step F3, rule R0.
+     * @param graph The graph to orient.
      */
     public void ruleR0(Graph graph) {
         graph.reorientAllWith(Endpoint.CIRCLE);
@@ -214,11 +194,6 @@ public final class FciOrient {
         }
     }
 
-    private void printWrongColliderMessage(Node a, Node b, Node c, Graph graph) {
-        if (this.truePag != null && graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
-            logger.forceLogMessage("R0" + ": Orienting collider by mistake: " + a + "*->;" + b + "<-*" + c);
-        }
-    }
 
     /**
      * Orients the graph according to rules in the graph (FCI step D).
@@ -233,7 +208,7 @@ public final class FciOrient {
         }
     }
 
-    private void spirtesFinalOrientation(Graph graph) {
+    public void spirtesFinalOrientation(Graph graph) {
         this.changeFlag = true;
         boolean firstTime = true;
 
@@ -258,7 +233,7 @@ public final class FciOrient {
         }
     }
 
-    private void zhangFinalOrientation(Graph graph) {
+    public void zhangFinalOrientation(Graph graph) {
         this.changeFlag = true;
         boolean firstTime = true;
 
@@ -337,7 +312,7 @@ public final class FciOrient {
 
     /// R1, away from collider
     // If a*->bo-*c and a, c not adjacent then a*->b->c
-    private void ruleR1(Node a, Node b, Node c, Graph graph) {
+    public void ruleR1(Node a, Node b, Node c, Graph graph) {
         if (graph.isAdjacentTo(a, c)) {
             return;
         }
@@ -359,7 +334,7 @@ public final class FciOrient {
 
     //if a*-oc and either a-->b*->c or a*->b-->c, and a*-oc then a*->c
     // This is Zhang's rule R2.
-    private void ruleR2(Node a, Node b, Node c, Graph graph) {
+    public void ruleR2(Node a, Node b, Node c, Graph graph) {
         if ((graph.isAdjacentTo(a, c)) && (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
             if ((graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(b, c) == Endpoint.ARROW)
                     && (graph.getEndpoint(b, a) == Endpoint.TAIL || graph.getEndpoint(c, b) == Endpoint.TAIL)) {
@@ -558,61 +533,6 @@ public final class FciOrient {
     }
 
     /**
-     * Orients the edges inside the definte discriminating path triangle. Takes
-     * the left endpoint, and a,b,c as arguments.
-     */
-    private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
-        if (graph.isAdjacentTo(d, c)) {
-            throw new IllegalArgumentException();
-        }
-
-        List<Node> sepset = getSepsets().getSepset(d, c);
-
-        if (this.verbose) {
-            logger.forceLogMessage("Sepset for d = " + d + " and c = " + c + " = " + sepset);
-        }
-
-        if (sepset == null) {
-            if (this.verbose) {
-                logger.forceLogMessage("Must be a sepset: " + d + " and " + c + "; they're non-adjacent.");
-            }
-            return false;
-        }
-
-        if (!sepset.contains(b) && doDiscriminatingPathColliderRule) {
-            if (!isArrowpointAllowed(a, b, graph, knowledge)) {
-                return false;
-            }
-
-            if (!isArrowpointAllowed(c, b, graph, knowledge)) {
-                return false;
-            }
-
-            graph.setEndpoint(a, b, Endpoint.ARROW);
-            graph.setEndpoint(c, b, Endpoint.ARROW);
-
-            if (this.verbose) {
-                this.logger.forceLogMessage(
-                        "R4: Definite discriminating path collider rule d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
-            }
-
-            this.changeFlag = true;
-        } else if (doDiscriminatingPathTailRule) {
-            graph.setEndpoint(c, b, Endpoint.TAIL);
-
-            if (this.verbose) {
-                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg(
-                        "R4: Definite discriminating path tail rule d = " + d, graph.getEdge(b, c)));
-            }
-
-            this.changeFlag = true;
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB,
      * if there is an uncovered circle path u =
      * [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B
@@ -779,8 +699,63 @@ public final class FciOrient {
                 }
             }
         }
-
     }
+
+    /**
+     * Orients the edges inside the definte discriminating path triangle. Takes
+     * the left endpoint, and a,b,c as arguments.
+     */
+    public boolean doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
+        if (graph.isAdjacentTo(d, c)) {
+            throw new IllegalArgumentException();
+        }
+
+        List<Node> sepset = getSepsets().getSepset(d, c);
+
+        if (this.verbose) {
+            logger.forceLogMessage("Sepset for d = " + d + " and c = " + c + " = " + sepset);
+        }
+
+        if (sepset == null) {
+            if (this.verbose) {
+                logger.forceLogMessage("Must be a sepset: " + d + " and " + c + "; they're non-adjacent.");
+            }
+            return false;
+        }
+
+        if (!sepset.contains(b) && doDiscriminatingPathColliderRule) {
+            if (!isArrowpointAllowed(a, b, graph, knowledge)) {
+                return false;
+            }
+
+            if (!isArrowpointAllowed(c, b, graph, knowledge)) {
+                return false;
+            }
+
+            graph.setEndpoint(a, b, Endpoint.ARROW);
+            graph.setEndpoint(c, b, Endpoint.ARROW);
+
+            if (this.verbose) {
+                this.logger.forceLogMessage(
+                        "R4: Definite discriminating path collider rule d = " + d + " " + GraphUtils.pathString(graph, a, b, c));
+            }
+
+            this.changeFlag = true;
+        } else if (doDiscriminatingPathTailRule) {
+            graph.setEndpoint(c, b, Endpoint.TAIL);
+
+            if (this.verbose) {
+                this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg(
+                        "R4: Definite discriminating path tail rule d = " + d, graph.getEdge(b, c)));
+            }
+
+            this.changeFlag = true;
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * Orients every edge on a path as undirected (i.e. A---B).
@@ -926,9 +901,9 @@ public final class FciOrient {
      *
      * @param a The node A.
      * @param c The node C.
-     * @return Whether or not R8 was successfully applied.
+     * @return Whether R8 was successfully applied.
      */
-    private boolean ruleR8(Node a, Node c, Graph graph) {
+    public boolean ruleR8(Node a, Node c, Graph graph) {
         List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
         for (Node b : intoCArrows) {
@@ -980,7 +955,7 @@ public final class FciOrient {
      * @param c The node C.
      * @return Whether R9 was succesfully applied.
      */
-    private boolean ruleR9(Node a, Node c, Graph graph) {
+    public boolean ruleR9(Node a, Node c, Graph graph) {
         Edge e = graph.getEdge(a, c);
 
         if (e == null) return false;
@@ -1010,88 +985,6 @@ public final class FciOrient {
         }
 
         return false;
-    }
-
-    /**
-     * Tries to apply Zhang's rule R10 to a pair of nodes A and C which are
-     * assumed to be such that Ao->C.
-     * <p>
-     * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
-     * <p>
-     * R10: If Ao->C, B-->C<--D, there is an uncovered p.d. path u1=<A,M,...,B>
-     * and an uncovered p.d. path u2=
-     * <A,N,...,D> with M != N and M,N nonadjacent then A-->C.
-     *
-     * @param a The node A.
-     * @param c The node C.
-     */
-    private void ruleR10(Node a, Node c, Graph graph) {
-        List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
-
-        for (Node b : intoCArrows) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            if (b == a) {
-                continue;
-            }
-
-            if (!(graph.getEndpoint(c, b) == Endpoint.TAIL)) {
-                continue;
-            }
-            // We know Ao->C and B-->C.
-
-            for (Node d : intoCArrows) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                if (d == a || d == b) {
-                    continue;
-                }
-
-                if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) {
-                    continue;
-                }
-                // We know Ao->C and B-->C&lt;--D.
-
-                List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
-                List<List<Node>> ucPdPsToD = getUcPdPaths(a, d, graph);
-                for (List<Node> u1 : ucPdPsToB) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    Node m = u1.get(1);
-                    for (List<Node> u2 : ucPdPsToD) {
-                        if (Thread.currentThread().isInterrupted()) {
-                            break;
-                        }
-
-                        Node n = u2.get(1);
-
-                        if (m.equals(n)) {
-                            continue;
-                        }
-                        if (graph.isAdjacentTo(m, n)) {
-                            continue;
-                        }
-                        // We know B,D,u1,u2 as required: R10 applies!
-
-                        graph.setEndpoint(c, a, Endpoint.TAIL);
-
-                        if (verbose) {
-                            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
-                        }
-
-                        this.changeFlag = true;
-                        return;
-                    }
-                }
-            }
-        }
-
     }
 
     /**
@@ -1202,16 +1095,17 @@ public final class FciOrient {
     }
 
     /**
-     * True iff verbose output should be printed.
+     * Sets whether verbose output is printed.
+     * @param verbose True if so.
      */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the true PAG for comparison.
+     * @param truePag This PAG.
+     */
     public void setTruePag(Graph truePag) {
         this.truePag = truePag;
     }
@@ -1223,23 +1117,123 @@ public final class FciOrient {
         return this.truePag;
     }
 
+    /**
+     * Sets the change flag--marks externally that a change has been made.
+     * @param changeFlag This flag.
+     */
     public void setChangeFlag(boolean changeFlag) {
         this.changeFlag = changeFlag;
     }
 
     /**
-     * change flag for repeat rules
+     * Change flag for repeat rules
+     * @return True if a change has occurred.
      */
     public boolean isChangeFlag() {
         return this.changeFlag;
     }
 
-    public void setDoDiscriminatingPathColliderRule(boolean skip) {
-        this.doDiscriminatingPathColliderRule = skip;
+    /**
+     * Sets whether the discriminating path collider rule should be done.
+     * @param doDiscriminatingPathColliderRule True is done.
+     */
+    public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
+        this.doDiscriminatingPathColliderRule = doDiscriminatingPathColliderRule;
     }
 
+    /**
+     * Sets whether the discriminating path tail rule should be done.
+     * @param doDiscriminatingPathTailRule True if done.
+     */
     public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {
         this.doDiscriminatingPathTailRule = doDiscriminatingPathTailRule;
     }
 
+    /**
+     * Tries to apply Zhang's rule R10 to a pair of nodes A and C which are
+     * assumed to be such that Ao->C.
+     * <p>
+     * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
+     * <p>
+     * R10: If Ao->C, B-->C<--D, there is an uncovered p.d. path u1=<A,M,...,B>
+     * and an uncovered p.d. path u2=
+     * <A,N,...,D> with M != N and M,N nonadjacent then A-->C.
+     *
+     * @param a The node A.
+     * @param c The node C.
+     */
+    public void ruleR10(Node a, Node c, Graph graph) {
+        List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
+
+        for (Node b : intoCArrows) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            if (b == a) {
+                continue;
+            }
+
+            if (!(graph.getEndpoint(c, b) == Endpoint.TAIL)) {
+                continue;
+            }
+            // We know Ao->C and B-->C.
+
+            for (Node d : intoCArrows) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                if (d == a || d == b) {
+                    continue;
+                }
+
+                if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) {
+                    continue;
+                }
+                // We know Ao->C and B-->C&lt;--D.
+
+                List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
+                List<List<Node>> ucPdPsToD = getUcPdPaths(a, d, graph);
+                for (List<Node> u1 : ucPdPsToB) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
+                    Node m = u1.get(1);
+                    for (List<Node> u2 : ucPdPsToD) {
+                        if (Thread.currentThread().isInterrupted()) {
+                            break;
+                        }
+
+                        Node n = u2.get(1);
+
+                        if (m.equals(n)) {
+                            continue;
+                        }
+                        if (graph.isAdjacentTo(m, n)) {
+                            continue;
+                        }
+                        // We know B,D,u1,u2 as required: R10 applies!
+
+                        graph.setEndpoint(c, a, Endpoint.TAIL);
+
+                        if (verbose) {
+                            this.logger.forceLogMessage(SearchLogUtils.edgeOrientedMsg("R10: ", graph.getEdge(c, a)));
+                        }
+
+                        this.changeFlag = true;
+                        return;
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void printWrongColliderMessage(Node a, Node b, Node c, Graph graph) {
+        if (this.truePag != null && graph.isDefCollider(a, b, c) && !this.truePag.isDefCollider(a, b, c)) {
+            logger.forceLogMessage("R0" + ": Orienting collider by mistake: " + a + "*->;" + b + "<-*" + c);
+        }
+    }
 }
