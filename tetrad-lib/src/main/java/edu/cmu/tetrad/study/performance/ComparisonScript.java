@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.performance;
+package edu.cmu.tetrad.study.performance;
 
 import edu.cmu.tetrad.sem.ScoreType;
 import edu.cmu.tetrad.util.TextTable;

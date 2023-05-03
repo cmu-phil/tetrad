@@ -23,7 +23,6 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.simulation;
 
 import cern.colt.list.DoubleArrayList;
 import cern.jet.stat.Descriptive;
-import edu.cmu.tetrad.gene.tetrad.gene.history.*;
 import edu.cmu.tetrad.study.gene.tetrad.gene.history.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;

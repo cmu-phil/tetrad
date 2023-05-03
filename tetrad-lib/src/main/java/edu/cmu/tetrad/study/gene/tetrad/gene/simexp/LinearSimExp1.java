@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.study.gene.tetrad.gene.simexp;
 
-import edu.cmu.tetrad.gene.tetrad.gene.history.*;
 import edu.cmu.tetrad.study.gene.tetrad.gene.simulation.MeasurementSimulator;
 import edu.cmu.tetrad.study.gene.tetrad.gene.history.*;
 import edu.cmu.tetrad.util.NumberFormatUtil;

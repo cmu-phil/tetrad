@@ -23,7 +23,6 @@ package edu.cmu.tetrad.study.gene.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.study.gene.tetrad.gene.graph.DisplayNameHandler;
-import edu.cmu.tetrad.gene.tetrad.gene.history.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.study.gene.tetrad.gene.history.*;

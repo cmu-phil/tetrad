@@ -1,10 +1,9 @@
-package edu.cmu.tetrad.performance;
+package edu.cmu.tetrad.study.performance;
 
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.performance.ComparisonParameters.IndependenceTestType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.ScoreType;
@@ -301,7 +300,7 @@ public class Comparison2 {
             }
         }
 
-        if (params.getIndependenceTest() == IndependenceTestType.FisherZ) {
+        if (params.getIndependenceTest() == ComparisonParameters.IndependenceTestType.FisherZ) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Continuous) {
                 throw new IllegalArgumentException("Data type previously set to something other than continuous.");
             }
@@ -314,7 +313,7 @@ public class Comparison2 {
             test = new IndTestFisherZ(dataSet, params.getAlpha());
 
             params.setDataType(ComparisonParameters.DataType.Continuous);
-        } else if (params.getIndependenceTest() == IndependenceTestType.ChiSquare) {
+        } else if (params.getIndependenceTest() == ComparisonParameters.IndependenceTestType.ChiSquare) {
             if (params.getDataType() != null && params.getDataType() != ComparisonParameters.DataType.Discrete) {
                 throw new IllegalArgumentException("Data type previously set to something other than discrete.");
             }

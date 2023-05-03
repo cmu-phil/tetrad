@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.performance;
+package edu.cmu.tetrad.study.performance;
 
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.biolingua;
 
-import edu.cmu.tetrad.gene.tetrad.gene.algorithm.util.*;
 import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.*;
 
 /**
