@@ -137,8 +137,6 @@ public class ComparisonParameters {
             resultType = ResultType.CPDAG;
         } else if (algorithm == Algorithm.FGES2) {
             resultType = ResultType.CPDAG;
-        } else if (algorithm == Algorithm.PCLocal) {
-            resultType = ResultType.CPDAG;
         } else if (algorithm == Algorithm.PCStableMax) {
             resultType = ResultType.CPDAG;
         } else if (algorithm == Algorithm.FCI) {
@@ -322,5 +320,5 @@ public class ComparisonParameters {
 
     public enum IndependenceTestType {FisherZ, ChiSquare}
 
-    public enum Algorithm {PC, CPC, FGES, FGES2, PCLocal, PCStableMax, FCI, GFCI, SVARFCI}
+    public enum Algorithm {PC, CPC, FGES, FGES2, PCStableMax, FCI, GFCI, SVARFCI}
 }

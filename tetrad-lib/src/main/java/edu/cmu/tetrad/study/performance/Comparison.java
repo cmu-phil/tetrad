@@ -189,11 +189,6 @@ public class Comparison {
             Cpc search = new Cpc(test);
             result.setResultGraph(search.search());
             result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
-        } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCLocal) {
-            if (test == null) throw new IllegalArgumentException("Test not set.");
-            PcLocal search = new PcLocal(test);
-            result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.PCStableMax) {
             if (test == null) throw new IllegalArgumentException("Test not set.");
             PcStableMax search = new PcStableMax(test);
