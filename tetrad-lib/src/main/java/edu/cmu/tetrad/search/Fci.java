@@ -48,70 +48,18 @@ import java.util.Set;
  * @author Choh-Man Teng
  */
 public final class Fci implements GraphSearch {
-
-    /**
-     * The SepsetMap being constructed.
-     */
     private SepsetMap sepsets;
-
-    /**
-     * The background knowledge.
-     */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The variables to search over (optional)
-     */
     private final List<Node> variables = new ArrayList<>();
-
-    /**
-     * The test to use for the search.
-     */
     private final IndependenceTest independenceTest;
-
-    /**
-     * flag for complete rule set, true if should use complete rule set, false otherwise.
-     */
     private boolean completeRuleSetUsed = true;
-
-    /**
-     * True iff the possible dsep search is done.
-     */
     private boolean possibleDsepSearchDone = true;
-
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
     private int maxPathLength = -1;
-
-    /**
-     * The depth for the fast adjacency search.
-     */
     private int depth = -1;
-
-    /**
-     * Elapsed time of last search.
-     */
     private long elapsedTime;
-
-    /**
-     * The logger to use.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * True iff verbose output should be printed.
-     */
     private boolean verbose;
-
-    /**
-     * FAS heuristic
-     */
     private int heuristic;
-
-    /**
-     * FAS stable option.
-     */
     private boolean stable;
     private boolean doDiscriminatingPathRule = true;
 
@@ -234,7 +182,6 @@ public final class Fci implements GraphSearch {
         return graph;
     }
 
-
     /**
      * Retrieves the sepset map from FAS.
      */
@@ -343,6 +290,10 @@ public final class Fci implements GraphSearch {
         this.stable = stable;
     }
 
+    /**
+     * Sets whether the discriminating path rule should be used.
+     * @param doDiscriminatingPathRule True if so.
+     */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
