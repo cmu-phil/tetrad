@@ -32,6 +32,7 @@ import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Calculates the discrete BIC score.
+ * @author josephramsey
  */
 public class DiscreteBicScore implements IDiscreteScore {
     private List<Node> variables;
