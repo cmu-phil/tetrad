@@ -40,13 +40,13 @@ import java.util.*;
  * the maximum depth or else the first such depth at which no edges can be removed. The interpretation of this adjacency
  * search is different for different algorithm, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
- *
- * @author Joseph Ramsey.
- * <p>
  * <p>
  * This is a copy of Fas.java for the SvarFCI algorithm. The main difference is that if an edge is removed, it will also
  * remove all homologous edges to preserve the time-repeating structure assumed by SvarFCI. Based on (but not identicial
  * to) code by Entner and Hoyer for their 2010 paper. Modified by DMalinsky 4/21/2016.
+ *
+ * @author Joseph Ramsey.
+ * @author DMalinsky
  */
 public class Fasts implements IFas {
 
@@ -82,27 +82,12 @@ public class Fasts implements IFas {
      */
     private final TetradLogger logger = TetradLogger.getInstance();
 
-    /**
-     * The number of false dependence judgements, judged from the true graph using d-separation. Temporary.
-     */
-    private int numFalseDependenceJudgments;
-
-    /**
-     * The number of dependence judgements. Temporary.
-     */
-    private int numDependenceJudgement;
-
     private int numIndependenceJudgements;
 
     /**
      * The sepsets found during the search.
      */
     private SepsetMap sepset = new SepsetMap();
-
-    /**
-     * True if this is being run by FCI--need to skip the knowledge forbid step.
-     */
-    private final boolean fci = false;
 
     /**
      * The depth 0 graph, specified initially.
@@ -117,8 +102,6 @@ public class Fasts implements IFas {
     private boolean verbose;
 
     private PrintStream out = System.out;
-
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new FastAdjacencySearch.
@@ -135,8 +118,6 @@ public class Fasts implements IFas {
         this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
     }
-
-    //==========================PUBLIC METHODS===========================//
 
     /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
@@ -195,10 +176,11 @@ public class Fasts implements IFas {
         return this.graph;
     }
 
-    public int getDepth() {
-        return this.depth;
-    }
-
+    /**
+     * Sets the depth--i.e., the maximum number of variables conditioned on in any
+     * test, -1 for unlimited.
+     * @param depth This depth.
+     */
     public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
@@ -208,15 +190,88 @@ public class Fasts implements IFas {
         this.depth = depth;
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
+    /**
+     * Sets the knowledge used in the search.
+     * @param knowledge This knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
-    //==============================PRIVATE METHODS======================/
+    /**
+     * Returns the number of independence tests.
+     * @return This number.
+     */
+    public int getNumIndependenceTests() {
+        return this.numIndependenceTests;
+    }
+
+    /**
+     * Returns a map for x _||_ y | Z from {x, y} to Z.
+     * @return This map.
+     */
+    public SepsetMap getSepsets() {
+        return this.sepset;
+    }
+
+    /**
+     * Sets an external graph.
+     * @param externalGraph This grpah.
+     */
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * @throws UnsupportedOperationException This method is not used.
+     */
+    @Override
+    public Graph search(List<Node> nodes) {
+        throw new UnsupportedOperationException("This method is not used.");
+    }
+
+    /**
+     * @throws UnsupportedOperationException This method is not used.
+     */
+    @Override
+    public long getElapsedTime() {
+        throw new UnsupportedOperationException("This method is not used.");
+    }
+
+    /**
+     * Returns the nodes of the test.
+     * @return This list.
+     */
+    @Override
+    public List<Node> getNodes() {
+        return this.test.getVariables();
+    }
+
+    /**
+     * @throws UnsupportedOperationException This method is not used.
+     */
+    @Override
+    public List<Triple> getAmbiguousTriples(Node node) {
+        throw new UnsupportedOperationException("This method is not used.");
+    }
+
+    /**
+     * Sets the output stream for printing, default is System.out.
+     * @param out The print stream.
+     * @see PrintStream
+     */
+    @Override
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
 
     private boolean searchAtDepth0(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
         List<Node> empty = Collections.emptyList();
@@ -242,8 +297,8 @@ public class Fasts implements IFas {
                 Iterator<Node> itx1 = simListX.iterator();
                 Iterator<Node> ity1 = simListY.iterator();
                 while (itx1.hasNext() && ity1.hasNext()) {
-                    Node x1 = (Node) itx1.next();
-                    Node y1 = (Node) ity1.next();
+                    Node x1 = itx1.next();
+                    Node y1 = ity1.next();
                     String simX = x1.getName();
                     String simY = y1.getName();
                     if ((Objects.equals(xName, simX) && Objects.equals(yName, simY)) ||
@@ -279,8 +334,6 @@ public class Fasts implements IFas {
 
                 if (independent) {
                     this.numIndependenceJudgements++;
-                } else {
-                    this.numDependenceJudgement++;
                 }
 
                 boolean noEdgeRequired =
@@ -416,8 +469,6 @@ public class Fasts implements IFas {
 
                         if (independent) {
                             this.numIndependenceJudgements++;
-                        } else {
-                            this.numDependenceJudgement++;
                         }
 
                         boolean noEdgeRequired =
@@ -479,7 +530,6 @@ public class Fasts implements IFas {
         int ntiers = this.knowledge.getNumTiers();
         int indx_tier = this.knowledge.isInWhichTier(x);
         int indy_tier = this.knowledge.isInWhichTier(y);
-        int max_tier = FastMath.max(indx_tier, indy_tier);
         int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
@@ -513,8 +563,8 @@ public class Fasts implements IFas {
             if (indx_tier >= indy_tier) {
                 List<String> tmp_tier1 = this.knowledge.getTier(i + tier_diff);
                 List<String> tmp_tier2 = this.knowledge.getTier(i);
-                A = (String) tmp_tier1.get(indx_comp);
-                B = (String) tmp_tier2.get(indy_comp);
+                A = tmp_tier1.get(indx_comp);
+                B = tmp_tier2.get(indy_comp);
                 if (A.equals(B)) continue;
                 if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
                 if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
@@ -544,7 +594,7 @@ public class Fasts implements IFas {
                         continue;
                     }
                     List<String> new_tier = this.knowledge.getTier(condAB_tier);
-                    String tempNode1 = (String) new_tier.get(ind_temp);
+                    String tempNode1 = new_tier.get(ind_temp);
                     System.out.println("adding variable " + tempNode1 + " to SepSet");
                     condSetAB.add(test.getVariable(tempNode1));
                 }
@@ -594,13 +644,13 @@ public class Fasts implements IFas {
         }
     }
 
+
     // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     private List<List<Node>> returnSimilarPairs(IndependenceTest test, Node x, Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
-//        System.out.println("Knowledge within returnSimilar : " + knowledge);
         int ntiers = this.knowledge.getNumTiers();
         int indx_tier = this.knowledge.isInWhichTier(x);
         int indy_tier = this.knowledge.isInWhichTier(y);
@@ -667,58 +717,11 @@ public class Fasts implements IFas {
         return (pairList);
     }
 
-
-    public String getNameNoLag(Object obj) {
+    private String getNameNoLag(Object obj) {
         String tempS = obj.toString();
         if (tempS.indexOf(':') == -1) {
             return tempS;
         } else return tempS.substring(0, tempS.indexOf(':'));
-    }
-
-    public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
-    }
-
-    public SepsetMap getSepsets() {
-        return this.sepset;
-    }
-
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    @Override
-    public Graph search(List<Node> nodes) {
-        nodes = new ArrayList<>(nodes);
-        return null;
-    }
-
-    @Override
-    public long getElapsedTime() {
-        return 0;
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        return this.test.getVariables();
-    }
-
-    @Override
-    public List<Triple> getAmbiguousTriples(Node node) {
-        return null;
-    }
-
-    public int getNumIndependenceJudgements() {
-        return this.numIndependenceJudgements;
-    }
-
-    @Override
-    public void setOut(PrintStream out) {
-        this.out = out;
     }
 }
 
