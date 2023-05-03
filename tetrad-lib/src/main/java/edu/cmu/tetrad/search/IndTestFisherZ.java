@@ -73,7 +73,6 @@ public final class IndTestFisherZ implements IndependenceTest {
     private double p = Double.NaN;
     private double r = Double.NaN;
 
-
     //==========================CONSTRUCTORS=============================//
 
     /**
@@ -133,12 +132,11 @@ public final class IndTestFisherZ implements IndependenceTest {
      *
      * @param data      A 2D continuous data set with no missing values.
      * @param variables A list of variables, a subset of the variables of <code>data</code>.
-     * @param alpha     The significance cutoff level. p values less than alpha will be reported as dependent.
+     * @param alpha   The alpha level of the test.
      */
     public IndTestFisherZ(Matrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.transpose().toArray()), variables);
         this.cor = SimpleDataLoader.getCorrelationMatrix(this.dataSet);
-//        this.cor = new CorrelationMatrix(this.dataSet);
         this.variables = Collections.unmodifiableList(variables);
         this.indexMap = indexMap(variables);
         this.nameMap = nameMap(variables);
@@ -156,6 +154,8 @@ public final class IndTestFisherZ implements IndependenceTest {
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
+     * @param covMatrix The covaraince matrix.
+     * @param alpha   The alpha level of the test.
      */
     public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha) {
         this.cor = new CorrelationMatrix(covMatrix);
@@ -177,6 +177,8 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     /**
      * Creates a new independence test instance for a subset of the variables.
+     * @return a new independence test.
+     * @see IndependenceTest
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -208,8 +210,9 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @param x the one variable being compared.
      * @param y the second variable being compared.
      * @param z the list of conditioning variables.
-     * @return true iff x _||_ y | z.
+     * @return Independence result for x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         double p = 0.0;
@@ -246,6 +249,14 @@ public final class IndTestFisherZ implements IndependenceTest {
         return this.p;
     }
 
+    /**
+     * Returns the p-value for x _||_ y | z.
+     * @param x Node 1
+     * @param y Node 2
+     * @param z The conditioning varialbes.
+     * @return The p-value.
+     * @throws SingularMatrixException If a singularity occurs when invering a matrix.
+     */
     public double getPValue(Node x, Node y, List<Node> z) throws SingularMatrixException {
         double r;
         int n;
@@ -272,7 +283,152 @@ public final class IndTestFisherZ implements IndependenceTest {
         return p;
     }
 
-    //======================PRIVATE==========================//
+    /**
+     * Returns the BIC score for this test.
+     * @return The BIC score.
+     */
+    public double getBic() {
+        return -sampleSize() * FastMath.log(1.0 - this.r * this.r) - FastMath.log(sampleSize());
+    }
+
+    /**
+     * Gets the getModel significance level.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    /**
+     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
+     * correlations to be considered statistically equal to zero.
+     */
+    public void setAlpha(double alpha) {
+        if (alpha < 0.0 || alpha > 1.0) {
+            throw new IllegalArgumentException("Significance out of range: " + alpha);
+        }
+
+        this.alpha = alpha;
+    }
+
+    /**
+     * @return the list of variables over which this independence checker is capable of determinine independence
+     * relations-- that is, all the variables in the given graph or the given data set.
+     */
+    public List<Node> getVariables() {
+        return this.variables;
+    }
+
+    /**
+     * Sets teh variables to a new list of the same size. Useful if multiple independence tests
+     * are needed with object-identical sets of variables.
+     * @param variables The new list of variables.
+     */
+    public void setVariables(List<Node> variables) {
+        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
+        this.variables = new ArrayList<>(variables);
+        this.cor.setVariables(variables);
+    }
+
+    /**
+     * @return the variable with the given name.
+     */
+    public Node getVariable(String name) {
+        return this.nameMap.get(name);
+    }
+
+    /**
+     * @return the data set being analyzed.
+     */
+    public DataSet getData() {
+        return this.dataSet;
+    }
+
+    /**
+     * @return the correlation matrix being analyzed.
+     */
+    public ICovarianceMatrix getCov() {
+        return this.cor;
+    }
+
+    /**
+     * Returns the (singleton) list of datasets being analyzed.
+     * @return This list (length 1).
+     */
+    @Override
+    public List<DataSet> getDataSets() {
+        List<DataSet> dataSets = new ArrayList<>();
+        dataSets.add(this.dataSet);
+        return dataSets;
+    }
+
+    /**
+     * Returns the sample size.
+     * @return This size.
+     */
+    @Override
+    public int getSampleSize() {
+        return this.cor.getSampleSize();
+    }
+
+    /**
+     * Returns the score for this test, alpha - p. Should be dependent only for positive values.
+     * @return This score.
+     */
+    @Override
+    public double getScore() {
+        return this.alpha - this.p;//FastMath.abs(fisherZ) - cutoff;
+    }
+
+    /**
+     * Returns true iff verbose output should be printed.
+     * @return True if so.
+     */
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * @return A string representation of this test.
+     */
+    public String toString() {
+        return "Fisher Z, alpha = " + new DecimalFormat("0.0###").format(getAlpha());
+    }
+
+    /**
+     * Returns true in case the variable in Z jointly determine x.
+     * @param z The contitioning variables.
+     * @param x The conditioned variable.
+     */
+    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
+        int[] parents = new int[z.size()];
+
+        for (int j = 0; j < parents.length; j++) {
+            parents[j] = indexMap.get(z.get(j).getName());
+        }
+
+        if (parents.length > 0) {
+
+            // Regress z onto i, yielding regression coefficients b.
+            Matrix Czz = this.cor.getSelection(parents, parents);
+
+            try {
+                Czz.inverse();
+            } catch (SingularMatrixException e) {
+                System.out.println(SearchLogUtils.determinismDetected(z, x));
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     private double partialCorrelation(Node x, Node y, List<Node> z, List<Integer> rows) throws SingularMatrixException {
         int[] indices = new int[z.size() + 2];
@@ -325,103 +481,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     private double getR(Node x, Node y, List<Node> z, List<Integer> rows) {
-//        try {
         return partialCorrelation(x, y, z, rows);
-//        } catch (SingularMatrixException e) {
-//            e.printStackTrace();
-//            System.out.println(SearchLogUtils.determinismDetected(z, x));
-//            return Double.NaN;
-//        }
-    }
-
-
-    public double getBic() {
-        return -sampleSize() * FastMath.log(1.0 - this.r * this.r) - FastMath.log(sampleSize());
-    }
-
-    /**
-     * Gets the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
-    }
-
-    /**
-     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
-     */
-    public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Significance out of range: " + alpha);
-        }
-
-        this.alpha = alpha;
-//        double cutoff = StatUtils.getZForAlpha(alpha);
-    }
-
-    /**
-     * @return the list of variables over which this independence checker is capable of determinine independence
-     * relations-- that is, all the variables in the given graph or the given data set.
-     */
-    public List<Node> getVariables() {
-        return this.variables;
-    }
-
-    public void setVariables(List<Node> variables) {
-        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
-        this.variables = new ArrayList<>(variables);
-        this.cor.setVariables(variables);
-    }
-
-    /**
-     * @return the variable with the given name.
-     */
-    public Node getVariable(String name) {
-        return this.nameMap.get(name);
-    }
-
-
-    /**
-     * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
-     * UnsupportedOperationException.
-     */
-    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
-        int[] parents = new int[z.size()];
-
-        for (int j = 0; j < parents.length; j++) {
-            parents[j] = indexMap.get(z.get(j).getName());
-        }
-
-        if (parents.length > 0) {
-
-            // Regress z onto i, yielding regression coefficients b.
-            Matrix Czz = this.cor.getSelection(parents, parents);
-
-            try {
-                Czz.inverse();
-            } catch (SingularMatrixException e) {
-                System.out.println(SearchLogUtils.determinismDetected(z, x));
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @return the data set being analyzed.
-     */
-    public DataSet getData() {
-        return this.dataSet;
-    }
-
-    //==========================PRIVATE METHODS============================//
-
-    /**
-     * @return a string representation of this test.
-     */
-    public String toString() {
-        return "Fisher Z, alpha = " + new DecimalFormat("0.0###").format(getAlpha());
     }
 
     private int sampleSize() {
@@ -450,36 +510,6 @@ public final class IndTestFisherZ implements IndependenceTest {
         }
 
         return indexMap;
-    }
-
-    public ICovarianceMatrix getCov() {
-        return this.cor;
-    }
-
-    @Override
-    public List<DataSet> getDataSets() {
-        List<DataSet> dataSets = new ArrayList<>();
-        dataSets.add(this.dataSet);
-        return dataSets;
-    }
-
-    @Override
-    public int getSampleSize() {
-        return this.cor.getSampleSize();
-    }
-
-
-    @Override
-    public double getScore() {
-        return this.alpha - this.p;//FastMath.abs(fisherZ) - cutoff;
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
