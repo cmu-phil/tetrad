@@ -186,18 +186,28 @@ public class ConditionalGaussianLikelihood {
         return new Ret(ret1.getLik() - ret2.getLik(), ret1.getDof() - ret2.getDof());
     }
 
-    public double getPenaltyDiscount() {
-        return this.penaltyDiscount;
-    }
-
+    /**
+     * Sets the penalty discount for this score, which is a multiplier on the panalty term of BIC.
+     * @param penaltyDiscount The penalty discount.
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    /**
+     * Sets whether to discretize child variables to avoid integration. An optimization.
+     * @param discretize True if so.
+     * @see #setNumCategoriesToDiscretize(int)
+     */
     public void setDiscretize(boolean discretize) {
         this.discretize = discretize;
     }
 
+    /**
+     * Sets the number of categories to use to discretize child variables to avoid integrationl
+     * @param numCategoriesToDiscretize This number.
+     * @see #setDiscretize(boolean)
+     */
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
