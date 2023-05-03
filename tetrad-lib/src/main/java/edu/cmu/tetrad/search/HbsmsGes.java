@@ -41,7 +41,6 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-
 public final class HbsmsGes implements Hbsms {
     private Knowledge knowledge = new Knowledge();
     private final Graph graph;
