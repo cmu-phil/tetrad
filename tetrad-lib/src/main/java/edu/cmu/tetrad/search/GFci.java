@@ -34,12 +34,14 @@ import java.util.List;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016.
+ * <p>Implements a version of FCI that started by running the FGES algorithm and
+ * then correct the result to be correct for latent variables models.</p>
+ * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
+ * for Latent Variable Models," JMLR 2016.</p>
  *
  * @author Juan Miguel Ogarrio
  * @author ps7z
- * @author jdramsey
+ * @author josephramsey
  */
 public final class GFci implements GraphSearch {
     private Graph graph;
