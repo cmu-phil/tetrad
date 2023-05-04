@@ -47,7 +47,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * @author Bryan Andrews
  */
-public class IndTestDegenerateGaussianLRT implements IndependenceTest {
+public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
     private final BoxDataSet ddata;
     private final double[][] _ddata;
@@ -100,7 +100,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public IndTestDegenerateGaussianLRT(DataSet dataSet) {
+    public IndTestDegenerateGaussianLrt(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -215,7 +215,7 @@ public class IndTestDegenerateGaussianLRT implements IndependenceTest {
         double ldetA = log(getCov(rows, A_).det());
         double ldetB = log(getCov(rows, B_).det());
 
-        double lik = N * (ldetB - ldetA) + IndTestDegenerateGaussianLRT.L2PE * (B_.length - A_.length);
+        double lik = N * (ldetB - ldetA) + IndTestDegenerateGaussianLrt.L2PE * (B_.length - A_.length);
 
         return new Ret(lik, dof);
     }

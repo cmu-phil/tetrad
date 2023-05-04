@@ -32,10 +32,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Checks conditional independence of variable in a continuous data set using a conditional correlation test
- * for the nonlinear nonGaussian case.
+ * Checks conditional independence of variable in a continuous data set using a
+ * conditional correlation test for the nonlinear nonGaussian with additive error
+ * case.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class IndTestConditionalCorrelation implements IndependenceTest {
 
@@ -106,6 +107,12 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Checks the independence of x _||_ y | z
+     *
+     * @return the result.
+     * @see IndependenceResult
+     */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
 
         double score = this.cci.isIndependent(x, y, z);
@@ -123,13 +130,20 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
     }
 
+    /**
+     * Returns the p-value of the test,
+     *
+     * @return The p-value.
+     */
     public double getPValue() {
         return this.cci.getPValue();
     }
 
     /**
-     * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
-     * correlations to be considered statistically equal to zero.
+     * Sets the significance level at which independence judgments should be made.
+     * Affects the cutoff for partial correlations to be considered statistically equal to zero.
+     *
+     * @param alpha The alpha level.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -141,27 +155,26 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Gets the getModel significance level.
+     * @return The getModel significance level.
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
-     * @return the list of variables over which this independence checker is capable of determinine independence
-     * relations-- that is, all the variables in the given graph or the given data set.
+     * @return the list of variables over which this independence checker is capable
+     * of determinine independence relations-- that is, all the variables in the given
+     * graph or the given data set.
      */
     public List<Node> getVariables() {
         return this.variables;
     }
 
-
     /**
-     * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
-     * UnsupportedOperationException.
+     * @throws UnsupportedOperationException Since such code is not avialable.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("The 'determine' method is not implemented");
     }
 
     /**
@@ -172,6 +185,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
 
+    /**
+     * Returns a number is more positive for stronger judgments of dependence.
+     * @return This number.
+     */
     @Override
     public double getScore() {
         return this.score;
@@ -184,34 +201,68 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         return "Conditional Correlation, q = " + IndTestConditionalCorrelation.nf.format(getAlpha());
     }
 
+    /**
+     * Returns true if verbose output should be printed.
+     * @return True if the case.
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the number of orthogal functions to use to do the calculations.
+     * @param numFunctions This number.
+     */
     public void setNumFunctions(int numFunctions) {
         this.cci.setNumFunctions(numFunctions);
     }
 
-    public double getWeight() {
+    /**
+     * Returns the kernel width.
+     * @return This width.
+     */
+    public double getWidth() {
         return this.cci.getWidth();
     }
 
+    /**
+     * Returns the kernel multiplier.
+     * @param multiplier This multiplier.
+     */
     public void setKernelMultiplier(double multiplier) {
         this.cci.setWidth(multiplier);
     }
 
+    /**
+     * Sets the kernel to be used.
+     * @param kernel This kernel.
+     * @see edu.cmu.tetrad.search.ConditionalCorrelationIndependence.Kernel
+     */
     public void setKernel(ConditionalCorrelationIndependence.Kernel kernel) {
         this.cci.setKernelMultiplier(kernel);
     }
 
+    /**
+     * Sets the basis used for the calculation.
+     * @param basis This basis.
+     * @see edu.cmu.tetrad.search.ConditionalCorrelationIndependence.Basis
+     */
     public void setBasis(ConditionalCorrelationIndependence.Basis basis) {
         this.cci.setBasis(basis);
     }
 
+    /**
+     * Sets the kernal regression sample size.
+     * @param i This size.
+     */
     public void setKernelRegressionSampleSize(int i) {
         this.cci.setKernelRegressionSampleSize(i);
     }

@@ -44,7 +44,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
  *
  * @author Joseph Ramsey
  */
-public class IndTestConditionalGaussianLRT implements IndependenceTest {
+public class IndTestConditionalGaussianLrt implements IndependenceTest {
     private final DataSet data;
     private final Map<Node, Integer> nodesHash;
     private double alpha;
@@ -56,7 +56,7 @@ public class IndTestConditionalGaussianLRT implements IndependenceTest {
     private boolean verbose;
     private int numCategoriesToDiscretize = 3;
 
-    public IndTestConditionalGaussianLRT(DataSet data, double alpha, boolean discretize) {
+    public IndTestConditionalGaussianLrt(DataSet data, double alpha, boolean discretize) {
         this.data = data;
         this.likelihood = new ConditionalGaussianLikelihood(data);
         this.likelihood.setDiscretize(discretize);

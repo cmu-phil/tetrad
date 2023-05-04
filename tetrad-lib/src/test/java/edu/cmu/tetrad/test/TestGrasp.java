@@ -147,7 +147,7 @@ public final class TestGrasp {
         DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data);
         score.setStructurePrior(structurePrior);
 
-        IndTestDegenerateGaussianLRT test = new IndTestDegenerateGaussianLRT((DataSet) data);
+        IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt((DataSet) data);
         test.setAlpha(0.01);
 
 
