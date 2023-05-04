@@ -63,7 +63,11 @@ public final class GSquareTest {
      */
     private double alpha;
 
-
+    /**
+     * Constructor
+     * @param dataSet The discrete dataset for which test results are requested.
+     * @param alpha The alpha sigificance level cutoff.
+     */
     public GSquareTest(DataSet dataSet, double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Significance level must be in " +
@@ -84,14 +88,13 @@ public final class GSquareTest {
         this.getCellTable().setMissingValue(DiscreteVariable.MISSING_VALUE);
     }
 
-//    public GSquareTest(DataSet dataSet, double alpha) {
-//        super(dataSet, alpha);
-//    }
-
     /**
      * Calculates g square for a conditional crosstabulation table for independence question 0 _||_ 1 | 2, 3, ...max by
      * summing up g square and degrees of freedom for each conditional table in turn, where rows or columns that consist
      * entirely of zeros have been removed.
+     * @param testIndices The indices of the test result needed, in order. So for the above, [0 1 2 3...max].
+     * @return the test result.
+     * @see Result
      */
     public Result calcGSquare(int[] testIndices) {
 
@@ -214,8 +217,7 @@ public final class GSquareTest {
     }
 
     /**
-     * Simple class to store the parameters of the result returned by the G Square test.
-     *
+     * Stores the parameters of the result returned by the G Square test and its p-value.
      * @author Frank Wimberly
      */
     public static final class Result {
@@ -267,11 +269,20 @@ public final class GSquareTest {
         }
     }
 
-
+    /**
+     * Returns the dimensions of the variables, in order.
+      * @return These dimensions, as an int[] array. For instance, if the array is [2 3],
+     * then the first variable has 2 categories and second variable has 3 categories.
+     */
     public int[] getDims() {
         return this.dims;
     }
 
+    /**
+     * Returns the cell table for this test.
+     * @return This table.
+     * @see CellTable
+     */
     public CellTable getCellTable() {
         return this.cellTable;
     }
@@ -285,6 +296,7 @@ public final class GSquareTest {
 
     /**
      * Sets the significance level to be used for tests.
+     * @param alpha The alpha significance level of the test.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -295,20 +307,21 @@ public final class GSquareTest {
         this.alpha = alpha;
     }
 
-    public int[] selectFromArray(int[] arr, int[] indices) {
-        int[] retArr = new int[indices.length];
-
-        for (int i = 0; i < indices.length; i++) {
-            retArr[i] = arr[indices[i]];
-        }
-
-        return retArr;
-    }
-
+    /**
+     * Returns the dataset used for this test.
+     * @return This dataset.
+     */
     public DataSet getDataSet() {
         return this.dataSet;
     }
 
+    /**
+     * Returns a judgement of whether the variables index by 'testIndices'
+     * determine the variable index by 'p'.
+     * @param testIndices The indices of the conditioning variables.
+     * @param p The index of the child variable.
+     * @return True if the conditioning variables determine the child variable.
+     */
     public boolean isDetermined(int[] testIndices, double p) {
 
         // Reset the cell table for the columns referred to in
@@ -359,6 +372,16 @@ public final class GSquareTest {
         }
 
         return true;
+    }
+
+    private int[] selectFromArray(int[] arr, int[] indices) {
+        int[] retArr = new int[indices.length];
+
+        for (int i = 0; i < indices.length; i++) {
+            retArr[i] = arr[indices[i]];
+        }
+
+        return retArr;
     }
 }
 
