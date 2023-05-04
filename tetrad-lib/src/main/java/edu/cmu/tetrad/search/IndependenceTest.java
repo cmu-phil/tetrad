@@ -32,8 +32,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Interface implemented by classes that do conditional independence testing. These classes are capable of serving as
- * conditional independence "oracles" for constraint-based searches.
+ * <p>Interface implemented by classes that do conditional independence testing.
+ * These classes are capable of serving as conditional independence "oracles"
+ * for constraint-based searches.</p>
  *
  * @author Joseph Ramsey
  */
@@ -46,25 +47,42 @@ public interface IndependenceTest {
     IndependenceResult checkIndependence(Node x, Node y, List<Node> z);
 
     /**
-     * @return the list of variables over which this independence checker is capable of determinining independence
+     * @return the list of variables over which this independence checker is
+     * capable of determinining independence
      * relations.
      */
     List<Node> getVariables();
 
     /**
-     * @return The data model for the independence test.
+     * @return The data model for the independence test, either a DataSet or a
+     * CovarianceMatrix.
+     * @see DataSet
+     * @see ICovarianceMatrix
+     * @see DataModel
      */
     DataModel getData();
 
     /**
-     * A score that is higher with more likely models.
+     * @return A score that is higher with more likely models.
      */
     double getScore();
 
+    /**
+     * Sets whether this test will print verbose output.
+     * @param verbose True if so.
+     */
     void setVerbose(boolean verbose);
 
+    /**
+     * Returns true if the test prints verbose output.
+     * @return True if the case.
+     */
     boolean isVerbose();
 
+    /**
+     * Returns a string representation of this test.
+     * @return This string.
+     */
     String toString();
 
     //==============================DEFAULT METHODS=========================//
