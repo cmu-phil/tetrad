@@ -284,7 +284,7 @@ public class Pc implements GraphSearch {
     }
 
     /**
-     * @return  the non-adjacencies of the searched graph.
+     * @return the non-adjacencies of the searched graph.
      */
     public Set<Edge> getNonadjacencies() {
         Graph complete = GraphUtils.completeGraph(this.graph);
@@ -295,7 +295,7 @@ public class Pc implements GraphSearch {
     }
 
     /**
-     * @return  the number of independence tests performed in the search.
+     * @return the number of independence tests performed in the search.
      */
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
@@ -310,6 +310,7 @@ public class Pc implements GraphSearch {
 
     /**
      * Sets whether verbose output should be given.
+     *
      * @param verbose True iff the case.
      */
     public void setVerbose(boolean verbose) {
@@ -318,6 +319,7 @@ public class Pc implements GraphSearch {
 
     /**
      * Sets whether the stable adjacency search should be used.
+     *
      * @param stable True iff the case.
      */
     public void setStable(boolean stable) {
@@ -326,6 +328,7 @@ public class Pc implements GraphSearch {
 
     /**
      * Sets whether the max p method should be used in the adjacency searc h.
+     *
      * @param useMaxP iff the case.
      */
     public void setUseMaxP(boolean useMaxP) {
@@ -334,6 +337,7 @@ public class Pc implements GraphSearch {
 
     /**
      * Sets the maximum path length for the PC heuristic.
+     *
      * @param maxPPathLength this length.
      */
     public void setMaxPPathLength(int maxPPathLength) {

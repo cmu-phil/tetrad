@@ -127,6 +127,7 @@ public final class Cfci implements GraphSearch {
 
     /**
      * Performs the search and returns the PAG.
+     *
      * @return The search PAG.
      */
     public Graph search() {

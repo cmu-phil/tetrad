@@ -15,6 +15,7 @@ public class AdTrees {
 
     /**
      * Returns an ADLeafTree for the given dataset.
+     *
      * @param dataSet A discrete dataset.
      * @return The AdLeafTree
      * @see AdLeafTree

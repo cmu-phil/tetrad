@@ -170,6 +170,7 @@ public final class BuildPureClusters {
 
     /**
      * Sets the cluster significance type.
+     *
      * @param checkType This type
      * @see ClusterSignificance
      */

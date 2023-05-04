@@ -37,6 +37,7 @@ public class Bes {
 
     /**
      * Returns the variables being searched over.
+     *
      * @return These variables as a list.
      */
     @NotNull
@@ -46,6 +47,7 @@ public class Bes {
 
     /**
      * Sets whether verbose output should be printed.
+     *
      * @param verbose True iff so.
      */
     public void setVerbose(boolean verbose) {
@@ -54,6 +56,7 @@ public class Bes {
 
     /**
      * Sets the knowledge for the search.
+     *
      * @param knowledge This knowledge.
      * @see Knowledge
      */
@@ -63,6 +66,7 @@ public class Bes {
 
     /**
      * Sets the depth for the search, which is the maximum number of variables conditioned on.
+     *
      * @param depth This maximum; for unlimited depth use -1; otherwise, give a nonzero integer.
      */
     public void setDepth(int depth) {
@@ -72,7 +76,8 @@ public class Bes {
 
     /**
      * Runs BES for a graph over the given list of variables
-     * @param graph The graph.
+     *
+     * @param graph     The graph.
      * @param variables The variables the search should be restricted to.
      */
     public void bes(Graph graph, List<Node> variables) {

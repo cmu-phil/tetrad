@@ -45,7 +45,7 @@ public class TeyssierScorer {
 
 
     public TeyssierScorer(IndependenceTest test, Score score) {
-        if (test == null && score == null)  throw new IllegalArgumentException("Required: test or score");
+        if (test == null && score == null) throw new IllegalArgumentException("Required: test or score");
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
         this.variables = score.getVariables();

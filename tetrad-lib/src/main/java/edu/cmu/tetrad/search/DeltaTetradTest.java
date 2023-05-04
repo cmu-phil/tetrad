@@ -55,6 +55,7 @@ public class DeltaTetradTest {
     /**
      * Constructs a test using a given data set. If a data set is provided (that is, a tabular data set), fourth moment
      * statistics can be calculated (p. 160); otherwise, it must be assumed that the data are multivariate Gaussian.
+     *
      * @param dataSet The dataset to use.
      */
     public DeltaTetradTest(DataSet dataSet) {
@@ -89,6 +90,7 @@ public class DeltaTetradTest {
     /**
      * Constructs a test using the given covariance matrix. Fourth moment statistics are not caculated; it is assumed
      * that the data are distributed as multivariate Gaussian.
+     *
      * @param cov The covaraince matrix to use.
      */
     public DeltaTetradTest(ICovarianceMatrix cov) {
@@ -113,6 +115,7 @@ public class DeltaTetradTest {
      * <p>
      * Calculates the T statistic (Bollen and Ting, p. 161). This is significant if tests as significant using the Chi
      * Square distribution with degrees of freedom equal to the number of nonredundant tetrads tested.
+     *
      * @param tetrads The tetrads for which a chi-square is needed.
      */
     public double calcChiSquare(Tetrad... tetrads) {
@@ -230,6 +233,7 @@ public class DeltaTetradTest {
 
     /**
      * Returns a p-value for the given list of tetrad.
+     *
      * @param tetrads The tetrad for which a p-vaue is needed.
      * @return The p-value.
      */

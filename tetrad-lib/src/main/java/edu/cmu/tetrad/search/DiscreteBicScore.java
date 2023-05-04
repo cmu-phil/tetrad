@@ -33,6 +33,7 @@ import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * Calculates the discrete BIC score.
+ *
  * @author josephramsey
  */
 public class DiscreteBicScore implements DiscreteScore {
@@ -46,6 +47,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Constructor.
+     *
      * @param dataSet The discrete dataset to analyze.
      */
     public DiscreteBicScore(DataSet dataSet) {
@@ -86,6 +88,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Returns the score of the given nodes given its parents.
+     *
      * @param node    The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score.
@@ -181,6 +184,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Returns localScore(y | z, x) - localScore(y | z).
+     *
      * @return This score.
      */
     @Override
@@ -190,6 +194,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Returns the variables.
+     *
      * @return This list.
      */
     @Override
@@ -199,6 +204,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Returns the sample size.
+     *
      * @return This size.
      */
     public int getSampleSize() {
@@ -207,6 +213,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Must be called directly after the corresponding scoring call. Used in FGES.
+     *
      * @param bump The score bump.
      * @see Fges
      */
@@ -216,6 +223,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Returns the dataset being analyzed.
+     *
      * @return this dataset.
      */
     @Override
@@ -225,6 +233,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Sets the structure prior.
+     *
      * @param structurePrior This prior.
      */
     @Override
@@ -234,6 +243,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * This method is not used for this score.
+     *
      * @throws UnsupportedOperationException Since this method is not used.
      */
     @Override
@@ -243,6 +253,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Sets the variables to a new list of the same size.
+     *
      * @param variables The new list of variables.
      */
     public void setVariables(List<Node> variables) {
@@ -258,6 +269,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Sets the penalty discount, which is a multiplier on the penalty term of BIC.
+     *
      * @param penaltyDiscount This discount.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
@@ -266,6 +278,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Returns the maximum degree for some algorithms.
+     *
      * @return 1000.
      */
     @Override
@@ -276,6 +289,7 @@ public class DiscreteBicScore implements DiscreteScore {
     /**
      * This method is not used; a method for calculating whether nodes Z determind node y has not
      * been implemented here.
+     *
      * @throws UnsupportedOperationException Since this method is not used.
      */
     @Override
@@ -285,6 +299,7 @@ public class DiscreteBicScore implements DiscreteScore {
 
     /**
      * Returns a string representation of this score.
+     *
      * @return This string.
      */
     @Override

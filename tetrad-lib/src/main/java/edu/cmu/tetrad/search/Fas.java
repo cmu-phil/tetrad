@@ -243,7 +243,8 @@ public class Fas implements IFas {
 
     /**
      * The number of independence tests.
-     */ /**
+     */
+    /**
      * Returns the nubmer of independence tests that were done.
      *
      * @return This number.
@@ -313,6 +314,7 @@ public class Fas implements IFas {
 
     /**
      * This is not used here.
+     *
      * @param out This print stream.
      */
     @Override

@@ -81,6 +81,7 @@ public final class FciOrient {
 
     /**
      * Performs final FCI orientation on the given graph.
+     *
      * @param graph The graph to further orient.
      * @return The oriented graph.
      */
@@ -104,6 +105,7 @@ public final class FciOrient {
 
     /**
      * Returns the map from {x,y} to {z1,...,zn} for x _||_ y | z1,..,zn.
+     *
      * @return Thia map.
      */
     public SepsetProducer getSepsets() {
@@ -112,6 +114,7 @@ public final class FciOrient {
 
     /**
      * Sets the knowledge to use for the final orientation.
+     *
      * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -144,6 +147,7 @@ public final class FciOrient {
      * Orients colliders in the graph. (FCI Step C)
      * <p>
      * Zhang's step F3, rule R0.
+     *
      * @param graph The graph to orient.
      */
     public void ruleR0(Graph graph) {
@@ -1106,6 +1110,7 @@ public final class FciOrient {
 
     /**
      * Sets whether verbose output is printed.
+     *
      * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
@@ -1114,6 +1119,7 @@ public final class FciOrient {
 
     /**
      * Sets the true PAG for comparison.
+     *
      * @param truePag This PAG.
      */
     public void setTruePag(Graph truePag) {
@@ -1129,6 +1135,7 @@ public final class FciOrient {
 
     /**
      * Sets the change flag--marks externally that a change has been made.
+     *
      * @param changeFlag This flag.
      */
     public void setChangeFlag(boolean changeFlag) {
@@ -1137,6 +1144,7 @@ public final class FciOrient {
 
     /**
      * Change flag for repeat rules
+     *
      * @return True if a change has occurred.
      */
     public boolean isChangeFlag() {
@@ -1145,6 +1153,7 @@ public final class FciOrient {
 
     /**
      * Sets whether the discriminating path collider rule should be done.
+     *
      * @param doDiscriminatingPathColliderRule True is done.
      */
     public void setDoDiscriminatingPathColliderRule(boolean doDiscriminatingPathColliderRule) {
@@ -1153,6 +1162,7 @@ public final class FciOrient {
 
     /**
      * Sets whether the discriminating path tail rule should be done.
+     *
      * @param doDiscriminatingPathTailRule True if done.
      */
     public void setDoDiscriminatingPathTailRule(boolean doDiscriminatingPathTailRule) {

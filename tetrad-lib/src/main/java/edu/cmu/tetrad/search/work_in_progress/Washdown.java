@@ -70,7 +70,8 @@ public class Washdown {
 
     /**
      * Constructor.
-     * @param cov The covaraince matrix.
+     *
+     * @param cov   The covaraince matrix.
      * @param alpha The alpha cutoff level.
      */
     public Washdown(ICovarianceMatrix cov, double alpha) {
@@ -81,7 +82,8 @@ public class Washdown {
 
     /**
      * Constructor.
-     * @param data The dataset.
+     *
+     * @param data  The dataset.
      * @param alpha The alpha cutoff level.
      */
     public Washdown(DataSet data, double alpha) {
@@ -92,6 +94,7 @@ public class Washdown {
 
     /**
      * Runs the Washdown algorithm and return a graph.
+     *
      * @return The graph.
      */
     public Graph search() {

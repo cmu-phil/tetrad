@@ -23,6 +23,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * <p>Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
  * "Estimating high-dimensional intervention effects from observational data."
  * The Annals of Statistics 37.6A (2009): 3133-3164.</p>
+ *
  * @author josephramsey
  */
 public class Ida {
@@ -34,9 +35,10 @@ public class Ida {
 
     /**
      * Constructor.
-     * @param dataSet The dataset being searched over.
-     * @param cpdag The CPDAG (found, e.g., by running PC, or some other CPDAG-
-     *              producing algorithm.
+     *
+     * @param dataSet        The dataset being searched over.
+     * @param cpdag          The CPDAG (found, e.g., by running PC, or some other CPDAG-
+     *                       producing algorithm.
      * @param possibleCauses The possible causes to be considered.
      */
     public Ida(DataSet dataSet, Graph cpdag, List<Node> possibleCauses) {
@@ -56,6 +58,7 @@ public class Ida {
 
     /**
      * Returns the minimum effects of X on Y for X in V \ {Y}, sorted downward by minimum effect
+     *
      * @param y The child variable.
      * @return Two sorted lists, one of nodes, the other of corresponding minimum effects, sorted downward by
      * minimum effect size.
@@ -79,6 +82,7 @@ public class Ida {
 
     /**
      * A list of nodes and corresponding minimum effects.
+     *
      * @author josephramsey
      */
     public static class NodeEffects {
@@ -120,6 +124,7 @@ public class Ida {
     /**
      * Calculates the true effect of (x, y) given the true DAG (which
      * must be provided.
+     *
      * @param trueDag The true DAG.
      * @return The true effect of (x, y).
      */
@@ -234,6 +239,7 @@ public class Ida {
 
     /**
      * Returns a map from nodes in V \ {Y} to their minimum effects.
+     *
      * @param y The child variable
      * @return Thia map.
      */

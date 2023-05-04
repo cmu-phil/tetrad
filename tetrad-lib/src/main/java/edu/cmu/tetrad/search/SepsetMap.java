@@ -59,6 +59,7 @@ public final class SepsetMap implements TetradSerializable {
 
     /**
      * Copy constructor.
+     *
      * @param map A given sepset map.
      */
     public SepsetMap(SepsetMap map) {

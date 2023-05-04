@@ -48,6 +48,7 @@ public class GraphoidAxioms {
 
     /**
      * Constructor.
+     *
      * @param facts A set of GraphoidIndFacts.
      * @param nodes The list of nodes.
      * @see GraphoidIndFact k
@@ -59,8 +60,9 @@ public class GraphoidAxioms {
 
     /**
      * Constructor.
-     * @param facts A list of GraphoidIndFacts.
-     * @param nodes The list of nodes.
+     *
+     * @param facts     A list of GraphoidIndFacts.
+     * @param nodes     The list of nodes.
      * @param textSpecs A map from GraphoidIndFacts to String text specs. The
      *                  text specs are used for printing information to the user
      *                  about which facts are found or are missing.
@@ -76,6 +78,7 @@ public class GraphoidAxioms {
 
     /**
      * The main methods.
+     *
      * @param args E.g., "java -cp tetrad-gui-7.1.3-SNAPSHOT-launch.jar edu.cmu.tetrad.search.GraphoidAxioms  udags5.txt 5"
      *             Here, udgas5.txt is a file containing independence models, one per line, where each independence
      *             fast is specified by, e.g., "1:23|56", indicating that 1 is independence of 2 and 3 conditional
@@ -161,6 +164,7 @@ public class GraphoidAxioms {
 
     /**
      * Checked whether the IM is a semigraphoid.
+     *
      * @return True if so.
      */
     public boolean semigraphoid() {
@@ -169,6 +173,7 @@ public class GraphoidAxioms {
 
     /**
      * Checks whether teh IM is a semigraphoid.
+     *
      * @return True if so.
      */
     public boolean graphoid() {
@@ -177,6 +182,7 @@ public class GraphoidAxioms {
 
     /**
      * Checks whether the IM is a compositional graphoid.
+     *
      * @return True if so.
      */
     public boolean compositionalGraphoid() {

@@ -67,7 +67,8 @@ public class FasFdr implements IFas {
 
     /**
      * Constructs a new FastAdjacencySearch.
-     * @param test The independence test to use.
+     *
+     * @param test                 The independence test to use.
      * @param numIndependenceTests The number of independence tests total done.
      */
     public FasFdr(IndependenceTest test, int numIndependenceTests) {
@@ -151,6 +152,7 @@ public class FasFdr implements IFas {
 
     /**
      * Returns the nubmer of independence tests done in the course of the search.
+     *
      * @return This number.
      */
     public int getNumIndependenceTests() {
@@ -159,6 +161,7 @@ public class FasFdr implements IFas {
 
     /**
      * Returns a map for x _||_ y | z1,...,zn of {x, y} to {z1,...,zn},
+     *
      * @return This map.
      */
     public SepsetMap getSepsets() {
@@ -167,6 +170,7 @@ public class FasFdr implements IFas {
 
     /**
      * Sets whether verbose output will be printed.
+     *
      * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
@@ -204,6 +208,7 @@ public class FasFdr implements IFas {
     /**
      * Sets the depth of the search--i.e., the maximum number of variables conditioned on for any
      * conditional independence test.
+     *
      * @param depth This maximum.
      */
     public void setDepth(int depth) {
@@ -217,6 +222,7 @@ public class FasFdr implements IFas {
 
     /**
      * Sets the knowledge to be used in the search.
+     *
      * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {

@@ -39,6 +39,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * This algorithm will work with an arbitrary score.
+     *
      * @param score The Score to use.
      */
     public Boss(Score score) {
@@ -58,9 +59,10 @@ public class Boss implements SuborderSearch {
 
     /**
      * Searches over the given suborder using the given prefix. Useful if tiered knowledge is available.
-     * @param prefix The prefix--variables alwasys allowed for conditioning.
+     *
+     * @param prefix   The prefix--variables alwasys allowed for conditioning.
      * @param suborder The suborder--these are the variables being searched over.
-     * @param gsts The grow-shrink tree used for caching.
+     * @param gsts     The grow-shrink tree used for caching.
      * @see GrowShrinkTree
      */
     @Override
@@ -127,6 +129,7 @@ public class Boss implements SuborderSearch {
     /**
      * Sets the number of times the procedure should be restarted in search of a better
      * score.
+     *
      * @param numStarts This number.
      */
     public void setNumStarts(int numStarts) {
@@ -135,6 +138,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * Returns the variables.
+     *
      * @return A list of these.
      */
     @Override
@@ -144,6 +148,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * Returns a map from nodes to their parents.
+     *
      * @return This map.
      */
     @Override
@@ -153,6 +158,7 @@ public class Boss implements SuborderSearch {
 
     /**
      * Returns the score being used for the search.
+     *
      * @return This score.
      * @see Score
      */

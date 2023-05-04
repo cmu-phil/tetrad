@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p></p>Performs a Max-P orientation of unshielded triples in a graph.</p>
+ *
  * @author Joseph Ramsey
  * @see PcMax
  */

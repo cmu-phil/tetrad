@@ -61,7 +61,8 @@ public class EbicScore implements Score {
 
     /**
      * Constructs the score using a covariance matrix.
-     * @param dataSet The continuous dataset to analyze.
+     *
+     * @param dataSet               The continuous dataset to analyze.
      * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly.
      *                              True if precomputed.
      */
@@ -102,6 +103,7 @@ public class EbicScore implements Score {
 
     /**
      * Returns the score of the node i given its parents.
+     *
      * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score, or NaN if the score cannot be calculated.
@@ -130,6 +132,7 @@ public class EbicScore implements Score {
 
     /**
      * Returns the sample size.
+     *
      * @return This size.
      */
     public int getSampleSize() {
@@ -138,6 +141,7 @@ public class EbicScore implements Score {
 
     /**
      * Returns a judgement for FGES of whether the given bump implies an effect edge.
+     *
      * @param bump The bump
      * @return True if so
      * @see Fges
@@ -149,6 +153,7 @@ public class EbicScore implements Score {
 
     /**
      * Returns the variables for this score.
+     *
      * @return Thsi list.
      */
     @Override
@@ -158,6 +163,7 @@ public class EbicScore implements Score {
 
     /**
      * Returns an estimate of max degree of the graph for some algorithms.
+     *
      * @return This max degree.
      * @see Fges
      * @see MagSemBicScore
@@ -169,6 +175,7 @@ public class EbicScore implements Score {
 
     /**
      * Return a judgment of whether the variable in z determine y exactly.
+     *
      * @return This judgment
      */
     @Override
@@ -184,6 +191,7 @@ public class EbicScore implements Score {
 
     /**
      * Sets the gamma parameter for EBIC.
+     *
      * @param gamma The gamma parameter.
      */
     public void setGamma(double gamma) {

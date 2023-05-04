@@ -49,12 +49,12 @@ public class PermutationSearch {
                     end++;
                 }
                 if (!this.knowledge.isTierForbiddenWithin(i)) {
-                    tasks.add(new int[] {start, end});
+                    tasks.add(new int[]{start, end});
                 }
             }
         } else {
             this.order.addAll(this.variables);
-            tasks.add(new int[] {0, this.variables.size()});
+            tasks.add(new int[]{0, this.variables.size()});
         }
 
         for (int[] task : tasks) {
@@ -102,7 +102,9 @@ public class PermutationSearch {
         this.verbose = verbose;
     }
 
-    public Knowledge getKnowledge() { return this.knowledge; }
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
 
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;

@@ -103,6 +103,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
     /**
      * Creates a new IndTestChiSquare for a subset of the nodes.
+     *
      * @param nodes This list of nodes.
      */
     public IndependenceTest indTestSubset(List<Node> nodes) {
@@ -269,6 +270,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
     /**
      * Returns the alpha significance level of the test.
+     *
      * @return This level.
      */
     public double getAlpha() {
@@ -295,6 +297,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
     /**
      * Returns a string representation of this test.
+     *
      * @return This string.
      */
     public String toString() {
@@ -304,6 +307,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
     /**
      * Returns the data being analyzed.
+     *
      * @return This data.
      */
     public DataSet getData() {
@@ -312,6 +316,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
     /**
      * Returns a number which is more positive for more dependent test tesults.
+     *
      * @return This number.
      */
     @Override
@@ -321,6 +326,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
     /**
      * Returns true if verbose output should be printed.
+     *
      * @return This.
      */
     @Override
@@ -330,6 +336,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
     /**
      * Sets whether verbose output should be printed.
+     *
      * @param verbose True if so.
      */
     @Override

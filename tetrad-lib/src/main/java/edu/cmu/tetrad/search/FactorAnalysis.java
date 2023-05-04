@@ -53,6 +53,7 @@ public class FactorAnalysis {
 
     /**
      * Consructor.
+     *
      * @param covarianceMatrix The covariance matrix being analyzed.
      */
     public FactorAnalysis(ICovarianceMatrix covarianceMatrix) {
@@ -61,6 +62,7 @@ public class FactorAnalysis {
 
     /**
      * Constructor.
+     *
      * @param dataSet The continuous dataset being analyzed.
      */
     public FactorAnalysis(DataSet dataSet) {

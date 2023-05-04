@@ -38,6 +38,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * Constructs a BDe score for the given dataset.
+     *
      * @param dataSet A discrete dataset.
      */
     public BdeScore(DataSet dataSet) {
@@ -55,9 +56,10 @@ public class BdeScore implements DiscreteScore {
     /**
      * Returns the score for the given parent given its parents, where these are
      * specified as column indices into the dataset.
-     * @return the score, or NaN if the score can't be calculated.
-     * @param i The index of the variable.
+     *
+     * @param i       The index of the variable.
      * @param parents The indices of the parents of the variables.
+     * @return the score, or NaN if the score can't be calculated.
      */
     public double localScore(int i, int[] parents) {
 
@@ -142,6 +144,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * Returns the different between localScore(y | z, x) and localScore(y | z)
+     *
      * @param x The index of the x variable
      * @param y The index of the y variable.
      * @param z The indices of the z variables
@@ -155,6 +158,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * Returns the dataset being analyzed.
+     *
      * @return This dataset.
      */
     @Override
@@ -173,6 +177,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * BDe does not use a structure prior.
+     *
      * @param structurePrior The structure prior (not used).
      * @throws UnsupportedOperationException Since this method is not implemented for this score.
      */
@@ -182,6 +187,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * BDe does not use a sample prior.
+     *
      * @param samplePrior The structure prior (not used).
      * @throws UnsupportedOperationException Since this method is not implemented for this score.
      */
@@ -191,6 +197,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * Returns the variables of the dataset.
+     *
      * @return These variables as  list.
      */
     @Override
@@ -200,6 +207,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * Returns the sample size of the data.
+     *
      * @return This size.
      */
     public int getSampleSize() {
@@ -209,6 +217,7 @@ public class BdeScore implements DiscreteScore {
     /**
      * Returns a judgment of whether the given bump in score allows one to conclude
      * that the edge is an "effect edge" for FGES.
+     *
      * @param bump The bump.
      * @return True iff so.
      * @see Fges
@@ -220,6 +229,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * Returns the maximum degree of the graphs as they're searched.
+     *
      * @return This maximum degree.
      */
     @Override
@@ -230,6 +240,7 @@ public class BdeScore implements DiscreteScore {
     /**
      * A judgment of whether a node given its parents is determined is not available for this
      * score.
+     *
      * @param z The parents.
      * @param y The node.
      * @return The judgment
@@ -243,6 +254,7 @@ public class BdeScore implements DiscreteScore {
 
     /**
      * Returns "BDe Score".
+     *
      * @return This string.
      */
     @Override
@@ -261,7 +273,6 @@ public class BdeScore implements DiscreteScore {
     private DataSet dataSet() {
         return this.dataSet;
     }
-
 
 
 }

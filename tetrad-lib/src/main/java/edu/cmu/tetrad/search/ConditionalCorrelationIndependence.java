@@ -277,6 +277,7 @@ public final class ConditionalCorrelationIndependence {
 
     /**
      * Number of functions to use in (truncated) basis
+     *
      * @param numFunctions This number.
      */
     public void setNumFunctions(int numFunctions) {
@@ -285,6 +286,7 @@ public final class ConditionalCorrelationIndependence {
 
     /**
      * Sets the kernel multiplier.
+     *
      * @param kernelMultiplier This multiplier.
      */
     public void setKernelMultiplier(Kernel kernelMultiplier) {
@@ -293,6 +295,7 @@ public final class ConditionalCorrelationIndependence {
 
     /**
      * Sets the basis.
+     *
      * @param basis This basis.
      * @see Basis
      */
@@ -302,6 +305,7 @@ public final class ConditionalCorrelationIndependence {
 
     /**
      * Returns the kernel width.
+     *
      * @return This width.
      */
     public double getWidth() {
@@ -310,6 +314,7 @@ public final class ConditionalCorrelationIndependence {
 
     /**
      * Sets the kernel width.
+     *
      * @param width This width.
      */
     public void setWidth(double width) {
@@ -318,6 +323,7 @@ public final class ConditionalCorrelationIndependence {
 
     /**
      * Returns the p-value of the score.
+     *
      * @return This p-value.
      */
     public double getPValue() {
@@ -326,6 +332,7 @@ public final class ConditionalCorrelationIndependence {
 
     /**
      * Returns the p-value of the score.
+     *
      * @param score The score.
      * @return This p-value.
      */
@@ -343,6 +350,7 @@ public final class ConditionalCorrelationIndependence {
 
     /**
      * Sets the alpha cutoff.
+     *
      * @param alpha This cutoff.
      */
     public void setAlpha(double alpha) {
@@ -351,6 +359,7 @@ public final class ConditionalCorrelationIndependence {
 
     /**
      * Sets the kernel regression sample size.
+     *
      * @param kernelRegressionSapleSize This sample size
      */
     public void setKernelRegressionSampleSize(int kernelRegressionSapleSize) {

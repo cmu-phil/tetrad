@@ -36,6 +36,7 @@ public class Sp implements SuborderSearch {
 
     /**
      * This algorithm will work with an arbitrary score.
+     *
      * @param score The Score to use.
      */
     public Sp(Score score) {
@@ -51,11 +52,12 @@ public class Sp implements SuborderSearch {
 
     /**
      * This is the method called by PermutationSearch per tier.
-     * @param prefix The variable preceding the suborder variables in the permutation, including
-     *               all variables from previous tiers.
+     *
+     * @param prefix   The variable preceding the suborder variables in the permutation, including
+     *                 all variables from previous tiers.
      * @param suborder The suborder of the variables list beign searched over. Only the order of the
      *                 variables in this suborder will be modified.
-     * @param gsts The GrowShrinkTree used for the search. This is an optimized score-caching class.
+     * @param gsts     The GrowShrinkTree used for the search. This is an optimized score-caching class.
      */
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
@@ -98,6 +100,7 @@ public class Sp implements SuborderSearch {
 
     /**
      * Sets the knowledge to be used in the search.
+     *
      * @param knowledge This knowledge.
      * @see Knowledge
      */
@@ -108,6 +111,7 @@ public class Sp implements SuborderSearch {
 
     /**
      * Returns the variables in the data.
+     *
      * @return This list.
      */
     @Override
@@ -117,6 +121,7 @@ public class Sp implements SuborderSearch {
 
     /**
      * Returns the map from nodes to their parents.
+     *
      * @return This map.
      */
     @Override
@@ -126,6 +131,7 @@ public class Sp implements SuborderSearch {
 
     /**
      * Returns the score being used for this search.
+     *
      * @return This score.
      * @see Score
      */
@@ -229,7 +235,7 @@ public class Sp implements SuborderSearch {
             if (i == -1) return null;
 
             int k = i + this.dirs[i];
-            this.next = new int[] {i, k};
+            this.next = new int[]{i, k};
 
             swap(i, k, this.dirs);
             swap(i, k, this.perm);

@@ -65,10 +65,11 @@ public class Fofc {
 
     /**
      * Conctructor.
-     * @param cov The covariance matrix searched over.
-     * @param testType The type of test used.
+     *
+     * @param cov       The covariance matrix searched over.
+     * @param testType  The type of test used.
      * @param algorithm The type of FOFC algorithm used.
-     * @param alpha The alpha significance cutoff.
+     * @param alpha     The alpha significance cutoff.
      * @see TestType
      * @see Algorithm
      */
@@ -90,10 +91,11 @@ public class Fofc {
 
     /**
      * Conctructor.
-     * @param dataSet The continuous dataset searched over.
-     * @param testType The type of test used.
+     *
+     * @param dataSet   The continuous dataset searched over.
+     * @param testType  The type of test used.
      * @param algorithm The type of FOFC algorithm used.
-     * @param alpha The alpha significance cutoff.
+     * @param alpha     The alpha significance cutoff.
      * @see TestType
      * @see Algorithm
      */
@@ -136,6 +138,7 @@ public class Fofc {
 
     /**
      * Sets whether the significant of cluster should be checked for each cluster.
+     *
      * @param significanceChecked True if so.
      */
     public void setSignificanceChecked(boolean significanceChecked) {
@@ -144,6 +147,7 @@ public class Fofc {
 
     /**
      * Sets which type of cluster check should be performed.
+     *
      * @param checkType The type to be performed.
      * @see ClusterSignificance.CheckType
      */

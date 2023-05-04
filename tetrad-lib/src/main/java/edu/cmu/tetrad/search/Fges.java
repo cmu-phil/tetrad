@@ -140,6 +140,7 @@ public final class Fges implements GraphSearch, DagScorer {
      * case of conditional independence. See Chickering (2002), locally
      * consistent scoring criterion. This by default uses all the processors on
      * the machine.
+     *
      * @param score The score to use. The score should yield better scores for
      *              more correct local models. The algorithm as given by
      *              Chickering assumes the score will be a BIC score of some
@@ -234,6 +235,7 @@ public final class Fges implements GraphSearch, DagScorer {
 
     /**
      * Returns the elapsed time of the search.
+     *
      * @return This elapsed time.
      */
     public long getElapsedTime() {
@@ -249,6 +251,7 @@ public final class Fges implements GraphSearch, DagScorer {
 
     /**
      * Sets the initial graph.
+     *
      * @param initialGraph This graph.
      */
     public void setInitialGraph(Graph initialGraph) {
@@ -274,6 +277,7 @@ public final class Fges implements GraphSearch, DagScorer {
     /**
      * Sets whether verbose output should be produced. Verbose output generated
      * by the Meek rules is treated separately.
+     *
      * @param verbose True iff the case.
      * @see #setMeekVerbose(boolean)
      */
@@ -283,6 +287,7 @@ public final class Fges implements GraphSearch, DagScorer {
 
     /**
      * Sets whether verbose output should be produced for the Meek rules.
+     *
      * @param meekVerbose True iff the case.
      */
     public void setMeekVerbose(boolean meekVerbose) {
@@ -300,6 +305,7 @@ public final class Fges implements GraphSearch, DagScorer {
     /**
      * Sets the output stream that output (except for log output) should be sent
      * to. By detault System.out.
+     *
      * @param out This print stream.
      */
     public void setOut(PrintStream out) {
@@ -308,6 +314,7 @@ public final class Fges implements GraphSearch, DagScorer {
 
     /**
      * If non-null, edges not adjacent in this graph will not be added.
+     *
      * @param boundGraph This bound graph.
      */
     public void setBoundGraph(Graph boundGraph) {
@@ -342,6 +349,7 @@ public final class Fges implements GraphSearch, DagScorer {
     /**
      * Sets whether the first step of the procedure will score both X->Y and Y->X and prefer the
      * higher score (for adding X--Y to the graph).
+     *
      * @param symmetricFirstStep True iff the case.
      */
     public void setSymmetricFirstStep(boolean symmetricFirstStep) {
@@ -350,6 +358,7 @@ public final class Fges implements GraphSearch, DagScorer {
 
     /**
      * Makes a string for the edge Bayes factors to log.
+     *
      * @param dag The DAG to logs the factors for.
      * @return The string to log.
      */
@@ -360,6 +369,7 @@ public final class Fges implements GraphSearch, DagScorer {
 
     /**
      * Returns the score of the final search model.
+     *
      * @return This score.
      */
     public double getModelScore() {

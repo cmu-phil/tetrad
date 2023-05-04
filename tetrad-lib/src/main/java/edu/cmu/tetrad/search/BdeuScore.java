@@ -44,6 +44,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Constructs a BDe score for the given dataset.
+     *
      * @param dataSet A discrete dataset.
      */
     public BdeuScore(DataSet dataSet) {
@@ -84,6 +85,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Calculates the BDeu score of a node given its parents.
+     *
      * @param node    The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score.
@@ -171,6 +173,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Calculates localScore(y | z, x) - localScore(y | z).
+     *
      * @param x The index of x.
      * @param y The index of y.
      * @param z The indeces of the z variables.
@@ -184,6 +187,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Returns the variables of the data.
+     *
      * @return These variables as a list.
      */
     @Override
@@ -193,6 +197,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Returns the sample size of the data.
+     *
      * @return This size.
      */
     public int getSampleSize() {
@@ -201,7 +206,8 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * For FGES, this determines whether an edge counts as an effect edge.
-     * @param  bump The bump for the edge.
+     *
+     * @param bump The bump for the edge.
      * @return True if so.
      * @see Fges
      */
@@ -211,6 +217,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Returns the dataset being analyzed.
+     *
      * @return This dataset
      */
     @Override
@@ -220,6 +227,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Returns the structure prior.
+     *
      * @return This prior.
      */
     public double getStructurePrior() {
@@ -228,6 +236,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Sets the structure prior
+     *
      * @param structurePrior This prior.
      */
     public void setStructurePrior(double structurePrior) {
@@ -236,6 +245,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Returns the smaple prior.
+     *
      * @return This prior.
      */
     public double getSamplePrior() {
@@ -244,6 +254,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Set the sample prior
+     *
      * @param samplePrior This prior.
      */
     @Override
@@ -253,6 +264,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Returns a string representation of this score.
+     *
      * @return This string.
      */
     @Override
@@ -263,6 +275,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Sets the variables to another of the same names, in the same order.
+     *
      * @param variables The new varialbe list.
      * @see edu.cmu.tetrad.algcomparison.algorithm.multi.Images
      */
@@ -279,6 +292,7 @@ public class BdeuScore implements DiscreteScore {
 
     /**
      * Returns the needed max degree for some searches.
+     *
      * @return This max degree.
      */
     @Override
@@ -289,6 +303,7 @@ public class BdeuScore implements DiscreteScore {
     /**
      * This score does not implement a method to decide whehter a node is determined
      * by its parents.
+     *
      * @param z The parents.
      * @param y The node.
      * @return This determination

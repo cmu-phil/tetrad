@@ -523,6 +523,7 @@ public final class Fask implements GraphSearch {
 
     /**
      * A left/right judgment for double[] arrays (data) as input.
+     *
      * @param x The data for the first variable.
      * @param y The data for the second variable.
      * @return The left-right judgment, which is negative if X&lt;-Y, positive if X-&gt;Y, and

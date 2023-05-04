@@ -22,7 +22,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -125,6 +128,7 @@ public final class Cpc implements GraphSearch {
 
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
+     *
      * @param aggressivelyPreventCycles True if so.
      */
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
@@ -134,6 +138,7 @@ public final class Cpc implements GraphSearch {
     /**
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
      * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
+     *
      * @param depth This maximum.
      */
     public void setDepth(int depth) {
@@ -212,6 +217,7 @@ public final class Cpc implements GraphSearch {
 
     /**
      * Returns the edges in the search graph.
+     *
      * @return These edges.
      */
     public Set<Edge> getAdjacencies() {
@@ -220,6 +226,7 @@ public final class Cpc implements GraphSearch {
 
     /**
      * Returns the non-adjacencies in the seaarch graph.
+     *
      * @return These non-adjacencies.
      */
     public Set<Edge> getNonadjacencies() {
@@ -297,6 +304,7 @@ public final class Cpc implements GraphSearch {
 
     /**
      * Returns a map for x _||_ y | z1,..,zn from {x, y} to {z1,...,zn}.
+     *
      * @return This map.
      */
     public SepsetMap getSepsets() {
@@ -305,6 +313,7 @@ public final class Cpc implements GraphSearch {
 
     /**
      * The graph that's constructed during the search.
+     *
      * @return This graph.
      */
     public Graph getGraph() {
@@ -334,6 +343,7 @@ public final class Cpc implements GraphSearch {
 
     /**
      * Sets the max path length for the max p heuristic.
+     *
      * @param maxPPathLength This length.
      */
     public void setMaxPPathLength(int maxPPathLength) {

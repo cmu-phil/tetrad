@@ -25,8 +25,6 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.log;
-
 /**
  * <p>Implements a score to average results over multiple scores. This is
  * used for the IMaGES algorithm. The idea is that one pick and algorithm
@@ -56,6 +54,7 @@ public class ImagesScore implements Score {
     /**
      * Constructs an IMaGES score using the given list of individual scores.
      * These scores will be be averaged to obtain the IMaGES score itself.
+     *
      * @param scores The list of scores.
      */
     public ImagesScore(List<Score> scores) {
@@ -73,6 +72,7 @@ public class ImagesScore implements Score {
      * component score from their localScoreDiff methods. Score differences
      * that are returned as undefined (NaN) are excluded from the
      * average.
+     *
      * @return This average score.
      */
     @Override
@@ -97,6 +97,7 @@ public class ImagesScore implements Score {
      * which is obtained by averaging the local such scores obtained from each
      * individual score provided in the constructor, excluding scores that are
      * returned as undefined (which are left out of the average).
+     *
      * @param i The variable whose score is needed.
      * @return This score.
      */
@@ -131,6 +132,7 @@ public class ImagesScore implements Score {
      * parents, which is obtained by averaging the local such scores obtained
      * from each individual score provided in the constructor, excluding scores
      * that are returned as undefined (which are left out of the average).
+     *
      * @param i The variable whose score is needed.
      * @return This score.
      */
@@ -155,6 +157,7 @@ public class ImagesScore implements Score {
      * averaging the local scores obtained from each individual score
      * provided in the constructor, excluding scores that are returned
      * as undefined (which are left out of the average).
+     *
      * @param i The variable whose score is needed.
      * @return This score.
      */
@@ -181,6 +184,7 @@ public class ImagesScore implements Score {
 
     /**
      * Returns the variables.
+     *
      * @return This list.
      */
     @Override
@@ -190,6 +194,7 @@ public class ImagesScore implements Score {
 
     /**
      * Returns the sample size from the first score.
+     *
      * @return This size.
      */
     @Override
@@ -199,6 +204,7 @@ public class ImagesScore implements Score {
 
     /**
      * Returns the max degree from teh first score.
+     *
      * @return This maximum.
      */
     @Override
@@ -208,6 +214,7 @@ public class ImagesScore implements Score {
 
     /**
      * Returns the 'determines' judgment from the first score.
+     *
      * @return This judgment, true if the 'determine' relations holds.
      */
     @Override

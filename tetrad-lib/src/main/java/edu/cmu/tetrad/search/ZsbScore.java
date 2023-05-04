@@ -64,6 +64,7 @@ public class ZsbScore implements Score {
 
     /**
      * Constructs the score using a covariance matrix.
+     *
      * @param covMatrix The covariance matrix.
      */
     public ZsbScore(ICovarianceMatrix covMatrix) {
@@ -78,6 +79,7 @@ public class ZsbScore implements Score {
 
     /**
      * Constructs the score using a covariance matrix.
+     *
      * @param dataSet The data set.
      */
     public ZsbScore(DataSet dataSet) {
@@ -87,7 +89,8 @@ public class ZsbScore implements Score {
 
     /**
      * Returns the score for the child given the parents.
-     * @param i    The index of the node.
+     *
+     * @param i       The index of the node.
      * @param parents The indices of the node's parents.
      * @return The score
      */
@@ -127,6 +130,7 @@ public class ZsbScore implements Score {
 
     /**
      * Returns localScore(y | z, x) - localScore(y | z).
+     *
      * @param x Node 1
      * @param y Node 2
      * @param z The conditioning nodes.

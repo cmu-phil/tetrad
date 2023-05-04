@@ -158,7 +158,8 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
-     * @param i The child indes.
+     *
+     * @param i       The child indes.
      * @param parents The indices of the parents.
      */
     public double localScore(int i, int... parents) {
@@ -198,6 +199,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * Returns localScore(y | z, x) - localScore(y, z).
+     *
      * @param x Node 1.
      * @param y Node 2.
      * @param z The conditioning variables
@@ -209,6 +211,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * Returns the sample size for the data for this score.
+     *
      * @return This sample size.
      */
     public int getSampleSize() {
@@ -218,6 +221,7 @@ public class DegenerateGaussianScore implements Score {
     /**
      * Returns a decision whether a given bump counts as an effect edge
      * for this score.
+     *
      * @param bump The bump.
      * @return True if it counts as an effect edge.
      * @see Fges
@@ -229,6 +233,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * Returns the variables for this score.
+     *
      * @return This list.
      */
     @Override
@@ -238,6 +243,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * Returns an estimate of the max degree needed for certain algorithms.
+     *
      * @return This estimate
      * @see Fges
      * @see MagSemBicScore
@@ -250,6 +256,7 @@ public class DegenerateGaussianScore implements Score {
     /**
      * This score does not implement a method to determing whether a given set of parents determine
      * a given child, so an exception is thrown.
+     *
      * @throws UnsupportedOperationException Since this method is not implemented.
      */
     @Override
@@ -259,6 +266,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * Sets the penalty discount for this score, which is a multiplier on the BIC penalty term.
+     *
      * @param penaltyDiscount This penalty.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
@@ -267,6 +275,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * Sets the structure prior for this score.
+     *
      * @param structurePrior This prior.
      */
     public void setStructurePrior(double structurePrior) {
@@ -275,6 +284,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * Returns a string representation of this score.
+     *
      * @return This string.
      */
     @Override

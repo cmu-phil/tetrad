@@ -9,6 +9,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 /**
  * Stores a single conditional independence result, e.g., whether
  * X _||_ Y | Z1,..,Zn holds or does not.
+ *
  * @author josephramsey
  */
 public final class IndependenceResult implements TetradSerializable {
@@ -20,9 +21,10 @@ public final class IndependenceResult implements TetradSerializable {
 
     /**
      * Construtor.
-     * @param fact The fact itself.
-     * @param indep The conditional independence result, true if the fact
-     *              holds, false if not.
+     *
+     * @param fact   The fact itself.
+     * @param indep  The conditional independence result, true if the fact
+     *               holds, false if not.
      * @param pValue The p-values of the independence result, under the null
      *               (independence) hypothesis.
      * @see IndependenceFact
@@ -35,6 +37,7 @@ public final class IndependenceResult implements TetradSerializable {
 
     /**
      * Generates a simple exemplar of this class to test serialization.
+     *
      * @see TetradSerializableUtils
      */
     public static IndependenceResult serializableInstance() {
@@ -45,6 +48,7 @@ public final class IndependenceResult implements TetradSerializable {
 
     /**
      * Returns the independence fact being stored.
+     *
      * @return This fact
      * @see IndependenceFact
      */
@@ -55,6 +59,7 @@ public final class IndependenceResult implements TetradSerializable {
     /**
      * Returns whether the fact holds--i.e., if the judgment is for
      * independence.
+     *
      * @return True if the fact holds, false if ot.
      * @see #isDependent()
      */
@@ -65,6 +70,7 @@ public final class IndependenceResult implements TetradSerializable {
     /**
      * Returns whether the fact fails to hold--i.e., if the judgment is for
      * dependence. This is the negation of isIndependent.
+     *
      * @return True if the fact does not, false if it does.
      * @see #isIndependent()
      */
@@ -77,6 +83,7 @@ public final class IndependenceResult implements TetradSerializable {
      * A special case obtains is this fact is being used to store a d-separation
      * fact, in which case the "p-value" is deemed to be 0 if the fact holds and
      * 1 if it does not.
+     *
      * @return The p-value of result under the null hypothesis.
      */
     public double getPValue() {
@@ -85,6 +92,7 @@ public final class IndependenceResult implements TetradSerializable {
 
     /**
      * Returns a string represnetation of this independence fact.
+     *
      * @return This string.
      */
     public String toString() {

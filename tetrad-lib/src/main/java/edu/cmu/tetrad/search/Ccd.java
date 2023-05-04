@@ -45,6 +45,7 @@ public final class Ccd implements GraphSearch {
 
     /**
      * Construct a CCD algorithm with the given independence test.
+     *
      * @param test The test to be used.
      * @see IndependenceTest
      */

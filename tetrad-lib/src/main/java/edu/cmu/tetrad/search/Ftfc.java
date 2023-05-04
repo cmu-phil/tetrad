@@ -125,6 +125,7 @@ public class Ftfc {
 
     /**
      * Returns clusters output by the algorithm from the last call to search().
+     *
      * @return These clusters.
      */
     public List<List<Node>> getClusters() {
@@ -133,6 +134,7 @@ public class Ftfc {
 
     /**
      * Sets whether verbose output should be printed.
+     *
      * @param verbose True if the case.
      */
     public void setVerbose(boolean verbose) {

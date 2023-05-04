@@ -60,7 +60,8 @@ public class LingamPattern {
 
     /**
      * Constructor.
-     * @param cpdag The CPDAG whose unoriented edges are to be oriented.
+     *
+     * @param cpdag   The CPDAG whose unoriented edges are to be oriented.
      * @param dataSet Teh dataset to use.
      */
     public LingamPattern(Graph cpdag, DataSet dataSet)
@@ -82,6 +83,7 @@ public class LingamPattern {
 
     /**
      * Runs the search and returns the result graph.
+     *
      * @return This graph.
      */
     public Graph search() {
@@ -179,6 +181,7 @@ public class LingamPattern {
 
     /**
      * Returns the p-values of the search.
+     *
      * @return This list as a double[] array.
      */
     public double[] getPValues() {
@@ -187,6 +190,7 @@ public class LingamPattern {
 
     /**
      * Sets the alpha level for the search.
+     *
      * @param alpha This alpha level.
      */
     public void setAlpha(double alpha) {

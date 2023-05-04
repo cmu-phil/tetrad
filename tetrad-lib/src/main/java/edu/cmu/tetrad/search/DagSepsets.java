@@ -39,6 +39,7 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * Constructs a new DagSepsets object for the given DAG.
+     *
      * @param dag the DAG.
      */
     public DagSepsets(Graph dag) {
@@ -47,6 +48,7 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * Returns the list of sepset for {a, b}.
+     *
      * @param a One node.
      * @param b The other node.
      * @return The list of sepsets for {a, b}.
@@ -58,6 +60,7 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * True iff i*-*j*-*k is an unshielded collider.
+     *
      * @param i Node 1
      * @param j Node 2
      * @param k Node 3
@@ -72,11 +75,13 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * True iff i*-*j*-*k is an unshielded noncollider.
+     *
      * @param i Node 1
      * @param j Node 2
      * @param k Node 3
      * @return True if the condition holds.
-     */    @Override
+     */
+    @Override
     public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
         List<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && sepset.contains(j);
@@ -84,6 +89,7 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * Not implemented; required for an interface.
+     *
      * @throws UnsupportedOperationException Since this is not implemented.
      */
     @Override
@@ -96,6 +102,7 @@ public class DagSepsets implements SepsetProducer {
      * the name isIndependent fool you; this is a d-separation method. We
      * only use the name isIndependent so that this can be used in place
      * of an independence check.
+     *
      * @param a Node 1
      * @param b NOde 2
      * @param c A set of conditoning nodes.
@@ -108,6 +115,7 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * Returns the nodes in the DAG.
+     *
      * @return This list.
      */
     @Override
@@ -117,8 +125,9 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * Thsi method is not used.
+     *
      * @throws UnsupportedOperationException Since this method is not used (but is
-     * required by an interface).
+     *                                       required by an interface).
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -127,6 +136,7 @@ public class DagSepsets implements SepsetProducer {
 
     /**
      * Returns the DAG being analyzed.
+     *
      * @return This DAG.
      */
     public Graph getDag() {

@@ -40,7 +40,8 @@ public class PermutationMatrixPair {
     /**
      * Constructs with a given matrix M and a row and column permutation (which
      * may be null).
-     * @param M The matrix to be permuted.
+     *
+     * @param M       The matrix to be permuted.
      * @param rowPerm The row permutation for M; if null the identity permutation
      *                ([0 1 2...#rows]) will be used.
      * @param colPerm The row permutation for M; if null the identity permutation
@@ -64,6 +65,7 @@ public class PermutationMatrixPair {
 
     /**
      * Returns W, permuted rowwise by the permutation passed in through the constructor.
+     *
      * @return The matrix, permuted columnwise and rowwise, by the specified column and
      * row permutations.
      */
@@ -87,6 +89,7 @@ public class PermutationMatrixPair {
 
     /**
      * Prints a string representation of this.
+     *
      * @return The row and columns permutations, followed by the permuted matrix.
      */
     public String toString() {

@@ -46,6 +46,7 @@ public class Cstar {
 
     /**
      * Returns a list of of records for making a CSTaR table.
+     *
      * @param allRecords the list of all records.
      * @return The list for the CSTaR table.
      */
@@ -465,6 +466,7 @@ public class Cstar {
 
     /**
      * Sets qFrom.
+     *
      * @param qFrom This integer.
      */
     public void setqFrom(int qFrom) {
@@ -473,6 +475,7 @@ public class Cstar {
 
     /**
      * Sets qTo.
+     *
      * @param qTo This integer.
      */
     public void setqTo(int qTo) {
@@ -481,6 +484,7 @@ public class Cstar {
 
     /**
      * Sets q increment.
+     *
      * @param qIncrement This integer.
      */
     public void setqIncrement(int qIncrement) {
@@ -489,6 +493,7 @@ public class Cstar {
 
     /**
      * The CSTaR algorithm can use any CPDAG algorithm; here you can set it.
+     *
      * @param cpdagAlglorithm The CPDAG algorithm.
      * @see CpdagAlgorithm
      */
@@ -498,6 +503,7 @@ public class Cstar {
 
     /**
      * Sets whether verbose output will be printed.
+     *
      * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
@@ -506,6 +512,7 @@ public class Cstar {
 
     /**
      * Sets the selection alpha.
+     *
      * @param selectionAlpha This alpha.
      */
     public void setSelectionAlpha(double selectionAlpha) {
@@ -514,6 +521,7 @@ public class Cstar {
 
     /**
      * Sets the sample style.
+     *
      * @param sampleStyle This style.
      * @see SampleStyle
      */
@@ -523,6 +531,7 @@ public class Cstar {
 
     /**
      * Sets the number of subsamples.
+     *
      * @param numSubsamples This number.
      */
     public void setNumSubsamples(int numSubsamples) {

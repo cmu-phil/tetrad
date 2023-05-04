@@ -50,7 +50,8 @@ public class DagInCpcagIterator {
      *
      * @param CPDAG The CPDAG for which DAGS are wanted. May result in cyclic outputs.
      * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
-     */    public DagInCpcagIterator(Graph CPDAG) {
+     */
+    public DagInCpcagIterator(Graph CPDAG) {
         this(CPDAG, new Knowledge(), false, true);
     }
 
@@ -58,10 +59,11 @@ public class DagInCpcagIterator {
      * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it
      * is not acyclic, it is rejected.
      *
-     * @param CPDAG  The CPDAG for which DAGS are wanted. May result in cyclic outputs.
-     * @param knowledge  The knowledge to be used to constrain the DAGs.
+     * @param CPDAG     The CPDAG for which DAGS are wanted. May result in cyclic outputs.
+     * @param knowledge The knowledge to be used to constrain the DAGs.
      * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
-     */    public DagInCpcagIterator(Graph CPDAG, Knowledge knowledge) {
+     */
+    public DagInCpcagIterator(Graph CPDAG, Knowledge knowledge) {
         this(CPDAG, knowledge, false, true);
     }
 
@@ -70,10 +72,10 @@ public class DagInCpcagIterator {
      * is not acyclic, it is rejected.
      *
      * @param CPDAG                      The CPDAG for which DAGS are wanted.
-     * @param knowledge  The knowledge to be used to constrain the DAGs.
+     * @param knowledge                  The knowledge to be used to constrain the DAGs.
      * @param allowArbitraryOrientations True if arbitrary orientations are allowable when reasonable ones cannot be
      *                                   made. May result in cyclic outputs.
-     * @param allowNewColliders True if new colliders are allowed in teh graphs.
+     * @param allowNewColliders          True if new colliders are allowed in teh graphs.
      * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
      */
     public DagInCpcagIterator(Graph CPDAG, Knowledge knowledge, boolean allowArbitraryOrientations,

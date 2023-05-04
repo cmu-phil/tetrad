@@ -188,6 +188,7 @@ public class ConditionalGaussianLikelihood {
 
     /**
      * Sets the penalty discount for this score, which is a multiplier on the panalty term of BIC.
+     *
      * @param penaltyDiscount The penalty discount.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
@@ -196,6 +197,7 @@ public class ConditionalGaussianLikelihood {
 
     /**
      * Sets whether to discretize child variables to avoid integration. An optimization.
+     *
      * @param discretize True if so.
      * @see #setNumCategoriesToDiscretize(int)
      */
@@ -205,6 +207,7 @@ public class ConditionalGaussianLikelihood {
 
     /**
      * Sets the number of categories to use to discretize child variables to avoid integrationl
+     *
      * @param numCategoriesToDiscretize This number.
      * @see #setDiscretize(boolean)
      */

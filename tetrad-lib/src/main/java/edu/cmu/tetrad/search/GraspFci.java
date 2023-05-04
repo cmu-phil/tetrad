@@ -40,6 +40,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
  * FGES.</p>
+ *
  * @author peterspirtes
  * @author josephramsey
  * @author bryanandrews

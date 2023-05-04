@@ -292,6 +292,7 @@ public final class Fci implements GraphSearch {
 
     /**
      * Sets whether the discriminating path rule should be used.
+     *
      * @param doDiscriminatingPathRule True if so.
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {

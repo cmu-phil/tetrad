@@ -187,6 +187,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * Returns a number is more positive for stronger judgments of dependence.
+     *
      * @return This number.
      */
     @Override
@@ -203,6 +204,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * Returns true if verbose output should be printed.
+     *
      * @return True if the case.
      */
     public boolean isVerbose() {
@@ -211,6 +213,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * Sets whether verbose output should be printed.
+     *
      * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
@@ -219,6 +222,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * Sets the number of orthogal functions to use to do the calculations.
+     *
      * @param numFunctions This number.
      */
     public void setNumFunctions(int numFunctions) {
@@ -227,6 +231,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * Returns the kernel width.
+     *
      * @return This width.
      */
     public double getWidth() {
@@ -235,6 +240,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * Returns the kernel multiplier.
+     *
      * @param multiplier This multiplier.
      */
     public void setKernelMultiplier(double multiplier) {
@@ -243,6 +249,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * Sets the kernel to be used.
+     *
      * @param kernel This kernel.
      * @see edu.cmu.tetrad.search.ConditionalCorrelationIndependence.Kernel
      */
@@ -252,6 +259,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * Sets the basis used for the calculation.
+     *
      * @param basis This basis.
      * @see edu.cmu.tetrad.search.ConditionalCorrelationIndependence.Basis
      */
@@ -261,6 +269,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
      * Sets the kernal regression sample size.
+     *
      * @param i This size.
      */
     public void setKernelRegressionSampleSize(int i) {

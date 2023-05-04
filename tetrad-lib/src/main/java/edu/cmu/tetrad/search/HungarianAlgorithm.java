@@ -293,10 +293,10 @@ public class HungarianAlgorithm {
         // the problem is written in the form of a matrix
         double[][] dataMatrix = {
                 //col0  col1  col2  col3
-                {70,  40,   20,   55},  //row0
-                {65,  60,   45,   90},  //row1
-                {30,  45,   50,   75},  //row2
-                {25,  30,   55,   40}   //row3
+                {70, 40, 20, 55},  //row0
+                {65, 60, 45, 90},  //row1
+                {30, 45, 50, 75},  //row2
+                {25, 30, 55, 40}   //row3
         };
 
         //find optimal assignment

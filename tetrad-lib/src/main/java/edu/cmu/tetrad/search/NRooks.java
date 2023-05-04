@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Stack;
 
 /**
  * <p>Returns row positions for placing rooks for an n x n matrix so the rooks
@@ -16,8 +17,9 @@ public class NRooks {
 
     /**
      * Solves the N-Rooks problem for the given board or allowable positions.
+     *
      * @param allowablePositions A matrix of allowable rook positions, should be
-     *                       true iff the position is allowable.
+     *                           true iff the position is allowable.
      * @return A list of row indices for where to place the rooks for each solution.
      */
     public static ArrayList<int[]> nRooks(boolean[][] allowablePositions) {

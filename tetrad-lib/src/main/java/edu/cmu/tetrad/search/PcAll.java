@@ -41,7 +41,9 @@ import java.util.Set;
  */
 public final class PcAll implements GraphSearch {
     public enum FasType {REGULAR, STABLE}
+
     public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
+
     public enum ConflictRule {PRIORITY, BIDIRECTED, OVERWRITE}
 
     /**
@@ -187,6 +189,7 @@ public final class PcAll implements GraphSearch {
 
     /**
      * Sets the type of collider discovery to do.
+     *
      * @param colliderDiscovery This type.
      */
     public void setColliderDiscovery(ColliderDiscovery colliderDiscovery) {
@@ -195,6 +198,7 @@ public final class PcAll implements GraphSearch {
 
     /**
      * Sets the conflict rule to use.
+     *
      * @param conflictRule This rule.
      */
     public void setConflictRule(ConflictRule conflictRule) {
@@ -261,6 +265,7 @@ public final class PcAll implements GraphSearch {
 
     /**
      * Sets whether verbose output should be printed.
+     *
      * @param verbose True iff the case.
      */
     public void setVerbose(boolean verbose) {
@@ -459,7 +464,7 @@ public final class PcAll implements GraphSearch {
         }
     }
 
-     private void orientUnshieldedTriplesConservative(Knowledge knowledge) {
+    private void orientUnshieldedTriplesConservative(Knowledge knowledge) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
 
         this.colliderTriples = new HashSet<>();
@@ -627,5 +632,5 @@ public final class PcAll implements GraphSearch {
             }
         }
     }
- }
+}
 

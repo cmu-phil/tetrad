@@ -119,7 +119,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      *
      * @param data      A 2D continuous data set with no missing values.
      * @param variables A list of variables, a subset of the variables of <code>data</code>.
-     * @param alpha   The alpha level of the test.
+     * @param alpha     The alpha level of the test.
      */
     public IndTestFisherZ(Matrix data, List<Node> variables, double alpha) {
         this.dataSet = new BoxDataSet(new VerticalDoubleDataBox(data.transpose().toArray()), variables);
@@ -141,8 +141,9 @@ public final class IndTestFisherZ implements IndependenceTest {
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
+     *
      * @param covMatrix The covaraince matrix.
-     * @param alpha   The alpha level of the test.
+     * @param alpha     The alpha level of the test.
      */
     public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha) {
         this.cor = new CorrelationMatrix(covMatrix);
@@ -164,6 +165,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     /**
      * Creates a new independence test instance for a subset of the variables.
+     *
      * @return a new independence test.
      * @see IndependenceTest
      */
@@ -238,6 +240,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     /**
      * Returns the p-value for x _||_ y | z.
+     *
      * @param x Node 1
      * @param y Node 2
      * @param z The conditioning varialbes.
@@ -272,6 +275,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     /**
      * Returns the BIC score for this test.
+     *
      * @return The BIC score.
      */
     public double getBic() {
@@ -308,6 +312,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     /**
      * Sets teh variables to a new list of the same size. Useful if multiple independence tests
      * are needed with object-identical sets of variables.
+     *
      * @param variables The new list of variables.
      */
     public void setVariables(List<Node> variables) {
@@ -339,6 +344,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     /**
      * Returns the (singleton) list of datasets being analyzed.
+     *
      * @return This list (length 1).
      */
     @Override
@@ -350,6 +356,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     /**
      * Returns the sample size.
+     *
      * @return This size.
      */
     @Override
@@ -359,6 +366,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     /**
      * Returns the score for this test, alpha - p. Should be dependent only for positive values.
+     *
      * @return This score.
      */
     @Override
@@ -368,6 +376,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     /**
      * Returns true iff verbose output should be printed.
+     *
      * @return True if so.
      */
     public boolean isVerbose() {
@@ -376,6 +385,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     /**
      * Sets whether verbose output should be printed.
+     *
      * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
@@ -391,6 +401,7 @@ public final class IndTestFisherZ implements IndependenceTest {
 
     /**
      * Returns true in case the variable in Z jointly determine x.
+     *
      * @param z The contitioning variables.
      * @param x The conditioned variable.
      */

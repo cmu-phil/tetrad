@@ -63,9 +63,13 @@ public class GrowShrinkTree {
         return this.score.getVariables();
     }
 
-    public List<Node> getRequired() { return this.required; }
+    public List<Node> getRequired() {
+        return this.required;
+    }
 
-    public List<Node> getForbidden() { return this.forbidden; }
+    public List<Node> getForbidden() {
+        return this.forbidden;
+    }
 
     public void setKnowledge(List<Node> required, List<Node> forbidden) {
         this.root = new GSTNode(this);
@@ -163,7 +167,7 @@ public class GrowShrinkTree {
                         parents.remove(best);
                         this.remove.add(best);
                     }
-                } while(best != null);
+                } while (best != null);
 
             }
             parents.removeAll(this.remove);

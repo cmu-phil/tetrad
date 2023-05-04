@@ -55,6 +55,7 @@ public class GraphScore implements Score {
 
     /**
      * Constructor
+     *
      * @param dag A directed acyclic graph.
      */
     public GraphScore(Graph dag) {
@@ -65,6 +66,7 @@ public class GraphScore implements Score {
 
     /**
      * Constructor.
+     *
      * @param facts A list known independence facts; a lookup will be donw
      *              from these facts.
      * @see IndependenceFacts
@@ -77,6 +79,7 @@ public class GraphScore implements Score {
 
     /**
      * Calculates the sample likelihood and BIC score for y given its z in a simple SEM model.
+     *
      * @return this score.
      */
     public double localScore(int y, int[] z) {
@@ -105,6 +108,7 @@ public class GraphScore implements Score {
     /**
      * Returns a "score difference", which amounts to a conditional
      * local scoring criterion results
+     *
      * @return The "difference".
      */
     @Override
@@ -114,6 +118,7 @@ public class GraphScore implements Score {
 
     /**
      * The "unconditional difference."
+     *
      * @return This.
      */
     @Override
@@ -137,6 +142,7 @@ public class GraphScore implements Score {
 
     /**
      * Returns a judgment for FGES as to whether a score with the bump is for an effect edge.
+     *
      * @param bump The bump
      * @return True if so.
      * @see Fges
@@ -155,6 +161,7 @@ public class GraphScore implements Score {
 
     /**
      * Returns the list of variables.
+     *
      * @return This list.
      */
     @Override
@@ -164,6 +171,7 @@ public class GraphScore implements Score {
 
     /**
      * Returns the maximum degree, which is set to 1000.
+     *
      * @return 1000.
      */
     @Override
@@ -195,6 +203,7 @@ public class GraphScore implements Score {
 
     /**
      * Returns a copy of the DAG being searched over.
+     *
      * @return This DAG.
      */
     public Graph getDag() {

@@ -31,6 +31,7 @@ import java.util.List;
  * and useful Markov blanket search.</p>
  * <p>Margaritis, D., & Thrun, S. (1999). Bayesian network induction via local neighborhoods.
  * Advances in neural information processing systems, 12.</p>
+ *
  * @author Joseph Ramsey
  */
 public class GrowShrink implements MbSearch {
@@ -47,6 +48,7 @@ public class GrowShrink implements MbSearch {
 
     /**
      * Constructs a new search.
+     *
      * @param test The test used for this search.
      */
     public GrowShrink(IndependenceTest test) {
@@ -106,6 +108,7 @@ public class GrowShrink implements MbSearch {
 
     /**
      * Returns "Grow Shrink".
+     *
      * @return This string.
      */
     public String getAlgorithmName() {

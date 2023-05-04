@@ -172,6 +172,7 @@ public class TsFas implements IFas {
     /**
      * Sets the depth--i.e., the maximum number of variables conditioned on in any
      * test, -1 for unlimited.
+     *
      * @param depth This depth.
      */
     public void setDepth(int depth) {
@@ -185,6 +186,7 @@ public class TsFas implements IFas {
 
     /**
      * Sets the knowledge used in the search.
+     *
      * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -193,6 +195,7 @@ public class TsFas implements IFas {
 
     /**
      * Returns the number of independence tests.
+     *
      * @return This number.
      */
     public int getNumIndependenceTests() {
@@ -201,6 +204,7 @@ public class TsFas implements IFas {
 
     /**
      * Returns a map for x _||_ y | Z from {x, y} to Z.
+     *
      * @return This map.
      */
     public SepsetMap getSepsets() {
@@ -209,6 +213,7 @@ public class TsFas implements IFas {
 
     /**
      * Sets an external graph.
+     *
      * @param externalGraph This grpah.
      */
     public void setExternalGraph(Graph externalGraph) {
@@ -217,6 +222,7 @@ public class TsFas implements IFas {
 
     /**
      * Sets whether verbose output should be printed.
+     *
      * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
@@ -241,6 +247,7 @@ public class TsFas implements IFas {
 
     /**
      * Returns the nodes of the test.
+     *
      * @return This list.
      */
     @Override
@@ -258,6 +265,7 @@ public class TsFas implements IFas {
 
     /**
      * Sets the output stream for printing, default is System.out.
+     *
      * @param out The print stream.
      * @see PrintStream
      */

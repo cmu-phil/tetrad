@@ -42,9 +42,10 @@ public class BpcTetradPurifyWashdown {
 
     /**
      * Construct the algorithm using a covariance matrix.
-     * @param cov A covariance matrix.
+     *
+     * @param cov      A covariance matrix.
      * @param testType A Test type.
-     * @param alpha An alpha cutoff
+     * @param alpha    An alpha cutoff
      * @see edu.cmu.tetrad.data.CovarianceMatrix
      * @see TestType
      */
@@ -55,18 +56,21 @@ public class BpcTetradPurifyWashdown {
 
     /**
      * Construct the algorithm using a data set.
-     * @param dataSet A DataSet.
+     *
+     * @param dataSet  A DataSet.
      * @param testType A Test type.
-     * @param alpha An alpha cutoff
+     * @param alpha    An alpha cutoff
      * @see DataSet
      * @see TestType
-     */     public BpcTetradPurifyWashdown(DataSet dataSet, TestType testType, double alpha) {
+     */
+    public BpcTetradPurifyWashdown(DataSet dataSet, TestType testType, double alpha) {
         this.variables = dataSet.getVariables();
         this.test = new ContinuousTetradTest(dataSet, testType, alpha);
     }
 
     /**
      * Runs the search and returns a graph.
+     *
      * @return The discovered graph.
      */
     public Graph search() {

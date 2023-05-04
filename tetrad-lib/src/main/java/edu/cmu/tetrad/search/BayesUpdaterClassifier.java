@@ -141,6 +141,7 @@ public final class BayesUpdaterClassifier
 
     /**
      * Sets the target variable.
+     *
      * @param target This variable.
      */
     public void setTarget(String target) {
@@ -168,6 +169,7 @@ public final class BayesUpdaterClassifier
     /**
      * Computes and returns the cross-tabulation of observed versus estimated
      * values of the target variable as described above.
+     *
      * @return this cross-tabulation.
      */
     public int[] classify() {
@@ -381,6 +383,7 @@ public final class BayesUpdaterClassifier
 
     /**
      * Returns the Bayes IM being used.
+     *
      * @return This IM
      * @see BayesIm
      */
@@ -390,6 +393,7 @@ public final class BayesUpdaterClassifier
 
     /**
      * Returns the test data being used.
+     *
      * @return This data.
      */
     public DataSet getTestData() {
@@ -398,6 +402,7 @@ public final class BayesUpdaterClassifier
 
     /**
      * Returns the classification for the target variable.
+     *
      * @return Thsi classification.
      */
     public int[] getClassifications() {
@@ -406,6 +411,7 @@ public final class BayesUpdaterClassifier
 
     /**
      * Returns the marginals.
+     *
      * @return This.
      */
     public double[][] getMarginals() {
@@ -414,6 +420,7 @@ public final class BayesUpdaterClassifier
 
     /**
      * Returns the number of cases for the data.
+     *
      * @return This number.
      */
     public int getNumCases() {
@@ -422,6 +429,7 @@ public final class BayesUpdaterClassifier
 
     /**
      * Returns the number of usable cases for the data.
+     *
      * @return Thsi number.
      */
     public int getTotalUsableCases() {
@@ -430,6 +438,7 @@ public final class BayesUpdaterClassifier
 
     /**
      * Returns the variables of the BayesIM.
+     *
      * @return These variables as a list.
      * @see BayesIm
      */

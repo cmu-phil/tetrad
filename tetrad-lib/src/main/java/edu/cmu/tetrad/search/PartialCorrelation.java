@@ -36,6 +36,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * Calculates partial correlation using the recursive method.
+ *
  * @author josephramsey
  */
 public class PartialCorrelation {
@@ -45,8 +46,9 @@ public class PartialCorrelation {
 
     /**
      * Constructor.
-     * @param nodes The lsit of nodes.
-     * @param cov The covariance matrix, as a Matrix.
+     *
+     * @param nodes      The lsit of nodes.
+     * @param cov        The covariance matrix, as a Matrix.
      * @param sampleSize The sample size.
      */
     public PartialCorrelation(List<Node> nodes, Matrix cov, int sampleSize) {
@@ -56,6 +58,7 @@ public class PartialCorrelation {
 
     /**
      * Constructor
+     *
      * @param cov The covariance matrix, as an ICovariance object.
      */
     public PartialCorrelation(ICovarianceMatrix cov) {
@@ -67,6 +70,7 @@ public class PartialCorrelation {
     /**
      * Calculates the partial correlation of x and y conditional on the nodes in z
      * recursively.
+     *
      * @return this partial correlation.
      */
     public double corr(Node x, Node y, List<Node> z) {

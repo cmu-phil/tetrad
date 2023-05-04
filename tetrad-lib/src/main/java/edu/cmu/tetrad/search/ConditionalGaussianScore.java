@@ -72,7 +72,8 @@ public class ConditionalGaussianScore implements Score {
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
-     * @param i The index of the child.
+     *
+     * @param i       The index of the child.
      * @param parents The indices of the parents.
      * @return The score.,
      */
@@ -96,6 +97,7 @@ public class ConditionalGaussianScore implements Score {
 
     /**
      * Calculates localScore(y | z, x) - localScore(z).
+     *
      * @param x The index of the child.
      * @param z The indices of the parents.
      * @return The score difference.
@@ -106,6 +108,7 @@ public class ConditionalGaussianScore implements Score {
 
     /**
      * Reurns the sample size of the data.
+     *
      * @return This size.
      */
     public int getSampleSize() {
@@ -115,6 +118,7 @@ public class ConditionalGaussianScore implements Score {
     /**
      * A method for FGES for determining whether an edge counts as an effect edges for this
      * score bump.
+     *
      * @param bump The bump in score.
      * @return True iff so.
      * @see Fges
@@ -126,6 +130,7 @@ public class ConditionalGaussianScore implements Score {
 
     /**
      * Returns the variables of the data.
+     *
      * @return This list.
      */
     @Override
@@ -136,6 +141,7 @@ public class ConditionalGaussianScore implements Score {
     /**
      * Returns the max degree recommended for the search form the MagSemBicScore
      * and Fges.
+     *
      * @return This max degree.
      * @see MagSemBicScore
      * @see Fges
@@ -148,6 +154,7 @@ public class ConditionalGaussianScore implements Score {
     /**
      * This score does not implement a method to decide whether a given set of parents
      * determines a given child, so an exception is thrown.
+     *
      * @throws UnsupportedOperationException Since this method is not supported.
      */
     @Override
@@ -158,6 +165,7 @@ public class ConditionalGaussianScore implements Score {
     /**
      * Returns the penalty discount for this score, which is a multiplier on the penatly term of the BIC
      * score.
+     *
      * @return This penalty discount.
      */
     public double getPenaltyDiscount() {
@@ -167,6 +175,7 @@ public class ConditionalGaussianScore implements Score {
     /**
      * Sets the penalty discount for this score, which is a multiplier on the penalty discount of the
      * BIC score.
+     *
      * @param penaltyDiscount This penalty discount.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
@@ -175,6 +184,7 @@ public class ConditionalGaussianScore implements Score {
 
     /**
      * Sets tne number of categories used to discretize, when this optimization is used.
+     *
      * @param numCategoriesToDiscretize This number.
      */
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
