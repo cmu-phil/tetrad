@@ -35,13 +35,9 @@ import static org.apache.commons.math3.util.FastMath.*;
  * difference (I believe) is that the R package can handle complex numbers,
  * whereas this implementation cannot.
  * <p>
- * Performance. The R version scales up much better than this one does, the main
- * reason for which is that the calculation of the initial covariance matrix
- * (1/n) X'X is so much faster.
- * <p>
  * The documention of the R version is as follows, all of which is true of this
  * translation (so far as I know) except for its being in R and its allowing
- * complex values:
+ * complex values.
  * <p>
  * Description:
  * <p>
@@ -137,8 +133,6 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and
  * Applications, _Neural Networks_, *13(4-5)*:411-430
- * <p>
- * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015&gt; 0
  *
  * @author Joseph Ramsey (of the translation, that is)
  */
