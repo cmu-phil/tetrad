@@ -24,6 +24,7 @@ package edu.cmu.tetrad.algcomparison.examples;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BossTest;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Grasp;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
@@ -43,10 +44,10 @@ import edu.cmu.tetrad.util.Params;
 public class TestBoss {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-        parameters.set(Params.NUM_RUNS, 10);
+        parameters.set(Params.NUM_RUNS, 1);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
-        parameters.set(Params.NUM_MEASURES, 60);
-        parameters.set(Params.AVG_DEGREE, 6);
+        parameters.set(Params.NUM_MEASURES, 100);
+        parameters.set(Params.AVG_DEGREE, 10);
         parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.COEF_LOW, 0);
         parameters.set(Params.COEF_HIGH, 1);
@@ -64,12 +65,15 @@ public class TestBoss {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
+        statistics.add(new BicDiff());
+        statistics.add(new NumberOfEdgesEst());
         statistics.add(new ElapsedCpuTime());
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new Boss(new SemBicScore()));
-        algorithms.add(new Grasp(new FisherZ(), new SemBicScore()));
+//        algorithms.add(new Fges(new SemBicScore()));
+//        algorithms.add(new Boss(new SemBicScore()));
+        algorithms.add(new BossTest(new SemBicScore()));
+//        algorithms.add(new Grasp(new FisherZ(), new SemBicScore()));
 //        algorithms.add(new SP(new SemBicScore()));
 
         Simulations simulations = new Simulations();
