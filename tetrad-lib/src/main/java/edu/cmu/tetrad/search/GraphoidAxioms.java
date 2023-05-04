@@ -48,14 +48,24 @@ public class GraphoidAxioms {
 
     /**
      * Constructor.
-     *
-     * @param facts A set of GraphoidIdFacts.
+     * @param facts A set of GraphoidIndFacts.
+     * @param nodes The list of nodes.
+     * @see GraphoidIndFact k
      */
     public GraphoidAxioms(Set<GraphoidIndFact> facts, List<Node> nodes) {
         this.facts = new LinkedHashSet<>(facts);
         this.nodes = new ArrayList<>(nodes);
     }
 
+    /**
+     * Constructor.
+     * @param facts A list of GraphoidIndFacts.
+     * @param nodes The list of nodes.
+     * @param textSpecs A map from GraphoidIndFacts to String text specs. The
+     *                  text specs are used for printing information to the user
+     *                  about which facts are found or are missing.
+     * @see GraphoidIndFact
+     */
     public GraphoidAxioms(Set<GraphoidIndFact> facts,
                           List<Node> nodes,
                           Map<GraphoidAxioms.GraphoidIndFact, String> textSpecs) {
@@ -64,6 +74,14 @@ public class GraphoidAxioms {
         this.textSpecs = new HashMap<>(textSpecs);
     }
 
+    /**
+     * The main methods.
+     * @param args E.g., "java -cp tetrad-gui-7.1.3-SNAPSHOT-launch.jar edu.cmu.tetrad.search.GraphoidAxioms  udags5.txt 5"
+     *             Here, udgas5.txt is a file containing independence models, one per line, where each independence
+     *             fast is specified by, e.g., "1:23|56", indicating that 1 is independence of 2 and 3 conditional
+     *             on 5 and 6. No more than 9 variables can be handled this way. If you need more, let us know and
+     *             we'll change the format.
+     */
     public static void main(String... args) {
         try {
             File file = new File(args[0]);
@@ -87,8 +105,8 @@ public class GraphoidAxioms {
                 }
 
                 GraphoidAxioms axioms = getGraphoidAxioms(line, variables);
-                axioms.setTrivialtyAssumed();
-                axioms.setSymmetryAssumed();
+                axioms.ensureTriviality();
+                axioms.ensureSymmetry();
 
                 System.out.println(axioms.getIndependenceFacts().getVariableNames());
 
@@ -141,20 +159,33 @@ public class GraphoidAxioms {
         return new GraphoidAxioms(facts, nodes, textSpecs);
     }
 
+    /**
+     * Checked whether the IM is a semigraphoid.
+     * @return True if so.
+     */
     public boolean semigraphoid() {
         return symmetry() && decomposition() && weakUnion() && contraction();
     }
 
+    /**
+     * Checks whether teh IM is a semigraphoid.
+     * @return True if so.
+     */
     public boolean graphoid() {
         return semigraphoid() && intersection();
     }
 
+    /**
+     * Checks whether the IM is a compositional graphoid.
+     * @return True if so.
+     */
     public boolean compositionalGraphoid() {
         return graphoid() && composition();
     }
 
     /**
-     * Assumes decompositiona nd composition.
+     * Returns the independence facts in the form 1:2|3 for use in various Tetrad algorithms. Assumes
+     * decomposition and compositios, so that there are no complex independence facts.
      */
     public IndependenceFacts getIndependenceFacts() {
         IndependenceFacts ifFacts = new IndependenceFacts();
@@ -173,7 +204,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * X ⊥⊥ Y | Z ==&gt; Y ⊥⊥ X | Z
+     * Checks is symmetry holds--i.e., X ⊥⊥ Y | Z ==&gt; Y ⊥⊥ X | Z
      */
     public boolean symmetry() {
 
@@ -196,7 +227,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * X ⊥⊥ (Y ∪ W) |Z ==&gt; (X ⊥⊥ Y |Z) ∧ (X ⊥⊥ W |Z)
+     * Checks if decomposition holds, e.g., X ⊥⊥ (Y ∪ W) |Z ==&gt; (X ⊥⊥ Y |Z) ∧ (X ⊥⊥ W |Z)
      */
     public boolean decomposition() {
         boolean found0 = false;
@@ -272,7 +303,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * X _||_ Y U W | Z ==&gt; X _||_ Y | Z U W
+     * Checks is weak union holds, e.g., X _||_ Y U W | Z ==&gt; X _||_ Y | Z U W
      */
     public boolean weakUnion() {
         boolean found0 = false;
@@ -327,7 +358,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * (X ⊥⊥ Y |Z) ∧ (X ⊥⊥ W |Z ∪ Y) ==&gt; X ⊥⊥ (Y ∪ W) |Z
+     * Checks if contraction holds--e.g., (X ⊥⊥ Y |Z) ∧ (X ⊥⊥ W |Z ∪ Y) ==&gt; X ⊥⊥ (Y ∪ W) |Z
      */
     public boolean contraction() {
         boolean found0 = false;
@@ -384,7 +415,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * (X ⊥⊥ Y | (Z ∪ W)) ∧ (X ⊥⊥ W | (Z ∪ Y)) ==&gt; X ⊥⊥ (Y ∪ W) |Z
+     * Checks if intersection holds--e.g., (X ⊥⊥ Y | (Z ∪ W)) ∧ (X ⊥⊥ W | (Z ∪ Y)) ==&gt; X ⊥⊥ (Y ∪ W) |Z
      */
     public boolean intersection() {
         boolean found0 = false;
@@ -422,8 +453,6 @@ public class GraphoidAxioms {
                     Set<Node> YW = new HashSet<>(Y);
                     YW.addAll(W);
 
-                    if (YW.isEmpty()) continue;
-
                     boolean found2 = false;
 
                     for (GraphoidIndFact _fact : facts) {
@@ -456,7 +485,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * (X ⊥⊥ Y | Z) ∧ (X ⊥⊥ W |Z) ==&gt; X ⊥⊥ (Y ∪ W) |Z
+     * Checks if composition holds--e.g., (X ⊥⊥ Y | Z) ∧ (X ⊥⊥ W |Z) ==&gt; X ⊥⊥ (Y ∪ W) |Z
      */
     public boolean composition() {
         boolean found0 = false;
@@ -505,14 +534,17 @@ public class GraphoidAxioms {
         return !found0;
     }
 
-    public void setTrivialtyAssumed() {
+    /**
+     * Sets whether triviality as assumed.
+     */
+    public void ensureTriviality() {
         this.trivialtyAssumed = true;
     }
 
     /**
-     * X ⊥⊥ Y | Z ==&gt; Y ⊥⊥ X | Z
+     * Sets symmetry as assumed--i.e., ensures that X ⊥⊥ Y | Z ==&gt; Y ⊥⊥ X | Z.
      */
-    public void setSymmetryAssumed() {
+    public void ensureSymmetry() {
         for (GraphoidIndFact fact : new HashSet<>(facts)) {
             Set<Node> X = fact.getX();
             Set<Node> Y = fact.getY();
@@ -525,6 +557,10 @@ public class GraphoidAxioms {
         }
     }
 
+    /**
+     * Represents a graphoid independence fact--i.e., a fact in a general independence model (IM)
+     * X _||_Y | Z.
+     */
     public static class GraphoidIndFact {
         private final Set<Node> X;
         private final Set<Node> Y;

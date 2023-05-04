@@ -1,7 +1,5 @@
 package edu.cmu.tetrad.algcomparison.algorithm.other;
 
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -52,7 +50,7 @@ public class Glasso implements Algorithm {
             Matrix cov = new Matrix(SimpleDataLoader.getContinuousDataSet(ds)
                     .getCovarianceMatrix().toArray());
 
-            edu.cmu.tetrad.search.Glasso glasso = new edu.cmu.tetrad.search.Glasso(cov);
+            edu.cmu.tetrad.search.work_in_progress.Glasso glasso = new edu.cmu.tetrad.search.work_in_progress.Glasso(cov);
             glasso.setMaxit(parameters.getInt(Params.MAXIT));
             glasso.setIa(parameters.getBoolean(Params.IA));
             glasso.setIs(parameters.getBoolean(Params.IS));
@@ -61,7 +59,7 @@ public class Glasso implements Algorithm {
             glasso.setThr(parameters.getDouble(Params.THR));
             glasso.setRhoAllEqual(1.0);
 
-            edu.cmu.tetrad.search.Glasso.Result result = glasso.search();
+            edu.cmu.tetrad.search.work_in_progress.Glasso.Result result = glasso.search();
             Matrix wwi = new Matrix(result.getWwi().toArray());
 
             List<Node> variables = ds.getVariables();

@@ -1344,8 +1344,8 @@ public final class TestGrasp {
                 line = line.trim();
 
                 GraphoidAxioms axioms = getGraphoidAxioms(line, variables);
-                axioms.setTrivialtyAssumed();
-                axioms.setSymmetryAssumed();
+                axioms.ensureTriviality();
+                axioms.ensureSymmetry();
 
                 System.out.println(axioms.getIndependenceFacts().getVariableNames());
 
