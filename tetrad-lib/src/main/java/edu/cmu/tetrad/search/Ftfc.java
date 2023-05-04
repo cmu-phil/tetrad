@@ -70,8 +70,15 @@ public class Ftfc {
     private boolean verbose;
     private Algorithm algorithm = Algorithm.GAP;
 
-    //========================================PUBLIC METHODS====================================//
-
+    /**
+     * Conctructor.
+     *
+     * @param cov       The covariance matrix searched over.
+     * @param algorithm The type of FOFC algorithm used.
+     * @param alpha     The alpha significance cutoff.
+     * @see TestType
+     * @see Fofc.Algorithm
+     */
     public Ftfc(ICovarianceMatrix cov, Algorithm algorithm, double alpha) {
         cov = new CovarianceMatrix(cov);
         this.variables = cov.getVariables();
@@ -81,10 +88,17 @@ public class Ftfc {
         this.algorithm = algorithm;
 
         this.corr = new CorrelationMatrix(cov);
-
-
     }
 
+    /**
+     * Conctructor.
+     *
+     * @param dataSet   The continuous dataset searched over.
+     * @param algorithm The type of FOFC algorithm used.
+     * @param alpha     The alpha significance cutoff.
+     * @see TestType
+     * @see Fofc.Algorithm
+     */
     public Ftfc(DataSet dataSet, Algorithm algorithm, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
@@ -94,6 +108,73 @@ public class Ftfc {
 
         this.corr = new CorrelationMatrix(dataSet);
     }
+
+    public Graph search() {
+        Set<List<Integer>> allClusters;
+
+        if (this.algorithm == Algorithm.SAG) {
+            allClusters = estimateClustersSAG();
+        } else if (this.algorithm == Algorithm.GAP) {
+            allClusters = estimateClustersGAP();
+        } else {
+            throw new IllegalStateException("Expected SAG or GAP: " + this.algorithm);
+        }
+        this.clusters = variablesForIndices(allClusters);
+        return convertToGraph(allClusters);
+    }
+
+    /**
+     * Returns clusters output by the algorithm from the last call to search().
+     * @return These clusters.
+     */
+    public List<List<Node>> getClusters() {
+        return this.clusters;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True if the case.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    // This is the main algorithm.
+    private Set<List<Integer>> estimateClustersGAP() {
+        List<Integer> _variables = allVariables();
+
+        Set<List<Integer>> pentads = findPurepentads(_variables);
+        Set<List<Integer>> combined = combinePurePentads(pentads, _variables);
+
+        Set<List<Integer>> _combined = new HashSet<>();
+
+        for (List<Integer> c : combined) {
+            List<Integer> a = new ArrayList<>(c);
+            Collections.sort(a);
+            _combined.add(a);
+        }
+
+        return _combined;
+
+    }
+
+    private List<Integer> allVariables() {
+        List<Integer> _variables = new ArrayList<>();
+        for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
+        return _variables;
+    }
+
+    private Set<List<Integer>> estimateClustersSAG() {
+        List<Integer> _variables = allVariables();
+
+        Set<List<Integer>> pureClusters = findPureClusters(_variables);
+        Set<List<Integer>> mixedClusters = findMixedClusters(pureClusters, _variables, unionPure(pureClusters));
+        Set<List<Integer>> allClusters = new HashSet<>(pureClusters);
+        allClusters.addAll(mixedClusters);
+        return allClusters;
+
+    }
+
 
     // renjiey
     private int findFrequentestIndex(Integer[] outliers) {
@@ -190,59 +271,6 @@ public class Ftfc {
             }
         }
         return list.toArray(new Integer[1]);
-    }
-
-
-    public Graph search() {
-        Set<List<Integer>> allClusters;
-
-        if (this.algorithm == Algorithm.SAG) {
-            allClusters = estimateClustersSAG();
-        } else if (this.algorithm == Algorithm.GAP) {
-            allClusters = estimateClustersGAP();
-        } else {
-            throw new IllegalStateException("Expected SAG or GAP: " + this.algorithm);
-        }
-        this.clusters = variablesForIndices(allClusters);
-        return convertToGraph(allClusters);
-    }
-
-    //========================================PRIVATE METHODS====================================//
-
-    // This is the main algorithm.
-    private Set<List<Integer>> estimateClustersGAP() {
-        List<Integer> _variables = allVariables();
-
-        Set<List<Integer>> pentads = findPurepentads(_variables);
-        Set<List<Integer>> combined = combinePurePentads(pentads, _variables);
-
-        Set<List<Integer>> _combined = new HashSet<>();
-
-        for (List<Integer> c : combined) {
-            List<Integer> a = new ArrayList<>(c);
-            Collections.sort(a);
-            _combined.add(a);
-        }
-
-        return _combined;
-
-    }
-
-    private List<Integer> allVariables() {
-        List<Integer> _variables = new ArrayList<>();
-        for (int i = 0; i < this.variables.size(); i++) _variables.add(i);
-        return _variables;
-    }
-
-    private Set<List<Integer>> estimateClustersSAG() {
-        List<Integer> _variables = allVariables();
-
-        Set<List<Integer>> pureClusters = findPureClusters(_variables);
-        Set<List<Integer>> mixedClusters = findMixedClusters(pureClusters, _variables, unionPure(pureClusters));
-        Set<List<Integer>> allClusters = new HashSet<>(pureClusters);
-        allClusters.addAll(mixedClusters);
-        return allClusters;
-
     }
 
     private Set<List<Integer>> findPurepentads(List<Integer> variables) {
@@ -988,17 +1016,6 @@ public class Ftfc {
         }
 
         return count >= n;
-    }
-
-    /**
-     * The clusters output by the algorithm from the last call to search().
-     */
-    public List<List<Node>> getClusters() {
-        return this.clusters;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     private boolean vanishes(int n1, int n2, int n3, int n4, int n5, int n6) {

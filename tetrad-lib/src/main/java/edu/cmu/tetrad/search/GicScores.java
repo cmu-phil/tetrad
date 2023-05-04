@@ -272,34 +272,6 @@ public class GicScores implements Score {
         return Double.isNaN(v);
     }
 
-    private void setCovariances(ICovarianceMatrix covariances) {
-//        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
-        this.covariances = covariances;
-//        this.covariances = covariances;
-
-//        boolean exists = false;
-
-//        for (int i = 0; i < correlations.getSize(); i++) {
-//            for (int j = 0; j < correlations.getSize(); j++) {
-//                if (i == j) continue;
-//                double r = correlations.getValue(i, j);
-//                if (abs(r) > correlationThreshold) {
-//                    System.out.println("Absolute correlation too high: " + r);
-//                    exists = true;
-//                }
-//            }
-//        }
-
-//        if (exists) {
-//            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
-//                    + ") in absolute value.");
-//        }
-
-
-        this.N = covariances.getSampleSize();
-    }
-
-
     public void setRuleType(RuleType ruleType) {
         this.ruleType = ruleType;
     }
@@ -337,6 +309,36 @@ public class GicScores implements Score {
     }
 
     public enum RuleType {MANUAL, BIC, NANDY, GIC2, RIC, RICc, GIC5, GIC6}
+
+
+    private void setCovariances(ICovarianceMatrix covariances) {
+//        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
+        this.covariances = covariances;
+//        this.covariances = covariances;
+
+//        boolean exists = false;
+
+//        for (int i = 0; i < correlations.getSize(); i++) {
+//            for (int j = 0; j < correlations.getSize(); j++) {
+//                if (i == j) continue;
+//                double r = correlations.getValue(i, j);
+//                if (abs(r) > correlationThreshold) {
+//                    System.out.println("Absolute correlation too high: " + r);
+//                    exists = true;
+//                }
+//            }
+//        }
+
+//        if (exists) {
+//            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
+//                    + ") in absolute value.");
+//        }
+
+
+        this.N = covariances.getSampleSize();
+    }
+
+
 }
 
 
