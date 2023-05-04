@@ -29,7 +29,7 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Ccd;
-import edu.cmu.tetrad.search.IndTestCramerT;
+import edu.cmu.tetrad.search.work_in_progress.IndTestCramerT;
 import edu.cmu.tetrad.search.Pc;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
