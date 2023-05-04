@@ -39,6 +39,7 @@ import java.util.Collections;
 public final class FasLofs implements GraphSearch {
 
     private final Lofs2.Rule rule;
+
     // Elapsed time of the search, in milliseconds.
     private long elapsed;
 
