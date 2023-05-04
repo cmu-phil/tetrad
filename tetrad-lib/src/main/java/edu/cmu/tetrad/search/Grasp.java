@@ -1,7 +1,8 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -47,6 +48,7 @@ public class Grasp {
 
     /**
      * Constructor for a score.
+     *
      * @param score The score to use.
      */
     public Grasp(@NotNull Score score) {
@@ -57,6 +59,7 @@ public class Grasp {
 
     /**
      * Constructor for a test.
+     *
      * @param test The test to use.
      */
     public Grasp(@NotNull IndependenceTest test) {
@@ -68,7 +71,8 @@ public class Grasp {
     /**
      * Constructor that takes both a test and a score; only one is used--
      * the parameter setting will decide which.
-     * @param test The test to use.
+     *
+     * @param test  The test to use.
      * @param score The score to use.
      */
     public Grasp(@NotNull IndependenceTest test, Score score) {
@@ -81,6 +85,7 @@ public class Grasp {
      * Given an initial permutation, 'order', of the variables, searches
      * for a best permutation of the variables by rearranging the varialbes
      * in 'order'.
+     *
      * @param order The initial permutation.
      * @return The discovered permutation at the end of the procedure.
      */
@@ -143,6 +148,7 @@ public class Grasp {
 
     /**
      * Returns the number of edges in the DAG implied by the discovered permuttion.
+     *
      * @return This number.
      */
     public int getNumEdges() {
@@ -151,6 +157,7 @@ public class Grasp {
 
     /**
      * Returns the graph implied by the discovered permutation.
+     *
      * @param cpDag True if a CPDAG should be returned, false if a DAG should be returned.
      * @return This graph.
      */
@@ -167,6 +174,7 @@ public class Grasp {
     /**
      * Sets the number of times the best order algorithm should be rerun with different
      * starting permtutions in search of a best BIC scoring permutation.
+     *
      * @param numStarts This number; if 1, it is run just once with the given
      *                  starting permutation; if 2 or higher, it is rerun subsequently
      *                  with random initial permutations and the best scoring
@@ -183,6 +191,7 @@ public class Grasp {
      * automatic best order runs will use random permutations.) This is included
      * so that the algorithm will be capable of outputting the same results with the
      * same data without any randomness.
+     *
      * @param useDataOrder True if so
      */
     public void setUseDataOrder(boolean useDataOrder) {
@@ -191,6 +200,7 @@ public class Grasp {
 
     /**
      * Returns the variables.
+     *
      * @return This list.
      */
     public List<Node> getVariables() {
@@ -199,6 +209,7 @@ public class Grasp {
 
     /**
      * Sets whether verbose output is printed.
+     *
      * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
@@ -211,6 +222,7 @@ public class Grasp {
     /**
      * Sets the knowledge used in the search. The search is set up to honor all
      * knowledge of forbidden or required directed edges, and tiered knowledge.
+     *
      * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -219,6 +231,7 @@ public class Grasp {
 
     /**
      * Sets the depth of ??? (Bryan cnan you document this?)
+     *
      * @param depth This depth.
      */
     public void setDepth(int depth) {
@@ -228,16 +241,20 @@ public class Grasp {
 
     /**
      * Sets the depth of ??? (Bryan cnan you document this?)
+     *
      * @param uncoveredDepth This depth.
-     */    public void setSingularDepth(int uncoveredDepth) {
+     */
+    public void setSingularDepth(int uncoveredDepth) {
         if (uncoveredDepth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
         this.uncoveredDepth = uncoveredDepth;
     }
 
     /**
      * Sets the depth of ??? (Bryan cnan you document this?)
+     *
      * @param nonSingularDepth This depth.
-     */    public void setNonSingularDepth(int nonSingularDepth) {
+     */
+    public void setNonSingularDepth(int nonSingularDepth) {
         if (nonSingularDepth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
         this.nonSingularDepth = nonSingularDepth;
     }
@@ -245,6 +262,7 @@ public class Grasp {
     /**
      * True if the score should be used (if both a score and a test are provided),
      * false if not.
+     *
      * @param useScore True if so.
      */
     public void setUseScore(boolean useScore) {
@@ -254,6 +272,7 @@ public class Grasp {
     /**
      * True if GRasP0 should be performed before GRaSP1 and GRaSP1 before GRaSP2.
      * False if this ordering should not be imposed.
+     *
      * @param ordered True if the ordering should be imposed.
      */
     public void setOrdered(boolean ordered) {
@@ -263,6 +282,7 @@ public class Grasp {
     /**
      * True if the Raskutti-Uhler method should be used, false if the Verma-Pearl
      * method should be used.
+     *
      * @param useRaskuttiUhler True if RU, false if VP.
      * @see #setNumStarts(int)
      */
