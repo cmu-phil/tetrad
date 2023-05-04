@@ -68,7 +68,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static edu.cmu.tetrad.search.OtherPermAlgs.Method.SP;
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 
@@ -1947,30 +1946,6 @@ public final class TestGrasp {
     }
 
     //    @Test
-    public void testRaskutti() {
-        Ret facts = getFactsRaskutti();
-
-        IndTestDSep test = new IndTestDSep(facts.getFacts());
-
-        OtherPermAlgs otherPermAlgs = new OtherPermAlgs(test);
-        otherPermAlgs.setMethod(SP);
-        otherPermAlgs.setNumStarts(1);
-
-        List<Node> variables = test.getVariables();
-        PermutationGenerator gen = new PermutationGenerator(variables.size());
-        int[] perm;
-
-        while ((perm = gen.next()) != null) {
-            List<Node> p = GraphUtils.asList(perm, variables);
-
-            List<Node> p2 = otherPermAlgs.bestOrder(test.getVariables());
-            Graph cpdag = otherPermAlgs.getGraph(true);
-
-            System.out.println(p + " " + cpdag.getNumEdges());
-        }
-    }
-
-    //    @Test
     public void testManyVarManyDegreeTest() {
         Parameters params = new Parameters();
 
@@ -3000,73 +2975,6 @@ public final class TestGrasp {
                     passed = false;
 //                        break;
                 }
-            }
-
-            System.out.println((i + 1) + " " + (passed ? "P " : "F"));
-        }
-    }
-
-    //    @Test
-    public void testWorstCaseExamples() {
-        List<Ret> allFacts = new ArrayList<>();
-
-        allFacts.add(getBryanWorseCaseMParentsNChildren(3, 2));
-
-        int count = 0;
-
-        boolean printCpdag = false;
-
-        for (int i = 0; i < allFacts.size(); i++) {
-            Ret facts = allFacts.get(i);
-            count++;
-
-            System.out.println();
-            System.out.println("Test #" + (i + 1));
-            System.out.println(facts.getLabel());
-            System.out.println(facts.getFacts());
-        }
-
-        for (int i = 0; i < allFacts.size(); i++) {
-            boolean passed = true;
-
-            Ret facts = allFacts.get(i);
-            count++;
-
-            TeyssierScorer scorer = new TeyssierScorer(new IndTestDSep(facts.getFacts()),
-                    new GraphScore(facts.getFacts()));
-
-            OrderedMap<String, Set<Graph>> graphs = new ListOrderedMap<>();
-            OrderedMap<String, Set<String>> labels = new ListOrderedMap<>();
-
-            List<Node> variables = facts.facts.getVariables();
-            Collections.sort(variables);
-
-            PermutationGenerator gen = new PermutationGenerator(variables.size());
-            int[] perm;
-
-            while ((perm = gen.next()) != null) {
-                List<Node> p = GraphUtils.asList(perm, variables);
-
-                OtherPermAlgs search = new OtherPermAlgs(new IndTestDSep(facts.getFacts()));
-//                    search.setMaxPermSize(6);
-                search.setDepth(Integer.MAX_VALUE);
-//                    search.setDepth((method == BOSS1 || method == BOSS2 || method == GRASP || method == RCG) ? 20 : 5);
-                search.setNumRounds(20);
-//                    search.setVerbose(true);
-                List<Node> order = search.bestOrder(p);
-                System.out.println(p + " " + order + " " + search.getNumEdges());// + " " + search.getGraph(false));
-
-                if (search.getNumEdges() != facts.getTruth()) {
-                    passed = false;
-//                        break;
-                }
-
-//                Pc search = new Pc(new IndTestDSep(facts.getFacts()));
-//                System.out.println(p + " " + search.search().getNumEdges());
-
-//                Fges search = new Fges(new GraphScore(facts.getFacts()));
-//                System.out.println(p + " " + search.search().getNumEdges());
-
             }
 
             System.out.println((i + 1) + " " + (passed ? "P " : "F"));
