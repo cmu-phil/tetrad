@@ -52,7 +52,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     private final Map<Node, Integer> variablesMap;
     private double percent = .75;
     private boolean fdr = true;
-    private final ArrayList<RecursivePartialCorrelation> recursivePartialCorrelation;
+    private final ArrayList<PartialCorrelation> recursivePartialCorrelation;
     private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
@@ -87,7 +87,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
         this.recursivePartialCorrelation = new ArrayList<>();
         for (Matrix covMatrix : this.ncov) {
-            this.recursivePartialCorrelation.add(new RecursivePartialCorrelation(getVariables(), covMatrix, dataSets.get(0).getNumRows()));
+            this.recursivePartialCorrelation.add(new PartialCorrelation(getVariables(), covMatrix, dataSets.get(0).getNumRows()));
         }
     }
 

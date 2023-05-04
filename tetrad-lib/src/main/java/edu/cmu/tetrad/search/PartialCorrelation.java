@@ -38,7 +38,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * Calculates partial correlation using the recursive method.
  * @author josephramsey
  */
-public class RecursivePartialCorrelation {
+public class PartialCorrelation {
 
     private final ICovarianceMatrix corr;
     private final Map<Node, Integer> nodesMap = new HashMap<>();
@@ -49,7 +49,7 @@ public class RecursivePartialCorrelation {
      * @param cov The covariance matrix, as a Matrix.
      * @param sampleSize The sample size.
      */
-    public RecursivePartialCorrelation(List<Node> nodes, Matrix cov, int sampleSize) {
+    public PartialCorrelation(List<Node> nodes, Matrix cov, int sampleSize) {
         this.corr = new CorrelationMatrixOnTheFly(new CovarianceMatrix(nodes, cov, sampleSize));
         for (int i = 0; i < nodes.size(); i++) this.nodesMap.put(nodes.get(i), i);
     }
@@ -58,7 +58,7 @@ public class RecursivePartialCorrelation {
      * Constructor
      * @param cov The covariance matrix, as an ICovariance object.
      */
-    public RecursivePartialCorrelation(ICovarianceMatrix cov) {
+    public PartialCorrelation(ICovarianceMatrix cov) {
         this.corr = new CorrelationMatrixOnTheFly(cov);
         List<Node> nodes = this.corr.getVariables();
         for (int i = 0; i < nodes.size(); i++) this.nodesMap.put(nodes.get(i), i);

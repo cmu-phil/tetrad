@@ -77,7 +77,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     private double fisherZ = Double.NaN;
     private double cutoff = Double.NaN;
     private final NormalDistribution normal = new NormalDistribution(0, 1);
-    private final RecursivePartialCorrelation recursivePartialCorrelation;
+    private final PartialCorrelation recursivePartialCorrelation;
 
 
     //==========================CONSTRUCTORS=============================//
@@ -108,7 +108,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
 
         this.dataSet = dataSet;
 
-        this.recursivePartialCorrelation = new RecursivePartialCorrelation(this.covMatrix);
+        this.recursivePartialCorrelation = new PartialCorrelation(this.covMatrix);
     }
 
     /**
@@ -126,7 +126,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         this.nameMap = nameMap(variables);
         setAlpha(alpha);
 
-        this.recursivePartialCorrelation = new RecursivePartialCorrelation(this.covMatrix);
+        this.recursivePartialCorrelation = new PartialCorrelation(this.covMatrix);
 
     }
 
@@ -141,7 +141,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         this.nameMap = nameMap(this.variables);
         setAlpha(alpha);
 
-        this.recursivePartialCorrelation = new RecursivePartialCorrelation(this.covMatrix);
+        this.recursivePartialCorrelation = new PartialCorrelation(this.covMatrix);
 
     }
 
