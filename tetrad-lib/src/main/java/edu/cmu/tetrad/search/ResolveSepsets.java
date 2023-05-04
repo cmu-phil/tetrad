@@ -509,7 +509,7 @@ public final class ResolveSepsets {
                 localCondSet.add(independenceTest.getVariable(node.getName()));
             }
             independenceTest.checkIndependence(independenceTest.getVariable(x.getName()), independenceTest.getVariable(y.getName()), localCondSet);
-            ts += ((IndTestChiSquare) independenceTest).getXSquare() / independenceTests.size();
+            ts += ((IndTestChiSquare) independenceTest).getChiSquare() / independenceTests.size();
             df += ((IndTestChiSquare) independenceTest).getDf();
         }
         df = df / independenceTests.size();

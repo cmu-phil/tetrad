@@ -30,22 +30,22 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 /**
- * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
- * variable not in S, by applying a conditional Chi Square test. A description of such a test is given in Fienberg, "The
- * Analysis of Cross-Classified Categorical Data," 2nd edition. The formula for degrees of freedom used in this test are
+ * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable,
+ * and X and Y are discrete variable not in S, by applying a conditional Chi Square test.
+ * A description of such a test is given in Fienberg, "The Analysis of Cross-Classified
+ * Categorical Data," 2nd edition. The formula for degrees of freedom used in this test are
  * equivalent to the formulation on page 142 of Fienberg.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see ChiSquareTest
  */
 public final class IndTestChiSquare implements IndependenceTest {
 
     /**
-     * The X Square tester.
+     * The Chi Square tester.
      */
     private final ChiSquareTest chiSquareTest;
 
@@ -71,12 +71,7 @@ public final class IndTestChiSquare implements IndependenceTest {
      */
     private int df;
 
-    /**
-     *
-     */
     private double pValue;
-
-    private final HashSet<IndependenceFact> facts = new HashSet<>();
 
     private boolean verbose;
 
@@ -108,6 +103,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
     /**
      * Creates a new IndTestChiSquare for a subset of the nodes.
+     * @param nodes This list of nodes.
      */
     public IndependenceTest indTestSubset(List<Node> nodes) {
         if (nodes.isEmpty()) {
@@ -138,9 +134,9 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * @return the G Square value.
+     * @return the chi Square value.
      */
-    public double getXSquare() {
+    public double getChiSquare() {
         return this.xSquare;
     }
 
@@ -164,11 +160,9 @@ public final class IndTestChiSquare implements IndependenceTest {
      * @param x the one variable being compared.
      * @param y the second variable being compared.
      * @param z the list of conditioning varNames.
-     * @return true iff x _||_ y | z.
+     * @return True iff x _||_ y | z.
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
         if (z == null) {
             throw new NullPointerException();
         }
@@ -211,8 +205,6 @@ public final class IndTestChiSquare implements IndependenceTest {
         }
 
         IndependenceFact fact = new IndependenceFact(x, y, z);
-        this.facts.add(fact);
-
         return new IndependenceResult(fact, result.isIndep(), result.getPValue());
     }
 
@@ -275,6 +267,10 @@ public final class IndTestChiSquare implements IndependenceTest {
         return countDetermined;
     }
 
+    /**
+     * Returns the alpha significance level of the test.
+     * @return This level.
+     */
     public double getAlpha() {
         return this.chiSquareTest.getAlpha();
     }
@@ -290,17 +286,55 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * @return the list of variables over which this independence checker is capable of determinine independence
-     * relations-- that is, all the variables in the given graph or the given data set.
+     * @return the list of variables over which this independence checker is capable of determinine
+     * independence relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
         return Collections.unmodifiableList(this.variables);
     }
 
-
+    /**
+     * Returns a string representation of this test.
+     * @return This string.
+     */
     public String toString() {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
         return "Chi Square, alpha = " + nf.format(getAlpha());
+    }
+
+    /**
+     * Returns the data being analyzed.
+     * @return This data.
+     */
+    public DataSet getData() {
+        return this.dataSet;
+    }
+
+    /**
+     * Returns a number which is more positive for more dependent test tesults.
+     * @return This number.
+     */
+    @Override
+    public double getScore() {
+        return -(getPValue() - getAlpha());
+    }
+
+    /**
+     * Returns true if verbose output should be printed.
+     * @return This.
+     */
+    @Override
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True if so.
+     */
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     private double getDeterminationP() {
@@ -309,30 +343,6 @@ public final class IndTestChiSquare implements IndependenceTest {
          * values of conditioning variables, that coefs as 'determining."
          */
         return 0.99;
-    }
-
-    public DataSet getData() {
-        return this.dataSet;
-    }
-
-
-    @Override
-    public double getScore() {
-        return -(getPValue() - getAlpha());
-    }
-
-    public HashSet<IndependenceFact> getFacts() {
-        return this.facts;
-    }
-
-    @Override
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    @Override
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 }
 
