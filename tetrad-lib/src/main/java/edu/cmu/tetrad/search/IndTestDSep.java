@@ -294,7 +294,7 @@ public class IndTestDSep implements IndependenceTest {
      * @throws UnsupportedOperationException Since this method is not feasible.
      */
     public boolean determines(List<Node> z, Node x1) {
-        throw new UnsupportedOperationException("The 'determines' method is not implemented")
+        throw new UnsupportedOperationException("The 'determines' method is not implemented");
     }
 
     /**
