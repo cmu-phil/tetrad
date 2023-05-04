@@ -31,7 +31,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by josephramsey on 3/24/15.
+ * <p>A SepsetProcuder that selects the first sepset it comes to from among the extra
+ * sepsets or the adjacents of i or k, or null if none is found. This version uses
+ * conservative reasoning (see the CPC algorithm).</p>
+ *
+ * @author josephramsey
+ * @see SepsetProducer
+ * @see SepsetMap
+ * @see Cpc
  */
 public class SepsetsConservative implements SepsetProducer {
     private final Graph graph;

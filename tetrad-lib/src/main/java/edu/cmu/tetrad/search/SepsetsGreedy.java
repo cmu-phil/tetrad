@@ -30,8 +30,12 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.List;
 
 /**
- * Selects the first sepset it comes to from among the extra sepsets or the adjacents of i or k,
- * or null if none is found.
+ * <p>A SepsetProcuder that selects the first sepset it comes to from among the extra
+ * sepsets or the adjacents of i or k, or null if none is found.</p>
+ *
+ * @author josephramsey
+ * @see SepsetProducer
+ * @see SepsetMap
  */
 public class SepsetsGreedy implements SepsetProducer {
     private final Graph graph;

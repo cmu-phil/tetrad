@@ -26,7 +26,10 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Created by josephramsey on 3/24/15.
+ * <p>A sepset producer using conditional independence tests to generate the Sepset map.</p>
+ * @author josephramsey
+ * @see SepsetProducer
+ * @see SepsetMap
  */
 public class SepsetsSet implements SepsetProducer {
     private final SepsetMap sepsets;

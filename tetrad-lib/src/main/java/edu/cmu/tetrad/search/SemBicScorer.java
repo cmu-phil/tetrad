@@ -11,12 +11,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Scores a DAG using the SemBicScore.
+ * @author josephramsey
+ * @see SemBicScore
+ */
 public class SemBicScorer {
     public static double scoreDag(Graph dag, DataModel data) {
-        return scoreDag(dag, data, true);
-    }
-
-    public static double scoreDag(Graph dag, DataModel data, boolean precomputeCovariances) {
         if (dag == null) throw new NullPointerException("DAG not specified.");
 
         Score score;

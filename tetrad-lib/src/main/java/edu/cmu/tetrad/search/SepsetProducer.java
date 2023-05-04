@@ -26,6 +26,8 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
+ * <p>A covenience structure that can generate and keep track of sepsets</p>
+ * @see SepsetMap
  * @author Joseph Ramsey
  */
 public interface SepsetProducer {
