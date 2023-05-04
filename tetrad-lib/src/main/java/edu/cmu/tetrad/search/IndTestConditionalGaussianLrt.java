@@ -79,9 +79,9 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * @return true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = z1,...,zn, where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
+     * @return True if the given independence question is judged true, False if not.
+     * The independence question is of the form x _||_ y | z, z = z1,...,zn, where
+     * x, y, z1,...,zn are searchVariables in the list returned by getVariableNames().
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
@@ -140,24 +140,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
     }
 
-    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
-        List<Integer> rows = new ArrayList<>();
-
-        K:
-        for (int k = 0; k < this.data.getNumRows(); k++) {
-            for (Node node : allVars) {
-                if (node instanceof ContinuousVariable) {
-                    if (Double.isNaN(this.data.getDouble(k, nodesHash.get(node)))) continue K;
-                } else if (node instanceof DiscreteVariable) {
-                    if (this.data.getInt(k, nodesHash.get(node)) == -99) continue K;
-                }
-            }
-
-            rows.add(k);
-        }
-        return rows;
-    }
-
     /**
      * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
      * not meaningful for tis test.
@@ -197,13 +179,21 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         this.alpha = alpha;
     }
 
+    /**
+     * Returns the data.
+     * @return This.
+     */
     public DataSet getData() {
         return this.data;
     }
 
 
+    /**
+     * Returns a number that is higher for stronger judgments of dependence
+     * and negative for judgments of independence.
+     * @return This number.
+     */
     @Override
-
     public double getScore() {
         return getAlpha() - getPValue();
     }
@@ -216,17 +206,47 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         return "Conditional Gaussian LRT, alpha = " + nf.format(getAlpha());
     }
 
+    /**
+     * Returns true iff verbose output should be printed.
+     * @return This.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the nubmer of categories used to discretize variables.
+     * @param numCategoriesToDiscretize This number, by default 3.
+     */
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
+    }
+
+    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+        List<Integer> rows = new ArrayList<>();
+
+        K:
+        for (int k = 0; k < this.data.getNumRows(); k++) {
+            for (Node node : allVars) {
+                if (node instanceof ContinuousVariable) {
+                    if (Double.isNaN(this.data.getDouble(k, nodesHash.get(node)))) continue K;
+                } else if (node instanceof DiscreteVariable) {
+                    if (this.data.getInt(k, nodesHash.get(node)) == -99) continue K;
+                }
+            }
+
+            rows.add(k);
+        }
+        return rows;
     }
 }
