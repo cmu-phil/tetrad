@@ -55,7 +55,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @author Ricardo Silva, Summer 2003
  * @author Joseph Ramsey, Revisions 5/2015
  */
-public final class Fges implements GraphSearch, GraphScorer {
+public final class Fges implements GraphSearch, DagScorer {
     private final Set<Node> emptySet = new HashSet<>();
     private final int[] count = new int[1];
     private final int depth = 10000;

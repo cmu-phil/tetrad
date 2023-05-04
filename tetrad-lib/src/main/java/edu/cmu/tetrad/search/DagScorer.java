@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
  *
  * @author Joseph Ramsey
  */
-public interface GraphScorer {
+public interface DagScorer {
     double scoreDag(Graph dag);
 }
 

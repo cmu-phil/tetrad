@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.GraphScorer;
+import edu.cmu.tetrad.search.DagScorer;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
@@ -63,7 +63,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
     /**
      * Transient graph scorer, null if non exists (or needs to be refreshed).
      */
-    private final transient GraphScorer graphScorer;
+    private final transient DagScorer graphScorer;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -72,7 +72,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         this.graphScorer = null;
     }
 
-    public ScoredGraphsWrapper(Graph graph, GraphScorer scorer) {
+    public ScoredGraphsWrapper(Graph graph, DagScorer scorer) {
         List<Graph> dags = SearchGraphUtils.generateCpdagDags(graph, true);
         this.graphsToScores = new HashMap<>();
         this.graphScorer = scorer;
@@ -201,7 +201,7 @@ public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshal
         this.selectedGraph = graph;
     }
 
-    public GraphScorer getGraphScorer() {
+    public DagScorer getGraphScorer() {
         return this.graphScorer;
     }
 }

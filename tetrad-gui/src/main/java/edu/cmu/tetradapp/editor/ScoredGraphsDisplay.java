@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.GraphScorer;
+import edu.cmu.tetrad.search.DagScorer;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
@@ -71,7 +71,7 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         setup();
     }
 
-    public ScoredGraphsDisplay(Graph graph, GraphScorer scorer) {
+    public ScoredGraphsDisplay(Graph graph, DagScorer scorer) {
         List<Graph> _dags = SearchGraphUtils.generateCpdagDags(graph, true);
 
         for (Graph _graph : _dags) {
