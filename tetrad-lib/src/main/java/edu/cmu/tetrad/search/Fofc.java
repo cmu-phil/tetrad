@@ -41,7 +41,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  *
  * @author Joseph Ramsey
  */
-public class FindOneFactorClusters {
+public class Fofc {
 
     private final CorrelationMatrix corr;
     // The list of all variables.
@@ -62,7 +62,7 @@ public class FindOneFactorClusters {
     private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
 
 
-    public FindOneFactorClusters(ICovarianceMatrix cov, TestType testType, Algorithm algorithm, double alpha) {
+    public Fofc(ICovarianceMatrix cov, TestType testType, Algorithm algorithm, double alpha) {
         if (testType == null) throw new NullPointerException("Null indepTest type.");
         cov = new CovarianceMatrix(cov);
         this.variables = cov.getVariables();
@@ -78,7 +78,7 @@ public class FindOneFactorClusters {
 
     }
 
-    public FindOneFactorClusters(DataSet dataSet, TestType testType, Algorithm algorithm, double alpha) {
+    public Fofc(DataSet dataSet, TestType testType, Algorithm algorithm, double alpha) {
         if (testType == null) throw new NullPointerException("Null test type.");
         this.variables = dataSet.getVariables();
         this.alpha = alpha;

@@ -74,8 +74,8 @@ public class TestMimbuild {
             List<List<Node>> partition;
 
             if (algorithm.equals("FOFC")) {
-                FindOneFactorClusters fofc = new FindOneFactorClusters(data, TestType.TETRAD_WISHART,
-                        FindOneFactorClusters.Algorithm.GAP, 0.001);
+                Fofc fofc = new Fofc(data, TestType.TETRAD_WISHART,
+                        Fofc.Algorithm.GAP, 0.001);
                 searchGraph = fofc.search();
                 partition = fofc.getClusters();
             } else if (algorithm.equals("BPC")) {

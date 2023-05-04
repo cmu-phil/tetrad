@@ -39,7 +39,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  *
  * @author Joseph Ramsey
  */
-public class FindTwoFactorClusters {
+public class Ftfc {
 
     public Algorithm getAlgorithm() {
         return this.algorithm;
@@ -71,7 +71,7 @@ public class FindTwoFactorClusters {
 
     //========================================PUBLIC METHODS====================================//
 
-    public FindTwoFactorClusters(ICovarianceMatrix cov, Algorithm algorithm, double alpha) {
+    public Ftfc(ICovarianceMatrix cov, Algorithm algorithm, double alpha) {
         cov = new CovarianceMatrix(cov);
         this.variables = cov.getVariables();
         this.alpha = alpha;
@@ -84,7 +84,7 @@ public class FindTwoFactorClusters {
 
     }
 
-    public FindTwoFactorClusters(DataSet dataSet, Algorithm algorithm, double alpha) {
+    public Ftfc(DataSet dataSet, Algorithm algorithm, double alpha) {
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
         this.test = new DeltaSextadTest(dataSet);

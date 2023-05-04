@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.ZsbScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -34,12 +35,12 @@ public class ZhangShenBoundScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.ZhangShenBoundScore score;
+        ZsbScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.ZhangShenBoundScore((DataSet) this.dataSet);
+            score = new ZsbScore((DataSet) this.dataSet);
         } else if (dataSet instanceof ICovarianceMatrix) {
-            score = new edu.cmu.tetrad.search.ZhangShenBoundScore((ICovarianceMatrix) this.dataSet);
+            score = new ZsbScore((ICovarianceMatrix) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }

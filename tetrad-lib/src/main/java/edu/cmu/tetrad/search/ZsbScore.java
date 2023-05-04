@@ -38,7 +38,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * @author Joseph Ramsey
  */
-public class ZhangShenBoundScore implements Score {
+public class ZsbScore implements Score {
 
     // The variables of the covariance matrix.
     private final List<Node> variables;
@@ -66,7 +66,7 @@ public class ZhangShenBoundScore implements Score {
      * Constructs the score using a covariance matrix.
      * @param covMatrix The covariance matrix.
      */
-    public ZhangShenBoundScore(ICovarianceMatrix covMatrix) {
+    public ZsbScore(ICovarianceMatrix covMatrix) {
         if (covMatrix == null) {
             throw new NullPointerException();
         }
@@ -80,7 +80,7 @@ public class ZhangShenBoundScore implements Score {
      * Constructs the score using a covariance matrix.
      * @param dataSet The data set.
      */
-    public ZhangShenBoundScore(DataSet dataSet) {
+    public ZsbScore(DataSet dataSet) {
         this(SimpleDataLoader.getCovarianceMatrix(dataSet));
         this.data = dataSet.getDoubleData();
     }

@@ -52,16 +52,16 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
             }
 
             boolean gap = parameters.getBoolean(Params.USE_GAP, true);
-            FindOneFactorClusters.Algorithm algorithm;
+            edu.cmu.tetrad.search.Fofc.Algorithm algorithm;
 
             if (gap) {
-                algorithm = FindOneFactorClusters.Algorithm.GAP;
+                algorithm = edu.cmu.tetrad.search.Fofc.Algorithm.GAP;
             } else {
-                algorithm = FindOneFactorClusters.Algorithm.SAG;
+                algorithm = edu.cmu.tetrad.search.Fofc.Algorithm.SAG;
             }
 
-            edu.cmu.tetrad.search.FindOneFactorClusters search
-                    = new edu.cmu.tetrad.search.FindOneFactorClusters(cov, testType, algorithm, alpha);
+            edu.cmu.tetrad.search.Fofc search
+                    = new edu.cmu.tetrad.search.Fofc(cov, testType, algorithm, alpha);
             search.setSignificanceChecked(parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
