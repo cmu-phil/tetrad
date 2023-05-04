@@ -29,13 +29,16 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 
+import javax.help.UnsupportedOperationException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Implements Chickering and Meek's (2002) locally consistent score criterion.
+ * A "score" that implmenets implements Chickering and Meek's (2002) locally
+ * consistent score criterion. This is not a true score; rather, a 0 is returned
+ * in case dseparation holds and a 1 in case dseparation does not hold.
  *
  * @author Joseph Ramsey
  */
@@ -51,36 +54,30 @@ public class GraphScore implements Score {
     private boolean verbose = false;
 
     /**
-     * Constructs the score using a covariance matrix.
+     * Constructor
+     * @param dag A directed acyclic graph.
      */
     public GraphScore(Graph dag) {
         this.dag = dag;
-
         this.variables = new ArrayList<>(dag.getNodes());
         this.variables.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-
-//        for (Node node : dag.getNodes()) {
-//            if (node.getNodeType() == NodeType.MEASURED) {
-//                this.variables.add(node);
-//            }
-//        }
-    }
-
-    public GraphScore(IndependenceFacts facts) {
-        this.facts = facts;
-
-        this.variables = new ArrayList<>(facts.getVariables());
-        this.variables.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-
-//        for (Node node : facts.getVariables()) {
-//            if (node.getNodeType() == NodeType.MEASURED) {
-//                this.variables.add(node);
-//            }
-//        }
     }
 
     /**
-     * Calculates the sample likelihood and BIC score for y given its z in a simple SEM model
+     * Constructor.
+     * @param facts A list known independence facts; a lookup will be donw
+     *              from these facts.
+     * @see IndependenceFacts
+     */
+    public GraphScore(IndependenceFacts facts) {
+        this.facts = facts;
+        this.variables = new ArrayList<>(facts.getVariables());
+        this.variables.removeIf(node -> node.getNodeType() == NodeType.LATENT);
+    }
+
+    /**
+     * Calculates the sample likelihood and BIC score for y given its z in a simple SEM model.
+     * @return this score.
      */
     public double localScore(int y, int[] z) {
         return getPearlParentsTest().size();
@@ -104,24 +101,104 @@ public class GraphScore implements Score {
         return mb;
     }
 
-    private List<Node> getVariableList(int[] indices) {
-        List<Node> variables = new ArrayList<>();
-        for (int i : indices) {
-            variables.add(this.variables.get(i));
-        }
-        return variables;
-    }
 
-
+    /**
+     * Returns a "score difference", which amounts to a conditional
+     * local scoring criterion results
+     * @return The "difference".
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return locallyConsistentScoringCriterion(x, y, z);
     }
 
+    /**
+     * The "unconditional difference."
+     * @return This.
+     */
     @Override
     public double localScoreDiff(int x, int y) {
         return localScoreDiff(x, y, new int[0]);
-//        return localScore(y, x) - localScore(y);
+    }
+
+    /**
+     * @throws UnsupportedOperationException Since the method doesn't make sense here.
+     */
+    public double localScore(int i, int parent) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @throws UnsupportedOperationException Since the method doesn't make sense here.
+     */
+    public double localScore(int i) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns a judgment for FGES as to whether a score with the bump is for an effect edge.
+     * @param bump The bump
+     * @return True if so.
+     * @see Fges
+     */
+    @Override
+    public boolean isEffectEdge(double bump) {
+        return bump > 0;
+    }
+
+    /**
+     * @throws UnsupportedOperationException Since the method doesn't make sense here.
+     */
+    public DataSet getDataSet() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns the list of variables.
+     * @return This list.
+     */
+    @Override
+    public List<Node> getVariables() {
+        return variables;
+    }
+
+    /**
+     * Returns the maximum degree, which is set to 1000.
+     * @return 1000.
+     */
+    @Override
+    public int getMaxDegree() {
+        return 1000;
+    }
+
+    /**
+     * @throws UnsupportedOperationException Since this method doesn't make sense here.
+     */
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        throw new UnsupportedOperationException("The 'determines' method is not implemented for this score.");
+    }
+
+    /**
+     * @throws UnsupportedOperationException Since this "score" does not use data.
+     */
+    public DataModel getData() {
+        throw new UnsupportedOperationException("This score does not use data.");
+    }
+
+    /**
+     * @throws UnsupportedOperationException Since this score does not use data.
+     */
+    public int getSampleSize() {
+        throw new UnsupportedOperationException("This score does not use data, so no sample size is available.");
+    }
+
+    /**
+     * Returns a copy of the DAG being searched over.
+     * @return This DAG.
+     */
+    public Graph getDag() {
+        return new EdgeListGraph(dag);
     }
 
     private double locallyConsistentScoringCriterion(int x, int y, int[] z) {
@@ -142,70 +219,7 @@ public class GraphScore implements Score {
         return dSeparatedFrom ? -1.0 : 1.0;
     }
 
-    /**
-     * Specialized scoring method for a single parent. Used to speed up the effect edges search.
-     */
-
-    public double localScore(int i, int parent) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Specialized scoring method for no parents. Used to speed up the effect edges search.
-     */
-    public double localScore(int i) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isEffectEdge(double bump) {
-        return bump > 0;
-    }
-
-    public DataSet getDataSet() {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return variables;
-    }
-
-    @Override
-    public int getMaxDegree() {
-        return 1000;
-    }
-
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        return false;
-    }
-
-    public DataModel getData() {
-        return null;
-    }
-
-    public int getSampleSize() {
-        return 0;
-    }
-
-    public boolean getAlternativePenalty() {
-        return false;
-    }
-
-    public Graph getDag() {
-        return new EdgeListGraph(dag);
-    }
-
-    public boolean isDSeparatedFrom(Node x, Node y, List<Node> z) {
+    private boolean isDSeparatedFrom(Node x, Node y, List<Node> z) {
         if (dag != null) {
             return dag.paths().isDSeparatedFrom(x, y, z);
         } else if (facts != null) {
@@ -215,16 +229,16 @@ public class GraphScore implements Score {
         throw new IllegalArgumentException("Expecting either a DAG or an IndependenceFacts object.");
     }
 
-    public boolean isDConnectedTo(Node x, Node y, List<Node> z) {
+    private boolean isDConnectedTo(Node x, Node y, List<Node> z) {
         return !isDSeparatedFrom(x, y, z);
     }
 
-    public void setPrefix(List<Node> prefix) {
-        this.prefix = prefix;
-    }
-
-    public void setN(Node n) {
-        this.n = n;
+    private List<Node> getVariableList(int[] indices) {
+        List<Node> variables = new ArrayList<>();
+        for (int i : indices) {
+            variables.add(this.variables.get(i));
+        }
+        return variables;
     }
 }
 
