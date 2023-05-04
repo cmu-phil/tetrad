@@ -32,17 +32,10 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Implements the "fast adjacency search" used in several causal algorithm in this package. In the fast adjacency
- * search, at a given stage of the search, an edge X*-*Y is removed from the graph if X _||_ Y | S, where S is a subset
- * of size d either of adj(X) or of adj(Y), where d is the depth of the search. The fast adjacency search performs this
- * procedure for each pair of adjacent edges in the graph and for each depth d = 0, 1, 2, ..., d1, where d1 is either
- * the maximum depth or else the first such depth at which no edges can be removed. The interpretation of this adjacency
- * search is different for different algorithm, depending on the assumptions of the algorithm. A mapping from {x, y} to
- * S({x, y}) is returned for edges x *-* y that have been removed.
- * <p>
  * This adjusts FAS for the deterministic case.
  *
  * @author Joseph Ramsey.
+ * @see Fas
  */
 public class FasDeterministic implements IFas {
 
@@ -120,8 +113,6 @@ public class FasDeterministic implements IFas {
         this.test = test;
     }
 
-    //==========================PUBLIC METHODS===========================//
-
     /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
      * variables which are independent conditional on some other set of variables in the graph (the "sepset"). These are
@@ -165,8 +156,6 @@ public class FasDeterministic implements IFas {
             }
         }
 
-//        out.println("Finished with search, constructing Graph...");
-
         for (int i = 0; i < nodes.size(); i++) {
             for (int j = i + 1; j < nodes.size(); j++) {
                 Node x = nodes.get(i);
@@ -177,8 +166,6 @@ public class FasDeterministic implements IFas {
                 }
             }
         }
-
-//        out.println("Finished constructing Graph.");
 
         this.logger.log("info", "Finishing Fast Adjacency Search.");
 
@@ -209,7 +196,55 @@ public class FasDeterministic implements IFas {
         this.knowledge = knowledge;
     }
 
-    //==============================PRIVATE METHODS======================/
+    public int getNumIndependenceTests() {
+        return this.numIndependenceTests;
+    }
+
+    public int getNumDependenceJudgments() {
+        return this.numDependenceJudgement;
+    }
+
+    public SepsetMap getSepsets() {
+        return this.sepset;
+    }
+
+    public void setExternalGraph(Graph externalGraph) {
+        this.externalGraph = externalGraph;
+    }
+
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    @Override
+    public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+        return null;
+    }
+
+    @Override
+    public long getElapsedTime() {
+        return 0;
+    }
+
+    @Override
+    public List<Node> getNodes() {
+        return this.test.getVariables();
+    }
+
+    @Override
+    public List<Triple> getAmbiguousTriples(Node node) {
+        return null;
+    }
+
+    @Override
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
 
     private boolean searchAtDepth0(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
         List<Node> empty = Collections.emptyList();
@@ -394,56 +429,6 @@ public class FasDeterministic implements IFas {
 
     private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
-    }
-
-    public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
-    }
-
-    public int getNumDependenceJudgments() {
-        return this.numDependenceJudgement;
-    }
-
-    public SepsetMap getSepsets() {
-        return this.sepset;
-    }
-
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    @Override
-    public Graph search(List<Node> nodes) {
-        nodes = new ArrayList<>(nodes);
-        return null;
-    }
-
-    @Override
-    public long getElapsedTime() {
-        return 0;
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        return this.test.getVariables();
-    }
-
-    @Override
-    public List<Triple> getAmbiguousTriples(Node node) {
-        return null;
-    }
-
-    @Override
-    public void setOut(PrintStream out) {
-        this.out = out;
     }
 }
 

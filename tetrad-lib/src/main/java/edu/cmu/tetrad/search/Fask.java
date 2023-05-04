@@ -125,6 +125,16 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public final class Fask implements GraphSearch {
 
+    // The method to use for finding the adjacencies.
+    public enum AdjacencyMethod {FAS_STABLE, FGES, EXTERNAL_GRAPH, NONE}
+
+    // The left-right rule to use. Options include the FASK left-right rule and three left-right rules
+    // from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
+    // paper, "empirical" versions were given in which the variables are multiplied through by the
+    // signs of the skewnesses; we follow this advice here (with good results). These others are provided
+    // for comparison; in general they are quite good.
+    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
+
     // The score to be used for the FAS adjacency search.
     private final IndependenceTest test;
     private final Score score;
@@ -133,7 +143,7 @@ public final class Fask implements GraphSearch {
     private final DataSet dataSet;
     // Used for calculating coefficient values.
     private final RegressionDataset regressionDataset;
-    double[][] D;
+    private double[][] D;
     // An initial graph to constrain the adjacency step.
     private Graph externalGraph;
     // Elapsed time of the search, in milliseconds.
@@ -197,42 +207,7 @@ public final class Fask implements GraphSearch {
         this.orientationAlpha = 0.01;
     }
 
-    private static double cu(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
-
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
-    private static double correxp(double[] x, double[] y, double[] z) {
-        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
-    }
-
     //======================================== PUBLIC METHODS ====================================//
-
-    // Returns E(XY | Z > 0); Z is typically either X or Y.
-    private static double E(double[] x, double[] y, double[] z) {
-        double exy = 0.0;
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (z[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
 
     /**
      * Runs the search on the concatenated data, returning a graph, possibly cyclic, possibly with
@@ -251,7 +226,6 @@ public final class Fask implements GraphSearch {
 
         List<Node> variables = dataSet.getVariables();
         double[][] lrs = getLrScores(); // Sets D.
-//        D = dataSet.getDoubleData().transpose().toArray();
 
         for (int i = 0; i < variables.size(); i++) {
             System.out.println("Skewness of " + variables.get(i) + " = " + skewness(this.D[i]));
@@ -398,24 +372,7 @@ public final class Fask implements GraphSearch {
                 graph.addDirectedEdge(Y, X);
                 logTwoCycle(nf, variables, this.D, X, Y, "2-cycle Pre-screen");
             }
-        }
-//        else if (twoCycleScreeningCutoff == 0 && orientationAlpha > 0) {
-//            for (Edge edge : graph.getEdges()) {
-//                Node X = edge.getNode1();
-//                Node Y = edge.getNode2();
-//
-//                int i = variables.indexOf(X);
-//                int j = variables.indexOf(Y);
-//
-//                if (twoCycleTest(i, j, D, graph, variables)) {
-//                    graph.removeEdges(X, Y);
-//                    graph.addDirectedEdge(X, Y);
-//                    graph.addDirectedEdge(Y, X);
-//                    logTwoCycle(nf, variables, D, X, Y, "2-cycle Tested");
-//                }
-//            }
-//        }
-        else if (this.twoCycleScreeningCutoff > 0 && this.orientationAlpha > 0) {
+        } else if (this.twoCycleScreeningCutoff > 0 && this.orientationAlpha > 0) {
             for (NodePair edge : twoCycles) {
                 Node X = edge.getFirst();
                 Node Y = edge.getSecond();
@@ -438,21 +395,6 @@ public final class Fask implements GraphSearch {
         this.graph = graph;
 
         return graph;
-    }
-
-    private void logTwoCycle(NumberFormat nf, List<Node> variables, double[][] d, Node X, Node Y, String type) {
-        int i = variables.indexOf(X);
-        int j = variables.indexOf(Y);
-
-        double[] x = d[i];
-        double[] y = d[j];
-
-        double lr = leftRight(x, y);
-
-        TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t" + type
-                + "\t" + nf.format(lr)
-                + "\t" + X + "<=>" + Y
-        );
     }
 
     /**
@@ -535,7 +477,7 @@ public final class Fask implements GraphSearch {
      * @param knowledge Knowledge of forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     public Graph getExternalGraph() {
@@ -579,32 +521,14 @@ public final class Fask implements GraphSearch {
         this.empirical = empirical;
     }
 
-
-    //======================================== PRIVATE METHODS ====================================//
-
-    public double leftRight(Node X, Node Y) {
-        List<Node> variables = this.dataSet.getVariables();
-
-        int i = -1;
-
-        for (int k = 0; k < variables.size(); k++) {
-            if (X.getName().equals(variables.get(k).getName())) i = k;
-        }
-
-        int j = -1;
-
-        for (int k = 0; k < variables.size(); k++) {
-            if (Y.getName().equals(variables.get(k).getName())) j = k;
-        }
-
-        double[] x = this.D[i];
-        double[] y = this.D[j];
-
-        return leftRight(x, y);
-
-    }
-
-    private double leftRight(double[] x, double[] y) {
+    /**
+     * A left/right judgment for double[] arrays (data) as input.
+     * @param x The data for the first variable.
+     * @param y The data for the second variable.
+     * @return The left-right judgment, which is negative if X&lt;-Y, positive if X-&gt;Y, and
+     * 0 if indeterminate.
+     */
+    public double leftRight(double[] x, double[] y) {
         if (this.leftRight == LeftRight.FASK1) {
             return faskLeftRightV1(x, y);
         } else if (this.leftRight == LeftRight.FASK2) {
@@ -629,8 +553,6 @@ public final class Fask implements GraphSearch {
         if (this.empirical) {
             lr *= signum(sx) * signum(sy);
         }
-
-//        lr *= signum(r);
 
         if (r < this.delta) {
             lr *= -1;
@@ -827,15 +749,55 @@ public final class Fask implements GraphSearch {
         return StatUtils.partialCorrelation(m);
     }
 
-    // The method to use for finding the adjacencies.
-    public enum AdjacencyMethod {FAS_STABLE, FGES, EXTERNAL_GRAPH, NONE}
+    private void logTwoCycle(NumberFormat nf, List<Node> variables, double[][] d, Node X, Node Y, String type) {
+        int i = variables.indexOf(X);
+        int j = variables.indexOf(Y);
 
-    // The left-right rule to use. Options include the FASK left-right rule and three left-right rules
-    // from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
-    // paper, "empirical" versions were given in which the variables are multiplied through by the
-    // signs of the skewnesses; we follow this advice here (with good results). These others are provided
-    // for comparison; in general they are quite good.
-    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
+        double[] x = d[i];
+        double[] y = d[j];
+
+        double lr = leftRight(x, y);
+
+        TetradLogger.getInstance().forceLogMessage(X + "\t" + Y + "\t" + type
+                + "\t" + nf.format(lr)
+                + "\t" + X + "<=>" + Y
+        );
+    }
+
+    private static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    // Returns E(XY | Z > 0); Z is typically either X or Y.
+    private static double E(double[] x, double[] y, double[] z) {
+        double exy = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (z[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
+    private static double correxp(double[] x, double[] y, double[] z) {
+        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
+    }
 }
 
 

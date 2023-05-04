@@ -231,6 +231,22 @@ public class FactorAnalysis {
         this.threshold = threshold;
     }
 
+    public double getThreshold() {
+        return this.threshold;
+    }
+
+    public int getNumFactors() {
+        return this.numFactors;
+    }
+
+    public void setNumFactors(int numFactors) {
+        this.numFactors = numFactors;
+    }
+
+    public Matrix getResidual() {
+        return this.residual;
+    }
+
     // ------------------Private methods-------------------//
 
     /**
@@ -333,22 +349,6 @@ public class FactorAnalysis {
             }
         }
         return result;
-    }
-
-    public double getThreshold() {
-        return this.threshold;
-    }
-
-    public int getNumFactors() {
-        return this.numFactors;
-    }
-
-    public void setNumFactors(int numFactors) {
-        this.numFactors = numFactors;
-    }
-
-    public Matrix getResidual() {
-        return this.residual;
     }
 }
 
