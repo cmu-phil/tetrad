@@ -35,14 +35,16 @@ import java.util.List;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
+ * <p>Replaces FGES in GFCI by GRaSP using a score, which is another score-based
+ * (but more accurate) algorithm.</p>
+ * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
- * FGES.
- *
- * @author Juan Miguel Ogarrio
- * @author ps7z
- * @author jdramsey
- * @author bryan andrews
+ * FGES.</p>
+ * @author peterspirtes
+ * @author josephramsey
+ * @author bryanandrews
+ * @see GFci
+ * @see Grasp
  */
 public final class GraspFci implements GraphSearch {
 
@@ -84,8 +86,6 @@ public final class GraspFci implements GraphSearch {
     private boolean useDataOrder = true;
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
-    private boolean possibleDsepSearchDone = true;
-
     private boolean ordered = false;
     private int graspDepth = 3;
     private int uncoveredDepth = 1;
@@ -395,10 +395,6 @@ public final class GraspFci implements GraphSearch {
 
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
     public void setGraspDepth(int graspDepth) {
