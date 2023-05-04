@@ -43,17 +43,32 @@ public class RecursivePartialCorrelation {
     private final ICovarianceMatrix corr;
     private final Map<Node, Integer> nodesMap = new HashMap<>();
 
+    /**
+     * Constructor.
+     * @param nodes The lsit of nodes.
+     * @param cov The covariance matrix, as a Matrix.
+     * @param sampleSize The sample size.
+     */
     public RecursivePartialCorrelation(List<Node> nodes, Matrix cov, int sampleSize) {
         this.corr = new CorrelationMatrixOnTheFly(new CovarianceMatrix(nodes, cov, sampleSize));
         for (int i = 0; i < nodes.size(); i++) this.nodesMap.put(nodes.get(i), i);
     }
 
+    /**
+     * Constructor
+     * @param cov The covariance matrix, as an ICovariance object.
+     */
     public RecursivePartialCorrelation(ICovarianceMatrix cov) {
         this.corr = new CorrelationMatrixOnTheFly(cov);
         List<Node> nodes = this.corr.getVariables();
         for (int i = 0; i < nodes.size(); i++) this.nodesMap.put(nodes.get(i), i);
     }
 
+    /**
+     * Calculates the partial correlation of x and y conditional on the nodes in z
+     * recursively.
+     * @return this partial correlation.
+     */
     public double corr(Node x, Node y, List<Node> z) {
         if (z.isEmpty()) return this.corr.getValue(this.nodesMap.get(x), this.nodesMap.get(y));
         Node z0 = z.get(0);
