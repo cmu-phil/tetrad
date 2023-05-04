@@ -34,8 +34,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Checks independence facts for variables associated with the nodes in a given graph by checking d-separation facts on
- * the underlying nodes.
+ * Checks independence facts for variables associated with the nodes in a given graph by
+ * checking d-separation facts on the underlying nodes.
  *
  * @author Joseph Ramsey
  */
@@ -57,21 +57,52 @@ public class IndTestDSep implements IndependenceTest {
     private boolean verbose = false;
     private double pvalue = 0;
 
+    /**
+     * Constructor.
+     *
+     * @param graph The graph for which d-separation facts should be checked.
+     *              This may be a DAG, CPDAG, or PAG. In the latter case,
+     *              m-separation results will be returned (same algorithm).
+     */
     public IndTestDSep(Graph graph) {
         this(graph, false);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param facts     Independence facts to be used for direct calculations of
+     *                  d-separation.
+     * @param variables The variables for the facts, if different from those
+     *                  that independenceFacts would return.
+     * @see IndependenceFacts
+     */
     public IndTestDSep(IndependenceFacts facts, List<Node> variables) {
         this(facts, false);
         facts.setNodes(variables);
     }
 
+
+    /**
+     * Constructor.
+     *
+     * @param facts Independence facts to be used for direct calculations of
+     *              d-separation.
+     * @see IndependenceFacts
+     */
     public IndTestDSep(IndependenceFacts facts) {
         this(facts, false);
     }
 
     /**
-     * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
+     * Constructor.
+     *
+     * @param graph       The graph for which d-separation facts should be checked.
+     *                    This may be a DAG, CPDAG, or PAG. In the latter case,
+     *                    m-separation results will be returned (same algorithm).
+     * @param keepLatents Whether latent in the graph should be used in conditional
+     *                    independence facts. If the graph is being marginalized,
+     *                    this should be false.
      */
     public IndTestDSep(Graph graph, boolean keepLatents) {
         if (graph == null) {
@@ -84,6 +115,16 @@ public class IndTestDSep implements IndependenceTest {
         this.observedVars = new ArrayList<>(_observedVars);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param facts       Independence facts to be used for direct calculations of
+     *                    d-separation.
+     * @param keepLatents Whether latent in the graph should be used in conditional
+     *                    independence facts. If the graph is being marginalized,
+     *                    this should be false.
+     * @see IndependenceFacts
+     */
     public IndTestDSep(IndependenceFacts facts, boolean keepLatents) {
         if (facts == null) {
             throw new NullPointerException();
@@ -96,7 +137,7 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * Required by IndependenceTest.
+     * Returns a test over a buset of the variables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -125,7 +166,7 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * @return the list of observed nodes in the given graph.
+     * @return the list of observed varialbes in the given graph.
      */
     private List<Node> calcVars(List<Node> nodes, boolean keepLatents) {
         if (keepLatents) {
@@ -145,8 +186,6 @@ public class IndTestDSep implements IndependenceTest {
 
             return _nodes;
         }
-
-
     }
 
     /**
@@ -155,7 +194,7 @@ public class IndTestDSep implements IndependenceTest {
      * @param x one node.
      * @param y a second node.
      * @param z a List of nodes (conditioning variables)
-     * @return true iff x _||_ y | z
+     * @return True iff x _||_ y | z
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         if (z == null) {
@@ -215,7 +254,8 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * Auxiliary method to calculate dseparation facts directly from nodes instead of from variables.
+     * Auxiliary method to calculate dseparation facts directly from nodes instead
+     * of from variables.
      */
     public boolean isDSeparated(Node x, Node y, List<Node> z) {
         if (z == null) {
@@ -239,26 +279,48 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * @return the list of TetradNodes over which this independence checker is capable of determinine independence
-     * relations-- that is, all the variables in the given graph or the given data set.
+     * @return the list of TetradNodes over which this independence checker is capable
+     * of determinine independence relations-- that is, all the variables in the given
+     * graph or the given data set.
      */
     public List<Node> getVariables() {
         return Collections.unmodifiableList(_observedVars);
     }
 
-
+    /**
+     * We're assuming faithfuless (i.e., calculating d-separation facts), so is markes
+     * no sense to give judgments of determination of a varialbe by a set of variables.
+     *
+     * @throws UnsupportedOperationException Since this method is not feasible.
+     */
     public boolean determines(List<Node> z, Node x1) {
-        return false;
+        throw new UnsupportedOperationException("The 'determines' method is not implemented")
     }
 
+    /**
+     * Returns an alpha level, 0.5.
+     *
+     * @return 0.5.
+     */
     public double getAlpha() {
         return 0.5;
     }
 
+    /**
+     * @throws UnsupportedOperationException it makes no sense to set an alpha level
+     *                                       for a d-separation test.
+     */
     public void setAlpha(double alpha) {
-        //
+        throw new UnsupportedOperationException("Method mot implemented. What were you thinking?" +
+                "This is a d-separation method.");
     }
 
+    /**
+     * Returns the variable with the given name.
+     *
+     * @param name The name.
+     * @return The variable.
+     */
     public Node getVariable(String name) {
         for (Node variable : observedVars) {
             if (variable.getName().equals(name)) {
@@ -276,37 +338,44 @@ public class IndTestDSep implements IndependenceTest {
         return this.graph;
     }
 
-    public void setGraph(Graph graph) {
-        this.graph = graph;
-    }
-
+    /**
+     * Returns a string representation of this test.
+     *
+     * @return "D-separation".
+     */
     public String toString() {
         return "D-separation";
     }
 
+    /**
+     * @throws UnsupportedOperationException Method doesn't make sense here.
+     */
     public DataSet getData() {
         throw new UnsupportedOperationException("This is a d-separation test, no data available.");
     }
 
-
+    /**
+     * @return 1 for d-connections, -1 for d-separations
+     */
     @Override
     public double getScore() {
         return getPValue() == 1 ? -1 : 1;
     }
 
-    public List<IndependenceFact> getFacts() {
-        return facts;
-    }
-
+    /**
+     * @return True just in case verbose output should be printed.
+     */
     public boolean isVerbose() {
         return verbose;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-
-
 }
 
 

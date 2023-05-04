@@ -41,8 +41,8 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
- * Scheines, "Causation, Prediction and Search," 2nd edition, page 94.
+ * Checks conditional independence of variable in a continuous data set using Fisher's Z test.
+ * See Spirtes, Glymour, and Scheines, "Causation, Prediction and Search," 2nd edition, page 94.
  *
  * @author Joseph Ramsey
  * @author Frank Wimberly
