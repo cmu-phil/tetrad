@@ -1,15 +1,12 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.text.NumberFormat;
 import java.util.*;
 

@@ -1,9 +1,13 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.IndTestFisherZ;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SemBicScore;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.File;

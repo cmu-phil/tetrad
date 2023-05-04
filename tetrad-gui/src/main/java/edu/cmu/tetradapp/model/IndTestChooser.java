@@ -147,9 +147,9 @@ final class IndTestChooser {
 
         if (IndTestType.TIPPETT == testType) {
             List<IndependenceTest> independenceTests = new ArrayList<>();
-            for (DataModel dataModel : dataSets) {
-                DataSet dataSet = (DataSet) dataModel;
-                independenceTests.add(new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001)));
+            for (DataSet dataModel : dataSets) {
+                independenceTests.add(new IndTestFisherZ(dataModel, params.getDouble("alpha",
+                        0.001)));
             }
 
             return new IndTestMulti(independenceTests, ResolveSepsets.Method.tippett);
@@ -160,8 +160,14 @@ final class IndTestChooser {
         }
 
         if (IndTestType.SEM_BIC == testType) {
-            List<DataModel> dataModels = new ArrayList<>(dataSets);
-            return new IndTestScore(new SemBicScoreImages(dataModels));
+            List<Score> scores = new ArrayList<>();
+            for (DataSet dataSet : dataSets) {
+                SemBicScore _score = new SemBicScore(dataSet);
+                scores.add(_score);
+            }
+
+            ImagesScore imagesScore = new ImagesScore(scores);
+            return new IndTestScore(imagesScore);
         }
 
         {

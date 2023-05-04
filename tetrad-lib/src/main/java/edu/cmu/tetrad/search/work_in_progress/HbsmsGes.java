@@ -19,11 +19,14 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.DagInCpcagIterator;
+import edu.cmu.tetrad.search.MeekRules;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.sem.DagScorer;
 import edu.cmu.tetrad.sem.Scorer;
 import edu.cmu.tetrad.sem.SemIm;

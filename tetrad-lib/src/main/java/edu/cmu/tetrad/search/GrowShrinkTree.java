@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Node;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,7 +14,7 @@ public class GrowShrinkTree {
     private List<Node> forbidden;
     private GSTNode root;
 
-    public GrowShrinkTree(Score score,  Map<Node, Integer> index, Node node) {
+    public GrowShrinkTree(Score score, Map<Node, Integer> index, Node node) {
         this.score = score;
         this.index = index;
         this.node = node;

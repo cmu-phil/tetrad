@@ -24,6 +24,9 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.work_in_progress.HbmsBeam;
+import edu.cmu.tetrad.search.work_in_progress.Hbsms;
+import edu.cmu.tetrad.search.work_in_progress.HbsmsGes;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.*;
 

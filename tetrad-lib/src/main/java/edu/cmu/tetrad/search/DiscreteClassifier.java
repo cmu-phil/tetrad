@@ -21,28 +21,33 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.sem.SemIm;
 
 /**
- * Interface for Bff (Heuristic Best Significant Model Search) algorithm. See implementations.
+ * Interface implemented by classes that do discrete classification.
+ *
+ * @author Frank Wimberly
  */
-public interface Hbsms {
-    void setAlpha(double alpha);
+public interface DiscreteClassifier {
 
-    void setBeamWidth(int beamWidth);
+    /**
+     * @return an array with a classification (estimated value) of a target variable for each case in a DataSet.
+     */
+    int[] classify();
 
-    void setHighPValueAlpha(double alpha);
+    /**
+     * @return the double subscripted int array containing the "confusion matrix" of coefs of estimated versus observed
+     * values of the target variable.
+     */
+    int[][] crossTabulation();
 
-    void setKnowledge(Knowledge knowledge);
+    /**
+     * @return the percentage of cases where the target variable is correctly classified.
+     */
+    double getPercentCorrect();
 
-    Graph search();
-
-    SemIm getOriginalSemIm();
-
-    SemIm getNewSemIm();
 }
+
+
 
 
 

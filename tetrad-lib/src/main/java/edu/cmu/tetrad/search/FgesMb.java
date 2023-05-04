@@ -560,8 +560,8 @@ public final class FgesMb {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setSamplePrior(double samplePrior) {
-        if (this.fgesScore instanceof IDiscreteScore) {
-            ((IDiscreteScore) this.fgesScore).setSamplePrior(samplePrior);
+        if (this.fgesScore instanceof DiscreteScore) {
+            ((DiscreteScore) this.fgesScore).setSamplePrior(samplePrior);
         }
     }
 
@@ -569,8 +569,8 @@ public final class FgesMb {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setStructurePrior(double expectedNumParents) {
-        if (this.fgesScore instanceof IDiscreteScore) {
-            ((IDiscreteScore) this.fgesScore).setStructurePrior(expectedNumParents);
+        if (this.fgesScore instanceof DiscreteScore) {
+            ((DiscreteScore) this.fgesScore).setStructurePrior(expectedNumParents);
         }
     }
 

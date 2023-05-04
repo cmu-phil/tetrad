@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
@@ -29,9 +28,22 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * Implements a score to average results over multiple scores.
+ * <p>Implements a score to average results over multiple scores. This is
+ * used for the IMaGES algorithm. The idea is that one pick and algorithm
+ * that takes (only) a score as input, such as FGES or GRaSP or BOSS,
+ * and then constructs an ImagesScore (which class) with a list of
+ * datasets as input, feeds this ImagesScore to this algorithm through
+ * the contructor, and then runs the algorithm to get an estimate
+ * of the structure.</p>
+ * <p>Importantly, only the variables from the first score will be
+ * returned from the getVariables method, so it is up to the user to
+ * ensure that all of the scores share the same (object-identical)
+ * variables. </p>
  *
  * @author Joseph Ramsey
+ * @see Fges
+ * @see Grasp
+ * @see Boss
  */
 public class ImagesScore implements Score {
 
@@ -41,16 +53,10 @@ public class ImagesScore implements Score {
     // The variables of the covariance matrix.
     private final List<Node> variables;
 
-    private final int sampleSize;
-
-    // The penalty penaltyDiscount.
-    private double penaltyDiscount = 2.0;
-
-    // True if verbose output should be sent to out.
-    private boolean verbose;
-
     /**
-     * Constructs the score using a covariance matrix.
+     * Constructs an IMaGES score using the given list of individual scores.
+     * These scores will be be averaged to obtain the IMaGES score itself.
+     * @param scores The list of scores.
      */
     public ImagesScore(List<Score> scores) {
         if (scores == null) {
@@ -60,24 +66,39 @@ public class ImagesScore implements Score {
         this.scores = scores;
 
         this.variables = scores.get(0).getVariables();
-        this.sampleSize = scores.get(0).getSampleSize();
     }
 
-
+    /**
+     * Returns the average of the individual scores returned from each
+     * component score from their localScoreDiff methods. Score differences
+     * that are returned as undefined (NaN) are excluded from the
+     * average.
+     * @return This average score.
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         double sum = 0.0;
+        int count = 0;
 
         for (Score score : this.scores) {
-            sum += score.localScoreDiff(x, y, z);
+            double _score = score.localScoreDiff(x, y, z);
+
+            if (Double.isNaN(_score)) {
+                sum += _score;
+                count++;
+            }
         }
 
-        return sum;
+        return sum / count;
     }
 
-
     /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
+     * Returns the (aggregate) local score for a variable given its parents,
+     * which is obtained by averaging the local such scores obtained from each
+     * individual score provided in the constructor, excluding scores that are
+     * returned as undefined (which are left out of the average).
+     * @param i The variable whose score is needed.
+     * @return This score.
      */
     public double localScore(int i, int[] parents) {
         double sum = 0.0;
@@ -105,12 +126,13 @@ public class ImagesScore implements Score {
         return localScoreOneDataSet(i, parents, index);
     }
 
-    private double localScoreOneDataSet(int i, int[] parents, int index) {
-        return this.scores.get(index).localScore(i, parents);
-    }
-
     /**
-     * Specialized scoring method for a single parent. Used to speed up the effect edges search.
+     * Returns the (aggregate) local score for a variable given one of its
+     * parents, which is obtained by averaging the local such scores obtained
+     * from each individual score provided in the constructor, excluding scores
+     * that are returned as undefined (which are left out of the average).
+     * @param i The variable whose score is needed.
+     * @return This score.
      */
     public double localScore(int i, int parent) {
         double sum = 0.0;
@@ -128,7 +150,14 @@ public class ImagesScore implements Score {
         return sum / count;
     }
 
-
+    /**
+     * Returns the (aggregate) local node score, which is obtained by
+     * averaging the local scores obtained from each individual score
+     * provided in the constructor, excluding scores that are returned
+     * as undefined (which are left out of the average).
+     * @param i The variable whose score is needed.
+     * @return This score.
+     */
     public double localScore(int i) {
         double sum = 0.0;
         int count = 0;
@@ -145,45 +174,49 @@ public class ImagesScore implements Score {
         return sum / count;
     }
 
-    public double getPenaltyDiscount() {
-        return this.penaltyDiscount;
-    }
-
     @Override
     public boolean isEffectEdge(double bump) {
-        return bump > -0.25 * getPenaltyDiscount() * log(this.sampleSize);
+        return scores.get(0).isEffectEdge(bump);
     }
 
-    public DataSet getDataSet() {
-        throw new UnsupportedOperationException();
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
+    /**
+     * Returns the variables.
+     * @return This list.
+     */
     @Override
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * Returns the sample size from the first score.
+     * @return This size.
+     */
     @Override
     public int getSampleSize() {
-        return this.sampleSize;
+        return scores.get(0).getSampleSize();
     }
 
+    /**
+     * Returns the max degree from teh first score.
+     * @return This maximum.
+     */
     @Override
     public int getMaxDegree() {
-        return 1000;
+        return scores.get(0).getMaxDegree();
     }
 
+    /**
+     * Returns the 'determines' judgment from the first score.
+     * @return This judgment, true if the 'determine' relations holds.
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
-        return false;
+        return scores.get(0).determines(z, y);
+    }
+
+    private double localScoreOneDataSet(int i, int[] parents, int index) {
+        return this.scores.get(index).localScore(i, parents);
     }
 }
 

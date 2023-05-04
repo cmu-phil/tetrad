@@ -46,7 +46,7 @@ import java.util.List;
  * @author Frank Wimberly based on a specification by Clark Glymour
  */
 public final class BayesUpdaterClassifier
-        implements IDiscreteClassifier, TetradSerializable {
+        implements DiscreteClassifier, TetradSerializable {
     static final long serialVersionUID = 23L;
 
     /**

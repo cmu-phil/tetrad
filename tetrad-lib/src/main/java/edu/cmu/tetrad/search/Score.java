@@ -89,9 +89,5 @@ public interface Score {
     default boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Method determines() is not implemented for this score.");
     }
-
-    default Score defaultScore() {
-        return this;
-    }
 }
 

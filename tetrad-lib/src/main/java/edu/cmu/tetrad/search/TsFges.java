@@ -441,8 +441,8 @@ public final class TsFges implements GraphSearch, GraphScorer {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setSamplePrior(double samplePrior) {
-        if (this.score instanceof IDiscreteScore) {
-            ((IDiscreteScore) this.score).setSamplePrior(samplePrior);
+        if (this.score instanceof DiscreteScore) {
+            ((DiscreteScore) this.score).setSamplePrior(samplePrior);
         }
     }
 
@@ -450,8 +450,8 @@ public final class TsFges implements GraphSearch, GraphScorer {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setStructurePrior(double expectedNumParents) {
-        if (this.score instanceof IDiscreteScore) {
-            ((IDiscreteScore) this.score).setStructurePrior(expectedNumParents);
+        if (this.score instanceof DiscreteScore) {
+            ((DiscreteScore) this.score).setStructurePrior(expectedNumParents);
         }
     }
 

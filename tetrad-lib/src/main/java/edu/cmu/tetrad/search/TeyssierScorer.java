@@ -1,12 +1,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.concurrent.Callable;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 import static java.util.Collections.sort;
