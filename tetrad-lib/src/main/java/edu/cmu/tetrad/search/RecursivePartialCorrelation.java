@@ -35,7 +35,8 @@ import java.util.Map;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * Created by josephramsey on 4/13/14.
+ * Calculates partial correlation using the recursive method.
+ * @author josephramsey
  */
 public class RecursivePartialCorrelation {
 
