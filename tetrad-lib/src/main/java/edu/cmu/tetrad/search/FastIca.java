@@ -133,8 +133,10 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and
  * Applications, _Neural Networks_, *13(4-5)*:411-430
+ * <p>
+ * This code has been well-tested.
  *
- * @author Joseph Ramsey (of the translation, that is)
+ * @author Joseph Ramsey (of the translation, that is, not the original.)
  */
 public class FastIca {
 
