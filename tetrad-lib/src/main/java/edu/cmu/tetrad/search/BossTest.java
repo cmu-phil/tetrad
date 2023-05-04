@@ -76,22 +76,14 @@ public class BossTest {
         double accum;
         double score;
 
-        int count = 0;
-
         do {
 
-//            if (count++ == 1000) break;
-
             HashSet<Node> prefix = new HashSet<>();
-
             ListIterator<Integer> rows = this.order.listIterator();
 
             bestScore = 0;
             bestInsert = null;
 
-            System.out.println("Start");
-
-//            A:
             while (rows.hasNext()) {
                 int i = rows.nextIndex();
                 int row = rows.next();
@@ -106,6 +98,7 @@ public class BossTest {
                 }
 
                 ListIterator<Integer> cols = this.order.listIterator();
+                Set<Node> alt = new HashSet<>();
 
                 while (cols.hasNext()) {
                     int j = cols.nextIndex();
@@ -117,45 +110,28 @@ public class BossTest {
                         continue;
                     }
 
-                    if (i < j) {
-                        accum += this.insert[row][col];
-//                        prefix.add(b);
-                    }
+                    if (i < j) accum += this.insert[row][col];
+                    if (i > j) accum -= this.insert[row][col];
 
-                    if (i > j) {
-                        accum -= this.insert[row][col];
-//                        prefix.remove(b);
-                    }
-
-                    Set<Node> alt = this.order.subList(0, j).stream()
-                            .map(this.variables::get).collect(toSet());
-                    score = this.gsts.get(a).trace(alt, new HashSet<>());
+                    score = this.gsts.get(a).trace(new HashSet<>(alt), new HashSet<>());
                     score -= baseline;
                     score += accum;
 
+                    alt.add(b);
+
                     if (score <= 1e-10) continue;
-
-                    if (i < j) {
-//                        prefix.remove(b);
-                        if (score <= bestScore) continue;
-                    }
-
-                    if (i > j) {
-//                        prefix.add(b);
-                        if (score < bestScore) continue;
-                    }
+                    if ((i < j) && (score <= bestScore)) continue;
+                    if ((i > j) && (score < bestScore) )continue;
 
                     bestScore = score;
                     bestInsert = new int[]{i, j};
-//                    break A;
                 }
 
                 prefix.add(a);
             }
 
-            System.out.println("end");
-
             System.out.println(Arrays.toString(bestInsert));
+            System.out.println(bestScore);
 
             if (bestInsert != null) {
 
@@ -166,7 +142,6 @@ public class BossTest {
 
                 if (i < j) update(i, j + 1);
                 if (i > j) update(j, i + 1);
-//                update(0, this.order.size());
             }
         } while(bestInsert != null);
 
