@@ -38,7 +38,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * <p>Importantly, only the variables from the first score will be
  * returned from the getVariables method, so it is up to the user to
  * ensure that all of the scores share the same (object-identical)
- * variables. </p>
+ * variables.</p>
  *
  * @author Joseph Ramsey
  * @see Fges
