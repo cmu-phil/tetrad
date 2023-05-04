@@ -32,11 +32,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * This is an optimization of the CCD (Cyclic Causal Discovery) algorithm by Thomas Richardson.
- *
+ * <p></p>Performs a Max-P orientation of unshielded triples in a graph.</p>
  * @author Joseph Ramsey
+ * @see PcMax
  */
-public final class OrientCollidersMaxP {
+public final class MaxPColliderOrientation {
     private final IndependenceTest independenceTest;
     private int depth = -1;
     private Knowledge knowledge = new Knowledge();
@@ -44,7 +44,7 @@ public final class OrientCollidersMaxP {
     private int maxPathLength = 3;
     private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
 
-    public OrientCollidersMaxP(IndependenceTest test) {
+    public MaxPColliderOrientation(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
     }
@@ -227,7 +227,7 @@ public final class OrientCollidersMaxP {
     private void orientCollider(Graph graph, Node a, Node b, Node c, PcAll.ConflictRule conflictRule) {
         if (this.knowledge.isForbidden(a.getName(), b.getName())) return;
         if (this.knowledge.isForbidden(c.getName(), b.getName())) return;
-        OrientCollidersMaxP.orientCollider(a, b, c, conflictRule, graph);
+        MaxPColliderOrientation.orientCollider(a, b, c, conflictRule, graph);
     }
 
     public Knowledge getKnowledge() {
