@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a sextad of variables.
+ * Represents an ordered sextad of variables.
  */
 public class Sextad implements TetradSerializable {
     static final long serialVersionUID = 23L;
