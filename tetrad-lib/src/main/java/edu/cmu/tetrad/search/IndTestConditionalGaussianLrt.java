@@ -37,12 +37,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
- * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
- * This test is valid for both ordinal and non-ordinal discrete searchVariables.
+ * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables
+ * are either continuous or discrete. This test is valid for both ordinal and non-ordinal
+ * discrete searchVariables.
  * <p>
- * Assumed a conditional Gaussain model and uses a likelihood rat test.
+ * Assumes a conditional Gaussain model and uses a likelihood ratio test.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class IndTestConditionalGaussianLrt implements IndependenceTest {
     private final DataSet data;
@@ -181,6 +182,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     /**
      * Returns the data.
+     *
      * @return This.
      */
     public DataSet getData() {
@@ -191,6 +193,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     /**
      * Returns a number that is higher for stronger judgments of dependence
      * and negative for judgments of independence.
+     *
      * @return This number.
      */
     @Override
@@ -208,6 +211,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     /**
      * Returns true iff verbose output should be printed.
+     *
      * @return This.
      */
     @Override
@@ -217,6 +221,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     /**
      * Sets whether verbose output should be printed.
+     *
      * @param verbose True if so.
      */
     @Override
@@ -226,6 +231,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     /**
      * Sets the nubmer of categories used to discretize variables.
+     *
      * @param numCategoriesToDiscretize This number, by default 3.
      */
     public void setNumCategoriesToDiscretize(int numCategoriesToDiscretize) {
