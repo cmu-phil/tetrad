@@ -41,7 +41,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey
  */
-public class SemBicScoreMultiFas implements ISemBicScore {
+public class SemBicScoreMultiFas implements HasPenaltyDiscount {
 
     // The covariance matrix.
     private final List<SemBicScore> semBicScores;

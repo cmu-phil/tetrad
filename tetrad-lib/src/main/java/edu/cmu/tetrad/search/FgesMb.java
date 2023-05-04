@@ -537,8 +537,8 @@ public final class FgesMb {
      * @deprecated Use the getters on the individual scores instead.
      */
     public double getPenaltyDiscount() {
-        if (this.fgesScore instanceof ISemBicScore) {
-            return ((ISemBicScore) this.fgesScore).getPenaltyDiscount();
+        if (this.fgesScore instanceof HasPenaltyDiscount) {
+            return ((HasPenaltyDiscount) this.fgesScore).getPenaltyDiscount();
         } else {
             return 2.0;
         }
@@ -551,8 +551,8 @@ public final class FgesMb {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
-        if (this.fgesScore instanceof ISemBicScore) {
-            ((ISemBicScore) this.fgesScore).setPenaltyDiscount(penaltyDiscount);
+        if (this.fgesScore instanceof HasPenaltyDiscount) {
+            ((HasPenaltyDiscount) this.fgesScore).setPenaltyDiscount(penaltyDiscount);
         }
     }
 

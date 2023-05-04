@@ -430,8 +430,8 @@ public final class TsFges implements GraphSearch, GraphScorer {
      * @deprecated Use the getters on the individual scores instead.
      */
     public double getPenaltyDiscount() {
-        if (this.score instanceof ISemBicScore) {
-            return ((ISemBicScore) this.score).getPenaltyDiscount();
+        if (this.score instanceof HasPenaltyDiscount) {
+            return ((HasPenaltyDiscount) this.score).getPenaltyDiscount();
         } else {
             return 2.0;
         }
@@ -461,8 +461,8 @@ public final class TsFges implements GraphSearch, GraphScorer {
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setPenaltyDiscount(double penaltyDiscount) {
-        if (this.score instanceof ISemBicScore) {
-            ((ISemBicScore) this.score).setPenaltyDiscount(penaltyDiscount);
+        if (this.score instanceof HasPenaltyDiscount) {
+            ((HasPenaltyDiscount) this.score).setPenaltyDiscount(penaltyDiscount);
         }
     }
 

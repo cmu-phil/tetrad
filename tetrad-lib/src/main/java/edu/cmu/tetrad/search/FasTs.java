@@ -33,22 +33,15 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Implements the "fast adjacency search" used in several causal algorithm in this package. In the fast adjacency
- * search, at a given stage of the search, an edge X*-*Y is removed from the graph if X _||_ Y | S, where S is a subset
- * of size d either of adj(X) or of adj(Y), where d is the depth of the search. The fast adjacency search performs this
- * procedure for each pair of adjacent edges in the graph and for each depth d = 0, 1, 2, ..., d1, where d1 is either
- * the maximum depth or else the first such depth at which no edges can be removed. The interpretation of this adjacency
- * search is different for different algorithm, depending on the assumptions of the algorithm. A mapping from {x, y} to
- * S({x, y}) is returned for edges x *-* y that have been removed.
- * <p>
  * This is a copy of Fas.java for the SvarFCI algorithm. The main difference is that if an edge is removed, it will also
  * remove all homologous edges to preserve the time-repeating structure assumed by SvarFCI. Based on (but not identicial
  * to) code by Entner and Hoyer for their 2010 paper. Modified by DMalinsky 4/21/2016.
  *
  * @author Joseph Ramsey.
  * @author DMalinsky
+ * @see Fas
  */
-public class Fasts implements IFas {
+public class FasTs implements IFas {
 
     /**
      * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
@@ -106,7 +99,7 @@ public class Fasts implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public Fasts(Graph graph, IndependenceTest test) {
+    public FasTs(Graph graph, IndependenceTest test) {
         this.graph = graph;
         this.test = test;
     }
@@ -114,7 +107,7 @@ public class Fasts implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public Fasts(IndependenceTest test) {
+    public FasTs(IndependenceTest test) {
         this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
     }
