@@ -34,25 +34,12 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * GesSearch is an implementation of the GES algorithm, as specified in
- * Chickering (2002) "Optimal structure identification with greedy search"
- * Journal of Machine Learning Research. It works for both BayesNets and SEMs.
- * <p>
- * Some code optimization could be done for the scoring part of the graph for
- * discrete models (method scoreGraphChange). Some of Andrew Moore's approaches
- * for caching sufficient statistics, for instance.
- * <p>
- * To speed things up, it has been assumed that variables X and Y with zero
- * correlation do not correspond to edges in the graph. This is a restricted
- * form of the heuristicSpeedup assumption, something GES does not assume. This
- * the graph. This is a restricted form of the heuristicSpeedup assumption,
- * something GES does not assume. This heuristicSpeedup assumption needs to be
- * explicitly turned on using setHeuristicSpeedup(true).
- * <p>
- * A number of other optimizations were added 5/2015. See code for details.
+ * This code restricts the FGES algorithm to the operations needed just
+ * to find the graph over the Markov blanket of a variable X (or a graph
+ * over the Markov blankets of a list of variables X1,..,Xn), together
+ * with the target X (or, respectively, the targets X1,...,Xn).
  *
- * @author Ricardo Silva, Summer 2003
- * @author Joseph Ramsey, Revisions 5/2015
+ * @author josephramsey
  */
 public final class FgesMb {
 

@@ -40,8 +40,10 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * quartet algorithm to a one factor tetrad algorithm).
  *
  * @author Joseph Ramsey
+ * @author erichkummerfeld
  */
 public class Fofc {
+    public enum Algorithm {SAG, GAP}
 
     private final CorrelationMatrix corr;
     // The list of all variables.
@@ -61,7 +63,15 @@ public class Fofc {
     private final Algorithm algorithm;
     private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
 
-
+    /**
+     * Conctructor.
+     * @param cov The covariance matrix searched over.
+     * @param testType The type of test used.
+     * @param algorithm The type of FOFC algorithm used.
+     * @param alpha The alpha significance cutoff.
+     * @see TestType
+     * @see Algorithm
+     */
     public Fofc(ICovarianceMatrix cov, TestType testType, Algorithm algorithm, double alpha) {
         if (testType == null) throw new NullPointerException("Null indepTest type.");
         cov = new CovarianceMatrix(cov);
@@ -78,6 +88,15 @@ public class Fofc {
 
     }
 
+    /**
+     * Conctructor.
+     * @param dataSet The continuous dataset searched over.
+     * @param testType The type of test used.
+     * @param algorithm The type of FOFC algorithm used.
+     * @param alpha The alpha significance cutoff.
+     * @see TestType
+     * @see Algorithm
+     */
     public Fofc(DataSet dataSet, TestType testType, Algorithm algorithm, double alpha) {
         if (testType == null) throw new NullPointerException("Null test type.");
         this.variables = dataSet.getVariables();
@@ -90,6 +109,48 @@ public class Fofc {
 
         this.corr = new CorrelationMatrix(dataSet);
     }
+
+    public Graph search() {
+        Set<List<Integer>> allClusters;
+
+        if (this.algorithm == Algorithm.SAG) {
+            allClusters = estimateClustersTetradsFirst();
+        } else if (this.algorithm == Algorithm.GAP) {
+            allClusters = estimateClustersTriplesFirst();
+        } else {
+            throw new IllegalStateException("Expected SAG or GAP: " + this.testType);
+        }
+
+        this.clusters = ClusterSignificance.variablesForIndices2(allClusters, variables);
+
+        System.out.println("allClusters = " + allClusters);
+        System.out.println("this.clusters = " + this.clusters);
+
+//        if (allClusters.isEmpty()) return new EdgeListGraph();
+
+        ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
+        clusterSignificance.printClusterPValues(allClusters);
+
+        return convertToGraph(allClusters);
+    }
+
+    /**
+     * Sets whether the significant of cluster should be checked for each cluster.
+     * @param significanceChecked True if so.
+     */
+    public void setSignificanceChecked(boolean significanceChecked) {
+        this.significanceChecked = significanceChecked;
+    }
+
+    /**
+     * Sets which type of cluster check should be performed.
+     * @param checkType The type to be performed.
+     * @see ClusterSignificance.CheckType
+     */
+    public void setCheckType(ClusterSignificance.CheckType checkType) {
+        this.checkType = checkType;
+    }
+
 
     // renjiey
     private int findFrequentestIndex(Integer[] outliers) {
@@ -188,33 +249,6 @@ public class Fofc {
         }
         return list.toArray(new Integer[1]);
     }
-
-
-    public Graph search() {
-        Set<List<Integer>> allClusters;
-
-        if (this.algorithm == Algorithm.SAG) {
-            allClusters = estimateClustersTetradsFirst();
-        } else if (this.algorithm == Algorithm.GAP) {
-            allClusters = estimateClustersTriplesFirst();
-        } else {
-            throw new IllegalStateException("Expected SAG or GAP: " + this.testType);
-        }
-
-        this.clusters = ClusterSignificance.variablesForIndices2(allClusters, variables);
-
-        System.out.println("allClusters = " + allClusters);
-        System.out.println("this.clusters = " + this.clusters);
-
-//        if (allClusters.isEmpty()) return new EdgeListGraph();
-
-        ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
-        clusterSignificance.printClusterPValues(allClusters);
-
-        return convertToGraph(allClusters);
-    }
-
-    //========================================PRIVATE METHODS====================================//
 
     // This is the main algorithm.
     private Set<List<Integer>> estimateClustersTriplesFirst() {
@@ -965,16 +999,6 @@ public class Fofc {
             TetradLogger.getInstance().forceLogMessage(s);
         }
     }
-
-    public void setSignificanceChecked(boolean significanceChecked) {
-        this.significanceChecked = significanceChecked;
-    }
-
-    public void setCheckType(ClusterSignificance.CheckType checkType) {
-        this.checkType = checkType;
-    }
-
-    public enum Algorithm {SAG, GAP}
 }
 
 

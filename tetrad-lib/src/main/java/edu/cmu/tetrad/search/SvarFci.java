@@ -124,7 +124,7 @@ public final class SvarFci implements GraphSearch {
 
     public Graph search() {
         getIndependenceTest().getVariables();
-        return search(new FasTs(getIndependenceTest()));
+        return search(new TsFas(getIndependenceTest()));
 //        return search(new Fas(getIndependenceTest()));
     }
 

@@ -33,11 +33,15 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Implements the continuous BIC score for FGES.
+ * <p></[>Implements scores motivated by the Generalized Information Criterion (GIC)
+ * approach as given in Kim et al. (2012).</p>
+ * <p>Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection criteria on
+ * high dimensions. The Journal of Machine Learning Research, 13(1), 1037-1057.
+ * Foster and George.</p>
  *
  * @author Joseph Ramsey
  */
-public class KimEtAlScores implements Score {
+public class GicScores implements Score {
 
     // The dataset.
     private DataSet dataSet;
@@ -70,7 +74,7 @@ public class KimEtAlScores implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public KimEtAlScores(ICovarianceMatrix covariances/*, double correlationThreshold*/) {
+    public GicScores(ICovarianceMatrix covariances/*, double correlationThreshold*/) {
         if (covariances == null) {
             throw new NullPointerException();
         }
@@ -86,7 +90,7 @@ public class KimEtAlScores implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public KimEtAlScores(DataSet dataSet/*, double correlationThreshold*/) {
+    public GicScores(DataSet dataSet/*, double correlationThreshold*/) {
         if (dataSet == null) {
             throw new NullPointerException();
         }

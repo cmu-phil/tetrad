@@ -38,6 +38,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * sextet algorithm to a one factor IntSextad algorithm).
  *
  * @author Joseph Ramsey
+ * @author erichkummerfeld
  */
 public class Ftfc {
 

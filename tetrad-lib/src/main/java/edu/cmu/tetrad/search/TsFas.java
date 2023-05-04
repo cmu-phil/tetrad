@@ -41,7 +41,7 @@ import java.util.*;
  * @author DMalinsky
  * @see Fas
  */
-public class FasTs implements IFas {
+public class TsFas implements IFas {
 
     /**
      * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
@@ -99,7 +99,7 @@ public class FasTs implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public FasTs(Graph graph, IndependenceTest test) {
+    public TsFas(Graph graph, IndependenceTest test) {
         this.graph = graph;
         this.test = test;
     }
@@ -107,7 +107,7 @@ public class FasTs implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public FasTs(IndependenceTest test) {
+    public TsFas(IndependenceTest test) {
         this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
     }

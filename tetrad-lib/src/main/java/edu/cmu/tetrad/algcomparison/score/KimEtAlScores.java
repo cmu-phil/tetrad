@@ -6,6 +6,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.GicScores;
 import edu.cmu.tetrad.search.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -33,37 +34,37 @@ public class KimEtAlScores implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.KimEtAlScores score;
+        GicScores score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.KimEtAlScores((DataSet) this.dataSet);
+            score = new GicScores((DataSet) this.dataSet);
         } else if (dataSet instanceof ICovarianceMatrix) {
-            score = new edu.cmu.tetrad.search.KimEtAlScores((ICovarianceMatrix) this.dataSet);
+            score = new GicScores((ICovarianceMatrix) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
 
         int anInt = parameters.getInt((Params.SEM_GIC_RULE));
-        edu.cmu.tetrad.search.KimEtAlScores.RuleType ruleType;
+        GicScores.RuleType ruleType;
 
         switch (anInt) {
             case 1:
-                ruleType = edu.cmu.tetrad.search.KimEtAlScores.RuleType.BIC;
+                ruleType = GicScores.RuleType.BIC;
                 break;
             case 2:
-                ruleType = edu.cmu.tetrad.search.KimEtAlScores.RuleType.GIC2;
+                ruleType = GicScores.RuleType.GIC2;
                 break;
             case 3:
-                ruleType = edu.cmu.tetrad.search.KimEtAlScores.RuleType.RIC;
+                ruleType = GicScores.RuleType.RIC;
                 break;
             case 4:
-                ruleType = edu.cmu.tetrad.search.KimEtAlScores.RuleType.RICc;
+                ruleType = GicScores.RuleType.RICc;
                 break;
             case 5:
-                ruleType = edu.cmu.tetrad.search.KimEtAlScores.RuleType.GIC5;
+                ruleType = GicScores.RuleType.GIC5;
                 break;
             case 6:
-                ruleType = edu.cmu.tetrad.search.KimEtAlScores.RuleType.GIC6;
+                ruleType = GicScores.RuleType.GIC6;
                 break;
             default:
                 throw new IllegalArgumentException("Unrecognized rule type: " + anInt);

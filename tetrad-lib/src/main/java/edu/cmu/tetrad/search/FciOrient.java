@@ -29,21 +29,31 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm
- * (found in FCI.java) with Jiji Zhang's Augmented FCI rules (found in sec. 4.1
- * of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
- * Insufficient Systems").
- * <p>
- * This class is based off a copy of FCI.java taken from the repository on
- * 2008/12/16, revision 7306. The extension is done by extending
- * doFinalOrientation() with methods for Zhang's rules R5-R10 which implements
- * the augmented search. (By a remark of Zhang's, the rule applications can be
- * staged in this way.)
+ * <p>This class performs the final orientation steps of the FCI algorithms.
+ * There are two versions of these final orientation steps, one due to
+ * Peter Spirtes (the original, in Causation, Prediction and Search),
+ * which is arrow complete, and the other which Jiji Zhang worked out
+ * in his Ph.D. dissertation, which is both arrow and tail complete. The
+ * references for these are as follows.</p>
+ * <p>Spirtes, P., Glymour, C. N., Scheines, R., & Heckerman, D. (2000).
+ * Causation, prediction, and search. MIT press.</p>
+ * <p>Zhang, J. (2008). On the completeness of orientation rules for causal
+ * discovery in the presence of latent confounders and selection bias.
+ * Artificial Intelligence, 172(16-17), 1873-1896.</p>
+ * <p>These final rules are used in all algorithms in Tetrad that
+ * follow and refine the FCI algorithm--for example, the GFCI and RFCI
+ * algorihtms.</p>
+ * <p>We've made the methods for each of the separate rules publicly
+ * accessible in case someone wants to use the individual rules in the
+ * context of their own algorithms.</p>
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
  * @author Joseph Ramsey
  * @author Choh-Man Teng
+ * @see Fci
+ * @see GFci
+ * @see Rfci
  */
 public final class FciOrient {
     private final SepsetProducer sepsets;
