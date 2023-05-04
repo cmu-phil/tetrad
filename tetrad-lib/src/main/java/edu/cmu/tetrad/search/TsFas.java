@@ -317,7 +317,7 @@ public class TsFas implements IFas {
 
                 try {
                     this.numIndependenceTests++;
-                    independent = test.checkIndependence(x, y, empty).independent();
+                    independent = test.checkIndependence(x, y, empty).isIndependent();
                     System.out.println("############# independence given empty set: x,y " + x + ", " +
                             y + " independence = " + independent);
                 } catch (Exception e) {
@@ -455,7 +455,7 @@ public class TsFas implements IFas {
 
                         try {
                             this.numIndependenceTests++;
-                            independent = test.checkIndependence(x, y, condSet).independent();
+                            independent = test.checkIndependence(x, y, condSet).isIndependent();
                         } catch (Exception e) {
                             independent = false;
                         }

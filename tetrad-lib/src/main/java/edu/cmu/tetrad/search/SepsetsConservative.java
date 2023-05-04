@@ -85,7 +85,7 @@ public class SepsetsConservative implements SepsetProducer {
 
                     IndependenceResult result = getIndependenceTest().checkIndependence(i, k, v);
 
-                    if (result.independent()) {
+                    if (result.isIndependent()) {
                         double pValue = result.getPValue();
                         if (pValue > _p) {
                             _p = pValue;
@@ -103,7 +103,7 @@ public class SepsetsConservative implements SepsetProducer {
                     List<Node> v = GraphUtils.asList(choice, adjk);
                     IndependenceResult result = getIndependenceTest().checkIndependence(i, k, v);
 
-                    if (result.independent()) {
+                    if (result.isIndependent()) {
                         double pValue = result.getPValue();
                         if (pValue > _p) {
                             _p = pValue;
@@ -151,7 +151,7 @@ public class SepsetsConservative implements SepsetProducer {
             while ((choice = cg.next()) != null) {
                 List<Node> cond = GraphUtils.asList(choice, _nodes);
 
-                if (test.checkIndependence(x, z, cond).independent()) {
+                if (test.checkIndependence(x, z, cond).isIndependent()) {
                     if (verbose) {
                         System.out.println("Indep: " + x + " _||_ " + z + " | " + cond);
                     }
@@ -181,7 +181,7 @@ public class SepsetsConservative implements SepsetProducer {
             while ((choice = cg.next()) != null) {
                 List<Node> cond = GraphUtils.asList(choice, _nodes);
 
-                if (test.checkIndependence(x, z, cond).independent()) {
+                if (test.checkIndependence(x, z, cond).isIndependent()) {
                     if (cond.contains(y)) {
                         sepsetsContainingY.add(cond);
                     } else {
@@ -203,7 +203,7 @@ public class SepsetsConservative implements SepsetProducer {
     public boolean isIndependent(Node a, Node b, List<Node> c) {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
         this.lastResult = result;
-        return result.independent();
+        return result.isIndependent();
     }
 
     @Override

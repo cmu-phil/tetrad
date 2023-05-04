@@ -86,7 +86,7 @@ public class Iamb implements MbSearch {
                 break;
             }
 
-            if (!this.independenceTest.checkIndependence(f, target, cmb).independent()) {
+            if (!this.independenceTest.checkIndependence(f, target, cmb).isIndependent()) {
                 cmb.add(f);
                 cont = true;
             }
@@ -97,7 +97,7 @@ public class Iamb implements MbSearch {
         for (Node f : new LinkedList<>(cmb)) {
             cmb.remove(f);
 
-            if (this.independenceTest.checkIndependence(f, target, cmb).independent()) {
+            if (this.independenceTest.checkIndependence(f, target, cmb).isIndependent()) {
                 continue;
             }
 

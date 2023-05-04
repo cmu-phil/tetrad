@@ -67,7 +67,7 @@ public class SepsetsSet implements SepsetProducer {
     public boolean isIndependent(Node a, Node b, List<Node> c) {
         IndependenceResult result = this.test.checkIndependence(a, b, c);
         this.result = result;
-        return result.independent();
+        return result.isIndependent();
     }
 
     @Override

@@ -907,7 +907,7 @@ public class Paths implements TetradSerializable {
                     List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
                     if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                     if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                    if (test.checkIndependence(a, b, sepset).independent()) {
+                    if (test.checkIndependence(a, b, sepset).isIndependent()) {
                         graph.removeEdge(edge);
 
                         if (sepsets != null) {
@@ -931,7 +931,7 @@ public class Paths implements TetradSerializable {
                         List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
                         if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                         if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                        if (test.checkIndependence(a, b, sepset).independent()) {
+                        if (test.checkIndependence(a, b, sepset).isIndependent()) {
                             graph.removeEdge(edge);
 
                             if (sepsets != null) {

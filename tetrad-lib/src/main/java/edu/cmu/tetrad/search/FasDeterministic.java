@@ -279,7 +279,7 @@ public class FasDeterministic implements IFas {
                     result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN);
                 }
 
-                if (!result.independent()) {
+                if (!result.isIndependent()) {
                     this.numDependenceJudgement++;
                 }
 
@@ -287,7 +287,7 @@ public class FasDeterministic implements IFas {
                         this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
 
-                if (result.independent() && noEdgeRequired) {
+                if (result.isIndependent() && noEdgeRequired) {
                     getSepsets().set(x, y, empty);
 
                     TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
@@ -383,7 +383,7 @@ public class FasDeterministic implements IFas {
 
                         try {
                             this.numIndependenceTests++;
-                            independent = test.checkIndependence(x, y, condSet).independent();
+                            independent = test.checkIndependence(x, y, condSet).isIndependent();
 
                         } catch (Exception e) {
                             independent = false;

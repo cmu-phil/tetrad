@@ -204,7 +204,7 @@ public class RfciBsc implements GraphSearch {
             @Override
             public Boolean call() throws Exception {
                 for (IndependenceFact f : hCopy.keySet()) {
-                    boolean ind = this.bsTest.checkIndependence(f.getX(), f.getY(), f.getZ()).independent();
+                    boolean ind = this.bsTest.checkIndependence(f.getX(), f.getY(), f.getZ()).isIndependent();
                     int value = ind ? 1 : 0;
 
                     String indFact = f.toString();

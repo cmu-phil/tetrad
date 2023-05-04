@@ -209,7 +209,7 @@ public class VcFas {
 
                 try {
                     this.numIndependenceTests++;
-                    independent = test.checkIndependence(x, y, empty).independent();
+                    independent = test.checkIndependence(x, y, empty).isIndependent();
                 } catch (Exception e) {
                     e.printStackTrace();
                     independent = false;
@@ -290,7 +290,7 @@ public class VcFas {
 
                         try {
                             this.numIndependenceTests++;
-                            independent = test.checkIndependence(x, y, condSet).independent();
+                            independent = test.checkIndependence(x, y, condSet).isIndependent();
                         } catch (Exception e) {
                             independent = false;
                         }

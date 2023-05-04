@@ -77,7 +77,7 @@ public class GrowShrink implements MbSearch {
             remaining.remove(target);
 
             for (Node node : remaining) {
-                if (!this.independenceTest.checkIndependence(node, target, blanket).independent()) {
+                if (!this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
                     blanket.add(node);
                     changed = true;
                 }
@@ -92,7 +92,7 @@ public class GrowShrink implements MbSearch {
             for (Node node : new LinkedList<>(blanket)) {
                 blanket.remove(node);
 
-                if (this.independenceTest.checkIndependence(node, target, blanket).independent()) {
+                if (this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
                     changed = true;
                     continue;
                 }

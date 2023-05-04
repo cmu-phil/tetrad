@@ -90,7 +90,7 @@ public class InterIamb implements MbSearch {
                 break;
             }
 
-            if (!this.independenceTest.checkIndependence(f, target, cmb).independent()) {
+            if (!this.independenceTest.checkIndependence(f, target, cmb).isIndependent()) {
                 cmb.add(f);
                 cont = true;
             }
@@ -99,7 +99,7 @@ public class InterIamb implements MbSearch {
             for (Node _f : new LinkedList<>(cmb)) {
                 cmb.remove(_f);
 
-                if (this.independenceTest.checkIndependence(_f, target, cmb).independent()) {
+                if (this.independenceTest.checkIndependence(_f, target, cmb).isIndependent()) {
                     continue;
                 }
 

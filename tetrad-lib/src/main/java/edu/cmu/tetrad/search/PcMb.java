@@ -639,7 +639,7 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     private boolean independent(Node v, Node w, List<Node> z) {
-        boolean independent = getTest().checkIndependence(v, w, z).independent();
+        boolean independent = getTest().checkIndependence(v, w, z).isIndependent();
 
         this.numIndependenceTests++;
         return independent;

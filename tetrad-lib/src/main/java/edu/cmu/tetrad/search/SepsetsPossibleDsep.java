@@ -114,7 +114,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
             IndependenceResult result = this.test.checkIndependence(node1, node2, condSet);
             this.result = result;
 
-            if (result.independent() && noEdgeRequired) {
+            if (result.isIndependent() && noEdgeRequired) {
                 return condSet;
             }
         }
@@ -153,7 +153,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     @Override
     public boolean isIndependent(Node d, Node c, List<Node> path) {
         IndependenceResult result = this.test.checkIndependence(d, c, path);
-        return result.independent();
+        return result.isIndependent();
     }
 
 }

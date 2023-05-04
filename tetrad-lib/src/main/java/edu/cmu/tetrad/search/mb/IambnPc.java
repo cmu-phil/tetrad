@@ -91,7 +91,7 @@ public class IambnPc implements MbSearch {
                 break;
             }
 
-            if (!this.independenceTest.checkIndependence(f, target, cmb).independent()) {
+            if (!this.independenceTest.checkIndependence(f, target, cmb).isIndependent()) {
                 cmb.add(f);
                 cont = true;
             }

@@ -526,7 +526,7 @@ public final class PcAll implements GraphSearch {
                     }
 
                     List<Node> v = GraphUtils.asList(choice, adji);
-                    if (getIndependenceTest().checkIndependence(i, k, v).independent()) sepsets.add(v);
+                    if (getIndependenceTest().checkIndependence(i, k, v).isIndependent()) sepsets.add(v);
                 }
             }
 
@@ -540,7 +540,7 @@ public final class PcAll implements GraphSearch {
                     }
 
                     List<Node> v = GraphUtils.asList(choice, adjk);
-                    if (getIndependenceTest().checkIndependence(i, k, v).independent()) sepsets.add(v);
+                    if (getIndependenceTest().checkIndependence(i, k, v).isIndependent()) sepsets.add(v);
                 }
             }
         }

@@ -452,7 +452,7 @@ public class TestFges {
                 fp1++;
             }
 
-            boolean dependent = !_test.checkIndependence(x, y).independent();
+            boolean dependent = !_test.checkIndependence(x, y).isIndependent();
 
             if (trueAncestral && dependent) {
                 tp2++;
@@ -1592,7 +1592,7 @@ public class TestFges {
                 z.add(nodes.get(c));
             }
 
-            boolean _dsep = dsep.checkIndependence(x, y, new ArrayList<>(z)).independent();
+            boolean _dsep = dsep.checkIndependence(x, y, new ArrayList<>(z)).isIndependent();
             double diff = scoreGraphChange(x, y, z, this.hashIndices, score);
             boolean diffNegative = diff < 0;
 

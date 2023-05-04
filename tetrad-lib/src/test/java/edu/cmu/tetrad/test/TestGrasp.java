@@ -1671,10 +1671,10 @@ public final class TestGrasp {
     }
 
     private static void extractedWayne(Node x1, Node x2, Node x3, Node x4, IndependenceTest chiSq) {
-        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList()) + " " + chiSq.checkIndependence(x1, x2).independent());
-        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).independent());
-        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).independent());
-        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).independent());
+        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList()) + " " + chiSq.checkIndependence(x1, x2).isIndependent());
+        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).isIndependent());
+        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).isIndependent());
+        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).isIndependent());
     }
 
     @NotNull
@@ -3242,7 +3242,7 @@ public final class TestGrasp {
                             }
                         }
 
-                        if (dsep.checkIndependence(x, y, new ArrayList<>(pathColliders)).independent()) {
+                        if (dsep.checkIndependence(x, y, new ArrayList<>(pathColliders)).isIndependent()) {
                             IndependenceFact fact = new IndependenceFact(x, y, new ArrayList<>(pathColliders));
                             facts.add(fact);
                             System.out.println("Added " + fact);

@@ -404,7 +404,7 @@ public class FasFdr implements IFas {
                         boolean noEdgeRequired =
                                 this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
-                        if (result.independent() && noEdgeRequired) {
+                        if (result.isIndependent() && noEdgeRequired) {
                             adjacencies.get(x).remove(y);
                             adjacencies.get(y).remove(x);
                             getSepsets().set(x, y, condSet);

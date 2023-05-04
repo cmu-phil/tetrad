@@ -394,14 +394,14 @@ public final class VcPc implements GraphSearch {
                 IndependenceTest test = this.independenceTest;
 
                 if (!futureX.contains(y)) {
-                    if (!test.checkIndependence(x, y, boundaryX).independent()) {
+                    if (!test.checkIndependence(x, y, boundaryX).isIndependent()) {
                         continue MARKOV;
                     }
 
                 }
 
                 if (!futureY.contains(x)) {
-                    if (!test.checkIndependence(y, x, boundaryY).independent()) {
+                    if (!test.checkIndependence(y, x, boundaryY).isIndependent()) {
                         continue MARKOV;
                     }
                 }
@@ -646,7 +646,7 @@ public final class VcPc implements GraphSearch {
                 while ((choice = cg.next()) != null) {
                     List<Node> cond = GraphUtils.asList(choice, _nodes);
 
-                    if (test.checkIndependence(x, z, cond).independent()) {
+                    if (test.checkIndependence(x, z, cond).isIndependent()) {
 //                        System.out.println("Indep: " + x + " _||_ " + z + " | " + cond);
 
                         if (cond.contains(y)) {

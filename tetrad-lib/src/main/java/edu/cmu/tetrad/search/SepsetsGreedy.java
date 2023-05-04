@@ -91,7 +91,7 @@ public class SepsetsGreedy implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adji);
 
-                    if (getIndependenceTest().checkIndependence(i, k, v).independent()) {
+                    if (getIndependenceTest().checkIndependence(i, k, v).isIndependent()) {
                         return v;
                     }
                 }
@@ -104,7 +104,7 @@ public class SepsetsGreedy implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     List<Node> v = GraphUtils.asList(choice, adjk);
 
-                    if (getIndependenceTest().checkIndependence(i, k, v).independent()) {
+                    if (getIndependenceTest().checkIndependence(i, k, v).isIndependent()) {
                         return v;
                     }
                 }
@@ -118,7 +118,7 @@ public class SepsetsGreedy implements SepsetProducer {
     public boolean isIndependent(Node a, Node b, List<Node> c) {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
         this.result = result;
-        return result.independent();
+        return result.isIndependent();
     }
 
     @Override

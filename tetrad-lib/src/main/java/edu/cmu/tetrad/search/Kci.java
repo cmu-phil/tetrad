@@ -173,14 +173,14 @@ public class Kci implements IndependenceTest {
             if (verbose) {
                 double p = result.getPValue();
 
-                if (result.independent()) {
+                if (result.isIndependent()) {
                     TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
                 } else {
                     TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
                 }
             }
 
-            return new IndependenceResult(fact, result.independent(), result.getPValue());
+            return new IndependenceResult(fact, result.isIndependent(), result.getPValue());
         } else {
             List<Integer> rows = getRows(this.data);
 
@@ -230,7 +230,7 @@ public class Kci implements IndependenceTest {
             IndependenceResult result = facts.get(fact);
 
             if (this.facts.get(fact) != null) {
-                return new IndependenceResult(fact, result.independent(), result.getPValue());
+                return new IndependenceResult(fact, result.isIndependent(), result.getPValue());
             } else {
                 if (z.isEmpty()) {
                     result = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
@@ -242,7 +242,7 @@ public class Kci implements IndependenceTest {
             if (verbose) {
                 double p = result.getPValue();
 
-                if (result.independent()) {
+                if (result.isIndependent()) {
                     TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
 
                 } else {
@@ -250,7 +250,7 @@ public class Kci implements IndependenceTest {
                 }
             }
 
-            return new IndependenceResult(fact, result.independent(), result.getPValue());
+            return new IndependenceResult(fact, result.isIndependent(), result.getPValue());
         }
     }
 

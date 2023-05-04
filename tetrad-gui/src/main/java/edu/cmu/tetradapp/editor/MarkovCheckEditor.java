@@ -210,13 +210,13 @@ public class MarkovCheckEditor extends JPanel {
 
                 if (columnIndex == 2) {
                     if (getIndependenceTest() instanceof IndTestDSep) {
-                        if (result.independent()) {
+                        if (result.isIndependent()) {
                             return "D-SEPARATED";
                         } else {
                             return "d-connected";
                         }
                     } else {
-                        if (result.independent()) {
+                        if (result.isIndependent()) {
                             return "INDEPENDENT";
                         } else {
                             return "dependent";
@@ -306,7 +306,7 @@ public class MarkovCheckEditor extends JPanel {
         int dependent = 0;
 
         for (IndependenceResult result : model.getResults(false)) {
-            if (result.dependent() && !Double.isNaN(result.getPValue())) dependent++;
+            if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
         }
 
         fractionDependentDep = dependent / (double) model.getResults(false).size();
@@ -392,13 +392,13 @@ public class MarkovCheckEditor extends JPanel {
 
                 if (columnIndex == 2) {
                     if (getIndependenceTest() instanceof IndTestDSep) {
-                        if (result.independent()) {
+                        if (result.isIndependent()) {
                             return "D-SEPARATED";
                         } else {
                             return "d-connected";
                         }
                     } else {
-                        if (result.independent()) {
+                        if (result.isIndependent()) {
                             return "INDEPENDENT";
                         } else {
                             return "dependent";
@@ -488,7 +488,7 @@ public class MarkovCheckEditor extends JPanel {
         int dependent = 0;
 
         for (IndependenceResult result : model.getResults(true)) {
-            if (result.dependent() && !Double.isNaN(result.getPValue())) dependent++;
+            if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
         }
 
         fractionDependentIndep = dependent / (double) model.getResults(true).size();
@@ -621,7 +621,7 @@ public class MarkovCheckEditor extends JPanel {
                             boolean verbose = test.isVerbose();
                             test.setVerbose(verbose);
                             IndependenceResult result = test.checkIndependence(x, y, z);
-                            boolean indep = result.independent();
+                            boolean indep = result.isIndependent();
                             double pValue = result.getPValue();
                             test.setVerbose(verbose);
 
@@ -669,7 +669,7 @@ public class MarkovCheckEditor extends JPanel {
                 int dependent = 0;
 
                 for (IndependenceResult result : model.getResults(indep)) {
-                    if (result.dependent() && !Double.isNaN(result.getPValue())) dependent++;
+                    if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
                 }
 
                 if (indep) {

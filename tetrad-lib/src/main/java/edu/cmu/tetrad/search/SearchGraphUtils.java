@@ -318,7 +318,7 @@ public final class SearchGraphUtils {
                     }
 
                     //            LogUtils.getInstance().finest("Trying " + condSet);
-                    if (test.checkIndependence(x, z, condSet).independent()) {
+                    if (test.checkIndependence(x, z, condSet).isIndependent()) {
                         return true;
                     }
                 }
@@ -1299,7 +1299,7 @@ public final class SearchGraphUtils {
             while ((choice = cg.next()) != null) {
                 List<Node> cond = GraphUtils.asList(choice, _nodes);
 
-                if (test.checkIndependence(x, z, cond).independent()) {
+                if (test.checkIndependence(x, z, cond).isIndependent()) {
                     if (cond.contains(y)) {
                         numSepsetsContainingY++;
                     } else {
@@ -1326,7 +1326,7 @@ public final class SearchGraphUtils {
             while ((choice = cg.next()) != null) {
                 List<Node> cond = GraphUtils.asList(choice, _nodes);
 
-                if (test.checkIndependence(x, z, cond).independent()) {
+                if (test.checkIndependence(x, z, cond).isIndependent()) {
                     if (cond.contains(y)) {
                         numSepsetsContainingY++;
                     } else {

@@ -63,13 +63,13 @@ public class TestCheckMarkov {
 
                 IndependenceResult result = test.checkIndependence(x, y, cond);
 
-                if (result.independent()) {
+                if (result.isIndependent()) {
                     numIndep++;
                 }
 
                 total++;
 
-                System.out.print(" " + (result.independent() ? "Independent" : "Dependent"));
+                System.out.print(" " + (result.isIndependent() ? "Independent" : "Dependent"));
                 System.out.print(" p = " + result.getPValue());
                 System.out.println();
             }

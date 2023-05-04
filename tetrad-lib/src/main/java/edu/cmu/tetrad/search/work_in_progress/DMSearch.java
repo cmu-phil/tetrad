@@ -194,7 +194,7 @@ public class DMSearch {
 
 //                    System.out.println(i);
 //                    System.out.println(j);
-                        if (ind.checkIndependence(data.getVariable(i), data.getVariable(j)).dependent()) {
+                        if (ind.checkIndependence(data.getVariable(i), data.getVariable(j)).isDependent()) {
                             pattern.addDirectedEdge(data.getVariable(i), data.getVariable(j));
                         }
                     }
@@ -659,7 +659,7 @@ public class DMSearch {
         boolean testResult = false;
 
         try {
-            testResult = test.checkIndependence(outputsLatent.first(), outputsLatentEffect.first(), latentList).independent();
+            testResult = test.checkIndependence(outputsLatent.first(), outputsLatentEffect.first(), latentList).isIndependent();
         } catch (SingularMatrixException error) {
             System.out.println(error);
             System.out.println("SingularMatrixException Error!!!!!! Evaluated as:");
