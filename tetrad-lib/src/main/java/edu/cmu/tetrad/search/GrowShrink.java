@@ -27,9 +27,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * <p>Implements the Grow-Shrink algorithm of Margaritis and Thrun. Reference: "Bayesian Network
- * Induction via LocalmNeighborhoods."</p>
- *
+ * <p>Implements the Grow-Shrink algorithm of Margaritis and Thrun, a simple yet correct
+ * and useful Markov blanket search.</p>
+ * <p>Margaritis, D., & Thrun, S. (1999). Bayesian network induction via local neighborhoods.
+ * Advances in neural information processing systems, 12.</p>
  * @author Joseph Ramsey
  */
 public class GrowShrink implements MbSearch {
@@ -42,12 +43,11 @@ public class GrowShrink implements MbSearch {
     /**
      * The list of variables being searched over. Must contain the target.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * Constructs a new search.
-     *
-     * @param test The source of conditional independence information for the search.
+     * @param test The test used for this search.
      */
     public GrowShrink(IndependenceTest test) {
         if (test == null) {
@@ -104,34 +104,19 @@ public class GrowShrink implements MbSearch {
         return blanket;
     }
 
+    /**
+     * Returns "Grow Shrink".
+     * @return This string.
+     */
     public String getAlgorithmName() {
         return "Grow Shrink";
     }
 
+    /**
+     * @throws UnsupportedOperationException Since independence tests are not counted.
+     */
     public int getNumIndependenceTests() {
-        return 0;
-    }
-
-    private Node getVariableForName(String targetName) {
-        Node target = null;
-
-        for (Node V : this.variables) {
-            if (V.getName().equals(targetName)) {
-                target = V;
-                break;
-            }
-        }
-
-        if (target == null) {
-            throw new IllegalArgumentException(
-                    "Target variable not in dataset: " + targetName);
-        }
-
-        return target;
-    }
-
-    public void setVariables(List<Node> variables) {
-        this.variables = variables;
+        throw new UnsupportedOperationException("Independence tests are not counted in the algorithm.");
     }
 }
 
