@@ -48,7 +48,6 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     private double alpha;
     private double pValue = Double.NaN;
     private final int[] rows;
-    //    private List<TetradMatrix> data;
     private final List<ICovarianceMatrix> ncov;
     private final Map<Node, Integer> variablesMap;
     private double percent = .5;
@@ -104,7 +103,6 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
             Matrix _ncov = iCovarianceMatrix.getSelection(all, all);
             Matrix inv = _ncov.inverse();
             double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
-//            r *= 0.6;
             double _z = sqrt(this.sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
             double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(_z)));
             pValues.add(pvalue);

@@ -81,7 +81,6 @@ public class IndTestDSep implements IndependenceTest {
         facts.setNodes(variables);
     }
 
-
     /**
      * Constructor.
      *
