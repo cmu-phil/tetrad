@@ -47,16 +47,17 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     private final List<DataSet> dataSets;
     private double alpha;
     private double pValue = Double.NaN;
-    private final int[] rows;
     private final List<ICovarianceMatrix> ncov;
     private final Map<Node, Integer> variablesMap;
-    private double percent = .5;
-
-    private final List<IndependenceTest> tests = new ArrayList<>();
     private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
 
+    /**
+     * Constructor.
+     * @param dataSets The continuous datasets to analyze.
+     * @param alpha The alpha significance cutoff value.
+     */
     public IndTestFisherZFisherPValue(List<DataSet> dataSets, double alpha) {
 
         this.sampleSize = dataSets.get(0).getNumRows();
@@ -67,9 +68,6 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
             this.ncov.add(new CovarianceMatrix(dataSet));
         }
 
-        this.rows = new int[dataSets.get(0).getNumRows()];
-        for (int i = 0; i < getRows().length; i++) getRows()[i] = i;
-
         this.variables = dataSets.get(0).getVariables();
         this.variablesMap = new HashMap<>();
         for (int i = 0; i < this.variables.size(); i++) {
@@ -77,18 +75,28 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         }
 
         for (DataSet dataSet : dataSets) {
-            this.tests.add(new IndTestFisherZ(dataSet, alpha));
+            ((List<IndependenceTest>) new ArrayList<IndependenceTest>()).add(new IndTestFisherZ(dataSet, alpha));
         }
 
         this.dataSets = dataSets;
     }
 
-    //==========================PUBLIC METHODS=============================//
-
+    /**
+     * @throws UnsupportedOperationException Not implemented.
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     *
+     * @param x the one variable being compared.
+     * @param y the second variable being compared.
+     * @param z the list of conditioning variables.
+     * @return True iff x _||_ y | z.
+     * @throws RuntimeException if a matrix singularity is encountered.
+     */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         int[] all = new int[z.size() + 2];
         all[0] = this.variablesMap.get(x);
@@ -180,18 +188,24 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * @return the variable with the given name.
+     * @throws UnsupportedOperationException Not implemented.
      */
-
-
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Returns the concatenated data.
+     * @return This data
+     */
     public DataSet getData() {
-        return (DataSet) this.tests.get(0).getData();
+        return DataUtils.concatenate(this.dataSets);
     }
 
+    /**
+     * Returns teh covaraince matrix of the concatenated data.
+     * @return This covariance matrix.
+     */
     public ICovarianceMatrix getCov() {
         List<DataSet> _dataSets = new ArrayList<>();
 
@@ -202,7 +216,12 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
     }
 
-
+    /**
+     * Return a number that is positive when dependence holds and more positive
+     * for greater dependence.
+     * @return This number
+     * @see Fges
+     */
     @Override
     public double getScore() {
         return getPValue();
@@ -212,26 +231,21 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Fisher Z, Fisher P Value Percent = " + round(this.percent * 100);
+        return "Fisher Z, Fisher P Value Percent = " + round(.5 * 100);
     }
 
-    public int[] getRows() {
-        return this.rows;
-    }
-
-    public double getPercent() {
-        return this.percent;
-    }
-
-    public void setPercent(double percent) {
-        if (percent < 0.0 || percent > 1.0) throw new IllegalArgumentException();
-        this.percent = percent;
-    }
-
+    /**
+     * Return True if verbose output should be printed.
+     * @return True if so.
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output is printed.
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

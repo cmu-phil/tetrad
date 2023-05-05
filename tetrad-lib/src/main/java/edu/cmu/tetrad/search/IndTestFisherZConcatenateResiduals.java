@@ -97,8 +97,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         this.dataSets = dataSets2;
     }
 
-    //==========================PUBLIC METHODS=============================//
-
     /**
      * @throws UnsupportedOperationException Not implemented.
      */
@@ -263,6 +261,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     public double getScore() {
         return -(getPValue() - getAlpha());
     }
+
     /**
      * @return a string representation of this test.
      */
