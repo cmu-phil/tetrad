@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DeltaSextadTest;
-import edu.cmu.tetrad.search.IntSextad;
+import edu.cmu.tetrad.search.Sextad;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -66,18 +66,18 @@ public class TestDeltaSextadTest {
         final int m5 = 4;
         final int m6 = 5;
 
-        IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);
-        IntSextad t2 = new IntSextad(m1, m2, m4, m3, m5, m6);
-        IntSextad t3 = new IntSextad(m1, m2, m5, m3, m4, m6);
-        IntSextad t4 = new IntSextad(m1, m2, m6, m3, m4, m5);
-        IntSextad t5 = new IntSextad(m1, m3, m4, m2, m5, m6);
-        IntSextad t6 = new IntSextad(m1, m3, m5, m2, m4, m6);
-        IntSextad t7 = new IntSextad(m1, m3, m6, m2, m4, m5);
-        IntSextad t8 = new IntSextad(m1, m4, m5, m2, m3, m6);
-        IntSextad t9 = new IntSextad(m1, m4, m6, m2, m3, m5);
-        IntSextad t10 = new IntSextad(m1, m5, m6, m2, m3, m4);
+        Sextad t1 = new Sextad(m1, m2, m3, m4, m5, m6);
+        Sextad t2 = new Sextad(m1, m2, m4, m3, m5, m6);
+        Sextad t3 = new Sextad(m1, m2, m5, m3, m4, m6);
+        Sextad t4 = new Sextad(m1, m2, m6, m3, m4, m5);
+        Sextad t5 = new Sextad(m1, m3, m4, m2, m5, m6);
+        Sextad t6 = new Sextad(m1, m3, m5, m2, m4, m6);
+        Sextad t7 = new Sextad(m1, m3, m6, m2, m4, m5);
+        Sextad t8 = new Sextad(m1, m4, m5, m2, m3, m6);
+        Sextad t9 = new Sextad(m1, m4, m6, m2, m3, m5);
+        Sextad t10 = new Sextad(m1, m5, m6, m2, m3, m4);
 
-        List<IntSextad> sextads = new ArrayList<>();
+        List<Sextad> sextads = new ArrayList<>();
 
         sextads.add(t1);
         sextads.add(t2);
@@ -100,7 +100,7 @@ public class TestDeltaSextadTest {
         int[] choice;
 
         while ((choice = gen.next()) != null) {
-            IntSextad[] _sextads = new IntSextad[numSextads];
+            Sextad[] _sextads = new Sextad[numSextads];
 
             for (int i = 0; i < numSextads; i++) {
                 _sextads[i] = sextads.get(choice[i]);
@@ -130,24 +130,24 @@ public class TestDeltaSextadTest {
         final int m5 = 4;
         final int m6 = 5;
 
-        IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);
-        IntSextad t2 = new IntSextad(m1, m2, m4, m3, m5, m6);
-        IntSextad t3 = new IntSextad(m1, m2, m5, m3, m4, m6);
-        IntSextad t4 = new IntSextad(m1, m2, m6, m3, m4, m5);
-        IntSextad t5 = new IntSextad(m1, m3, m4, m2, m5, m6);
-        IntSextad t6 = new IntSextad(m1, m3, m5, m2, m4, m6);
-        IntSextad t7 = new IntSextad(m1, m3, m6, m2, m4, m5);
-        IntSextad t8 = new IntSextad(m1, m4, m5, m2, m3, m6);
-        IntSextad t9 = new IntSextad(m1, m4, m6, m2, m3, m5);
-        IntSextad t10 = new IntSextad(m1, m5, m6, m2, m3, m4);
+        Sextad t1 = new Sextad(m1, m2, m3, m4, m5, m6);
+        Sextad t2 = new Sextad(m1, m2, m4, m3, m5, m6);
+        Sextad t3 = new Sextad(m1, m2, m5, m3, m4, m6);
+        Sextad t4 = new Sextad(m1, m2, m6, m3, m4, m5);
+        Sextad t5 = new Sextad(m1, m3, m4, m2, m5, m6);
+        Sextad t6 = new Sextad(m1, m3, m5, m2, m4, m6);
+        Sextad t7 = new Sextad(m1, m3, m6, m2, m4, m5);
+        Sextad t8 = new Sextad(m1, m4, m5, m2, m3, m6);
+        Sextad t9 = new Sextad(m1, m4, m6, m2, m3, m5);
+        Sextad t10 = new Sextad(m1, m5, m6, m2, m3, m4);
 
         DeltaSextadTest test = new DeltaSextadTest(data);
 
-        IntSextad[] _sextads = {t2, t5, t10, t3, t6};
+        Sextad[] _sextads = {t2, t5, t10, t3, t6};
         double p = test.getPValue(_sextads);
         assertEquals(0.21, p, 0.01);
 
-        _sextads = new IntSextad[]{t10};
+        _sextads = new Sextad[]{t10};
         p = test.getPValue(_sextads);
         assertEquals(0.30, p, 0.01);
 
@@ -236,8 +236,8 @@ public class TestDeltaSextadTest {
         DeltaSextadTest test = new DeltaSextadTest(data);
 
         // Should be invariant to changes or order of the first three or of the last three variables.
-        double a = test.getPValue(new IntSextad(x1, x2, x3, x4, x5, x6));
-        double b = test.getPValue(new IntSextad(x2, x3, x1, x5, x4, x6));
+        double a = test.getPValue(new Sextad(x1, x2, x3, x4, x5, x6));
+        double b = test.getPValue(new Sextad(x2, x3, x1, x5, x4, x6));
 
         assertEquals(a, b, 1e-7);
     }

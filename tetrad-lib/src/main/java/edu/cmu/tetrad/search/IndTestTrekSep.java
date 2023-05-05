@@ -197,7 +197,6 @@ public final class IndTestTrekSep implements IndependenceTest {
         return this.nameMap.get(name);
     }
 
-
     /**
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
@@ -250,7 +249,45 @@ public final class IndTestTrekSep implements IndependenceTest {
         return "t-Separation test, alpha = " + IndTestTrekSep.nf.format(getAlpha());
     }
 
-    //==========================PRIVATE METHODS============================//
+    public void setVariables(List<Node> variables) {
+        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
+        this.variables = new ArrayList<>(variables);
+        this.covMatrix.setVariables(variables);
+    }
+
+    public ICovarianceMatrix getCov() {
+        return this.covMatrix;
+    }
+
+    @Override
+    public List<DataSet> getDataSets() {
+
+        List<DataSet> dataSets = new ArrayList<>();
+
+        dataSets.add(this.dataSet);
+
+        return dataSets;
+    }
+
+    @Override
+    public int getSampleSize() {
+        return this.covMatrix.getSampleSize();
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
+    @Override
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 
     private int sampleSize() {
         return covMatrix().getSampleSize();
@@ -284,47 +321,6 @@ public final class IndTestTrekSep implements IndependenceTest {
         }
 
         return indexMap;
-    }
-
-    public void setVariables(List<Node> variables) {
-        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
-        this.variables = new ArrayList<>(variables);
-        this.covMatrix.setVariables(variables);
-    }
-
-    public ICovarianceMatrix getCov() {
-        return this.covMatrix;
-    }
-
-    @Override
-    public List<DataSet> getDataSets() {
-
-        List<DataSet> dataSets = new ArrayList<>();
-
-        dataSets.add(this.dataSet);
-
-        return dataSets;
-    }
-
-    @Override
-    public int getSampleSize() {
-        return this.covMatrix.getSampleSize();
-    }
-
-
-    @Override
-    public double getScore() {
-        return getPValue();
-    }
-
-    @Override
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    @Override
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 }
 

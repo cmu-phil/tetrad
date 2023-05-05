@@ -74,13 +74,13 @@ public class PurifySextadBased {
     private List<List<Integer>> combinedSearch(List<List<Integer>> clustering) {
         Set<Integer> eliminated = new HashSet<>();
 
-        Set<IntSextad> allImpurities = null;
+        Set<Sextad> allImpurities = null;
         double cutoff = this.alpha;
         int count = 0;
 
         for (List<Integer> cluster : clustering) {
             System.out.println("Within cluster: " + ++count);
-            Set<IntSextad> impurities = listSextads(cluster, eliminated, cutoff);
+            Set<Sextad> impurities = listSextads(cluster, eliminated, cutoff);
 
             if (impurities != null) {
                 if (allImpurities == null) {
@@ -90,7 +90,7 @@ public class PurifySextadBased {
             }
         }
 
-        Set<IntSextad> impurities = listCrossConstructSextads(clustering, eliminated, cutoff);
+        Set<Sextad> impurities = listCrossConstructSextads(clustering, eliminated, cutoff);
 
         if (impurities != null) {
             if (allImpurities == null) {
@@ -108,7 +108,7 @@ public class PurifySextadBased {
         while (true) {
             int max = 0;
             Integer maxNode = null;
-            Map<Integer, Set<IntSextad>> impuritiesPerNode = getImpuritiesPerNode(allImpurities, eliminated);
+            Map<Integer, Set<Sextad>> impuritiesPerNode = getImpuritiesPerNode(allImpurities, eliminated);
 
             for (Integer node : this.nodes) {
                 if (impuritiesPerNode.get(node).size() > max) {
@@ -122,8 +122,8 @@ public class PurifySextadBased {
             double minP = Double.POSITIVE_INFINITY;
             double maxP = Double.NEGATIVE_INFINITY;
 
-            for (IntSextad IntSextad : impuritiesPerNode.get(maxNode)) {
-                double pValue = this.sextadTest.getPValue(IntSextad);
+            for (Sextad Sextad : impuritiesPerNode.get(maxNode)) {
+                double pValue = this.sextadTest.getPValue(Sextad);
 
                 if (pValue < minP) {
                     minP = pValue;
@@ -143,50 +143,50 @@ public class PurifySextadBased {
         return buildSolution(clustering, eliminated);
     }
 
-    private Map<Integer, Set<IntSextad>> getImpuritiesPerNode(Set<IntSextad> allImpurities, Set<Integer> _eliminated) {
-        Map<Integer, Set<IntSextad>> impuritiesPerNode = new HashMap<>();
+    private Map<Integer, Set<Sextad>> getImpuritiesPerNode(Set<Sextad> allImpurities, Set<Integer> _eliminated) {
+        Map<Integer, Set<Sextad>> impuritiesPerNode = new HashMap<>();
 
         for (Integer node : this.nodes) {
             impuritiesPerNode.put(node, new HashSet<>());
         }
 
-        for (IntSextad IntSextad : allImpurities) {
-            if (_eliminated.contains(IntSextad.getI())) {
+        for (Sextad Sextad : allImpurities) {
+            if (_eliminated.contains(Sextad.getI())) {
                 continue;
             }
 
-            if (_eliminated.contains(IntSextad.getJ())) {
+            if (_eliminated.contains(Sextad.getJ())) {
                 continue;
             }
 
-            if (_eliminated.contains(IntSextad.getK())) {
+            if (_eliminated.contains(Sextad.getK())) {
                 continue;
             }
 
-            if (_eliminated.contains(IntSextad.getL())) {
+            if (_eliminated.contains(Sextad.getL())) {
                 continue;
             }
 
-            if (_eliminated.contains(IntSextad.getM())) {
+            if (_eliminated.contains(Sextad.getM())) {
                 continue;
             }
 
-            if (_eliminated.contains(IntSextad.getN())) {
+            if (_eliminated.contains(Sextad.getN())) {
                 continue;
             }
 
-            impuritiesPerNode.get(IntSextad.getI()).add(IntSextad);
-            impuritiesPerNode.get(IntSextad.getJ()).add(IntSextad);
-            impuritiesPerNode.get(IntSextad.getK()).add(IntSextad);
-            impuritiesPerNode.get(IntSextad.getL()).add(IntSextad);
-            impuritiesPerNode.get(IntSextad.getM()).add(IntSextad);
-            impuritiesPerNode.get(IntSextad.getN()).add(IntSextad);
+            impuritiesPerNode.get(Sextad.getI()).add(Sextad);
+            impuritiesPerNode.get(Sextad.getJ()).add(Sextad);
+            impuritiesPerNode.get(Sextad.getK()).add(Sextad);
+            impuritiesPerNode.get(Sextad.getL()).add(Sextad);
+            impuritiesPerNode.get(Sextad.getM()).add(Sextad);
+            impuritiesPerNode.get(Sextad.getN()).add(Sextad);
         }
         return impuritiesPerNode;
     }
 
-    private Set<IntSextad> listCrossConstructSextads(List<List<Integer>> clustering, Set<Integer> eliminated, double cutoff) {
-        Set<IntSextad> allSextads = new HashSet<>();
+    private Set<Sextad> listCrossConstructSextads(List<List<Integer>> clustering, Set<Integer> eliminated, double cutoff) {
+        Set<Sextad> allSextads = new HashSet<>();
         boolean countable = false;
 
         for (int p1 = 0; p1 < clustering.size(); p1++) {
@@ -206,7 +206,7 @@ public class PurifySextadBased {
                             List<Integer> crossCluster = new ArrayList<>();
                             for (int i : choice1) crossCluster.add(cluster1.get(i));
                             for (int i : choice2) crossCluster.add(cluster2.get(i));
-                            Set<IntSextad> Sextads = listSextads(crossCluster, eliminated, cutoff);
+                            Set<Sextad> Sextads = listSextads(crossCluster, eliminated, cutoff);
 
                             if (Sextads != null) {
                                 countable = true;
@@ -229,7 +229,7 @@ public class PurifySextadBased {
                             for (int i : choice1) crossCluster.add(cluster2.get(i));
                             for (int i : choice2) crossCluster.add(cluster1.get(i));
 
-                            Set<IntSextad> Sextads = listSextads(crossCluster, eliminated, cutoff);
+                            Set<Sextad> Sextads = listSextads(crossCluster, eliminated, cutoff);
 
                             if (Sextads != null) {
                                 countable = true;
@@ -246,12 +246,12 @@ public class PurifySextadBased {
     }
 
 
-    private Set<IntSextad> listSextads(List<Integer> cluster, Set<Integer> eliminated, double cutoff) {
+    private Set<Sextad> listSextads(List<Integer> cluster, Set<Integer> eliminated, double cutoff) {
         if (cluster.size() < 6) return null;
         cluster = new ArrayList<>(cluster);
         boolean countable = false;
 
-        Set<IntSextad> Sextads = new HashSet<>();
+        Set<Sextad> Sextads = new HashSet<>();
         ChoiceGenerator gen = new ChoiceGenerator(cluster.size(), 6);
         int[] choice;
 
@@ -287,16 +287,16 @@ public class PurifySextadBased {
             double p9;
             double p10;
 
-            IntSextad t1 = new IntSextad(m1, m2, m3, m4, m5, m6);
-            IntSextad t2 = new IntSextad(m1, m2, m4, m3, m5, m6);
-            IntSextad t3 = new IntSextad(m1, m2, m5, m3, m4, m6);
-            IntSextad t4 = new IntSextad(m1, m2, m6, m3, m4, m5);
-            IntSextad t5 = new IntSextad(m1, m3, m4, m2, m5, m6);
-            IntSextad t6 = new IntSextad(m1, m3, m5, m2, m4, m6);
-            IntSextad t7 = new IntSextad(m1, m3, m6, m2, m4, m5);
-            IntSextad t8 = new IntSextad(m1, m4, m5, m2, m3, m6);
-            IntSextad t9 = new IntSextad(m1, m4, m6, m2, m3, m5);
-            IntSextad t10 = new IntSextad(m1, m5, m6, m2, m3, m4);
+            Sextad t1 = new Sextad(m1, m2, m3, m4, m5, m6);
+            Sextad t2 = new Sextad(m1, m2, m4, m3, m5, m6);
+            Sextad t3 = new Sextad(m1, m2, m5, m3, m4, m6);
+            Sextad t4 = new Sextad(m1, m2, m6, m3, m4, m5);
+            Sextad t5 = new Sextad(m1, m3, m4, m2, m5, m6);
+            Sextad t6 = new Sextad(m1, m3, m5, m2, m4, m6);
+            Sextad t7 = new Sextad(m1, m3, m6, m2, m4, m5);
+            Sextad t8 = new Sextad(m1, m4, m5, m2, m3, m6);
+            Sextad t9 = new Sextad(m1, m4, m6, m2, m3, m5);
+            Sextad t10 = new Sextad(m1, m5, m6, m2, m3, m4);
 
             p1 = this.sextadTest.getPValue(t1);
             p2 = this.sextadTest.getPValue(t2);

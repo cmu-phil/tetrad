@@ -1,47 +1,21 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
-//                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
-
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.graph.GraphNode;
-import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Represents an ordered sextad of variables.
- */
 public class Sextad implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private final Node i;
-    private final Node j;
-    private final Node k;
-    private final Node l;
-    private final Node m;
-    private final Node n;
+    private final int i;
+    private final int j;
+    private final int k;
+    private final int l;
+    private final int m;
+    private final int n;
 
-    public Sextad(Node i, Node j, Node k, Node l, Node m, Node n) {
+    public Sextad(int i, int j, int k, int l, int m, int n) {
         testDistinctness(i, j, k, l, m, n);
         this.i = i;
         this.j = j;
@@ -51,34 +25,15 @@ public class Sextad implements TetradSerializable {
         this.n = n;
     }
 
-    public Sextad(Node[] nodes) {
-        if (nodes.length != 6) throw new IllegalArgumentException("Must provide exactly 6 nodes.");
-
-        this.i = nodes[0];
-        this.j = nodes[1];
-        this.k = nodes[2];
-        this.l = nodes[3];
-        this.m = nodes[4];
-        this.n = nodes[5];
-
-        testDistinctness(this.i, this.j, this.k, this.l, this.m, this.n);
-
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static Sextad serializableInstance() {
-        Node i = new GraphNode("i");
-        Node j = new GraphNode("j");
-        Node k = new GraphNode("k");
-        Node l = new GraphNode("l");
-        Node m = new GraphNode("m");
-        Node n = new GraphNode("n");
-        return new Sextad(i, j, k, l, m, n);
+        return new Sextad(0, 1, 2, 3, 4, 5);
     }
 
-    private void testDistinctness(Node i, Node j, Node k, Node l, Node m, Node n) {
+
+    private void testDistinctness(int i, int j, int k, int l, int m, int n) {
         if (i == j || i == k || i == l || i == m || i == n) {
             throw new IllegalArgumentException("Nodes not distinct.");
         }
@@ -100,39 +55,38 @@ public class Sextad implements TetradSerializable {
         }
     }
 
-    public Node getI() {
+    public int getI() {
         return this.i;
     }
 
-    public Node getJ() {
+    public int getJ() {
         return this.j;
     }
 
-    public Node getK() {
+    public int getK() {
         return this.k;
     }
 
-    public Node getL() {
+    public int getL() {
         return this.l;
     }
 
-    public Node getM() {
+    public int getM() {
         return this.m;
     }
 
-    public Node getN() {
+    public int getN() {
         return this.n;
     }
 
     public int hashCode() {
-        int hash = 17 * this.i.hashCode() * this.j.hashCode() * this.k.hashCode();
-        hash += 29 * this.l.hashCode() * this.m.hashCode() * this.n.hashCode();
-
+        int hash = this.i * this.j * this.k;
+        hash += this.l * this.m * this.n;
         return hash;
     }
 
     public boolean equals(Object o) {
-        if (!(o instanceof Sextad)) throw new IllegalArgumentException();
+        if (!(o instanceof Sextad)) return false;
         Sextad sextad = (Sextad) o;
 
         boolean leftEquals = this.i == sextad.i && this.j == sextad.j && this.k == sextad.k ||
@@ -156,8 +110,8 @@ public class Sextad implements TetradSerializable {
         return "<" + this.i + ", " + this.j + ", " + this.k + "; " + this.l + ", " + this.m + ", " + this.n + ">";
     }
 
-    public List<Node> getNodes() {
-        List<Node> nodes = new ArrayList<>();
+    public List<Integer> getNodes() {
+        List<Integer> nodes = new ArrayList<>();
         nodes.add(this.i);
         nodes.add(this.j);
         nodes.add(this.k);
@@ -167,5 +121,3 @@ public class Sextad implements TetradSerializable {
         return nodes;
     }
 }
-
-

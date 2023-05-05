@@ -1021,21 +1021,21 @@ public class Ftfc {
     }
 
     private boolean vanishes(int n1, int n2, int n3, int n4, int n5, int n6) {
-        IntSextad t1 = new IntSextad(n1, n2, n3, n4, n5, n6);
-        IntSextad t2 = new IntSextad(n1, n5, n6, n2, n3, n4);
-        IntSextad t3 = new IntSextad(n1, n4, n6, n2, n3, n5);
-        IntSextad t4 = new IntSextad(n1, n4, n5, n2, n3, n6);
-        IntSextad t5 = new IntSextad(n1, n3, n4, n2, n5, n6);
-        IntSextad t6 = new IntSextad(n1, n3, n5, n2, n4, n6);
-        IntSextad t7 = new IntSextad(n1, n3, n6, n2, n4, n5);
-        IntSextad t8 = new IntSextad(n1, n2, n4, n3, n5, n6);
-        IntSextad t9 = new IntSextad(n1, n2, n5, n3, n4, n6);
-        IntSextad t10 = new IntSextad(n1, n2, n6, n3, n4, n5);
+        Sextad t1 = new Sextad(n1, n2, n3, n4, n5, n6);
+        Sextad t2 = new Sextad(n1, n5, n6, n2, n3, n4);
+        Sextad t3 = new Sextad(n1, n4, n6, n2, n3, n5);
+        Sextad t4 = new Sextad(n1, n4, n5, n2, n3, n6);
+        Sextad t5 = new Sextad(n1, n3, n4, n2, n5, n6);
+        Sextad t6 = new Sextad(n1, n3, n5, n2, n4, n6);
+        Sextad t7 = new Sextad(n1, n3, n6, n2, n4, n5);
+        Sextad t8 = new Sextad(n1, n2, n4, n3, n5, n6);
+        Sextad t9 = new Sextad(n1, n2, n5, n3, n4, n6);
+        Sextad t10 = new Sextad(n1, n2, n6, n3, n4, n5);
 
 //            IntSextad[] independents = {t2, t5, t10, t3, t6};
 
-        List<IntSextad[]> independents = new ArrayList<>();
-        independents.add(new IntSextad[]{t1, t2, t3, t5, t6});
+        List<Sextad[]> independents = new ArrayList<>();
+        independents.add(new Sextad[]{t1, t2, t3, t5, t6});
 //        independents.add(new IntSextad[]{t1, t2, t3, t9, t10});
 //        independents.add(new IntSextad[]{t6, t7, t8, t9, t10});
 //        independents.add(new IntSextad[]{t1, t2, t4, t5, t9});
@@ -1046,7 +1046,7 @@ public class Ftfc {
         // The four sextads implied by equation 5.17 in Harmann.
 //            independents.add(new IntSextad[]{t3, t7, t8, t9});
 
-        for (IntSextad[] sextads : independents) {
+        for (Sextad[] sextads : independents) {
             double p = this.test.getPValue(sextads);
 
             if (Double.isNaN(p)) {

@@ -112,7 +112,7 @@ public class DeltaSextadTest {
      * @param sextads The sextads for which a p-value is needed.
      * @return The p-value.
      */
-    public double getPValue(IntSextad... sextads) {
+    public double getPValue(Sextad... sextads) {
         int df = dofHarman(sextads.length);
         double chisq = calcChiSquare(sextads);
         double cdf = new ChiSquaredDistribution(df).cumulativeProbability(chisq);
@@ -129,10 +129,10 @@ public class DeltaSextadTest {
      * @param sextads The sextads for which a chi-square is needed
      * @return The chi-square.
      */
-    public double calcChiSquare(IntSextad[] sextads) {
+    public double calcChiSquare(Sextad[] sextads) {
         Set<Sigma> boldSigmaSet = new HashSet<>();
 
-        for (IntSextad sextad : sextads) {
+        for (Sextad sextad : sextads) {
             List<Integer> _nodes = sextad.getNodes();
 
             for (int k1 = 0; k1 < 3; k1++) {
@@ -195,7 +195,7 @@ public class DeltaSextadTest {
         Matrix del = new Matrix(boldSigma.size(), sextads.length);
 
         for (int j = 0; j < sextads.length; j++) {
-            IntSextad sextad = sextads[j];
+            Sextad sextad = sextads[j];
 
             for (int i = 0; i < boldSigma.size(); i++) {
                 Sigma sigma = boldSigma.get(i);
@@ -208,7 +208,7 @@ public class DeltaSextadTest {
         Matrix t = new Matrix(sextads.length, 1);
 
         for (int i = 0; i < sextads.length; i++) {
-            IntSextad sextad = sextads[i];
+            Sextad sextad = sextads[i];
             List<Integer> nodes = sextad.getNodes();
             Matrix m = new Matrix(3, 3);
 
@@ -255,7 +255,7 @@ public class DeltaSextadTest {
         }
     }
 
-    private double getDerivative(IntSextad sextad, Sigma sigma) {
+    private double getDerivative(Sextad sextad, Sigma sigma) {
         int a = sigma.getA();
         int b = sigma.getB();
 

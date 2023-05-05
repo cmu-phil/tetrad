@@ -34,7 +34,8 @@ import java.util.*;
 
 
 /**
- * Checks independence facts for variables associated associated with a sepset by simply querying the sepset
+ * Checks independence facts for variables associated with a sepset by simply
+ * querying the sepset
  *
  * @author Robert Tillman
  */
