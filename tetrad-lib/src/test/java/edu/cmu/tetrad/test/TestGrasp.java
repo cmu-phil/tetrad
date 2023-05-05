@@ -1371,7 +1371,7 @@ public final class TestGrasp {
 
                     edu.cmu.tetrad.search.Grasp boss = new edu.cmu.tetrad.search.Grasp(test, new GraphScore(facts));
                     boss.setNonSingularDepth(1);
-                    boss.setSingularDepth(1);
+                    boss.setUncoveredDepth(1);
 
 //                    OtherPermAlgs spAlg = new OtherPermAlgs(test);
 //                    spAlg.setUsePearl(true);
@@ -1395,7 +1395,7 @@ public final class TestGrasp {
                     edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test);
 
                     grasp.setDepth(3);
-                    grasp.setSingularDepth(1);
+                    grasp.setUncoveredDepth(1);
                     grasp.setNonSingularDepth(1);
                     grasp.setUseRaskuttiUhler(usePearl);
                     grasp.setOrdered(true);
@@ -2964,7 +2964,7 @@ public final class TestGrasp {
 
                 edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new IndTestDSep(facts.getFacts()));
                 search.setDepth(depth);
-                search.setSingularDepth(depth);
+                search.setUncoveredDepth(depth);
                 search.setNonSingularDepth(depth);
                 search.setUseRaskuttiUhler(false);
                 List<Node> order = search.bestOrder(p);

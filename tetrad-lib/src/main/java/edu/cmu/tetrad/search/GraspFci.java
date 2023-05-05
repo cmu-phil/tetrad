@@ -124,7 +124,7 @@ public final class GraspFci implements GraphSearch {
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
         alg.setDepth(graspDepth);
-        alg.setSingularDepth(uncoveredDepth);
+        alg.setUncoveredDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
         alg.setNumStarts(numStarts);
         alg.setVerbose(verbose);
