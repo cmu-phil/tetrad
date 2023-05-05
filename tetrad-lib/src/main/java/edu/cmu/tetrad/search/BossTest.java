@@ -113,15 +113,17 @@ public class BossTest {
                     if (i < j) accum += this.insert[row][col];
                     if (i > j) accum -= this.insert[row][col];
 
+                    if (i < j) alt.add(b);
+
                     score = this.gsts.get(a).trace(new HashSet<>(alt), new HashSet<>());
                     score -= baseline;
                     score += accum;
 
-                    alt.add(b);
+                    if (i > j) alt.add(b);
 
                     if (score <= 1e-10) continue;
-                    if ((i < j) && (score <= bestScore)) continue;
-                    if ((i > j) && (score < bestScore) )continue;
+                    if ((i < j) && (score < bestScore)) continue;
+                    if ((i > j) && (score <= bestScore) )continue;
 
                     bestScore = score;
                     bestInsert = new int[]{i, j};
