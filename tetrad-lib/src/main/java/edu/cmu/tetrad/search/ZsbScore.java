@@ -187,9 +187,6 @@ public class ZsbScore implements Score {
         return lambdas.get(m0);
     }
 
-    /**
-     * Specialized scoring method for a single parent. Used to speed up the effect edges search.
-     */
     public ICovarianceMatrix getCovariances() {
         return covariances;
     }
