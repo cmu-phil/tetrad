@@ -53,7 +53,6 @@ public class IndTestDSep implements IndependenceTest {
      */
     private List<Node> observedVars;
     private List<Node> _observedVars;
-    private List<IndependenceFact> facts;
     private boolean verbose = false;
     private double pvalue = 0;
 
@@ -160,8 +159,6 @@ public class IndTestDSep implements IndependenceTest {
         this._observedVars = _vars;
         this.observedVars = new ArrayList<>(_observedVars);
 
-        facts = new ArrayList<>();
-
         return this;
     }
 
@@ -174,16 +171,6 @@ public class IndTestDSep implements IndependenceTest {
         } else {
             List<Node> _nodes = new ArrayList<>(nodes);
             _nodes.removeIf(node -> node.getNodeType() == NodeType.LATENT);
-
-
-//            List<Node> observedVars = new ArrayList<>();
-//
-//            for (Node node : nodes) {
-//                if (node.getNodeType() == NodeType.MEASURED) {
-//                    observedVars.add(node);
-//                }
-//            }
-
             return _nodes;
         }
     }
@@ -239,10 +226,6 @@ public class IndTestDSep implements IndependenceTest {
         double pValue;
 
         if (dSeparated) {
-            if (this.facts != null) {
-                this.facts.add(new IndependenceFact(x, y, z));
-            }
-
             pValue = 1.0;
         } else {
             pValue = 0.0;
