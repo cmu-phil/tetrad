@@ -230,7 +230,8 @@ public class Grasp {
     }
 
     /**
-     * Sets the depth of ??? (Bryan cnan you document this?)
+     * Sets the maximum depth of the depth first search that GRaSP perform while
+     * searching for a weakly increasing tuck sequence that improves the score.
      *
      * @param depth This depth.
      */
@@ -240,7 +241,8 @@ public class Grasp {
     }
 
     /**
-     * Sets the depth of ??? (Bryan cnan you document this?)
+     * Sets the maximum depth at which uncovered tucks can be performed within
+     * the depth first search of GRaSP.
      *
      * @param uncoveredDepth This depth.
      */
@@ -250,7 +252,8 @@ public class Grasp {
     }
 
     /**
-     * Sets the depth of ??? (Bryan cnan you document this?)
+     * Sets the maximum depth at which singular tucks can be performed within
+     * the depth first search of GRaSP.
      *
      * @param nonSingularDepth This depth.
      */
