@@ -27,9 +27,11 @@ import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.data.reader.Data;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
@@ -92,7 +94,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
-        this.dataSet = dataSet;
+        this.dataSet = DataUtils.center(dataSet);
         this.data = new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray());
         this.variables = Collections.unmodifiableList(dataSet.getVariables());
         setAlpha(alpha);
