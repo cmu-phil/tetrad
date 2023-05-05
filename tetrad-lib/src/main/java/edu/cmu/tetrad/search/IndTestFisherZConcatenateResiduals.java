@@ -65,10 +65,11 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     private double pValue = Double.NaN;
     private boolean verbose;
 
-//    private DataSet concatenatedData;
-
-    //==========================CONSTRUCTORS=============================//
-
+    /**
+     * Constructor.
+     * @param dataSets The continuous datasets to analyze.
+     * @param alpha The alpha significance cutoff value.
+     */
     public IndTestFisherZConcatenateResiduals(List<DataSet> dataSets, double alpha) {
         System.out.println("# data sets = " + dataSets.size());
         this.dataSets = dataSets;
@@ -84,8 +85,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
         setAlpha(alpha);
 
-//        this.concatenatedData = DataUtils.concatenate(dataSets);
-
         this.variables = dataSets.get(0).getVariables();
 
         List<DataSet> dataSets2 = new ArrayList<>();
@@ -100,6 +99,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     //==========================PUBLIC METHODS=============================//
 
+    /**
+     * @throws UnsupportedOperationException Not implemented.
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
@@ -110,7 +112,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      * @param x the one variable being compared.
      * @param y the second variable being compared.
      * @param z the list of conditioning variables.
-     * @return true iff x _||_ y | z.
+     * @return True iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
@@ -175,44 +177,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     }
 
-
-    private double[] residuals(Node node, List<Node> parents) {
-        List<Double> _residuals = new ArrayList<>();
-
-        Node target = this.dataSets.get(0).getVariable(node.getName());
-
-        List<Node> regressors = new ArrayList<>();
-
-        for (Node _regressor : parents) {
-            Node variable = this.dataSets.get(0).getVariable(_regressor.getName());
-            regressors.add(variable);
-        }
-
-
-        for (int m = 0; m < this.dataSets.size(); m++) {
-            RegressionResult result = this.regressions.get(m).regress(target, regressors);
-            double[] residualsSingleDataset = result.getResiduals().toArray();
-
-            double mean = StatUtils.mean(residualsSingleDataset);
-            for (int i2 = 0; i2 < residualsSingleDataset.length; i2++) {
-                residualsSingleDataset[i2] = residualsSingleDataset[i2] - mean;
-            }
-
-            for (double d : residualsSingleDataset) {
-                _residuals.add(d);
-            }
-        }
-
-        double[] _f = new double[_residuals.size()];
-
-
-        for (int k = 0; k < _residuals.size(); k++) {
-            _f[k] = _residuals.get(k);
-        }
-
-        return _f;
-    }
-
     private Node getVariable(List<Node> variables, String name) {
         for (Node node : variables) {
             if (name.equals(node.getName())) {
@@ -260,18 +224,24 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * @return the variable with the given name.
+     * @throws UnsupportedOperationException Not implemented.
      */
-
-
-    public boolean determines(List z, Node x) throws UnsupportedOperationException {
+    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Returns the concatenated data.
+     * @return This data
+     */
     public DataSet getData() {
         return DataUtils.concatenate(this.dataSets);
     }
 
+    /**
+     * Returns teh covaraince matrix of the concatenated data.
+     * @return This covariance matrix.
+     */
     @Override
     public ICovarianceMatrix getCov() {
         List<DataSet> _dataSets = new ArrayList<>();
@@ -283,13 +253,16 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
     }
 
-
+    /**
+     * Return a number that is positive when dependence holds and more positive
+     * for greater dependence.
+     * @return This number
+     * @see Fges
+     */
     @Override
     public double getScore() {
         return -(getPValue() - getAlpha());
     }
-
-
     /**
      * @return a string representation of this test.
      */
@@ -297,13 +270,59 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         return "Fisher Z, Concatenating Residuals";
     }
 
+    /**
+     * Return True if verbose output should be printed.
+     * @return True if so.
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output is printed.
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    private double[] residuals(Node node, List<Node> parents) {
+        List<Double> _residuals = new ArrayList<>();
+
+        Node target = this.dataSets.get(0).getVariable(node.getName());
+
+        List<Node> regressors = new ArrayList<>();
+
+        for (Node _regressor : parents) {
+            Node variable = this.dataSets.get(0).getVariable(_regressor.getName());
+            regressors.add(variable);
+        }
+
+
+        for (int m = 0; m < this.dataSets.size(); m++) {
+            RegressionResult result = this.regressions.get(m).regress(target, regressors);
+            double[] residualsSingleDataset = result.getResiduals().toArray();
+
+            double mean = StatUtils.mean(residualsSingleDataset);
+            for (int i2 = 0; i2 < residualsSingleDataset.length; i2++) {
+                residualsSingleDataset[i2] = residualsSingleDataset[i2] - mean;
+            }
+
+            for (double d : residualsSingleDataset) {
+                _residuals.add(d);
+            }
+        }
+
+        double[] _f = new double[_residuals.size()];
+
+
+        for (int k = 0; k < _residuals.size(); k++) {
+            _f[k] = _residuals.get(k);
+        }
+
+        return _f;
+    }
+
 }
 
 
