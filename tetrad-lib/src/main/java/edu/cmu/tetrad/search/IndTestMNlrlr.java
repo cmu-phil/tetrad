@@ -36,7 +36,7 @@ import java.util.Map;
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
  * This test is valid for both ordinal and non-ordinal discrete searchVariables.
  *
- * @author Bryan Andrews
+ * @author bryanandrews
  */
 public class IndTestMNlrlr implements IndependenceTest {
     private final DataSet data;
@@ -46,7 +46,6 @@ public class IndTestMNlrlr implements IndependenceTest {
     // Likelihood function
     private final MnlrLikelihood likelihood;
     private boolean verbose;
-
 
     // P Values
     private double pValue = Double.NaN;
@@ -178,22 +177,33 @@ public class IndTestMNlrlr implements IndependenceTest {
         this.alpha = alpha;
     }
 
+    /**
+     * Returns the data.
+     * @return This.
+     */
     public DataSet getData() {
         return this.data;
     }
 
-
     @Override
-
     public double getScore() {
         return getAlpha() - getPValue();
     }
 
+    /**
+     * Returns whether verbose output should be printed.
+     * @return True is so.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether this test will print verbose output.
+     *
+     * @param verbose True if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
