@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search.work_in_progress;
+package edu.cmu.tetrad.search.WIP;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;

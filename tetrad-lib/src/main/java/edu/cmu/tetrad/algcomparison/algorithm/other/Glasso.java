@@ -50,7 +50,7 @@ public class Glasso implements Algorithm {
             Matrix cov = new Matrix(SimpleDataLoader.getContinuousDataSet(ds)
                     .getCovarianceMatrix().toArray());
 
-            edu.cmu.tetrad.search.work_in_progress.Glasso glasso = new edu.cmu.tetrad.search.work_in_progress.Glasso(cov);
+            edu.cmu.tetrad.search.WIP.Glasso glasso = new edu.cmu.tetrad.search.WIP.Glasso(cov);
             glasso.setMaxit(parameters.getInt(Params.MAXIT));
             glasso.setIa(parameters.getBoolean(Params.IA));
             glasso.setIs(parameters.getBoolean(Params.IS));
@@ -59,7 +59,7 @@ public class Glasso implements Algorithm {
             glasso.setThr(parameters.getDouble(Params.THR));
             glasso.setRhoAllEqual(1.0);
 
-            edu.cmu.tetrad.search.work_in_progress.Glasso.Result result = glasso.search();
+            edu.cmu.tetrad.search.WIP.Glasso.Result result = glasso.search();
             Matrix wwi = new Matrix(result.getWwi().toArray());
 
             List<Node> variables = ds.getVariables();

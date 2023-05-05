@@ -5,7 +5,7 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.search.IndTestMNlrlr;
+import edu.cmu.tetrad.search.IndTestMnlrLr;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -29,7 +29,7 @@ public class Mnlrlrt implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        return new IndTestMNlrlr(SimpleDataLoader.getMixedDataSet(dataSet), parameters.getDouble("alpha"));
+        return new IndTestMnlrLr(SimpleDataLoader.getMixedDataSet(dataSet), parameters.getDouble("alpha"));
     }
 
     @Override

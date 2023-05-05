@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.work_in_progress.DMSearch;
+import edu.cmu.tetrad.search.WIP.DMSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;

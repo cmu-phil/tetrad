@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.WIP;
 
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
@@ -29,6 +29,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.search.IndependenceResult;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 

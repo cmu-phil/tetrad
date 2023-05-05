@@ -27,6 +27,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.WIP.IndTestFisherZGeneralizedInverse;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.IOException;

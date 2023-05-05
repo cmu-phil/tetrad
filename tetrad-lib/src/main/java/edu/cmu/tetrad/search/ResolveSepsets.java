@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodePair;
-import edu.cmu.tetrad.search.work_in_progress.SepsetMapDci;
+import edu.cmu.tetrad.search.WIP.SepsetMapDci;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;

@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Pools together a set of independence tests using a specified methods
+ * Pools together a set of independence tests using a specified method.
  *
  * @author Robert Tillman
  */
@@ -83,7 +83,7 @@ public final class IndTestMulti implements IndependenceTest {
      * @param x the one variable being compared.
      * @param y the second variable being compared.
      * @param z the list of conditioning variables.
-     * @return true iff x _||_ y | z.
+     * @return True iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
@@ -122,22 +122,28 @@ public final class IndTestMulti implements IndependenceTest {
     }
 
     /**
-     * @return the variable with the given name.
+     * @throws UnsupportedOperationException Method not implemented.
      */
-
-
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @throws javax.help.UnsupportedOperationException Method not implemented.
+     */
     public DataSet getData() {
         throw new UnsupportedOperationException();
     }
 
 
+    /**
+     * Returns alpha - pvalue.
+     *
+     * @return This.
+     */
     @Override
     public double getScore() {
-        return getPValue();
+        return getAlpha() - getPValue();
     }
 
     /**
@@ -147,11 +153,21 @@ public final class IndTestMulti implements IndependenceTest {
         return "Pooled Independence Test:  alpha = " + this.independenceTests.get(0).getAlpha();
     }
 
+    /**
+     * Returns true if the test prints verbose output.
+     *
+     * @return True if the case.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether this test will print verbose output.
+     *
+     * @param verbose True if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

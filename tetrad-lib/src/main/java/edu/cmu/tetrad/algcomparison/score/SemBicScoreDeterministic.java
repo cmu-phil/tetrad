@@ -28,8 +28,8 @@ public class SemBicScoreDeterministic implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
-        edu.cmu.tetrad.search.work_in_progress.SemBicScoreDeterministic semBicScore
-                = new edu.cmu.tetrad.search.work_in_progress.SemBicScoreDeterministic(SimpleDataLoader.getCovarianceMatrix(dataSet));
+        edu.cmu.tetrad.search.WIP.SemBicScoreDeterministic semBicScore
+                = new edu.cmu.tetrad.search.WIP.SemBicScoreDeterministic(SimpleDataLoader.getCovarianceMatrix(dataSet));
         semBicScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
         semBicScore.setDeterminismThreshold(parameters.getDouble("determinismThreshold"));
         return semBicScore;
