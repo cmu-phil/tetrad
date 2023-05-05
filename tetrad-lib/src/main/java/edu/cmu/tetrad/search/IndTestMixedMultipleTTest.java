@@ -90,7 +90,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * @return true if the given independence question is judged true, false if not. The independence question is of the
+     * @return True if the given independence question is judged true, False if not. The independence question is of the
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
@@ -110,6 +110,89 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
                 return isIndependentRegression(x, y, z);
             }
         }
+    }
+
+
+    /**
+     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
+     * not meaningful for tis test.
+     */
+    public double getPValue() {
+        return this.lastP; //STUB
+    }
+
+    /**
+     * @return the list of searchVariables over which this independence checker is capable of determinining independence
+     * relations.
+     */
+    public List<Node> getVariables() {
+        return this.searchVariables; // Make sure the variables from the ORIGINAL data set are returned, not the modified dataset!
+    }
+
+    /**
+     * @throws javax.help.UnsupportedOperationException Method not implemented.
+     */
+    public boolean determines(List<Node> z, Node y) {
+        throw new UnsupportedOperationException("Method not implemented.");
+    }
+
+    /**
+     * @throws UnsupportedOperationException if there is no significance level.
+     */
+    public double getAlpha() {
+        throw new UnsupportedOperationException("Method not implemented.");
+    }
+
+    /**
+     * Sets the significance level.
+     */
+    public void setAlpha(double alpha) {
+        this.alpha = alpha;
+    }
+
+    /**
+     * Returne the original data for the method.
+     *
+     * @return This data.
+     */
+    public DataSet getData() {
+        return this.originalData;
+    }
+
+    /**
+     * Returns alpha minus the last p-value calculated.
+     *
+     * @return Thsi.
+     */
+    @Override
+    public double getScore() {
+        return alpha - getPValue();
+    }
+
+    /**
+     * @return a string representation of this test.
+     */
+    public String toString() {
+        NumberFormat nf = new DecimalFormat("0.0000");
+        return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
+    }
+
+    /**
+     * Returns whether verbose output should be printed.
+     *
+     * @return This.
+     */
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
     }
 
     private List<Node> expandVariable(DataSet dataSet, Node node) {
@@ -339,70 +422,5 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
         }
 
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
-    }
-
-    /**
-     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for tis test.
-     */
-    public double getPValue() {
-        return this.lastP; //STUB
-    }
-
-    /**
-     * @return the list of searchVariables over which this independence checker is capable of determinining independence
-     * relations.
-     */
-    public List<Node> getVariables() {
-        return this.searchVariables; // Make sure the variables from the ORIGINAL data set are returned, not the modified dataset!
-    }
-
-
-    /**
-     * @return true if y is determined the variable in z.
-     */
-    public boolean determines(List<Node> z, Node y) {
-        return false; //stub
-    }
-
-    /**
-     * @return the significance level of the independence test.
-     * @throws UnsupportedOperationException if there is no significance level.
-     */
-    public double getAlpha() {
-        return this.alpha; //STUB
-    }
-
-    /**
-     * Sets the significance level.
-     */
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
-
-    public DataSet getData() {
-        return this.originalData;
-    }
-
-
-    @Override
-    public double getScore() {
-        return getPValue();
-    }
-
-    /**
-     * @return a string representation of this test.
-     */
-    public String toString() {
-        NumberFormat nf = new DecimalFormat("0.0000");
-        return "Multinomial Logistic Regression, alpha = " + nf.format(getAlpha());
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 }
