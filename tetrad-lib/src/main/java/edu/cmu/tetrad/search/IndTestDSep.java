@@ -311,8 +311,7 @@ public class IndTestDSep implements IndependenceTest {
      *                                       for a d-separation test.
      */
     public void setAlpha(double alpha) {
-        throw new UnsupportedOperationException("Method mot implemented. What were you thinking?" +
-                "This is a d-separation method.");
+        throw new UnsupportedOperationException("Method mot implemented.");
     }
 
     /**
