@@ -94,9 +94,10 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             throw new IllegalArgumentException("Alpha mut be in [0, 1]");
         }
 
-        this.dataSet = DataUtils.center(dataSet);
-        this.data = new DenseDoubleMatrix2D(dataSet.getDoubleData().toArray());
-        this.variables = Collections.unmodifiableList(dataSet.getVariables());
+        this.dataSet = dataSet;
+
+        this.data = new DenseDoubleMatrix2D(DataUtils.center(this.dataSet).getDoubleData().toArray());
+        this.variables = Collections.unmodifiableList(this.dataSet.getVariables());
         setAlpha(alpha);
     }
 
@@ -291,6 +292,27 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         return this.data.rows();
     }
 
+    /**
+     * Returns the data being analyzed (centered).
+     * @return This data.
+     */
+    public DataSet getData() {
+        return this.dataSet;
+    }
+
+    @Override
+    public double getScore() {
+        return getPValue();
+    }
+
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
     public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {
             throw new NullPointerException();
@@ -364,24 +386,6 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         }
 
         return determined;
-    }
-
-    public DataSet getData() {
-        return this.dataSet;
-    }
-
-
-    @Override
-    public double getScore() {
-        return getPValue();
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 }
 
