@@ -99,6 +99,8 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
     /**
      * Constructs the score using a covariance matrix.
+     *
+     * @param dataSet The data being analyzed.
      */
     public IndTestDegenerateGaussianLrt(DataSet dataSet) {
         if (dataSet == null) {
@@ -189,38 +191,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         this._ddata = this.ddata.getDoubleData().toArray();
     }
 
-    /**
-     * Calculates the sample log likelihood
-     */
-    private Ret getlldof(List<Integer> rows, int i, int... parents) {
-        int N = rows.size();
-
-        List<Integer> B = new ArrayList<>();
-        List<Integer> A = new ArrayList<>(this.embedding.get(i));
-        for (int i_ : parents) {
-            B.addAll(this.embedding.get(i_));
-        }
-
-        int[] A_ = new int[A.size() + B.size()];
-        int[] B_ = new int[B.size()];
-        for (int i_ = 0; i_ < A.size(); i_++) {
-            A_[i_] = A.get(i_);
-        }
-        for (int i_ = 0; i_ < B.size(); i_++) {
-            A_[A.size() + i_] = B.get(i_);
-            B_[i_] = B.get(i_);
-        }
-
-        double dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2.0;
-        double ldetA = log(getCov(rows, A_).det());
-        double ldetB = log(getCov(rows, B_).det());
-
-        double lik = N * (ldetB - ldetA) + IndTestDegenerateGaussianLrt.L2PE * (B_.length - A_.length);
-
-        return new Ret(lik, dof);
-    }
 
     /**
+     * @param vars A sublist of the dataset variables.
      * @return an Independence test for a subset of the searchVariables.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
@@ -228,7 +201,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * @return true if the given independence question is judged true, false if not. The independence question is of the
+     * @return True if the given independence question is judged true, False if not. The independence question is of the
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
@@ -312,7 +285,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         return new ArrayList<>(this.variables);
     }
 
-
     /**
      * @return true if y is determined the variable in z.
      */
@@ -335,11 +307,20 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         this.alpha = alpha;
     }
 
+    /**
+     * @return The dataset being analyzed.
+     */
     public DataSet getData() {
         return this.dataSet;
     }
 
 
+    /**
+     * Returns a value that more positive for stronger dependence and positive
+     * only if dependence holds.
+     * @return This value.
+     * @see Fges
+     */
     @Override
     public double getScore() {
         return getAlpha() - getPValue();
@@ -353,14 +334,54 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         return "Degenerate Gaussian, alpha = " + nf.format(getAlpha());
     }
 
+    /**
+     * Returns true iff verbose output should be printed.
+     * @return True if so.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+
+    /**
+     * Calculates the sample log likelihood
+     */
+    private Ret getlldof(List<Integer> rows, int i, int... parents) {
+        int N = rows.size();
+
+        List<Integer> B = new ArrayList<>();
+        List<Integer> A = new ArrayList<>(this.embedding.get(i));
+        for (int i_ : parents) {
+            B.addAll(this.embedding.get(i_));
+        }
+
+        int[] A_ = new int[A.size() + B.size()];
+        int[] B_ = new int[B.size()];
+        for (int i_ = 0; i_ < A.size(); i_++) {
+            A_[i_] = A.get(i_);
+        }
+        for (int i_ = 0; i_ < B.size(); i_++) {
+            A_[A.size() + i_] = B.get(i_);
+            B_[i_] = B.get(i_);
+        }
+
+        double dof = (A_.length * (A_.length + 1) - B_.length * (B_.length + 1)) / 2.0;
+        double ldetA = log(getCov(rows, A_).det());
+        double ldetB = log(getCov(rows, B_).det());
+
+        double lik = N * (ldetB - ldetA) + IndTestDegenerateGaussianLrt.L2PE * (B_.length - A_.length);
+
+        return new Ret(lik, dof);
     }
 
     private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {

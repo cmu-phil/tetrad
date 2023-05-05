@@ -41,7 +41,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 public class Lofs {
-    private final Graph CPDAG;
+    private final Graph cpdag;
     private final List<DataSet> dataSets;
     private double alpha = 0.05;
     private final ArrayList<Regression> regressions;
@@ -59,13 +59,13 @@ public class Lofs {
 
     //===============================CONSTRUCTOR============================//
 
-    public Lofs(Graph CPDAG, List<DataSet> dataSets, boolean strongR2, boolean meekDone, boolean meanCenterResiduals)
+    public Lofs(Graph cpdag, List<DataSet> dataSets, boolean strongR2, boolean meekDone, boolean meanCenterResiduals)
             throws IllegalArgumentException {
         this.strongR2 = strongR2;
         this.meekDone = meekDone;
         this.meanCenterResiduals = meanCenterResiduals;
 
-        if (CPDAG == null) {
+        if (cpdag == null) {
             throw new IllegalArgumentException("CPDAG must be specified.");
         }
 
@@ -73,7 +73,7 @@ public class Lofs {
             throw new IllegalArgumentException("Data set must be specified.");
         }
 
-        this.CPDAG = CPDAG;
+        this.cpdag = cpdag;
         this.dataSets = dataSets;
 
         this.regressions = new ArrayList<>();
@@ -85,7 +85,7 @@ public class Lofs {
     }
 
     public Graph orient() {
-        Graph skeleton = GraphUtils.undirectedGraph(getCPDAG());
+        Graph skeleton = GraphUtils.undirectedGraph(getCpdag());
         Graph graph = new EdgeListGraph(skeleton.getNodes());
 
         List<Node> nodes = skeleton.getNodes();
@@ -617,8 +617,8 @@ public class Lofs {
         this.alpha = alpha;
     }
 
-    private Graph getCPDAG() {
-        return this.CPDAG;
+    private Graph getCpdag() {
+        return this.cpdag;
     }
 
     private Node getVariable(List<Node> variables, String name) {

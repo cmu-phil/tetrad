@@ -57,6 +57,13 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     private boolean verbose;
     private int numCategoriesToDiscretize = 3;
 
+    /**
+     * Consstructor.
+     *
+     * @param data       The data to analyze.
+     * @param alpha      The signifcance level.
+     * @param discretize Whether discrete children of continuous parents should be discretized.
+     */
     public IndTestConditionalGaussianLrt(DataSet data, double alpha, boolean discretize) {
         this.data = data;
         this.likelihood = new ConditionalGaussianLikelihood(data);
@@ -157,7 +164,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         return new ArrayList<>(this.data.getVariables());
     }
 
-
     /**
      * @return true if y is determined the variable in z.
      */
@@ -188,7 +194,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     public DataSet getData() {
         return this.data;
     }
-
 
     /**
      * Returns a number that is higher for stronger judgments of dependence
