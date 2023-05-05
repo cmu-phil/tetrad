@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
@@ -27,6 +27,9 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceResult;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
@@ -52,7 +55,6 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     private final Map<Node, Integer> variablesMap;
     private double percent = .75;
     private boolean fdr = true;
-    private final ArrayList<PartialCorrelation> recursivePartialCorrelation;
     private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
@@ -84,11 +86,6 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         for (int i = 0; i < this.variables.size(); i++) {
             this.variablesMap.put(this.variables.get(i), i);
         }
-
-        this.recursivePartialCorrelation = new ArrayList<>();
-        for (Matrix covMatrix : this.ncov) {
-            this.recursivePartialCorrelation.add(new PartialCorrelation(getVariables(), covMatrix, dataSets.get(0).getNumRows()));
-        }
     }
 
     //==========================PUBLIC METHODS=============================//
@@ -108,8 +105,8 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         int sampleSize = this.data.get(0).rows();
         List<Double> pValues = new ArrayList<>();
 
-        for (int m = 0; m < this.ncov.size(); m++) {
-            Matrix _ncov = this.ncov.get(m).getSelection(all, all);
+        for (Matrix matrix : this.ncov) {
+            Matrix _ncov = matrix.getSelection(all, all);
             Matrix inv = _ncov.inverse();
             double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
 
@@ -134,10 +131,6 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         Collections.sort(pValues);
         int index = (int) round((1.0 - this.percent) * pValues.size());
         this.pValue = pValues.get(index);
-
-//        if (this.pValue == 0) {
-//            System.out.println("Zero pvalue "+ SearchLogUtils.independenceFactMsg(x, y, z, getScore()));
-//        }
 
         boolean independent = this.pValue > _cutoff;
 

@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import javax.help.UnsupportedOperationException;
 import java.util.List;
 
 /**
@@ -40,15 +41,30 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     private final IndependenceFacts facts;
     private boolean verbose;
 
+    /**
+     * Constructor.
+     *
+     * @param facts The facts to check.
+     * @see IndependenceFacts
+     */
     public IndTestIndependenceFacts(IndependenceFacts facts) {
         this.facts = facts;
     }
 
-
+    /**
+     * @throws UnsupportedOperationException Not implemented.
+     */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Checks independence by looking up facts in the list of facts supplied in the
+     * constructor.
+     *
+     * @return the independence result.
+     * @see IndependenceResult
+     */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         Node[] _z = new Node[z.size()];
 
@@ -68,14 +84,30 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
     }
 
+    /**
+     * No p-values are available.
+     *
+     * @return Double.NaN.
+     */
     public double getPValue() {
         return Double.NaN;
     }
 
+    /**
+     * Returns the list of variables for the facts.
+     *
+     * @return This list.
+     */
     public List<Node> getVariables() {
         return this.facts.getVariables();
     }
 
+    /**
+     * Returns the node with the given name.
+     *
+     * @param name The name of the node,
+     * @return The node.
+     */
     public Node getVariable(String name) {
         if (name == null) throw new NullPointerException();
 
@@ -90,32 +122,60 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         return null;
     }
 
+    /**
+     * @throws UnsupportedOperationException Method not implemented.
+     */
     public boolean determines(List<Node> z, Node y) {
-        return false;
+        throw new UnsupportedOperationException("Method not implmeented.");
     }
 
+    /**
+     * @throws java.lang.UnsupportedOperationException Method not implemented.
+     */
     public double getAlpha() {
-        return Double.NaN;
+        throw new java.lang.UnsupportedOperationException("Method not implemented");
     }
 
+    /**
+     * @throws java.lang.UnsupportedOperationException Method not implemented.
+     */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Returns the facts supplied in the constructor, which constutite a data model.
+     *
+     * @return These facts.
+     */
     public DataModel getData() {
         return this.facts;
     }
 
-
+    /**
+     * Returns NaN.
+     *
+     * @return This.
+     */
     @Override
     public double getScore() {
         return getPValue();
     }
 
+    /**
+     * Returns whether verbose output is to be printed.
+     *
+     * @return True if so.
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output is to be printed.
+     *
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
