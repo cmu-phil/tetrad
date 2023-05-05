@@ -370,7 +370,15 @@ public class Kci implements IndependenceTest {
         this.epsilon = epsilon;
     }
 
-    //====================================PRIVATE METHODS==================================//
+    @Override
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    @Override
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
 
     /**
      * KCI independence for the unconditional case. Uses Theorem 4 from the paper.
@@ -656,16 +664,6 @@ public class Kci implements IndependenceTest {
         }
 
         return sum;
-    }
-
-    @Override
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    @Override
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     private class Eigendecomposition {
