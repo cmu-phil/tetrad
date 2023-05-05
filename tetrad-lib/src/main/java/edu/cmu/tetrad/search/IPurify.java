@@ -31,10 +31,7 @@ import java.util.List;
  */
 public interface IPurify {
     List<List<Node>> purify(List<List<Node>> partition);
-
     void setTrueGraph(Graph mim);
-
-
 }
 
 

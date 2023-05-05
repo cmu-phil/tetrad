@@ -37,11 +37,11 @@ import java.util.*;
  */
 public class PurifyTetradBased implements IPurify {
     private final boolean outputMessage = true;
-    private final ITetradTest tetradTest;
+    private final TetradTest tetradTest;
 
     private final List<Node> nodes;
 
-    public PurifyTetradBased(ITetradTest tetradTest) {
+    public PurifyTetradBased(TetradTest tetradTest) {
         this.tetradTest = tetradTest;
         this.nodes = tetradTest.getVariables();
     }

@@ -33,41 +33,24 @@ import java.util.List;
  *
  * @author Ricardo Silva
  */
-public interface ITetradTest {
+public interface TetradTest {
     DataSet getDataSet();
-
     int tetradScore(int i, int j, int k, int q);
-
     boolean tetradScore3(int i, int j, int k, int q);
-
     boolean tetradScore1(int i, int j, int k, int q);
-
     boolean tetradHolds(int i, int j, int k, int q);
-
     double tetradPValue(int i, int j, int k, int q);
-
     double tetradPValue(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2);
-
     boolean oneFactorTest(int a, int b, int c, int d);
-
     boolean oneFactorTest(int a, int b, int c, int d, int e);
-
     boolean oneFactorTest(int a, int b, int c, int d, int e, int f);
-
     boolean twoFactorTest(int a, int b, int c, int d);
-
     boolean twoFactorTest(int a, int b, int c, int d, int e);
-
     boolean twoFactorTest(int a, int b, int c, int d, int e, int f);
-
     double getSignificance();
-
     void setSignificance(double sig);
-
     String[] getVarNames();
-
     List<Node> getVariables();
-
     ICovarianceMatrix getCovMatrix();
 }
 

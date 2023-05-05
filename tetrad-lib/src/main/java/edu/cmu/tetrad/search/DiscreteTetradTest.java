@@ -45,7 +45,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 
-public final class DiscreteTetradTest implements ITetradTest {
+public final class DiscreteTetradTest implements TetradTest {
     DataSet dataSet;
     //    int rawdata[][];
     int[][][][] counts; //bivariate coefs only

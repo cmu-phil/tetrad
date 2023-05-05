@@ -77,7 +77,7 @@ public final class BuildPureClusters {
     final int EDGE_RED = 4;
     final int MAX_CLIQUE_TRIALS = 50;
 
-    private ITetradTest tetradTest;
+    private TetradTest tetradTest;
     private IndependenceTest independenceTest;
     private DataSet dataSet;
     private double alpha;

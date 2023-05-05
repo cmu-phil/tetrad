@@ -70,7 +70,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
     public void execute() {
         Object source = getData();
 
-        ITetradTest test;
+        TetradTest test;
 
 
         System.out.println("Clusters " + getParams().get("clusters", null));

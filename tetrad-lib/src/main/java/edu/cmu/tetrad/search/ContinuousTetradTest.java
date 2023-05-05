@@ -54,7 +54,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * @author Ricardo Silva
  */
 
-public final class ContinuousTetradTest implements ITetradTest {
+public final class ContinuousTetradTest implements TetradTest {
     private double sig;
     private double[] prob;
     private ICovarianceMatrix covMatrix;

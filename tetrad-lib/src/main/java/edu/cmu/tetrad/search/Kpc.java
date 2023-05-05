@@ -93,11 +93,6 @@ public class Kpc implements GraphSearch {
     private Set<Triple> unshieldedNoncolliders;
 
     /**
-     * The number of indepdendence tests in the last search.
-     */
-    private int numIndependenceTests;
-
-    /**
      * The threshold for rejecting the null
      */
     private double alpha;
@@ -236,7 +231,7 @@ public class Kpc implements GraphSearch {
         }
 
         List<Node> allNodes = getIndependenceTest().getVariables();
-        if (!allNodes.containsAll(nodes)) {
+        if (!new HashSet<>(allNodes).containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
         }
@@ -249,7 +244,6 @@ public class Kpc implements GraphSearch {
         fas.setDepth(getDepth());
         this.graph = fas.search();
         this.sepset = fas.getSepsets();
-        this.numIndependenceTests = fas.getNumIndependenceTests();
 
         enumerateTriples();
 
@@ -293,6 +287,15 @@ public class Kpc implements GraphSearch {
     public Set<Triple> getUnshieldedNoncolliders() {
         return this.unshieldedNoncolliders;
     }
+
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
 
     //===============================ADDED FOR KPC=========================//
 
@@ -373,16 +376,7 @@ public class Kpc implements GraphSearch {
             }
         }
     }
-
-    public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
 }
-
 
 
 

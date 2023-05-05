@@ -67,7 +67,7 @@ public class Purify {
     private Clusters clusters;
     private List forbiddenList;
     private int numVars;
-    private ITetradTest tetradTest;
+    private TetradTest tetradTest;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -120,7 +120,7 @@ public class Purify {
         this.variables = dataSet.getVariables();
     }
 
-    public Purify(ITetradTest tetradTest, Clusters knowledge) {
+    public Purify(TetradTest tetradTest, Clusters knowledge) {
         this.tetradTest = tetradTest;
         initAlgorithm(-1., TestType.NONE, knowledge);
 

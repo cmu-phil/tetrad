@@ -39,7 +39,7 @@ import java.util.*;
  */
 public class PurifyScoreBased implements IPurify {
     private final boolean outputMessage = true;
-    private final ITetradTest tetradTest;
+    private final TetradTest tetradTest;
     private final int numVars;
     private List forbiddenList;
 
@@ -87,7 +87,7 @@ public class PurifyScoreBased implements IPurify {
 
     boolean extraDebugPrint;
 
-    public PurifyScoreBased(ITetradTest tetradTest) {
+    public PurifyScoreBased(TetradTest tetradTest) {
         this.tetradTest = tetradTest;
         this.numVars = tetradTest.getVarNames().length;
     }
