@@ -246,7 +246,7 @@ public class Grasp {
      *
      * @param uncoveredDepth This depth.
      */
-    public void setSingularDepth(int uncoveredDepth) {
+    public void setUncoveredDepth(int uncoveredDepth) {
         if (uncoveredDepth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
         this.uncoveredDepth = uncoveredDepth;
     }

@@ -75,7 +75,7 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test, score);
 
             grasp.setDepth(parameters.getInt(Params.GRASP_DEPTH));
-            grasp.setSingularDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
+            grasp.setUncoveredDepth(parameters.getInt(Params.GRASP_SINGULAR_DEPTH));
             grasp.setNonSingularDepth(parameters.getInt(Params.GRASP_NONSINGULAR_DEPTH));
             grasp.setOrdered(parameters.getBoolean(Params.GRASP_ORDERED_ALG));
             grasp.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
