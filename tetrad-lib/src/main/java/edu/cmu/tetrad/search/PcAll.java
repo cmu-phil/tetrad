@@ -34,10 +34,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
- * locally.
+ * Common implementation of variaous PC-like algorithms, with options for
+ * collider discovery type, FAS type, and conflict rule.
  *
- * @author Joseph Ramsey (this version).
+ * @author josephramsey
  */
 public final class PcAll implements GraphSearch {
     public enum FasType {REGULAR, STABLE}
