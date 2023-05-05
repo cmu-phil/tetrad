@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.WIP.SampleVcpcFast;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
 

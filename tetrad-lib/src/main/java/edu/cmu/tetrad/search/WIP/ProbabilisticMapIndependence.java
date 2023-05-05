@@ -19,13 +19,16 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.WIP;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceResult;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 
@@ -39,7 +42,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey 3/2014
  */
-public class ProbabilisticMAPIndependence implements IndependenceTest {
+public class ProbabilisticMapIndependence implements IndependenceTest {
 
     /**
      * Calculates probabilities of independence for conditional independence facts.
@@ -72,7 +75,7 @@ public class ProbabilisticMAPIndependence implements IndependenceTest {
     /**
      * Initializes the test using a discrete data sets.
      */
-    public ProbabilisticMAPIndependence(DataSet dataSet) {
+    public ProbabilisticMapIndependence(DataSet dataSet) {
         this.data = dataSet;
 
         int[] counts = new int[dataSet.getNumColumns() + 2];

@@ -21,6 +21,9 @@ import java.util.*;
  * <p>This class is meant to be used in the context of the PermutationSearch class (see).
  * the proper use is PermutationSearch search = new PermutationSearch(new Sp(score));</p>
  *
+ * <p>Raskutti, G., & Uhler, C. (2018). Learning directed acyclic graph models based on
+ * sparsest permutations. Stat, 7(1), e183.</p>
+ *
  * @author bryanandrews
  * @author josephramsey
  * @see PermutationSearch

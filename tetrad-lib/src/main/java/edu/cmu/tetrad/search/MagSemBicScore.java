@@ -149,6 +149,46 @@ public class MagSemBicScore implements Score {
         return score;
     }
 
+
+    public double getPenaltyDiscount() {
+        return this.score.getPenaltyDiscount();
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.score.setPenaltyDiscount(penaltyDiscount);
+    }
+
+
+    @Override
+    public double localScoreDiff(int x, int y, int[] z) {
+        return localScore(y, append(z, x)) - localScore(y, z);
+    }
+
+    @Override
+    public int getSampleSize() {
+        return this.score.getSampleSize();
+    }
+
+    @Override
+    public List<Node> getVariables() {
+        return this.score.getVariables();
+    }
+
+    @Override
+    public boolean isEffectEdge(double bump) {
+        return bump > 0;
+    }
+
+    @Override
+    public int getMaxDegree() {
+        return this.score.getMaxDegree();
+    }
+
+    @Override
+    public boolean determines(List<Node> z, Node y) {
+        return false;
+    }
+
     private void constructHeadsTails(List<List<Node>> heads, List<Set<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1) {
         /*
           Calculates the head and tails of a MAG for vertex v1 and ordered Markov blanket mbo.
@@ -201,43 +241,5 @@ public class MagSemBicScore implements Score {
         }
     }
 
-    public double getPenaltyDiscount() {
-        return this.score.getPenaltyDiscount();
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.score.setPenaltyDiscount(penaltyDiscount);
-    }
-
-
-    @Override
-    public double localScoreDiff(int x, int y, int[] z) {
-        return localScore(y, append(z, x)) - localScore(y, z);
-    }
-
-    @Override
-    public int getSampleSize() {
-        return this.score.getSampleSize();
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return this.score.getVariables();
-    }
-
-    @Override
-    public boolean isEffectEdge(double bump) {
-        return bump > 0;
-    }
-
-    @Override
-    public int getMaxDegree() {
-        return this.score.getMaxDegree();
-    }
-
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        return false;
-    }
 
 }
