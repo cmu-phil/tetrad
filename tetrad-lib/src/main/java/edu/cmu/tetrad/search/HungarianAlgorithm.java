@@ -6,12 +6,12 @@ import java.util.Set;
 
 /**
  * <p>An implemetation of the Kuhn–Munkres assignment algorithm of the year 1957.
- * https://en.wikipedia.org/wiki/Hungarian_algorithm.</p>
+ * <a href="https://en.wikipedia.org/wiki/Hungarian_algorithm">...</a>.</p>
  * <p>From: https://github.com/aalmi/HungarianAlgorithm</p>
  * <p>This is not our code; please see the references given. We've just
  * made a few tweaks to make it work better in Tetrad. Thanks aalmi.</p>
  *
- * @author https://github.com/aalmi | march 2014
+ * @author <a href="https://github.com/aalmi">...</a> | march 2014
  * @version 1.0
  */
 public class HungarianAlgorithm {
