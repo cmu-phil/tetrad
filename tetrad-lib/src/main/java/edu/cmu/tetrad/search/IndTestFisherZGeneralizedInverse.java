@@ -31,7 +31,6 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
-import edu.pitt.dbmi.data.reader.Data;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
@@ -116,7 +115,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      * @param xVar the one variable being compared.
      * @param yVar the second variable being compared.
      * @param z    the list of conditioning variables.
-     * @return true iff x _||_ y | z.
+     * @return True iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
     public IndependenceResult checkIndependence(Node xVar, Node yVar, List<Node> z) {
@@ -256,63 +255,49 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         return "Fisher's Z - Generalized Inverse, alpha = " + IndTestFisherZGeneralizedInverse.nf.format(getAlpha());
     }
 
-    //==========================PRIVATE METHODS============================//
-
     /**
-     * Computes that value x such that P(abs(N(0,1) > x) < alpha.  Note that this is a two sided test of the null
-     * hypothesis that the Fisher's Z value, which is distributed as N(0,1) is not equal to 0.0.
-     */
-    private double cutoffGaussian() {
-        double upperTail = 1.0 - getAlpha() / 2.0;
-        final double epsilon = 1e-14;
-
-        // Find an upper bound.
-        double lowerBound = -1.0;
-        double upperBound = 0.0;
-
-        while (RandomUtil.getInstance().normalCdf(0, 1, upperBound) < upperTail) {
-            lowerBound += 1.0;
-            upperBound += 1.0;
-        }
-
-        while (upperBound >= lowerBound + epsilon) {
-            double midPoint = lowerBound + (upperBound - lowerBound) / 2.0;
-
-            if (RandomUtil.getInstance().normalCdf(0, 1, midPoint) <= upperTail) {
-                lowerBound = midPoint;
-            } else {
-                upperBound = midPoint;
-            }
-        }
-
-        return lowerBound;
-    }
-
-    private int sampleSize() {
-        return this.data.rows();
-    }
-
-    /**
-     * Returns the data being analyzed (centered).
+     * Returns the data being analyzed.
+     *
      * @return This data.
      */
     public DataSet getData() {
         return this.dataSet;
     }
 
+    /**
+     * Returns the score of the data.
+     *
+     * @return A number that's great than zero iff dependent.
+     * @see Fges
+     */
     @Override
     public double getScore() {
-        return getPValue();
+        return alpha - getPValue();
     }
 
+    /**
+     * Returns True just in case verbose output should be printed.
+     *
+     * @return This.
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns true just in case the varialbe in zList determine xVar.
+     *
+     * @return True if so.
+     */
     public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {
             throw new NullPointerException();
@@ -386,6 +371,40 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         }
 
         return determined;
+    }
+
+    /**
+     * Computes that value x such that P(abs(N(0,1) > x) < alpha.  Note that this is a two sided test of the null
+     * hypothesis that the Fisher's Z value, which is distributed as N(0,1) is not equal to 0.0.
+     */
+    private double cutoffGaussian() {
+        double upperTail = 1.0 - getAlpha() / 2.0;
+        final double epsilon = 1e-14;
+
+        // Find an upper bound.
+        double lowerBound = -1.0;
+        double upperBound = 0.0;
+
+        while (RandomUtil.getInstance().normalCdf(0, 1, upperBound) < upperTail) {
+            lowerBound += 1.0;
+            upperBound += 1.0;
+        }
+
+        while (upperBound >= lowerBound + epsilon) {
+            double midPoint = lowerBound + (upperBound - lowerBound) / 2.0;
+
+            if (RandomUtil.getInstance().normalCdf(0, 1, midPoint) <= upperTail) {
+                lowerBound = midPoint;
+            } else {
+                upperBound = midPoint;
+            }
+        }
+
+        return lowerBound;
+    }
+
+    private int sampleSize() {
+        return this.data.rows();
     }
 }
 
