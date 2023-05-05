@@ -21,6 +21,13 @@ public class GrowShrinkTree {
     private List<Node> forbidden;
     private GSTNode root;
 
+    /**
+     * Constructor for a grow-shrink tree.
+     *
+     * @param score A score.
+     * @param index A node-index map.
+     * @param node The root node.
+     */
     public GrowShrinkTree(Score score, Map<Node, Integer> index, Node node) {
         this.score = score;
         this.index = index;
@@ -31,46 +38,108 @@ public class GrowShrinkTree {
         this.forbidden = new ArrayList<>();
     }
 
+    /**
+     * Trace down the tree and updates parents.
+     *
+     * @param prefix The prefix (mutated during call).
+     * @param parents The parents (modified in place).
+     * @return The grow-shrink score.
+     */
     public double trace(Set<Node> prefix, Set<Node> parents) {
         return this.root.trace(prefix, parents);
     }
 
+    /**
+     * Gets the root node.
+     *
+     * @return The root node.
+     */
     public Node getNode() {
         return this.node;
     }
 
+    /**
+     * Gets the index of a node.
+     *
+     * @param node The node.
+     * @return The index.
+     */
     public Integer getIndex(Node node) {
         return this.index.get(node);
     }
 
+    /**
+     * Wraps the localScore call of the score.
+     *
+     * @return The value return by the score.
+     */
     public Double localScore() {
         return this.score.localScore(this.nodeIndex);
     }
 
+    /**
+     * Wraps the localScore call of the score.
+     *
+     * @param X The parents.
+     * @return The value return by the score.
+     */
     public Double localScore(int[] X) {
         return this.score.localScore(this.nodeIndex, X);
     }
 
+    /**
+     * True if node is a required parent.
+     *
+     * @param node The node.
+     * @return The boolean.
+     */
     public boolean isRequired(Node node) {
         return this.required.contains(node);
     }
 
+    /**
+     * True if node is a forbidden parent.
+     *
+     * @param node The node.
+     * @return The boolean.
+     */
     public boolean isForbidden(Node node) {
         return this.forbidden.contains(node);
     }
 
+    /**
+     * Gets the list of variables.
+     *
+     * @return The list of variables.
+     */
     public List<Node> getVariables() {
         return this.score.getVariables();
     }
 
+    /**
+     * Gets the list of required parents.
+     *
+     * @return The list of required parents.
+     */
     public List<Node> getRequired() {
         return this.required;
     }
 
+    /**
+     * Gets the list of forbidden parents.
+     *
+     * @return The list of forbidden parents.
+     */
     public List<Node> getForbidden() {
         return this.forbidden;
     }
 
+    /**
+     * Sets the background knowledge.
+     *
+     * @param required A list of required parents.
+     * @param forbidden A list of forbidden parents.
+     */
     public void setKnowledge(List<Node> required, List<Node> forbidden) {
         this.root = new GSTNode(this);
         this.required = required;
