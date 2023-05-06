@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.*;
 
 /**
- * <p></p>Implements common elements of a permutation search. The specific parts
+ * <p>Implements common elements of a permutation search. The specific parts
  * for each permutation search are implemented as a SuborderSearch.</p>
  * <p>This class specificaly handls an optimization for tiered knowledge, whereby
  * tiers in the knowledge can be searched one at a time in order form lowest
@@ -19,6 +19,8 @@ import java.util.*;
  *
  * @author bryanandrews
  * @see SuborderSearch
+ * @see Boss
+ * @see Sp
  */
 public class PermutationSearch {
     private final SuborderSearch suborderSearch;
