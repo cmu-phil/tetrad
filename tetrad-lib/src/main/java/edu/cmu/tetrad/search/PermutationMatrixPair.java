@@ -26,9 +26,9 @@ import edu.cmu.tetrad.util.Matrix;
 import java.util.Arrays;
 
 /**
- * Stores a matrix together with a row and column permutation. (if either
- * of these is null, the identity permtuation will be used.) Returns
- * the permuted matrix.
+ * Stores a matrix together with a row and column permutation. if either
+ * of these is null in the constructor, the identity permtuation will be used.
+ * Returns the matrix permuted by these row and column permutations.
  *
  * @author josephramsey
  */
