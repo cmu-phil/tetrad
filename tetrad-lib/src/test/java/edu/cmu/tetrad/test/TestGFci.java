@@ -101,11 +101,11 @@ public class TestGFci {
 //        dagToPag.setMaxPathLength(maxPathLength);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = SearchGraphUtils.dagToPag(dag);
+        Graph truePag = GraphUtilsSearch.dagToPag(dag);
 
         outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
 
-        int[][] counts = SearchGraphUtils.graphComparison(truePag, outGraph, null);
+        int[][] counts = GraphUtilsSearch.graphComparison(truePag, outGraph, null);
 
         int[][] expectedCounts = {
                 {0, 0, 0, 0, 0, 0},
@@ -184,7 +184,7 @@ public class TestGFci {
 //            dagToPag.setCompleteRuleSetUsed(false);
 //            Graph pag2 = dagToPag.convert();
 
-            Graph pag2 = SearchGraphUtils.dagToPag(dag);
+            Graph pag2 = GraphUtilsSearch.dagToPag(dag);
 
             assertEquals(pag2, pag1);
         }

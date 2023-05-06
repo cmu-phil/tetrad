@@ -31,7 +31,7 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchLogUtils;
+import edu.cmu.tetrad.search.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
@@ -211,7 +211,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, p));
+                        LogUtilsSearch.independenceFactMsg(x, y, z, p));
             }
         }
 
@@ -269,9 +269,9 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
         if (this.verbose) {
             if (indep) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
+                TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(x, y, z, p));
             } else {
-                TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+                TetradLogger.getInstance().log("dependencies", LogUtilsSearch.dependenceFactMsg(x, y, z, p));
             }
         }
 

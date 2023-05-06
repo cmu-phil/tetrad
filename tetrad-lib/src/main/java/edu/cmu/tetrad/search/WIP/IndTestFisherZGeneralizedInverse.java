@@ -33,7 +33,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchLogUtils;
+import edu.cmu.tetrad.search.LogUtilsSearch;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
@@ -179,7 +179,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 
         if (Double.isNaN(r)) {
             if (this.verbose) {
-                TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+                TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, z, getPValue()));
             }
             return new IndependenceResult(new IndependenceFact(xVar, yVar, z), false, Double.NaN);
         }
@@ -203,13 +203,13 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         //Two sided
 
         if (this.verbose) {
-            TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+            TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, z, getPValue()));
         }
 
         if (this.verbose) {
             if (indFisher) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(xVar, yVar, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(xVar, yVar, z, getPValue()));
             }
         }
 

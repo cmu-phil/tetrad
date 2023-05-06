@@ -117,7 +117,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
+        return GraphUtilsSearch.cpdagForDag(new EdgeListGraph(graph));
     }
 
     @Override

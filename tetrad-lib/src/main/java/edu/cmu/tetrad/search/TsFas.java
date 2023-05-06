@@ -347,11 +347,11 @@ public class TsFas implements IFas {
                     }
 //                    }
 
-                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+                    TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFact(x, y, empty) + " score = " +
                             this.nf.format(test.getScore()));
 
                     if (this.verbose) {
-                        this.out.println(SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+                        this.out.println(LogUtilsSearch.independenceFact(x, y, empty) + " score = " +
                                 this.nf.format(test.getScore()));
                     }
 
@@ -378,7 +378,7 @@ public class TsFas implements IFas {
                     }
 
                     if (this.verbose) {
-                        TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " score = " +
+                        TetradLogger.getInstance().log("dependencies", LogUtilsSearch.independenceFact(x, y, empty) + " score = " +
                                 this.nf.format(test.getScore()));
                     }
                 }

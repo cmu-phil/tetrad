@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.GraphUtilsSearch;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -162,7 +162,7 @@ public final class TestEdgeListGraph {
 
         graph2.removeEdge(nodes.get(0), nodes.get(1));
 
-        int shd = SearchGraphUtils.structuralHammingDistance(graph1, graph2);
+        int shd = GraphUtilsSearch.structuralHammingDistance(graph1, graph2);
 
         assertEquals(3, shd);
     }

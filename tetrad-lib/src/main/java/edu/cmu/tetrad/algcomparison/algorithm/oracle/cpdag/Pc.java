@@ -13,7 +13,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.GraphUtilsSearch;
 import edu.cmu.tetrad.search.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -90,7 +90,7 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
+        return GraphUtilsSearch.cpdagForDag(new EdgeListGraph(graph));
     }
 
     @Override

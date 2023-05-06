@@ -282,7 +282,7 @@ public final class PcMb implements MbSearch, GraphSearch {
 
         this.logger.log("info", "BEGINNING step 4 (PC Orient).");
 
-        SearchGraphUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
+        GraphUtilsSearch.pcOrientbk(this.knowledge, graph, graph.getNodes());
 
         List<Node> _visited = new LinkedList<>(getA());
         orientUnshieldedTriples(this.knowledge, graph, getDepth(), _visited);

@@ -269,8 +269,8 @@ public final class BFci implements GraphSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = GraphUtilsSearch.translate(edge.getFrom(), variables);
+            Node to = GraphUtilsSearch.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -282,15 +282,15 @@ public final class BFci implements GraphSearch {
 
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
         for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = GraphUtilsSearch.translate(edge.getFrom(), variables);
+            Node to = GraphUtilsSearch.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -302,7 +302,7 @@ public final class BFci implements GraphSearch {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
         this.logger.log("info", "Finishing BK Orientation.");

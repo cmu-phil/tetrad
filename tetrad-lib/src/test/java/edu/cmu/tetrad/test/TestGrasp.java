@@ -1671,10 +1671,10 @@ public final class TestGrasp {
     }
 
     private static void extractedWayne(Node x1, Node x2, Node x3, Node x4, IndependenceTest chiSq) {
-        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList()) + " " + chiSq.checkIndependence(x1, x2).isIndependent());
-        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).isIndependent());
-        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).isIndependent());
-        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeList()) + " " + chiSq.checkIndependence(x1, x2).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeList(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeList(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeList(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).isIndependent());
     }
 
     @NotNull
@@ -2578,7 +2578,7 @@ public final class TestGrasp {
             Graph trueGraph = RandomGraph.randomGraph(20, 8, 40,
                     100, 100, 100, false);
 
-            Graph truePag = SearchGraphUtils.dagToPag(trueGraph);
+            Graph truePag = GraphUtilsSearch.dagToPag(trueGraph);
 
             trueGraphMap.put(i, new HashMap<>());
             trueGraphs.add(trueGraph);
@@ -2697,7 +2697,7 @@ public final class TestGrasp {
             for (Node y : graph.getNodes()) {
                 if (!graph.paths().isDescendentOf(y, x) && !parents.contains(y)) {
                     if (!graph.paths().isDSeparatedFrom(x, y, parents)) {
-                        System.out.println("Failure! " + SearchLogUtils.dependenceFactMsg(x, y, parents, 1.0));
+                        System.out.println("Failure! " + LogUtilsSearch.dependenceFactMsg(x, y, parents, 1.0));
                     }
                 }
             }
@@ -3071,8 +3071,8 @@ public final class TestGrasp {
                         g2 = GraphUtils.replaceNodes(g2, g1.getNodes());
 
                         if (g1.equals(g2)) gsCount++;
-                        gsShd += SearchGraphUtils.structuralHammingDistance(
-                                SearchGraphUtils.cpdagForDag(g1), SearchGraphUtils.cpdagForDag(g2));
+                        gsShd += GraphUtilsSearch.structuralHammingDistance(
+                                GraphUtilsSearch.cpdagForDag(g1), GraphUtilsSearch.cpdagForDag(g2));
 
                         for (int i = 0; i < alpha.length; i++) {
 //                            test.setAlpha(alpha[i]);
@@ -3086,8 +3086,8 @@ public final class TestGrasp {
                             g3 = GraphUtils.replaceNodes(g3, g1.getNodes());
 
                             if (g1.equals(g3)) pearlCounts[i]++;
-                            pearlShd[i] += SearchGraphUtils.structuralHammingDistance(
-                                    SearchGraphUtils.cpdagForDag(g1), SearchGraphUtils.cpdagForDag(g3));
+                            pearlShd[i] += GraphUtilsSearch.structuralHammingDistance(
+                                    GraphUtilsSearch.cpdagForDag(g1), GraphUtilsSearch.cpdagForDag(g3));
                         }
                     }
 

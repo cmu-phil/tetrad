@@ -255,8 +255,8 @@ public class Pc implements GraphSearch {
 
         this.numIndependenceTests = fas.getNumIndependenceTests();
 
-        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
-        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
+        GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphUtilsSearch.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
 
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 

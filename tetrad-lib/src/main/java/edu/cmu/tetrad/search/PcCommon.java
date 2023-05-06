@@ -372,7 +372,7 @@ public final class PcCommon implements GraphSearch {
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
 
-        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, nodes);
 
         if (this.colliderDiscovery == ColliderDiscovery.FAS_SEPSETS) {
             orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, this.conflictRule);
@@ -440,7 +440,7 @@ public final class PcCommon implements GraphSearch {
             graph.addDirectedEdge(z, y);
         }
 
-        TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
+        TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(x, y, z));
     }
 
     private void logTriples() {
@@ -627,7 +627,7 @@ public final class PcCommon implements GraphSearch {
                         System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
                     }
 
-                    TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
+                    TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset));
                 }
             }
         }

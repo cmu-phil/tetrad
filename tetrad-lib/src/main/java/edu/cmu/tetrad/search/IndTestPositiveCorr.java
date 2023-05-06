@@ -132,7 +132,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      */
     public IndependenceResult checkIndependence(Node x0, Node y0, List<Node> z0) {
 
-        System.out.println(SearchLogUtils.independenceFact(x0, y0, z0));
+        System.out.println(LogUtilsSearch.independenceFact(x0, y0, z0));
 
 
         double[] x = this.data[this.dataSet.getColumn(x0)];

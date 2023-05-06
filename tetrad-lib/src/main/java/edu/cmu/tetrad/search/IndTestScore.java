@@ -26,7 +26,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -93,7 +92,7 @@ public class IndTestScore implements IndependenceTest {
             if (independent) {
                 NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFact(x, y, z) + " score = " + nf.format(bump));
+                        LogUtilsSearch.independenceFact(x, y, z) + " score = " + nf.format(bump));
             }
         }
 

@@ -193,7 +193,7 @@ public final class IndTestGSquare implements IndependenceTest {
         if (this.verbose) {
             if (result.isIndep()) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
             }
         }
 

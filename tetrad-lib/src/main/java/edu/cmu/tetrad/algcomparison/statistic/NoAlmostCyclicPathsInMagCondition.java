@@ -5,7 +5,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.GraphUtilsSearch;
 
 /**
  * @author jdramsey
@@ -25,7 +25,7 @@ public class NoAlmostCyclicPathsInMagCondition implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph mag = SearchGraphUtils.pagToMag(estGraph);
+        Graph mag = GraphUtilsSearch.pagToMag(estGraph);
 
         for (Edge e : mag.getEdges()) {
             Node x = e.getNode1();

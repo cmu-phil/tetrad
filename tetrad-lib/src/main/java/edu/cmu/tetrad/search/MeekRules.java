@@ -191,7 +191,7 @@ public class MeekRules implements ImpliedOrientation {
         for (Node a : graph.getParents(b)) {
             if (graph.isAdjacentTo(c, a)) continue;
             if (direct(b, c, graph, visited)) {
-                log(SearchLogUtils.edgeOrientedMsg(
+                log(LogUtilsSearch.edgeOrientedMsg(
                         "Meek R1 triangle (" + a + "-->" + b + "---" + c + ")", graph.getEdge(b, c)));
                 return true;
             }
@@ -228,7 +228,7 @@ public class MeekRules implements ImpliedOrientation {
 
     private boolean r2Helper(Node a, Node b, Node c, Graph graph, Set<Node> visited) {
         boolean directed = direct(a, c, graph, visited);
-        log(SearchLogUtils.edgeOrientedMsg(
+        log(LogUtilsSearch.edgeOrientedMsg(
                 "Meek R2 triangle (" + a + "-->" + b + "-->" + c + ", " + a + "---" + c + ")", graph.getEdge(a, c)));
         return directed;
     }
@@ -270,7 +270,7 @@ public class MeekRules implements ImpliedOrientation {
 
         if (b4 && b5 && b6 && b7 && b8) {
             oriented = direct(d, a, graph, visited);
-            log(SearchLogUtils.edgeOrientedMsg("Meek R3 " + d + "--" + a + ", " + b + ", "
+            log(LogUtilsSearch.edgeOrientedMsg("Meek R3 " + d + "--" + a + ", " + b + ", "
                     + c, graph.getEdge(d, a)));
         }
 
@@ -292,7 +292,7 @@ public class MeekRules implements ImpliedOrientation {
                 if (!dc.pointsTowards(c)) continue;
                 if (graph.getEdge(a, d).isDirected()) continue;
                 if (direct(a, b, graph, visited)) {
-                    log(SearchLogUtils.edgeOrientedMsg("Meek R4 using " + c + ", " + d, graph.getEdge(a, b)));
+                    log(LogUtilsSearch.edgeOrientedMsg("Meek R4 using " + c + ", " + d, graph.getEdge(a, b)));
                     return true;
                 }
             }

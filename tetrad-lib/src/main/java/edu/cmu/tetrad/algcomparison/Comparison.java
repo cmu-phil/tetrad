@@ -41,7 +41,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.GraphUtilsSearch;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 import org.reflections.Reflections;
@@ -563,12 +563,12 @@ public class Comparison {
 
                     if (isSaveCPDAGs()) {
                         File file3 = new File(dir3, "cpdag." + (j + 1) + ".txt");
-                        GraphPersistence.saveGraph(SearchGraphUtils.cpdagForDag(graph), file3, false);
+                        GraphPersistence.saveGraph(GraphUtilsSearch.cpdagForDag(graph), file3, false);
                     }
 
                     if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphPersistence.saveGraph(SearchGraphUtils.dagToPag(graph), file4, false);
+                        GraphPersistence.saveGraph(GraphUtilsSearch.dagToPag(graph), file4, false);
                     }
 
                 }
@@ -650,12 +650,12 @@ public class Comparison {
 
                 if (isSaveCPDAGs()) {
                     File file3 = new File(dir3, "cpdag." + (j + 1) + ".txt");
-                    GraphPersistence.saveGraph(SearchGraphUtils.cpdagForDag(graph), file3, false);
+                    GraphPersistence.saveGraph(GraphUtilsSearch.cpdagForDag(graph), file3, false);
                 }
 
                 if (isSavePags()) {
                     File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                    GraphPersistence.saveGraph(SearchGraphUtils.dagToPag(graph), file4, false);
+                    GraphPersistence.saveGraph(GraphUtilsSearch.dagToPag(graph), file4, false);
                 }
             }
         } catch (IOException e) {
@@ -1236,9 +1236,9 @@ public class Comparison {
             if (this.comparisonGraph == ComparisonGraph.true_DAG) {
                 comparisonGraph = new EdgeListGraph(trueGraph);
             } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
-                comparisonGraph = SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueGraph));
+                comparisonGraph = GraphUtilsSearch.cpdagForDag(new EdgeListGraph(trueGraph));
             } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
-                comparisonGraph = SearchGraphUtils.dagToPag(trueGraph);
+                comparisonGraph = GraphUtilsSearch.dagToPag(trueGraph);
             } else {
                 throw new IllegalArgumentException("Unrecognized graph type.");
             }

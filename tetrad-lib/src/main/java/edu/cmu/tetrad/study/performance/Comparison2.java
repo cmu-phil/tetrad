@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import static edu.cmu.tetrad.search.GraphUtilsSearch.dagToPag;
 
 /**
  * Does a comparison of algorithm results across algorithm type, sample sizes,
@@ -133,16 +133,16 @@ public class Comparison2 {
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.PC) {
                 Pc search = new Pc(test);
                 result.setResultGraph(search.search());
-                result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
+                result.setCorrectResult(GraphUtilsSearch.cpdagForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
                 Cpc search = new Cpc(test);
                 result.setResultGraph(search.search());
-                result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
+                result.setCorrectResult(GraphUtilsSearch.cpdagForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
                 Fges search = new Fges(score);
                 //search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
                 result.setResultGraph(search.search());
-                result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
+                result.setCorrectResult(GraphUtilsSearch.cpdagForDag(new EdgeListGraph(trueDag)));
             } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
                 Fci search = new Fci(test);
                 result.setResultGraph(search.search());
@@ -368,14 +368,14 @@ public class Comparison2 {
             }
             Pc search = new Pc(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(GraphUtilsSearch.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.CPC) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
             }
             Cpc search = new Cpc(test);
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(GraphUtilsSearch.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FGES) {
             if (score == null) {
                 throw new IllegalArgumentException("Score not set.");
@@ -383,7 +383,7 @@ public class Comparison2 {
             Fges search = new Fges(score);
             //search.setFaithfulnessAssumed(params.isOneEdgeFaithfulnessAssumed());
             result.setResultGraph(search.search());
-            result.setCorrectResult(SearchGraphUtils.cpdagForDag(new EdgeListGraph(trueDag)));
+            result.setCorrectResult(GraphUtilsSearch.cpdagForDag(new EdgeListGraph(trueDag)));
         } else if (params.getAlgorithm() == ComparisonParameters.Algorithm.FCI) {
             if (test == null) {
                 throw new IllegalArgumentException("Test not set.");
@@ -455,7 +455,7 @@ public class Comparison2 {
             Graph correctGraph = _result.getCorrectResult();
             Graph resultGraph = _result.getResultGraph();
 
-            GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison2(correctGraph, resultGraph);
+            GraphUtils.GraphComparison comparison = GraphUtilsSearch.getGraphComparison2(correctGraph, resultGraph);
 
             int newRow = dataSet.getNumRows();
 

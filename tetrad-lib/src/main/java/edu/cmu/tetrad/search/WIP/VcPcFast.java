@@ -255,7 +255,7 @@ public final class VcPcFast implements GraphSearch {
         if (this.verbose) {
             System.out.println("CPC orientation...");
         }
-        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
+        GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, allNodes);
         orientUnshieldedTriples(this.knowledge, getIndependenceTest(), getDepth());
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
         MeekRules meekRules = new MeekRules();
@@ -570,7 +570,7 @@ public final class VcPcFast implements GraphSearch {
                         this.graph.setEndpoint(x, y, Endpoint.ARROW);
                         this.graph.setEndpoint(z, y, Endpoint.ARROW);
 
-                        TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
+                        TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(x, y, z));
                     }
 
                     this.colliderTriples.add(new Triple(x, y, z));

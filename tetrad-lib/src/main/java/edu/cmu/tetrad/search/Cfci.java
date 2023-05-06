@@ -520,8 +520,8 @@ public final class Cfci implements GraphSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = GraphUtilsSearch.translate(edge.getFrom(), variables);
+            Node to = GraphUtilsSearch.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -535,7 +535,7 @@ public final class Cfci implements GraphSearch {
             graph.setEndpoint(to, from, Endpoint.ARROW);
 
             if (this.verbose) {
-                this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+                this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
             }
         }
 
@@ -544,8 +544,8 @@ public final class Cfci implements GraphSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = GraphUtilsSearch.translate(edge.getFrom(), variables);
+            Node to = GraphUtilsSearch.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -566,7 +566,7 @@ public final class Cfci implements GraphSearch {
             graph.setEndpoint(from, to, Endpoint.ARROW);
 
             if (this.verbose) {
-                this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+                this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
             }
         }
 

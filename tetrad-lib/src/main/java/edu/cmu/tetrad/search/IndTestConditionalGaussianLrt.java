@@ -141,7 +141,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, this.pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, z, this.pValue));
             }
         }
 

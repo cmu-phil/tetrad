@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.GraphChange;
 import edu.cmu.tetrad.search.PossibleDConnectingPath;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.GraphUtilsSearch;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -788,7 +788,7 @@ public class Ion {
             variables.remove(x);
             variables.remove(y);
 
-            List<Set<Node>> subsets = SearchGraphUtils.powerSet(variables);
+            List<Set<Node>> subsets = GraphUtilsSearch.powerSet(variables);
 
             IonIndependenceFacts indep = new IonIndependenceFacts(x, y, new HashSet<>());
             IonIndependenceFacts assoc = new IonIndependenceFacts(x, y, new HashSet<>());

@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.MisclassificationUtils;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.GraphUtilsSearch;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import static edu.cmu.tetrad.search.GraphUtilsSearch.dagToPag;
 
 
 /**
@@ -150,7 +150,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
             return new EdgeListGraph(graph);
         } else if ("CPDAG".equals(type)) {
             params.set("graphComparisonType", "CPDAG");
-            return SearchGraphUtils.cpdagForDag(graph);
+            return GraphUtilsSearch.cpdagForDag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
             return dagToPag(graph);

@@ -131,7 +131,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.cpdagForDag(graph);
+        return GraphUtilsSearch.cpdagForDag(graph);
     }
 
     @Override

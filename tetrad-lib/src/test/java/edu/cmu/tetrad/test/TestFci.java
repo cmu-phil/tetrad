@@ -195,7 +195,7 @@ public class TestFci {
 //        DagToPag dagToPag = new DagToPag(trueGraph);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = SearchGraphUtils.dagToPag(trueGraph);
+        Graph truePag = GraphUtilsSearch.dagToPag(trueGraph);
 
         assertEquals(graph, truePag);
     }

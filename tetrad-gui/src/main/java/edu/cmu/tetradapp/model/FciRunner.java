@@ -128,7 +128,7 @@ public class FciRunner extends AbstractAlgorithmRunner
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
+            GraphUtilsSearch.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
             LayoutUtil.circleLayout(graph, 200, 200, 150);
         }

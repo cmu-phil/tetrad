@@ -218,7 +218,7 @@ public class IndTestDSep implements IndependenceTest {
         if (this.verbose) {
             if (dSeparated) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, 1.0));
+                        LogUtilsSearch.independenceFactMsg(x, y, z, 1.0));
             }
         }
 

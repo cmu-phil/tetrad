@@ -3,7 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.GraphUtilsSearch;
 import org.apache.commons.math3.util.FastMath;
 
 /**
@@ -27,7 +27,7 @@ public class Shd implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison(trueGraph, estGraph);
+        GraphUtils.GraphComparison comparison = GraphUtilsSearch.getGraphComparison(trueGraph, estGraph);
         return comparison.getShd();
     }
 

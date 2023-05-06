@@ -191,7 +191,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         try {
             r = partialCorrelation(x, y, z);
         } catch (SingularMatrixException e) {
-            System.out.println(SearchLogUtils.determinismDetected(z, x));
+            System.out.println(LogUtilsSearch.determinismDetected(z, x));
             this.fisherZ = Double.POSITIVE_INFINITY;
             return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
         }
@@ -205,7 +205,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
             }
         }
 
@@ -279,7 +279,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
             try {
                 Czz.inverse();
             } catch (SingularMatrixException e) {
-                System.out.println(SearchLogUtils.determinismDetected(z, x));
+                System.out.println(LogUtilsSearch.determinismDetected(z, x));
                 return true;
             }
         }

@@ -92,7 +92,7 @@ public class LingamPattern {
 
         TetradLogger.getInstance().log("info", "Making list of all dags in CPDAG...");
 
-        List<Graph> dags = SearchGraphUtils.getAllGraphsByDirectingUndirectedEdges(_cpdag);
+        List<Graph> dags = GraphUtilsSearch.getAllGraphsByDirectingUndirectedEdges(_cpdag);
 
         TetradLogger.getInstance().log("normalityTests", "Anderson Darling P value for Variables\n");
         NumberFormat nf = new DecimalFormat("0.0000");
@@ -139,7 +139,7 @@ public class LingamPattern {
             TetradLogger.getInstance().log("normalityTests", getDataSet().getVariable(j) + ": " + nf.format(scores.get(maxj).pvals[j]));
         }
 
-        Graph ngDagCPDAG = SearchGraphUtils.cpdagFromDag(dag);
+        Graph ngDagCPDAG = GraphUtilsSearch.cpdagFromDag(dag);
 
         List<Node> nodes = ngDagCPDAG.getNodes();
 

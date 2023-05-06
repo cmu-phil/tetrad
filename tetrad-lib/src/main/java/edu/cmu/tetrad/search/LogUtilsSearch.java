@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class SearchLogUtils {
+public class LogUtilsSearch {
     public static String edgeOrientedMsg(String reason, Edge edge) {
         return "Orienting edge (" + reason + "): " + edge;
     }
@@ -64,7 +64,7 @@ public class SearchLogUtils {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         sb.append("Independence accepted: ");
-        sb.append(SearchLogUtils.independenceFact(x, y, condSet));
+        sb.append(LogUtilsSearch.independenceFact(x, y, condSet));
 
         if (!Double.isNaN(pValue)) {
             sb.append("\tp = ").append(nf.format(pValue));
@@ -78,7 +78,7 @@ public class SearchLogUtils {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         sb.append("Dependent: ");
-        sb.append(SearchLogUtils.independenceFact(x, y, condSet));
+        sb.append(LogUtilsSearch.independenceFact(x, y, condSet));
 
         if (!Double.isNaN(pValue)) {
             sb.append("\tp = ").append(nf.format(pValue));
@@ -109,7 +109,6 @@ public class SearchLogUtils {
 
         return sb.toString();
     }
-
 }
 
 

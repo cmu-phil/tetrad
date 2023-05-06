@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.GraphUtilsSearch;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
@@ -49,7 +49,7 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
     private GraphWorkbench workbench;
 
     public CPDAGDisplay(Graph graph) {
-        List<Graph> dags = SearchGraphUtils.generateCpdagDags(graph, false);
+        List<Graph> dags = GraphUtilsSearch.generateCpdagDags(graph, false);
 
         if (dags.size() == 0) {
             JOptionPane.showMessageDialog(
@@ -81,7 +81,7 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
             String option = (String) box.getSelectedItem();
 
             if ("Orient --- only".equals(option)) {
-                List _dags = SearchGraphUtils.generateCpdagDags(graph, false);
+                List _dags = GraphUtilsSearch.generateCpdagDags(graph, false);
                 dags.clear();
                 dags.addAll(_dags);
                 SpinnerNumberModel model1 =
@@ -97,7 +97,7 @@ public class CPDAGDisplay extends JPanel implements GraphEditable {
                 totalLabel.setText(" of " + dags.size());
                 CPDAGDisplay.this.workbench.setGraph(dags.get(0));
             } else if ("Orient ---, &lt;->".equals(option)) {
-                List _dags = SearchGraphUtils.generateCpdagDags(graph, true);
+                List _dags = GraphUtilsSearch.generateCpdagDags(graph, true);
                 dags.clear();
                 dags.addAll(_dags);
                 SpinnerNumberModel model1 =

@@ -23,7 +23,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.FciOrient;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.GraphUtilsSearch;
 import edu.cmu.tetrad.search.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
@@ -35,7 +35,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import static edu.cmu.tetrad.search.GraphUtilsSearch.dagToPag;
 
 /**
  * Basic graph utilities.
@@ -1766,7 +1766,7 @@ public final class GraphUtils {
             return new EdgeListGraph(graph);
         } else if ("CPDAG".equals(type)) {
             params.set("graphComparisonType", "CPDAG");
-            return SearchGraphUtils.cpdagForDag(graph);
+            return GraphUtilsSearch.cpdagForDag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
             return dagToPag(graph);

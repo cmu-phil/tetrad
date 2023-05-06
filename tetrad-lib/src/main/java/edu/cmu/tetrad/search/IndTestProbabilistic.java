@@ -208,7 +208,7 @@ public class IndTestProbabilistic implements IndependenceTest {
         if (this.verbose) {
             if (ind) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, Arrays.asList(z), p));
+                        LogUtilsSearch.independenceFactMsg(x, y, Arrays.asList(z), p));
             }
         }
 

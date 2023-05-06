@@ -238,7 +238,7 @@ public class MbUtils {
      * @return An example DAG in this CPDAG.
      */
     public static Graph getOneMbDag(Graph mbCpdag) {
-        return SearchGraphUtils.dagFromCPDAG(mbCpdag);
+        return GraphUtilsSearch.dagFromCPDAG(mbCpdag);
     }
 
     /**
@@ -291,7 +291,7 @@ public class MbUtils {
     private static void doAbbreviatedMbOrientation(Graph graph,
                                                    IndependenceTest test,
                                                    int depth, Node target) {
-        SearchGraphUtils.orientUsingMeekRulesLocally(new Knowledge(), graph,
+        GraphUtilsSearch.orientUsingMeekRulesLocally(new Knowledge(), graph,
                 test, depth);
         MbUtils.trimToMbNodes(graph, target, false);
         MbUtils.trimEdgesAmongParents(graph, target);

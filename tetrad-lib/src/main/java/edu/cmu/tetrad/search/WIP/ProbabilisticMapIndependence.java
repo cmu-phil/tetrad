@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchLogUtils;
+import edu.cmu.tetrad.search.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 
@@ -132,7 +132,7 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, Arrays.asList(z), p));
+                        LogUtilsSearch.independenceFactMsg(x, y, Arrays.asList(z), p));
             }
         }
 

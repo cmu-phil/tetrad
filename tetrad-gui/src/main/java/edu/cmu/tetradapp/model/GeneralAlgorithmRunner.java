@@ -406,7 +406,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             if (_knowledge.getVariablesNotInTiers().size()
                     < _knowledge.getVariables().size()) {
                 for (Graph graph : graphList) {
-                    SearchGraphUtils.arrangeByKnowledgeTiers(graph, _knowledge);
+                    GraphUtilsSearch.arrangeByKnowledgeTiers(graph, _knowledge);
                 }
             }
         } else {

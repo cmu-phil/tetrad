@@ -208,7 +208,7 @@ public final class Fges implements GraphSearch, DagScorer {
             this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(SearchGraphUtils.dagFromCPDAG(graph), true);
+        this.modelScore = scoreDag(GraphUtilsSearch.dagFromCPDAG(graph), true);
 
         return graph;
     }

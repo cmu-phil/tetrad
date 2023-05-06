@@ -94,7 +94,7 @@ public final class MaxP {
             graph.addDirectedEdge(z, y);
         }
 
-        TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
+        TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(x, y, z));
     }
 
     /**

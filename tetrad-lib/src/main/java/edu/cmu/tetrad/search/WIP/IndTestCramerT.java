@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchLogUtils;
+import edu.cmu.tetrad.search.LogUtilsSearch;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
@@ -242,7 +242,7 @@ public final class IndTestCramerT implements IndependenceTest {
         }
 
         if (Double.isNaN(this.storedR)) {
-            throw new IllegalArgumentException("Conditional correlation cannot be computed: " + SearchLogUtils.independenceFact(x, y, z));
+            throw new IllegalArgumentException("Conditional correlation cannot be computed: " + LogUtilsSearch.independenceFact(x, y, z));
         }
 
         // Determine whether this partial correlation is statistically
@@ -253,7 +253,7 @@ public final class IndTestCramerT implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, z, pValue));
             }
         }
 

@@ -290,11 +290,11 @@ public class FasDeterministic implements IFas {
                 if (result.isIndependent() && noEdgeRequired) {
                     getSepsets().set(x, y, empty);
 
-                    TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
+                    TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFact(x, y, empty) + " p = " +
                             this.nf.format(result.getPValue()));
 
                     if (this.verbose) {
-                        this.out.println(SearchLogUtils.independenceFact(x, y, empty) + " p = " +
+                        this.out.println(LogUtilsSearch.independenceFact(x, y, empty) + " p = " +
                                 this.nf.format(result.getPValue()));
                     }
 
@@ -302,7 +302,7 @@ public class FasDeterministic implements IFas {
                     adjacencies.get(x).add(y);
                     adjacencies.get(y).add(x);
 
-                    TetradLogger.getInstance().log("dependencies", SearchLogUtils.independenceFact(x, y, empty) + " p = " +
+                    TetradLogger.getInstance().log("dependencies", LogUtilsSearch.independenceFact(x, y, empty) + " p = " +
                             this.nf.format(result.getPValue()));
 
                 }

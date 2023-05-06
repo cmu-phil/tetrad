@@ -6,9 +6,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.GraphSearch;
 import edu.cmu.tetrad.search.IndTestProbabilistic;
 import edu.cmu.tetrad.search.Rfci;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.GraphUtilsSearch;
 import edu.cmu.tetrad.util.GraphSampling;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -75,7 +74,7 @@ public class PagSamplingRfci implements GraphSearch {
                 for (Future<Graph> completedTask : completedTasks) {
                     try {
                         Graph graph = completedTask.get();
-                        if (graph != null && SearchGraphUtils.isLegalPag(graph).isLegalPag()) {
+                        if (graph != null && GraphUtilsSearch.isLegalPag(graph).isLegalPag()) {
                             graphs.add(graph);
                         }
                     } catch (ExecutionException exception) {

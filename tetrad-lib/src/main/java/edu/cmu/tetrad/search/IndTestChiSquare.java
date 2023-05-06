@@ -201,7 +201,7 @@ public final class IndTestChiSquare implements IndependenceTest {
         if (verbose) {
             if (result.isIndep()) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, this.pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, z, this.pValue));
             }
         }
 

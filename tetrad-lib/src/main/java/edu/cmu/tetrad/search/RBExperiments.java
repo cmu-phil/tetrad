@@ -230,7 +230,7 @@ public class RBExperiments {
 //        dagToPag.setCompleteRuleSetUsed(false);
 //        Graph PAG_True = dagToPag.convert();
 
-        Graph PAG_True = SearchGraphUtils.dagToPag(dag);
+        Graph PAG_True = GraphUtilsSearch.dagToPag(dag);
 
         PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());
 
@@ -258,7 +258,7 @@ public class RBExperiments {
 
         // learn structure of constraints using empirical data
         Graph depCPDAG = runFGS(depData);
-        Graph estDepBN = SearchGraphUtils.dagFromCPDAG(depCPDAG);
+        Graph estDepBN = GraphUtilsSearch.dagFromCPDAG(depCPDAG);
         System.out.println("estDepBN: " + estDepBN.getEdges());
         out.println("DepGraph(nodes,edges):" + estDepBN.getNumNodes() + "," + estDepBN.getNumEdges());
         System.out.println("Dependency graph done!");
@@ -365,7 +365,7 @@ public class RBExperiments {
 
         tableColumns.add(Comparison.TableColumn.SHD);
 
-        GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison(trueGraph, graph);
+        GraphUtils.GraphComparison comparison = GraphUtilsSearch.getGraphComparison(trueGraph, graph);
 
         List<Node> variables = new ArrayList<>();
         for (Comparison.TableColumn column : tableColumns) {

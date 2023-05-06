@@ -249,8 +249,8 @@ public class Pcd implements GraphSearch {
 
         enumerateTriples();
 
-        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
-        SearchGraphUtils.pcdOrientC(getIndependenceTest(), this.knowledge, this.graph);
+        GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphUtilsSearch.pcdOrientC(getIndependenceTest(), this.knowledge, this.graph);
 
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);

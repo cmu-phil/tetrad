@@ -123,7 +123,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, p));
+                        LogUtilsSearch.independenceFactMsg(x, y, z, p));
             }
         }
 

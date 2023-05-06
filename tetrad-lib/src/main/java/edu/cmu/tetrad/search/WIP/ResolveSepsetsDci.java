@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.NodePair;
 import edu.cmu.tetrad.search.IndTestChiSquare;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchLogUtils;
+import edu.cmu.tetrad.search.LogUtilsSearch;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -569,9 +569,9 @@ public final class ResolveSepsetsDci {
 //        boolean independent = c < allPValues.size() - 2;
 
         if (independent) {
-            TetradLogger.getInstance().log("independence", "***FDR judges " + SearchLogUtils.independenceFact(x, y, condSet) + " independent");
+            TetradLogger.getInstance().log("independence", "***FDR judges " + LogUtilsSearch.independenceFact(x, y, condSet) + " independent");
         } else {
-            TetradLogger.getInstance().log("independence", "###FDR judges " + SearchLogUtils.independenceFact(x, y, condSet) + " dependent");
+            TetradLogger.getInstance().log("independence", "###FDR judges " + LogUtilsSearch.independenceFact(x, y, condSet) + " dependent");
         }
         TetradLogger.getInstance().log("independence", "c = " + c);
 
@@ -619,9 +619,9 @@ public final class ResolveSepsetsDci {
         boolean independent = c < allPValues.size() / 2;
 
         if (independent) {
-            TetradLogger.getInstance().log("independence", "***Majority = " + SearchLogUtils.independenceFact(x, y, condSet) + " independent");
+            TetradLogger.getInstance().log("independence", "***Majority = " + LogUtilsSearch.independenceFact(x, y, condSet) + " independent");
         } else {
-            TetradLogger.getInstance().log("independence", "###Majority = " + SearchLogUtils.independenceFact(x, y, condSet) + " dependent");
+            TetradLogger.getInstance().log("independence", "###Majority = " + LogUtilsSearch.independenceFact(x, y, condSet) + " dependent");
         }
         TetradLogger.getInstance().log("independence", "c = " + c);
 

@@ -27,8 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchLogUtils;
-import edu.cmu.tetrad.search.WIP.SepsetMapDci;
+import edu.cmu.tetrad.search.LogUtilsSearch;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -132,7 +131,7 @@ public class IndTestSepsetDci implements IndependenceTest {
                     final double pValue = 1.0;
 
                     if (this.verbose) {
-                        TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, pValue));
+                        TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(x, y, z, pValue));
                     }
                     independent = true;
                     break;
@@ -144,7 +143,7 @@ public class IndTestSepsetDci implements IndependenceTest {
             if (independent) {
                 NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFact(x, y, z) + " score = " + SearchLogUtils.independenceFactMsg(x, y, z, getPValue()));
+                        LogUtilsSearch.independenceFact(x, y, z) + " score = " + LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
             }
         }
 

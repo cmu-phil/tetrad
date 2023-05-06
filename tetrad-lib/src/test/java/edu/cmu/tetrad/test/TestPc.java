@@ -39,7 +39,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import static edu.cmu.tetrad.search.GraphUtilsSearch.dagToPag;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -217,7 +217,7 @@ public class TestPc {
             IndTestDSep test = new IndTestDSep(graph);
             Pc pc = new Pc(test);
             Graph CPDAG = pc.search();
-            Graph CPDAG2 = SearchGraphUtils.cpdagFromDag(graph);
+            Graph CPDAG2 = GraphUtilsSearch.cpdagFromDag(graph);
             assertEquals(CPDAG, CPDAG2);
         }
     }

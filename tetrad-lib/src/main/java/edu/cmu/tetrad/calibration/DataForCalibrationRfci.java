@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.calibration;
 
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Bfci;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
@@ -108,7 +107,7 @@ public class DataForCalibrationRfci {
 //
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = SearchGraphUtils.dagToPag(dag);
+        Graph truePag = GraphUtilsSearch.dagToPag(dag);
 
         System.out.println("true PAG construction Done!");
 

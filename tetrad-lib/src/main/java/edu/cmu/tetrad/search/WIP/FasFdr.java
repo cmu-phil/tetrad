@@ -416,7 +416,7 @@ public class FasFdr implements IFas {
                             getSepsets().set(x, y, condSet);
 
                             if (this.verbose) {
-                                this.out.println(SearchLogUtils.independenceFact(x, y, condSet) + " p = " +
+                                this.out.println(LogUtilsSearch.independenceFact(x, y, condSet) + " p = " +
                                         this.nf.format(result.getPValue()));
                             }
                             continue EDGE;

@@ -103,7 +103,7 @@ public class TestMimbuild {
                     mimbuild.setPenaltyDiscount(1);
                     mimbuild.setMinClusterSize(3);
                     mimbuildStructure = mimbuild.search(partition, latentVarList, new CovarianceMatrix(data));
-                    int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
+                    int shd = GraphUtilsSearch.structuralHammingDistance(mimStructure, mimbuildStructure);
                     assertEquals(7, shd);
                 } else if (mimbuildMethod == 3) {
 //                    System.out.println("Mimbuild Trek\n");
@@ -111,7 +111,7 @@ public class TestMimbuild {
                     mimbuild.setAlpha(0.1);
                     mimbuild.setMinClusterSize(3);
                     mimbuildStructure = mimbuild.search(partition, latentVarList, new CovarianceMatrix(data));
-                    int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
+                    int shd = GraphUtilsSearch.structuralHammingDistance(mimStructure, mimbuildStructure);
                     assertEquals(3, shd);
                 } else {
                     throw new IllegalStateException();

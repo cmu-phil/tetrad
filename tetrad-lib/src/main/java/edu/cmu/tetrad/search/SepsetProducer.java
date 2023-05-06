@@ -33,17 +33,11 @@ import java.util.List;
  */
 public interface SepsetProducer {
     List<Node> getSepset(Node a, Node b);
-
     boolean isUnshieldedCollider(Node i, Node j, Node k);
-
     boolean isUnshieldedNoncollider(Node a, Node b, Node c);
-
     double getScore();
-
     List<Node> getVariables();
-
     void setVerbose(boolean verbose);
-
     boolean isIndependent(Node d, Node c, List<Node> path);
 }
 

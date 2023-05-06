@@ -272,7 +272,7 @@ public final class SampleVcpc implements GraphSearch {
             if (this.verbose) {
                 System.out.println("CPC orientation...");
             }
-            SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
+            GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, allNodes);
             orientUnshieldedTriples(this.knowledge, getIndependenceTest(), getDepth());
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
             MeekRules meekRules = new MeekRules();
@@ -800,19 +800,19 @@ public final class SampleVcpc implements GraphSearch {
                 if (this.graph.isAdjacentTo(x, z)) {
                     continue;
                 }
-                SearchGraphUtils.CpcTripleType type = SearchGraphUtils.getCpcTripleType(x, y, z, test, depth, graph);
+                GraphUtilsSearch.CpcTripleType type = GraphUtilsSearch.getCpcTripleType(x, y, z, test, depth, graph);
 
 
-                if (type == SearchGraphUtils.CpcTripleType.COLLIDER) {
+                if (type == GraphUtilsSearch.CpcTripleType.COLLIDER) {
                     if (this.colliderAllowed(x, y, z, knowledge)) {
                         graph.setEndpoint(x, y, Endpoint.ARROW);
                         graph.setEndpoint(z, y, Endpoint.ARROW);
 
-                        TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
+                        TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(x, y, z));
                     }
 
                     colliderTriples.add(new Triple(x, y, z));
-                } else if (type == SearchGraphUtils.CpcTripleType.AMBIGUOUS) {
+                } else if (type == GraphUtilsSearch.CpcTripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     ambiguousTriples.add(triple);
                     graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());

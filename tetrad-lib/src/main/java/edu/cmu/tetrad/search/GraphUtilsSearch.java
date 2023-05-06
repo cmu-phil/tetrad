@@ -45,7 +45,7 @@ import static org.apache.commons.math3.util.FastMath.max;
  *
  * @author Joseph Ramsey
  */
-public final class SearchGraphUtils {
+public final class GraphUtilsSearch {
 
     /**
      * Orients according to background knowledge.
@@ -56,8 +56,8 @@ public final class SearchGraphUtils {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), nodes);
-            Node to = SearchGraphUtils.translate(edge.getTo(), nodes);
+            Node from = GraphUtilsSearch.translate(edge.getFrom(), nodes);
+            Node to = GraphUtilsSearch.translate(edge.getTo(), nodes);
 
             if (from == null || to == null) {
                 continue;
@@ -71,15 +71,15 @@ public final class SearchGraphUtils {
             graph.removeEdge(from, to);
             graph.addDirectedEdge(to, from);
 
-            TetradLogger.getInstance().log("knowledgeOrientations", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(to, from)));
+            TetradLogger.getInstance().log("knowledgeOrientations", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(to, from)));
         }
 
         for (Iterator<KnowledgeEdge> it = bk.requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), nodes);
-            Node to = SearchGraphUtils.translate(edge.getTo(), nodes);
+            Node from = GraphUtilsSearch.translate(edge.getFrom(), nodes);
+            Node to = GraphUtilsSearch.translate(edge.getTo(), nodes);
 
             if (from == null || to == null) {
                 continue;
@@ -93,7 +93,7 @@ public final class SearchGraphUtils {
             graph.removeEdges(from, to);
             graph.addDirectedEdge(from, to);
 
-            TetradLogger.getInstance().log("knowledgeOrientations", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            TetradLogger.getInstance().log("knowledgeOrientations", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
         TetradLogger.getInstance().log("details", "Finishing BK Orientation.");
@@ -129,7 +129,7 @@ public final class SearchGraphUtils {
                     continue;
                 }
 
-                List<Node> sepset = SearchGraphUtils.sepset(graph, x, z, new HashSet<>(), new HashSet<>(),
+                List<Node> sepset = GraphUtilsSearch.sepset(graph, x, z, new HashSet<>(), new HashSet<>(),
                         test);
 
                 if (sepset == null) {
@@ -166,16 +166,16 @@ public final class SearchGraphUtils {
                     continue;
                 }
 
-                if (!SearchGraphUtils.isArrowpointAllowed(x, y, knowledge)
-                        || !SearchGraphUtils.isArrowpointAllowed(z, y, knowledge)) {
+                if (!GraphUtilsSearch.isArrowpointAllowed(x, y, knowledge)
+                        || !GraphUtilsSearch.isArrowpointAllowed(z, y, knowledge)) {
                     continue;
                 }
 
                 graph.setEndpoint(x, y, Endpoint.ARROW);
                 graph.setEndpoint(z, y, Endpoint.ARROW);
 
-                System.out.println(SearchLogUtils.colliderOrientedMsg(x, y, z) + " sepset = " + sepset);
-                TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(x, y, z));
+                System.out.println(LogUtilsSearch.colliderOrientedMsg(x, y, z) + " sepset = " + sepset);
+                TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(x, y, z));
             }
         }
 
@@ -222,9 +222,9 @@ public final class SearchGraphUtils {
         boolean changed;
 
         do {
-            changed = SearchGraphUtils.meekR1Locally(graph, knowledge, test, depth)
-                    || SearchGraphUtils.meekR2(graph, knowledge) || SearchGraphUtils.meekR3(graph, knowledge)
-                    || SearchGraphUtils.meekR4(graph, knowledge);
+            changed = GraphUtilsSearch.meekR1Locally(graph, knowledge, test, depth)
+                    || GraphUtilsSearch.meekR2(graph, knowledge) || GraphUtilsSearch.meekR3(graph, knowledge)
+                    || GraphUtilsSearch.meekR4(graph, knowledge);
         } while (changed);
 
         TetradLogger.getInstance().log("info", "Finishing Orientation Step D.");
@@ -262,8 +262,8 @@ public final class SearchGraphUtils {
 
                 //I think the null check needs to be here --AJ
                 if (sepset != null && !sepset.contains(b)
-                        && SearchGraphUtils.isArrowpointAllowed(a, b, knowledge)
-                        && SearchGraphUtils.isArrowpointAllowed(c, b, knowledge)) {
+                        && GraphUtilsSearch.isArrowpointAllowed(a, b, knowledge)
+                        && GraphUtilsSearch.isArrowpointAllowed(c, b, knowledge)) {
                     if (verbose) {
                         System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
                     }
@@ -280,7 +280,7 @@ public final class SearchGraphUtils {
                     graph.addDirectedEdge(a, b);
                     graph.addDirectedEdge(c, b);
 
-                    TetradLogger.getInstance().log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c, sepset));
+                    TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset));
                 }
             }
         }
@@ -361,26 +361,26 @@ public final class SearchGraphUtils {
 
                     if (graph.getEndpoint(b, a) == Endpoint.ARROW
                             && graph.paths().isUndirectedFromTo(a, c)) {
-                        if (SearchGraphUtils.existsLocalSepsetWithout(b, a, c, test, graph,
+                        if (GraphUtilsSearch.existsLocalSepsetWithout(b, a, c, test, graph,
                                 depth)) {
                             continue;
                         }
 
-                        if (SearchGraphUtils.isArrowpointAllowed(a, c, knowledge)) {
+                        if (GraphUtilsSearch.isArrowpointAllowed(a, c, knowledge)) {
                             graph.setEndpoint(a, c, Endpoint.ARROW);
-                            TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R1", graph.getEdge(a, c)));
+                            TetradLogger.getInstance().log("impliedOrientation", LogUtilsSearch.edgeOrientedMsg("Meek R1", graph.getEdge(a, c)));
                             changed = true;
                         }
                     } else if (graph.getEndpoint(c, a) == Endpoint.ARROW
                             && graph.paths().isUndirectedFromTo(a, b)) {
-                        if (SearchGraphUtils.existsLocalSepsetWithout(b, a, c, test, graph,
+                        if (GraphUtilsSearch.existsLocalSepsetWithout(b, a, c, test, graph,
                                 depth)) {
                             continue;
                         }
 
-                        if (SearchGraphUtils.isArrowpointAllowed(a, b, knowledge)) {
+                        if (GraphUtilsSearch.isArrowpointAllowed(a, b, knowledge)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
-                            TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R1", graph.getEdge(a, b)));
+                            TetradLogger.getInstance().log("impliedOrientation", LogUtilsSearch.edgeOrientedMsg("Meek R1", graph.getEdge(a, b)));
                             changed = true;
                         }
                     }
@@ -415,16 +415,16 @@ public final class SearchGraphUtils {
                 if (graph.paths().isDirectedFromTo(b, a)
                         && graph.paths().isDirectedFromTo(a, c)
                         && graph.paths().isUndirectedFromTo(b, c)) {
-                    if (SearchGraphUtils.isArrowpointAllowed(b, c, knowledge)) {
+                    if (GraphUtilsSearch.isArrowpointAllowed(b, c, knowledge)) {
                         graph.setEndpoint(b, c, Endpoint.ARROW);
-                        TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(b, c)));
+                        TetradLogger.getInstance().log("impliedOrientation", LogUtilsSearch.edgeOrientedMsg("Meek R2", graph.getEdge(b, c)));
                     }
                 } else if (graph.paths().isDirectedFromTo(c, a)
                         && graph.paths().isDirectedFromTo(a, b)
                         && graph.paths().isUndirectedFromTo(c, b)) {
-                    if (SearchGraphUtils.isArrowpointAllowed(c, b, knowledge)) {
+                    if (GraphUtilsSearch.isArrowpointAllowed(c, b, knowledge)) {
                         graph.setEndpoint(c, b, Endpoint.ARROW);
-                        TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R2", graph.getEdge(c, b)));
+                        TetradLogger.getInstance().log("impliedOrientation", LogUtilsSearch.edgeOrientedMsg("Meek R2", graph.getEdge(c, b)));
                     }
                 }
             }
@@ -478,9 +478,9 @@ public final class SearchGraphUtils {
 
                     if (graph.paths().isDirectedFromTo(c, b)
                             && graph.paths().isDirectedFromTo(d, b)) {
-                        if (SearchGraphUtils.isArrowpointAllowed(a, b, knowledge)) {
+                        if (GraphUtilsSearch.isArrowpointAllowed(a, b, knowledge)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
-                            TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek R3", graph.getEdge(a, b)));
+                            TetradLogger.getInstance().log("impliedOrientation", LogUtilsSearch.edgeOrientedMsg("Meek R3", graph.getEdge(a, b)));
                             changed = true;
                             break;
                         }
@@ -533,17 +533,17 @@ public final class SearchGraphUtils {
 
                     if (graph.paths().isDirectedFromTo(b, c)
                             && graph.paths().isDirectedFromTo(d, c)) {
-                        if (SearchGraphUtils.isArrowpointAllowed(a, c, knowledge)) {
+                        if (GraphUtilsSearch.isArrowpointAllowed(a, c, knowledge)) {
                             graph.setEndpoint(a, c, Endpoint.ARROW);
-                            TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, c)));
+                            TetradLogger.getInstance().log("impliedOrientation", LogUtilsSearch.edgeOrientedMsg("Meek T1", graph.getEdge(a, c)));
                             changed = true;
                             break;
                         }
                     } else if (graph.paths().isDirectedFromTo(c, d)
                             && graph.paths().isDirectedFromTo(d, b)) {
-                        if (SearchGraphUtils.isArrowpointAllowed(a, b, knowledge)) {
+                        if (GraphUtilsSearch.isArrowpointAllowed(a, b, knowledge)) {
                             graph.setEndpoint(a, b, Endpoint.ARROW);
-                            TetradLogger.getInstance().log("impliedOrientation", SearchLogUtils.edgeOrientedMsg("Meek T1", graph.getEdge(a, b)));
+                            TetradLogger.getInstance().log("impliedOrientation", LogUtilsSearch.edgeOrientedMsg("Meek T1", graph.getEdge(a, b)));
                             changed = true;
                             break;
                         }
@@ -639,14 +639,14 @@ public final class SearchGraphUtils {
      */
     public static Graph cpdagFromDag(Graph dag) {
         Graph graph = new EdgeListGraph(dag);
-        SearchGraphUtils.basicCPDAG(graph);
+        GraphUtilsSearch.basicCPDAG(graph);
         MeekRules rules = new MeekRules();
         rules.orientImplied(graph);
         return graph;
     }
 
     public static Graph dagFromCPDAG(Graph graph) {
-        return SearchGraphUtils.dagFromCPDAG(graph, null);
+        return GraphUtilsSearch.dagFromCPDAG(graph, null);
     }
 
     public static Graph dagFromCPDAG(Graph graph, Knowledge knowledge) {
@@ -678,7 +678,7 @@ public final class SearchGraphUtils {
                 Node y = edge.getNode2();
 
                 if (Edges.isUndirectedEdge(edge) && !graph.paths().isAncestorOf(y, x)) {
-                    SearchGraphUtils.direct(x, y, dag);
+                    GraphUtilsSearch.direct(x, y, dag);
                     rules.orientImplied(dag);
                     continue NEXT;
                 }
@@ -792,37 +792,7 @@ public final class SearchGraphUtils {
             }
         }
 
-//        for (Node n : pag.getNodes()) {
-//            if (pag.paths().existsDirectedPathFromTo(n, n))
-//                return new LegalPagRet(false,
-//                        "Acyclicity violated: There is a directed cyclic path from from " + n + " to itself");
-//        }
-
-//        for (Edge e : pag.getEdges()) {
-//            Node x = e.getNode1();
-//            Node y = e.getNode2();
-//
-//            if (Edges.isBidirectedEdge(e)) {
-//                if (pag.existsDirectedPathFromTo(x, y)) {
-//                    List<Node> path = GraphUtils.directedPathsFromTo(
-//                            pag, x, y, 100).get(0);
-//                    return new LegalPagRet(false,
-//                            "Bidirected edge semantics violated: there is a directed path for " + e + " from " + x + " to " + y
-//                                    + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
-//                                    + "An example path is " + GraphUtils.pathString(pag, path));
-//                } else if (pag.existsDirectedPathFromTo(y, x)) {
-//                    List<Node> path = GraphUtils.directedPathsFromTo(
-//                            pag, y, x, 100).get(0);
-//                    return new LegalPagRet(false,
-//                            "Bidirected edge semantics violated: There is an a directed path for " + e + " from " + y + " to " + x +
-//                                    ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
-//                                    + "An example path is " + GraphUtils.pathString(pag, path));
-//                }
-//            }
-//        }
-
         Graph mag = pagToMag(pag);
-
 
         LegalMagRet legalMag = isLegalMag(mag);
 
@@ -830,7 +800,7 @@ public final class SearchGraphUtils {
             return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
         }
 
-        Graph pag2 = SearchGraphUtils.dagToPag(mag);
+        Graph pag2 = GraphUtilsSearch.dagToPag(mag);
 
         if (!pag.equals(pag2)) {
             String edgeMismatch = "";
@@ -1203,7 +1173,7 @@ public final class SearchGraphUtils {
             cpdag = GraphUtils.removeBidirectedOrientations(cpdag);
         }
 
-        return SearchGraphUtils.getDagsInCpdagMeek(cpdag, new Knowledge());
+        return GraphUtilsSearch.getDagsInCpdagMeek(cpdag, new Knowledge());
     }
 
     public static List<Graph> getDagsInCpdagMeek(Graph cpdag, Knowledge knowledge) {
@@ -1366,8 +1336,8 @@ public final class SearchGraphUtils {
 
         try {
             estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
-            trueGraph = SearchGraphUtils.cpdagForDag(trueGraph);
-            estGraph = SearchGraphUtils.cpdagForDag(estGraph);
+            trueGraph = GraphUtilsSearch.cpdagForDag(trueGraph);
+            estGraph = GraphUtilsSearch.cpdagForDag(estGraph);
 
             // Will check mixedness later.
             if (trueGraph.paths().existsDirectedCycle()) {
@@ -1399,7 +1369,7 @@ public final class SearchGraphUtils {
                         return -99;
                     }
 
-                    int error = SearchGraphUtils.structuralHammingDistanceOneEdge(e1, e2);
+                    int error = GraphUtilsSearch.structuralHammingDistanceOneEdge(e1, e2);
                     shd += error;
                 }
             }
@@ -1809,8 +1779,6 @@ public final class SearchGraphUtils {
         }
 
         List<Edge> incorrect = new ArrayList<>();
-        List<Edge> compatible = new ArrayList<>();
-        List<Edge> incompatible = new ArrayList<>();
 
         for (Edge adj : allSingleEdges) {
             Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
@@ -1818,57 +1786,9 @@ public final class SearchGraphUtils {
 
             if (!edge1.equals(edge2)) {
                 incorrect.add(adj);
-
-//                if (SearchGraphUtils.isLegalPag(trueGraph).isLegalPag() && SearchGraphUtils.isLegalPag(targetGraph).isLegalPag()) {
-//                    GraphUtils.addPagColoring(trueGraph);
-//                    GraphUtils.addPagColoring(targetGraph);
-//
-//                    if (edge2 == null) continue;
-//
-//                    if (GraphUtils.compatible(edge1, edge2)) {
-//                        compatible.add(edge1);
-//                    } else {
-//                        incompatible.add(edge1);
-//                    }
-//                }
             }
         }
 
-//        if (SearchGraphUtils.isLegalPag(trueGraph).isLegalPag() && SearchGraphUtils.isLegalPag(targetGraph).isLegalPag()) {
-//            builder.append("\n\n" + "Edges incorrectly oriented (incompatible)");
-//
-//            if (incompatible.isEmpty()) {
-//                builder.append("\n  --NONE--");
-//            } else {
-//                sort(incompatible);
-//
-//                int j1 = 0;
-//
-//                for (Edge adj : incompatible) {
-//                    Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
-//                    Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
-//                    if (edge1 == null || edge2 == null) continue;
-//                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
-//                }
-//            }
-//
-//            builder.append("\n\n" + "Edges incorrectly oriented (compatible)");
-//
-//            sort(compatible);
-//
-//            if (compatible.isEmpty()) {
-//                builder.append("\n  --NONE--");
-//            } else {
-//                int j1 = 0;
-//
-//                for (Edge adj : compatible) {
-//                    Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
-//                    Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
-//                    if (edge1 == null || edge2 == null) continue;
-//                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
-//                }
-//            }
-//        } else
         {
             builder.append("\n\n" + "Edges incorrectly oriented");
 
@@ -1917,7 +1837,7 @@ public final class SearchGraphUtils {
     }
 
     public static int[][] graphComparison(Graph trueCpdag, Graph estCpdag, PrintStream out) {
-        GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison2(estCpdag, trueCpdag);
+        GraphUtils.GraphComparison comparison = GraphUtilsSearch.getGraphComparison2(estCpdag, trueCpdag);
 
         if (out != null) {
             out.println("Adjacencies:");

@@ -247,8 +247,8 @@ public class Kpc implements GraphSearch {
 
         enumerateTriples();
 
-        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
-        SearchGraphUtils.orientCollidersUsingSepsets(this.sepset, this.knowledge, this.graph, this.verbose, true);
+        GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphUtilsSearch.orientCollidersUsingSepsets(this.sepset, this.knowledge, this.graph, this.verbose, true);
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         rules.setKnowledge(this.knowledge);

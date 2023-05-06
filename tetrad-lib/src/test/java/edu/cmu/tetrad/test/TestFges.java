@@ -109,7 +109,7 @@ public class TestFges {
         alg.setFaithfulnessAssumed(true);
         Graph estCPDAG = alg.search();
 
-        Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
+        Graph trueCPDAG = GraphUtilsSearch.cpdagForDag(dag);
 
         estCPDAG = GraphUtils.replaceNodes(estCPDAG, vars);
 
@@ -174,9 +174,9 @@ public class TestFges {
 
         Graph estCPDAG = ges.search();
 
-        Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
+        Graph trueCPDAG = GraphUtilsSearch.cpdagForDag(dag);
 
-        int[][] counts = SearchGraphUtils.graphComparison(trueCPDAG, estCPDAG, null);
+        int[][] counts = GraphUtilsSearch.graphComparison(trueCPDAG, estCPDAG, null);
 
         int[][] expectedCounts = {
                 {2, 0, 0, 0, 0, 1},
@@ -197,7 +197,7 @@ public class TestFges {
         Graph graph = GraphUtils.convert("A-->B,A-->C,B-->D,C-->D");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         Graph CPDAG = fges.search();
-        assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
+        assertEquals(GraphUtilsSearch.cpdagForDag(graph), CPDAG);
     }
 
     @Test
@@ -205,7 +205,7 @@ public class TestFges {
         Graph graph = GraphUtils.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         Graph CPDAG = fges.search();
-        assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
+        assertEquals(GraphUtilsSearch.cpdagForDag(graph), CPDAG);
     }
 
     @Test
@@ -214,7 +214,7 @@ public class TestFges {
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         fges.setFaithfulnessAssumed(false);
         Graph CPDAG = fges.search();
-        assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
+        assertEquals(GraphUtilsSearch.cpdagForDag(graph), CPDAG);
     }
 
 
@@ -672,7 +672,7 @@ public class TestFges {
             fges.setVerbose(true);
             fges.setParallelized(true);
             Graph CPDAG1 = fges.search();
-            Graph CPDAG2 = SearchGraphUtils.cpdagFromDag(dag);
+            Graph CPDAG2 = GraphUtilsSearch.cpdagFromDag(dag);
             assertEquals(CPDAG2, CPDAG1);
         }
     }

@@ -83,8 +83,8 @@ public final class TestSearchGraph {
                     }
 
                     if (graph.isDSeparatedFrom(x, y, z) != graph.isDSeparatedFrom(y, x, z)) {
-                        fail(SearchLogUtils.independenceFact(x, y, z) + " should have same d-sep result as " +
-                                SearchLogUtils.independenceFact(y, x, z));
+                        fail(LogUtilsSearch.independenceFact(x, y, z) + " should have same d-sep result as " +
+                                LogUtilsSearch.independenceFact(y, x, z));
                     }
                 }
 
