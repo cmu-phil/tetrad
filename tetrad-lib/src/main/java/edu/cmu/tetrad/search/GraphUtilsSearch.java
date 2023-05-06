@@ -419,9 +419,6 @@ public final class GraphUtilsSearch {
         Graph mag = new EdgeListGraph(pag.getNodes());
         for (Edge e : pag.getEdges()) mag.addEdge(new Edge(e));
 
-        SepsetProducer sepsets = new DagSepsets(mag);
-        FciOrient fciOrient = new FciOrient(sepsets);
-
         List<Node> nodes = mag.getNodes();
 
         Graph pcafci = new EdgeListGraph(nodes);
@@ -791,7 +788,7 @@ public final class GraphUtilsSearch {
     public static Set<Node> getReachableNodes(List<Node> initialNodes,
                                               LegalPairs legalPairs, List<Node> c, List<Node> d, Graph graph, int maxPathLength) {
         HashSet<Node> reachable = new HashSet<>();
-        MultiKeyMap visited = new MultiKeyMap();
+        MultiKeyMap<Node, Boolean> visited = new MultiKeyMap<>();
         List<ReachabilityEdge> nextEdges = new LinkedList<>();
 
         for (Node x : initialNodes) {
