@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
 
-
 /**
  * An interface for Markov blanket searches.
  *
@@ -33,18 +32,15 @@ import java.util.List;
  */
 public interface MbSearch {
 
-
     /**
      * Given the target this returns all the nodes in the Markov Blanket.
      */
     List<Node> findMb(Node target);
 
-
     /**
      * The name of the algorithm.
      */
     String getAlgorithmName();
-
 
     /**
      * Number of independent tests.
