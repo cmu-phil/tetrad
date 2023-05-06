@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.TetradTest;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
@@ -122,11 +121,6 @@ public class TetradTestPopulation implements TetradTest {
                 tetradScore3(b, c, d, e);
     }
 
-    public boolean oneFactorTest(int a, int b, int c, int d, int e, int f) {
-        return tetradScore3(a, b, c, d) && tetradScore3(b, c, d, e) &&
-                tetradScore3(c, d, e, f);
-    }
-
     public boolean twoFactorTest(int a, int b, int c, int d) {
         tetradScore(a, b, c, d);
         return this.bvalues[2];
@@ -163,10 +157,6 @@ public class TetradTestPopulation implements TetradTest {
 
     public double tetradPValue(int v1, int v2, int v3, int v4) {
         return -1;
-    }
-
-    public double tetradPValue(int i1, int j1, int k1, int l1, int i2, int j2, int k2, int l2) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public double getSignificance() {
