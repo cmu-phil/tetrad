@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.MbUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -33,7 +34,7 @@ import java.util.List;
  * Created by IntelliJ IDEA. User: jdramsey Date: Jan 26, 2006 Time: 10:29:07 PM To change this template use File |
  * Settings | File Templates.
  */
-public class IambnPc implements MbSearch {
+public class IambnPc implements IMbSearch {
 
     /**
      * The independence test used to perform the search.

@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.GraphSearch;
+import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Mmmb;
 import edu.cmu.tetrad.search.utils.FgesOrienter;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -40,7 +40,7 @@ import java.util.Map;
  *
  * @author Joseph Ramsey (this version).
  */
-public class Mmhc implements GraphSearch {
+public class Mmhc implements IGraphSearch {
 
     /**
      * The independence test used for the PC search.

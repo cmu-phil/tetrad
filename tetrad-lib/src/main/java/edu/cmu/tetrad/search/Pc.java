@@ -46,7 +46,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey.
  */
-public class Pc implements GraphSearch {
+public class Pc implements IGraphSearch {
 
     /**
      * The independence test used for the PC search.g

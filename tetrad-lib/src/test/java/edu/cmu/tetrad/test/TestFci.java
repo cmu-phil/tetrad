@@ -406,7 +406,7 @@ public class TestFci {
         SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(4.0);
 
-        GraphSearch search = new Pc(test);
+        IGraphSearch search = new Pc(test);
 
         return search.search();
     }

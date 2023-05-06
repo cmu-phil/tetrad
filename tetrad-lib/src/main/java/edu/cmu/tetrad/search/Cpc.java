@@ -42,7 +42,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey (this version).
  */
-public final class Cpc implements GraphSearch {
+public final class Cpc implements IGraphSearch {
 
     /**
      * The independence test used for the PC search.

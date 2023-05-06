@@ -3,7 +3,7 @@ package edu.pitt.dbmi.algo.bayesian.constraint.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.GraphSearch;
+import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
@@ -18,7 +18,7 @@ import java.util.concurrent.*;
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  */
-public class PagSamplingRfci implements GraphSearch {
+public class PagSamplingRfci implements IGraphSearch {
 
     private final int NUM_THREADS = 10;
 

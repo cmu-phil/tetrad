@@ -46,7 +46,7 @@ import java.util.*;
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
  */
-public final class Cfci implements GraphSearch {
+public final class Cfci implements IGraphSearch {
 
     /**
      * The PAG being constructed.

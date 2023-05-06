@@ -55,7 +55,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see Boss
  * @see GFci
  */
-public final class BFci implements GraphSearch {
+public final class BFci implements IGraphSearch {
 
     // The PAG being constructed.
     private Graph graph;

@@ -45,7 +45,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey.
  */
-public class PcMax implements GraphSearch {
+public class PcMax implements IGraphSearch {
 
     /**
      * The independence test used for the PC search.g

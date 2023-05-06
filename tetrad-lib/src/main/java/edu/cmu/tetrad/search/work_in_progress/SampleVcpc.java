@@ -50,7 +50,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey (this version).
  */
-public final class SampleVcpc implements GraphSearch {
+public final class SampleVcpc implements IGraphSearch {
 
     /**
      * The independence test used for the PC search.

@@ -50,7 +50,7 @@ import java.util.List;
  * @author Joseph Ramsey
  * @author Choh-Man Teng
  */
-public final class Rfci implements GraphSearch {
+public final class Rfci implements IGraphSearch {
 
     /**
      * The RFCI-PAG being constructed.

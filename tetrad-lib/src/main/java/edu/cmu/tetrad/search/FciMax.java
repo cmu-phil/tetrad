@@ -44,7 +44,7 @@ import java.util.concurrent.RecursiveTask;
  * @author Choh-Man Teng
  * @see Fci
  */
-public final class FciMax implements GraphSearch {
+public final class FciMax implements IGraphSearch {
 
     /**
      * The SepsetMap being constructed.

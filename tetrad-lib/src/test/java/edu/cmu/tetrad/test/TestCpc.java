@@ -116,7 +116,7 @@ public class TestCpc {
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
-        GraphSearch search = new Cpc(independence);
+        IGraphSearch search = new Cpc(independence);
 
         // Run search
         Graph resultGraph = search.search();

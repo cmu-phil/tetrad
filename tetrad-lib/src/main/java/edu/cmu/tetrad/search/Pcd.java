@@ -43,7 +43,7 @@ import java.util.Set;
  *
  * @author Joseph Ramsey.
  */
-public class Pcd implements GraphSearch {
+public class Pcd implements IGraphSearch {
 
     /**
      * The independence test used for the PC search.

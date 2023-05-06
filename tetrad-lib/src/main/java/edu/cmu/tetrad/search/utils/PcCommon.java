@@ -41,7 +41,7 @@ import java.util.Set;
  *
  * @author josephramsey
  */
-public final class PcCommon implements GraphSearch {
+public final class PcCommon implements IGraphSearch {
     public enum FasType {REGULAR, STABLE}
 
     public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}

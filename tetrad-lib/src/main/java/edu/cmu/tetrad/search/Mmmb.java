@@ -36,7 +36,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class Mmmb implements MbSearch {
+public final class Mmmb implements IMbSearch {
 
     /**
      * True if the symmetric algorithm is to be used.

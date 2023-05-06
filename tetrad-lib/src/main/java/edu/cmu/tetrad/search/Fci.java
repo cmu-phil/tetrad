@@ -50,7 +50,7 @@ import java.util.Set;
  * @author Joseph Ramsey
  * @author Choh-Man Teng
  */
-public final class Fci implements GraphSearch {
+public final class Fci implements IGraphSearch {
     private SepsetMap sepsets;
     private Knowledge knowledge = new Knowledge();
     private final List<Node> variables = new ArrayList<>();

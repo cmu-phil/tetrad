@@ -39,7 +39,7 @@ import java.util.Collections;
  *
  * @author Joseph Ramsey
  */
-public final class FasLofs implements GraphSearch {
+public final class FasLofs implements IGraphSearch {
 
     private final Lofs.Rule rule;
 

@@ -54,7 +54,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see GFci
  * @see Grasp
  */
-public final class SpFci implements GraphSearch {
+public final class SpFci implements IGraphSearch {
 
     // The PAG being constructed.
     private Graph graph;

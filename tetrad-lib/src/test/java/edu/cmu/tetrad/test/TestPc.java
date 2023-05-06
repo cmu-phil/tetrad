@@ -331,7 +331,7 @@ public class TestPc {
 
             SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
             score.setPenaltyDiscount(2.0);
-            GraphSearch search;
+            IGraphSearch search;
 
             switch (t) {
                 case 0:
@@ -700,7 +700,7 @@ public class TestPc {
 
             SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
             score.setPenaltyDiscount(4.0);
-            GraphSearch search;
+            IGraphSearch search;
             Graph out;
 
             Node target = null;

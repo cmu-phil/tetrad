@@ -41,7 +41,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey (this version).
  */
-public final class VcPcAlt implements GraphSearch {
+public final class VcPcAlt implements IGraphSearch {
 
     /**
      * The independence test used for the PC search.

@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Implements the Inter-IAMB algorithm.
  */
-public class InterIamb implements MbSearch {
+public class InterIamb implements IMbSearch {
 
     /**
      * The independence test used to perform the search.

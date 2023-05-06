@@ -35,7 +35,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class GrowShrink implements MbSearch {
+public class GrowShrink implements IMbSearch {
 
     /**
      * The independence test used to perform the search.

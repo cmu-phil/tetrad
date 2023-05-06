@@ -44,7 +44,7 @@ import java.util.Set;
  *
  * @author Robert Tillman.
  */
-public class Kpc implements GraphSearch {
+public class Kpc implements IGraphSearch {
 
     /**
      * The independence test used for the PC search.

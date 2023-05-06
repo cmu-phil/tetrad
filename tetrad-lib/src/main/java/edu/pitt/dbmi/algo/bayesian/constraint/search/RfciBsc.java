@@ -30,7 +30,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  */
-public class RfciBsc implements GraphSearch {
+public class RfciBsc implements IGraphSearch {
 
     private final Rfci rfci;
 

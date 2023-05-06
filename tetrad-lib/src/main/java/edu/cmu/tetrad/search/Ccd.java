@@ -41,7 +41,7 @@ import java.util.*;
  * @author Frank C. Wimberly
  * @author Joseph Ramsey
  */
-public final class Ccd implements GraphSearch {
+public final class Ccd implements IGraphSearch {
     private final IndependenceTest independenceTest;
     private final List<Node> nodes;
     private boolean applyR1;

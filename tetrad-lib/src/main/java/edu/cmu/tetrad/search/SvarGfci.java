@@ -48,7 +48,7 @@ import java.util.List;
  * @author Daniel Malinsky
  * @see GFci
  */
-public final class SvarGfci implements GraphSearch {
+public final class SvarGfci implements IGraphSearch {
 
     // The PAG being constructed.
     private Graph graph;

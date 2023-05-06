@@ -43,7 +43,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey (this version).
  */
-public final class VcPcFast implements GraphSearch {
+public final class VcPcFast implements IGraphSearch {
 
     /**
      * The independence test used for the PC search.

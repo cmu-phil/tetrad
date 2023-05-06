@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public interface MbSearch {
+public interface IMbSearch {
 
     /**
      * Given the target this returns all the nodes in the Markov Blanket.

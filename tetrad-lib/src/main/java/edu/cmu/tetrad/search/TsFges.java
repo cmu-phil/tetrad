@@ -57,7 +57,7 @@ import java.util.concurrent.*;
  * @author Joseph Ramsey, Revisions 5/2015
  * @author Daniel Malinsky
  */
-public final class TsFges implements GraphSearch, DagScorer {
+public final class TsFges implements IGraphSearch, DagScorer {
 
     /**
      * Internal.

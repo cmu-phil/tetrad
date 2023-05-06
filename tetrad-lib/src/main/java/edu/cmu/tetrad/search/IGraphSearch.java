@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 /**
  * Interface for a search method that searches and returns a graph.
  */
-public interface GraphSearch {
+public interface IGraphSearch {
     Graph search();
 }
 

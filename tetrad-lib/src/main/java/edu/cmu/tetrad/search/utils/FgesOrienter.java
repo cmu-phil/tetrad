@@ -55,7 +55,7 @@ import java.util.concurrent.*;
  * of the edges in the oriented graph
  * @author AJ Sedgewick, 5/2015
  */
-public final class FgesOrienter implements GraphSearch, DagScorer {
+public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     /**
      * The covariance matrix for continuous data.

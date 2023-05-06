@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.MbUtils;
+import edu.cmu.tetrad.search.utils.MbUtils;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.PcMb;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;

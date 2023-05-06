@@ -53,7 +53,7 @@ import java.util.List;
  * @author Choh-Man Teng
  * @author Daniel Malinsky
  */
-public final class SvarFci implements GraphSearch {
+public final class SvarFci implements IGraphSearch {
 
     /**
      * The PAG being constructed.

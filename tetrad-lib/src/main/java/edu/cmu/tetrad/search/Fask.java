@@ -126,7 +126,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * @author Joseph Ramsey
  */
-public final class Fask implements GraphSearch {
+public final class Fask implements IGraphSearch {
 
     // The method to use for finding the adjacencies.
     public enum AdjacencyMethod {FAS_STABLE, FGES, EXTERNAL_GRAPH, NONE}

@@ -39,7 +39,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public final class PcMb implements MbSearch, GraphSearch {
+public final class PcMb implements IMbSearch, IGraphSearch {
 
     /**
      * The independence test used to perform the search.
