@@ -30,7 +30,7 @@ import java.util.*;
 /**
  * Some useful utilities for dealing with Markov blankets and Markov blanket DAGs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class MbUtils {
 
@@ -38,6 +38,8 @@ public class MbUtils {
      * Trims the graph to the target, the parents and children of the target, and the parents of the children of the
      * target. Bidirected edges are interpreted as if they could be oriented in either direction.
      *
+     * @param graph             The graph.
+     * @param target            The target.
      * @param includeBidirected true if bidirected edges should be included.
      */
     public static void trimToMbNodes(Graph graph, Node target,
@@ -136,6 +138,9 @@ public class MbUtils {
 
     /**
      * Removes edges among the parents of the target.
+     *
+     * @param graph  The graph.
+     * @param target The target.
      */
     public static void trimEdgesAmongParents(Graph graph, Node target) {
         List<Node> parents = graph.getParents(target);
@@ -151,7 +156,6 @@ public class MbUtils {
                 Edge edge = graph.getEdge(v, w);
 
                 if (edge != null) {
-//                    LogUtils.getInstance().finest("Removing edge among parents: " + edge);
                     graph.removeEdges(v, w);
                 }
             }
@@ -160,6 +164,9 @@ public class MbUtils {
 
     /**
      * Removes edges among the parents of children of the target.
+     *
+     * @param graph  The graph.
+     * @param target The target.
      */
     public static void trimEdgesAmongParentsOfChildren(Graph graph,
                                                        Node target) {
@@ -186,13 +193,18 @@ public class MbUtils {
                 Edge edge = graph.getEdge(v, w);
 
                 if (edge != null) {
-//                    LogUtils.getInstance().finest("Removing edge among parents: " + edge);
                     graph.removeEdge(v, w);
                 }
             }
         }
     }
 
+    /**
+     * Trims the graph to just the adjacents of the target.
+     *
+     * @param graph  The graph.
+     * @param target The target.
+     */
     public static void trimToAdjacents(Graph graph, Node target) {
         for (Node node : graph.getNodes()) {
             if (node == target) {
@@ -263,8 +275,13 @@ public class MbUtils {
         return dags;
     }
 
-    public static Graph getOneMbDag(Graph mbCPDAG) {
-        return SearchGraphUtils.dagFromCPDAG(mbCPDAG);
+    /**
+     * Returns an example DAG from the given MB CPDAG.
+     * @param mbCpdag The MB CPDAG.
+     * @return An example DAG in this CPDAG.
+     */
+    public static Graph getOneMbDag(Graph mbCpdag) {
+        return SearchGraphUtils.dagFromCPDAG(mbCpdag);
     }
 
     /**
