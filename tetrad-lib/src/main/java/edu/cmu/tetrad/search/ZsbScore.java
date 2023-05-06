@@ -34,7 +34,11 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Implements the Zhang-Shen bound score.
+ * <p>Implements the Zhang-Shen bound score. This is an adaptation of
+ * Theorem 1 in the following:</p>
+ * <p>Zhang, Y., & Shen, X. (2010). Model selection procedure for
+ * high‐dimensional data. Statistical Analysis and Data Mining: The
+ * ASA Data Science Journal, 3(5), 350-358</p>
  *
  * @author Joseph Ramsey
  */
@@ -54,7 +58,6 @@ public class ZsbScore implements Score {
     // The sample size of the covariance matrix.
     private int sampleSize;
     // True if verbose output should be sent to out.
-    private boolean verbose = false;
     // A record of lambdas for each m0.
     private List<Double> lambdas;
     // The data, if it is set.
@@ -171,33 +174,49 @@ public class ZsbScore implements Score {
         this.sampleSize = covariances.getSampleSize();
     }
 
+    /**
+     * Returns the sample size.
+     * @return This size.
+     */
     public int getSampleSize() {
         return sampleSize;
     }
 
+    /**
+     * Returns a judgement for FGES for whether a certain bump in score gives
+     * efidence of an effect edges.
+     * @param bump The bump.
+     * @return True if so.
+     * @see Fges
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
-    public boolean isVerbose() {
-        return verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
+    /**
+     * Returns the variables.
+     * @return This list.
+     */
     @Override
     public List<Node> getVariables() {
         return new ArrayList<>(variables);
     }
 
+    /**
+     * Returns a judgment of max degree for some algorithms.
+     * @return This maximum.
+     * @see Fges
+     */
     @Override
     public int getMaxDegree() {
         return (int) ceil(log(sampleSize));
     }
 
+    /**
+     * Returns true if the variable in Z determine y.
+     * @return True if so.
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = variables.indexOf(y);
@@ -209,14 +228,10 @@ public class ZsbScore implements Score {
         return Double.isNaN(v);
     }
 
-    public boolean isChanged() {
-        return changed;
-    }
-
-    public void setChanged(boolean b) {
-        changed = b;
-    }
-
+    /**
+     * Sets the risk bound for the Zhang Shen Bound score.
+     * @param riskBound The risk bound.
+     */
     public void setRiskBound(double riskBound) {
         this.riskBound = riskBound;
     }

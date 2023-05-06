@@ -17,7 +17,8 @@ import static org.apache.commons.math3.util.FastMath.min;
 
 
 /**
- * Implements the backward equivalence search of FGES.
+ * <p>Implements the backward equivalence search of FGES, taking permutations
+ * as input and returning updated permutations as output.</p>
  *
  * @author bryanandrews
  * @author josephramsey
@@ -27,30 +28,44 @@ public class PermutationBes {
     private final Score score;
     private Knowledge knowledge = new Knowledge();
     private boolean verbose = true;
-    private int depth = -1;
 
+    /**
+     * Constructor.
+     *
+     * @param score The score that BES (from FGES) will use.
+     */
     public PermutationBes(@NotNull Score score) {
         this.score = score;
         this.variables = score.getVariables();
     }
 
+    /**
+     * Returns the variables.
+     *
+     * @return This list.
+     */
     @NotNull
     public List<Node> getVariables() {
         return this.variables;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets the knowledge that BES will use.
+     *
+     * @param knowledge This knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
-
-//    public void setDepth(int depth) {
-//        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-//        this.depth = depth;
-//    }
 
     private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
 
@@ -197,13 +212,9 @@ public class PermutationBes {
         return score.localScoreDiff(xIndex, yIndex, parentIndices);
     }
 
-    public Knowledge getKnowledge() {
-        return knowledge;
-    }
-
     private Set<Node> revertToCPDAG(Graph graph) {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(getKnowledge());
+        rules.setKnowledge(knowledge);
         rules.setAggressivelyPreventCycles(true);
         boolean meekVerbose = false;
         rules.setVerbose(meekVerbose);
@@ -384,10 +395,10 @@ public class PermutationBes {
     }
 
     private void calculateArrowsBackward(Node a, Node b, Graph
-            graph, Map<Edge, ArrowConfigBackward> arrowsMapBackward, Map<Node, Integer> hashIndices,
-                                         int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) {
+            graph, Map<Edge, ArrowConfigBackward> arrowsMapBackward, Map<Node,
+            Integer> hashIndices, int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) {
         if (existsKnowledge()) {
-            if (!getKnowledge().noEdgeRequired(a.getName(), b.getName())) {
+            if (!knowledge.noEdgeRequired(a.getName(), b.getName())) {
                 return;
             }
         }
@@ -402,6 +413,7 @@ public class PermutationBes {
         if (storedConfig != null && storedConfig.equals(config)) return;
         arrowsMapBackward.put(directedEdge(a, b), new ArrowConfigBackward(naYX, parents));
 
+        int depth = -1;
         int _depth = min(depth, _naYX.size());
 
         final SublistGenerator gen = new SublistGenerator(_naYX.size(), _depth);//_naYX.size());
@@ -466,7 +478,6 @@ public class PermutationBes {
             return Objects.hash(nayx, parents);
         }
     }
-
 
     private static class Arrow implements Comparable<Arrow> {
 
