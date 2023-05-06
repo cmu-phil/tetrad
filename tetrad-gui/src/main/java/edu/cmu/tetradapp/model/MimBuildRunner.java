@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
-import edu.cmu.tetrad.search.MimUtils;
+import edu.cmu.tetrad.search.utils.MimUtils;
 import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemPm;
