@@ -31,6 +31,8 @@ import java.util.Arrays;
  * Returns the matrix permuted by these row and column permutations.
  *
  * @author josephramsey
+ * @see Lingam
+ * @see LingD
  */
 public class PermutationMatrixPair {
     private final int[] rowPerm;
