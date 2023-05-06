@@ -23,10 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.bpc_utils.BpcTestType;
-import edu.cmu.tetrad.search.bpc_utils.ClusterSignificance;
-import edu.cmu.tetrad.search.bpc_utils.ClusterUtils;
-import edu.cmu.tetrad.search.bpc_utils.TetradTestContinuous;
+import edu.cmu.tetrad.search.bpc_utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;

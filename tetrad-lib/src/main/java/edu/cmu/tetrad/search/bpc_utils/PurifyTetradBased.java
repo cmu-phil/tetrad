@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.bpc_utils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Tetrad;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
 import java.util.*;
