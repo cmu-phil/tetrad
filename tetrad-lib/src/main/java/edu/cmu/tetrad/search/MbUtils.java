@@ -35,8 +35,9 @@ import java.util.*;
 public class MbUtils {
 
     /**
-     * Trims the graph to the target, the parents and children of the target, and the parents of the children of the
-     * target. Bidirected edges are interpreted as if they could be oriented in either direction.
+     * Trims the graph to the target, the parents and children of the target, and
+     * the parents of the children of the target. Bidirected edges are interpreted
+     * as if they could be oriented in either direction.
      *
      * @param graph             The graph.
      * @param target            The target.
