@@ -141,52 +141,6 @@ public class ZsbScore implements Score {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-    private static double getP(double pn, double m0, double lambda) {
-        return 2. - pow((1. + (exp(-(lambda - 1.) / 2.)) * sqrt(lambda)), pn - m0);
-    }
-
-    private int[] indices(List<Node> __adj) {
-        int[] indices = new int[__adj.size()];
-        for (int t = 0; t < __adj.size(); t++) indices[t] = variables.indexOf(__adj.get(t));
-        return indices;
-    }
-
-    private static double zhangShenLambda(int m0, double pn, double riskBound) {
-        if (m0 > pn) throw new IllegalArgumentException("m0 should not be > pn; m0 = " + m0 + " pn = " + pn);
-
-        double high = 10000.0;
-        double low = 0.0;
-
-        while (high - low > 1e-13) {
-            double lambda = (high + low) / 2.0;
-
-            double p = getP(pn, m0, lambda);
-
-            if (p < 1.0 - riskBound) {
-                low = lambda;
-            } else {
-                high = lambda;
-            }
-        }
-
-        return low;
-    }
-
-    private double getLambda(int m0, int pn) {
-        if (lambdas == null) {
-            lambdas = new ArrayList<>();
-        }
-
-        if (lambdas.size() - 1 < m0) {
-            for (int t = lambdas.size(); t <= m0; t++) {
-                double lambda = zhangShenLambda(t, pn, riskBound);
-                lambdas.add(lambda);
-            }
-        }
-
-        return lambdas.get(m0);
-    }
-
     public ICovarianceMatrix getCovariances() {
         return covariances;
     }
@@ -265,6 +219,52 @@ public class ZsbScore implements Score {
 
     public void setRiskBound(double riskBound) {
         this.riskBound = riskBound;
+    }
+
+    private static double zhangShenLambda(int m0, double pn, double riskBound) {
+        if (m0 > pn) throw new IllegalArgumentException("m0 should not be > pn; m0 = " + m0 + " pn = " + pn);
+
+        double high = 10000.0;
+        double low = 0.0;
+
+        while (high - low > 1e-13) {
+            double lambda = (high + low) / 2.0;
+
+            double p = getP(pn, m0, lambda);
+
+            if (p < 1.0 - riskBound) {
+                low = lambda;
+            } else {
+                high = lambda;
+            }
+        }
+
+        return low;
+    }
+
+    private double getLambda(int m0, int pn) {
+        if (lambdas == null) {
+            lambdas = new ArrayList<>();
+        }
+
+        if (lambdas.size() - 1 < m0) {
+            for (int t = lambdas.size(); t <= m0; t++) {
+                double lambda = zhangShenLambda(t, pn, riskBound);
+                lambdas.add(lambda);
+            }
+        }
+
+        return lambdas.get(m0);
+    }
+
+    private static double getP(double pn, double m0, double lambda) {
+        return 2. - pow((1. + (exp(-(lambda - 1.) / 2.)) * sqrt(lambda)), pn - m0);
+    }
+
+    private int[] indices(List<Node> __adj) {
+        int[] indices = new int[__adj.size()];
+        for (int t = 0; t < __adj.size(); t++) indices[t] = variables.indexOf(__adj.get(t));
+        return indices;
     }
 }
 
