@@ -291,8 +291,9 @@ public class MbUtils {
     private static void doAbbreviatedMbOrientation(Graph graph,
                                                    IndependenceTest test,
                                                    int depth, Node target) {
-        GraphUtilsSearch.orientUsingMeekRulesLocally(new Knowledge(), graph,
-                test, depth);
+        MeekRules meekRules = new MeekRules();
+        meekRules.setRevertToUnshieldedColliders(false);
+        meekRules.orientImplied(graph);
         MbUtils.trimToMbNodes(graph, target, false);
         MbUtils.trimEdgesAmongParents(graph, target);
         MbUtils.trimEdgesAmongParentsOfChildren(graph, target);
