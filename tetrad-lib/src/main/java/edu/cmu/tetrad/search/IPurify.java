@@ -28,6 +28,7 @@ import java.util.List;
 
 /**
  * An interface for Purify algorithm.
+ * @author josephramsey
  */
 public interface IPurify {
     List<List<Node>> purify(List<List<Node>> partition);

@@ -50,7 +50,6 @@ public class Kci implements IndependenceTest {
     // Variables in data
     private final List<Node> variables;
     private final double[] h;
-//    private final double[][] _data;
 
     // The alpha level of the test.
     private double alpha;
@@ -113,7 +112,6 @@ public class Kci implements IndependenceTest {
         for (int j = 0; j < n; j++) Ones.set(j, 0, 1);
 
         this.alpha = alpha;
-
     }
 
     //====================================PUBLIC METHODS==================================//
@@ -126,7 +124,7 @@ public class Kci implements IndependenceTest {
     }
 
     /**
-     * Returns true if the given independence question is judged true, false if not. The independence question is of the
+     * Returns True if the given independence question is judged true, false if not. The independence question is of the
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
      */
@@ -135,29 +133,6 @@ public class Kci implements IndependenceTest {
             return new IndependenceResult(new IndependenceFact(x, y, z),
                     true, Double.NaN);
         }
-
-//        Node _x = data.getVariable(x.getName());
-//
-//        if (_x == null) {
-//            throw new NullPointerException("The x variable, " + x + " was not in the data.");
-//        }
-//
-//        Node _y = data.getVariable(y.getName());
-//
-//        if (_y == null) {
-//            throw new NullPointerException("The y variable, " + y + " was not in the data.");
-//        }
-//
-//        List<Node> _z = new ArrayList<>();
-//        for (Node v : z) {
-//            Node variable = data.getVariable(v.getName());
-//
-//            if (variable == null) {
-//                throw new NullPointerException("A conditioning variable, " + v + " was not in the data.");
-//            }
-//
-//            _z.add(variable);
-//        }
 
         List<Node> allVars = new ArrayList<>();
         allVars.add(x);

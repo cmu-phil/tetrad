@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Ion;
+import edu.cmu.tetrad.search.WIP.Ion;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -199,8 +199,8 @@ public class IonRunner extends AbstractAlgorithmRunner
 
         Ion ion = new Ion(getGraphs());
 
-        ion.setAdjacencySearch(getParams().getBoolean("pruneByAdjacencies", true));
-        ion.setPathLengthSearch(getParams().getBoolean("pruneByPathLength", true));
+        ion.setDoAdjacencySearch(getParams().getBoolean("pruneByAdjacencies", true));
+        ion.setDoPathLengthSearch(getParams().getBoolean("pruneByPathLength", true));
         ion.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
 
         List<Graph> graphs = ion.search();

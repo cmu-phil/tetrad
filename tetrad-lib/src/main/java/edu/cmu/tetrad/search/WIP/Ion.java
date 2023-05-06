@@ -19,11 +19,14 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.WIP;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.GraphChange;
+import edu.cmu.tetrad.search.PossibleDConnectingPath;
+import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -45,7 +48,7 @@ public class Ion {
     private boolean pathLengthSearch = true;
 
     // prune using adjacencies
-    private boolean adjacencySearch;
+    private boolean doAdjacencySearch;
 
     /**
      * The input PAGs being to be intergrated, possibly FCI outputs.
@@ -117,19 +120,25 @@ public class Ion {
     //============================= Public Methods ============================//
 
     /**
-     * Sets path length search on or off
+     * Sets path length search on or off.
+     * @param doPathLengthSearch True if on.
      */
-    public void setPathLengthSearch(boolean b) {
-        this.pathLengthSearch = b;
+    public void setDoPathLengthSearch(boolean doPathLengthSearch) {
+        this.pathLengthSearch = doPathLengthSearch;
     }
 
     /**
      * Sets adjacency search on or off
+     * @param doAdjacencySearch True if on.
      */
-    public void setAdjacencySearch(boolean b) {
-        this.adjacencySearch = b;
+    public void setDoAdjacencySearch(boolean doAdjacencySearch) {
+        this.doAdjacencySearch = doAdjacencySearch;
     }
 
+    /**
+     * Sets the knowledge to be used for this search.
+     * @param knowledge This knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Knowledge must not be null.");
@@ -139,7 +148,8 @@ public class Ion {
     }
 
     /**
-     * Begins the ION search procedure, described at each step
+     * Runs the ION search and returns a list of compatible graphs.
+     * @return These graphs.
      */
     public List<Graph> search() {
 
@@ -211,7 +221,7 @@ public class Ion {
             final int currentSep = 1;
             int numAdjacencies = this.separations.size();
             for (IonIndependenceFacts fact : this.separations) {
-                if (this.adjacencySearch) {
+                if (this.doAdjacencySearch) {
                     TetradLogger.getInstance().log("info", "Braching over path nonadjacencies: " + currentSep + " of " + numAdjacencies);
                 }
                 seps--;
@@ -230,7 +240,7 @@ public class Ion {
                     // known to be d-separated
                     List<PossibleDConnectingPath> dConnections = new ArrayList<>();
                     // checks to see if looping over adjacencies
-                    if (this.adjacencySearch) {
+                    if (this.doAdjacencySearch) {
                         for (Collection<Node> conditions : fact.getZ()) {
                             // checks to see if looping over path lengths
                             if (this.pathLengthSearch) {
@@ -403,7 +413,7 @@ public class Ion {
                     }
                 }
                 // exits loop if not looping over adjacencies
-                if (!this.adjacencySearch) {
+                if (!this.doAdjacencySearch) {
                     break;
                 }
             }
@@ -510,6 +520,7 @@ public class Ion {
                     newGraph.setEndpoint(triple.getX(), triple.getY(), Endpoint.ARROW);
                     newGraph.setEndpoint(triple.getZ(), triple.getY(), Endpoint.ARROW);
                 }
+
                 doFinalOrientation(newGraph);
             }
             for (Graph outputPag : this.finalResult) {
@@ -535,8 +546,9 @@ public class Ion {
         return this.output;
     }
 
-    // returns total runtime and times for hitting set calculations
-
+    /**
+     * @return The total runtime and times for hitting set calculations.
+     */
     public List<String> getRuntime() {
         double totalhit = 0;
         double longesthit = 0;
@@ -556,8 +568,9 @@ public class Ion {
         return list;
     }
 
-    // returns the maximum memory used in a run of ION
-
+    /**
+     * @return The maximum memory used in a run of ION
+     */
     public double getMaxMemUsage() {
         return this.maxMemory;
     }
@@ -584,6 +597,10 @@ public class Ion {
 
     // summarizes time and hitting set time and size information for latex
 
+    /**
+     * Summarizes time and hitting set time and size information for latex
+     * @return A string summarizing this information.
+     */
     public String getStats() {
         String stats = "Total running time:  " + this.runtime + "\\\\";
         int totalit = 0;
@@ -658,12 +675,11 @@ public class Ion {
         return nonadjacencies;
     }
 
-    /*
+    /**
      * Transfers local information from the input PAGs by adding edges from
      * local PAGs with their orientations and unorienting the edges if there
      * is a conflict and recording definite noncolliders.
      */
-
     private void transferLocal(Graph graph) {
         Set<NodePair> nonadjacencies = nonadjacencies(graph);
         for (Graph pag : this.input) {
@@ -724,11 +740,10 @@ public class Ion {
         return triples;
     }
 
-    /*
+    /**
      * @return variable pairs that are not in the intersection of the variable
      * sets for any two input PAGs
      */
-
     private List<NodePair> nonIntersection(Graph graph) {
         List<Set<String>> varsets = new ArrayList<>();
         for (Graph inputPag : this.input) {
@@ -1030,7 +1045,6 @@ public class Ion {
     /*
      * Does the final set of orientations after colliders have been oriented
      */
-
     private void doFinalOrientation(Graph graph) {
         this.discrimGraphs.clear();
         Set<Graph> currentDiscrimGraphs = new HashSet<>();
@@ -1104,7 +1118,6 @@ public class Ion {
     }
 
     // Does only the ancestor and cycle rules of these repeatedly until no changes
-
     private void awayFromAncestorCycle(Graph graph) {
         while (this.changeFlag) {
             this.changeFlag = false;
@@ -1137,7 +1150,6 @@ public class Ion {
 
     // Does all 3 of these rules at once instead of going through all
     // triples multiple times per iteration of doFinalOrientation.
-
     private void awayFromColliderAncestorCycle(Graph graph) {
         List<Node> nodes = graph.getNodes();
 
@@ -1166,7 +1178,6 @@ public class Ion {
     }
 
     /// R1, away from collider
-
     private void ruleR1(Node a, Node b, Node c, Graph graph) {
         if (graph.isAdjacentTo(a, c)) {
             return;
@@ -1184,7 +1195,6 @@ public class Ion {
 
     //if Ao->c and a-->b-->c, then a-->c
     // Zhang's rule R2, awy from ancestor.
-
     private void ruleR2(Node a, Node b, Node c, Graph graph) {
         if (!graph.isAdjacentTo(a, c)) {
             return;
@@ -1207,7 +1217,6 @@ public class Ion {
             graph.setEndpoint(a, c, Endpoint.ARROW);
         }
     }
-
 
     private boolean isArrowpointAllowed(Graph graph, Node x, Node y) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
@@ -1275,7 +1284,6 @@ public class Ion {
     }
 
     //if Ao->c and a-->b-->c, then a-->c
-
     private void awayFromCycle(Graph graph, Node a, Node b, Node c) {
         if ((graph.isAdjacentTo(a, c)) &&
                 (graph.getEndpoint(a, c) == Endpoint.ARROW) &&
@@ -1591,7 +1599,6 @@ public class Ion {
      * @param <E> The type of elements in the Collection passed to the constructor.
      * @author pingel
      */
-
     private static class PowerSet<E> implements Iterable<Set<E>> {
         Collection<E> all;
 
