@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.WIP.IndTestMultinomialLogisticRegression;
-import edu.cmu.tetrad.search.PcStable;
 import edu.cmu.tetrad.search.SemBicScore;
 import edu.pitt.csb.mgm.Mgm;
 import edu.pitt.csb.mgm.MixedUtils;
@@ -47,7 +47,8 @@ public class SearchWrappers {
 
         public Graph search(DataSet ds) {
             IndTestMultinomialLogisticRegression indTest = new IndTestMultinomialLogisticRegression(ds, this.searchParams[0]);
-            PcStable pcs = new PcStable(indTest);
+            Pc pcs = new Pc(indTest);
+            pcs.setStable(true);
             return pcs.search();
         }
     }

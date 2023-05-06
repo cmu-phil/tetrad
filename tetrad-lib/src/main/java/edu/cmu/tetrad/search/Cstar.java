@@ -680,7 +680,8 @@ public class Cstar {
     private Graph getPatternPcStable(DataSet sample) {
         IndependenceTest test = getIndependenceTest(sample, this.test);
         test.setVerbose(false);
-        PcStable pc = new PcStable(test);
+        Pc pc = new Pc(test);
+        pc.setStable(true);
         pc.setVerbose(false);
         return pc.search();
     }

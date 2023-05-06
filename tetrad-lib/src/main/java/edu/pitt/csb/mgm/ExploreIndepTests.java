@@ -24,8 +24,8 @@ package edu.pitt.csb.mgm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphPersistence;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.WIP.IndTestMultinomialLogisticRegression;
-import edu.cmu.tetrad.search.PcStable;
 import edu.cmu.tetrad.search.SearchGraphUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 
@@ -45,9 +45,13 @@ public class ExploreIndepTests {
             IndTestMultinomialLogisticRegressionWald indWalLin = new IndTestMultinomialLogisticRegressionWald(ds, .05, true);
             IndTestMultinomialLogisticRegressionWald indWalLog = new IndTestMultinomialLogisticRegressionWald(ds, .05, false);
 
-            PcStable s1 = new PcStable(indMix);
-            PcStable s2 = new PcStable(indWalLin);
-            PcStable s3 = new PcStable(indWalLog);
+            Pc s1 = new Pc(indMix);
+            Pc s2 = new Pc(indWalLin);
+            Pc s3 = new Pc(indWalLog);
+
+            s1.setStable(true);
+            s2.setStable(true);
+            s3.setStable(true);
 
             long time = MillisecondTimes.timeMillis();
             Graph g1 = SearchGraphUtils.cpdagFromDag(s1.search());

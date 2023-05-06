@@ -219,9 +219,10 @@ public class PerformanceTests {
 
         IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
 
-        PcStable pcStable = new PcStable(test);
+        Pc pc = new Pc(test);
+        pc.setStable(true);
 
-        Graph estCPDAG = pcStable.search();
+        Graph estCPDAG = pc.search();
 
 //        out.println(estCPDAG);
 
@@ -1379,7 +1380,8 @@ public class PerformanceTests {
 
         System.out.println("First FAS graph = " + left);
 
-        PcStable pc2 = new PcStable(new IndTestDSep(dag));
+        Pc pc2 = new Pc(new IndTestDSep(dag));
+        pc2.setStable(true);
         Graph top = pc2.search();
 
         System.out.println("Second FAS graph = " + top);
