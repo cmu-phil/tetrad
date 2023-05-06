@@ -26,10 +26,9 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -53,7 +52,6 @@ import java.util.concurrent.*;
  * @author Daniel Malinsky
  */
 public final class TsFges implements GraphSearch, DagScorer {
-
 
     /**
      * Internal.
@@ -84,19 +82,9 @@ public final class TsFges implements GraphSearch, DagScorer {
     private Graph externalGraph;
 
     /**
-     * If non-null, edges not adjacent in this graph will not be added.
-     */
-    private Graph boundGraph;
-
-    /**
      * Elapsed time of the most recent search.
      */
     private long elapsedTime;
-
-    /**
-     * A bound on cycle length.
-     */
-    private int cycleBound = -1;
 
     /**
      * The totalScore for discrete searches.
@@ -136,7 +124,7 @@ public final class TsFges implements GraphSearch, DagScorer {
     private ConcurrentMap<Node, Integer> hashIndices;
 
     // The static ForkJoinPool instance.
-    private ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
 
     // A running tally of the total BIC totalScore.
     private double totalScore;
@@ -147,18 +135,15 @@ public final class TsFges implements GraphSearch, DagScorer {
     // Where printed output is sent.
     private PrintStream out = System.out;
 
-    // A initial adjacencies graph.
+    // An initial adjacencies graph.
     private Graph adjacencies;
 
     // The graph being constructed.
     private Graph graph;
 
     // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
-    // The ordering doesn't matter; it just have to be transitive.
+    // The ordering doesn't matter; it just has to be transitive.
     int arrowIndex;
-
-    // The final totalScore after search.
-    private double modelScore;
 
     // Internal.
     private Mode mode = Mode.heuristicSpeedup;
@@ -172,6 +157,9 @@ public final class TsFges implements GraphSearch, DagScorer {
     private int maxIndegree = -1;
 
     final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
+
+    private final int[] count = new int[1];
+
 
     //===========================CONSTRUCTORS=============================//
 
@@ -188,20 +176,6 @@ public final class TsFges implements GraphSearch, DagScorer {
     }
 
     //==========================PUBLIC METHODS==========================//
-
-    /**
-     * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
-     */
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
-    }
-
-    /**
-     * @return true if it is assumed that all path pairs with one length 1 path do not cancel.
-     */
-    public boolean isFaithfulnessAssumed() {
-        return this.faithfulnessAssumed;
-    }
 
     /**
      * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
@@ -261,15 +235,21 @@ public final class TsFges implements GraphSearch, DagScorer {
         this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.flush();
 
-        this.modelScore = this.totalScore;
+        // The final totalScore after search.
 
         return this.graph;
     }
 
     /**
+     * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
+     */
+    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
+        this.faithfulnessAssumed = faithfulnessAssumed;
+    }
+
+    /**
      * @return the background knowledge.
      */
-
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
@@ -280,15 +260,20 @@ public final class TsFges implements GraphSearch, DagScorer {
      * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
+    /**
+     * Returns the elapsed time o the search.
+     *
+     * @return This time.
+     */
     public long getElapsedTime() {
         return this.elapsedTime;
     }
 
     /**
-     * If the true graph is set, askterisks will be printed in log output for the true edges.
+     * If the true graph is set, asterisks will be printed in log output for the true edges.
      */
     public void setTrueGraph(Graph trueGraph) {
         this.trueGraph = trueGraph;
@@ -299,13 +284,6 @@ public final class TsFges implements GraphSearch, DagScorer {
      */
     public double getScore(Graph dag) {
         return scoreDag(dag);
-    }
-
-    /**
-     * @return the list of top scoring graphs.
-     */
-    public LinkedList<ScoredGraph> getTopGraphs() {
-        return this.topGraphs;
     }
 
     /**
@@ -377,7 +355,7 @@ public final class TsFges implements GraphSearch, DagScorer {
     }
 
     /**
-     * @return the set of preset adjacenies for the algorithm; edges not in this adjacencies graph
+     * @return the set of preset adjacencies for the algorithm; edges not in this adjacencies graph
      * will not be added.
      */
     public Graph getAdjacencies() {
@@ -385,43 +363,11 @@ public final class TsFges implements GraphSearch, DagScorer {
     }
 
     /**
-     * Sets the set of preset adjacenies for the algorithm; edges not in this adjacencies graph
+     * Sets the set of preset adjacencies for the algorithm; edges not in this adjacencies graph
      * will not be added.
      */
     public void setAdjacencies(Graph adjacencies) {
         this.adjacencies = adjacencies;
-    }
-
-    /**
-     * A bound on cycle length.
-     */
-    public int getCycleBound() {
-        return this.cycleBound;
-    }
-
-    /**
-     * A bound on cycle length.
-     *
-     * @param cycleBound The bound, &gt;= 1, or -1 for unlimited.
-     */
-    public void setCycleBound(int cycleBound) {
-        if (!(cycleBound == -1 || cycleBound >= 1))
-            throw new IllegalArgumentException("Cycle bound needs to be -1 or >= 1: " + cycleBound);
-        this.cycleBound = cycleBound;
-    }
-
-    /**
-     * Creates a new processors pool with the specified number of threads.
-     */
-    public void setParallelism(int numProcessors) {
-        this.pool = new ForkJoinPool(numProcessors);
-    }
-
-    /**
-     * If non-null, edges not adjacent in this graph will not be added.
-     */
-    public void setBoundGraph(Graph boundGraph) {
-        this.boundGraph = GraphUtils.replaceNodes(boundGraph, getVariables());
     }
 
     /**
@@ -485,6 +431,12 @@ public final class TsFges implements GraphSearch, DagScorer {
         this.maxIndegree = maxIndegree;
     }
 
+    public int getMinChunk(int n) {
+        // The minimum number of operations to do before parallelizing.
+        int minChunk = 100;
+        return FastMath.max(n / this.maxThreads, minChunk);
+    }
+
     //===========================PRIVATE METHODS========================//
 
     //Sets the discrete scoring function to use.
@@ -504,15 +456,7 @@ public final class TsFges implements GraphSearch, DagScorer {
         this.maxIndegree = this.score.getMaxDegree();
     }
 
-    final int[] count = new int[1];
-
-    public int getMinChunk(int n) {
-        // The minimum number of operations to do before parallelizing.
-        int minChunk = 100;
-        return FastMath.max(n / this.maxThreads, minChunk);
-    }
-
-    class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
+    private class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
         private final int from;
         private final int to;
         private final List<Node> nodes;
@@ -548,7 +492,7 @@ public final class TsFges implements GraphSearch, DagScorer {
                             continue;
                         }
 
-                        if (!validSetByKnowledge(y, this.emptySet)) {
+                        if (invalidSetByKnowledge(y, this.emptySet)) {
                             continue;
                         }
                     }
@@ -560,8 +504,6 @@ public final class TsFges implements GraphSearch, DagScorer {
                     int child = TsFges.this.hashIndices.get(y);
                     int parent = TsFges.this.hashIndices.get(x);
                     double bump = TsFges.this.score.localScoreDiff(parent, child);
-
-                    if (TsFges.this.boundGraph != null && !TsFges.this.boundGraph.isAdjacentTo(x, y)) continue;
 
                     if (bump > 0) {
                         Edge edge = Edges.undirectedEdge(x, y);
@@ -615,7 +557,10 @@ public final class TsFges implements GraphSearch, DagScorer {
 
                     while (tasks.size() > TsFges.this.maxThreads) {
                         NodeTaskEmptyGraph _task = tasks.poll();
-                        _task.join();
+
+                        if (_task != null) {
+                            _task.join();
+                        }
                     }
                 }
 
@@ -704,7 +649,7 @@ public final class TsFges implements GraphSearch, DagScorer {
                                     continue;
                                 }
 
-                                if (!validSetByKnowledge(y, emptySet)) {
+                                if (invalidSetByKnowledge(y, emptySet)) {
                                     continue;
                                 }
                             }
@@ -799,7 +744,7 @@ public final class TsFges implements GraphSearch, DagScorer {
                                     continue;
                                 }
 
-                                if (!validSetByKnowledge(y, emptySet)) {
+                                if (invalidSetByKnowledge(y, emptySet)) {
                                     continue;
                                 }
                             }
@@ -852,7 +797,7 @@ public final class TsFges implements GraphSearch, DagScorer {
                 continue;
             }
 
-            if (!getTNeighbors(x, y).containsAll(arrow.getHOrT())) {
+            if (!new HashSet<>(getTNeighbors(x, y)).containsAll(arrow.getHOrT())) {
                 continue;
             }
 
@@ -868,7 +813,7 @@ public final class TsFges implements GraphSearch, DagScorer {
 
             this.totalScore += bump;
 
-            Set<Node> visited = reapplyOrientation(x, y, null);
+            Set<Node> visited = reapplyOrientation();
             Set<Node> toProcess = new HashSet<>();
 
             for (Node node : visited) {
@@ -888,7 +833,7 @@ public final class TsFges implements GraphSearch, DagScorer {
             toProcess.add(y);
 
             storeGraph();
-            reevaluateForward(toProcess, arrow);
+            reevaluateForward(toProcess);
         }
     }
 
@@ -921,9 +866,6 @@ public final class TsFges implements GraphSearch, DagScorer {
             Edge edge = this.graph.getEdge(x, y);
             if (edge.pointsTowards(x)) continue;
 
-            HashSet<Node> diff = new HashSet<>(arrow.getNaYX());
-            diff.removeAll(arrow.getHOrT());
-
             if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX())) continue;
 
             Set<Node> H = arrow.getHOrT();
@@ -936,7 +878,7 @@ public final class TsFges implements GraphSearch, DagScorer {
 
             clearArrow(x, y);
 
-            Set<Node> visited = reapplyOrientation(x, y, H);
+            Set<Node> visited = reapplyOrientation();
 
             Set<Node> toProcess = new HashSet<>();
 
@@ -957,7 +899,7 @@ public final class TsFges implements GraphSearch, DagScorer {
             reevaluateBackward(toProcess);
         }
 
-        meekOrientRestricted(getVariables(), getKnowledge());
+        meekOrientRestricted(getKnowledge());
     }
 
     private Set<Node> getCommonAdjacents(Node x, Node y) {
@@ -966,16 +908,8 @@ public final class TsFges implements GraphSearch, DagScorer {
         return commonChildren;
     }
 
-    private Set<Node> reapplyOrientation(Node x, Node y, Set<Node> newArrows) {
-        Set<Node> toProcess = new HashSet<>();
-        toProcess.add(x);
-        toProcess.add(y);
-
-        if (newArrows != null) {
-            toProcess.addAll(newArrows);
-        }
-
-        return meekOrientRestricted(new ArrayList<>(toProcess), getKnowledge());
+    private Set<Node> reapplyOrientation() {
+        return meekOrientRestricted(getKnowledge());
     }
 
     // Returns true if knowledge is not empty.
@@ -1017,8 +951,8 @@ public final class TsFges implements GraphSearch, DagScorer {
         }
     }
 
-    // Calcuates new arrows based on changes in the graph for the forward search.
-    private void reevaluateForward(Set<Node> nodes, Arrow arrow) {
+    // Calculates new arrows based on changes in the graph for the forward search.
+    private void reevaluateForward(Set<Node> nodes) {
         class AdjTask extends RecursiveTask<Boolean> {
             private final List<Node> nodes;
             private final int from;
@@ -1274,12 +1208,12 @@ public final class TsFges implements GraphSearch, DagScorer {
                 h.removeAll(diff);
 
                 if (existsKnowledge()) {
-                    if (!validSetByKnowledge(b, h)) {
+                    if (invalidSetByKnowledge(b, h)) {
                         continue;
                     }
                 }
 
-                double bump = deleteEval(a, b, diff, naYX, this.hashIndices);
+                double bump = deleteEval(a, b, diff, this.hashIndices);
 
                 if (bump > 0.0) {
                     addArrow(a, b, naYX, h, bump);
@@ -1288,11 +1222,7 @@ public final class TsFges implements GraphSearch, DagScorer {
         }
     }
 
-    public double getModelScore() {
-        return this.modelScore;
-    }
-
-    // Basic data structure for an arrow a->b considered for additiom or removal from the graph, together with
+    // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
     // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
     // For the forward direction, T neighbors are needed; for the backward direction, H neighbors are needed.
     // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
@@ -1335,14 +1265,12 @@ public final class TsFges implements GraphSearch, DagScorer {
         }
 
         // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
-        // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
+        // to zero with an existing element, so for the cases where the comparison is to zero, i.e. have the same
         // bump, we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
         // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
         // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
-        // not equal to zero by keeping a list. This last part is commened out by default.
-        public int compareTo(Arrow arrow) {
-            if (arrow == null) throw new NullPointerException();
-
+        // not equal to zero by keeping a list. This last part is commented out by default.
+        public int compareTo(@NotNull Arrow arrow) {
             int compare = Double.compare(arrow.getBump(), getBump());
 
             if (compare == 0) {
@@ -1411,7 +1339,7 @@ public final class TsFges implements GraphSearch, DagScorer {
     }
 
     // Evaluate the Delete(X, Y, T) operator (Definition 12 from Chickering, 2002).
-    private double deleteEval(Node x, Node y, Set<Node> diff, Set<Node> naYX,
+    private double deleteEval(Node x, Node y, Set<Node> diff,
                               Map<Node, Integer> hashIndices) {
         Set<Node> set = new HashSet<>(diff);
         set.addAll(this.graph.getParents(y));
@@ -1433,8 +1361,6 @@ public final class TsFges implements GraphSearch, DagScorer {
             trueEdge = this.trueGraph.getEdge(_x, _y);
         }
 
-        if (this.boundGraph != null && !this.boundGraph.isAdjacentTo(x, y)) return false;
-
         this.graph.addDirectedEdge(x, y);
         //  Adding similar edges to enforce repeating structure **/
         addSimilarEdges(x, y);
@@ -1448,9 +1374,7 @@ public final class TsFges implements GraphSearch, DagScorer {
 
         int numEdges = this.graph.getNumEdges();
 
-//        if (verbose) {
         if (numEdges % 1000 == 0) this.out.println("Num edges added: " + numEdges);
-//        }
 
         if (this.verbose) {
             String label = this.trueGraph != null && trueEdge != null ? "*" : "";
@@ -1468,8 +1392,6 @@ public final class TsFges implements GraphSearch, DagScorer {
             this.graph.removeEdge(_t, y);
             //  removing similar edges to enforce repeating structure **/
             removeSimilarEdges(_t, y);
-            //  **/
-            if (this.boundGraph != null && !this.boundGraph.isAdjacentTo(_t, y)) continue;
 
             this.graph.addDirectedEdge(_t, y);
             //  Adding similar edges to enforce repeating structure **/
@@ -1507,12 +1429,9 @@ public final class TsFges implements GraphSearch, DagScorer {
         this.removedEdges.add(Edges.undirectedEdge(x, y));
         //  removing similar edges to enforce repeating structure **/
         removeSimilarEdges(x, y);
-        //  **/
 
-//        if (verbose) {
         int numEdges = this.graph.getNumEdges();
         if (numEdges % 1000 == 0) this.out.println("Num edges (backwards) = " + numEdges);
-//        }
 
         if (this.verbose) {
             String label = this.trueGraph != null && trueEdge != null ? "*" : "";
@@ -1584,7 +1503,8 @@ public final class TsFges implements GraphSearch, DagScorer {
         Set<Node> union = new HashSet<>(T);
         union.addAll(naYX);
         boolean clique = GraphUtils.isClique(union, this.graph);
-        boolean noCycle = !existsUnblockedSemiDirectedPath(y, x, union, this.cycleBound);
+        int cycleBound = -1;
+        boolean noCycle = !existsUnblockedSemiDirectedPath(y, x, union, cycleBound);
         return clique && noCycle && !violatesKnowledge;
     }
 
@@ -1639,7 +1559,6 @@ public final class TsFges implements GraphSearch, DagScorer {
             if (this.knowledge.isForbidden(A, B)) {
                 Node nodeA = edge.getNode1();
                 Node nodeB = edge.getNode2();
-                if (nodeA == null || nodeB == null) throw new NullPointerException();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
                     if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
@@ -1659,7 +1578,6 @@ public final class TsFges implements GraphSearch, DagScorer {
             } else if (this.knowledge.isForbidden(B, A)) {
                 Node nodeA = edge.getNode2();
                 Node nodeB = edge.getNode1();
-                if (nodeA == null || nodeB == null) throw new NullPointerException();
 
                 if (graph.isAdjacentTo(nodeA, nodeB) && !graph.isChildOf(nodeA, nodeB)) {
                     if (!graph.paths().isAncestorOf(nodeA, nodeB)) {
@@ -1682,13 +1600,13 @@ public final class TsFges implements GraphSearch, DagScorer {
     // Use background knowledge to decide if an insert or delete operation does not orient edges in a forbidden
     // direction according to prior knowledge. If some orientation is forbidden in the subset, the whole subset is
     // forbidden.
-    private boolean validSetByKnowledge(Node y, Set<Node> subset) {
+    private boolean invalidSetByKnowledge(Node y, Set<Node> subset) {
         for (Node node : subset) {
             if (getKnowledge().isForbidden(node.getName(), y.getName())) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     // Find all adj that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
@@ -1773,13 +1691,7 @@ public final class TsFges implements GraphSearch, DagScorer {
     }
 
     // Runs Meek rules on just the changed adj.
-    private Set<Node> reorientNode(List<Node> nodes) {
-        addRequiredEdges(this.graph);
-        return meekOrientRestricted(nodes, getKnowledge());
-    }
-
-    // Runs Meek rules on just the changed adj.
-    private Set<Node> meekOrientRestricted(List<Node> nodes, Knowledge knowledge) {
+    private Set<Node> meekOrientRestricted(Knowledge knowledge) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
         return rules.orientImplied(this.graph);
@@ -1882,76 +1794,21 @@ public final class TsFges implements GraphSearch, DagScorer {
         }
     }
 
-    public String logEdgeBayesFactorsString(Graph dag) {
-        Map<Edge, Double> factors = logEdgeBayesFactors(dag);
-        return logBayesPosteriorFactorsString(factors, scoreDag(dag));
-    }
-
-    public Map<Edge, Double> logEdgeBayesFactors(Graph dag) {
-        Map<Edge, Double> logBayesFactors = new HashMap<>();
-        double withEdge = scoreDag(dag);
-
-        for (Edge edge : dag.getEdges()) {
-            dag.removeEdge(edge);
-            double withoutEdge = scoreDag(dag);
-            double difference = withEdge - withoutEdge;
-            logBayesFactors.put(edge, difference);
-            dag.addEdge(edge);
-        }
-
-        return logBayesFactors;
-    }
-
-    private String logBayesPosteriorFactorsString(Map<Edge, Double> factors, double modelScore) {
-        NumberFormat nf = new DecimalFormat("0.00");
-        StringBuilder builder = new StringBuilder();
-
-        List<Edge> edges = new ArrayList<>(factors.keySet());
-
-        Collections.sort(edges, new Comparator<Edge>() {
-            @Override
-            public int compare(Edge o1, Edge o2) {
-                return -Double.compare(factors.get(o1), factors.get(o2));
-            }
-        });
-
-        builder.append("Edge Posterior Log Bayes Factors:\n\n");
-
-        builder.append("For a DAG in the IMaGES pattern with model totalScore m, for each edge e in the " +
-                "DAG, the model totalScore that would result from removing each edge, calculating " +
-                "the resulting model totalScore m(e), and then reporting m - m(e). The totalScore used is " +
-                "the IMScore, L - SUM_i{kc ln n(i)}, L is the maximum likelihood of the model, " +
-                "k isthe number of parameters of the model, n(i) is the sample size of the ith " +
-                "data set, and c is the penalty penaltyDiscount. Note that the more negative the totalScore, " +
-                "the more important the edge is to the posterior probability of the IMaGES model. " +
-                "Edges are given in order of their importance so measured.\n\n");
-
-        int i = 0;
-
-        for (Edge edge : edges) {
-            builder.append(++i).append(". ").append(edge).append(" ").append(nf.format(factors.get(edge))).append("\n");
-        }
-
-        return builder.toString();
-    }
-
     // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     private List<List<Node>> returnSimilarPairs(Node x, Node y) {
         System.out.println("$$$$$ Entering returnSimilarPairs method with x,y = " + x + ", " + y);
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return new ArrayList<>();
         }
-//        System.out.println("Knowledge within returnSimilar : " + knowledge);
+
         int ntiers = this.knowledge.getNumTiers();
         int indx_tier = this.knowledge.isInWhichTier(x);
         int indy_tier = this.knowledge.isInWhichTier(y);
         int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
-        List tier_x = this.knowledge.getTier(indx_tier);
-//        Collections.sort(tier_x);
-        List tier_y = this.knowledge.getTier(indy_tier);
-//        Collections.sort(tier_y);
+        List<String> tier_x = this.knowledge.getTier(indx_tier);
+        List<String> tier_y = this.knowledge.getTier(indy_tier);
 
         int i;
         for (i = 0; i < tier_x.size(); ++i) {
@@ -1983,21 +1840,17 @@ public final class TsFges implements GraphSearch, DagScorer {
             Node x1;
             String B;
             Node y1;
+            List<String> tmp_tier1;
+            List<String> tmp_tier2;
             if (indx_tier >= indy_tier) {
-                List tmp_tier1 = this.knowledge.getTier(i + tier_diff);
-//                Collections.sort(tmp_tier1);
-                List tmp_tier2 = this.knowledge.getTier(i);
-//                Collections.sort(tmp_tier2);
-                A = (String) tmp_tier1.get(indx_comp);
-                B = (String) tmp_tier2.get(indy_comp);
+                tmp_tier1 = this.knowledge.getTier(i + tier_diff);
+                tmp_tier2 = this.knowledge.getTier(i);
             } else {
-                List tmp_tier1 = this.knowledge.getTier(i);
-//                Collections.sort(tmp_tier1);
-                List tmp_tier2 = this.knowledge.getTier(i + tier_diff);
-//                Collections.sort(tmp_tier2);
-                A = (String) tmp_tier1.get(indx_comp);
-                B = (String) tmp_tier2.get(indy_comp);
+                tmp_tier1 = this.knowledge.getTier(i);
+                tmp_tier2 = this.knowledge.getTier(i + tier_diff);
             }
+            A = tmp_tier1.get(indx_comp);
+            B = tmp_tier2.get(indy_comp);
             if (A.equals(B)) continue;
             if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
             if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
@@ -2026,11 +1879,11 @@ public final class TsFges implements GraphSearch, DagScorer {
         if (simList.isEmpty()) return;
         List<Node> x1List = simList.get(0);
         List<Node> y1List = simList.get(1);
-        Iterator itx = x1List.iterator();
-        Iterator ity = y1List.iterator();
+        Iterator<Node> itx = x1List.iterator();
+        Iterator<Node> ity = y1List.iterator();
         while (itx.hasNext() && ity.hasNext()) {
-            Node x1 = (Node) itx.next();
-            Node y1 = (Node) ity.next();
+            Node x1 = itx.next();
+            Node y1 = ity.next();
             System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
             System.out.println("adding edge between x = " + x1 + " and y = " + y1);
             this.graph.addDirectedEdge(x1, y1);
@@ -2042,11 +1895,11 @@ public final class TsFges implements GraphSearch, DagScorer {
         if (simList.isEmpty()) return;
         List<Node> x1List = simList.get(0);
         List<Node> y1List = simList.get(1);
-        Iterator itx = x1List.iterator();
-        Iterator ity = y1List.iterator();
+        Iterator<Node> itx = x1List.iterator();
+        Iterator<Node> ity = y1List.iterator();
         while (itx.hasNext() && ity.hasNext()) {
-            Node x1 = (Node) itx.next();
-            Node y1 = (Node) ity.next();
+            Node x1 = itx.next();
+            Node y1 = ity.next();
             System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
             System.out.println("removing edge between x = " + x1 + " and y = " + y1);
             Edge oldxy = this.graph.getEdge(x1, y1);
