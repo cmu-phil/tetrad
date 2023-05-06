@@ -35,7 +35,6 @@ import java.util.List;
 public class SepsetsSet implements SepsetProducer {
     private final SepsetMap sepsets;
     private final IndependenceTest test;
-    private double p;
     private boolean verbose;
     private IndependenceResult result;
 
@@ -55,13 +54,6 @@ public class SepsetsSet implements SepsetProducer {
         List<Node> sepset = this.sepsets.get(i, k);
         if (sepset == null) throw new IllegalArgumentException("That triple was covered: " + i + " " + j + " " + k);
         else return !sepset.contains(j);
-    }
-
-    @Override
-    public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
-        List<Node> sepset = this.sepsets.get(i, k);
-        if (sepset == null) throw new IllegalArgumentException("That triple was covered: " + i + " " + j + " " + k);
-        return sepset.contains(j);
     }
 
     @Override

@@ -74,20 +74,6 @@ public class DagSepsets implements SepsetProducer {
 
 
     /**
-     * True iff i*-*j*-*k is an unshielded noncollider.
-     *
-     * @param i Node 1
-     * @param j Node 2
-     * @param k Node 3
-     * @return True if the condition holds.
-     */
-    @Override
-    public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
-        List<Node> sepset = this.dag.getSepset(i, k);
-        return sepset != null && sepset.contains(j);
-    }
-
-    /**
      * Not implemented; required for an interface.
      *
      * @throws UnsupportedOperationException Since this is not implemented.

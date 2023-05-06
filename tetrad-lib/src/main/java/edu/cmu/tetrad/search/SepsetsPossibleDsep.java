@@ -75,11 +75,6 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         return sepset != null && !sepset.contains(j);
     }
 
-    public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
-        List<Node> sepset = getSepset(i, k);
-        return sepset != null && sepset.contains(j);
-    }
-
     @Override
     public double getScore() {
         return -(this.result.getPValue() - this.test.getAlpha());

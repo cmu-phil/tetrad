@@ -64,11 +64,6 @@ public class SepsetsGreedy implements SepsetProducer {
         return set != null && !set.contains(j);
     }
 
-    public boolean isUnshieldedNoncollider(Node i, Node j, Node k) {
-        List<Node> set = getSepsetGreedy(i, k);
-        return set != null && set.contains(j);
-    }
-
     @Override
     public boolean isIndependent(Node a, Node b, List<Node> c) {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);

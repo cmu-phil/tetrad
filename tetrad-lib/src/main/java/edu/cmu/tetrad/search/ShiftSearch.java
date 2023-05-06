@@ -127,7 +127,7 @@ public class ShiftSearch {
     }
 
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     public int getC() {
