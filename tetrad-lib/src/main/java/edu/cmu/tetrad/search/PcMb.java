@@ -91,16 +91,6 @@ public final class PcMb implements MbSearch, GraphSearch {
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * Set of unshielded colliders from the triple orientation step.
-     */
-    private Set<Triple> colliderTriples;
-
-    /**
-     * Set of unshielded noncolliders from the triple orientation step.
-     */
-    private Set<Triple> noncolliderTriples;
-
-    /**
      * Set of ambiguous unshielded triples.
      */
     private Set<Triple> ambiguousTriples;
@@ -170,8 +160,6 @@ public final class PcMb implements MbSearch, GraphSearch {
         long start = MillisecondTimes.timeMillis();
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
 
         if (targets == null) {
             throw new IllegalArgumentException(
@@ -358,8 +346,6 @@ public final class PcMb implements MbSearch, GraphSearch {
     public Graph search() {
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
 
         // Some statistics.
         this.maxRemainingAtDepth = new int[20];
@@ -414,20 +400,6 @@ public final class PcMb implements MbSearch, GraphSearch {
      */
     public Set<Triple> getAmbiguousTriples() {
         return new HashSet<>(this.ambiguousTriples);
-    }
-
-    /**
-     * @return the set of triples identified as colliders by the CPC algorithm during the most recent search.
-     */
-    public Set<Triple> getColliderTriples() {
-        return this.colliderTriples;
-    }
-
-    /**
-     * @return the set of triples identified as noncolliders by the CPC algorithm during the most recent search.
-     */
-    public Set<Triple> getNoncolliderTriples() {
-        return this.noncolliderTriples;
     }
 
     /**
@@ -516,7 +488,7 @@ public final class PcMb implements MbSearch, GraphSearch {
      * @param knowledge See the Knowledge class.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     public Graph getGraph() {
@@ -663,8 +635,6 @@ public final class PcMb implements MbSearch, GraphSearch {
     private void orientUnshieldedTriples(Knowledge knowledge, Graph graph, int depth, List<Node> nodes) {
         this.logger.log("info", "Starting Collider Orientation:");
 
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
 
         if (nodes == null) {
@@ -701,15 +671,12 @@ public final class PcMb implements MbSearch, GraphSearch {
                         graph.setEndpoint(z, y, Endpoint.ARROW);
                         this.logger.log("tripleClassifications", "Collider oriented: " + Triple.pathString(graph, x, y, z));
                     }
-
-                    this.colliderTriples.add(new Triple(x, y, z));
                 } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
                     graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
                 } else {
-                    this.noncolliderTriples.add(new Triple(x, y, z));
                     this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
                 }
             }
