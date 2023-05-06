@@ -381,7 +381,7 @@ public final class PcAll implements GraphSearch {
                 System.out.println("MaxP orientation...");
             }
 
-            MaxPColliderOrientation orientCollidersMaxP = new MaxPColliderOrientation(this.independenceTest);
+            MaxP orientCollidersMaxP = new MaxP(this.independenceTest);
             orientCollidersMaxP.setConflictRule(this.conflictRule);
             orientCollidersMaxP.setUseHeuristic(this.useHeuristic);
             orientCollidersMaxP.setMaxPathLength(this.maxPathLength);

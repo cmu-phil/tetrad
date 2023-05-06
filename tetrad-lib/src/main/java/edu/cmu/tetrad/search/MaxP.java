@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Joseph Ramsey
  * @see PcMax
  */
-public final class MaxPColliderOrientation {
+public final class MaxP {
     private final IndependenceTest independenceTest;
     private int depth = -1;
     private Knowledge knowledge = new Knowledge();
@@ -52,7 +52,7 @@ public final class MaxPColliderOrientation {
      *
      * @param test The test to use for orienting colliders using the Max-P rule.
      */
-    public MaxPColliderOrientation(IndependenceTest test) {
+    public MaxP(IndependenceTest test) {
         if (test == null) throw new NullPointerException();
         this.independenceTest = test;
     }
@@ -293,7 +293,7 @@ public final class MaxPColliderOrientation {
     private void orientCollider(Graph graph, Node a, Node b, Node c, PcAll.ConflictRule conflictRule) {
         if (this.knowledge.isForbidden(a.getName(), b.getName())) return;
         if (this.knowledge.isForbidden(c.getName(), b.getName())) return;
-        MaxPColliderOrientation.orientCollider(a, b, c, conflictRule, graph);
+        MaxP.orientCollider(a, b, c, conflictRule, graph);
     }
 
     // Returns true if there is an undirected path from x to either y or z within the given number of steps.
