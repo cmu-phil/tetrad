@@ -273,7 +273,7 @@ public final class GraphUtilsSearch {
     }
 
     /**
-     * Checks if an arrowpoint is allowed by background knowledge.
+     * Checks if an arrowhead is allowed by background knowledge.
      */
     public static boolean isArrowheadAllowed(Object from, Object to,
                                               Knowledge knowledge) {
@@ -374,11 +374,6 @@ public final class GraphUtilsSearch {
                 throw new IllegalArgumentException("That 'cpdag' contains a bidirected edge.");
             }
         }
-
-        // FGES with incoherent forbidden knowledge may produce a cycle
-//        if (graph.existsDirectedCycle()) {
-//            throw new IllegalArgumentException("That 'cpdag' contains a directed cycle.");
-//        }
 
         MeekRules rules = new MeekRules();
 
@@ -867,9 +862,9 @@ public final class GraphUtilsSearch {
     }
 
     /**
-     * Checks if an arrowpoint is allowed by background knowledge.
+     * Checks if an arrowhead is allowed by background knowledge.
      */
-    public static boolean isArrowpointAllowed1(Node from, Node to,
+    public static boolean isArrowheadAllowed1(Node from, Node to,
                                                Knowledge knowledge) {
         if (knowledge == null) {
             return true;
@@ -1212,7 +1207,7 @@ public final class GraphUtilsSearch {
     }
 
     /**
-     * Just counts arrowpoint errors--for cyclic edges counts an arrowpoint at
+     * Just counts arrowhead errors--for cyclic edges counts an arrowhead at
      * each node.
      */
     public static GraphUtils.GraphComparison getGraphComparison2(Graph graph, Graph trueGraph) {

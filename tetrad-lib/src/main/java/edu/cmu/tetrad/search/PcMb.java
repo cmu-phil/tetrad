@@ -823,11 +823,11 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
-        return PcMb.isArrowpointAllowed1(x, y, knowledge) &&
-                PcMb.isArrowpointAllowed1(z, y, knowledge);
+        return PcMb.isArrowheadAllowed1(x, y, knowledge) &&
+                PcMb.isArrowheadAllowed1(z, y, knowledge);
     }
 
-    private static boolean isArrowpointAllowed1(Node from, Node to,
+    private static boolean isArrowheadAllowed1(Node from, Node to,
                                                 Knowledge knowledge) {
         if (knowledge == null) {
             return true;

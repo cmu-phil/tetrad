@@ -114,21 +114,21 @@ public final class PcCommon implements GraphSearch {
 
 
     /**
-     * For the edge from*-*to, return true iff an arrowpoint is allowed as 'to'.
+     * For the edge from*-*to, return true iff an arrowhead is allowed as 'to'.
      *
      * @param from      the from edge.
      * @param to        the to edge.
      * @param knowledge the knowledge.
      * @return true iff an arrow point is allowed at 'to'.
      */
-    public static boolean isArrowpointAllowed1(Node from, Node to,
+    public static boolean isArrowheadAllowed1(Node from, Node to,
                                                Knowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     /**
-     * Checks if an arrowpoint is allowed by background knowledge.
+     * Checks if an arrowhead is allowed by background knowledge.
      */
     public static boolean isArrowheadAllowed(Object from, Object to,
                                               Knowledge knowledge) {
@@ -574,8 +574,8 @@ public final class PcCommon implements GraphSearch {
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
-        return PcCommon.isArrowpointAllowed1(x, y, knowledge) &&
-                PcCommon.isArrowpointAllowed1(z, y, knowledge);
+        return PcCommon.isArrowheadAllowed1(x, y, knowledge) &&
+                PcCommon.isArrowheadAllowed1(z, y, knowledge);
     }
 
     /**

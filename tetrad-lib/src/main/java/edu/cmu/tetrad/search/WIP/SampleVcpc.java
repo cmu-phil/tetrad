@@ -828,11 +828,11 @@ public final class SampleVcpc implements GraphSearch {
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
-        return SampleVcpc.isArrowpointAllowed1(x, y, knowledge) &&
-                SampleVcpc.isArrowpointAllowed1(z, y, knowledge);
+        return SampleVcpc.isArrowheadAllowed1(x, y, knowledge) &&
+                SampleVcpc.isArrowheadAllowed1(z, y, knowledge);
     }
 
-    public static boolean isArrowpointAllowed1(Node from, Node to,
+    public static boolean isArrowheadAllowed1(Node from, Node to,
                                                Knowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());

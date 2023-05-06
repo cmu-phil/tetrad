@@ -760,11 +760,11 @@ public final class SampleVcpcFast implements GraphSearch {
 
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
-        return SampleVcpcFast.isArrowpointAllowed1(x, y, knowledge) &&
-                SampleVcpcFast.isArrowpointAllowed1(z, y, knowledge);
+        return SampleVcpcFast.isArrowheadAllowed1(x, y, knowledge) &&
+                SampleVcpcFast.isArrowheadAllowed1(z, y, knowledge);
     }
 
-    public static boolean isArrowpointAllowed1(Node from, Node to,
+    public static boolean isArrowheadAllowed1(Node from, Node to,
                                                Knowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());

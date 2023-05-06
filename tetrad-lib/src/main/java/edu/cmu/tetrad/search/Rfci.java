@@ -560,11 +560,11 @@ public final class Rfci implements GraphSearch {
 
 
     /**
-     * Helper method. Appears to check if an arrowpoint is permitted by background knowledge.
+     * Helper method. Appears to check if an arrowhead is permitted by background knowledge.
      *
      * @param x The possible other node.
      * @param y The possible point node.
-     * @return Whether the arrowpoint is allowed.
+     * @return Whether the arrowhead is allowed.
      */
     private boolean isArrowheadAllowed(Node x, Node y) {
         if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {

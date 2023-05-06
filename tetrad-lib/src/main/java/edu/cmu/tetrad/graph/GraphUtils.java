@@ -515,7 +515,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Counts the arrowpoints that are in graph1 but not in graph2.
+     * Counts the arrowheads that are in graph1 but not in graph2.
      */
     public static int countArrowptErrors(Graph graph1, Graph graph2) {
         if (graph1 == null) {
