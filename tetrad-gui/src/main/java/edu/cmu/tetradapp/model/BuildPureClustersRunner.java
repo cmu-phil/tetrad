@@ -29,6 +29,10 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.WIP.BpcTetradPurifyWashdown;
 import edu.cmu.tetrad.search.WIP.Washdown;
+import edu.cmu.tetrad.search.bpc_utils.BpcAlgorithmType;
+import edu.cmu.tetrad.search.bpc_utils.BpcTestType;
+import edu.cmu.tetrad.search.Bpc;
+import edu.cmu.tetrad.search.bpc_utils.ClusterUtils;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
@@ -135,18 +139,18 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 
                 searchGraph = bpc.search();
             } else if (algorithm == BpcAlgorithmType.BUILD_PURE_CLUSTERS) {
-                BuildPureClusters bpc;
+                Bpc bpc;
                 DataModel source = getData();
 
                 BpcTestType testType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
 
                 if (source instanceof ICovarianceMatrix) {
-                    bpc = new BuildPureClusters((ICovarianceMatrix) source,
+                    bpc = new Bpc((ICovarianceMatrix) source,
                             getParams().getDouble("alpha", 0.001),
                             testType
                     );
                 } else if (source instanceof DataSet) {
-                    bpc = new BuildPureClusters(
+                    bpc = new Bpc(
                             (DataSet) source, getParams().getDouble("alpha", 0.001),
                             testType
                     );

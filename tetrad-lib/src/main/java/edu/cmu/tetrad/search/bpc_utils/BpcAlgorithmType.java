@@ -19,21 +19,37 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.bpc_utils;
 
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-
-import java.util.List;
+import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * An interface for Purify algorithm.
- * @author josephramsey
+ * An enumeration of the test types for BuildPureClusters, and Purify.
  */
-public interface IPurify {
-    List<List<Node>> purify(List<List<Node>> partition);
-    void setTrueGraph(Graph mim);
-}
+public enum BpcAlgorithmType implements TetradSerializable {
+    BUILD_PURE_CLUSTERS,
+    SIMPLIFIED_BPC_DEPTH_0,
+    SIMPLIFIED_BPC_DEPTH_1,
+    SIMPLIFIED_BPC,
+    TETRAD_PURIFY_WASHDOWN,
+    FIND_ONE_FACTOR_CLUSTERS,
+    FIND_TWO_FACTOR_CLUSTERS;
 
+    static final long serialVersionUID = 23L;
+
+    public static BpcAlgorithmType serializableInstance() {
+        return BpcAlgorithmType.BUILD_PURE_CLUSTERS;
+    }
+
+    public static BpcAlgorithmType[] getAlgorithmDescriptions() {
+        return new BpcAlgorithmType[]{
+                BpcAlgorithmType.BUILD_PURE_CLUSTERS,
+//                BpcAlgorithmType.SIMPLIFIED_BPC,
+                BpcAlgorithmType.TETRAD_PURIFY_WASHDOWN,
+//                BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS,
+//                BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS
+        };
+    }
+}
 
 

@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.bpc_utils.*;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
@@ -56,7 +57,7 @@ import java.util.*;
  *
  * @author Ricardo Silva
  */
-public final class BuildPureClusters {
+public final class Bpc {
     private boolean outputMessage;
 
     private ICovarianceMatrix covarianceMatrix;
@@ -88,8 +89,8 @@ public final class BuildPureClusters {
     /**
      * Constructor BuildPureClusters
      */
-    public BuildPureClusters(ICovarianceMatrix covarianceMatrix, double alpha,
-                             BpcTestType sigTestType) {
+    public Bpc(ICovarianceMatrix covarianceMatrix, double alpha,
+               BpcTestType sigTestType) {
         if (covarianceMatrix == null) {
             throw new IllegalArgumentException("Covariance matrix cannot be null.");
         }
@@ -98,7 +99,7 @@ public final class BuildPureClusters {
         initAlgorithm(alpha, sigTestType);
     }
 
-    public BuildPureClusters(DataSet dataSet, double alpha, BpcTestType sigTestType) {
+    public Bpc(DataSet dataSet, double alpha, BpcTestType sigTestType) {
         if (dataSet.isContinuous()) {
             this.dataSet = dataSet;
             this.covarianceMatrix = new CovarianceMatrix(dataSet);

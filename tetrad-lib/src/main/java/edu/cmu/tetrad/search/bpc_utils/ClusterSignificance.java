@@ -1,10 +1,12 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.bpc_utils;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Fas;
+import edu.cmu.tetrad.search.IndTestFisherZ;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -31,14 +33,14 @@ public class ClusterSignificance {
 
     private CheckType checkType = CheckType.Clique;
 
-    ClusterSignificance(List<Node> variables, DataModel dataModel) {
+    public ClusterSignificance(List<Node> variables, DataModel dataModel) {
         if (variables == null) throw new NullPointerException("Variable null.");
         if (dataModel == null) throw new NullPointerException("Data model null.");
         this.variables = variables;
         this.dataModel = dataModel;
     }
 
-    void printClusterPValues(Set<List<Integer>> out) {
+    public void printClusterPValues(Set<List<Integer>> out) {
         NumberFormat nf = new DecimalFormat("0.000");
 
         for (List<Integer> _out : out) {
@@ -55,7 +57,7 @@ public class ClusterSignificance {
         }
     }
 
-    static List<Node> variablesForIndices(List<Integer> cluster, List<Node> variables) {
+    public static List<Node> variablesForIndices(List<Integer> cluster, List<Node> variables) {
         List<Node> _cluster = new ArrayList<>();
 
         for (int c : cluster) {
@@ -65,7 +67,7 @@ public class ClusterSignificance {
         return _cluster;
     }
 
-    static List<List<Node>> variablesForIndices2(Set<List<Integer>> clusters, List<Node> _variables) {
+    public static List<List<Node>> variablesForIndices2(Set<List<Integer>> clusters, List<Node> _variables) {
         List<List<Node>> variables = new ArrayList<>();
 
         for (List<Integer> cluster : clusters) {
@@ -81,17 +83,17 @@ public class ClusterSignificance {
      * @param indices The indices of the variables.
      * @return The extracted index list.
      */
-    static List<Integer> getInts(int[] indices) {
+    public static List<Integer> getInts(int[] indices) {
         List<Integer> cluster = new ArrayList<>();
         for (int i : indices) cluster.add(i);
         return cluster;
     }
 
-    void setCheckType(CheckType checkType) {
+    public void setCheckType(CheckType checkType) {
         this.checkType = checkType;
     }
 
-    boolean significant(List<Integer> cluster, double alpha) {
+    public boolean significant(List<Integer> cluster, double alpha) {
         if (checkType == CheckType.None) {
             return true;
         } else if (checkType == CheckType.Significance) {
@@ -103,7 +105,7 @@ public class ClusterSignificance {
         }
     }
 
-    double getModelPValue(List<List<Integer>> clusters) {
+    public double getModelPValue(List<List<Integer>> clusters) {
         SemIm im = estimateModel(clusters);
         return im.getPValue();
     }

@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.bpc_utils;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
@@ -65,7 +65,7 @@ public class Purify {
     private CorrelationMatrix correlationMatrix;
     private DataSet dataSet;
     private Clusters clusters;
-    private List forbiddenList;
+    private List<Node> forbiddenList;
     private int numVars;
     private TetradTest tetradTest;
 
@@ -127,10 +127,6 @@ public class Purify {
         this.variables = tetradTest.getVariables();
     }
 
-    public void setForbiddenList(List forbiddenList) {
-        this.forbiddenList = forbiddenList;
-    }
-
     private void initAlgorithm(double sig, BpcTestType testType, Clusters clusters) {
         this.clusters = clusters;
         this.forbiddenList = null;
@@ -151,10 +147,6 @@ public class Purify {
         }
         this.numVars = this.tetradTest.getVarNames().length;
         this.outputMessage = true;
-    }
-
-    public void setOutputMessage(boolean outputMessage) {
-        this.outputMessage = outputMessage;
     }
 
     /**
@@ -182,7 +174,7 @@ public class Purify {
         {
             BpcTestType type = ((TetradTestContinuous) this.tetradTest).getTestType();
 //            type = TestType.TETRAD_BASED;
-            type = null;
+//            type = null;
 
             if (type == BpcTestType.TETRAD_BASED) {
                 IPurify purifier = new PurifyTetradBased(this.tetradTest);
@@ -200,7 +192,7 @@ public class Purify {
                 SemGraph semGraph3 = dummyPurification(getClusters());
                 return Purify.convertSearchGraph(semGraph3);
             } else {
-                List pureClusters;
+                List<int[]> pureClusters;
 //                if (constraintSearchVariation == 0) {
                 IPurify purifier = new PurifyTetradBased(this.tetradTest);
                 List<List<Node>> partition2 = purifier.purify(ClusterUtils.convertIntToList(getClusters(), this.tetradTest.getVariables()));
@@ -220,16 +212,16 @@ public class Purify {
     }
 
     private List<int[]> getClusters() {
-        List clusters = new ArrayList();
+        List<int[]> clusters = new ArrayList<>();
         String[] varNames = this.tetradTest.getVarNames();
         for (int i = 0; i < this.clusters.getNumClusters(); i++) {
-            List clusterS = this.clusters.getCluster(i);
+            List<String> clusterS = this.clusters.getCluster(i);
 
             int[] cluster = new int[clusterS.size()];
-            Iterator it = clusterS.iterator();
+            Iterator<String> it = clusterS.iterator();
             int count = 0;
             while (it.hasNext()) {
-                String nextName = (String) it.next();
+                String nextName = it.next();
                 for (int j = 0; j < varNames.length; j++) {
                     if (varNames[j].equals(nextName)) {
                         cluster[count++] = j;
@@ -245,12 +237,12 @@ public class Purify {
 
     public static Graph convertSearchGraph(SemGraph input) {
         if (input == null) {
-            List nodes = new ArrayList();
+            List<Node> nodes = new ArrayList<>();
             nodes.add(new GraphNode("No_model."));
             return new EdgeListGraph(nodes);
         }
-        List inputIndicators = new ArrayList();
-        List inputLatents = new ArrayList();
+        List<Node> inputIndicators = new ArrayList<>();
+        List<Node> inputLatents = new ArrayList<>();
         for (Node next : input.getNodes()) {
             if (next.getNodeType() == NodeType.MEASURED) {
                 inputIndicators.add(next);
@@ -259,7 +251,7 @@ public class Purify {
             }
 
         }
-        List allNodes = new ArrayList(inputIndicators);
+        List<Node> allNodes = new ArrayList<>(inputIndicators);
         allNodes.addAll(inputLatents);
         Graph output = new EdgeListGraph(allNodes);
 
@@ -269,12 +261,12 @@ public class Purify {
                 if (edge != null) {
                     if (node1.getNodeType() == NodeType.ERROR &&
                             node2.getNodeType() == NodeType.ERROR) {
-                        Iterator ci = input.getChildren(node1).iterator();
+                        Iterator<Node> ci = input.getChildren(node1).iterator();
                         Node indicator1 =
-                                (Node) ci.next(); //Assuming error nodes have only one children in SemGraphs...
+                                ci.next(); //Assuming error nodes have only one children in SemGraphs...
                         ci = input.getChildren(node2).iterator();
                         Node indicator2 =
-                                (Node) ci.next(); //Assuming error nodes have only one children in SemGraphs...
+                                ci.next(); //Assuming error nodes have only one children in SemGraphs...
                         if (indicator1.getNodeType() != NodeType.LATENT) {
                             output.setEndpoint(indicator1, indicator2,
                                     Endpoint.ARROW);
@@ -296,10 +288,10 @@ public class Purify {
 
         for (int i = 0; i < inputLatents.size() - 1; i++) {
             for (int j = i + 1; j < inputLatents.size(); j++) {
-                output.setEndpoint((Node) inputLatents.get(i),
-                        (Node) inputLatents.get(j), Endpoint.TAIL);
-                output.setEndpoint((Node) inputLatents.get(j),
-                        (Node) inputLatents.get(i), Endpoint.TAIL);
+                output.setEndpoint(inputLatents.get(i),
+                        inputLatents.get(j), Endpoint.TAIL);
+                output.setEndpoint(inputLatents.get(j),
+                        inputLatents.get(i), Endpoint.TAIL);
             }
         }
 
@@ -310,7 +302,7 @@ public class Purify {
      * ****************************************************** DEBUG UTILITIES *******************************************************
      */
 
-    private void printClustering(List clustering) {
+    private void printClustering(List<int[]> clustering) {
         for (Object o : clustering) {
             int[] c = (int[]) o;
             printCluster(c);
@@ -359,7 +351,7 @@ public class Purify {
         }
     }
 
-    private int sizeCluster(List cluster) {
+    private int sizeCluster(List<int[]> cluster) {
         int total = 0;
         for (Object o : cluster) {
             int[] next = (int[]) o;
@@ -374,7 +366,7 @@ public class Purify {
      * impure. If there is not, then it is treated as pure. This is virtually the original Purify as described in CPS.
      */
 
-    private List tetradBasedPurify(List partition) {
+    private List<int[]> tetradBasedPurify(List<int[]> partition) {
         boolean[] eliminated = new boolean[this.numVars];
         for (int i = 0; i < this.numVars; i++) {
             eliminated[i] = false;
@@ -407,7 +399,7 @@ public class Purify {
 
                 "------------------------------------------------------");
         printlnMessage("Output Measurement Model");
-        List output = buildSolution(partition, eliminated);
+        List<int[]> output = buildSolution(partition, eliminated);
         printClustering(output);
 
         return output;
@@ -428,9 +420,9 @@ public class Purify {
         List<Double> allPValues = new ArrayList<>();
         int numImpurities = 0;
 
-        Set[] failures = new Set[clusterSize];
+        Set<int[]>[] failures = new Set[clusterSize];
         for (int i = 0; i < clusterSize; i++) {
-            failures[i] = new HashSet();
+            failures[i] = new HashSet<>();
         }
 
         for (int i = 0; i < clusterSize - 3; i++) {
@@ -548,7 +540,7 @@ public class Purify {
                 if (eliminated[cluster[i]]) {
                     continue;
                 }
-                Set toRemove = new HashSet();
+                Set<int[]> toRemove = new HashSet<>();
                 for (Object o : failures[i]) {
                     int[] impurity = (int[]) o;
                     for (int j = 0; j < 4; j++) {
@@ -1033,8 +1025,8 @@ public class Purify {
         return n1;
     }
 
-    private List buildSolution(List partition, boolean[] eliminated) {
-        List solution = new ArrayList();
+    private List<int[]> buildSolution(List<int[]> partition, boolean[] eliminated) {
+        List<int[]> solution = new ArrayList<>();
         for (Object o : partition) {
             int[] next = (int[]) o;
             int[] draftArea = new int[next.length];

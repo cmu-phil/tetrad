@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.bpc_utils;
 
 import edu.cmu.tetrad.data.Clusters;
 import edu.cmu.tetrad.graph.*;
@@ -180,7 +180,7 @@ public class ClusterUtils {
 
     }
 
-    static void logClusters(Set<Set<Integer>> clusters, List<Node> variables) {
+    public static void logClusters(Set<Set<Integer>> clusters, List<Node> variables) {
         int num = 1;
         StringBuilder buf = new StringBuilder();
         buf.append("\nClusters:\n");

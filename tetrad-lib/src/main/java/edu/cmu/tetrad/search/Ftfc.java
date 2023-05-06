@@ -23,6 +23,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.bpc_utils.BpcTestType;
+import edu.cmu.tetrad.search.bpc_utils.ClusterUtils;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;

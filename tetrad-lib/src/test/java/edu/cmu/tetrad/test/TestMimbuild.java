@@ -29,6 +29,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.bpc_utils.BpcTestType;
+import edu.cmu.tetrad.search.Bpc;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -82,7 +84,7 @@ public class TestMimbuild {
                 final BpcTestType testType = BpcTestType.TETRAD_WISHART;
                 final BpcTestType purifyType = BpcTestType.TETRAD_BASED;
 
-                BuildPureClusters bpc = new BuildPureClusters(
+                Bpc bpc = new Bpc(
                         data, 0.001,
                         testType
                 );

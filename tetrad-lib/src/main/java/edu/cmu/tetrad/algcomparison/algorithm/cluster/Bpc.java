@@ -9,6 +9,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.bpc_utils.BpcTestType;
+import edu.cmu.tetrad.search.bpc_utils.ClusterSignificance;
+import edu.cmu.tetrad.search.bpc_utils.ClusterUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -50,7 +53,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
                 testType = BpcTestType.TETRAD_DELTA;
             }
 
-            BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType);
+            edu.cmu.tetrad.search.Bpc bpc = new edu.cmu.tetrad.search.Bpc(cov, alpha, testType);
 
             if (parameters.getInt(Params.CHECK_TYPE) == 1) {
                 bpc.setCheckType(ClusterSignificance.CheckType.Significance);
