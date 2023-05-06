@@ -34,24 +34,20 @@ import java.util.*;
  */
 public class PossibleDConnectingPath {
 
-
     /**
      * The pag we are searching in.
      */
     private final Graph pag;
-
 
     /**
      * The conditions.
      */
     private final Set<Node> conditions;
 
-
     /**
      * The path.
      */
     private final List<Node> path;
-
 
     private PossibleDConnectingPath(Graph p, Set<Node> conditions, List<Node> path) {
         if (p == null || conditions == null || path == null) {
@@ -62,9 +58,7 @@ public class PossibleDConnectingPath {
         this.pag = p;
     }
 
-
     //========================= Public methods ======================//
-
 
     public Graph getPag() {
         return this.pag;
@@ -270,7 +264,6 @@ public class PossibleDConnectingPath {
 
     }
 
-
     private static boolean isOpen(Graph pag, Node x, Node y, Node z) {
         Edge edge = pag.getEdge(x, y);
         if (edge.getEndpoint1() != Endpoint.CIRCLE || edge.getEndpoint2() != Endpoint.CIRCLE) {
@@ -279,7 +272,6 @@ public class PossibleDConnectingPath {
         edge = pag.getEdge(y, z);
         return edge.getEndpoint1() == Endpoint.CIRCLE && edge.getEndpoint2() == Endpoint.CIRCLE;
     }
-
 }
 
 

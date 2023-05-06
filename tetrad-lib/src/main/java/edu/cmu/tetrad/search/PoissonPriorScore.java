@@ -105,17 +105,10 @@ public class PoissonPriorScore implements Score {
 
     }
 
-    private int[] indices(List<Node> __adj) {
-        int[] indices = new int[__adj.size()];
-        for (int t = 0; t < __adj.size(); t++) indices[t] = this.variables.indexOf(__adj.get(t));
-        return indices;
-    }
-
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
-
 
     /**
      * @param i       The index of the node.
@@ -188,6 +181,11 @@ public class PoissonPriorScore implements Score {
         return this.dataSet;
     }
 
+    public void setLambda(double lambda) {
+        if (lambda < 1.0) throw new IllegalArgumentException("Structure prior can't be < 1: " + lambda);
+        this.lambda = lambda;
+    }
+
     private void setCovariances(ICovarianceMatrix covariances) {
         CorrelationMatrixOnTheFly correlations = new CorrelationMatrixOnTheFly(covariances);
         this.covariances = covariances;
@@ -215,13 +213,14 @@ public class PoissonPriorScore implements Score {
         this.N = covariances.getSampleSize();
     }
 
-    public void setLambda(double lambda) {
-        if (lambda < 1.0) throw new IllegalArgumentException("Structure prior can't be < 1: " + lambda);
-        this.lambda = lambda;
-    }
-
     private static double getP(int pn, int m0, double lambda) {
         return 2 - pow(1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda), (double) pn - m0);
+    }
+
+    private int[] indices(List<Node> __adj) {
+        int[] indices = new int[__adj.size()];
+        for (int t = 0; t < __adj.size(); t++) indices[t] = this.variables.indexOf(__adj.get(t));
+        return indices;
     }
 }
 

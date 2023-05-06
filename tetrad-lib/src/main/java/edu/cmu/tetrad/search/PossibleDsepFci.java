@@ -45,16 +45,10 @@ import java.util.List;
  * @author David Danks
  */
 public class PossibleDsepFci {
-
     private final Graph graph;
     private final IndependenceTest test;
-
     private final SepsetMap sepset;
     private int depth = -1;
-
-    /**
-     * The background knowledge.
-     */
     private Knowledge knowledge = new Knowledge();
     private int maxReachablePathLength = -1;
 
@@ -80,9 +74,6 @@ public class PossibleDsepFci {
 
         setMaxPathLength(this.maxReachablePathLength);
     }
-
-    //============================== Public Methods =========================//
-
 
     /**
      * Performs pairwise comparisons of each variable in the graph with the variables that have not already been
@@ -124,6 +115,35 @@ public class PossibleDsepFci {
         }
 
         return condSet;
+    }
+
+    public int getDepth() {
+        return this.depth;
+    }
+
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException(
+                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+        }
+
+        this.depth = depth;
+    }
+
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
+    public void setMaxPathLength(int maxReachablePathLength) {
+        if (maxReachablePathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxReachablePathLength);
+        }
+
+        this.maxReachablePathLength = maxReachablePathLength == -1 ? Integer.MAX_VALUE : maxReachablePathLength;
     }
 
     private List<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
@@ -196,34 +216,6 @@ public class PossibleDsepFci {
         return dsep;
     }
 
-    public int getDepth() {
-        return this.depth;
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + depth);
-        }
-
-        this.depth = depth;
-    }
-
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    public void setMaxPathLength(int maxReachablePathLength) {
-        if (maxReachablePathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxReachablePathLength);
-        }
-
-        this.maxReachablePathLength = maxReachablePathLength == -1 ? Integer.MAX_VALUE : maxReachablePathLength;
-    }
 }
 
 
