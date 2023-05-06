@@ -33,6 +33,8 @@ import java.util.List;
 
 /**
  * Calculates the BDeu score.
+ *
+ * @author josephramsey
  */
 public class BdeuScore implements DiscreteScore {
     private final int[][] data;
