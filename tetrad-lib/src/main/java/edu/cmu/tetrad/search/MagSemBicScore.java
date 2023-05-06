@@ -28,9 +28,13 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
+import javax.help.UnsupportedOperationException;
 import java.util.*;
 
 /**
+ * This ia BIC score for a linear, Gaussian MAG (Mixed Ancestral Graph). It
+ * will perform the same as SemBicScore for DAGs.
+ *
  * @author Bryan Andrews
  */
 public class MagSemBicScore implements Score {
@@ -41,6 +45,11 @@ public class MagSemBicScore implements Score {
 
     private List<Node> order;
 
+    /**
+     * Constructor.
+     *
+     * @param covariances The covarainces to analyze.
+     */
     public MagSemBicScore(ICovarianceMatrix covariances) {
         if (covariances == null) {
             throw new NullPointerException();
@@ -51,6 +60,11 @@ public class MagSemBicScore implements Score {
         this.order = null;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param dataSet The continuous dataset to analyze.
+     */
     public MagSemBicScore(DataSet dataSet) {
         if (dataSet == null) {
             throw new NullPointerException();
@@ -61,30 +75,63 @@ public class MagSemBicScore implements Score {
         this.order = null;
     }
 
+    /**
+     * Returns the wrapped MAG.
+     *
+     * @return This MAG.
+     */
     public Graph getMag() {
         return this.mag;
     }
 
+    /**
+     * Sets the MAG to wrap.
+     *
+     * @param mag This MAG.
+     */
     public void setMag(Graph mag) {
         this.mag = mag;
     }
 
+    /**
+     * Sets the MAG to null.
+     */
     public void resetMag() {
         this.mag = null;
     }
 
+    /**
+     * Returns the order.
+     *
+     * @return The order of variables, a list.
+     */
     public List<Node> getOrder() {
         return this.order;
     }
 
+    /**
+     * Sets the order.
+     *
+     * @param order The order of variables, a list.
+     */
     public void setOrder(List<Node> order) {
         this.order = order;
     }
 
+    /**
+     * Sets the order ot null.
+     */
     public void resetOrder() {
         this.order = null;
     }
 
+    /**
+     * Return the BIC score for a node given its parents.
+     *
+     * @param i  The index of the node.
+     * @param js The indices of the node's parents.
+     * @return The BIC score.
+     */
     @Override
     public double localScore(int i, int... js) {
         if (this.mag == null || this.order == null) {
@@ -149,44 +196,80 @@ public class MagSemBicScore implements Score {
         return score;
     }
 
-
+    /**
+     * @return The penalty discount, a multiplier on the penalty term of BIC.
+     */
     public double getPenaltyDiscount() {
         return this.score.getPenaltyDiscount();
     }
 
+    /**
+     * Seets the penalty discount.
+     *
+     * @param penaltyDiscount This number, a multiplier on the penalty term of BIC.
+     */
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.score.setPenaltyDiscount(penaltyDiscount);
     }
 
-
+    /**
+     * @return localScore(y | z, x) - localScore(y | z).
+     */
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
+    /**
+     * Returns the sample size.
+     *
+     * @return This size.
+     */
     @Override
     public int getSampleSize() {
         return this.score.getSampleSize();
     }
 
+    /**
+     * Returns the list of variables.
+     *
+     * @return This list.
+     */
     @Override
     public List<Node> getVariables() {
         return this.score.getVariables();
     }
 
+    /**
+     * Returns a judgment for FGES as to whether an edges with this bump
+     * (for this score) counts as an effect edge.
+     *
+     * @param bump Ths bump.
+     * @return The judgment.
+     * @see Fges
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;
     }
 
+    /**
+     * Returns a judgment of the max degree needed for this score.
+     *
+     * @return This max.
+     * @see Fges
+     */
     @Override
     public int getMaxDegree() {
         return this.score.getMaxDegree();
     }
 
+    /**
+     * @throws UnsupportedOperationException Not implemented.
+     */
     @Override
     public boolean determines(List<Node> z, Node y) {
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     private void constructHeadsTails(List<List<Node>> heads, List<Set<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1) {
