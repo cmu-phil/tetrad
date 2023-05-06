@@ -27,33 +27,16 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 
 /**
- * Replaces the FAS search in the previous version with GES followed by PC adjacency removals for more accuracy.
- * Uses conservative collider orientation. Gets sepsets for X---Y from among adjacents of X or of Y. -jdramsey 3/10/2015
- * <p>
- * Following an idea of Spirtes, now it uses more of the information in GES, to calculating possible dsep paths and to
- * utilize unshielded colliders found by GES. 5/31/2015
- * <p>
- * Previous:
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in Fci.java) with Jiji Zhang's
- * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
- * Insufficient Systems").
- * <p>
- * This class is based off a copy of Fci.java taken from the repository on 2008/12/16, revision 7306. The extension is
- * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * Adapts GFCI to the SVAR case.
  *
- * @author Erin Korber, June 2004
- * @author Alex Smith, December 2008
- * @author Joseph Ramsey
- * @author Choh-Man Teng
  * @author Daniel Malinsky
+ * @see GFci
  */
 public final class SvarGfci implements GraphSearch {
 
@@ -63,16 +46,11 @@ public final class SvarGfci implements GraphSearch {
     // The background knowledge.
     private Knowledge knowledge = new Knowledge();
 
-    // The variables to search over (optional)
-
     // The conditional independence test.
     private IndependenceTest independenceTest;
 
     // Flag for complete rule set, true if one should use complete rule set, false otherwise.
     private boolean completeRuleSetUsed;
-
-    // True iff the possible dsep search is done.
-//    private boolean possibleDsepSearchDone = true;
 
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
@@ -89,9 +67,6 @@ public final class SvarGfci implements GraphSearch {
     // The covariance matrix being searched over. Assumes continuous data.
     ICovarianceMatrix covarianceMatrix;
 
-    // The sample size.
-    int sampleSize;
-
     // The penalty discount for the GES search. By default, 2.
     private double penaltyDiscount = 2;
 
@@ -100,9 +75,6 @@ public final class SvarGfci implements GraphSearch {
 
     // The structure prior for the Bdeu score (discrete data).
     private double structurePrior = 1;
-
-    // The print stream that output is directed to.
-    private PrintStream out = System.out;
 
     // True iff one-edge faithfulness is assumed. Speed up the algorith for very large searches.
     // By default, false.
@@ -122,28 +94,22 @@ public final class SvarGfci implements GraphSearch {
         if (score == null) {
             throw new NullPointerException();
         }
-        this.sampleSize = score.getSampleSize();
         this.score = score;
         this.independenceTest = test;
     }
 
-    //========================PUBLIC METHODS==========================//
-
-
     public Graph search() {
-
-
         this.logger.log("info", "Starting svarGFCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        this.logger.log("info", "Independence test = " + this.independenceTest + ".");
 
         this.graph = new EdgeListGraph(independenceTest.getVariables());
 
         if (this.score == null) {
-            setScore();
+            chooseScore();
         }
 
         TsFges fges = new TsFges(this.score);
-        fges.setKnowledge(getKnowledge());
+        fges.setKnowledge(this.knowledge);
         fges.setVerbose(this.verbose);
         fges.setNumCPDAGsToStore(0);
         fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
@@ -184,7 +150,7 @@ public final class SvarGfci implements GraphSearch {
         modifiedR0(fgesGraph);
 
         SvarFciOrient fciOrient = new SvarFciOrient(this.sepsets, this.independenceTest);
-        fciOrient.setKnowledge(getKnowledge());
+        fciOrient.setKnowledge(this.knowledge);
         fciOrient.setCompleteRuleSetUsed(this.completeRuleSetUsed);
         fciOrient.setMaxPathLength(this.maxPathLength);
         fciOrient.doFinalOrientation(this.graph);
@@ -194,9 +160,72 @@ public final class SvarGfci implements GraphSearch {
         return this.graph;
     }
 
-    private void setScore() {
-        this.sampleSize = this.independenceTest.getSampleSize();
-        double penaltyDiscount = getPenaltyDiscount();
+    public void setMaxIndegree(int maxIndegree) {
+        if (maxIndegree < -1) {
+            throw new IllegalArgumentException(
+                    "Depth must be -1 (unlimited) or >= 0: " + maxIndegree);
+        }
+
+        this.maxIndegree = maxIndegree;
+    }
+
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge == null) {
+            throw new NullPointerException();
+        }
+
+        this.knowledge = knowledge;
+    }
+
+    /**
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
+     *                            set of the original FCI) should be used. False by default.
+     */
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
+    }
+
+    /**
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     */
+    public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
+        this.maxPathLength = maxPathLength;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
+    public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
+        this.covarianceMatrix = covarianceMatrix;
+    }
+
+    public void setIndependenceTest(IndependenceTest independenceTest) {
+        this.independenceTest = independenceTest;
+    }
+
+    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
+        this.faithfulnessAssumed = faithfulnessAssumed;
+    }
+
+    public void setSamplePrior(double samplePrior) {
+        this.samplePrior = samplePrior;
+    }
+
+    public void setStructurePrior(double structurePrior) {
+        this.structurePrior = structurePrior;
+    }
+
+    private void chooseScore() {
+        double penaltyDiscount = this.penaltyDiscount;
 
         DataSet dataSet = (DataSet) this.independenceTest.getData();
         ICovarianceMatrix cov = this.independenceTest.getCov();
@@ -226,21 +255,8 @@ public final class SvarGfci implements GraphSearch {
         this.score = score;
     }
 
-    public int getMaxIndegree() {
-        return this.maxIndegree;
-    }
-
-    public void setMaxIndegree(int maxIndegree) {
-        if (maxIndegree < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + maxIndegree);
-        }
-
-        this.maxIndegree = maxIndegree;
-    }
-
     // Due to Spirtes.
-    public void modifiedR0(Graph fgesGraph) {
+    private void modifiedR0(Graph fgesGraph) {
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
 
@@ -283,108 +299,6 @@ public final class SvarGfci implements GraphSearch {
             }
         }
     }
-
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
-    }
-
-    /**
-     * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
-     * should be used. False by default.
-     */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
-    }
-
-    /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. False by default.
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * @return the maximum length of any discriminating path, or -1 of unlimited.
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength;
-    }
-
-    /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * The independence test.
-     */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
-    }
-
-    public double getPenaltyDiscount() {
-        return this.penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public ICovarianceMatrix getCovMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public ICovarianceMatrix getCovarianceMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
-        this.covarianceMatrix = covarianceMatrix;
-    }
-
-    public PrintStream getOut() {
-        return this.out;
-    }
-
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    public void setIndependenceTest(IndependenceTest independenceTest) {
-        this.independenceTest = independenceTest;
-    }
-
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
-    }
-
-    //===========================================PRIVATE METHODS=======================================//
 
     /**
      * Orients according to background knowledge
@@ -437,12 +351,28 @@ public final class SvarGfci implements GraphSearch {
         this.logger.log("info", "Finishing BK Orientation.");
     }
 
-    public void setSamplePrior(double samplePrior) {
-        this.samplePrior = samplePrior;
+    private String getNameNoLag(Object obj) {
+        String tempS = obj.toString();
+        if (tempS.indexOf(':') == -1) {
+            return tempS;
+        } else return tempS.substring(0, tempS.indexOf(':'));
     }
 
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
+    private void removeSimilarEdges(Node x, Node y) {
+        List<List<Node>> simList = returnSimilarPairs(x, y);
+        if (simList.isEmpty()) return;
+        List<Node> x1List = simList.get(0);
+        List<Node> y1List = simList.get(1);
+        Iterator<Node> itx = x1List.iterator();
+        Iterator<Node> ity = y1List.iterator();
+        while (itx.hasNext() && ity.hasNext()) {
+            Node x1 = itx.next();
+            Node y1 = ity.next();
+            System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
+            System.out.println("removing edge between x = " + x1 + " and y = " + y1);
+            Edge oldxy = this.graph.getEdge(x1, y1);
+            this.graph.removeEdge(oldxy);
+        }
     }
 
     private void orientSimilarPairs(Graph graph, Knowledge knowledge, Node x, Node y) {
@@ -502,13 +432,6 @@ public final class SvarGfci implements GraphSearch {
             }
         }
 
-    }
-
-    public String getNameNoLag(Object obj) {
-        String tempS = obj.toString();
-        if (tempS.indexOf(':') == -1) {
-            return tempS;
-        } else return tempS.substring(0, tempS.indexOf(':'));
     }
 
     // returnSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
@@ -583,24 +506,6 @@ public final class SvarGfci implements GraphSearch {
         pairList.add(simListY);
         return (pairList);
     }
-
-    public void removeSimilarEdges(Node x, Node y) {
-        List<List<Node>> simList = returnSimilarPairs(x, y);
-        if (simList.isEmpty()) return;
-        List<Node> x1List = simList.get(0);
-        List<Node> y1List = simList.get(1);
-        Iterator<Node> itx = x1List.iterator();
-        Iterator<Node> ity = y1List.iterator();
-        while (itx.hasNext() && ity.hasNext()) {
-            Node x1 = itx.next();
-            Node y1 = ity.next();
-            System.out.println("$$$$$$$$$$$ similar pair x,y = " + x1 + ", " + y1);
-            System.out.println("removing edge between x = " + x1 + " and y = " + y1);
-            Edge oldxy = this.graph.getEdge(x1, y1);
-            this.graph.removeEdge(oldxy);
-        }
-    }
-
 }
 
 

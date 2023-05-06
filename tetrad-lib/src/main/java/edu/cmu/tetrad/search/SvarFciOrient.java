@@ -64,14 +64,9 @@ public final class SvarFciOrient {
     private boolean changeFlag = true;
 
     /**
-     * flag for complete rule set, true if should use complete rule set, false otherwise.
+     * flag for complete rule set, true if one should use complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed;
-
-    /**
-     * True iff the possible dsep search is done.
-     */
-    private boolean possibleDsepSearchDone = true;
 
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
@@ -101,8 +96,6 @@ public final class SvarFciOrient {
         this.sepsets = sepsets;
         this.independenceTest = independenceTest;
     }
-
-    //========================PUBLIC METHODS==========================//
 
     public Graph orient(Graph graph) {
 
@@ -163,10 +156,6 @@ public final class SvarFciOrient {
 
     //===========================PRIVATE METHODS=========================//
 
-    private List<Node> getSepset(Node i, Node k) {
-        return this.sepsets.getSepset(i, k);
-    }
-
     /**
      * Orients colliders in the graph.  (FCI Step C)
      * <p>
@@ -205,11 +194,11 @@ public final class SvarFciOrient {
                 }
 
                 if (this.sepsets.isUnshieldedCollider(a, b, c)) {
-                    if (!isArrowpointAllowed(a, b, graph)) {
+                    if (isArrowheadDisallowed(a, b, graph)) {
                         continue;
                     }
 
-                    if (!isArrowpointAllowed(c, b, graph)) {
+                    if (isArrowheadDisallowed(c, b, graph)) {
                         continue;
                     }
 
@@ -218,8 +207,6 @@ public final class SvarFciOrient {
                     if (this.verbose) {
                         this.logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg(a, b, c));
                         System.out.println(SearchLogUtils.colliderOrientedMsg(a, b, c));
-                        final String location = "R0";
-
                         printWrongColliderMessage(a, b, c, graph);
                     }
                     this.orientSimilarPairs(graph, this.knowledge, a, b, Endpoint.ARROW);
@@ -335,7 +322,7 @@ public final class SvarFciOrient {
                 Node A = adj.get(combination[0]);
                 Node C = adj.get(combination[1]);
 
-                //choice gen doesnt do diff orders, so must switch A & C around.
+                //choice gen doesn't do diff orders, so must switch A & C around.
                 ruleR1(A, B, C, graph);
                 ruleR1(C, B, A, graph);
                 ruleR2(A, B, C, graph);
@@ -352,7 +339,7 @@ public final class SvarFciOrient {
         }
 
         if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-            if (!isArrowpointAllowed(b, c, graph)) {
+            if (isArrowheadDisallowed(b, c, graph)) {
                 return;
             }
 
@@ -369,10 +356,6 @@ public final class SvarFciOrient {
         }
     }
 
-    private boolean isNoncollider(Node a, Node b, Node c) {
-        return this.sepsets.isUnshieldedNoncollider(a, b, c);
-    }
-
     //if a*-oc and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c
     // This is Zhang's rule R2.
     private void ruleR2(Node a, Node b, Node c, Graph graph) {
@@ -384,7 +367,7 @@ public final class SvarFciOrient {
                     (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
                             (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
 
-                if (!isArrowpointAllowed(a, c, graph)) {
+                if (isArrowheadDisallowed(a, c, graph)) {
                     return;
                 }
 
@@ -443,7 +426,7 @@ public final class SvarFciOrient {
                         continue;
                     }
 
-                    if (!isArrowpointAllowed(D, B, graph)) {
+                    if (isArrowheadDisallowed(D, B, graph)) {
                         continue;
                     }
 
@@ -460,146 +443,6 @@ public final class SvarFciOrient {
         }
     }
 
-
-    /**
-     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
-     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
-     * <pre>
-     *          B
-     *         xo           x is either an arrowhead or a circle
-     *        /  \
-     *       v    v
-     * L....A --> C
-     * </pre>
-     * <p>
-     * This is Zhang's rule R4, discriminating undirectedPaths.
-     */
-    private void ruleR4A(Graph graph) {
-        List<Node> nodes = graph.getNodes();
-
-        for (Node b : nodes) {
-
-            //potential A and C candidate pairs are only those
-            // that look like this:   A&lt;-*Bo-*C
-            List<Node> possA = graph.getNodesOutTo(b, Endpoint.ARROW);
-            List<Node> possC = graph.getNodesInTo(b, Endpoint.CIRCLE);
-
-            for (Node a : possA) {
-                for (Node c : possC) {
-                    if (!graph.isParentOf(a, c)) {
-                        continue;
-                    }
-
-                    if (graph.getEndpoint(b, c) != Endpoint.ARROW) {
-                        continue;
-                    }
-
-                    LinkedList<Node> reachable = new LinkedList<>();
-                    reachable.add(a);
-
-                    if (this.verbose) {
-                        System.out.println("Found CPDAG " + a + " " + b + " " + c);
-                        reachablePathFind(a, b, c, reachable, graph);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of
-     * a DDP consists of colliders that are parents of c.
-     */
-    private void reachablePathFind(Node a, Node b, Node c,
-                                   LinkedList<Node> reachable, Graph graph) {
-
-        Set<Node> cParents = new HashSet<>(graph.getParents(c));
-
-        // Needed to avoid cycles in failure case.
-        Set<Node> visited = new HashSet<>();
-        visited.add(b);
-        visited.add(c);
-
-        Node e = reachable.getFirst();
-        int distance = 0;
-
-        // We don't want to include a,b,or c on the path, so they are added to
-        // the "visited" set.  b and c are added explicitly here; a will be
-        // added in the first while iteration.
-        while (reachable.size() > 0) {
-            Node x = reachable.removeFirst();
-            visited.add(x);
-
-            if (e == x) {
-                e = x;
-                distance++;
-
-                int _maxPathLength = this.maxPathLength == -1 ? 1000 : this.maxPathLength;
-
-                if (distance > 0 && distance > _maxPathLength) {
-                    continue;
-                }
-            }
-
-            // Possible DDP path endpoints.
-            List<Node> pathExtensions = graph.getNodesInTo(x, Endpoint.ARROW);
-            pathExtensions.removeAll(visited);
-
-            for (Node d : pathExtensions) {
-                // If d is reachable and not adjacent to c, its a DDP
-                // endpoint, so do DDP orientation. Otherwise, if d &lt;-> c,
-                // add d to the list of reachable nodes.
-                if (!graph.isAdjacentTo(d, c)) {
-                    // Check whether <a, b, c> should be reoriented given
-                    // that d is not adjacent to c; if so, orient and stop.
-                    doDdpOrientation(d, a, b, c, graph);
-                    return;
-                } else if (cParents.contains(d)) {
-                    if (graph.getEndpoint(x, d) == Endpoint.ARROW) {
-                        reachable.add(d);
-
-                        // RFCI: only record the next node of the first (shortest) occurrence
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Orients the edges inside the definte discriminating path triangle. Takes the left endpoint, and a,b,c as
-     * arguments.
-     */
-    private void doDdpOrientation(Node d, Node a, Node b, Node c, Graph graph) {
-        List<Node> sepset = getSepset(d, c);
-
-        if (sepset == null) return;
-
-        if (sepset.contains(b)) {
-            graph.setEndpoint(c, b, Endpoint.TAIL);
-            this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
-            if (this.verbose) {
-                this.logger.log("impliedOrientations", SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
-                System.out.println(SearchLogUtils.edgeOrientedMsg("Definite discriminating path d = " + d, graph.getEdge(b, c)));
-            }
-
-        } else {
-            if (!isArrowpointAllowed(a, b, graph)) {
-                return;
-            }
-
-            if (!isArrowpointAllowed(c, b, graph)) {
-                return;
-            }
-
-            graph.setEndpoint(a, b, Endpoint.ARROW);
-            graph.setEndpoint(c, b, Endpoint.ARROW);
-            this.orientSimilarPairs(graph, this.getKnowledge(), a, b, Endpoint.ARROW);
-            this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.ARROW);
-            this.logger.log("colliderOrientations", SearchLogUtils.colliderOrientedMsg("Definite discriminating path.. d = " + d, a, b, c));
-        }
-        this.changeFlag = true;
-    }
 
     /**
      * The triangles that must be oriented this way (won't be done by another rule) all look like
@@ -700,7 +543,7 @@ public final class SvarFciOrient {
     }
 
     /**
-     * Orients the edges inside the definte discriminating path triangle. Takes the left endpoint, and a,b,c as
+     * Orients the edges inside the definite discriminating path triangle. Takes the left endpoint, and a,b,c as
      * arguments.
      */
     private boolean doDdpOrientation(Node d, Node a, Node b, Node c, Map<Node, Node> previous, Graph graph) {
@@ -747,11 +590,11 @@ public final class SvarFciOrient {
             }
 
         } else {
-            if (!isArrowpointAllowed(a, b, graph)) {
+            if (isArrowheadDisallowed(a, b, graph)) {
                 return false;
             }
 
-            if (!isArrowpointAllowed(c, b, graph)) {
+            if (isArrowheadDisallowed(c, b, graph)) {
                 return false;
             }
 
@@ -767,19 +610,6 @@ public final class SvarFciOrient {
         }
         this.changeFlag = true;
         return true;
-    }
-
-    private void printDdp(Node d, List<Node> path, Node a, Node b, Node c, Graph graph) {
-        List<Node> nodes = new ArrayList<>();
-        nodes.add(d);
-        nodes.addAll(path);
-        nodes.add(a);
-        nodes.add(b);
-        nodes.add(c);
-
-        if (this.verbose) {
-            System.out.println("DDP subgraph = " + graph.subgraph(nodes));
-        }
     }
 
     private List<Node> getPath(Node c, Map<Node, Node> previous) {
@@ -1045,7 +875,7 @@ public final class SvarFciOrient {
      *
      * @param a The node A.
      * @param c The node C.
-     * @return Whether or not R8 was successfully applied.
+     * @return Whether R8 was successfully applied.
      */
     private boolean ruleR8(Node a, Node c, Graph graph) {
         List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
@@ -1083,7 +913,7 @@ public final class SvarFciOrient {
      *
      * @param a The node A.
      * @param c The node C.
-     * @return Whether or not R9 was succesfully applied.
+     * @return Whether R9 was successfully applied.
      */
     private boolean ruleR9(Node a, Node c, Graph graph) {
         List<List<Node>> ucPdPsToC = getUcPdPaths(a, c, graph);
@@ -1115,9 +945,8 @@ public final class SvarFciOrient {
      *
      * @param a The node A.
      * @param c The node C.
-     * @return Whether or not R10 was successfully applied.
      */
-    private boolean ruleR10(Node a, Node c, Graph graph) {
+    private void ruleR10(Node a, Node c, Graph graph) {
         List<Node> intoCArrows = graph.getNodesInTo(c, Endpoint.ARROW);
 
         for (Node b : intoCArrows) {
@@ -1148,13 +977,12 @@ public final class SvarFciOrient {
                         graph.setEndpoint(c, a, Endpoint.TAIL);
                         this.changeFlag = true;
                         this.orientSimilarPairs(graph, this.getKnowledge(), c, a, Endpoint.TAIL);
-                        return true;
+                        return;
                     }
                 }
             }
         }
 
-        return false;
     }
 
     /**
@@ -1214,39 +1042,31 @@ public final class SvarFciOrient {
 
 
     /**
-     * Helper method. Appears to check if an arrowpoint is permitted by background knowledge.
+     * Helper method. Appears to check if an arrowhead is permitted by background knowledge.
      *
      * @param x The possible other node.
      * @param y The possible point node.
-     * @return Whether the arrowpoint is allowed.
+     * @return Whether the arrowhead is allowed.
      */
-    private boolean isArrowpointAllowed(Node x, Node y, Graph graph) {
+    private boolean isArrowheadDisallowed(Node x, Node y, Graph graph) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
-
-        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
             return false;
         }
 
+        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
+            return true;
+        }
+
         if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            return true; // changed by DMalinsky 02/11/2019, if already an arrowhead at x, arrowpoint is allowed at y
+            return false; // changed by DMalinsky 02/11/2019, if already an arrowhead at x, arrowhead is allowed at y
 //            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
         }
 
         if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
+            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return false;
         }
 
-        return graph.getEndpoint(y, x) == Endpoint.CIRCLE;
-    }
-
-    public boolean isPossibleDsepSearchDone() {
-        return this.possibleDsepSearchDone;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
+        return graph.getEndpoint(y, x) != Endpoint.CIRCLE;
     }
 
     /**
@@ -1289,17 +1109,6 @@ public final class SvarFciOrient {
         return this.truePag;
     }
 
-    public void setChangeFlag(boolean changeFlag) {
-        this.changeFlag = changeFlag;
-    }
-
-    /**
-     * change flag for repeat rules
-     */
-    public boolean isChangeFlag() {
-        return this.changeFlag;
-    }
-
     private void orientSimilarPairs(Graph graph, Knowledge knowledge, Node x, Node y, Endpoint mark) {
         if (x.getName().equals("time") || y.getName().equals("time")) {
             return;
@@ -1311,9 +1120,9 @@ public final class SvarFciOrient {
         int tier_diff = FastMath.max(indx_tier, indy_tier) - FastMath.min(indx_tier, indy_tier);
         int indx_comp = -1;
         int indy_comp = -1;
-        List tier_x = knowledge.getTier(indx_tier);
+        List<String> tier_x = knowledge.getTier(indx_tier);
 //        Collections.sort(tier_x);
-        List tier_y = knowledge.getTier(indy_tier);
+        List<String> tier_y = knowledge.getTier(indy_tier);
 //        Collections.sort(tier_y);
 
         int i;
@@ -1341,12 +1150,12 @@ public final class SvarFciOrient {
             String B;
             Node y1;
             if (indx_tier >= indy_tier) {
-                List tmp_tier1 = knowledge.getTier(i + tier_diff);
+                List<String> tmp_tier1 = knowledge.getTier(i + tier_diff);
 //                Collections.sort(tmp_tier1);
-                List tmp_tier2 = knowledge.getTier(i);
+                List<String> tmp_tier2 = knowledge.getTier(i);
 //                Collections.sort(tmp_tier2);
-                A = (String) tmp_tier1.get(indx_comp);
-                B = (String) tmp_tier2.get(indy_comp);
+                A = tmp_tier1.get(indx_comp);
+                B = tmp_tier2.get(indy_comp);
                 if (A.equals(B)) continue;
                 if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
                 if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
@@ -1358,8 +1167,6 @@ public final class SvarFciOrient {
                     graph.setEndpoint(x1, y1, mark);
                     System.out.println(" by structure knowledge as: " + graph.getEdge(x1, y1).toString());
                 }
-            } else {
-//                System.out.println("############## WARNING (orientSimilarPairs): did not catch x,y pair " + x + ", " + y);
             }
         }
 
