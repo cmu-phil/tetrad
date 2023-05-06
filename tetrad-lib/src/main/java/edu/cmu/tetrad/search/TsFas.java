@@ -44,7 +44,7 @@ import java.util.*;
 public class TsFas implements IFas {
 
     /**
-     * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
+     * The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node
      * x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
      */
     private final Graph graph;
@@ -75,8 +75,6 @@ public class TsFas implements IFas {
      */
     private final TetradLogger logger = TetradLogger.getInstance();
 
-    private int numIndependenceJudgements;
-
     /**
      * The sepsets found during the search.
      */
@@ -95,14 +93,6 @@ public class TsFas implements IFas {
     private boolean verbose;
 
     private PrintStream out = System.out;
-
-    /**
-     * Constructs a new FastAdjacencySearch.
-     */
-    public TsFas(Graph graph, IndependenceTest test) {
-        this.graph = graph;
-        this.test = test;
-    }
 
     /**
      * Constructs a new FastAdjacencySearch.
@@ -333,10 +323,6 @@ public class TsFas implements IFas {
                     independent = false;
                 }
 
-                if (independent) {
-                    this.numIndependenceJudgements++;
-                }
-
                 boolean noEdgeRequired =
                         this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
@@ -466,10 +452,6 @@ public class TsFas implements IFas {
                             independent = test.checkIndependence(x, y, condSet).isIndependent();
                         } catch (Exception e) {
                             independent = false;
-                        }
-
-                        if (independent) {
-                            this.numIndependenceJudgements++;
                         }
 
                         boolean noEdgeRequired =
@@ -691,17 +673,17 @@ public class TsFas implements IFas {
             Node x1;
             String B;
             Node y1;
+            List<String> tmp_tier1;
+            List<String> tmp_tier2;
             if (indx_tier >= indy_tier) {
-                List<String> tmp_tier1 = this.knowledge.getTier(i + tier_diff);
-                List<String> tmp_tier2 = this.knowledge.getTier(i);
-                A = tmp_tier1.get(indx_comp);
-                B = tmp_tier2.get(indy_comp);
+                tmp_tier1 = this.knowledge.getTier(i + tier_diff);
+                tmp_tier2 = this.knowledge.getTier(i);
             } else {
-                List<String> tmp_tier1 = this.knowledge.getTier(i);
-                List<String> tmp_tier2 = this.knowledge.getTier(i + tier_diff);
-                A = tmp_tier1.get(indx_comp);
-                B = tmp_tier2.get(indy_comp);
+                tmp_tier1 = this.knowledge.getTier(i);
+                tmp_tier2 = this.knowledge.getTier(i + tier_diff);
             }
+            A = tmp_tier1.get(indx_comp);
+            B = tmp_tier2.get(indy_comp);
             if (A.equals(B)) continue;
             if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
             if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;
