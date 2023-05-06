@@ -13,7 +13,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.TsUtils;
+import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -21,7 +21,7 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.GraphUtilsSearch.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 
 /**
  * RFCI.

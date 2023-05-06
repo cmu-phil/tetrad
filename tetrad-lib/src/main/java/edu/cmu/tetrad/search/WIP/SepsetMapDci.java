@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search.WIP;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.SepsetMap;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

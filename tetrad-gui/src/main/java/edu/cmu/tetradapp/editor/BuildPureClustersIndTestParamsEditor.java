@@ -21,8 +21,8 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.search.bpc_utils.BpcAlgorithmType;
-import edu.cmu.tetrad.search.bpc_utils.BpcTestType;
+import edu.cmu.tetrad.search.utils.BpcAlgorithmType;
+import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 

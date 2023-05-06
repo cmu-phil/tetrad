@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.DeltaSextadTest;
-import edu.cmu.tetrad.search.Sextad;
+import edu.cmu.tetrad.search.utils.Sextad;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;

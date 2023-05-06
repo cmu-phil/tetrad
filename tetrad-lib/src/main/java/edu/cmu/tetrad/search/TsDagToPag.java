@@ -23,6 +23,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.DagSepsets;
+import edu.cmu.tetrad.search.utils.DagToPag;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;

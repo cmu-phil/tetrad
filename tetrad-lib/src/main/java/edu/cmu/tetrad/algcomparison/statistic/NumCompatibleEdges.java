@@ -4,7 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 
 import static edu.cmu.tetrad.graph.GraphUtils.compatible;
 

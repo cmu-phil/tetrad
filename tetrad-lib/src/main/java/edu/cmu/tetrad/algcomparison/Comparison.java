@@ -41,7 +41,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 import org.reflections.Reflections;

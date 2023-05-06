@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.search.BayesUpdaterClassifier;
+import edu.cmu.tetrad.search.ClassifierBayesUpdater;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -41,7 +41,7 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
     /**
      * @serial Cannot be null.
      */
-    private final BayesUpdaterClassifier classifier;
+    private final ClassifierBayesUpdater classifier;
 
     /**
      * @serial Can be null.
@@ -64,7 +64,7 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
                 (DataSet) dataWrapper.getSelectedDataModel();
         BayesIm bayesIm = bayesImWrapper.getBayesIm();
 
-        this.classifier = new BayesUpdaterClassifier(bayesIm, dataSet);
+        this.classifier = new ClassifierBayesUpdater(bayesIm, dataSet);
     }
 
     public BayesUpdaterClassifierWrapper(DirichletBayesImWrapper bayesImWrapper,
@@ -81,7 +81,7 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
                 (DataSet) dataWrapper.getSelectedDataModel();
         BayesIm bayesIm = bayesImWrapper.getDirichletBayesIm();
 
-        this.classifier = new BayesUpdaterClassifier(bayesIm, dataSet);
+        this.classifier = new ClassifierBayesUpdater(bayesIm, dataSet);
     }
 
     /**
@@ -95,7 +95,7 @@ public class BayesUpdaterClassifierWrapper implements SessionModel {
 
     //==============================PUBLIC METHODS=======================//
 
-    public BayesUpdaterClassifier getClassifier() {
+    public ClassifierBayesUpdater getClassifier() {
         return this.classifier;
     }
 

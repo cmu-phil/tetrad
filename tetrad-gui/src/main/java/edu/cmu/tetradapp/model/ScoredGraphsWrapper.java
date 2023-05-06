@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.DagScorer;
-import edu.cmu.tetrad.search.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.DagScorer;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;

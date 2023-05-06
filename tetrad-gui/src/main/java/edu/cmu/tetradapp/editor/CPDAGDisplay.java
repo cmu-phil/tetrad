@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.workbench.DisplayEdge;

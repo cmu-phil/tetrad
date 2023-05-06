@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -39,7 +40,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.GraphUtilsSearch.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

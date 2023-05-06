@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.GraphEditorUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;

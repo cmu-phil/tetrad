@@ -7,7 +7,7 @@ import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.BdeuScore;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.cmu.tetrad.util.RandomUtil;

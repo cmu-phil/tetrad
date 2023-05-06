@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.WIP;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 

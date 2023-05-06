@@ -27,6 +27,8 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.WIP.HbmsBeam;
 import edu.cmu.tetrad.search.WIP.Hbsms;
 import edu.cmu.tetrad.search.WIP.HbsmsGes;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.*;
 

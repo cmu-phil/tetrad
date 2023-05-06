@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.search.BayesImParser;
+import edu.cmu.tetrad.search.utils.BayesImParser;
 import edu.cmu.tetradapp.model.BayesImWrapper;
 import nu.xom.Builder;
 import nu.xom.Document;

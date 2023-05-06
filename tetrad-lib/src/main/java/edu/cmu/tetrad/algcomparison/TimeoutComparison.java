@@ -39,7 +39,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 import org.reflections.Reflections;
@@ -53,7 +53,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static edu.cmu.tetrad.search.GraphUtilsSearch.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 
 /**
  * Nov 14, 2017 12:00:31 PM

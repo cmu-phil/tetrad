@@ -24,6 +24,8 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IndTestType;

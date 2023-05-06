@@ -23,6 +23,9 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.utils.SepsetsPossibleDsep;
+import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.*;
 
 import java.util.*;

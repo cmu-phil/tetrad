@@ -23,8 +23,8 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.FciOrient;
-import edu.cmu.tetrad.search.GraphUtilsSearch;
-import edu.cmu.tetrad.search.SepsetProducer;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
@@ -35,7 +35,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
-import static edu.cmu.tetrad.search.GraphUtilsSearch.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 
 /**
  * Basic graph utilities.

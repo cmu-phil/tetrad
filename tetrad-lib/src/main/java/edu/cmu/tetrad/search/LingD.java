@@ -27,6 +27,8 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.HungarianAlgorithm;
+import edu.cmu.tetrad.search.utils.NRooks;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.BlockRealMatrix;

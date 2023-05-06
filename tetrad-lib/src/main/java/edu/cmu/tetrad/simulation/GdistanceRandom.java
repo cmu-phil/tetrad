@@ -3,7 +3,7 @@ package edu.cmu.tetrad.simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 
 import java.util.ArrayList;
 import java.util.List;

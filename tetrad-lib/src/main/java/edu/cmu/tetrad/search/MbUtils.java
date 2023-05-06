@@ -21,8 +21,9 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
 import java.util.*;

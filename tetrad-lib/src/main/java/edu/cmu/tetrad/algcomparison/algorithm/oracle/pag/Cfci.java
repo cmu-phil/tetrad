@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.GraphUtilsSearch.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 
 /**
  * Conserative FCI.

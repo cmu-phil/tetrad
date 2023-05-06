@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;

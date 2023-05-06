@@ -4,7 +4,7 @@ import edu.cmu.tetrad.algcomparison.statistic.utils.BidirectedConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
-import static edu.cmu.tetrad.search.GraphUtilsSearch.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 
 /**
  * The bidirected true positives.

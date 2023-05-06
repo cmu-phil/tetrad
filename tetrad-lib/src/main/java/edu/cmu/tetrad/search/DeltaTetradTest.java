@@ -23,7 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.bpc_utils.Tetrad;
+import edu.cmu.tetrad.search.utils.Tetrad;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 

@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.GraphScore;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.TeyssierScorer;
+import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;

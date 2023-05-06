@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.LingD;
 import edu.cmu.tetrad.search.Lingam;
-import edu.cmu.tetrad.search.NRooks;
+import edu.cmu.tetrad.search.utils.NRooks;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;

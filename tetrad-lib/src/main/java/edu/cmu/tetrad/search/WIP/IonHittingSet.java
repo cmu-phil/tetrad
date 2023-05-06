@@ -21,7 +21,7 @@
 
 package edu.cmu.tetrad.search.WIP;
 
-import edu.cmu.tetrad.search.GraphChange;
+import edu.cmu.tetrad.search.utils.GraphChange;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

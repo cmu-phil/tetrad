@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.search.bpc_utils.BpcTestType;
+import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;

@@ -5,6 +5,7 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.ScoreType;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -15,7 +16,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.GraphUtilsSearch.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 
 /**
  * Does a comparison of algorithm results across algorithm type, sample sizes, etc.

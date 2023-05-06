@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.WIP.IndTestMultinomialLogisticRegression;
-import edu.cmu.tetrad.search.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.util.MillisecondTimes;
 
 import java.io.File;

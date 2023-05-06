@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 
 import java.io.PrintStream;
 import java.util.List;

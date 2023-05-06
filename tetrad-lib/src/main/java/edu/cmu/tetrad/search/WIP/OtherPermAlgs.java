@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.OrderedPair;
 import edu.cmu.tetrad.search.GraphScore;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.TeyssierScorer;
+import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.PermutationGenerator;
 import org.jetbrains.annotations.NotNull;

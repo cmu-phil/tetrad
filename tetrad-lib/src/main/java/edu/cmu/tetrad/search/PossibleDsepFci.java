@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import org.apache.commons.math3.util.FastMath;
 
