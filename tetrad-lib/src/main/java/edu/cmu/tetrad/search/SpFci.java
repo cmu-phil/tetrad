@@ -35,21 +35,17 @@ import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirecte
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
+ * <p>Replaces FGES in GFCI by SP using a score, which is another score-based
+ * (but more accurate) algorithm.</p>
  * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
  * FGES.</p>
  *
- * <p>This uses PermutationSearch (see), calling the Sp algorithm (see).</p>
- *
- * <p>An independence test must be provided for the definite discriminating path step
- * of FCI. Otherwise, the provided score is used throughout.</p>
- *
- * @author Juan Miguel Ogarrio
- * @author ps7z
- * @author jdramsey
- * @author bryan andrews
- * @see PermutationSearch
- * @see Sp
+ * @author peterspirtes
+ * @author josephramsey
+ * @author bryanandrews
+ * @see GFci
+ * @see Grasp
  */
 public final class SpFci implements GraphSearch {
 
