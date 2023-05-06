@@ -40,20 +40,28 @@ import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * LOFS = Ling Orientation Fixed Structure. Some additional algorithm.
- * <p>
- * Expands the set of algorithm from Lofs.
+ * <p></p>These are methods for linear, non-Gaussian Orientation with a Fixed graph
+ * Structure (LOFS). The options for different types of scores are given in the enum
+ * Lofs.Score. The options for rules to use to do the orientations are given in the
+ * enum, Lofs.Rule. Most of these are taken from the literature and ca be googled.</p>
  *
  * @author Joseph Ramsey
+ * @see Score
+ * @see Rule
  */
 public class Lofs {
-
     public enum Score {
         andersonDarling, skew, kurtosis, fifthMoment, absoluteValue,
         exp, expUnstandardized, expUnstandardizedInverted, other, logcosh, entropy
     }
 
-    private final Graph CPDAG;
+    // orientStrongerDirection list of past and present rules.
+    public enum Rule {
+        IGCI, R1TimeLag, R1, R2, R3, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
+        Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC
+    }
+
+    private final Graph cpdag;
     private List<DataSet> dataSets;
     private List<Matrix> matrices;
     private double alpha = 1.1;
@@ -61,27 +69,32 @@ public class Lofs {
     private List<Node> variables;
     private boolean orientStrongerDirection;
     private boolean r2Orient2Cycles = true;
-
     private Lofs.Score score = Lofs.Score.andersonDarling;
     private double epsilon = 1.0;
     private Knowledge knowledge = new Knowledge();
     private Rule rule = Rule.R1;
     private double selfLoopStrength;
 
-    //===============================CONSTRUCTOR============================//
-
-    public Lofs(Graph CPDAG, List<DataSet> dataSets)
+    /**
+     * Constructor.
+     *
+     * @param graph    The graph to be oriented. Orientations for the graph will be overwritten.
+     * @param dataSets A list of datasets to use to do the orientation. This may be just one
+     *                 dataset. If more than one dataset are given, the data will be concatenated
+     *                 (pooled).
+     */
+    public Lofs(Graph graph, List<DataSet> dataSets)
             throws IllegalArgumentException {
+
+        if (graph == null) {
+            throw new IllegalArgumentException("graph must be specified.");
+        }
 
         if (dataSets == null) {
             throw new IllegalArgumentException("Data set must be specified.");
         }
 
-        if (CPDAG == null) {
-            throw new IllegalArgumentException("CPDAG must be specified.");
-        }
-
-        this.CPDAG = CPDAG;
+        this.cpdag = graph;
         this.variables = dataSets.get(0).getVariables();
 
         List<DataSet> dataSets2 = new ArrayList<>();
@@ -94,29 +107,14 @@ public class Lofs {
         this.dataSets = dataSets2;
     }
 
-    //==========================PUBLIC=========================================//
-
-    public void setRule(Rule rule) {
-        this.rule = rule;
-    }
-
-    public double getSelfLoopStrength() {
-        return this.selfLoopStrength;
-    }
-
-    public void setSelfLoopStrength(double selfLoopStrength) {
-        this.selfLoopStrength = selfLoopStrength;
-    }
-
-    // orientStrongerDirection list of past and present rules.
-    public enum Rule {
-        IGCI, R1TimeLag, R1, R2, R3, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
-        Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC
-    }
-
+    /**
+     * Orients the graph and returns the oriented graph.
+     *
+     * @return The oriented graph.
+     */
     public Graph orient() {
 
-        Graph skeleton = GraphUtils.undirectedGraph(getCPDAG());
+        Graph skeleton = GraphUtils.undirectedGraph(getCpdag());
         Graph graph = new EdgeListGraph(skeleton.getNodes());
 
         List<Node> nodes = skeleton.getNodes();
@@ -181,10 +179,43 @@ public class Lofs {
         return graph;
     }
 
-    public double getAlpha() {
-        return this.alpha;
+    /**
+     * Sets the rule to use to do the orientation.
+     *
+     * @param rule This rule.
+     * @see Rule
+     */
+    public void setRule(Rule rule) {
+        this.rule = rule;
     }
 
+    /**
+     * Sets the (LoFS) score to use.
+     * @param score This score.
+     * @see Score
+     */
+    public void setScore(Lofs.Score score) {
+        if (score == null) {
+            throw new NullPointerException();
+        }
+
+        this.score = score;
+    }
+
+    /**
+     * Sets the self-loop strength, if applicable.
+     *
+     * @param selfLoopStrength This strength.
+     */
+    public void setSelfLoopStrength(double selfLoopStrength) {
+        this.selfLoopStrength = selfLoopStrength;
+    }
+
+    /**
+     * Sets the alpha to use, where applicable.
+     *
+     * @param alpha This alpha.
+     */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
             throw new IllegalArgumentException("Alpha is in range [0, 1]");
@@ -193,32 +224,23 @@ public class Lofs {
         this.alpha = alpha;
     }
 
-    public boolean isOrientStrongerDirection() {
-        return this.orientStrongerDirection;
-    }
-
+    /**
+     * Sets whether orientation should be done in the stronger direction, where
+     * applicable.
+     *
+     * @param orientStrongerDirection True if so.
+     */
     public void setOrientStrongerDirection(boolean orientStrongerDirection) {
         this.orientStrongerDirection = orientStrongerDirection;
     }
 
+    /**
+     * Sets for R2 whether cycles shoudld be oriented.
+     *
+     * @param r2Orient2Cycles True if so.
+     */
     public void setR2Orient2Cycles(boolean r2Orient2Cycles) {
         this.r2Orient2Cycles = r2Orient2Cycles;
-    }
-
-    public boolean isR2Orient2Cycles() {
-        return this.r2Orient2Cycles;
-    }
-
-    public Lofs.Score getScore() {
-        return this.score;
-    }
-
-    public void setScore(Lofs.Score score) {
-        if (score == null) {
-            throw new NullPointerException();
-        }
-
-        this.score = score;
     }
 
     //==========================PRIVATE=======================================//
@@ -432,7 +454,7 @@ public class Lofs {
             Node x = adj.getNode1();
             Node y = adj.getNode2();
 
-            if (!isR2Orient2Cycles() && isTwoCycle(graph, x, y)) {
+            if (!this.r2Orient2Cycles && isTwoCycle(graph, x, y)) {
                 continue;
             }
 
@@ -440,7 +462,7 @@ public class Lofs {
                 continue;
             }
 
-            resolveOneEdgeMax2(graph, x, y, !isOrientStrongerDirection());
+            resolveOneEdgeMax2(graph, x, y, !this.orientStrongerDirection);
         }
     }
 
@@ -760,7 +782,7 @@ public class Lofs {
             }
 
             // Add in the diagonal, assumed to consist entirely of 1's, indicating no self loop.
-            d += (1.0 - getSelfLoopStrength()) * data.get(i, rowIndex);
+            d += (1.0 - this.selfLoopStrength) * data.get(i, rowIndex);
 
             this.col[i] = d;
         }
@@ -1645,8 +1667,8 @@ public class Lofs {
         return p;
     }
 
-    private Graph getCPDAG() {
-        return this.CPDAG;
+    private Graph getCpdag() {
+        return this.cpdag;
     }
 
     private Node getVariable(List<Node> variables, String name) {
