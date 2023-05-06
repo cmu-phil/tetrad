@@ -111,7 +111,6 @@ public final class SvarFciOrient {
         // Step CI D. (Zhang's step F4.)
         doFinalOrientation(graph);
 
-//        graph.closeInducingPaths();   //to make sure it's a legal PAG
         if (this.verbose) {
             this.logger.log("graph", "Returning graph: " + graph);
         }
@@ -194,11 +193,11 @@ public final class SvarFciOrient {
                 }
 
                 if (this.sepsets.isUnshieldedCollider(a, b, c)) {
-                    if (isArrowheadDisallowed(a, b, graph)) {
+                    if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
                         continue;
                     }
 
-                    if (isArrowheadDisallowed(c, b, graph)) {
+                    if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                         continue;
                     }
 
@@ -221,7 +220,6 @@ public final class SvarFciOrient {
             System.out.println("R0" + ": Orienting collider by mistake: " + a + "*->" + b + "<-*" + c);
         }
     }
-
 
     /**
      * Orients the graph according to rules in the graph (FCI step D).
@@ -339,7 +337,7 @@ public final class SvarFciOrient {
         }
 
         if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-            if (isArrowheadDisallowed(b, c, graph)) {
+            if (!FciOrient.isArrowheadAllowed(b, c, graph, knowledge)) {
                 return;
             }
 
@@ -367,7 +365,7 @@ public final class SvarFciOrient {
                     (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
                             (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
 
-                if (isArrowheadDisallowed(a, c, graph)) {
+                if (!FciOrient.isArrowheadAllowed(a, c, graph, knowledge)) {
                     return;
                 }
 
@@ -426,7 +424,7 @@ public final class SvarFciOrient {
                         continue;
                     }
 
-                    if (isArrowheadDisallowed(D, B, graph)) {
+                    if (!FciOrient.isArrowheadAllowed(D, B, graph, knowledge)) {
                         continue;
                     }
 
@@ -578,10 +576,7 @@ public final class SvarFciOrient {
             ind = sepset.contains(b);
         }
 
-//        printDdp(d, path, a, b, c, graph);
-
         if (ind) {
-//            if (sepset.contains(b)) {
             graph.setEndpoint(c, b, Endpoint.TAIL);
             this.orientSimilarPairs(graph, this.getKnowledge(), c, b, Endpoint.TAIL);
             if (this.verbose) {
@@ -590,11 +585,11 @@ public final class SvarFciOrient {
             }
 
         } else {
-            if (isArrowheadDisallowed(a, b, graph)) {
+            if (!FciOrient.isArrowheadAllowed(a, b, graph, knowledge)) {
                 return false;
             }
 
-            if (isArrowheadDisallowed(c, b, graph)) {
+            if (!FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                 return false;
             }
 
@@ -642,7 +637,7 @@ public final class SvarFciOrient {
                 if (!(graph.getEndpoint(a, b) == Endpoint.CIRCLE)) continue;
                 // We know Ao-oB.
 
-                List<List<Node>> ucCirclePaths = getUcCirclePaths(a, b, graph);
+                List<List<Node>> ucCirclePaths = FciOrient.getUcCirclePaths(a, b, graph);
 
                 for (List<Node> u : ucCirclePaths) {
                     if (u.size() < 3) continue;
@@ -767,106 +762,6 @@ public final class SvarFciOrient {
     }
 
     /**
-     * Gets a list of every uncovered partially directed path between two nodes in the graph.
-     * <p>
-     * Probably extremely slow.
-     *
-     * @param n1 The beginning node of the undirectedPaths.
-     * @param n2 The ending node of the undirectedPaths.
-     * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
-     */
-    private List<List<Node>> getUcPdPaths(Node n1, Node n2, Graph graph) {
-        List<List<Node>> ucPdPaths = new LinkedList<>();
-
-        LinkedList<Node> soFar = new LinkedList<>();
-        soFar.add(n1);
-
-        List<Node> adjacencies = graph.getAdjacentNodes(n1);
-        for (Node curr : adjacencies) {
-            getUcPdPsHelper(curr, soFar, n2, ucPdPaths, graph);
-        }
-
-        return ucPdPaths;
-    }
-
-    /**
-     * Used in getUcPdPaths(n1,n2) to perform a breadth-first search on the graph.
-     * <p>
-     * ASSUMES soFar CONTAINS AT LEAST ONE NODE!
-     * <p>
-     * Probably extremely slow.
-     *
-     * @param curr      The getModel node to test for addition.
-     * @param soFar     The getModel partially built-up path.
-     * @param end       The node to finish the undirectedPaths at.
-     * @param ucPdPaths The getModel list of uncovered p.d. undirectedPaths.
-     */
-    private void getUcPdPsHelper(Node curr, List<Node> soFar, Node end,
-                                 List<List<Node>> ucPdPaths, Graph graph) {
-
-        if (soFar.contains(curr)) return;
-
-        Node prev = soFar.get(soFar.size() - 1);
-        if (graph.getEndpoint(prev, curr) == Endpoint.TAIL ||
-                graph.getEndpoint(curr, prev) == Endpoint.ARROW) {
-            return; // Adding curr would make soFar not p.d.
-        } else if (soFar.size() >= 2) {
-            Node prev2 = soFar.get(soFar.size() - 2);
-            if (graph.isAdjacentTo(prev2, curr)) {
-                return; // Adding curr would make soFar not uncovered.
-            }
-        }
-
-        soFar.add(curr); // Adding curr is OK, so let's do it.
-
-        if (curr.equals(end)) {
-            // We've reached the goal! Save soFar as a path.
-            ucPdPaths.add(new LinkedList<>(soFar));
-        } else {
-            // Otherwise, try each node adjacent to the getModel one.
-            List<Node> adjacents = graph.getAdjacentNodes(curr);
-            for (Node next : adjacents) {
-                getUcPdPsHelper(next, soFar, end, ucPdPaths, graph);
-            }
-        }
-
-        soFar.remove(soFar.get(soFar.size() - 1)); // For other recursive calls.
-    }
-
-    /**
-     * Gets a list of every uncovered circle path between two nodes in the graph by iterating through the uncovered
-     * partially directed undirectedPaths and only keeping the circle undirectedPaths.
-     * <p>
-     * Probably extremely slow.
-     *
-     * @param n1 The beginning node of the undirectedPaths.
-     * @param n2 The ending node of the undirectedPaths.
-     * @return A list of uncovered circle undirectedPaths between n1 and n2.
-     */
-    private List<List<Node>> getUcCirclePaths(Node n1, Node n2, Graph graph) {
-        List<List<Node>> ucCirclePaths = new LinkedList<>();
-        List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2, graph);
-
-        for (List<Node> path : ucPdPaths) {
-            for (int i = 0; i < path.size() - 1; i++) {
-                Node j = path.get(i);
-                Node sj = path.get(i + 1);
-
-                if (!(graph.getEndpoint(j, sj) == Endpoint.CIRCLE)) break;
-                if (!(graph.getEndpoint(sj, j) == Endpoint.CIRCLE)) break;
-                // This edge is OK, it's all circles.
-
-                if (i == path.size() - 2) {
-                    // We're at the last edge, so this is a circle path.
-                    ucCirclePaths.add(path);
-                }
-            }
-        }
-
-        return ucCirclePaths;
-    }
-
-    /**
      * Tries to apply Zhang's rule R8 to a pair of nodes A and C which are assumed to be such that Ao->C.
      * <p>
      * MAY HAVE WEIRD EFFECTS ON ARBITRARY NODE PAIRS.
@@ -916,7 +811,7 @@ public final class SvarFciOrient {
      * @return Whether R9 was successfully applied.
      */
     private boolean ruleR9(Node a, Node c, Graph graph) {
-        List<List<Node>> ucPdPsToC = getUcPdPaths(a, c, graph);
+        List<List<Node>> ucPdPsToC = FciOrient.getUcPdPaths(a, c, graph);
 
         for (List<Node> u : ucPdPsToC) {
             Node b = u.get(1);
@@ -961,8 +856,8 @@ public final class SvarFciOrient {
                 if (!(graph.getEndpoint(d, c) == Endpoint.TAIL)) continue;
                 // We know Ao->C and B-->C<--D.
 
-                List<List<Node>> ucPdPsToB = getUcPdPaths(a, b, graph);
-                List<List<Node>> ucPdPsToD = getUcPdPaths(a, d, graph);
+                List<List<Node>> ucPdPsToB = FciOrient.getUcPdPaths(a, b, graph);
+                List<List<Node>> ucPdPsToD = FciOrient.getUcPdPaths(a, d, graph);
                 for (List<Node> u1 : ucPdPsToB) {
                     Node m = u1.get(1);
                     for (List<Node> u2 : ucPdPsToD) {
@@ -1040,34 +935,6 @@ public final class SvarFciOrient {
         this.logger.log("info", "Finishing BK Orientation.");
     }
 
-
-    /**
-     * Helper method. Appears to check if an arrowhead is permitted by background knowledge.
-     *
-     * @param x The possible other node.
-     * @param y The possible point node.
-     * @return Whether the arrowhead is allowed.
-     */
-    private boolean isArrowheadDisallowed(Node x, Node y, Graph graph) {
-        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return false;
-        }
-
-        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return true;
-        }
-
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            return false; // changed by DMalinsky 02/11/2019, if already an arrowhead at x, arrowhead is allowed at y
-//            if (!knowledge.isForbidden(x.getName(), y.getName())) return true;
-        }
-
-        if (graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return false;
-        }
-
-        return graph.getEndpoint(y, x) != Endpoint.CIRCLE;
-    }
 
     /**
      * @return the maximum length of any discriminating path, or -1 of unlimited.

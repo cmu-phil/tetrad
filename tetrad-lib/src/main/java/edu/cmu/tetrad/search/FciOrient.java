@@ -779,7 +779,7 @@ public final class FciOrient {
      *
      * @param path The path to orient as all tails.
      */
-    private void orientTailPath(List<Node> path, Graph graph) {
+    public void orientTailPath(List<Node> path, Graph graph) {
         for (int i = 0; i < path.size() - 1; i++) {
             Node n1 = path.get(i);
             Node n2 = path.get(i + 1);
@@ -806,7 +806,7 @@ public final class FciOrient {
      * @return A list of uncovered partially directed undirectedPaths from n1 to
      * n2.
      */
-    private List<List<Node>> getUcPdPaths(Node n1, Node n2, Graph graph) {
+    public static List<List<Node>> getUcPdPaths(Node n1, Node n2, Graph graph) {
         List<List<Node>> ucPdPaths = new LinkedList<>();
 
         LinkedList<Node> soFar = new LinkedList<>();
@@ -833,7 +833,7 @@ public final class FciOrient {
      * @param end       The node to finish the undirectedPaths at.
      * @param ucPdPaths The getModel list of uncovered p.d. undirectedPaths.
      */
-    private void getUcPdPsHelper(Node curr, List<Node> soFar, Node end,
+    private static void getUcPdPsHelper(Node curr, List<Node> soFar, Node end,
                                  List<List<Node>> ucPdPaths, Graph graph) {
 
         if (soFar.contains(curr)) {
@@ -878,7 +878,7 @@ public final class FciOrient {
      * @param n2 The ending node of the undirectedPaths.
      * @return A list of uncovered circle undirectedPaths between n1 and n2.
      */
-    private List<List<Node>> getUcCirclePaths(Node n1, Node n2, Graph graph) {
+    public static List<List<Node>> getUcCirclePaths(Node n1, Node n2, Graph graph) {
         List<List<Node>> ucCirclePaths = new LinkedList<>();
         List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2, graph);
 
