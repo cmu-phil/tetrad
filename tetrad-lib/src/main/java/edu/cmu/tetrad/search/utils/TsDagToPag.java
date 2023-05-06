@@ -19,12 +19,12 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.DagSepsets;
-import edu.cmu.tetrad.search.utils.DagToPag;
+import edu.cmu.tetrad.search.Fci;
+import edu.cmu.tetrad.search.FciOrient;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;

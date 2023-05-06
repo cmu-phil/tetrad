@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.TripleClassifier;
-import edu.cmu.tetrad.search.ImpliedOrientation;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.session.Executable;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.session.SimulationParamsSource;
@@ -72,7 +72,7 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
     /**
      * @return the orientation rules for this search.
      */
-    ImpliedOrientation getMeekRules();
+    MeekRules getMeekRules();
 
     /**
      * Sets the initial graph for the algorithm, if feasible.

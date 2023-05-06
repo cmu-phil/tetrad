@@ -33,12 +33,12 @@ public class PoissonPriorScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.PoissonPriorScore score;
+        edu.cmu.tetrad.search.score.PoissonPriorScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.PoissonPriorScore((DataSet) this.dataSet, parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
+            score = new edu.cmu.tetrad.search.score.PoissonPriorScore((DataSet) this.dataSet, parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
         } else if (dataSet instanceof ICovarianceMatrix) {
-            score = new edu.cmu.tetrad.search.PoissonPriorScore((ICovarianceMatrix) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.PoissonPriorScore((ICovarianceMatrix) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }

@@ -271,7 +271,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         return true;
     }
 
-    public ImpliedOrientation getMeekRules() {
+    public MeekRules getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge((Knowledge) this.params.get("knowledge", new Knowledge()));
         return rules;

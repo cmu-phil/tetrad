@@ -7,7 +7,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.ZsbScore;
+import edu.cmu.tetrad.search.score.ZsbScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 

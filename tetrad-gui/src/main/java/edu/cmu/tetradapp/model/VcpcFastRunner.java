@@ -33,10 +33,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IndTestType;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
@@ -256,7 +253,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
         return true;
     }
 
-    public ImpliedOrientation getMeekRules() {
+    public MeekRules getMeekRules() {
         MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         meekRules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));

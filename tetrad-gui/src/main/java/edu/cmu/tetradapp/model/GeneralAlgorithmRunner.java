@@ -41,6 +41,7 @@ import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndTestScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
@@ -459,7 +460,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     @Override
-    public ImpliedOrientation getMeekRules() {
+    public MeekRules getMeekRules() {
         return null;
     }
 

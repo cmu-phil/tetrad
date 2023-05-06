@@ -26,7 +26,6 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.ImpliedOrientation;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
@@ -40,7 +39,7 @@ import java.util.*;
  *
  * @author Joseph Ramsey
  */
-public class MeekRules implements ImpliedOrientation {
+public class MeekRules {
 
     private Knowledge knowledge = new Knowledge();
 

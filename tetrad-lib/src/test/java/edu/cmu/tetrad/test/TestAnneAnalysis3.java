@@ -8,6 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.PermutationSearch;
+import edu.cmu.tetrad.search.score.PoissonPriorScore;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
@@ -93,7 +94,7 @@ public class TestAnneAnalysis3 {
                         CovarianceMatrix cov = getCov1(linecor, vars, n);
 
 //                        edu.cmu.tetrad.search.score.SemBicScore score = new edu.cmu.tetrad.search.score.SemBicScore(cov);
-                        edu.cmu.tetrad.search.PoissonPriorScore score = new edu.cmu.tetrad.search.PoissonPriorScore(cov);
+                        PoissonPriorScore score = new PoissonPriorScore(cov);
 //                        score.setPenaltyDiscount(penalty);
                         score.setLambda(vars.size() / 2.);
 

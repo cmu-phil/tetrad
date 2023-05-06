@@ -117,7 +117,7 @@ public class PcRunner extends AbstractAlgorithmRunner
         return new PcRunner(Dag.serializableInstance(), new Parameters());
     }
 
-    public ImpliedOrientation getMeekRules() {
+    public MeekRules getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         rules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));

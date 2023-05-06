@@ -223,7 +223,7 @@ public class SampleVcpcFastRunner extends AbstractAlgorithmRunner
         return true;
     }
 
-    public ImpliedOrientation getMeekRules() {
+    public MeekRules getMeekRules() {
         MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         meekRules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
