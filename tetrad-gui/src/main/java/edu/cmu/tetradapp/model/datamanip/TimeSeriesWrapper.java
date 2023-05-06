@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.model.datamanip;
 
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.search.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -53,7 +53,7 @@ public class TimeSeriesWrapper extends DataWrapper implements KnowledgeTransfera
             }
 
             DataSet dataSet = (DataSet) dataModel;
-            DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, params.getInt("numTimeLags", 1));
+            DataSet timeSeries = TsUtils.createLagData(dataSet, params.getInt("numTimeLags", 1));
             if (dataSet.getName() != null) {
                 timeSeries.setName(dataSet.getName());
             }

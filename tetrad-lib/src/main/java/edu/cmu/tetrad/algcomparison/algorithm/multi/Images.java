@@ -60,7 +60,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 
             if (parameters.getInt(Params.TIME_LAG) > 0) {
                 for (DataModel dataSet : dataSets) {
-                    DataSet timeSeries = TimeSeriesUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                    DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
                     if (dataSet.getName() != null) {
                         timeSeries.setName(dataSet.getName());
                     }
@@ -104,7 +104,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 
             if (parameters.getInt(Params.TIME_LAG) > 0) {
                 for (DataSet dataSet : dataSets2) {
-                    DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                    DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
                     if (dataSet.getName() != null) {
                         timeSeries.setName(dataSet.getName());
                     }

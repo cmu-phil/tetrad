@@ -117,7 +117,7 @@ public class Comparison2 {
             if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                 trueDag = RandomGraph.randomGraphRandomForwardEdges(
                         nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
-                trueDag = TimeSeriesUtils.graphToLagGraph(trueDag, 2);
+                trueDag = TsUtils.graphToLagGraph(trueDag, 2);
                 System.out.println("Creating Time Lag Graph : " + trueDag);
             }
 
@@ -205,7 +205,7 @@ public class Comparison2 {
                 if (params.getAlgorithm() == ComparisonParameters.Algorithm.SVARFCI) {
                     trueDag = RandomGraph.randomGraphRandomForwardEdges(
                             nodes, 0, params.getNumEdges(), 10, 10, 10, false, true);
-                    trueDag = TimeSeriesUtils.graphToLagGraph(trueDag, 2);
+                    trueDag = TsUtils.graphToLagGraph(trueDag, 2);
                     System.out.println("Creating Time Lag Graph : " + trueDag);
                 }
 
@@ -243,7 +243,7 @@ public class Comparison2 {
                         Matrix Gamma0 = Matrix.identity(tierSize).minus(B);
                         Matrix A1 = Gamma0.inverse().times(Gamma1);
 
-                        isStableTetradMatrix = TimeSeriesUtils.allEigenvaluesAreSmallerThanOneInModulus(A1);
+                        isStableTetradMatrix = TsUtils.allEigenvaluesAreSmallerThanOneInModulus(A1);
                         System.out.println("isStableTetradMatrix? : " + isStableTetradMatrix);
                         attempt++;
                     } while ((!isStableTetradMatrix) && attempt <= 5);

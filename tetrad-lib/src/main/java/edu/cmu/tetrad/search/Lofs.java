@@ -280,7 +280,7 @@ public class Lofs {
                 throw new IllegalArgumentException("Dataset is not supplied.");
             }
 
-            DataSet lags = TimeSeriesUtils.createLagData(dataModel, 1);
+            DataSet lags = TsUtils.createLagData(dataModel, 1);
             if (dataModel.getName() != null) {
                 lags.setName(dataModel.getName());
             }

@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.search.TsUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -97,7 +97,7 @@ public class ShiftDataWrapper extends DataWrapper {
         List<DataSet> shiftedDataSets = new ArrayList<>();
 
         for (DataSet dataSet : dataSets) {
-            shiftedDataSets.add(TimeSeriesUtils.createShiftedData(dataSet, shifts));
+            shiftedDataSets.add(TsUtils.createShiftedData(dataSet, shifts));
         }
         return shiftedDataSets;
     }

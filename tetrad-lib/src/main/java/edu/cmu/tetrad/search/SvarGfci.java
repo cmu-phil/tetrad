@@ -68,7 +68,7 @@ public final class SvarGfci implements GraphSearch {
     // The conditional independence test.
     private IndependenceTest independenceTest;
 
-    // Flag for complete rule set, true if should use complete rule set, false otherwise.
+    // Flag for complete rule set, true if one should use complete rule set, false otherwise.
     private boolean completeRuleSetUsed;
 
     // True iff the possible dsep search is done.
@@ -86,13 +86,13 @@ public final class SvarGfci implements GraphSearch {
     // True iff verbose output should be printed.
     private boolean verbose;
 
-    // The covariance matrix beign searched over. Assumes continuous data.
+    // The covariance matrix being searched over. Assumes continuous data.
     ICovarianceMatrix covarianceMatrix;
 
     // The sample size.
     int sampleSize;
 
-    // The penalty discount for the GES search. By default 2.
+    // The penalty discount for the GES search. By default, 2.
     private double penaltyDiscount = 2;
 
     // The sample prior for the BDeu score (discrete data).
@@ -104,7 +104,8 @@ public final class SvarGfci implements GraphSearch {
     // The print stream that output is directed to.
     private PrintStream out = System.out;
 
-    // True iff one-edge faithfulness is assumed. Speed up the algorith for very large searches. By default false.
+    // True iff one-edge faithfulness is assumed. Speed up the algorith for very large searches.
+    // By default, false.
     private boolean faithfulnessAssumed = true;
 
     // The score.
@@ -556,17 +557,17 @@ public final class SvarGfci implements GraphSearch {
             Node x1;
             String B;
             Node y1;
+            List<String> tmp_tier1;
+            List<String> tmp_tier2;
             if (indx_tier >= indy_tier) {
-                List<String> tmp_tier1 = this.knowledge.getTier(i + tier_diff);
-                List<String> tmp_tier2 = this.knowledge.getTier(i);
-                A = tmp_tier1.get(indx_comp);
-                B = tmp_tier2.get(indy_comp);
+                tmp_tier1 = this.knowledge.getTier(i + tier_diff);
+                tmp_tier2 = this.knowledge.getTier(i);
             } else {
-                List<String> tmp_tier1 = this.knowledge.getTier(i);
-                List<String> tmp_tier2 = this.knowledge.getTier(i + tier_diff);
-                A = tmp_tier1.get(indx_comp);
-                B = tmp_tier2.get(indy_comp);
+                tmp_tier1 = this.knowledge.getTier(i);
+                tmp_tier2 = this.knowledge.getTier(i + tier_diff);
             }
+            A = tmp_tier1.get(indx_comp);
+            B = tmp_tier2.get(indy_comp);
             if (A.equals(B)) continue;
             if (A.equals(tier_x.get(indx_comp)) && B.equals(tier_y.get(indy_comp))) continue;
             if (B.equals(tier_x.get(indx_comp)) && A.equals(tier_y.get(indy_comp))) continue;

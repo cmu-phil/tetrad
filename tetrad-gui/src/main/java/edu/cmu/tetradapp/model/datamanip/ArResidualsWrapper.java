@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.LogDataUtils;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.search.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -55,7 +55,7 @@ public class ArResidualsWrapper extends DataWrapper {
                 continue;
             }
 
-            DataModel model = TimeSeriesUtils.ar2((DataSet) selectedModel, params.getInt("numTimeLags", 1));
+            DataModel model = TsUtils.ar2((DataSet) selectedModel, params.getInt("numTimeLags", 1));
             model.setKnowledge(selectedModel.getKnowledge());
             convertedList.add(model);
             setSourceGraph(data.getSourceGraph());

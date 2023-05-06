@@ -140,7 +140,7 @@ public class ShiftSearch {
         List<DataModel> shiftedDataSets2 = new ArrayList<>();
 
         for (DataModel dataSet : this.dataSets) {
-            DataSet shiftedData = TimeSeriesUtils.createShiftedData((DataSet) dataSet, shifts);
+            DataSet shiftedData = TsUtils.createShiftedData((DataSet) dataSet, shifts);
             shiftedDataSets2.add(shiftedData);
         }
 

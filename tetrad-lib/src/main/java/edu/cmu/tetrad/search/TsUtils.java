@@ -45,7 +45,7 @@ import java.util.List;
  * @author Joseph Ramsey
  * @author Daniel Malinsky (some improvements)
  */
-public class TimeSeriesUtils {
+public class TsUtils {
 
     /**
      * @return the VAR residuals of the given time series with the given number
@@ -54,7 +54,7 @@ public class TimeSeriesUtils {
      * residuals of these regressions for each variable are returned.
      */
     public static DataSet ar(DataSet timeSeries, int numLags) {
-        DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
+        DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
         List<Node> regressors = new ArrayList<>();
 
         for (int i = timeSeries.getNumColumns(); i < timeLags.getNumColumns(); i++) {
@@ -96,7 +96,7 @@ public class TimeSeriesUtils {
             }
         }
 
-        DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
+        DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
 
         Regression regression = new RegressionDataset(timeLags);
 
@@ -154,7 +154,7 @@ public class TimeSeriesUtils {
     }
 
     public static VarResult structuralVar(DataSet timeSeries, int numLags) {
-        DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
+        DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
         Knowledge knowledge = timeLags.getKnowledge().copy();
 
         for (int i = 0; i <= numLags; i++) {
@@ -281,7 +281,7 @@ public class TimeSeriesUtils {
     }
 
     public static double[] getSelfLoopCoefs(DataSet timeSeries) {
-        DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, 1);
+        DataSet timeLags = TsUtils.createLagData(timeSeries, 1);
 
         double[] coefs = new double[timeSeries.getNumColumns()];
 
@@ -299,7 +299,7 @@ public class TimeSeriesUtils {
     }
 
     public static double sumOfArCoefficients(DataSet timeSeries, int numLags) {
-        DataSet timeLags = TimeSeriesUtils.createLagData(timeSeries, numLags);
+        DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
         List<Node> regressors = new ArrayList<>();
 
         for (int i = timeSeries.getNumColumns(); i < timeLags.getNumColumns(); i++) {
@@ -575,23 +575,23 @@ public class TimeSeriesUtils {
         Collections.sort(variables, new Comparator<Node>() {
             @Override
             public int compare(Node o1, Node o2) {
-                String name1 = TimeSeriesUtils.getNameNoLag(o1);
-                String name2 = TimeSeriesUtils.getNameNoLag(o2);
+                String name1 = TsUtils.getNameNoLag(o1);
+                String name2 = TsUtils.getNameNoLag(o2);
 
-                String prefix1 = TimeSeriesUtils.getPrefix(name1);
-                String prefix2 = TimeSeriesUtils.getPrefix(name2);
+                String prefix1 = TsUtils.getPrefix(name1);
+                String prefix2 = TsUtils.getPrefix(name2);
 
-                int index1 = TimeSeriesUtils.getIndex(name1);
-                int index2 = TimeSeriesUtils.getIndex(name2);
+                int index1 = TsUtils.getIndex(name1);
+                int index2 = TsUtils.getIndex(name2);
 
-                if (TimeSeriesUtils.getLag(o1.getName()) == TimeSeriesUtils.getLag(o2.getName())) {
+                if (TsUtils.getLag(o1.getName()) == TsUtils.getLag(o2.getName())) {
                     if (prefix1.compareTo(prefix2) == 0) {
                         return Integer.compare(index1, index2);
                     } else {
                         return prefix1.compareTo(prefix2);
                     }
                 } else {
-                    return TimeSeriesUtils.getLag(o1.getName()) - TimeSeriesUtils.getLag(o2.getName());
+                    return TsUtils.getLag(o1.getName()) - TsUtils.getLag(o2.getName());
                 }
             }
         });

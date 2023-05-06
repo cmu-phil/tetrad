@@ -32,24 +32,15 @@ import java.util.List;
 
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
- * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
- * Insufficient Systems").
- * <p>
- * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
- * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * This class finds the PAG to which a DAG belongs, for a time series model.
  *
- * @author Erin Korber, June 2004
- * @author Alex Smith, December 2008
- * @author Joseph Ramsey
- * @author Choh-Man Teng
  * @author Daniel Malinsky
+ * @see Fci
+ * @see DagToPag
  */
 public final class TsDagToPag {
 
     private final Graph dag;
-//    private final IndTestDSep dsep;
 
     /*
      * The background knowledge.
@@ -115,8 +106,6 @@ public final class TsDagToPag {
 
     }
 
-    //========================PUBLIC METHODS==========================//
-
     public Graph convert() {
         this.logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
 //        System.out.println("Knowledge is = " + knowledge);
@@ -153,6 +142,121 @@ public final class TsDagToPag {
 
         return graph;
     }
+
+    public static boolean existsInducingPathInto(Node x, Node y, Graph graph, Knowledge knowledge) {
+        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
+        if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
+
+        LinkedList<Node> path = new LinkedList<>();
+        path.add(x);
+
+        for (Node b : graph.getAdjacentNodes(x)) {
+            Edge edge = graph.getEdge(x, b);
+            if (!edge.pointsTowards(x)) continue;
+
+            if (TsDagToPag.existsInducingPathVisitts(graph, x, b, x, y, path, knowledge)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge == null) {
+            throw new NullPointerException();
+        }
+
+        this.knowledge = knowledge;
+    }
+
+    /**
+     * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
+     * should be used. False by default.
+     */
+    public boolean isCompleteRuleSetUsed() {
+        return this.completeRuleSetUsed;
+    }
+
+    /**
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used,
+     *                           false if only R1-R4 (the rule set of the original FCI) should
+     *                            be used. False by default.
+     */
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
+    }
+
+    /**
+     * True iff verbose output should be printed.
+     */
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    public int getMaxPathLength() {
+        return this.maxPathLength;
+    }
+
+    public void setMaxPathLength(int maxPathLength) {
+        this.maxPathLength = maxPathLength;
+    }
+
+    public Graph getTruePag() {
+        return this.truePag;
+    }
+
+    public void setTruePag(Graph truePag) {
+        this.truePag = truePag;
+    }
+
+    public static boolean existsInducingPathVisitts(Graph graph, Node a, Node b, Node x, Node y,
+                                                    LinkedList<Node> path, Knowledge knowledge) {
+        if (path.contains(b)) {
+            return false;
+        }
+
+        path.addLast(b);
+
+        if (b == y) return true;
+
+        for (Node c : graph.getAdjacentNodes(b)) {
+            if (c == a) continue;
+
+            if (b.getNodeType() == NodeType.MEASURED) {
+                if (!graph.isDefCollider(a, b, c)) continue;
+
+            }
+
+            if (graph.isDefCollider(a, b, c)) {
+                if (!((graph.paths().isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(), x.getName())) ||
+                        (graph.paths().isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(), x.getName())))) {
+                    continue;
+                }
+            }
+
+            if (TsDagToPag.existsInducingPathVisitts(graph, b, c, x, y, path, knowledge)) {
+                return true;
+            }
+        }
+
+        path.removeLast();
+        return false;
+    }
+
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
 
     private Graph calcAdjacencyGraph() {
         List<Node> allNodes = this.dag.getNodes();
@@ -258,120 +362,6 @@ public final class TsDagToPag {
         }
     }
 
-    public static boolean existsInducingPathInto(Node x, Node y, Graph graph, Knowledge knowledge) {
-        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-        if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-
-        LinkedList<Node> path = new LinkedList<>();
-        path.add(x);
-
-        for (Node b : graph.getAdjacentNodes(x)) {
-            Edge edge = graph.getEdge(x, b);
-            if (!edge.pointsTowards(x)) continue;
-
-            if (TsDagToPag.existsInducingPathVisitts(graph, x, b, x, y, path, knowledge)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
-    }
-
-    /**
-     * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
-     * should be used. False by default.
-     */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
-    }
-
-    /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. False by default.
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    public int getMaxPathLength() {
-        return this.maxPathLength;
-    }
-
-    public void setMaxPathLength(int maxPathLength) {
-        this.maxPathLength = maxPathLength;
-    }
-
-    public Graph getTruePag() {
-        return this.truePag;
-    }
-
-    public void setTruePag(Graph truePag) {
-        this.truePag = truePag;
-    }
-
-
-    public static boolean existsInducingPathVisitts(Graph graph, Node a, Node b, Node x, Node y,
-                                                    LinkedList<Node> path, Knowledge knowledge) {
-        if (path.contains(b)) {
-            return false;
-        }
-
-        path.addLast(b);
-
-        if (b == y) return true;
-
-        for (Node c : graph.getAdjacentNodes(b)) {
-            if (c == a) continue;
-
-            if (b.getNodeType() == NodeType.MEASURED) {
-                if (!graph.isDefCollider(a, b, c)) continue;
-
-            }
-
-            if (graph.isDefCollider(a, b, c)) {
-                if (!((graph.paths().isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(), x.getName())) ||
-                        (graph.paths().isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(), x.getName())))) {
-                    continue;
-                }
-            }
-
-            if (TsDagToPag.existsInducingPathVisitts(graph, b, c, x, y, path, knowledge)) {
-                return true;
-            }
-        }
-
-        path.removeLast();
-        return false;
-    }
-
-
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
 }
 
 

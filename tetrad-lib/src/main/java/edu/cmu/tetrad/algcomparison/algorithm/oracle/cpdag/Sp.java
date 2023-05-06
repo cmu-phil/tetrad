@@ -56,7 +56,7 @@ public class Sp implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBoo
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (parameters.getInt(Params.TIME_LAG) > 0) {
                 DataSet dataSet = (DataSet) dataModel;
-                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
                 if (dataSet.getName() != null) {
                     timeSeries.setName(dataSet.getName());
                 }

@@ -10,7 +10,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
-import edu.cmu.tetrad.search.TimeSeriesUtils;
+import edu.cmu.tetrad.search.TsUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -49,14 +49,14 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         this.graphs = new ArrayList<>();
 
         Graph graph = this.randomGraph.createGraph(parameters);
-        graph = TimeSeriesUtils.graphToLagGraph(graph, parameters.getInt(Params.NUM_LAGS));
+        graph = TsUtils.graphToLagGraph(graph, parameters.getInt(Params.NUM_LAGS));
         TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
-        this.knowledge = TimeSeriesUtils.getKnowledge(graph);
+        this.knowledge = TsUtils.getKnowledge(graph);
 
         for (int i = 0; i < parameters.getInt(Params.NUM_RUNS); i++) {
             if (parameters.getBoolean(Params.DIFFERENT_GRAPHS) && i > 0) {
                 graph = this.randomGraph.createGraph(parameters);
-                graph = TimeSeriesUtils.graphToLagGraph(graph, 2);
+                graph = TsUtils.graphToLagGraph(graph, 2);
                 TimeSeriesSemSimulation.topToBottomLayout((TimeLagGraph) graph);
             }
 
@@ -72,7 +72,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
             int numLags = ((TimeLagGraph) graph).getMaxLag();
 
-            dataSet = TimeSeriesUtils.createLagData(dataSet, numLags);
+            dataSet = TsUtils.createLagData(dataSet, numLags);
 
             dataSet.setName("" + (i + 1));
             dataSet.setKnowledge(this.knowledge.copy());
