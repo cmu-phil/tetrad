@@ -49,10 +49,8 @@ public class TestKnowledge {
 
         testKnowledge(dataSet, knowledge, parameters, new Boss(score));
         testKnowledge(dataSet, knowledge, parameters, new Cpc(test));
-        testKnowledge(dataSet, knowledge, parameters, new CpcStable(test));
         testKnowledge(dataSet, knowledge, parameters, new Fges(score));
         testKnowledge(dataSet, knowledge, parameters, new Grasp(test, score));
-        testKnowledge(dataSet, knowledge, parameters, new PcStable(test));
         testKnowledge(dataSet, knowledge, parameters, new Pc(test));
         testKnowledge(dataSet, knowledge, parameters, new PcMax(test));
         testKnowledge(dataSet, knowledge, parameters, new Sp(score));

@@ -39,7 +39,7 @@ import java.util.Set;
  *
  * @author josephramsey
  */
-public final class PcAll implements GraphSearch {
+public final class PcCommon implements GraphSearch {
     public enum FasType {REGULAR, STABLE}
 
     public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
@@ -104,7 +104,7 @@ public final class PcAll implements GraphSearch {
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
      */
-    public PcAll(IndependenceTest independenceTest) {
+    public PcCommon(IndependenceTest independenceTest) {
         if (independenceTest == null) {
             throw new NullPointerException();
         }
@@ -498,7 +498,7 @@ public final class PcAll implements GraphSearch {
 
                 if (isColliderSepset(y, sepsetsxz)) {
                     if (colliderAllowed(x, y, z, knowledge)) {
-                        PcAll.orientCollider(x, y, z, this.conflictRule, this.graph);
+                        PcCommon.orientCollider(x, y, z, this.conflictRule, this.graph);
                     }
 
                     this.colliderTriples.add(new Triple(x, y, z));
@@ -574,8 +574,8 @@ public final class PcAll implements GraphSearch {
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
-        return PcAll.isArrowpointAllowed1(x, y, knowledge) &&
-                PcAll.isArrowpointAllowed1(z, y, knowledge);
+        return PcCommon.isArrowpointAllowed1(x, y, knowledge) &&
+                PcCommon.isArrowpointAllowed1(z, y, knowledge);
     }
 
     /**
@@ -620,8 +620,8 @@ public final class PcAll implements GraphSearch {
                 List<Node> s2 = new ArrayList<>(sepset);
                 if (!s2.contains(b)) s2.add(b);
 
-                if (!sepset.contains(b) && PcAll.isArrowpointAllowed(a, b, knowledge) && PcAll.isArrowpointAllowed(c, b, knowledge)) {
-                    PcAll.orientCollider(a, b, c, conflictRule, graph);
+                if (!sepset.contains(b) && PcCommon.isArrowpointAllowed(a, b, knowledge) && PcCommon.isArrowpointAllowed(c, b, knowledge)) {
+                    PcCommon.orientCollider(a, b, c, conflictRule, graph);
 
                     if (verbose) {
                         System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);

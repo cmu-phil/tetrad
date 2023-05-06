@@ -101,7 +101,7 @@ public final class Cpc implements GraphSearch {
     private boolean stable;
     private boolean useHeuristic = false;
     private int maxPPathLength = -1;
-    private final PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
+    private final PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -261,18 +261,18 @@ public final class Cpc implements GraphSearch {
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
 
-        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(independenceTest);
+        PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
         search.setHeuristic(1);
         search.setKnowledge(this.knowledge);
 
         if (stable) {
-            search.setFasType(PcAll.FasType.STABLE);
+            search.setFasType(PcCommon.FasType.STABLE);
         } else {
-            search.setFasType(PcAll.FasType.REGULAR);
+            search.setFasType(PcCommon.FasType.REGULAR);
         }
 
-        search.setColliderDiscovery(PcAll.ColliderDiscovery.CONSERVATIVE);
+        search.setColliderDiscovery(PcCommon.ColliderDiscovery.CONSERVATIVE);
         search.setConflictRule(conflictRule);
         search.setUseHeuristic(useHeuristic);
         search.setMaxPathLength(maxPPathLength);

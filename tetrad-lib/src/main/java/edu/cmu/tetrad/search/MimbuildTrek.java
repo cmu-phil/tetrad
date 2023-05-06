@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * An implemetation of Mimbuild based on the treks and ranks.
  *
- * @author Adam
+ * @author adambrodie
  */
 public class MimbuildTrek {
 
@@ -81,7 +81,6 @@ public class MimbuildTrek {
      * The p value of the optimization.
      */
     private double pValue;
-    private int numParams;
     private List<Node> latents;
     private double epsilon = 1e-4;
     private int minClusterSize = 3;
@@ -162,21 +161,11 @@ public class MimbuildTrek {
     }
 
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     public ICovarianceMatrix getLatentsCov() {
         return this.latentsCov;
-    }
-
-    public List<String> getLatentNames(List<Node> latents) {
-        List<String> latentNames = new ArrayList<>();
-
-        for (Node node : latents) {
-            latentNames.add(node.getName());
-        }
-
-        return latentNames;
     }
 
     public double getMinimum() {
@@ -297,14 +286,14 @@ public class MimbuildTrek {
 
         optimizeNonMeasureVariancesQuick(indicators, measurescov, latentscov, loadings, indicatorIndices);
 
-        this.numParams = allParams1.length;
+        int numParams = allParams1.length;
 
         optimizeAllParamsSimultaneously(indicators, measurescov, latentscov, loadings, indicatorIndices, delta);
 
         double N = _measurescov.getSampleSize();
         int p = _measurescov.getDimension();
 
-        int df = (p) * (p + 1) / 2 - (this.numParams);
+        int df = (p) * (p + 1) / 2 - (numParams);
         double x = (N - 1) * this.minimum;
         this.pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(x);
 
@@ -352,10 +341,6 @@ public class MimbuildTrek {
                 new MaxEval(100000));
 
         this.minimum = pair.getValue();
-    }
-
-    public int getNumParams() {
-        return this.numParams;
     }
 
     private void optimizeAllParamsSimultaneously(Node[][] indicators, Matrix measurescov,
@@ -573,7 +558,6 @@ public class MimbuildTrek {
 
         return sum;
     }
-
 }
 
 

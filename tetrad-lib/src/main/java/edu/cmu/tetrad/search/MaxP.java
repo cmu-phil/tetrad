@@ -45,7 +45,7 @@ public final class MaxP {
     private Knowledge knowledge = new Knowledge();
     private boolean useHeuristic;
     private int maxPathLength = 3;
-    private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
 
     /**
      * Constructor.
@@ -74,20 +74,20 @@ public final class MaxP {
      *
      * @param conflictRule The conflict rule to use.
      * @param graph        The graph to orient.
-     * @see edu.cmu.tetrad.search.PcAll.ConflictRule
+     * @see PcCommon.ConflictRule
      */
-    public static void orientCollider(Node x, Node y, Node z, PcAll.ConflictRule conflictRule, Graph graph) {
-        if (conflictRule == PcAll.ConflictRule.PRIORITY) {
+    public static void orientCollider(Node x, Node y, Node z, PcCommon.ConflictRule conflictRule, Graph graph) {
+        if (conflictRule == PcCommon.ConflictRule.PRIORITY) {
             if (!(graph.getEndpoint(y, x) == Endpoint.ARROW || graph.getEndpoint(y, z) == Endpoint.ARROW)) {
                 graph.removeEdge(x, y);
                 graph.removeEdge(z, y);
                 graph.addDirectedEdge(x, y);
                 graph.addDirectedEdge(z, y);
             }
-        } else if (conflictRule == PcAll.ConflictRule.BIDIRECTED) {
+        } else if (conflictRule == PcCommon.ConflictRule.BIDIRECTED) {
             graph.setEndpoint(x, y, Endpoint.ARROW);
             graph.setEndpoint(z, y, Endpoint.ARROW);
-        } else if (conflictRule == PcAll.ConflictRule.OVERWRITE) {
+        } else if (conflictRule == PcCommon.ConflictRule.OVERWRITE) {
             graph.removeEdge(x, y);
             graph.removeEdge(z, y);
             graph.addDirectedEdge(x, y);
@@ -126,9 +126,9 @@ public final class MaxP {
      * Sets the PC conflict rule to use for orientation.
      *
      * @param conflictRule This rule.
-     * @see edu.cmu.tetrad.search.PcAll.ConflictRule
+     * @see PcCommon.ConflictRule
      */
-    public void setConflictRule(PcAll.ConflictRule conflictRule) {
+    public void setConflictRule(PcCommon.ConflictRule conflictRule) {
         this.conflictRule = conflictRule;
     }
 
@@ -209,8 +209,8 @@ public final class MaxP {
         adja.remove(c);
         adjc.remove(a);
 
-        if (!(PcAll.isArrowpointAllowed(a, b, knowledge)
-                && (PcAll.isArrowpointAllowed(c, b, knowledge)))) {
+        if (!(PcCommon.isArrowpointAllowed(a, b, knowledge)
+                && (PcCommon.isArrowpointAllowed(c, b, knowledge)))) {
             return;
         }
 
@@ -290,7 +290,7 @@ public final class MaxP {
         }
     }
 
-    private void orientCollider(Graph graph, Node a, Node b, Node c, PcAll.ConflictRule conflictRule) {
+    private void orientCollider(Graph graph, Node a, Node b, Node c, PcCommon.ConflictRule conflictRule) {
         if (this.knowledge.isForbidden(a.getName(), b.getName())) return;
         if (this.knowledge.isForbidden(c.getName(), b.getName())) return;
         MaxP.orientCollider(a, b, c, conflictRule, graph);

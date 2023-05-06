@@ -94,7 +94,7 @@ public class PcMax implements GraphSearch {
     //    private boolean concurrent;
     private boolean useMaxP = false;
     private int maxPPathLength = -1;
-    private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -233,15 +233,15 @@ public class PcMax implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(independenceTest);
+        PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
         search.setHeuristic(1);
         search.setKnowledge(this.knowledge);
 
         if (stable) {
-            search.setFasType(PcAll.FasType.STABLE);
+            search.setFasType(PcCommon.FasType.STABLE);
         } else {
-            search.setFasType(PcAll.FasType.REGULAR);
+            search.setFasType(PcCommon.FasType.REGULAR);
         }
 
 //        if (concurrent) {
@@ -250,7 +250,7 @@ public class PcMax implements GraphSearch {
 //            search.setConcurrent(PcAll.Concurrent.NO);
 //        }
 
-        search.setColliderDiscovery(PcAll.ColliderDiscovery.MAX_P);
+        search.setColliderDiscovery(PcCommon.ColliderDiscovery.MAX_P);
         search.setConflictRule(conflictRule);
         search.setUseHeuristic(useMaxP);
         search.setMaxPathLength(maxPPathLength);
@@ -327,7 +327,7 @@ public class PcMax implements GraphSearch {
         this.maxPPathLength = maxPPathLength;
     }
 
-    public void setConflictRule(PcAll.ConflictRule conflictRule) {
+    public void setConflictRule(PcCommon.ConflictRule conflictRule) {
         this.conflictRule = conflictRule;
     }
 }

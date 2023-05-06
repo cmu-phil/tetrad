@@ -94,7 +94,7 @@ public class Pc implements GraphSearch {
     private boolean stable;
     private boolean useMaxP = false;
     private int maxPPathLength = -1;
-    private final PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
+    private final PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -233,18 +233,18 @@ public class Pc implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(independenceTest);
+        PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
         search.setHeuristic(1);
         search.setKnowledge(this.knowledge);
 
         if (stable) {
-            search.setFasType(PcAll.FasType.STABLE);
+            search.setFasType(PcCommon.FasType.STABLE);
         } else {
-            search.setFasType(PcAll.FasType.REGULAR);
+            search.setFasType(PcCommon.FasType.REGULAR);
         }
 
-        search.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+        search.setColliderDiscovery(PcCommon.ColliderDiscovery.FAS_SEPSETS);
         search.setConflictRule(conflictRule);
         search.setUseHeuristic(useMaxP);
         search.setMaxPathLength(maxPPathLength);
