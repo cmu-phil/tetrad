@@ -48,7 +48,7 @@ import java.util.List;
  * <p>
  * Uses a different (better) algorithm from Mimbuild. Preferable.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Mimbuild {
 

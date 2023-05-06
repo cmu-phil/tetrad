@@ -116,16 +116,6 @@ public final class FgesOrienter implements GraphSearch, DagScorer {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
-     */
-    private final SortedSet<ScoredGraph> topGraphs = new TreeSet<>();
-
-    /**
-     * The number of top CPDAGs to store.
-     */
-    private int numCPDAGsToStore;
-
-    /**
      * True if logs should be output.
      */
     private boolean log = true;
@@ -146,9 +136,6 @@ public final class FgesOrienter implements GraphSearch, DagScorer {
 
     // The static ForkJoinPool instance.
     private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
-
-    // A running tally of the total BIC score.
-    private double score;
 
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
@@ -266,12 +253,7 @@ public final class FgesOrienter implements GraphSearch, DagScorer {
 
         addRequiredEdges(graph);
 
-        this.topGraphs.clear();
-
-        storeGraph(graph);
-
         long start = MillisecondTimes.timeMillis();
-        this.score = 0.0;
 
         // Do forward search.
         fes(graph);
@@ -360,20 +342,6 @@ public final class FgesOrienter implements GraphSearch, DagScorer {
      */
     public double getScore(Graph dag) {
         return scoreDag(dag);
-    }
-
-    /**
-     * @return the list of top scoring graphs.
-     */
-    public SortedSet<ScoredGraph> getTopGraphs() {
-        return this.topGraphs;
-    }
-
-    /**
-     * @return the number of CPDAGs to store.
-     */
-    public int getnumCPDAGsToStore() {
-        return this.numCPDAGsToStore;
     }
 
     /**
@@ -621,7 +589,6 @@ public final class FgesOrienter implements GraphSearch, DagScorer {
             double bump = arrow.getBump();
 
             insert(x, y, t, graph, bump);
-            this.score += bump;
 
             Set<Node> visited = rebuildCPDAGRestricted(graph, x, y);
             Set<Node> toProcess = new HashSet<>();
@@ -645,8 +612,6 @@ public final class FgesOrienter implements GraphSearch, DagScorer {
             }
 
             reevaluateForward(graph, toProcess);
-
-            storeGraph(graph);
         }
     }
 
@@ -687,11 +652,8 @@ public final class FgesOrienter implements GraphSearch, DagScorer {
             double bump = arrow.getBump();
 
             delete(x, y, h, graph, bump);
-            this.score += bump;
 
             rebuildCPDAGRestricted(graph, x, y);
-
-            storeGraph(graph);
 
             reevaluateBackward(graph, x, y);
         }
@@ -1402,7 +1364,7 @@ public final class FgesOrienter implements GraphSearch, DagScorer {
         List<Edge> edges = graph.getEdges(a);
         SearchGraphUtils.basicCpdagRestricted2(graph, a);
         addRequiredEdges(graph);
-        Set<Node> visited = meekOrientRestricted(graph, nodes, getKnowledge());
+        Set<Node> visited = meekOrientRestricted(graph, getKnowledge());
 
         List<Edge> newEdges = graph.getEdges(a);
         newEdges.removeAll(edges); // The newly oriented edges.
@@ -1418,11 +1380,10 @@ public final class FgesOrienter implements GraphSearch, DagScorer {
     }
 
     // Runs Meek rules on just the changed nodes.
-    private Set<Node> meekOrientRestricted(Graph graph, List<Node> nodes, Knowledge knowledge) {
-        MeekRulesRestricted rules = new MeekRulesRestricted();
+    private Set<Node> meekOrientRestricted(Graph graph, Knowledge knowledge) {
+        MeekRules rules = new MeekRules();
         rules.setKnowledge(knowledge);
-        rules.orientImplied(graph, new HashSet<>(nodes));
-        return rules.getVisitedNodes();
+        return rules.orientImplied(graph);
     }
 
     // Sets the data set, possibly calculating a covariane matrix.
@@ -1713,21 +1674,6 @@ public final class FgesOrienter implements GraphSearch, DagScorer {
 
     private boolean isDiscrete() {
         return this.discrete;
-    }
-
-    // Stores the graph, if its score knocks out one of the top ones.
-    private void storeGraph(Graph graph) {
-        if (this.numCPDAGsToStore < 1) return;
-
-        if (this.topGraphs.isEmpty() || this.score > this.topGraphs.first().getScore()) {
-            Graph graphCopy = new EdgeListGraph(graph);
-
-            this.topGraphs.add(new ScoredGraph(graphCopy, this.score));
-
-            if (this.topGraphs.size() > getnumCPDAGsToStore()) {
-                this.topGraphs.remove(this.topGraphs.first());
-            }
-        }
     }
 }
 
