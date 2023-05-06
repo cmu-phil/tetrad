@@ -4,6 +4,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.GrowShrinkTree;
 
 import java.util.*;
 
@@ -29,7 +30,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @see PermutationSearch
  */
 public class Boss implements SuborderSearch {
-    private final PermutationBes bes;
+    private final BesPermutation bes;
     private final Score score;
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
@@ -53,7 +54,7 @@ public class Boss implements SuborderSearch {
             this.parents.put(x, new HashSet<>());
         }
 
-        this.bes = new PermutationBes(score);
+        this.bes = new BesPermutation(score);
         this.bes.setVerbose(false);
         this.numStarts = 1;
     }

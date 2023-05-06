@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;

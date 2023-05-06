@@ -25,7 +25,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @author bryanandrews
  * @author josephramsey
  */
-public class PermutationBes {
+public class BesPermutation {
     private final List<Node> variables;
     private final Score score;
     private Knowledge knowledge = new Knowledge();
@@ -36,7 +36,7 @@ public class PermutationBes {
      *
      * @param score The score that BES (from FGES) will use.
      */
-    public PermutationBes(@NotNull Score score) {
+    public BesPermutation(@NotNull Score score) {
         this.score = score;
         this.variables = score.getVariables();
     }

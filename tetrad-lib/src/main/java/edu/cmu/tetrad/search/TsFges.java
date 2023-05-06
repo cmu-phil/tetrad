@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.DiscreteScore;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.ScoredGraph;
 import edu.cmu.tetrad.search.utils.DagScorer;
 import edu.cmu.tetrad.search.utils.HasPenaltyDiscount;
 import edu.cmu.tetrad.search.utils.MeekRules;
