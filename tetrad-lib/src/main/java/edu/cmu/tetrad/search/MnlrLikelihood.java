@@ -43,8 +43,6 @@ import java.util.Map;
  *
  * @author Bryan Andrews
  */
-
-
 public class MnlrLikelihood {
 
     private final DataSet dataSet;

@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Holds some utility methods for Purify, Build Clusters, and Mimbuild.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class MimUtils {
 

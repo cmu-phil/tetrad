@@ -111,7 +111,9 @@ public class TestPcStableMax {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        PcStableMax pc = new PcStableMax(new IndTestFisherZ(dataSet, 0.11));
+        Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.11));
+        pc.setStable(true);
+        pc.setUseMaxP(true);
         pc.setKnowledge(knowledge);
 
         Graph CPDAG = pc.search();
@@ -170,7 +172,9 @@ public class TestPcStableMax {
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
-        PcStableMax pc = new PcStableMax(independence);
+        Pc pc = new Pc(independence);
+        pc.setStable(true);
+        pc.setUseMaxP(true);
 
         // Set up search.
         pc.setKnowledge(knowledge);

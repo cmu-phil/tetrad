@@ -247,74 +247,6 @@ public class PerformanceTests {
         this.out.close();
     }
 
-    public void testPcStableMax(int numVars, double edgeFactor, int numCases, double alpha) {
-        final int depth = -1;
-
-        init(new File("long.pcstablemax." + numVars + "." + edgeFactor + "." + alpha + ".txt"), "Tests performance of the PC Max algorithm");
-
-        long time1 = MillisecondTimes.timeMillis();
-
-        Graph dag = makeDag(numVars, edgeFactor);
-
-        System.out.println("Graph done");
-
-        this.out.println("Graph done");
-
-        System.out.println("Starting simulation");
-        LargeScaleSimulation simulator = new LargeScaleSimulation(dag);
-        simulator.setOut(this.out);
-
-        DataSet data = simulator.simulateDataFisher(numCases);
-
-        System.out.println("Finishing simulation");
-
-        long time2 = MillisecondTimes.timeMillis();
-
-        this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-
-        System.out.println("Making covariance matrix");
-
-//        ICovarianceMatrix cov = new CovarianceMatrix(data);
-        ICovarianceMatrix cov = new CovarianceMatrix(data);
-
-        System.out.println("Covariance matrix done");
-
-        long time3 = MillisecondTimes.timeMillis();
-
-        this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
-
-//        out.println(cov);
-
-        IndTestFisherZ test = new IndTestFisherZ(cov, alpha);
-
-        PcStableMax pcStable = new PcStableMax(test);
-
-        Graph estCPDAG = pcStable.search();
-
-//        out.println(estCPDAG);
-
-        long time4 = MillisecondTimes.timeMillis();
-
-        this.out.println("# Cases = " + numCases);
-        this.out.println("alpha = " + alpha);
-        this.out.println("depth = " + depth);
-
-        this.out.println("Elapsed (simulating the data): " + (time2 - time1) + " ms");
-        this.out.println("Elapsed (calculating cov): " + (time3 - time2) + " ms");
-        this.out.println("Elapsed (running PC-Max) " + (time4 - time3) + " ms");
-
-        this.out.println("Total elapsed (cov + PC-Max) " + (time4 - time2) + " ms");
-
-        Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
-
-        System.out.println("# edges in true CPDAG = " + trueCPDAG.getNumEdges());
-        System.out.println("# edges in est CPDAG = " + estCPDAG.getNumEdges());
-
-        SearchGraphUtils.graphComparison(trueCPDAG, estCPDAG, this.out);
-
-        this.out.close();
-    }
-
     public void testFges(int numVars, double edgeFactor, int numCases, double penaltyDiscount) {
         init(new File("long.fges." + numVars + "." + edgeFactor + "." + penaltyDiscount + ".txt"), "Tests performance of the FGES algorithm");
 
@@ -2103,11 +2035,6 @@ public class PerformanceTests {
         System.out.println("Finish");
 
         performanceTests.testPc(5000, 1, 1000, .0001);
-
-
-//        performanceTests.testPcStable(20000, 1, 1000, .00001);
-        performanceTests.testPcStableMax(5000, 1, 1000, .0001);
-
     }
 }
 
