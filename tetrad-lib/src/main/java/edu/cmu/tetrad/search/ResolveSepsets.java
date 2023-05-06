@@ -39,7 +39,6 @@ import java.util.*;
  * @author Robert Tillman
  */
 public final class ResolveSepsets {
-
     public enum Method {
         fisher, fisher2, tippett, worsleyfriston, stouffer, mudholkergeorge,
         mudholkergeorge2, average, averagetest, random, fdr, majority
