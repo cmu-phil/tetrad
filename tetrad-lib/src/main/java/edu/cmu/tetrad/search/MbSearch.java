@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * An interface for Markov blanket searches.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface MbSearch {
 
