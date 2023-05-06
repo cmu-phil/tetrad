@@ -38,9 +38,7 @@ import java.util.List;
  * @author Joseph Ramsey
  */
 public class ShiftSearch {
-
     private final List<DataModel> dataSets;
-
     private int maxShift = 2;
     private Knowledge knowledge = new Knowledge();
     private int c = 4;
@@ -116,6 +114,50 @@ public class ShiftSearch {
         return bestshifts;
     }
 
+    public int getMaxShift() {
+        return this.maxShift;
+    }
+
+    public void setMaxShift(int maxShift) {
+        this.maxShift = maxShift;
+    }
+
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
+    public int getC() {
+        return this.c;
+    }
+
+    public void setC(int c) {
+        this.c = c;
+    }
+
+    public int getMaxNumShifts() {
+        return this.maxNumShifts;
+    }
+
+    public void setMaxNumShifts(int maxNumShifts) {
+        this.maxNumShifts = maxNumShifts;
+    }
+
+    public void setOut(OutputStream out) {
+        this.out = new PrintStream(out);
+    }
+
+    public void stop() {
+        this.scheduleStop = true;
+    }
+
+    public void setForwardSearch(boolean forwardSearch) {
+        this.forwardSearch = forwardSearch;
+    }
+
     private void printShifts(int[] shifts, double b, List<Node> nodes) {
         StringBuilder buf = new StringBuilder();
 
@@ -172,50 +214,6 @@ public class ShiftSearch {
         images.setKnowledge(this.knowledge);
         images.search();
         return -images.getModelScore() / dataSets.size();
-    }
-
-    public int getMaxShift() {
-        return this.maxShift;
-    }
-
-    public void setMaxShift(int maxShift) {
-        this.maxShift = maxShift;
-    }
-
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    public int getC() {
-        return this.c;
-    }
-
-    public void setC(int c) {
-        this.c = c;
-    }
-
-    public int getMaxNumShifts() {
-        return this.maxNumShifts;
-    }
-
-    public void setMaxNumShifts(int maxNumShifts) {
-        this.maxNumShifts = maxNumShifts;
-    }
-
-    public void setOut(OutputStream out) {
-        this.out = new PrintStream(out);
-    }
-
-    public void stop() {
-        this.scheduleStop = true;
-    }
-
-    public void setForwardSearch(boolean forwardSearch) {
-        this.forwardSearch = forwardSearch;
     }
 }
 

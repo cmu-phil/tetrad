@@ -36,7 +36,6 @@ public class Sp implements SuborderSearch {
     private Map<Node, GrowShrinkTree> gsts;
     private Knowledge knowledge = new Knowledge();
 
-
     /**
      * This algorithm will work with an arbitrary score.
      *

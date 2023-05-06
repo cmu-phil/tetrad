@@ -289,6 +289,14 @@ public final class SpFci implements GraphSearch {
         this.independenceTest = independenceTest;
     }
 
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
     //===========================================PRIVATE METHODS=======================================//
 
     /**
@@ -340,12 +348,4 @@ public final class SpFci implements GraphSearch {
         this.logger.log("info", "Finishing BK Orientation.");
     }
 
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
 }
