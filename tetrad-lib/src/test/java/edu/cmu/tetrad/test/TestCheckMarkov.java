@@ -5,7 +5,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.Kci;
 import edu.cmu.tetrad.search.LogUtilsSearch;
 import edu.cmu.tetrad.sem.SemIm;

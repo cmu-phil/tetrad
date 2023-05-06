@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.Score;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

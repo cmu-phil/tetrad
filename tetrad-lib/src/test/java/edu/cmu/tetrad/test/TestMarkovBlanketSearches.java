@@ -24,7 +24,10 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.mb.MbSearch;
+import edu.cmu.tetrad.search.GrowShrink;
+import edu.cmu.tetrad.search.MbSearch;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.junit.Test;
 
 import java.util.ArrayList;

@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.ClassifierBayesUpdater;
+import edu.cmu.tetrad.search.classify.ClassifierBayesUpdaterDiscrete;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RocCalculator;
@@ -49,7 +49,7 @@ import java.util.List;
  * @author Jossph Ramsey
  */
 public class BayesUpdaterClassifierEditor extends JPanel {
-    private final ClassifierBayesUpdater classifier;
+    private final ClassifierBayesUpdaterDiscrete classifier;
     private JComboBox variableDropdown;
     private JTabbedPane tabbedPane;
     private JComboBox categoryDropdown;
@@ -57,7 +57,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
     private RocPlot rocPlot;
     private final JMenuItem saveRoc;
 
-    private BayesUpdaterClassifierEditor(ClassifierBayesUpdater classifier) {
+    private BayesUpdaterClassifierEditor(ClassifierBayesUpdaterDiscrete classifier) {
         if (classifier == null) {
             throw new NullPointerException();
         }
@@ -428,7 +428,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
         this(wrapper.getClassifier());
     }
 
-    private ClassifierBayesUpdater getClassifier() {
+    private ClassifierBayesUpdaterDiscrete getClassifier() {
         return this.classifier;
     }
 

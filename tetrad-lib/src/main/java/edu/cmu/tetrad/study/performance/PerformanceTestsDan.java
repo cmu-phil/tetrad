@@ -27,7 +27,8 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.GFci;
-import edu.cmu.tetrad.search.IndTestFisherZ;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -171,7 +172,7 @@ public class PerformanceTestsDan {
             ICovarianceMatrix cov = new CovarianceMatrix(data);
 
             IndTestFisherZ independenceTestGFci = new IndTestFisherZ(cov, alphaGFci);
-            edu.cmu.tetrad.search.SemBicScore scoreGfci = new edu.cmu.tetrad.search.SemBicScore(cov);
+            SemBicScore scoreGfci = new SemBicScore(cov);
 
             out6.println("GFCI.PAG_of_the_true_DAG");
 

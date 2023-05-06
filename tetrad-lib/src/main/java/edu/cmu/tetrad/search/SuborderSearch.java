@@ -2,6 +2,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.Score;
 
 import java.util.List;
 import java.util.Map;

@@ -21,7 +21,6 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import edu.cmu.tetrad.search.DeltaSextadTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
 import java.text.DecimalFormat;

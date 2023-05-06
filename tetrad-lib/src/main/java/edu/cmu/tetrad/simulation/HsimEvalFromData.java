@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
-import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.sem.SemEstimator;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;

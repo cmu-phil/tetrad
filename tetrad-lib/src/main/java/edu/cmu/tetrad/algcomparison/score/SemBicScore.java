@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -33,12 +33,12 @@ public class SemBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.SemBicScore semBicScore;
+        edu.cmu.tetrad.search.score.SemBicScore semBicScore;
 
         if (dataSet instanceof DataSet) {
-            semBicScore = new edu.cmu.tetrad.search.SemBicScore((DataSet) this.dataSet);
+            semBicScore = new edu.cmu.tetrad.search.score.SemBicScore((DataSet) this.dataSet);
         } else if (dataSet instanceof ICovarianceMatrix) {
-            semBicScore = new edu.cmu.tetrad.search.SemBicScore((ICovarianceMatrix) this.dataSet);
+            semBicScore = new edu.cmu.tetrad.search.score.SemBicScore((ICovarianceMatrix) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
@@ -48,10 +48,10 @@ public class SemBicScore implements ScoreWrapper {
 
         switch (parameters.getInt(Params.SEM_BIC_RULE)) {
             case 1:
-                semBicScore.setRuleType(edu.cmu.tetrad.search.SemBicScore.RuleType.CHICKERING);
+                semBicScore.setRuleType(edu.cmu.tetrad.search.score.SemBicScore.RuleType.CHICKERING);
                 break;
             case 2:
-                semBicScore.setRuleType(edu.cmu.tetrad.search.SemBicScore.RuleType.NANDY);
+                semBicScore.setRuleType(edu.cmu.tetrad.search.score.SemBicScore.RuleType.NANDY);
                 break;
             default:
                 throw new IllegalStateException("Expecting 1 or 2: " + parameters.getInt(Params.SEM_BIC_RULE));

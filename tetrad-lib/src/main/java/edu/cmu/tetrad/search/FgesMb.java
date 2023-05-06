@@ -22,6 +22,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.DiscreteScore;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.HasPenaltyDiscount;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.ChoiceGenerator;

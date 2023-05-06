@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.WIP.IndTestMultinomialLogisticRegression;
-import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.pitt.csb.mgm.Mgm;
 import edu.pitt.csb.mgm.MixedUtils;
 

@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
+import edu.cmu.tetrad.search.utils.DeltaSextadTest;
 import edu.cmu.tetrad.search.utils.Sextad;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.util.*;

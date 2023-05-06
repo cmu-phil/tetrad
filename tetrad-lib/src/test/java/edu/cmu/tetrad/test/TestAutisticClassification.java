@@ -28,8 +28,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fas;
-import edu.cmu.tetrad.search.IndTestScore;
-import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestScore;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.File;

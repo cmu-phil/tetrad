@@ -92,7 +92,7 @@ public class TestAnneAnalysis3 {
                         for (int i = 0; i < p; i++) vars.add(new ContinuousVariable("x" + (i + 1)));
                         CovarianceMatrix cov = getCov1(linecor, vars, n);
 
-//                        edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(cov);
+//                        edu.cmu.tetrad.search.score.SemBicScore score = new edu.cmu.tetrad.search.score.SemBicScore(cov);
                         edu.cmu.tetrad.search.PoissonPriorScore score = new edu.cmu.tetrad.search.PoissonPriorScore(cov);
 //                        score.setPenaltyDiscount(penalty);
                         score.setLambda(vars.size() / 2.);

@@ -50,6 +50,11 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.DegenerateGaussianScore;
+import edu.cmu.tetrad.search.score.GraphScore;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.search.utils.GraphoidAxioms;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
@@ -3037,7 +3042,7 @@ public final class TestGrasp {
 
                         IndTestDSep dsep = new IndTestDSep(graph);
 
-                        edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(dataSet);
+                        SemBicScore score = new SemBicScore(dataSet);
                         score.setPenaltyDiscount(1);
 
                         // Random permutation over 1...|V|.
@@ -3159,7 +3164,7 @@ public final class TestGrasp {
             DataSet d = im.simulateData(1000, false);
 
             IndTestFisherZ test = new IndTestFisherZ(d, 0.001);
-            edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(d);
+            SemBicScore score = new SemBicScore(d);
             score.setPenaltyDiscount(2);
 
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);

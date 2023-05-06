@@ -24,6 +24,9 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.MagSemBicScore;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.search.utils.SepsetsGreedy;
@@ -121,8 +124,8 @@ public final class SpFci implements GraphSearch {
 
         this.graph = alg.search();
 
-        if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
-            ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
+        if (score instanceof MagSemBicScore) {
+            ((MagSemBicScore) score).setMag(graph);
         }
 
         Knowledge knowledge2 = new Knowledge(knowledge);
