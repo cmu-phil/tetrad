@@ -55,7 +55,6 @@ public class MbClassify implements DiscreteClassifier {
     private int depth;
     private double prior;
     private int maxMissing;
-
     private DiscreteVariable targetVariable;
     private double percentCorrect;
     private int[][] crossTabulation;
