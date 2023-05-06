@@ -38,7 +38,7 @@ import java.util.Collections;
  */
 public final class FasLofs implements GraphSearch {
 
-    private final Lofs2.Rule rule;
+    private final Lofs.Rule rule;
 
     // Elapsed time of the search, in milliseconds.
     private long elapsed;
@@ -59,7 +59,7 @@ public final class FasLofs implements GraphSearch {
     /**
      * @param dataSet These datasets to analyze.
      */
-    public FasLofs(DataSet dataSet, Lofs2.Rule rule) {
+    public FasLofs(DataSet dataSet, Lofs.Rule rule) {
         this.dataSet = dataSet;
         this.rule = rule;
     }
@@ -93,7 +93,7 @@ public final class FasLofs implements GraphSearch {
 
         System.out.println("LOFS orientation, rule " + this.rule);
 
-        Lofs2 lofs2 = new Lofs2(G0, Collections.singletonList(this.dataSet));
+        Lofs lofs2 = new Lofs(G0, Collections.singletonList(this.dataSet));
         lofs2.setRule(this.rule);
         lofs2.setKnowledge(this.knowledge);
         Graph graph = lofs2.orient();

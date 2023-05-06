@@ -8,7 +8,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Lofs2;
+import edu.cmu.tetrad.search.Lofs;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -26,10 +26,10 @@ import java.util.List;
  */
 public class FasLofs implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
-    private final Lofs2.Rule rule;
+    private final Lofs.Rule rule;
     private Knowledge knowledge = new Knowledge();
 
-    public FasLofs(Lofs2.Rule rule) {
+    public FasLofs(Lofs.Rule rule) {
         this.rule = rule;
     }
 
