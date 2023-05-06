@@ -5,6 +5,11 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents an ordered sextad of nodes.
+ *
+ * @author josephramsey
+ */
 public class Sextad implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
@@ -15,6 +20,9 @@ public class Sextad implements TetradSerializable {
     private final int m;
     private final int n;
 
+    /**
+     * Constructor.
+     */
     public Sextad(int i, int j, int k, int l, int m, int n) {
         testDistinctness(i, j, k, l, m, n);
         this.i = i;
@@ -30,29 +38,6 @@ public class Sextad implements TetradSerializable {
      */
     public static Sextad serializableInstance() {
         return new Sextad(0, 1, 2, 3, 4, 5);
-    }
-
-
-    private void testDistinctness(int i, int j, int k, int l, int m, int n) {
-        if (i == j || i == k || i == l || i == m || i == n) {
-            throw new IllegalArgumentException("Nodes not distinct.");
-        }
-
-        if (j == k || j == l || j == m || j == n) {
-            throw new IllegalArgumentException("Nodes not distinct.");
-        }
-
-        if (k == l || k == m || k == n) {
-            throw new IllegalArgumentException("Nodes not distinct.");
-        }
-
-        if (l == m || l == n) {
-            throw new IllegalArgumentException("Nodes not distinct.");
-        }
-
-        if (m == n) {
-            throw new IllegalArgumentException("Nodes not distinct.");
-        }
     }
 
     public int getI() {
@@ -85,6 +70,11 @@ public class Sextad implements TetradSerializable {
         return hash;
     }
 
+    /**
+     * Returns a judgment of equality with another Sextad instance.
+     * @param o The other Sextad instance.
+     * @return True if equal.
+     */
     public boolean equals(Object o) {
         if (!(o instanceof Sextad)) return false;
         Sextad sextad = (Sextad) o;
@@ -110,6 +100,10 @@ public class Sextad implements TetradSerializable {
         return "<" + this.i + ", " + this.j + ", " + this.k + "; " + this.l + ", " + this.m + ", " + this.n + ">";
     }
 
+    /**
+     * Returns the list of nodes.
+     * @return This list.
+     */
     public List<Integer> getNodes() {
         List<Integer> nodes = new ArrayList<>();
         nodes.add(this.i);
@@ -119,5 +113,27 @@ public class Sextad implements TetradSerializable {
         nodes.add(this.m);
         nodes.add(this.n);
         return nodes;
+    }
+
+    private void testDistinctness(int i, int j, int k, int l, int m, int n) {
+        if (i == j || i == k || i == l || i == m || i == n) {
+            throw new IllegalArgumentException("Nodes not distinct.");
+        }
+
+        if (j == k || j == l || j == m || j == n) {
+            throw new IllegalArgumentException("Nodes not distinct.");
+        }
+
+        if (k == l || k == m || k == n) {
+            throw new IllegalArgumentException("Nodes not distinct.");
+        }
+
+        if (l == m || l == n) {
+            throw new IllegalArgumentException("Nodes not distinct.");
+        }
+
+        if (m == n) {
+            throw new IllegalArgumentException("Nodes not distinct.");
+        }
     }
 }
