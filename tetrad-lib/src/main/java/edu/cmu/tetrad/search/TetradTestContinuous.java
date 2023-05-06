@@ -54,7 +54,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * @author Ricardo Silva
  */
 
-public final class ContinuousTetradTest implements TetradTest {
+public final class TetradTestContinuous implements TetradTest {
     private double sig;
     private double[] prob;
     private ICovarianceMatrix covMatrix;
@@ -70,7 +70,7 @@ public final class ContinuousTetradTest implements TetradTest {
     private List<Node> variables;
     DeltaTetradTest deltaTest;
 
-    public ContinuousTetradTest(DataSet dataSet, BpcTestType sigTestType,
+    public TetradTestContinuous(DataSet dataSet, BpcTestType sigTestType,
                                 double sig) {
         if (sigTestType == BpcTestType.TETRAD_BOLLEN || sigTestType == null) {
             sigTestType = BpcTestType.TETRAD_DELTA;
@@ -98,7 +98,7 @@ public final class ContinuousTetradTest implements TetradTest {
         initialization();
     }
 
-    public ContinuousTetradTest(ICovarianceMatrix covMatrix,
+    public TetradTestContinuous(ICovarianceMatrix covMatrix,
                                 BpcTestType sigTestType, double sig) {
         if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
                 sigTestType == BpcTestType.TETRAD_DELTA ||
@@ -119,7 +119,7 @@ public final class ContinuousTetradTest implements TetradTest {
         this.variables = covMatrix.getVariables();
     }
 
-    public ContinuousTetradTest(CorrelationMatrix correlationMatrix,
+    public TetradTestContinuous(CorrelationMatrix correlationMatrix,
                                 BpcTestType sigTestType, double sig) {
         if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
                 sigTestType == BpcTestType.TETRAD_DELTA ||

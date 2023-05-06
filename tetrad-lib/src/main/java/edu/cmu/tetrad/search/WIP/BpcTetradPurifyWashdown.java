@@ -51,7 +51,7 @@ public class BpcTetradPurifyWashdown {
      */
     public BpcTetradPurifyWashdown(ICovarianceMatrix cov, BpcTestType testType, double alpha) {
         this.variables = cov.getVariables();
-        this.test = new ContinuousTetradTest(cov, testType, alpha);
+        this.test = new TetradTestContinuous(cov, testType, alpha);
     }
 
     /**
@@ -65,7 +65,7 @@ public class BpcTetradPurifyWashdown {
      */
     public BpcTetradPurifyWashdown(DataSet dataSet, BpcTestType testType, double alpha) {
         this.variables = dataSet.getVariables();
-        this.test = new ContinuousTetradTest(dataSet, testType, alpha);
+        this.test = new TetradTestContinuous(dataSet, testType, alpha);
     }
 
     /**

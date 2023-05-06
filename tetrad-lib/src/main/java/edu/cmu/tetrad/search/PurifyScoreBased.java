@@ -305,7 +305,7 @@ public class PurifyScoreBased implements IPurify {
                 impurities[j][i] = impurities[i][j];
             }
         }
-        if (((ContinuousTetradTest) this.tetradTest).getTestType() ==
+        if (((TetradTestContinuous) this.tetradTest).getTestType() ==
                 BpcTestType.GAUSSIAN_SCORE) {
             bestGraph = removeMarkedImpurities(bestGraph, impurities);
         }
@@ -359,7 +359,7 @@ public class PurifyScoreBased implements IPurify {
         this.purePartitionGraph = new SemGraph(this.basicGraph);
         this.purePartitionGraph.setShowErrorTerms(true);
 
-        if (((ContinuousTetradTest) this.tetradTest).getTestType() ==
+        if (((TetradTestContinuous) this.tetradTest).getTestType() ==
                 BpcTestType.NONE) {
             return;
         }

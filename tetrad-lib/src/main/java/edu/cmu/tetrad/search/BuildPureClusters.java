@@ -206,7 +206,7 @@ public final class BuildPureClusters {
         if (sigTestType == BpcTestType.DISCRETE) {
             this.numVariables = this.dataSet.getNumColumns();
             this.independenceTest = new IndTestGSquare(this.dataSet, alpha);
-            this.tetradTest = new DiscreteTetradTest(this.dataSet, alpha);
+            this.tetradTest = new TetradTestDiscrete(this.dataSet, alpha);
         } else {
             assert getCovarianceMatrix() != null;
             this.numVariables = getCovarianceMatrix().getSize();
@@ -222,9 +222,9 @@ public final class BuildPureClusters {
             }
 
             if (this.dataSet != null) {
-                this.tetradTest = new ContinuousTetradTest(this.dataSet, type, alpha);
+                this.tetradTest = new TetradTestContinuous(this.dataSet, type, alpha);
             } else {
-                this.tetradTest = new ContinuousTetradTest(getCovarianceMatrix(), type, alpha);
+                this.tetradTest = new TetradTestContinuous(getCovarianceMatrix(), type, alpha);
             }
         }
         this.labels = new int[numVariables()];

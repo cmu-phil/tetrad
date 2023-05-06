@@ -53,7 +53,7 @@ public class Fofc {
     // The Delta test. Testing two tetrads simultaneously.
     private final DeltaTetradTest test;
     // The tetrad test--using Ricardo's. Used only for Wishart.
-    private final ContinuousTetradTest test2;
+    private final TetradTestContinuous test2;
     // The data.
     private final transient DataModel dataModel;
     private final BpcTestType testType;
@@ -80,7 +80,7 @@ public class Fofc {
         this.alpha = alpha;
         this.testType = testType;
         this.test = new DeltaTetradTest(cov);
-        this.test2 = new ContinuousTetradTest(cov, testType, alpha);
+        this.test2 = new TetradTestContinuous(cov, testType, alpha);
         this.dataModel = cov;
         this.algorithm = algorithm;
 
@@ -105,7 +105,7 @@ public class Fofc {
         this.alpha = alpha;
         this.testType = testType;
         this.test = new DeltaTetradTest(dataSet);
-        this.test2 = new ContinuousTetradTest(dataSet, testType, alpha);
+        this.test2 = new TetradTestContinuous(dataSet, testType, alpha);
         this.dataModel = dataSet;
         this.algorithm = algorithm;
 

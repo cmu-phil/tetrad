@@ -140,13 +140,13 @@ public class Purify {
                 // Should type these ones.
 
                 if (testType == BpcTestType.TETRAD_DELTA) {
-                    this.tetradTest = new ContinuousTetradTest(this.dataSet, BpcTestType.TETRAD_DELTA, sig);
+                    this.tetradTest = new TetradTestContinuous(this.dataSet, BpcTestType.TETRAD_DELTA, sig);
                 } else {
-                    this.tetradTest = new ContinuousTetradTest(this.correlationMatrix,
+                    this.tetradTest = new TetradTestContinuous(this.correlationMatrix,
                             testType, sig);
                 }
             } else {
-                this.tetradTest = new DiscreteTetradTest(this.dataSet, sig);
+                this.tetradTest = new TetradTestDiscrete(this.dataSet, sig);
             }
         }
         this.numVars = this.tetradTest.getVarNames().length;
@@ -180,7 +180,7 @@ public class Purify {
 //            return convertSearchGraph(pureClusters);
 //        } else
         {
-            BpcTestType type = ((ContinuousTetradTest) this.tetradTest).getTestType();
+            BpcTestType type = ((TetradTestContinuous) this.tetradTest).getTestType();
 //            type = TestType.TETRAD_BASED;
             type = null;
 
@@ -1342,7 +1342,7 @@ public class Purify {
                 impurities[j][i] = impurities[i][j];
             }
         }
-        if (((ContinuousTetradTest) this.tetradTest).getTestType() ==
+        if (((TetradTestContinuous) this.tetradTest).getTestType() ==
                 BpcTestType.GAUSSIAN_SCORE) {
             bestGraph = removeMarkedImpurities(bestGraph, impurities);
         }
@@ -1502,7 +1502,7 @@ public class Purify {
         }
         this.purePartitionGraph = new SemGraph(this.basicGraph);
 
-        if (((ContinuousTetradTest) this.tetradTest).getTestType() ==
+        if (((TetradTestContinuous) this.tetradTest).getTestType() ==
                 BpcTestType.NONE) {
             return;
         }

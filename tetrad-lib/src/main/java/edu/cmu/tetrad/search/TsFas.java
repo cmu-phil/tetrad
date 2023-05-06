@@ -37,7 +37,7 @@ import java.util.*;
  * remove all homologous edges to preserve the time-repeating structure assumed by SvarFCI. Based on (but not identicial
  * to) code by Entner and Hoyer for their 2010 paper. Modified by DMalinsky 4/21/2016.
  *
- * @author Joseph Ramsey.
+ * @author josephramsey
  * @author DMalinsky
  * @see Fas
  */

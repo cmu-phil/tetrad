@@ -151,7 +151,7 @@ public class TestPurify {
         partition.add(cluster2);
         partition.add(cluster3);
 
-        TetradTest test = new ContinuousTetradTest(data, BpcTestType.TETRAD_WISHART, 0.05);
+        TetradTest test = new TetradTestContinuous(data, BpcTestType.TETRAD_WISHART, 0.05);
         IPurify purify = new PurifyTetradBased(test);
         purify.setTrueGraph(graph);
 
@@ -248,7 +248,7 @@ public class TestPurify {
         partition.add(cluster1);
         partition.add(cluster2);
 
-        TetradTest test = new ContinuousTetradTest(data, BpcTestType.TETRAD_WISHART, 0.0001);
+        TetradTest test = new TetradTestContinuous(data, BpcTestType.TETRAD_WISHART, 0.0001);
         IPurify purify = new PurifyTetradBased(test);
         purify.setTrueGraph(graph);
 
@@ -286,7 +286,7 @@ public class TestPurify {
             clustering.add(adj);
         }
 
-        ContinuousTetradTest test = new ContinuousTetradTest(data, BpcTestType.TETRAD_WISHART, 0.001);
+        TetradTestContinuous test = new TetradTestContinuous(data, BpcTestType.TETRAD_WISHART, 0.001);
 
         IPurify purify = new PurifyTetradBased(test);
 

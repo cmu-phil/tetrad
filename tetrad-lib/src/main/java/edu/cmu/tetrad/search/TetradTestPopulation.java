@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search.WIP;
+package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.DataSet;
@@ -37,12 +37,12 @@ import java.util.List;
  * @author Ricardo Silva
  */
 
-public class PopulationTetradTest implements TetradTest {
+public class TetradTestPopulation implements TetradTest {
     private final CorrelationMatrix CorrelationMatrix;
     private final boolean[] bvalues;
     private final double epsilon = 0.001;
 
-    public PopulationTetradTest(CorrelationMatrix CorrelationMatrix) {
+    public TetradTestPopulation(CorrelationMatrix CorrelationMatrix) {
         this.CorrelationMatrix = CorrelationMatrix;
         this.bvalues = new boolean[3];
     }

@@ -45,7 +45,7 @@ import java.util.List;
  * @author Ricardo Silva
  */
 
-public final class DiscreteTetradTest implements TetradTest {
+public final class TetradTestDiscrete implements TetradTest {
     DataSet dataSet;
     //    int rawdata[][];
     int[][][][] counts; //bivariate coefs only
@@ -96,7 +96,7 @@ public final class DiscreteTetradTest implements TetradTest {
      */
     int[][][][] twoFactor4Tests;
 
-    public DiscreteTetradTest(DataSet dataSet, double sig) {
+    public TetradTestDiscrete(DataSet dataSet, double sig) {
         this.dataSet = dataSet;
         this.sig = sig;
         initialization();
@@ -115,8 +115,8 @@ public final class DiscreteTetradTest implements TetradTest {
     }
 
     private void initialization() {
-        for (int i = 0; i < DiscreteTetradTest.GHY.length; i++) {
-            DiscreteTetradTest.GHY[i] *= FastMath.sqrt(2);
+        for (int i = 0; i < TetradTestDiscrete.GHY.length; i++) {
+            TetradTestDiscrete.GHY[i] *= FastMath.sqrt(2);
         }
         int numRows = this.dataSet.getNumRows();
         int numColumns = this.dataSet.getNumColumns();
@@ -127,9 +127,9 @@ public final class DiscreteTetradTest implements TetradTest {
         this.sig2 = 2. * this.sig / 3.;
         this.sig3 = this.sig;
 
-        this.rhoGrid = new double[DiscreteTetradTest.RHO_GRID_SIZE];
-        for (int i = 1; i < DiscreteTetradTest.RHO_GRID_SIZE; i++) {
-            this.rhoGrid[i - 1] = -1. + (2. / DiscreteTetradTest.RHO_GRID_SIZE) * i;
+        this.rhoGrid = new double[TetradTestDiscrete.RHO_GRID_SIZE];
+        for (int i = 1; i < TetradTestDiscrete.RHO_GRID_SIZE; i++) {
+            this.rhoGrid[i - 1] = -1. + (2. / TetradTestDiscrete.RHO_GRID_SIZE) * i;
         }
 
 //        this.rawdata = this.dataSet.getIntMatrixTransposed();
@@ -137,8 +137,8 @@ public final class DiscreteTetradTest implements TetradTest {
         // Store and order possible values
         this.values = new int[numColumns][];
         this.valueIndices = new int[numColumns];
-        int[] tempValues = new int[DiscreteTetradTest.MAX_VALUES];
-        boolean[] marked = new boolean[DiscreteTetradTest.MAX_VALUES];
+        int[] tempValues = new int[TetradTestDiscrete.MAX_VALUES];
+        boolean[] marked = new boolean[TetradTestDiscrete.MAX_VALUES];
         for (int i = 0; i < numColumns; i++) {
             int vSize = 0;
             rowloop:
@@ -149,7 +149,7 @@ public final class DiscreteTetradTest implements TetradTest {
                         continue rowloop;
                     }
                 }
-                if (vSize < DiscreteTetradTest.MAX_VALUES - 1) {
+                if (vSize < TetradTestDiscrete.MAX_VALUES - 1) {
                     tempValues[vSize++] = value;
                 } else {
                     throw new RuntimeException(
