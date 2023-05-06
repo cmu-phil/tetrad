@@ -370,11 +370,11 @@ public final class Rfci implements GraphSearch {
             if (!sepset.contains(j)
                     && this.graph.isAdjacentTo(i, j) && this.graph.isAdjacentTo(j, k)) {
 
-                if (!isArrowpointAllowed(i, j)) {
+                if (!isArrowheadAllowed(i, j)) {
                     continue;
                 }
 
-                if (!isArrowpointAllowed(k, j)) {
+                if (!isArrowheadAllowed(k, j)) {
                     continue;
                 }
 
@@ -566,7 +566,7 @@ public final class Rfci implements GraphSearch {
      * @param y The possible point node.
      * @return Whether the arrowpoint is allowed.
      */
-    private boolean isArrowpointAllowed(Node x, Node y) {
+    private boolean isArrowheadAllowed(Node x, Node y) {
         if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }

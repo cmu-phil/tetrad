@@ -1844,8 +1844,8 @@ public final class GraphUtils {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
-                    if (FciOrient.isArrowpointAllowed(a, b, graph, knowledge)
-                            && FciOrient.isArrowpointAllowed(c, b, graph, knowledge)) {
+                    if (FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                            && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                     }

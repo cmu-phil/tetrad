@@ -130,7 +130,7 @@ public final class PcCommon implements GraphSearch {
     /**
      * Checks if an arrowpoint is allowed by background knowledge.
      */
-    public static boolean isArrowpointAllowed(Object from, Object to,
+    public static boolean isArrowheadAllowed(Object from, Object to,
                                               Knowledge knowledge) {
         if (knowledge == null) {
             return true;
@@ -620,7 +620,7 @@ public final class PcCommon implements GraphSearch {
                 List<Node> s2 = new ArrayList<>(sepset);
                 if (!s2.contains(b)) s2.add(b);
 
-                if (!sepset.contains(b) && PcCommon.isArrowpointAllowed(a, b, knowledge) && PcCommon.isArrowpointAllowed(c, b, knowledge)) {
+                if (!sepset.contains(b) && PcCommon.isArrowheadAllowed(a, b, knowledge) && PcCommon.isArrowheadAllowed(c, b, knowledge)) {
                     PcCommon.orientCollider(a, b, c, conflictRule, graph);
 
                     if (verbose) {

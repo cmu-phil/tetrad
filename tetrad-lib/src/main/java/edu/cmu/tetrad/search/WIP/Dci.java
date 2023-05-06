@@ -364,10 +364,10 @@ public class Dci {
                         continue;
                     }
                     if (!sepset.get(a, c).contains(b)) {
-                        if (!isArrowpointAllowed(graph, a, b)) {
+                        if (!isArrowheadAllowed(graph, a, b)) {
                             continue;
                         }
-                        if (!isArrowpointAllowed(graph, c, b)) {
+                        if (!isArrowheadAllowed(graph, c, b)) {
                             continue;
                         }
                         System.out.println("Check here " + k + "\n " + sepset.get(a, c) +
@@ -452,7 +452,7 @@ public class Dci {
                         }
 
                         //if all of the previous tests pass, orient D*-oB as D*-&gt;B
-                        if (!isArrowpointAllowed(graph, D, B)) {
+                        if (!isArrowheadAllowed(graph, D, B)) {
                             continue;
                         }
 
@@ -464,7 +464,7 @@ public class Dci {
         }
     }
 
-    private boolean isArrowpointAllowed(Graph graph, Node x, Node y) {
+    private boolean isArrowheadAllowed(Graph graph, Node x, Node y) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }
@@ -532,7 +532,7 @@ public class Dci {
                 (graph.getEndpoint(a, b) == Endpoint.ARROW)) {
             if (CB == Endpoint.CIRCLE || CB == Endpoint.TAIL) {
                 if (BC == Endpoint.CIRCLE) {
-                    if (!isArrowpointAllowed(graph, b, c)) {
+                    if (!isArrowheadAllowed(graph, b, c)) {
                         return;
                     }
 
@@ -561,7 +561,7 @@ public class Dci {
                     (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
                             (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
 
-                if (!isArrowpointAllowed(graph, a, c)) {
+                if (!isArrowheadAllowed(graph, a, c)) {
                     return;
                 }
 
@@ -717,11 +717,11 @@ public class Dci {
         if (sepset.contains(b)) {
             graph.setEndpoint(c, b, Endpoint.TAIL);
         } else {
-            if (!isArrowpointAllowed(graph, a, b)) {
+            if (!isArrowheadAllowed(graph, a, b)) {
                 return;
             }
 
-            if (!isArrowpointAllowed(graph, c, b)) {
+            if (!isArrowheadAllowed(graph, c, b)) {
                 return;
             }
 
@@ -1575,7 +1575,7 @@ public class Dci {
                         }
 
                         //if all of the previous tests pass, orient D*-oB as D*-&gt;B
-                        if (!isArrowpointAllowed(graph, D, B)) {
+                        if (!isArrowheadAllowed(graph, D, B)) {
                             continue;
                         }
 
@@ -1767,11 +1767,11 @@ public class Dci {
         }
 
         Graph newGraph2 = new EdgeListGraph(graph);
-        if (!isArrowpointAllowed(graph, a, b)) {
+        if (!isArrowheadAllowed(graph, a, b)) {
             return;
         }
 
-        if (!isArrowpointAllowed(graph, c, b)) {
+        if (!isArrowheadAllowed(graph, c, b)) {
             return;
         }
 

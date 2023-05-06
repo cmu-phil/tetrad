@@ -1105,7 +1105,7 @@ public class Ion {
                         }
 
                         //if all of the previous tests pass, orient D*-oB as D*-&gt;B
-                        if (!isArrowpointAllowed(graph, D, B)) {
+                        if (!isArrowheadAllowed(graph, D, B)) {
                             continue;
                         }
 
@@ -1184,7 +1184,7 @@ public class Ion {
         }
 
         if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-            if (!isArrowpointAllowed(graph, b, c)) {
+            if (!isArrowheadAllowed(graph, b, c)) {
                 return;
             }
 
@@ -1202,7 +1202,7 @@ public class Ion {
 
         if (graph.getEndpoint(b, a) == Endpoint.TAIL && graph.getEndpoint(a, b) == Endpoint.ARROW
                 && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE) {
-            if (!isArrowpointAllowed(graph, a, c)) {
+            if (!isArrowheadAllowed(graph, a, c)) {
                 return;
             }
 
@@ -1210,7 +1210,7 @@ public class Ion {
         } else if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.TAIL
                 && graph.getEndpoint(b, c) == Endpoint.ARROW && graph.getEndpoint(a, c) == Endpoint.CIRCLE
         ) {
-            if (!isArrowpointAllowed(graph, a, c)) {
+            if (!isArrowheadAllowed(graph, a, c)) {
                 return;
             }
 
@@ -1218,7 +1218,7 @@ public class Ion {
         }
     }
 
-    private boolean isArrowpointAllowed(Graph graph, Node x, Node y) {
+    private boolean isArrowheadAllowed(Graph graph, Node x, Node y) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }
@@ -1244,7 +1244,7 @@ public class Ion {
                 (graph.getEndpoint(a, b) == Endpoint.ARROW)) {
             if (CB == Endpoint.CIRCLE || CB == Endpoint.TAIL) {
                 if (BC == Endpoint.CIRCLE) {
-                    if (!isArrowpointAllowed(graph, b, c)) {
+                    if (!isArrowheadAllowed(graph, b, c)) {
                         return;
                     }
 
@@ -1273,7 +1273,7 @@ public class Ion {
                     (graph.getEndpoint(b, a) == Endpoint.TAIL) ||
                             (graph.getEndpoint(c, b) == Endpoint.TAIL))) {
 
-                if (!isArrowpointAllowed(graph, a, c)) {
+                if (!isArrowheadAllowed(graph, a, c)) {
                     return;
                 }
 

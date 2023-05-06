@@ -325,8 +325,8 @@ public final class Cfci implements GraphSearch {
                 List<Node> sepset = sepsets.get(x, z);
 
                 if (type == TripleType.COLLIDER || (sepset != null && !sepset.contains(y))) {
-                    if (isArrowpointAllowed(x, y) &&
-                            isArrowpointAllowed(z, y)) {
+                    if (isArrowheadAllowed(x, y) &&
+                            isArrowheadAllowed(z, y)) {
                         getGraph().setEndpoint(x, y, Endpoint.ARROW);
                         getGraph().setEndpoint(z, y, Endpoint.ARROW);
 
@@ -358,7 +358,7 @@ public final class Cfci implements GraphSearch {
      * @param y The possible point node.
      * @return Whether the arrowpoint is allowed.
      */
-    private boolean isArrowpointAllowed(Node x, Node y) {
+    private boolean isArrowheadAllowed(Node x, Node y) {
         if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }

@@ -188,11 +188,11 @@ public final class FciOrient {
                 }
 
                 if (this.sepsets.isUnshieldedCollider(a, b, c)) {
-                    if (!isArrowpointAllowed(a, b, graph, knowledge)) {
+                    if (!isArrowheadAllowed(a, b, graph, knowledge)) {
                         continue;
                     }
 
-                    if (!isArrowpointAllowed(c, b, graph, knowledge)) {
+                    if (!isArrowheadAllowed(c, b, graph, knowledge)) {
                         continue;
                     }
 
@@ -332,7 +332,7 @@ public final class FciOrient {
         }
 
         if (graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(c, b) == Endpoint.CIRCLE) {
-            if (!isArrowpointAllowed(b, c, graph, knowledge)) {
+            if (!isArrowheadAllowed(b, c, graph, knowledge)) {
                 return;
             }
 
@@ -353,7 +353,7 @@ public final class FciOrient {
             if ((graph.getEndpoint(a, b) == Endpoint.ARROW && graph.getEndpoint(b, c) == Endpoint.ARROW)
                     && (graph.getEndpoint(b, a) == Endpoint.TAIL || graph.getEndpoint(c, b) == Endpoint.TAIL)) {
 
-                if (!isArrowpointAllowed(a, c, graph, knowledge)) {
+                if (!isArrowheadAllowed(a, c, graph, knowledge)) {
                     return;
                 }
 
@@ -738,11 +738,11 @@ public final class FciOrient {
         }
 
         if (!sepset.contains(b) && doDiscriminatingPathColliderRule) {
-            if (!isArrowpointAllowed(a, b, graph, knowledge)) {
+            if (!isArrowheadAllowed(a, b, graph, knowledge)) {
                 return false;
             }
 
-            if (!isArrowpointAllowed(c, b, graph, knowledge)) {
+            if (!isArrowheadAllowed(c, b, graph, knowledge)) {
                 return false;
             }
 
@@ -1062,7 +1062,7 @@ public final class FciOrient {
         this.logger.forceLogMessage("Finishing BK Orientation.");
     }
 
-    public static boolean isArrowpointAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
+    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
         if (!graph.isAdjacentTo(x, y)) return false;
 
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {

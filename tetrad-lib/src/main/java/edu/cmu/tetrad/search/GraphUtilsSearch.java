@@ -166,8 +166,8 @@ public final class GraphUtilsSearch {
                     continue;
                 }
 
-                if (!GraphUtilsSearch.isArrowpointAllowed(x, y, knowledge)
-                        || !GraphUtilsSearch.isArrowpointAllowed(z, y, knowledge)) {
+                if (!GraphUtilsSearch.isArrowheadAllowed(x, y, knowledge)
+                        || !GraphUtilsSearch.isArrowheadAllowed(z, y, knowledge)) {
                     continue;
                 }
 
@@ -245,8 +245,8 @@ public final class GraphUtilsSearch {
 
                 //I think the null check needs to be here --AJ
                 if (sepset != null && !sepset.contains(b)
-                        && GraphUtilsSearch.isArrowpointAllowed(a, b, knowledge)
-                        && GraphUtilsSearch.isArrowpointAllowed(c, b, knowledge)) {
+                        && GraphUtilsSearch.isArrowheadAllowed(a, b, knowledge)
+                        && GraphUtilsSearch.isArrowheadAllowed(c, b, knowledge)) {
                     if (verbose) {
                         System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
                     }
@@ -275,7 +275,7 @@ public final class GraphUtilsSearch {
     /**
      * Checks if an arrowpoint is allowed by background knowledge.
      */
-    public static boolean isArrowpointAllowed(Object from, Object to,
+    public static boolean isArrowheadAllowed(Object from, Object to,
                                               Knowledge knowledge) {
         if (knowledge == null) {
             return true;

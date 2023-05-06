@@ -302,7 +302,7 @@ public class MeekRules implements ImpliedOrientation {
     }
 
     private boolean direct(Node a, Node c, Graph graph, Set<Node> visited) {
-        if (!MeekRules.isArrowpointAllowed(a, c, this.knowledge)) return false;
+        if (!MeekRules.isArrowheadAllowed(a, c, this.knowledge)) return false;
         if (!Edges.isUndirectedEdge(graph.getEdge(a, c))) return false;
 
         Edge before = graph.getEdge(a, c);
@@ -324,7 +324,7 @@ public class MeekRules implements ImpliedOrientation {
         return true;
     }
 
-    private static boolean isArrowpointAllowed(Node from, Node to, Knowledge knowledge) {
+    private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
         if (knowledge.isEmpty()) return true;
         return !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
