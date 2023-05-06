@@ -6,7 +6,7 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.test.IndTestScore;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.search.work_in_progress.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
@@ -33,18 +33,18 @@ public class Pcd implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            IndTestScore test;
+            ScoreIndTest test;
 
             if (dataSet instanceof ICovarianceMatrix) {
                 SemBicScoreDeterministic score = new SemBicScoreDeterministic((ICovarianceMatrix) dataSet);
                 score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
                 score.setDeterminismThreshold(parameters.getDouble(Params.DETERMINISM_THRESHOLD));
-                test = new IndTestScore(score);
+                test = new ScoreIndTest(score);
             } else if (dataSet instanceof DataSet) {
                 SemBicScoreDeterministic score = new SemBicScoreDeterministic(new CovarianceMatrix((DataSet) dataSet));
                 score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
                 score.setDeterminismThreshold(parameters.getDouble(Params.DETERMINISM_THRESHOLD));
-                test = new IndTestScore(score);
+                test = new ScoreIndTest(score);
             } else {
                 throw new IllegalArgumentException("Expecting a dataset or a covariance matrix.");
             }

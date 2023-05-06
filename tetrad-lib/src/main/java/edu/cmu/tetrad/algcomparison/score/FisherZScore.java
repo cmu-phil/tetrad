@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.score.ScoredIndTest;
+import edu.cmu.tetrad.search.score.IndTestScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -35,7 +35,7 @@ public class FisherZScore implements ScoreWrapper {
         double alpha = parameters.getDouble(Params.ALPHA);
         this.alpha = alpha;
         IndTestFisherZ test = new IndTestFisherZ((DataSet) dataSet, alpha);
-        return new ScoredIndTest(test);
+        return new IndTestScore(test);
     }
 
     @Override

@@ -36,9 +36,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.IndTestScore;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -597,7 +596,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                 // Grabbing this independence score for the independence tests interface. JR 2020.8.24
                 Score score = wrapper.getScore(getDataModelList().get(0), this.parameters);
-                this.independenceTests.add(new IndTestScore(score));
+                this.independenceTests.add(new ScoreIndTest(score));
             }
         }
 

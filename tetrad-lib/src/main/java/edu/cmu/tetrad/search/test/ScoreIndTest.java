@@ -43,7 +43,7 @@ import java.util.List;
  * @author Don Crimbchin (djc2@andrew.cmu.edu)
  * @author josephramsey
  */
-public class IndTestScore implements IndependenceTest {
+public class ScoreIndTest implements IndependenceTest {
 
     private final Score score;
     private final List<Node> variables;
@@ -51,11 +51,11 @@ public class IndTestScore implements IndependenceTest {
     private final DataModel data;
     private boolean verbose;
 
-    public IndTestScore(Score score) {
+    public ScoreIndTest(Score score) {
         this(score, null);
     }
 
-    public IndTestScore(Score score, DataModel data) {
+    public ScoreIndTest(Score score, DataModel data) {
         if (score == null) throw new NullPointerException();
         this.score = score;
         this.variables = score.getVariables();
@@ -65,7 +65,7 @@ public class IndTestScore implements IndependenceTest {
     /**
      * @return an Independence test for a subset of the variables.
      */
-    public IndTestScore indTestSubset(List<Node> vars) {
+    public ScoreIndTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 

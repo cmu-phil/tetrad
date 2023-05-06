@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.ConditionalCorrelationIndependence;
 import edu.cmu.tetrad.search.test.IndTestConditionalCorrelation;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.score.ScoredIndTest;
+import edu.cmu.tetrad.search.score.IndTestScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -51,7 +51,7 @@ public class CciScore implements ScoreWrapper {
             throw new IllegalStateException("Basis not configured.");
         }
 
-        return new ScoredIndTest(cci);
+        return new IndTestScore(cci);
     }
 
     @Override

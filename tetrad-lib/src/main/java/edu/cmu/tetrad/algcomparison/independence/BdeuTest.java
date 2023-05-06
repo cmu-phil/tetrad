@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.score.BdeuScore;
-import edu.cmu.tetrad.search.test.IndTestScore;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -34,7 +34,7 @@ public class BdeuTest implements IndependenceWrapper {
         BdeuScore score = new BdeuScore(SimpleDataLoader.getDiscreteDataSet(dataSet));
         score.setSamplePrior(parameters.getDouble(Params.PRIOR_EQUIVALENT_SAMPLE_SIZE));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
-        return new IndTestScore(score);
+        return new ScoreIndTest(score);
     }
 
     @Override

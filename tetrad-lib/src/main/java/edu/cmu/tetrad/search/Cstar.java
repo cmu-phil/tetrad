@@ -5,11 +5,11 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.score.ScoredIndTest;
+import edu.cmu.tetrad.search.score.IndTestScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndTestScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
@@ -178,7 +178,7 @@ public class Cstar {
             }
         }
 
-        if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
+        if (test instanceof ScoreIndTest && ((ScoreIndTest) test).getWrappedScore() instanceof SemBicScore) {
             this.test = test;
         } else if (test instanceof IndTestFisherZ) {
             this.test = test;
@@ -694,29 +694,29 @@ public class Cstar {
     }
 
     private Graph getPatternFges(DataSet sample) {
-        Score score = new ScoredIndTest(getIndependenceTest(sample, this.test));
+        Score score = new IndTestScore(getIndependenceTest(sample, this.test));
         Fges fges = new Fges(score);
         fges.setVerbose(false);
         return fges.search();
     }
 
     private IndependenceTest getIndependenceTest(DataSet sample, IndependenceTest test) {
-        if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
+        if (test instanceof ScoreIndTest && ((ScoreIndTest) test).getWrappedScore() instanceof SemBicScore) {
             SemBicScore score = new SemBicScore(new CorrelationMatrix(sample));
-            score.setPenaltyDiscount(((SemBicScore) ((IndTestScore) test).getWrappedScore()).getPenaltyDiscount());
-            return new IndTestScore(score);
+            score.setPenaltyDiscount(((SemBicScore) ((ScoreIndTest) test).getWrappedScore()).getPenaltyDiscount());
+            return new ScoreIndTest(score);
         } else if (test instanceof IndTestFisherZ) {
             double alpha = test.getAlpha();
             return new IndTestFisherZ(new CorrelationMatrix(sample), alpha);
         } else if (test instanceof ChiSquare) {
             double alpha = test.getAlpha();
             return new IndTestFisherZ(sample, alpha);
-        } else if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof ConditionalGaussianScore) {
-            ConditionalGaussianScore score = (ConditionalGaussianScore) ((IndTestScore) test).getWrappedScore();
+        } else if (test instanceof ScoreIndTest && ((ScoreIndTest) test).getWrappedScore() instanceof ConditionalGaussianScore) {
+            ConditionalGaussianScore score = (ConditionalGaussianScore) ((ScoreIndTest) test).getWrappedScore();
             double penaltyDiscount = score.getPenaltyDiscount();
             ConditionalGaussianScore _score = new ConditionalGaussianScore(sample, penaltyDiscount, false);
             _score.setStructurePrior(0);
-            return new IndTestScore(_score);
+            return new ScoreIndTest(_score);
         } else {
             throw new IllegalArgumentException("That test is not configured: " + test);
         }

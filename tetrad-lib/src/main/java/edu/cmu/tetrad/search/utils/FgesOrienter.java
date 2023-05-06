@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.BdeuScore;
-import edu.cmu.tetrad.search.score.DiscreteScore;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
@@ -111,7 +110,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     /**
      * The score for discrete searches.
      */
-    private DiscreteScore IDiscreteScore;
+    private edu.cmu.tetrad.search.score.DiscreteScore DiscreteScore;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -350,15 +349,15 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     /**
      * @return the discrete scoring function being used. By default, BDeu.
      */
-    public DiscreteScore getDiscreteScore() {
-        return this.IDiscreteScore;
+    public edu.cmu.tetrad.search.score.DiscreteScore getDiscreteScore() {
+        return this.DiscreteScore;
     }
 
     /**
      * Sets the discrete scoring function to use.
      */
-    public void setDiscreteScore(DiscreteScore IDiscreteScore) {
-        this.IDiscreteScore = IDiscreteScore;
+    public void setDiscreteScore(edu.cmu.tetrad.search.score.DiscreteScore DiscreteScore) {
+        this.DiscreteScore = DiscreteScore;
     }
 
     /**

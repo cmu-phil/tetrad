@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.search.score.DiscreteBicScore;
-import edu.cmu.tetrad.search.test.IndTestScore;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -34,7 +34,7 @@ public class DiscreteBicTest implements IndependenceWrapper {
         DiscreteBicScore score = new DiscreteBicScore(SimpleDataLoader.getDiscreteDataSet(dataSet));
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
-        return new IndTestScore(score);
+        return new ScoreIndTest(score);
     }
 
     @Override

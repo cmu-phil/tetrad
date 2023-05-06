@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.search.score.Score;
 
 /**
  * Created by IntelliJ IDEA. User: jdramsey Date: Jul 6, 2009 Time: 3:58:26 PM To change this template use File |

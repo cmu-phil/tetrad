@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndTestPositiveCorr;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.score.ScoredIndTest;
+import edu.cmu.tetrad.search.score.IndTestScore;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ public class PositiveCorrScore implements ScoreWrapper {
         double alpha = parameters.getDouble("alpha");
         this.alpha = alpha;
         IndTestPositiveCorr test = new IndTestPositiveCorr((DataSet) dataSet, alpha);
-        return new ScoredIndTest(test);
+        return new IndTestScore(test);
     }
 
     @Override

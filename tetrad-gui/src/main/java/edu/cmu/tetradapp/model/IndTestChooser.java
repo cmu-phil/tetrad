@@ -138,7 +138,7 @@ final class IndTestChooser {
             return new IndTestFisherZGeneralizedInverse(dataSet, params.getDouble("alpha", 0.001));
         }
         if (IndTestType.SEM_BIC == testType) {
-            return new IndTestScore(new SemBicScore(new CovarianceMatrix(dataSet)));
+            return new ScoreIndTest(new SemBicScore(new CovarianceMatrix(dataSet)));
         }
 
         {
@@ -175,7 +175,7 @@ final class IndTestChooser {
             }
 
             ImagesScore imagesScore = new ImagesScore(scores);
-            return new IndTestScore(imagesScore);
+            return new ScoreIndTest(imagesScore);
         }
 
         {

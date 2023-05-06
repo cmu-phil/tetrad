@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Joseph Ramsey
  */
-public class ScoredIndTest implements Score {
+public class IndTestScore implements Score {
 
     private final IndependenceTest test;
 
@@ -47,7 +47,7 @@ public class ScoredIndTest implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public ScoredIndTest(IndependenceTest test) {
+    public IndTestScore(IndependenceTest test) {
         this.variables = new ArrayList<>();
 
         for (Node node : test.getVariables()) {

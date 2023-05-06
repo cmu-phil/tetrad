@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestScore;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.MillisecondTimes;
 
@@ -83,7 +83,7 @@ public final class FasLofs implements IGraphSearch {
 
         SemBicScore score = new SemBicScore(new CovarianceMatrix(this.dataSet));
         score.setPenaltyDiscount(this.penaltyDiscount);
-        IndependenceTest test = new IndTestScore(score, this.dataSet);
+        IndependenceTest test = new ScoreIndTest(score, this.dataSet);
 
         System.out.println("FAS");
 
