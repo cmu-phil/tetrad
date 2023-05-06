@@ -27,10 +27,8 @@ public class TeyssierScorer {
     private final List<Node> variables;
     private ArrayList<Node> pi; // The current permutation.
     private Map<Node, Integer> orderHash = new HashMap<>();
-
     private final IndependenceTest test;
     private final Score score;
-
     private ArrayList<Set<Node>> prefixes;
     private ArrayList<Pair> scores;
     private final Map<Object, ArrayList<Node>> bookmarkedOrders = new HashMap<>();
@@ -39,12 +37,18 @@ public class TeyssierScorer {
     private final Map<Object, Double> bookmarkedRunningScores = new HashMap<>();
     private final Map<Node, GrowShrinkTree> trees = new HashMap<>();
     private Knowledge knowledge = new Knowledge();
-
     private boolean useScore;
     private boolean useRaskuttiUhler = false;
     private double runningScore = 0f;
 
-
+    /**
+     * Constructor that takes both a test or a score. Only one of these is used, dependeint
+     * on how the parameters are set.
+     * @param test The test.
+     * @param score The score
+     * @see IndependenceTest
+     * @see Score
+     */
     public TeyssierScorer(IndependenceTest test, Score score) {
         if (test == null && score == null) throw new IllegalArgumentException("Required: test or score");
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
@@ -66,7 +70,6 @@ public class TeyssierScorer {
         }
     }
 
-
     /**
      * @param useScore True if the score should be used; false if the test should be used.
      */
@@ -74,7 +77,6 @@ public class TeyssierScorer {
         this.useScore = useScore && !(this.score instanceof GraphScore);
         if (this.useScore) this.useRaskuttiUhler = false;
     }
-
 
     /**
      * @param knowledge Knowledge of forbidden edges.
@@ -130,36 +132,13 @@ public class TeyssierScorer {
         return sum();
     }
 
-    private double sum() {
-        double score = 0;
-
-        for (int i = 0; i < this.pi.size(); i++) {
-            if (this.scores.get(i) == null) {
-                recalculate(i);
-            }
-            double score1 = this.scores.get(i).getScore();
-            score += score1;
-        }
-
-        return score;
-    }
-
     /**
      * Performs a tuck operation.
      */
-    public boolean swaptuck(Node x, Node y) {
-        if (index(x) < index(y)) {
-            return false;
-        } else if (index(y) < index(x)) {
+    public void swaptuck(Node x, Node y) {
+        if (index(y) < index(x)) {
             moveTo(x, index(y));
-            return true;
         }
-
-        return false;
-    }
-
-    public boolean tuck(Node k, Node j) {
-        return tuck(k, index(j));
     }
 
     public boolean tuck(Node k, int j) {
@@ -175,7 +154,6 @@ public class TeyssierScorer {
 
         return true;
     }
-
 
     /**
      * Moves v to a new index.
@@ -197,7 +175,6 @@ public class TeyssierScorer {
             updateScores(vIndex, toIndex);
         }
     }
-
 
     /**
      * Swaps m and n in the permutation.
@@ -228,7 +205,6 @@ public class TeyssierScorer {
         return true;
     }
 
-
     /**
      * Returns true iff x-&gt;y or y-&gt;x is a covered edge. x-&gt;y is a covered edge if
      * parents(x) = parents(y) \ {x}
@@ -246,14 +222,12 @@ public class TeyssierScorer {
         return px.equals(py);
     }
 
-
     /**
      * @return A copy of the current permutation.
      */
     public List<Node> getPi() {
         return new ArrayList<>(this.pi);
     }
-
 
     /**
      * Returns the current permutation without making a copy. Could be dangerous!
@@ -263,7 +237,6 @@ public class TeyssierScorer {
     public List<Node> getOrderShallow() {
         return this.pi;
     }
-
 
     /**
      * Return the index of v in the current permutation.
@@ -281,7 +254,6 @@ public class TeyssierScorer {
         return integer;
     }
 
-
     /**
      * Returns the parents of the node at index p.
      *
@@ -293,13 +265,17 @@ public class TeyssierScorer {
         return new HashSet<>(this.scores.get(p).getParents());
     }
 
-
+    /**
+     * Returns the children of a node v.
+     *
+     * @param p The index of the variable.
+     * @return Its parents.
+     */
     public Set<Node> getChildren(int p) {
         Set<Node> adj = getAdjacentNodes(get(p));
         adj.removeAll(getParents(p));
         return adj;
     }
-
 
     /**
      * Returns the parents of a node v.
@@ -311,11 +287,15 @@ public class TeyssierScorer {
         return getParents(index(v));
     }
 
-
+    /**
+     * Returns the children of a node v.
+     *
+     * @param v The variable.
+     * @return Its parents.
+     */
     public Set<Node> getChildren(Node v) {
         return getChildren(index(v));
     }
-
 
     /**
      * Returns the nodes adjacent to v.
@@ -334,7 +314,6 @@ public class TeyssierScorer {
 
         return adj;
     }
-
 
     /**
      * Returns the DAG build for the current permutation, or its CPDAG.
@@ -359,7 +338,6 @@ public class TeyssierScorer {
         return graph;
     }
 
-
     /**
      * Returns a list of adjacent node pairs in the current graph.
      *
@@ -383,30 +361,12 @@ public class TeyssierScorer {
         return new ArrayList<>(pairs);
     }
 
-
     public Set<Node> getAncestors(Node node) {
         Set<Node> ancestors = new HashSet<>();
         collectAncestorsVisit(node, ancestors);
 
         return ancestors;
     }
-
-
-    private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
-        if (ancestors.contains(node)) {
-            return;
-        }
-
-        ancestors.add(node);
-        Set<Node> parents = getParents(node);
-
-        if (!parents.isEmpty()) {
-            for (Node parent : parents) {
-                collectAncestorsVisit(parent, ancestors);
-            }
-        }
-    }
-
 
     /**
      * Returns a list of edges for the current graph as a list of ordered pairs.
@@ -426,7 +386,6 @@ public class TeyssierScorer {
         return edges;
     }
 
-
     /**
      * @return The number of edges in the current graph.
      */
@@ -440,7 +399,6 @@ public class TeyssierScorer {
         return numEdges;
     }
 
-
     /**
      * Returns the node at index j in pi.
      *
@@ -450,7 +408,6 @@ public class TeyssierScorer {
     public Node get(int j) {
         return this.pi.get(j);
     }
-
 
     /**
      * Bookmarks the current pi as index key.
@@ -469,14 +426,12 @@ public class TeyssierScorer {
         }
     }
 
-
     /**
      * Bookmarks the current pi with index Integer.MIN_VALUE.
      */
     public void bookmark() {
         bookmark(Integer.MIN_VALUE);
     }
-
 
     /**
      * Retrieves the bookmarked state for index 'key' and removes that bookmark.
@@ -494,14 +449,12 @@ public class TeyssierScorer {
         this.runningScore = this.bookmarkedRunningScores.get(key);
     }
 
-
     /**
      * Retries the bookmark with key = Integer.MIN_VALUE and removes the bookmark.
      */
     public void goToBookmark() {
         goToBookmark(Integer.MIN_VALUE);
     }
-
 
     /**
      * Clears all bookmarks.
@@ -513,7 +466,6 @@ public class TeyssierScorer {
         this.bookmarkedRunningScores.clear();
     }
 
-
     /**
      * @return The size of pi, the current permutation.
      */
@@ -521,13 +473,11 @@ public class TeyssierScorer {
         return this.pi.size();
     }
 
-
     public List<Node> getShuffledVariables() {
         List<Node> variables = getPi();
         shuffle(variables);
         return variables;
     }
-
 
     /**
      * Returns True iff a is adjacent to b in the current graph.
@@ -541,7 +491,6 @@ public class TeyssierScorer {
         return getParents(a).contains(b) || getParents(b).contains(a);
     }
 
-
     /**
      * Returns true iff [a, b, c] is a collider.
      *
@@ -554,7 +503,6 @@ public class TeyssierScorer {
         return getParents(b).contains(a) && getParents(b).contains(c);
     }
 
-
     /**
      * Returns true iff [a, b, c] is a triangle.
      *
@@ -566,7 +514,6 @@ public class TeyssierScorer {
     public boolean triangle(Node a, Node b, Node c) {
         return adjacent(a, b) && adjacent(b, c) && adjacent(a, c);
     }
-
 
     /**
      * True iff the nodes in W form a clique in the current DAG.
@@ -586,6 +533,50 @@ public class TeyssierScorer {
         return true;
     }
 
+    public Set<Node> getPrefix(int i) {
+        Set<Node> prefix = new HashSet<>();
+
+        for (int j = 0; j < i; j++) {
+            prefix.add(this.pi.get(j));
+        }
+
+        return prefix;
+    }
+
+    public Set<Set<Node>> getSkeleton() {
+        List<Node> order = getPi();
+        Set<Set<Node>> skeleton = new HashSet<>();
+
+        for (Node y : order) {
+            for (Node x : getParents(y)) {
+                Set<Node> adj = new HashSet<>();
+                adj.add(x);
+                adj.add(y);
+                skeleton.add(adj);
+            }
+        }
+
+        return skeleton;
+    }
+
+    public boolean parent(Node k, Node j) {
+        return getParents(j).contains(k);
+    }
+
+    private void collectAncestorsVisit(Node node, Set<Node> ancestors) {
+        if (ancestors.contains(node)) {
+            return;
+        }
+
+        ancestors.add(node);
+        Set<Node> parents = getParents(node);
+
+        if (!parents.isEmpty()) {
+            for (Node parent : parents) {
+                collectAncestorsVisit(parent, ancestors);
+            }
+        }
+    }
 
     private boolean violatesKnowledge(List<Node> order) {
         if (this.knowledge.isEmpty()) return false;
@@ -601,49 +592,16 @@ public class TeyssierScorer {
         return false;
     }
 
-
     private void initializeScores() {
         for (int i1 = 0; i1 < this.pi.size(); i1++) this.prefixes.set(i1, null);
         updateScores(0, this.pi.size() - 1);
     }
 
-
     private void updateScores(int i1, int i2) {
         for (int i = i1; i <= i2; i++) {
             this.orderHash.put(this.pi.get(i), i);
             this.scores.set(i, null);
-//            recalculate(i);
         }
-
-//        for (int i = i1; i <= i2; i++) {
-//            this.orderHash.put(this.pi.get(i), i);
-//        }
-//
-//        int chunk = getChunkSize(i2 - i1 + 1);
-//        List<MyTask> tasks = new ArrayList<>();
-//
-//        for (int w = 0; w < size(); w += chunk) {
-//            tasks.add(new MyTask(pi, this, chunk, orderHash, w, w + chunk));
-//        }
-//
-//        ForkJoinPool.commonPool().invokeAll(tasks);
-    }
-
-//    private int getChunkSize(int n) {
-//        int chunk = n / Runtime.getRuntime().availableProcessors();
-//        if (chunk < 100) chunk = 100;
-//        return chunk;
-//    }
-
-
-    public Set<Node> getPrefix(int i) {
-        Set<Node> prefix = new HashSet<>();
-
-        for (int j = 0; j < i; j++) {
-            prefix.add(this.pi.get(j));
-        }
-
-        return prefix;
     }
 
     private void recalculate(int p) {
@@ -656,6 +614,20 @@ public class TeyssierScorer {
             }
             this.scores.set(p, p2);
         }
+    }
+
+    private double sum() {
+        double score = 0;
+
+        for (int i = 0; i < this.pi.size(); i++) {
+            if (this.scores.get(i) == null) {
+                recalculate(i);
+            }
+            double score1 = this.scores.get(i).getScore();
+            score += score1;
+        }
+
+        return score;
     }
 
     private void nodesHash(Map<Node, Integer> nodesHash, List<Node> variables) {
@@ -767,26 +739,6 @@ public class TeyssierScorer {
         }
 
         return new Pair(parents, -parents.size());
-    }
-
-    public Set<Set<Node>> getSkeleton() {
-        List<Node> order = getPi();
-        Set<Set<Node>> skeleton = new HashSet<>();
-
-        for (Node y : order) {
-            for (Node x : getParents(y)) {
-                Set<Node> adj = new HashSet<>();
-                adj.add(x);
-                adj.add(y);
-                skeleton.add(adj);
-            }
-        }
-
-        return skeleton;
-    }
-
-    public boolean parent(Node k, Node j) {
-        return getParents(j).contains(k);
     }
 
     private static class Pair {
