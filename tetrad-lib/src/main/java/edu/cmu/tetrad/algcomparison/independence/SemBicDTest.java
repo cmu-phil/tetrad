@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.search.test.IndTestScore;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.WIP.SemBicScoreDeterministic;
+import edu.cmu.tetrad.search.work_in_progress.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;

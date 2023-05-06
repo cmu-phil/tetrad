@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.WIP.Ion;
+import edu.cmu.tetrad.search.work_in_progress.Ion;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;

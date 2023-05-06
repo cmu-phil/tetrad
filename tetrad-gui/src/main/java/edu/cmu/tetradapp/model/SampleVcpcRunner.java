@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.WIP.SampleVcpc;
+import edu.cmu.tetrad.search.work_in_progress.SampleVcpc;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.search.utils.MeekRules;

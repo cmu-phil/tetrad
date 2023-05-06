@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphPersistence;
 import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.WIP.IndTestMultinomialLogisticRegression;
+import edu.cmu.tetrad.search.work_in_progress.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.util.MillisecondTimes;
 
