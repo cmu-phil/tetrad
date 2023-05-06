@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.io.PrintStream;
 import java.util.*;
 
 /**
@@ -56,9 +55,6 @@ public class MeekRules implements ImpliedOrientation {
 
     // Whether verbose output should be generated.
 
-    // Where verbose output should be sent.
-    private PrintStream out;
-
     // True if verbose output should be printed.
     private boolean verbose;
 
@@ -74,6 +70,12 @@ public class MeekRules implements ImpliedOrientation {
 
     //======================== Public Methods ========================//
 
+    /**
+     * Uses the Meek rules to do as many orientations in the given graph as possible.
+     *
+     * @param graph The graph.
+     * @return The set of nodes that were visited in this orientation.
+     */
     public Set<Node> orientImplied(Graph graph) {
         // The initial list of nodes to visit.
         Set<Node> visited = new HashSet<>();
@@ -111,7 +113,64 @@ public class MeekRules implements ImpliedOrientation {
         return visited;
     }
 
-    public void revertToUnshieldedColliders(List<Node> nodes, Graph graph, Set<Node> visited) {
+    /**
+     * Sets the knowledge to be used in the orientation.
+     *
+     * @param knowledge The knowledge.
+     * @see Knowledge
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
+    /**
+     * Sets whether cycles should be aggressively prevented by cycle checking.
+     *
+     * @param aggressivelyPreventCycles True if so.
+     */
+    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
+        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    }
+
+    /**
+     * Returns a complete set of all the edges that were changed in the course of
+     * orientation, as a map from the previous edges in the graph to the new, changed
+     * edges for the same node pair. For example, if X->Y was changed to X<-Y, thie
+     * map will send X->Y to X<-Y.
+     *
+     * @return This map.
+     */
+    public Map<Edge, Edge> getChangedEdges() {
+        return this.changedEdges;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Sets whether orientations in the graph should be reverted to its
+     * unshielded colliders before performing any Meek rule orintations.
+     *
+     * @param revertToUnshieldedColliders True if so.
+     */
+    public void setRevertToUnshieldedColliders(boolean revertToUnshieldedColliders) {
+        this.revertToUnshieldedColliders = revertToUnshieldedColliders;
+    }
+
+    /**
+     * Reverts the subgraph of the given graph over the given nodes to just its unshielded colliders.
+     *
+     * @param nodes   The nodes of the subgraph.
+     * @param graph   The graph.
+     * @param visited The set of nodes visited.
+     */
+    private void revertToUnshieldedColliders(List<Node> nodes, Graph graph, Set<Node> visited) {
         boolean reverted = true;
 
         while (reverted) {
@@ -124,33 +183,6 @@ public class MeekRules implements ImpliedOrientation {
             }
         }
     }
-
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
-    }
-
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
-    }
-
-    public Map<Edge, Edge> getChangedEdges() {
-        return this.changedEdges;
-    }
-
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    public PrintStream getOut() {
-        return this.out;
-    }
-
-    //============================== Private Methods ===================================//
 
     /**
      * Meek's rule R1: if a-->b, b---c, and a not adj to c, then b-->c
@@ -276,11 +308,6 @@ public class MeekRules implements ImpliedOrientation {
         Edge before = graph.getEdge(a, c);
         graph.removeEdge(before);
 
-//        if (aggressivelyPreventCycles && GraphUtils.existsSemidirectedPath(c, a, graph)) {
-//            graph.addEdge(before);
-//            return false;
-//        }
-
         if (aggressivelyPreventCycles && graph.paths().existsDirectedPathFromTo(c, a)) {
             graph.addEdge(before);
             return false;
@@ -337,18 +364,10 @@ public class MeekRules implements ImpliedOrientation {
         }
     }
 
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
     private Set<Node> getCommonAdjacents(Node x, Node y, Graph graph) {
         Set<Node> adj = new HashSet<>(graph.getAdjacentNodes(x));
         adj.retainAll(graph.getAdjacentNodes(y));
         return adj;
-    }
-
-    public void setRevertToUnshieldedColliders(boolean revertToUnshieldedColliders) {
-        this.revertToUnshieldedColliders = revertToUnshieldedColliders;
     }
 }
 
