@@ -26,8 +26,6 @@ import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 /**
@@ -36,7 +34,6 @@ import java.util.*;
  * @author Joe Ramsey
  */
 public class PurifyTetradBased implements IPurify {
-    private final boolean outputMessage = true;
     private final TetradTest tetradTest;
 
     private final List<Node> nodes;
@@ -48,7 +45,7 @@ public class PurifyTetradBased implements IPurify {
 
     public List<List<Node>> purify(List<List<Node>> clustering) {
 
-        // The input nodes may not be object identical to the ones from the tetrad test, so we map them over then
+        // The input nodes may not be object-identical to the ones from the tetrad test, so we map them over then
         // back by their names.
         List<Node> originalNodes = new ArrayList<>();
 
@@ -87,7 +84,6 @@ public class PurifyTetradBased implements IPurify {
 
         Set<Tetrad> allImpurities = null;
         double cutoff = this.tetradTest.getSignificance();
-        final int count = 0;
 
         for (List<Node> cluster : clustering) {
             Set<Tetrad> impurities = listTetrads(cluster, eliminated, cutoff);
@@ -112,8 +108,6 @@ public class PurifyTetradBased implements IPurify {
         if (allImpurities == null) {
             return new ArrayList<>();
         }
-
-        NumberFormat nf = new DecimalFormat("0.####E00");
 
         while (true) {
             int max = 0;

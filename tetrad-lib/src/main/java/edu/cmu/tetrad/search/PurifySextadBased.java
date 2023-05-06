@@ -30,16 +30,15 @@ import java.util.*;
 // EXPERIMENTAL!!
 
 /**
- * A clean-up of Ricardo's IntSextad-based purify.
+ * A clean-up of Ricardo's Sextad-based purify.
  *
  * @author Joe Ramsey
  */
 public class PurifySextadBased {
-    private final boolean outputMessage = true;
     private final DeltaSextadTest sextadTest;
 
     private final List<Integer> nodes;
-    private double alpha = 0.05;
+    private final double alpha;
 
     public PurifySextadBased(DeltaSextadTest sextadTest, double alpha) {
         this.sextadTest = sextadTest;
@@ -52,11 +51,8 @@ public class PurifySextadBased {
         this.alpha = alpha;
     }
 
+    // The input nodes may not be object-identical to the ones from the IntSextad test.
     public List<List<Integer>> purify(List<List<Integer>> clustering) {
-
-        // The input nodes may not be object identical to the ones from the IntSextad test, so we map them over then
-        // back by their names.
-        clustering.addAll(clustering);
 
         if (clustering.isEmpty()) {
             throw new NullPointerException("Clusters not specified.");
