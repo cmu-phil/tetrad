@@ -582,7 +582,7 @@ public final class HbsmsGes implements Hbsms {
      * Appendix C of (Chickering, 2002).
      */
     private void rebuildCPDAG(Graph graph) {
-        GraphUtilsSearch.basicCPDAG(graph);
+        GraphUtilsSearch.basicCpdag(graph);
         addRequiredEdges(graph);
         pdagWithBk(graph, getKnowledge());
 

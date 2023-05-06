@@ -209,8 +209,8 @@ public final class MaxP {
         adja.remove(c);
         adjc.remove(a);
 
-        if (!(PcCommon.isArrowheadAllowed(a, b, knowledge)
-                && (PcCommon.isArrowheadAllowed(c, b, knowledge)))) {
+        if (!(GraphUtilsSearch.isArrowheadAllowed(a, b, knowledge)
+                && (GraphUtilsSearch.isArrowheadAllowed(c, b, knowledge)))) {
             return;
         }
 

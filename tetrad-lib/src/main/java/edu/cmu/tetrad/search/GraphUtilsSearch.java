@@ -147,22 +147,18 @@ public final class GraphUtilsSearch {
                 }
 
                 if (test.determines(sepset, x)) {
-//                    System.out.println(SearchLogUtils.determinismDetected(sepset, x));
                     continue;
                 }
 
                 if (test.determines(sepset, z)) {
-//                    System.out.println(SearchLogUtils.determinismDetected(sepset, z));
                     continue;
                 }
 
                 if (test.determines(augmentedSet, x)) {
-//                    System.out.println(SearchLogUtils.determinismDetected(augmentedSet, x));
                     continue;
                 }
 
                 if (test.determines(augmentedSet, z)) {
-//                    System.out.println(SearchLogUtils.determinismDetected(augmentedSet, z));
                     continue;
                 }
 
@@ -245,25 +241,31 @@ public final class GraphUtilsSearch {
 
                 //I think the null check needs to be here --AJ
                 if (sepset != null && !sepset.contains(b)
-                        && GraphUtilsSearch.isArrowheadAllowed(a, b, knowledge)
-                        && GraphUtilsSearch.isArrowheadAllowed(c, b, knowledge)) {
-                    if (verbose) {
-                        System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
+                        && GraphUtilsSearch.isArrowheadAllowed(a, b, knowledge)) {
+                    boolean result = true;
+                    if (knowledge != null) {
+                        result = !knowledge.isRequired(((Object) b).toString(), ((Object) c).toString())
+                                && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
                     }
-
-                    if (enforceCpdag) {
-                        if (graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW) {
-                            continue;
+                    if (result) {
+                        if (verbose) {
+                            System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
                         }
+
+                        if (enforceCpdag) {
+                            if (graph.getEndpoint(b, a) == Endpoint.ARROW || graph.getEndpoint(b, c) == Endpoint.ARROW) {
+                                continue;
+                            }
+                        }
+
+                        graph.removeEdge(a, b);
+                        graph.removeEdge(c, b);
+
+                        graph.addDirectedEdge(a, b);
+                        graph.addDirectedEdge(c, b);
+
+                        TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset));
                     }
-
-                    graph.removeEdge(a, b);
-                    graph.removeEdge(c, b);
-
-                    graph.addDirectedEdge(a, b);
-                    graph.addDirectedEdge(c, b);
-
-                    TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset));
                 }
             }
         }
@@ -287,7 +289,7 @@ public final class GraphUtilsSearch {
     /**
      * Get a graph and direct only the unshielded colliders.
      */
-    public static void basicCPDAG(Graph graph) {
+    public static void basicCpdag(Graph graph) {
         Set<Edge> undirectedEdges = new HashSet<>();
 
         NEXT_EDGE:
@@ -356,7 +358,7 @@ public final class GraphUtilsSearch {
      */
     public static Graph cpdagFromDag(Graph dag) {
         Graph graph = new EdgeListGraph(dag);
-        GraphUtilsSearch.basicCPDAG(graph);
+        GraphUtilsSearch.basicCpdag(graph);
         MeekRules rules = new MeekRules();
         rules.orientImplied(graph);
         return graph;
@@ -861,18 +863,6 @@ public final class GraphUtilsSearch {
         return subsets;
     }
 
-    /**
-     * Checks if an arrowhead is allowed by background knowledge.
-     */
-    public static boolean isArrowheadAllowed1(Node from, Node to,
-                                               Knowledge knowledge) {
-        if (knowledge == null) {
-            return true;
-        }
-
-        return !knowledge.isRequired(to.toString(), from.toString())
-                && !knowledge.isForbidden(from.toString(), to.toString());
-    }
 
     /**
      * Generates the list of DAGs in the given cpdag.

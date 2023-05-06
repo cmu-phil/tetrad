@@ -112,34 +112,6 @@ public final class PcCommon implements GraphSearch {
         this.independenceTest = independenceTest;
     }
 
-
-    /**
-     * For the edge from*-*to, return true iff an arrowhead is allowed as 'to'.
-     *
-     * @param from      the from edge.
-     * @param to        the to edge.
-     * @param knowledge the knowledge.
-     * @return true iff an arrow point is allowed at 'to'.
-     */
-    public static boolean isArrowheadAllowed1(Node from, Node to,
-                                               Knowledge knowledge) {
-        return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
-    }
-
-    /**
-     * Checks if an arrowhead is allowed by background knowledge.
-     */
-    public static boolean isArrowheadAllowed(Object from, Object to,
-                                              Knowledge knowledge) {
-        if (knowledge == null) {
-            return true;
-
-        }
-        return !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
-    }
-
     /**
      * @param useHeuristic Whether the heuristic should be used for max P collider
      *                     orientation.
@@ -574,8 +546,17 @@ public final class PcCommon implements GraphSearch {
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
-        return PcCommon.isArrowheadAllowed1(x, y, knowledge) &&
-                PcCommon.isArrowheadAllowed1(z, y, knowledge);
+        boolean result = true;
+        if (knowledge != null) {
+            result = !knowledge.isRequired(((Object) y).toString(), ((Object) x).toString())
+                    && !knowledge.isForbidden(((Object) x).toString(), ((Object) y).toString());
+        }
+        if (!result) return false;
+        if (knowledge == null) {
+            return true;
+        }
+        return !knowledge.isRequired(((Object) y).toString(), ((Object) z).toString())
+                && !knowledge.isForbidden(((Object) z).toString(), ((Object) y).toString());
     }
 
     /**
@@ -620,14 +601,28 @@ public final class PcCommon implements GraphSearch {
                 List<Node> s2 = new ArrayList<>(sepset);
                 if (!s2.contains(b)) s2.add(b);
 
-                if (!sepset.contains(b) && PcCommon.isArrowheadAllowed(a, b, knowledge) && PcCommon.isArrowheadAllowed(c, b, knowledge)) {
-                    PcCommon.orientCollider(a, b, c, conflictRule, graph);
-
-                    if (verbose) {
-                        System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
+                if (!sepset.contains(b)) {
+                    boolean result1 = true;
+                    if (knowledge != null) {
+                        result1 = !knowledge.isRequired(((Object) b).toString(), ((Object) a).toString())
+                                && !knowledge.isForbidden(((Object) a).toString(), ((Object) b).toString());
                     }
+                    if (result1) {
+                        boolean result = true;
+                        if (knowledge != null) {
+                            result = !knowledge.isRequired(((Object) b).toString(), ((Object) c).toString())
+                                    && !knowledge.isForbidden(((Object) c).toString(), ((Object) b).toString());
+                        }
+                        if (result) {
+                            PcCommon.orientCollider(a, b, c, conflictRule, graph);
 
-                    TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset));
+                            if (verbose) {
+                                System.out.println("Collider orientation <" + a + ", " + b + ", " + c + "> sepset = " + sepset);
+                            }
+
+                            TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(a, b, c, sepset));
+                        }
+                    }
                 }
             }
         }

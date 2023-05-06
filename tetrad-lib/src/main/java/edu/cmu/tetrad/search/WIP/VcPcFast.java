@@ -700,14 +700,8 @@ public final class VcPcFast implements GraphSearch {
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
-        return VcPcFast.isArrowheadAllowed1(x, y, knowledge) &&
-                VcPcFast.isArrowheadAllowed1(z, y, knowledge);
-    }
-
-    public static boolean isArrowheadAllowed1(Node from, Node to,
-                                               Knowledge knowledge) {
-        return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
+        if (!GraphUtilsSearch.isArrowheadAllowed(x, y, knowledge)) return false;
+        return GraphUtilsSearch.isArrowheadAllowed(z, y, knowledge);
     }
 
     /**
