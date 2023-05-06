@@ -39,7 +39,7 @@ import java.util.List;
  * conditional independence "oracles" for constraint-based searches.
  *
  * @author Don Crimbchin (djc2@andrew.cmu.edu)
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class IndTestScore implements IndependenceTest {
 
@@ -156,6 +156,7 @@ public class IndTestScore implements IndependenceTest {
 
     /**
      * Sets the significance level.
+     * @param alpha This level.
      */
     public void setAlpha(double alpha) {
     }
@@ -167,43 +168,67 @@ public class IndTestScore implements IndependenceTest {
         return this.data;
     }
 
+    /**
+     * Returns the covariance matrix.
+     * @return This matrix.
+     */
     public ICovarianceMatrix getCov() {
         return ((SemBicScore) this.score).getCovariances();
     }
 
+    /**
+     * @throws UnsupportedOperationException Not implemented.
+     */
     public List<DataSet> getDataSets() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Returns the sample size.
+     * @return This size.
+     */
     public int getSampleSize() {
         return this.score.getSampleSize();
     }
 
-    public List<Matrix> getCovMatrices() {
-        throw new UnsupportedOperationException();
-    }
-
     /**
-     * A score that is higher with more likely models.
+     * @return A score that is higher with more likely models.
      */
     public double getScore() {
         return this.bump;
     }
 
+    /**
+     * Returns the score that this test wraps.
+     * @return This score
+     * @see Score
+     */
     public Score getWrappedScore() {
         return this.score;
     }
 
+    /**
+     * Returns true if verbose ouput should be printed.
+     * @return True if so.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Returns a String representation of this test.
+     * @return This string.
+     */
     @Override
     public String toString() {
         return this.score.toString() + " Interpreted as a Test";
