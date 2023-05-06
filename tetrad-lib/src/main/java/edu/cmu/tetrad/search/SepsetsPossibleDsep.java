@@ -80,6 +80,30 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         return sepset != null && sepset.contains(j);
     }
 
+    @Override
+    public double getScore() {
+        return -(this.result.getPValue() - this.test.getAlpha());
+    }
+
+    @Override
+    public List<Node> getVariables() {
+        return this.test.getVariables();
+    }
+
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    @Override
+    public boolean isIndependent(Node d, Node c, List<Node> path) {
+        IndependenceResult result = this.test.checkIndependence(d, c, path);
+        return result.isIndependent();
+    }
+
     private List<Node> getCondSet(Node node1, Node node2, int maxPathLength) {
         List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
         List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
@@ -132,30 +156,5 @@ public class SepsetsPossibleDsep implements SepsetProducer {
 
         return dsep;
     }
-
-    @Override
-    public double getScore() {
-        return -(this.result.getPValue() - this.test.getAlpha());
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return this.test.getVariables();
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    @Override
-    public boolean isIndependent(Node d, Node c, List<Node> path) {
-        IndependenceResult result = this.test.checkIndependence(d, c, path);
-        return result.isIndependent();
-    }
-
 }
 
