@@ -11,8 +11,12 @@ import java.util.Set;
  * Interface to help implement suborder searches for various types of permutation algorithms.
  * A "suborder search" is a search for permutation &lt;x1a,...x1n, x2a,...,x2m, x3a,...,x3l&gt>
  * that searches for a good permutation of x2a,...,x2m with x1a,...,x1n as a prefix.
+ * This is used by PermutationSearch to form a complete permutation search algorithm,
+ * where PermutationSearch handles an optimization for tiered knowledge where each
+ * tier can be search separately in order. (See the documentation for that class.)
  *
  * @author bryanandrews
+ * @see PermutationSearch
  */
 public interface SuborderSearch {
 

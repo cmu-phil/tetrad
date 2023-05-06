@@ -145,15 +145,6 @@ public class PoissonPriorScore implements Score {
         }
     }
 
-    public static double getP(int pn, int m0, double lambda) {
-        return 2 - pow(1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda), (double) pn - m0);
-    }
-
-    /**
-     * Specialized scoring method for a single parent. Used to speed up the effect edges search.
-     */
-
-
     public ICovarianceMatrix getCovariances() {
         return this.covariances;
     }
@@ -180,7 +171,6 @@ public class PoissonPriorScore implements Score {
         return this.variables;
     }
 
-
     @Override
     public int getMaxDegree() {
         return (int) ceil(log(this.sampleSize));
@@ -189,11 +179,8 @@ public class PoissonPriorScore implements Score {
     @Override
     public boolean determines(List<Node> z, Node y) {
         int i = this.variables.indexOf(y);
-
         int[] k = indices(z);
-
         double v = localScore(i, k);
-
         return Double.isNaN(v);
     }
 
@@ -228,10 +215,13 @@ public class PoissonPriorScore implements Score {
         this.N = covariances.getSampleSize();
     }
 
-
     public void setLambda(double lambda) {
         if (lambda < 1.0) throw new IllegalArgumentException("Structure prior can't be < 1: " + lambda);
         this.lambda = lambda;
+    }
+
+    private static double getP(int pn, int m0, double lambda) {
+        return 2 - pow(1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda), (double) pn - m0);
     }
 }
 
