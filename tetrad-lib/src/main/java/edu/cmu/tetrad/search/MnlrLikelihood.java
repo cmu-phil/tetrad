@@ -116,39 +116,6 @@ public class MnlrLikelihood {
 
     }
 
-    private double multipleRegression(Vector Y, Matrix X) {
-
-        int n = X.rows();
-        Vector r;
-
-        try {
-            Matrix Xt = X.transpose();
-            Matrix XtX = Xt.times(X);
-            r = X.times(XtX.inverse().times(Xt.times(Y))).minus(Y);
-        } catch (Exception e) {
-            Vector ones = new Vector(n);
-            for (int i = 0; i < n; i++) ones.set(i, 1);
-            r = ones.scalarMult(ones.dotProduct(Y) / (double) n).minus(Y);
-        }
-
-        double sigma2 = r.dotProduct(r) / n;
-
-        if (sigma2 <= 0) {
-            Vector ones = new Vector(n);
-            for (int i = 0; i < n; i++) ones.set(i, 1);
-            r = ones.scalarMult(ones.dotProduct(Y) / (double) FastMath.max(n, 2)).minus(Y);
-            sigma2 = r.dotProduct(r) / n;
-        }
-
-        double lik = -(n / 2.) * (FastMath.log(2 * FastMath.PI) + FastMath.log(sigma2) + 1);
-
-        if (Double.isInfinite(lik) || Double.isNaN(lik)) {
-            System.out.println(lik);
-        }
-
-        return lik;
-    }
-
     public double getLik(int child_index, int[] parents) {
 
         double lik = 0;
@@ -287,6 +254,39 @@ public class MnlrLikelihood {
         double gamma = -this.structurePrior;
         return gamma * FastMath.log(n);
 
+    }
+
+    private double multipleRegression(Vector Y, Matrix X) {
+
+        int n = X.rows();
+        Vector r;
+
+        try {
+            Matrix Xt = X.transpose();
+            Matrix XtX = Xt.times(X);
+            r = X.times(XtX.inverse().times(Xt.times(Y))).minus(Y);
+        } catch (Exception e) {
+            Vector ones = new Vector(n);
+            for (int i = 0; i < n; i++) ones.set(i, 1);
+            r = ones.scalarMult(ones.dotProduct(Y) / (double) n).minus(Y);
+        }
+
+        double sigma2 = r.dotProduct(r) / n;
+
+        if (sigma2 <= 0) {
+            Vector ones = new Vector(n);
+            for (int i = 0; i < n; i++) ones.set(i, 1);
+            r = ones.scalarMult(ones.dotProduct(Y) / (double) FastMath.max(n, 2)).minus(Y);
+            sigma2 = r.dotProduct(r) / n;
+        }
+
+        double lik = -(n / 2.) * (FastMath.log(2 * FastMath.PI) + FastMath.log(sigma2) + 1);
+
+        if (Double.isInfinite(lik) || Double.isNaN(lik)) {
+            System.out.println(lik);
+        }
+
+        return lik;
     }
 
     private double MultinomialLogisticRegression(Matrix targets, Matrix subset) {

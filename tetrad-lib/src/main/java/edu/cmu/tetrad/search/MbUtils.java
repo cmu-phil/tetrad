@@ -233,6 +233,15 @@ public class MbUtils {
     }
 
     /**
+     * Returns an example DAG from the given MB CPDAG.
+     * @param mbCpdag The MB CPDAG.
+     * @return An example DAG in this CPDAG.
+     */
+    public static Graph getOneMbDag(Graph mbCpdag) {
+        return SearchGraphUtils.dagFromCPDAG(mbCpdag);
+    }
+
+    /**
      * The recursive method used to list the MB DAGS consistent with an MB CPDAG (i.e. with the independence
      * information available to the search).
      */
@@ -274,15 +283,6 @@ public class MbUtils {
                 MbUtils.listMbDags(graph, orientBidirectedEdges, test, depth, target));
 
         return dags;
-    }
-
-    /**
-     * Returns an example DAG from the given MB CPDAG.
-     * @param mbCpdag The MB CPDAG.
-     * @return An example DAG in this CPDAG.
-     */
-    public static Graph getOneMbDag(Graph mbCpdag) {
-        return SearchGraphUtils.dagFromCPDAG(mbCpdag);
     }
 
     /**

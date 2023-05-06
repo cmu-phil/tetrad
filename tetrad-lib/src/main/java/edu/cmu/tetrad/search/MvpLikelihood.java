@@ -127,6 +127,95 @@ public class MvpLikelihood {
 
     }
 
+    public double getLik(int child_index, int[] parents) {
+
+        double lik = 0;
+        Node c = this.variables.get(child_index);
+        List<ContinuousVariable> continuous_parents = new ArrayList<>();
+        List<DiscreteVariable> discrete_parents = new ArrayList<>();
+
+        if (c instanceof DiscreteVariable && this.discretize) {
+            for (int p : parents) {
+                Node parent = this.discreteVariables.get(p);
+                discrete_parents.add((DiscreteVariable) parent);
+            }
+        } else {
+            for (int p : parents) {
+                Node parent = this.variables.get(p);
+                if (parent instanceof ContinuousVariable) {
+                    continuous_parents.add((ContinuousVariable) parent);
+                } else {
+                    discrete_parents.add((DiscreteVariable) parent);
+                }
+            }
+        }
+
+        int p = continuous_parents.size();
+
+        List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
+
+        int[] continuousCols = new int[p];
+        for (int j = 0; j < p; j++) continuousCols[j] = this.nodesHash.get(continuous_parents.get(j));
+
+        for (List<Integer> cell : cells) {
+//            for (int[] cell : cells) {
+            int r = cell.size();
+//                int r = cell.length;
+            if (r > 1) {
+
+                double[] mean = new double[p];
+                double[] var = new double[p];
+                for (int i = 0; i < p; i++) {
+                    for (Integer integer : cell) {
+                        mean[i] += this.continuousData[continuousCols[i]][integer];
+                        var[i] += FastMath.pow(this.continuousData[continuousCols[i]][integer], 2);
+                    }
+                    mean[i] /= r;
+                    var[i] /= r;
+                    var[i] -= FastMath.pow(mean[i], 2);
+                    var[i] = FastMath.sqrt(var[i]);
+
+                    if (Double.isNaN(var[i])) {
+                        System.out.println(var[i]);
+                    }
+                }
+
+                int degree = this.fDegree;
+                if (this.fDegree < 1) {
+                    degree = (int) FastMath.floor(FastMath.log(r));
+                }
+                Matrix subset = new Matrix(r, p * degree + 1);
+                for (int i = 0; i < r; i++) {
+                    subset.set(i, p * degree, 1);
+                    for (int j = 0; j < p; j++) {
+                        for (int d = 0; d < degree; d++) {
+                            subset.set(i, p * d + j, FastMath.pow((this.continuousData[continuousCols[j]][cell.get(i)] - mean[j]) / var[j], d + 1));
+                        }
+                    }
+                }
+
+                if (c instanceof ContinuousVariable) {
+                    Vector target = new Vector(r);
+                    for (int i = 0; i < r; i++) {
+                        target.set(i, this.continuousData[child_index][cell.get(i)]);
+//                        target.set(i, continuousData[child_index][cell[i]]);
+                    }
+                    lik += multipleRegression(target, subset);
+                } else {
+                    assert c instanceof DiscreteVariable;
+                    Matrix target = new Matrix(r, ((DiscreteVariable) c).getNumCategories());
+                    for (int i = 0; i < r; i++) {
+                        target.set(i, this.discreteData[child_index][cell.get(i)], 1);
+                    }
+                    lik += approxMultinomialRegression(target, subset);
+                }
+            }
+        }
+
+        return lik;
+    }
+
+
     private double multipleRegression(Vector Y, Matrix X) {
 
         int n = X.rows();
@@ -221,93 +310,6 @@ public class MvpLikelihood {
     }
 
 
-    public double getLik(int child_index, int[] parents) {
-
-        double lik = 0;
-        Node c = this.variables.get(child_index);
-        List<ContinuousVariable> continuous_parents = new ArrayList<>();
-        List<DiscreteVariable> discrete_parents = new ArrayList<>();
-
-        if (c instanceof DiscreteVariable && this.discretize) {
-            for (int p : parents) {
-                Node parent = this.discreteVariables.get(p);
-                discrete_parents.add((DiscreteVariable) parent);
-            }
-        } else {
-            for (int p : parents) {
-                Node parent = this.variables.get(p);
-                if (parent instanceof ContinuousVariable) {
-                    continuous_parents.add((ContinuousVariable) parent);
-                } else {
-                    discrete_parents.add((DiscreteVariable) parent);
-                }
-            }
-        }
-
-        int p = continuous_parents.size();
-
-        List<List<Integer>> cells = this.adTree.getCellLeaves(discrete_parents);
-
-        int[] continuousCols = new int[p];
-        for (int j = 0; j < p; j++) continuousCols[j] = this.nodesHash.get(continuous_parents.get(j));
-
-        for (List<Integer> cell : cells) {
-//            for (int[] cell : cells) {
-            int r = cell.size();
-//                int r = cell.length;
-            if (r > 1) {
-
-                double[] mean = new double[p];
-                double[] var = new double[p];
-                for (int i = 0; i < p; i++) {
-                    for (Integer integer : cell) {
-                        mean[i] += this.continuousData[continuousCols[i]][integer];
-                        var[i] += FastMath.pow(this.continuousData[continuousCols[i]][integer], 2);
-                    }
-                    mean[i] /= r;
-                    var[i] /= r;
-                    var[i] -= FastMath.pow(mean[i], 2);
-                    var[i] = FastMath.sqrt(var[i]);
-
-                    if (Double.isNaN(var[i])) {
-                        System.out.println(var[i]);
-                    }
-                }
-
-                int degree = this.fDegree;
-                if (this.fDegree < 1) {
-                    degree = (int) FastMath.floor(FastMath.log(r));
-                }
-                Matrix subset = new Matrix(r, p * degree + 1);
-                for (int i = 0; i < r; i++) {
-                    subset.set(i, p * degree, 1);
-                    for (int j = 0; j < p; j++) {
-                        for (int d = 0; d < degree; d++) {
-                            subset.set(i, p * d + j, FastMath.pow((this.continuousData[continuousCols[j]][cell.get(i)] - mean[j]) / var[j], d + 1));
-                        }
-                    }
-                }
-
-                if (c instanceof ContinuousVariable) {
-                    Vector target = new Vector(r);
-                    for (int i = 0; i < r; i++) {
-                        target.set(i, this.continuousData[child_index][cell.get(i)]);
-//                        target.set(i, continuousData[child_index][cell[i]]);
-                    }
-                    lik += multipleRegression(target, subset);
-                } else {
-                    assert c instanceof DiscreteVariable;
-                    Matrix target = new Matrix(r, ((DiscreteVariable) c).getNumCategories());
-                    for (int i = 0; i < r; i++) {
-                        target.set(i, this.discreteData[child_index][cell.get(i)], 1);
-                    }
-                    lik += approxMultinomialRegression(target, subset);
-                }
-            }
-        }
-
-        return lik;
-    }
 
     public double getDoF(int child_index, int[] parents) {
 
