@@ -29,6 +29,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.WIP.IndTestFisherZGeneralizedInverse;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.util.IndTestType;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

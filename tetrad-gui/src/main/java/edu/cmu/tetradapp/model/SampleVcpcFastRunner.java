@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.WIP.SampleVcpcFast;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.util.IndTestType;
 
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.WIP.IndTestFisherZGeneralizedInverse;
 import edu.cmu.tetrad.search.WIP.IndTestFisherZPercentIndependent;
 import edu.cmu.tetrad.search.WIP.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.util.IndTestType;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
 import java.util.ArrayList;
