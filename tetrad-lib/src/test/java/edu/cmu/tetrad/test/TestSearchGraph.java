@@ -28,6 +28,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.test.IndTestDSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MillisecondTimes;

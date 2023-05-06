@@ -33,7 +33,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.LogUtilsSearch;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 

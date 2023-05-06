@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.ImpliedOrientation;
-import edu.cmu.tetrad.search.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.*;
