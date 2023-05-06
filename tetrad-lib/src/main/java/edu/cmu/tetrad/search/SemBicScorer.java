@@ -18,6 +18,13 @@ import java.util.Map;
  * @see SemBicScore
  */
 public class SemBicScorer {
+
+    /**
+     * Scores the given DAG using the given data model, usimg a BIC score.
+     * @param dag The DAG.
+     * @param data a continuous dataset or a covariance matrix.
+     * @return The BIC score of the DAG.
+     */
     public static double scoreDag(Graph dag, DataModel data) {
         if (dag == null) throw new NullPointerException("DAG not specified.");
 
