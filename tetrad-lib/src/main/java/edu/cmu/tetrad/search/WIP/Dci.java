@@ -1809,7 +1809,7 @@ public class Dci {
      */
     private void resolveResultingIndependencies() {
         List<SepsetMapDci> allSepsets = new ArrayList<>();
-        Pc fci = new Pc(new IndTestSepset(combineSepsets(this.sepsetMaps), this.variables));
+        Pc fci = new Pc(new IndTestSepsetDci(combineSepsets(this.sepsetMaps), this.variables));
         System.out.println("Starting pc...");
         SepsetMapDci consSepset = new SepsetMapDci();
         doSepsetClosure(consSepset, fci.search());
@@ -1840,7 +1840,7 @@ public class Dci {
             List<Node> variables = new ArrayList<>(this.marginalVars.get(k));
             Graph newGraph = new EdgeListGraph(variables);
             newGraph.fullyConnect(Endpoint.CIRCLE);
-            FasDci fas = new FasDci(newGraph, new IndTestSepset(allSepsets.get(k), new ArrayList<>(this.marginalVars.get(k))));
+            FasDci fas = new FasDci(newGraph, new IndTestSepsetDci(allSepsets.get(k), new ArrayList<>(this.marginalVars.get(k))));
             this.minimalSepsetMaps.add(fas.search());
         }
         this.sepsetMaps = allSepsets;
@@ -1853,7 +1853,7 @@ public class Dci {
      */
     private void resolveResultingIndependenciesB() {
         SepsetMapDci combinedSepset = combineSepsets(this.sepsetMaps);
-        Pc pc = new Pc(new IndTestSepset(combinedSepset, this.variables));
+        Pc pc = new Pc(new IndTestSepsetDci(combinedSepset, this.variables));
         Graph allInd = pc.search();
         System.out.println("PC finished...");
         List<Node> overlap = new ArrayList<>(this.marginalVars.get(0));
@@ -1943,7 +1943,7 @@ public class Dci {
             List<Node> variables = new ArrayList<>(marginalVar);
             Graph newGraph = new EdgeListGraph(variables);
             newGraph.fullyConnect(Endpoint.CIRCLE);
-            FasDci fas = new FasDci(newGraph, new IndTestSepset(newSepset, variables));
+            FasDci fas = new FasDci(newGraph, new IndTestSepsetDci(newSepset, variables));
             this.minimalSepsetMaps.add(fas.search());
         }
     }
@@ -1954,7 +1954,7 @@ public class Dci {
      */
     private void resolveResultingIndependenciesC() {
         List<SepsetMapDci> allSepsets = new ArrayList<>();
-        Pc fci = new Pc(new IndTestSepset(combineSepsets(this.sepsetMaps), this.variables));
+        Pc fci = new Pc(new IndTestSepsetDci(combineSepsets(this.sepsetMaps), this.variables));
         System.out.println("Starting pc...");
         SepsetMapDci consSepset = new SepsetMapDci();
         Graph fciResult = fci.search();

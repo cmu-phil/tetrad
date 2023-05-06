@@ -245,19 +245,14 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 //            TetradMatrix inverse;
 
             try {
-//                inverse =
                 Czz.inverse();
             } catch (SingularMatrixException e) {
-//                System.out.println(SearchLogUtils.determinismDetected(z, x));
-
                 return true;
             }
 
         }
 
         return false;
-
-//        return variance < 1e-20;
     }
 
     /**

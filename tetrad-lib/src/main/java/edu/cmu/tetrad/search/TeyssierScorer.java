@@ -26,7 +26,6 @@ import static org.apache.commons.math3.util.FastMath.floor;
 public class TeyssierScorer {
     private final List<Node> variables;
     private ArrayList<Node> pi; // The current permutation.
-    private final Map<Node, Integer> variablesHash = new HashMap<>();
     private Map<Node, Integer> orderHash = new HashMap<>();
 
     private final IndependenceTest test;
@@ -52,7 +51,8 @@ public class TeyssierScorer {
 
         this.variables = score.getVariables();
         this.pi = new ArrayList<>(this.variables);
-        nodesHash(this.variablesHash, this.variables);
+        Map<Node, Integer> variablesHash = new HashMap<>();
+        nodesHash(variablesHash, this.variables);
         nodesHash(this.orderHash, this.pi);
 
         this.test = test;
@@ -61,7 +61,7 @@ public class TeyssierScorer {
         setUseScore(true);
         if (this.useScore) {
             for (Node node : this.variables) {
-                this.trees.put(node, new GrowShrinkTree(score, this.variablesHash, node));
+                this.trees.put(node, new GrowShrinkTree(score, variablesHash, node));
             }
         }
     }
@@ -158,11 +158,9 @@ public class TeyssierScorer {
         return false;
     }
 
-
     public boolean tuck(Node k, Node j) {
         return tuck(k, index(j));
     }
-
 
     public boolean tuck(Node k, int j) {
         if (adjacent(k, get(j))) return false;
@@ -648,47 +646,6 @@ public class TeyssierScorer {
         return prefix;
     }
 
-
-    public Score getScoreObject() {
-        return this.score;
-    }
-
-
-    public IndependenceTest getTestObject() {
-        return this.test;
-    }
-
-
-//    class MyTask implements Callable<Boolean> {
-//        final List<Node> pi;
-//        final Map<Node, Integer> orderHash;
-//        TeyssierScorer scorer;
-//        int chunk;
-//        private final int from;
-//        private final int to;
-//
-//        MyTask(List<Node> pi, TeyssierScorer scorer, int chunk, Map<Node, Integer> orderHash,
-//               int from, int to) {
-//            this.pi = pi;
-//            this.scorer = scorer;
-//            this.chunk = chunk;
-//            this.orderHash = orderHash;
-//            this.from = from;
-//            this.to = to;
-//        }
-//
-//        @Override
-//        public Boolean call() throws InterruptedException {
-//            for (int i = from; i <= to; i++) {
-//                if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-//                recalculate(i);
-//            }
-//
-//            return true;
-//        }
-//    }
-
-
     private void recalculate(int p) {
         if (this.prefixes.get(p) == null || !this.prefixes.get(p).containsAll(getPrefix(p))) {
             Pair p2 = getParentsInternal(p);
@@ -701,13 +658,11 @@ public class TeyssierScorer {
         }
     }
 
-
     private void nodesHash(Map<Node, Integer> nodesHash, List<Node> variables) {
         for (int i = 0; i < variables.size(); i++) {
             nodesHash.put(variables.get(i), i);
         }
     }
-
 
     private boolean lastMoveSame(int i1, int i2) {
         if (i1 <= i2) {
@@ -729,7 +684,6 @@ public class TeyssierScorer {
         return true;
     }
 
-
     @NotNull
     private Pair getGrowShrinkScore(int p) {
         Node n = this.pi.get(p);
@@ -739,7 +693,6 @@ public class TeyssierScorer {
 
         return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
     }
-
 
     private Pair getGrowShrinkIndependent(int p) {
         Node n = this.pi.get(p);
@@ -779,7 +732,6 @@ public class TeyssierScorer {
         return new Pair(parents, -parents.size());
     }
 
-
     private Pair getParentsInternal(int p) {
         if (this.useRaskuttiUhler) {
             return getRaskuttiUhlerParents(p);
@@ -791,7 +743,6 @@ public class TeyssierScorer {
             }
         }
     }
-
 
     /**
      * Returns the parents of the node at index p, calculated using Pearl's method.
@@ -818,7 +769,6 @@ public class TeyssierScorer {
         return new Pair(parents, -parents.size());
     }
 
-
     public Set<Set<Node>> getSkeleton() {
         List<Node> order = getPi();
         Set<Set<Node>> skeleton = new HashSet<>();
@@ -835,11 +785,9 @@ public class TeyssierScorer {
         return skeleton;
     }
 
-
     public boolean parent(Node k, Node j) {
         return getParents(j).contains(k);
     }
-
 
     private static class Pair {
         private final Set<Node> parents;

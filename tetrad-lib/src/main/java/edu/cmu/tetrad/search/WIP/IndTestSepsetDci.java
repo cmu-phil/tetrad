@@ -19,12 +19,15 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.WIP;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.search.IndependenceResult;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SearchLogUtils;
 import edu.cmu.tetrad.search.WIP.SepsetMapDci;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -39,7 +42,7 @@ import java.util.*;
  *
  * @author Robert Tillman
  */
-public class IndTestSepset implements IndependenceTest {
+public class IndTestSepsetDci implements IndependenceTest {
 
     /**
      * The sepset being queried
@@ -63,9 +66,10 @@ public class IndTestSepset implements IndependenceTest {
     private boolean verbose;
 
     /**
-     * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
+     * Constructs a new independence test that returns d-separation facts for the given
+     * graph as independence results.
      */
-    public IndTestSepset(SepsetMapDci sepset, List<Node> nodes) {
+    public IndTestSepsetDci(SepsetMapDci sepset, List<Node> nodes) {
         if (sepset == null) {
             throw new NullPointerException();
         }
@@ -101,27 +105,12 @@ public class IndTestSepset implements IndependenceTest {
     }
 
     /**
-     * @return the list of observed nodes in the given graph.
-     */
-    private List<Node> calcObservedVars(List<Node> nodes) {
-        List<Node> observedVars = new ArrayList<>();
-
-        for (Node node : nodes) {
-            if (node.getNodeType() == NodeType.MEASURED) {
-                observedVars.add(getVariable(node));
-            }
-        }
-
-        return observedVars;
-    }
-
-    /**
      * Checks the indicated independence fact.
      *
      * @param x one node.
      * @param y a second node.
      * @param z a List of nodes (conditioning variables)
-     * @return true iff x _||_ y | z
+     * @return True iff x _||_ y | z
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         if (z == null) {
@@ -223,7 +212,6 @@ public class IndTestSepset implements IndependenceTest {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-
     @Override
     public double getScore() {
         return getPValue();
@@ -235,6 +223,21 @@ public class IndTestSepset implements IndependenceTest {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    /**
+     * @return the list of observed nodes in the given graph.
+     */
+    private List<Node> calcObservedVars(List<Node> nodes) {
+        List<Node> observedVars = new ArrayList<>();
+
+        for (Node node : nodes) {
+            if (node.getNodeType() == NodeType.MEASURED) {
+                observedVars.add(getVariable(node));
+            }
+        }
+
+        return observedVars;
     }
 }
 
