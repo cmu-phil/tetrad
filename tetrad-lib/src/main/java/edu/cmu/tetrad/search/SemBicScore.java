@@ -72,7 +72,7 @@ public class SemBicScore implements Score {
 
     // The rule type to use.
     private RuleType ruleType = RuleType.CHICKERING;
-    private double logN;
+    private final double logN;
 
     /**
      * Constructs the score using a covariance matrix.
@@ -121,8 +121,7 @@ public class SemBicScore implements Score {
 
     @NotNull
     private ICovarianceMatrix getiCovarianceMatrix(DataSet dataSet) {
-        ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataSet);
-        return cov;
+        return SimpleDataLoader.getCovarianceMatrix(dataSet);
     }
 
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets)
@@ -254,56 +253,18 @@ public class SemBicScore implements Score {
      * @return The score, or NaN if the score cannot be calculated.
      */
     public double localScore(int i, int... parents) {
-//        S = sorted(X)
-//        key = tuple(S)
-//        if key not in self.cache:
-//        self.cache[key] = np.linalg.slogdet(self.cov[np.ix_(S, S)])[1]
-//        log_prob = self.cache[key]
-//
-//        bisect.insort(S,y)
-//        key = tuple(S)
-//        if key not in self.cache:
-//        self.cache[key] = np.linalg.slogdet(self.cov[np.ix_(S, S)])[1]
-//        log_prob -= self.cache[key]
-//
-//        return self.n/2 * log_prob - self.c * len(X) * np.log(self.n)
-
-//        Arrays.sort(parents);
-//
-//        int[] all = new int[parents.length + 1];
-//        all[0] = i;
-//        Arrays.sort(all);
-//        System.arraycopy(parents, 0, all, 1, parents.length);
-//
-//        Matrix cov1 = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), parents, parents, data, covariances);
-//        double lik = FastMath.log(MatrixUtils.determinant(cov1.toArray()));
-//
-//        Matrix cov2 = SemBicScore.getCov(SemBicScore.getRows(i, parents, data, calculateRowSubsets), all, all, data, covariances);
-//        lik -= FastMath.log(MatrixUtils.determinant(cov2.toArray()));
-
-
         int k = parents.length;
         double lik;
 
         Arrays.sort(parents);
 
-//        List<Integer> _all = new ArrayList<>();
-//        _all.add(i);
-//        for (int value : parents) _all.add(value);
-//
-//        if (cache.containsKey(_all)) {
-//            lik = cache.get(_all);
-//        } else {
         try {
             double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
             lik = -(double) (this.sampleSize / 2.0) * log(varey);
-//                cache.put(_all, lik);
         } catch (SingularMatrixException e) {
             lik = NaN;
         }
 
-//            cache.put(_all, lik);
-//        }
 
         double c = getPenaltyDiscount();
 

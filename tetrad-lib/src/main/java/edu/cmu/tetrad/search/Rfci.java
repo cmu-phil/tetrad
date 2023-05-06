@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -71,11 +70,6 @@ public final class Rfci implements GraphSearch {
     private final List<Node> variables = new ArrayList<>();
 
     private final IndependenceTest independenceTest;
-
-    /**
-     * change flag for repeat rules
-     */
-    private boolean changeFlag = true;
 
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
@@ -226,7 +220,7 @@ public final class Rfci implements GraphSearch {
     }
 
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     //===========================PRIVATE METHODS=========================//
@@ -370,11 +364,11 @@ public final class Rfci implements GraphSearch {
             if (!sepset.contains(j)
                     && this.graph.isAdjacentTo(i, j) && this.graph.isAdjacentTo(j, k)) {
 
-                if (!isArrowheadAllowed(i, j)) {
+                if (!FciOrient.isArrowheadAllowed(i, j, graph, knowledge)) {
                     continue;
                 }
 
-                if (!isArrowheadAllowed(k, j)) {
+                if (!FciOrient.isArrowheadAllowed(k, j, graph, knowledge)) {
                     continue;
                 }
 
@@ -424,15 +418,15 @@ public final class Rfci implements GraphSearch {
     /////////////////////////////////////////////////////////////////////////////
     private void setMinSepSet(List<Node> sepSet, Node x, Node y) {
         List<Node> empty = Collections.emptyList();
-        boolean indep;
+        boolean independent;
 
         try {
-            indep = this.independenceTest.checkIndependence(x, y, empty).isIndependent();
+            independent = this.independenceTest.checkIndependence(x, y, empty).isIndependent();
         } catch (Exception e) {
-            indep = false;
+            independent = false;
         }
 
-        if (indep) {
+        if (independent) {
             getSepsets().set(x, y, empty);
             return;
         }
@@ -445,9 +439,9 @@ public final class Rfci implements GraphSearch {
             while ((combination = cg.next()) != null) {
                 List<Node> condSet = GraphUtils.asList(combination, sepSet);
 
-                indep = this.independenceTest.checkIndependence(x, y, condSet).isIndependent();
+                independent = this.independenceTest.checkIndependence(x, y, condSet).isIndependent();
 
-                if (indep) {
+                if (independent) {
                     getSepsets().set(x, y, condSet);
                     return;
                 }
@@ -455,136 +449,6 @@ public final class Rfci implements GraphSearch {
         }
     }
 
-    //////////////////////////////////////////////////
-    // Orients the graph according to rules for RFCI
-    //////////////////////////////////////////////////
-    private void doFinalOrientation() {
-
-
-        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
-
-        // This loop handles Zhang's rules R1-R3 (same as in the original FCI)
-        this.changeFlag = true;
-
-        while (this.changeFlag) {
-            this.changeFlag = false;
-            orient.setChangeFlag(false);
-            orient.rulesR1R2cycle(this.graph);
-            orient.ruleR3(this.graph);
-            this.changeFlag = orient.isChangeFlag();
-            orient.ruleR4B(this.graph);   // some changes to the original R4 inline
-        }
-
-        // For RFCI always executes R5-10
-
-        // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
-        // R5 once.
-        orient.ruleR5(this.graph);
-
-        // Now, by a further remark on page 102, we apply R6,R7 as many times
-        // as possible.
-        this.changeFlag = true;
-
-        while (this.changeFlag) {
-            this.changeFlag = false;
-            orient.setChangeFlag(false);
-            orient.ruleR6R7(this.graph);
-            this.changeFlag = orient.isChangeFlag();
-        }
-
-        // Finally, we apply R8-R10 as many times as possible.
-        this.changeFlag = true;
-
-        while (this.changeFlag) {
-            this.changeFlag = false;
-            orient.setChangeFlag(false);
-            orient.rulesR8R9R10(this.graph);
-            this.changeFlag = orient.isChangeFlag();
-        }
-    }
-
-    /**
-     * Orients according to background knowledge
-     */
-    private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
-        this.logger.log("info", "Starting BK Orientation.");
-
-        for (Iterator<KnowledgeEdge> it =
-             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = GraphUtilsSearch.translate(edge.getFrom(), variables);
-            Node to = GraphUtilsSearch.translate(edge.getTo(), variables);
-
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*-&gt;from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-            this.changeFlag = true;
-            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        for (Iterator<KnowledgeEdge> it =
-             bk.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = GraphUtilsSearch.translate(edge.getFrom(), variables);
-            Node to = GraphUtilsSearch.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.changeFlag = true;
-            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        this.logger.log("info", "Finishing BK Orientation.");
-    }
-
-
-    /**
-     * Helper method. Appears to check if an arrowhead is permitted by background knowledge.
-     *
-     * @param x The possible other node.
-     * @param y The possible point node.
-     * @return Whether the arrowhead is allowed.
-     */
-    private boolean isArrowheadAllowed(Node x, Node y) {
-        if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
-
-        if (this.graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return false;
-        }
-
-        if (this.graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
-        }
-
-        if (this.graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
-        }
-
-        return this.graph.getEndpoint(y, x) == Endpoint.CIRCLE;
-    }
 
     /**
      * @return the maximum length of any discriminating path, or -1 of unlimited.

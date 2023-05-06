@@ -1,4 +1,4 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.study;
 
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
@@ -6,10 +6,10 @@ import edu.cmu.tetrad.bayes.DirichletBayesIm;
 import edu.cmu.tetrad.bayes.DirichletEstimator;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.study.performance.Comparison;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.TextTable;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 import nu.xom.Builder;
 import nu.xom.Document;
@@ -17,11 +17,10 @@ import nu.xom.ParsingException;
 import org.apache.commons.math3.util.FastMath;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -36,11 +35,7 @@ public class RBExperiments {
     private static class MapUtil {
         public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
             List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
-            Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
-                public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
-                    return (o2.getValue()).compareTo(o1.getValue());
-                }
-            });
+            list.sort((o1, o2) -> (o2.getValue()).compareTo(o1.getValue()));
 
             Map<K, V> result = new LinkedHashMap<>();
             for (Map.Entry<K, V> entry : list) {
@@ -60,71 +55,19 @@ public class RBExperiments {
         return latents;
     }
 
-    public Graph makeSimpleDAG(int numLatentConfounders) {
-        List<Node> nodes = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            nodes.add(new DiscreteVariable(Integer.toString(i + 1)));
-        }
-
-        Graph dag = new EdgeListGraph(nodes);
-        dag.addDirectedEdge(nodes.get(0), nodes.get(1));
-        dag.addDirectedEdge(nodes.get(0), nodes.get(2));
-        dag.addDirectedEdge(nodes.get(1), nodes.get(3));
-        dag.addDirectedEdge(nodes.get(2), nodes.get(3));
-        dag.addDirectedEdge(nodes.get(2), nodes.get(4));
-        return dag;
-    }
-
-    private BayesIm initializeIM(BayesIm im) {
-        int node = 0;
-        im.setProbability(node, 0, 0, 0.8);
-        im.setProbability(node, 0, 1, 0.2);
-
-
-        node = 1;
-        im.setProbability(node, 0, 0, 0.9);
-        im.setProbability(node, 0, 1, 0.1);
-        im.setProbability(node, 1, 0, 0.3);
-        im.setProbability(node, 1, 1, 0.7);
-
-        node = 2;
-        im.setProbability(node, 0, 0, 0.8);
-        im.setProbability(node, 0, 1, 0.2);
-        im.setProbability(node, 1, 0, 0.4);
-        im.setProbability(node, 1, 1, 0.6);
-
-        node = 3;
-        im.setProbability(node, 0, 0, 0.9);
-        im.setProbability(node, 0, 1, 0.1);
-        im.setProbability(node, 1, 0, 0.7);
-        im.setProbability(node, 1, 1, 0.3);
-        im.setProbability(node, 2, 0, 0.6);
-        im.setProbability(node, 2, 1, 0.4);
-        im.setProbability(node, 3, 0, 0.2);
-        im.setProbability(node, 3, 1, 0.8);
-
-        node = 4;
-        im.setProbability(node, 0, 0, 0.9);
-        im.setProbability(node, 0, 1, 0.1);
-        im.setProbability(node, 1, 0, 0.6);
-        im.setProbability(node, 1, 1, 0.4);
-
-        return im;
-    }
-
     public static void main(String[] args) throws IOException {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
         // read and process input arguments
         double alpha = 0.05, lower = 0.3, upper = 0.7;
-        int numCases = 100, numModels = 5, numBootstrapSamples = 10, round = 0;
+        int numModels = 5, numBootstrapSamples = 10;
         String modelName = "Alarm", filePath = "/Users/chw20/Documents/DBMI/bsc-results",
                 dataPath = System.getProperty("user.dir");
         boolean threshold1 = false, threshold2 = true;
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "-c":
-                    numCases = Integer.parseInt(args[i + 1]);
+                case "-i":
                     break;
                 case "-lv":
                     Double.parseDouble(args[i + 1]);
@@ -159,9 +102,6 @@ public class RBExperiments {
                 case "-data":
                     dataPath = args[i + 1];
                     break;
-                case "-i":
-                    round = Integer.parseInt(args[i + 1]);
-                    break;
             }
         }
 
@@ -184,7 +124,7 @@ public class RBExperiments {
                            double numLatentConfounders, boolean threshold1, boolean threshold2, double lower, double upper,
                            String filePath, int round) {
         // 32827167123L
-        final Long seed = 878376L;
+        final long seed = 878376L;
         RandomUtil.getInstance().setSeed(seed);
         PrintStream out;
 
@@ -210,7 +150,7 @@ public class RBExperiments {
                             + numLatentConfounders + "-Cases" + numCases + "-numModels" + numModels + "-BS"
                             + numBootstrapSamples + "-" + round + ".txt");
             if (!file.exists() || file.length() == 0) {
-                out = new PrintStream(new FileOutputStream(file));
+                out = new PrintStream(Files.newOutputStream(file.toPath()));
             } else {
                 return;
             }
@@ -222,13 +162,10 @@ public class RBExperiments {
 
         // simulate data from instantiated model
         DataSet fullData = im.simulateData(numCases, /*round * 1000000 + 71512,*/ true);
-        fullData = refineData(fullData);
+        refineData(fullData);
         DataSet data = DataUtils.restrictToMeasured(fullData);
 
         // get the true underlying PAG
-//        DagToPag dagToPag = new DagToPag(dag);
-//        dagToPag.setCompleteRuleSetUsed(false);
-//        Graph PAG_True = dagToPag.convert();
 
         Graph PAG_True = GraphUtilsSearch.dagToPag(dag);
 
@@ -251,7 +188,6 @@ public class RBExperiments {
         System.out.println("RB (RFCI-BSC) done!");
         //
         // create empirical data for constraints
-        start = MillisecondTimes.timeMillis();
         DataSet depData = createDepDataFiltering(H, data, numBootstrapSamples, threshold2, lower, upper);
         out.println("DepData(row,col):" + depData.getNumRows() + "," + depData.getNumColumns());
         System.out.println("Dep data creation done!");
@@ -267,23 +203,16 @@ public class RBExperiments {
         BayesPm pmHat = new BayesPm(estDepBN, 2, 2);
         DirichletBayesIm prior = DirichletBayesIm.symmetricDirichletIm(pmHat, 0.5);
         BayesIm imHat = DirichletEstimator.estimate(prior, depData);
-        Long BscdTime = MillisecondTimes.timeMillis() - start;
         System.out.println("Dependency BN_Param done");
 
         // compute scores of graphs that are output by RB search using BSC-I and
         // BSC-D methods
-        start = MillisecondTimes.timeMillis();
-        allScores lnProbs = getLnProbsAll(bscPags, H, data, imHat, estDepBN);
-        Long mutualTime = (MillisecondTimes.timeMillis() - start) / 2;
+        allScores lnProbs = getLnProbsAll(bscPags, H, imHat);
 
         // normalize the scores
-        start = MillisecondTimes.timeMillis();
         Map<Graph, Double> normalizedDep = normalProbs(lnProbs.LnBSCD);
-        Long dTime = MillisecondTimes.timeMillis() - start;
 
-        start = MillisecondTimes.timeMillis();
         Map<Graph, Double> normalizedInd = normalProbs(lnProbs.LnBSCI);
-        Long iTime = MillisecondTimes.timeMillis() - start;
 
         // get the most probable PAG using each scoring method
         normalizedDep = MapUtil.sortByValue(normalizedDep);
@@ -319,7 +248,7 @@ public class RBExperiments {
 
     }
 
-    private DataSet refineData(DataSet fullData) {
+    private void refineData(DataSet fullData) {
         for (int c = 0; c < fullData.getNumColumns(); c++) {
             for (int r = 0; r < fullData.getNumRows(); r++) {
                 if (fullData.getInt(r, c) < 0) {
@@ -327,8 +256,6 @@ public class RBExperiments {
                 }
             }
         }
-
-        return fullData;
     }
 
     private BayesIm getBayesIM(String type) {
@@ -421,11 +348,6 @@ public class RBExperiments {
             dataSet.setDouble(newRow, tableColumns.indexOf(Comparison.TableColumn.SHD), comparison.getShd());
         }
 
-        int[] cols = new int[tableColumns.size()];
-        for (int i = 0; i < cols.length; i++) {
-            cols[i] = i;
-        }
-
         //		out.println(getTextTable(dataSet, cols, new DecimalFormat("0.00")));
         out.println(MisclassificationUtils.edgeMisclassifications(graph, trueGraph));
         int SHDAdj = comparison.getEdgesAdded().size() + comparison.getEdgesRemoved().size();
@@ -435,177 +357,6 @@ public class RBExperiments {
 
         out.println("-------------------------------");
 
-    }
-
-    private double[] printCorrectArrows(Graph outGraph, Graph truePag, PrintStream out) {
-        int correctArrows = 0;
-        int totalEstimatedArrows = 0;
-        int totalTrueArrows = 0;
-
-        double[] stats = new double[5];
-
-        for (Edge edge : outGraph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            Endpoint ex = edge.getEndpoint1();
-            Endpoint ey = edge.getEndpoint2();
-
-            Edge edge1 = truePag.getEdge(x, y);
-
-            if (ex == Endpoint.ARROW) {
-                if (edge1 != null && edge1.getProximalEndpoint(x) == Endpoint.ARROW) {
-                    correctArrows++;
-                }
-                totalEstimatedArrows++;
-            }
-
-            if (ey == Endpoint.ARROW) {
-                if (edge1 != null && edge1.getProximalEndpoint(y) == Endpoint.ARROW) {
-                    correctArrows++;
-                }
-
-                totalEstimatedArrows++;
-            }
-        }
-
-        for (Edge edge : truePag.getEdges()) {
-            Endpoint ex = edge.getEndpoint1();
-            Endpoint ey = edge.getEndpoint2();
-
-            if (ex == Endpoint.ARROW) {
-                totalTrueArrows++;
-            }
-
-            if (ey == Endpoint.ARROW) {
-                totalTrueArrows++;
-            }
-        }
-
-        out.println();
-        out.println("# correct arrows: " + correctArrows);
-        out.println("# total estimated arrows: " + totalEstimatedArrows);
-        out.println("# total true arrows: " + totalTrueArrows);
-
-        out.println();
-        NumberFormat nf = new DecimalFormat("0.00");
-        double precision = correctArrows / (double) totalEstimatedArrows;
-        out.println("Arrow precision: " + nf.format(precision));
-        double recall = correctArrows / (double) totalTrueArrows;
-        out.println("Arrow recall: " + nf.format(recall));
-
-        stats[0] = correctArrows;
-        stats[1] = totalEstimatedArrows;
-        stats[2] = totalTrueArrows;
-        stats[3] = precision;
-        stats[4] = recall;
-
-        return stats;
-    }
-
-    private double[] printCorrectTails(Graph outGraph, Graph truePag, PrintStream out) {
-        int correctTails = 0;
-        int totalEstimatedTails = 0;
-        int totalTrueTails = 0;
-
-        double[] stats = new double[5];
-
-        for (Edge edge : outGraph.getEdges()) {
-            Node x = edge.getNode1();
-            Node y = edge.getNode2();
-
-            Endpoint ex = edge.getEndpoint1();
-            Endpoint ey = edge.getEndpoint2();
-
-            Edge edge1 = truePag.getEdge(x, y);
-
-            if (ex == Endpoint.TAIL) {
-                if (edge1 != null && edge1.getProximalEndpoint(x) == Endpoint.TAIL) {
-                    correctTails++;
-                }
-
-                totalEstimatedTails++;
-            }
-
-            if (ey == Endpoint.TAIL) {
-                if (edge1 != null && edge1.getProximalEndpoint(y) == Endpoint.TAIL) {
-                    correctTails++;
-                }
-
-                totalEstimatedTails++;
-            }
-        }
-
-        for (Edge edge : truePag.getEdges()) {
-            Endpoint ex = edge.getEndpoint1();
-            Endpoint ey = edge.getEndpoint2();
-
-            if (ex == Endpoint.TAIL) {
-                totalTrueTails++;
-            }
-
-            if (ey == Endpoint.TAIL) {
-                totalTrueTails++;
-            }
-        }
-
-        out.println();
-        out.println("# correct tails: " + correctTails);
-        out.println("# total estimated tails: " + totalEstimatedTails);
-        out.println("# total true tails: " + totalTrueTails);
-
-        out.println();
-        NumberFormat nf = new DecimalFormat("0.00");
-        double precision = correctTails / (double) totalEstimatedTails;
-        out.println("Tail precision: " + nf.format(precision));
-        double recall = correctTails / (double) totalTrueTails;
-        out.println("Tail recall: " + nf.format(recall));
-
-        stats[0] = correctTails;
-        stats[1] = totalEstimatedTails;
-        stats[2] = totalTrueTails;
-        stats[3] = precision;
-        stats[4] = recall;
-
-        return stats;
-    }
-
-    private TextTable getTextTable(DataSet dataSet, int[] columns, NumberFormat nf) {
-        TextTable table = new TextTable(dataSet.getNumRows() + 2, columns.length + 1);
-
-        table.setToken(0, 0, "Run #");
-
-        for (int j = 0; j < columns.length; j++) {
-            table.setToken(0, j + 1, dataSet.getVariable(columns[j]).getName());
-        }
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            table.setToken(i + 1, 0, Integer.toString(i + 1));
-        }
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (int j = 0; j < columns.length; j++) {
-                table.setToken(i + 1, j + 1, nf.format(dataSet.getDouble(i, columns[j])));
-            }
-        }
-
-        NumberFormat nf2 = new DecimalFormat("0.00");
-
-        for (int j = 0; j < columns.length; j++) {
-            double sum = 0.0;
-
-            for (int i = 0; i < dataSet.getNumRows(); i++) {
-                sum += dataSet.getDouble(i, columns[j]);
-            }
-
-            double avg = sum / dataSet.getNumRows();
-
-            table.setToken(dataSet.getNumRows() + 2 - 1, j + 1, nf2.format(avg));
-        }
-
-        table.setToken(dataSet.getNumRows() + 2 - 1, 0, "Avg");
-
-        return table;
     }
 
     private DataSet createDepDataFiltering(Map<IndependenceFact, Double> H, DataSet data, int numBootstrapSamples,
@@ -649,8 +400,7 @@ public class RBExperiments {
         return fgsCPDAG;
     }
 
-    private allScores getLnProbsAll(List<Graph> pags, Map<IndependenceFact, Double> H, DataSet data, BayesIm im,
-                                    Graph dep) {
+    private allScores getLnProbsAll(List<Graph> pags, Map<IndependenceFact, Double> H, BayesIm im) {
         // Map<Graph, Double> pagLnBDeu = new HashMap<Graph, Double>();
         Map<Graph, Double> pagLnBSCD = new HashMap<>();
         Map<Graph, Double> pagLnBSCI = new HashMap<>();
@@ -660,7 +410,7 @@ public class RBExperiments {
                 double lnInd = getLnProb(pagOrig, H);
 
                 // Filtering
-                double lnDep = getLnProbUsingDepFiltering(pagOrig, H, im, dep);
+                double lnDep = getLnProbUsingDepFiltering(pagOrig, H, im);
                 pagLnBSCD.put(pagOrig, lnDep);
                 pagLnBSCI.put(pagOrig, lnInd);
             }
@@ -712,12 +462,12 @@ public class RBExperiments {
         return PAG_CS;
     }
 
-    private double getLnProbUsingDepFiltering(Graph pag, Map<IndependenceFact, Double> H, BayesIm im, Graph dep) {
+    private double getLnProbUsingDepFiltering(Graph pag, Map<IndependenceFact, Double> H, BayesIm im) {
         double lnQ = 0;
 
         for (IndependenceFact fact : H.keySet()) {
             BCInference.OP op;
-            double p = 0.0;
+            double p;
 
             if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
@@ -894,10 +644,5 @@ public class RBExperiments {
     }
 
     private static final int MININUM_EXPONENT = -1022;
-
-    public DataSet bootStrapSampling(DataSet data, int numBootstrapSamples, int bootsrapSampleSize) {
-
-        return DataUtils.getBootstrapSample(data, bootsrapSampleSize);
-    }
 
 }

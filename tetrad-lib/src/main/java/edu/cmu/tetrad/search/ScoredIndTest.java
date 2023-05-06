@@ -59,7 +59,7 @@ public class ScoredIndTest implements Score {
     }
 
     /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model
+     * Calculates the sample likelihood and BIC score for i, given its parents in a simple SEM model
      */
     public double localScore(int i, int[] parents) {
         throw new UnsupportedOperationException();
@@ -118,11 +118,6 @@ public class ScoredIndTest implements Score {
     public int getSampleSize() {
         return 0;
     }
-
-    public boolean getAlternativePenalty() {
-        return false;
-    }
-
 
     @Override
     public int getMaxDegree() {

@@ -33,12 +33,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Stores a map from pairs of nodes to separating sets--that is, for each unordered pair of nodes {node1, node2} in a
  * graph, stores a set of nodes conditional on which node1 and node2 are independent (where the nodes are considered as
  * variables) or stores null if the pair was not judged to be independent. (Note that if a sepset is non-null and empty,
- * that should means that the compared nodes were found to be independent conditional on the empty set, whereas if a
+ * that should mean that the compared nodes were found to be independent conditional on the empty set, whereas if a
  * sepset is null, that should mean that no set was found yet conditional on which the compared nodes are independent.
  * So at the end of the search, a null sepset carries different information from an empty sepset.)&gt; 0 <p>We cast the
  * variable-like objects to Node to allow them either to be variables explicitly or else to be graph nodes that in some
  * model could be considered as variables. This allows us to use d-separation as a graphical indicator of what
- * independendence in models ideally should be.&gt; 0
+ * independence in models ideally should be.&gt; 0
  *
  * @author Joseph Ramsey
  */
@@ -152,7 +152,7 @@ public final class SepsetMap implements TetradSerializable {
      * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
      * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
      * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
+     * help).
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -164,7 +164,7 @@ public final class SepsetMap implements TetradSerializable {
     }
 
     /**
-     * Returns the number of {x, y} in the keyset of the map.
+     * Returns the number of {x, y} in the key set of the map.
      */
     public int size() {
         return this.sepsets.keySet().size();
