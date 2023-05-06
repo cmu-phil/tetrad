@@ -41,12 +41,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * An implemetation of Mimbuild based on the Fgsl score. The search will attempt a GES search first and if that
- * throws and exception then a CPC search. The penalty penaltyDiscount parameter is for the GES search; the alpha
- * value is for the CPC search. Or you can just grab the latent covariance matrix and run whatever search you
- * want to. (I don't know why GES sometimes fails, it is a mystery.)
- * <p>
- * Uses a different (better) algorithm from Mimbuild. Preferable.
+ * <p>>An implemetation of Mimbuild. The search will first infer the covariance matrix
+ * over the latents and then will use GRaSP to infer the structure grpah over the
+ * latents, using the SemBicScore with the given penalty discount (default 2).</p
+ * <p>The covariance matrix over the latents may be retried if one desires to use
+ * a different method to infer the structure graph over the latents.</p>
  *
  * @author josephramsey
  */
@@ -81,9 +80,7 @@ public class Mimbuild {
      * The p value of the optimization.
      */
     private double pValue;
-    private int numParams;
     private List<Node> latents;
-    private double epsilon = 1e-4;
     private double penaltyDiscount = 1;
     private int minClusterSize = 3;
 
@@ -92,6 +89,16 @@ public class Mimbuild {
 
     //=================================== PUBLIC METHODS =========================================//
 
+    /**
+     * Does a Mimbuild search.
+     *
+     * @param clustering  The clustering to use--this clusters the measured variables in such a way
+     *                    that each cluster is explained by a single latent variables.
+     * @param latentNames The names of the latent variables corresponding in order ot each cluster
+     *                    in the clustering.
+     * @param measuresCov The covariance matrix over the measured variables.
+     * @return The inferred graph over the latent variables.
+     */
     public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) {
         List<String> _latentNames = new ArrayList<>(latentNames);
 
@@ -150,42 +157,53 @@ public class Mimbuild {
         return this.structureGraph;
     }
 
+    /**
+     * Returns the clustering of measured variables, each of which is explained
+     * by a single latent.
+     *
+     * @return This clustering.
+     */
     public List<List<Node>> getClustering() {
         return this.clustering;
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
+    /**
+     * Sets the knowledge to be used in the search.
+     *
+     * @param knowledge This knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
+    /**
+     * Returns the inferred covariance matrix over the late4nt variables.
+     *
+     * @return Thsi covariance matrix.
+     */
     public ICovarianceMatrix getLatentsCov() {
         return this.latentsCov;
     }
 
-    public List<String> getLatentNames(List<Node> latents) {
-        List<String> latentNames = new ArrayList<>();
-
-        for (Node node : latents) {
-            latentNames.add(node.getName());
-        }
-
-        return latentNames;
-    }
-
+    /**
+     * @return The minimum function (Fgsl) value achieved.
+     */
     public double getMinimum() {
         return this.minimum;
     }
 
+    /**
+     * @return The p value of the optimization.
+     */
     public double getpValue() {
         return this.pValue;
     }
 
     /**
-     * @return the allowUnfaithfulness discovered graph, with latents and indicators.
+     * The full graph inferred, including the edges from latents to measures and
+     * all fo the edges inferred among latents.
+     *
+     * @return This full graph.
      */
     public Graph getFullGraph() {
         Graph graph = new EdgeListGraph(this.structureGraph);
@@ -206,18 +224,11 @@ public class Mimbuild {
         return graph;
     }
 
-    public double getEpsilon() {
-        return this.epsilon;
-    }
-
     /**
-     * Parameter convergence threshold. Default = 1e-4.
+     * Sets the penalty discount of the score used to infer the structure graph.
+     *
+     * @param penaltyDiscount The penalty discount.
      */
-    public void setEpsilon(double epsilon) {
-        if (epsilon < 0) throw new IllegalArgumentException("Epsilon mut be >= 0: " + epsilon);
-        this.epsilon = epsilon;
-    }
-
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
@@ -298,14 +309,14 @@ public class Mimbuild {
 
         optimizeNonMeasureVariancesQuick(indicators, measurescov, latentscov, loadings, indicatorIndices);
 
-        this.numParams = allParams1.length;
+        int numParams = allParams1.length;
 
         optimizeAllParamsSimultaneously(indicators, measurescov, latentscov, loadings, indicatorIndices, delta);
 
         double N = _measurescov.getSampleSize();
         int p = _measurescov.getDimension();
 
-        int df = (p) * (p + 1) / 2 - (this.numParams);
+        int df = (p) * (p + 1) / 2 - (numParams);
         double x = (N - 1) * this.minimum;
 
         System.out.println("p = " + p);
@@ -361,10 +372,6 @@ public class Mimbuild {
                 new MaxEval(100000));
 
         this.minimum = pair.getValue();
-    }
-
-    public int getNumParams() {
-        return this.numParams;
     }
 
     private void optimizeAllParamsSimultaneously(Node[][] indicators, Matrix measurescov,
