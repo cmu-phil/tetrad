@@ -29,12 +29,13 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * This class contains methods which can be used to determine whether a directed graph is in the equivalence class
- * determined by the given PAG.  See p. 300 Def. 12.1.1 of CPS for a specification.
+ * This class contains methods which can be used to determine whether a directed graph
+ * is in the equivalence class determined by the given PAG.  See p. 300 Def. 12.1.1 of
+ * CPS for a specification.
  *
  * @author Frank Wimberly
  */
-public final class PagUtils {
+public final class GraphInPag {
 
     /**
      * This method implements step (1) of the definition.

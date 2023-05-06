@@ -56,7 +56,7 @@ public class Fofc {
     private final ContinuousTetradTest test2;
     // The data.
     private final transient DataModel dataModel;
-    private final TestType testType;
+    private final BpcTestType testType;
     private List<List<Node>> clusters;
     private boolean verbose;
     private boolean significanceChecked;
@@ -70,10 +70,10 @@ public class Fofc {
      * @param testType  The type of test used.
      * @param algorithm The type of FOFC algorithm used.
      * @param alpha     The alpha significance cutoff.
-     * @see TestType
+     * @see BpcTestType
      * @see Algorithm
      */
-    public Fofc(ICovarianceMatrix cov, TestType testType, Algorithm algorithm, double alpha) {
+    public Fofc(ICovarianceMatrix cov, BpcTestType testType, Algorithm algorithm, double alpha) {
         if (testType == null) throw new NullPointerException("Null indepTest type.");
         cov = new CovarianceMatrix(cov);
         this.variables = cov.getVariables();
@@ -96,10 +96,10 @@ public class Fofc {
      * @param testType  The type of test used.
      * @param algorithm The type of FOFC algorithm used.
      * @param alpha     The alpha significance cutoff.
-     * @see TestType
+     * @see BpcTestType
      * @see Algorithm
      */
-    public Fofc(DataSet dataSet, TestType testType, Algorithm algorithm, double alpha) {
+    public Fofc(DataSet dataSet, BpcTestType testType, Algorithm algorithm, double alpha) {
         if (testType == null) throw new NullPointerException("Null test type.");
         this.variables = dataSet.getVariables();
         this.alpha = alpha;
@@ -939,12 +939,12 @@ public class Fofc {
     }
 
     private boolean vanishes(int x, int y, int z, int w) {
-        if (this.testType == TestType.TETRAD_DELTA) {
+        if (this.testType == BpcTestType.TETRAD_DELTA) {
             Tetrad t1 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(z), this.variables.get(w));
             Tetrad t2 = new Tetrad(this.variables.get(x), this.variables.get(y), this.variables.get(w), this.variables.get(z));
 
             return this.test.getPValue(t1, t2) > this.alpha;
-        } else if (this.testType == TestType.TETRAD_WISHART) {
+        } else if (this.testType == BpcTestType.TETRAD_WISHART) {
             return this.test2.tetradPValue(x, y, z, w) > this.alpha && this.test2.tetradPValue(x, y, w, z) > this.alpha;
         }
 

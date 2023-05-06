@@ -62,7 +62,7 @@ public final class BuildPureClusters {
     private ICovarianceMatrix covarianceMatrix;
     private int numVariables;
 
-    private TestType sigTestType;
+    private BpcTestType sigTestType;
     private int[] labels;
     private boolean scoreTestMode;
 
@@ -89,7 +89,7 @@ public final class BuildPureClusters {
      * Constructor BuildPureClusters
      */
     public BuildPureClusters(ICovarianceMatrix covarianceMatrix, double alpha,
-                             TestType sigTestType) {
+                             BpcTestType sigTestType) {
         if (covarianceMatrix == null) {
             throw new IllegalArgumentException("Covariance matrix cannot be null.");
         }
@@ -98,7 +98,7 @@ public final class BuildPureClusters {
         initAlgorithm(alpha, sigTestType);
     }
 
-    public BuildPureClusters(DataSet dataSet, double alpha, TestType sigTestType) {
+    public BuildPureClusters(DataSet dataSet, double alpha, BpcTestType sigTestType) {
         if (dataSet.isContinuous()) {
             this.dataSet = dataSet;
             this.covarianceMatrix = new CovarianceMatrix(dataSet);
@@ -188,7 +188,7 @@ public final class BuildPureClusters {
         return this.numVariables;
     }
 
-    private void initAlgorithm(double alpha, TestType sigTestType) {
+    private void initAlgorithm(double alpha, BpcTestType sigTestType) {
 
         // Check for missing values.
         if (getCovarianceMatrix() != null && DataUtils.containsMissingValue(getCovarianceMatrix().getMatrix())) {
@@ -200,10 +200,10 @@ public final class BuildPureClusters {
 
         this.outputMessage = true;
         this.sigTestType = sigTestType;
-        this.scoreTestMode = (this.sigTestType == TestType.DISCRETE ||
-                this.sigTestType == TestType.GAUSSIAN_FACTOR);
+        this.scoreTestMode = (this.sigTestType == BpcTestType.DISCRETE ||
+                this.sigTestType == BpcTestType.GAUSSIAN_FACTOR);
 
-        if (sigTestType == TestType.DISCRETE) {
+        if (sigTestType == BpcTestType.DISCRETE) {
             this.numVariables = this.dataSet.getNumColumns();
             this.independenceTest = new IndTestGSquare(this.dataSet, alpha);
             this.tetradTest = new DiscreteTetradTest(this.dataSet, alpha);
@@ -211,10 +211,10 @@ public final class BuildPureClusters {
             assert getCovarianceMatrix() != null;
             this.numVariables = getCovarianceMatrix().getSize();
             this.independenceTest = new IndTestFisherZ(getCovarianceMatrix(), .1);
-            TestType type;
+            BpcTestType type;
 
-            if (sigTestType == TestType.TETRAD_WISHART || sigTestType == TestType.TETRAD_DELTA
-                    || sigTestType == TestType.GAUSSIAN_FACTOR) {
+            if (sigTestType == BpcTestType.TETRAD_WISHART || sigTestType == BpcTestType.TETRAD_DELTA
+                    || sigTestType == BpcTestType.GAUSSIAN_FACTOR) {
                 type = sigTestType;
             } else {
                 throw new IllegalArgumentException("Expecting TETRAD_WISHART, TETRAD_DELTA, or GAUSSIAN FACTOR " +

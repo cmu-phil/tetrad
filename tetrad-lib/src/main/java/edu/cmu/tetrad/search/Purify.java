@@ -83,7 +83,7 @@ public class Purify {
     /*
      * Constructor Purify
      */
-    public Purify(CorrelationMatrix correlationMatrix, double sig, TestType testType,
+    public Purify(CorrelationMatrix correlationMatrix, double sig, BpcTestType testType,
                   Clusters clusters) {
         if (DataUtils.containsMissingValue(correlationMatrix.getMatrix())) {
             throw new IllegalArgumentException(
@@ -92,7 +92,7 @@ public class Purify {
 
         this.correlationMatrix = correlationMatrix;
         initAlgorithm(sig, testType, clusters);
-        if (testType == TestType.TETRAD_DELTA) {
+        if (testType == BpcTestType.TETRAD_DELTA) {
             throw new RuntimeException(
                     "Covariance/correlation matrix is not enough to " +
                             "run Bollen's tetrad test.");
@@ -101,7 +101,7 @@ public class Purify {
         this.variables = correlationMatrix.getVariables();
     }
 
-    public Purify(DataSet dataSet, double sig, TestType testType,
+    public Purify(DataSet dataSet, double sig, BpcTestType testType,
                   Clusters clusters) {
         if (DataUtils.containsMissingValue(dataSet)) {
             throw new IllegalArgumentException(
@@ -122,7 +122,7 @@ public class Purify {
 
     public Purify(TetradTest tetradTest, Clusters knowledge) {
         this.tetradTest = tetradTest;
-        initAlgorithm(-1., TestType.NONE, knowledge);
+        initAlgorithm(-1., BpcTestType.NONE, knowledge);
 
         this.variables = tetradTest.getVariables();
     }
@@ -131,7 +131,7 @@ public class Purify {
         this.forbiddenList = forbiddenList;
     }
 
-    private void initAlgorithm(double sig, TestType testType, Clusters clusters) {
+    private void initAlgorithm(double sig, BpcTestType testType, Clusters clusters) {
         this.clusters = clusters;
         this.forbiddenList = null;
         if (this.tetradTest == null) {
@@ -139,8 +139,8 @@ public class Purify {
 
                 // Should type these ones.
 
-                if (testType == TestType.TETRAD_DELTA) {
-                    this.tetradTest = new ContinuousTetradTest(this.dataSet, TestType.TETRAD_DELTA, sig);
+                if (testType == BpcTestType.TETRAD_DELTA) {
+                    this.tetradTest = new ContinuousTetradTest(this.dataSet, BpcTestType.TETRAD_DELTA, sig);
                 } else {
                     this.tetradTest = new ContinuousTetradTest(this.correlationMatrix,
                             testType, sig);
@@ -180,23 +180,23 @@ public class Purify {
 //            return convertSearchGraph(pureClusters);
 //        } else
         {
-            TestType type = ((ContinuousTetradTest) this.tetradTest).getTestType();
+            BpcTestType type = ((ContinuousTetradTest) this.tetradTest).getTestType();
 //            type = TestType.TETRAD_BASED;
             type = null;
 
-            if (type == TestType.TETRAD_BASED) {
+            if (type == BpcTestType.TETRAD_BASED) {
                 IPurify purifier = new PurifyTetradBased(this.tetradTest);
                 List<List<Node>> partition2 = purifier.purify(ClusterUtils.convertIntToList(getClusters(), getVariables()));
                 List<int[]> pureClusters = ClusterUtils.convertListToInt(partition2, getVariables());
                 return ClusterUtils.convertSearchGraph(pureClusters, this.tetradTest.getVarNames());
             }
-            if (type == TestType.GAUSSIAN_SCORE || type == TestType.GAUSSIAN_SCORE_MARKS) {
+            if (type == BpcTestType.GAUSSIAN_SCORE || type == BpcTestType.GAUSSIAN_SCORE_MARKS) {
                 SemGraph semGraph = scoreBasedPurify(getClusters());
                 return Purify.convertSearchGraph(semGraph);
-            } else if (type == TestType.GAUSSIAN_SCORE_ITERATE) {
+            } else if (type == BpcTestType.GAUSSIAN_SCORE_ITERATE) {
                 SemGraph semGraphI = scoreBasedPurifyIterate(getClusters());
                 return Purify.convertSearchGraph(semGraphI);
-            } else if (type == TestType.NONE) {
+            } else if (type == BpcTestType.NONE) {
                 SemGraph semGraph3 = dummyPurification(getClusters());
                 return Purify.convertSearchGraph(semGraph3);
             } else {
@@ -1343,7 +1343,7 @@ public class Purify {
             }
         }
         if (((ContinuousTetradTest) this.tetradTest).getTestType() ==
-                TestType.GAUSSIAN_SCORE) {
+                BpcTestType.GAUSSIAN_SCORE) {
             bestGraph = removeMarkedImpurities(bestGraph, impurities);
         }
         return bestGraph;
@@ -1503,7 +1503,7 @@ public class Purify {
         this.purePartitionGraph = new SemGraph(this.basicGraph);
 
         if (((ContinuousTetradTest) this.tetradTest).getTestType() ==
-                TestType.NONE) {
+                BpcTestType.NONE) {
             return;
         }
 

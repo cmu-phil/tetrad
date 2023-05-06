@@ -60,7 +60,7 @@ public final class ContinuousTetradTest implements TetradTest {
     private ICovarianceMatrix covMatrix;
     //    private CorrelationMatrix corrMatrix;
     private Matrix rho;
-    private TestType sigTestType;
+    private BpcTestType sigTestType;
     private int sampleSize;
     private final DataSet dataSet;
     private OneFactorEstimator oneFactorEst4, oneFactorEst5, oneFactorEst6;
@@ -70,15 +70,15 @@ public final class ContinuousTetradTest implements TetradTest {
     private List<Node> variables;
     DeltaTetradTest deltaTest;
 
-    public ContinuousTetradTest(DataSet dataSet, TestType sigTestType,
+    public ContinuousTetradTest(DataSet dataSet, BpcTestType sigTestType,
                                 double sig) {
-        if (sigTestType == TestType.TETRAD_BOLLEN || sigTestType == null) {
-            sigTestType = TestType.TETRAD_DELTA;
+        if (sigTestType == BpcTestType.TETRAD_BOLLEN || sigTestType == null) {
+            sigTestType = BpcTestType.TETRAD_DELTA;
         }
 
-        if (!(sigTestType == TestType.TETRAD_WISHART ||
-                sigTestType == TestType.TETRAD_DELTA ||
-                sigTestType == TestType.GAUSSIAN_FACTOR)) {
+        if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
+                sigTestType == BpcTestType.TETRAD_DELTA ||
+                sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
             throw new IllegalArgumentException("Unexpected type: " + sigTestType);
         }
 
@@ -99,10 +99,10 @@ public final class ContinuousTetradTest implements TetradTest {
     }
 
     public ContinuousTetradTest(ICovarianceMatrix covMatrix,
-                                TestType sigTestType, double sig) {
-        if (!(sigTestType == TestType.TETRAD_WISHART ||
-                sigTestType == TestType.TETRAD_DELTA ||
-                sigTestType == TestType.GAUSSIAN_FACTOR)) {
+                                BpcTestType sigTestType, double sig) {
+        if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
+                sigTestType == BpcTestType.TETRAD_DELTA ||
+                sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
             throw new IllegalArgumentException("Unexpected type: " + sigTestType);
         }
         this.dataSet = null;
@@ -120,10 +120,10 @@ public final class ContinuousTetradTest implements TetradTest {
     }
 
     public ContinuousTetradTest(CorrelationMatrix correlationMatrix,
-                                TestType sigTestType, double sig) {
-        if (!(sigTestType == TestType.TETRAD_WISHART ||
-                sigTestType == TestType.TETRAD_DELTA ||
-                sigTestType == TestType.GAUSSIAN_FACTOR)) {
+                                BpcTestType sigTestType, double sig) {
+        if (!(sigTestType == BpcTestType.TETRAD_WISHART ||
+                sigTestType == BpcTestType.TETRAD_DELTA ||
+                sigTestType == BpcTestType.GAUSSIAN_FACTOR)) {
             throw new IllegalArgumentException("Unexpected type: " + sigTestType);
         }
 
@@ -183,11 +183,11 @@ public final class ContinuousTetradTest implements TetradTest {
         return this.variables;
     }
 
-    public TestType getTestType() {
+    public BpcTestType getTestType() {
         return this.sigTestType;
     }
 
-    public void setTestType(TestType sigTestType) {
+    public void setTestType(BpcTestType sigTestType) {
         this.sigTestType = sigTestType;
     }
 
@@ -225,7 +225,7 @@ public final class ContinuousTetradTest implements TetradTest {
      */
 
     public boolean tetradScore3(int v1, int v2, int v3, int v4) {
-        if (this.sigTestType != TestType.GAUSSIAN_FACTOR) {
+        if (this.sigTestType != BpcTestType.GAUSSIAN_FACTOR) {
             return tetradScore(v1, v2, v3, v4) == 3;
         } else {
             return oneFactorTest(v1, v2, v3, v4);

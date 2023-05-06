@@ -115,7 +115,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 
             searchGraph = washdown.search();
         } else {
-            TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
+            BpcTestType tetradTestType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
 
             if (algorithm == BpcAlgorithmType.TETRAD_PURIFY_WASHDOWN) {
                 BpcTetradPurifyWashdown bpc;
@@ -138,7 +138,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                 BuildPureClusters bpc;
                 DataModel source = getData();
 
-                TestType testType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
+                BpcTestType testType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
 
                 if (source instanceof ICovarianceMatrix) {
                     bpc = new BuildPureClusters((ICovarianceMatrix) source,

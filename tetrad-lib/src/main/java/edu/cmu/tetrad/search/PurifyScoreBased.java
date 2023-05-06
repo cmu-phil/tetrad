@@ -306,7 +306,7 @@ public class PurifyScoreBased implements IPurify {
             }
         }
         if (((ContinuousTetradTest) this.tetradTest).getTestType() ==
-                TestType.GAUSSIAN_SCORE) {
+                BpcTestType.GAUSSIAN_SCORE) {
             bestGraph = removeMarkedImpurities(bestGraph, impurities);
         }
         return bestGraph;
@@ -360,7 +360,7 @@ public class PurifyScoreBased implements IPurify {
         this.purePartitionGraph.setShowErrorTerms(true);
 
         if (((ContinuousTetradTest) this.tetradTest).getTestType() ==
-                TestType.NONE) {
+                BpcTestType.NONE) {
             return;
         }
 

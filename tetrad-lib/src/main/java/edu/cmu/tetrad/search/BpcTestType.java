@@ -26,8 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 /**
  * An enumeration of the test types for BuildPureClusters, and Purify.
  */
-public enum TestType implements TetradSerializable {
-    /*POPULATION,*/
+public enum BpcTestType implements TetradSerializable {
 
     // This one will work and does a good job for medium sized models.
     GAUSSIAN_PVALUE,
@@ -41,7 +40,7 @@ public enum TestType implements TetradSerializable {
     // Even slower.
     GAUSSIAN_SCORE_ITERATE,
 
-    // This option does't do any    purify.
+    // This option doesn't do any purify.
     NONE,
 
     DISCRETE_LRT, DISCRETE_VARIATIONAL,
@@ -57,28 +56,28 @@ public enum TestType implements TetradSerializable {
 
     static final long serialVersionUID = 23L;
 
-    public static TestType serializableInstance() {
-        return TestType.GAUSSIAN_PVALUE;
+    public static BpcTestType serializableInstance() {
+        return BpcTestType.GAUSSIAN_PVALUE;
     }
 
 
-    public static TestType[] getPurifyTestDescriptions() {
+    public static BpcTestType[] getPurifyTestDescriptions() {
 
-        return new TestType[]{
-                TestType.NONE,
-                TestType.TETRAD_BASED,
-                TestType.GAUSSIAN_PVALUE,
-                TestType.GAUSSIAN_SCORE_MARKS,
+        return new BpcTestType[]{
+                BpcTestType.NONE,
+                BpcTestType.TETRAD_BASED,
+                BpcTestType.GAUSSIAN_PVALUE,
+                BpcTestType.GAUSSIAN_SCORE_MARKS,
 //                TestType.GAUSSIAN_SCORE,
 //                TestType.POPULATION,
         };
     }
 
-    public static TestType[] getTestDescriptions() {
-        return new TestType[]{
-                TestType.TETRAD_WISHART,
+    public static BpcTestType[] getTestDescriptions() {
+        return new BpcTestType[]{
+                BpcTestType.TETRAD_WISHART,
 //                TestType.TETRAD_BOLLEN,
-                TestType.TETRAD_DELTA
+                BpcTestType.TETRAD_DELTA
 //                TestType.GAUSSIAN_FACTOR
         };
 

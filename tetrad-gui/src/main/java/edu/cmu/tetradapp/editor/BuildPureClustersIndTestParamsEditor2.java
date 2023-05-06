@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.search.BpcAlgorithmType;
-import edu.cmu.tetrad.search.TestType;
+import edu.cmu.tetrad.search.BpcTestType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
@@ -60,18 +60,18 @@ class BuildPureClustersIndTestParamsEditor2 extends JComponent {
         JComboBox testSelector = new JComboBox();
 
         if (!discreteData) {
-            TestType[] descriptions = TestType.getTestDescriptions();
+            BpcTestType[] descriptions = BpcTestType.getTestDescriptions();
             testSelector.removeAllItems();
-            for (TestType description : descriptions) {
+            for (BpcTestType description : descriptions) {
                 testSelector.addItem(description);
             }
 
-            TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
+            BpcTestType tetradTestType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
             testSelector.setSelectedItem(tetradTestType);
 
             testSelector.addActionListener(e -> {
                 JComboBox combo = (JComboBox) e.getSource();
-                TestType index = (TestType) combo.getSelectedItem();
+                BpcTestType index = (BpcTestType) combo.getSelectedItem();
                 if (index != null) {
                     getParams().set("tetradTestType", index);
                 }
@@ -86,29 +86,29 @@ class BuildPureClustersIndTestParamsEditor2 extends JComponent {
 
         if (getParams().get("bpcAlgorithmthmType", BpcAlgorithmType.FIND_ONE_FACTOR_CLUSTERS) == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
             testSelector.removeAllItems();
-            testSelector.addItem(TestType.SAG);
-            testSelector.addItem(TestType.GAP);
-            testSelector.setSelectedItem(TestType.GAP);
+            testSelector.addItem(BpcTestType.SAG);
+            testSelector.addItem(BpcTestType.GAP);
+            testSelector.setSelectedItem(BpcTestType.GAP);
         } else {
-            TestType type1 = (TestType) testSelector.getItemAt(0);
-            TestType type2 = (TestType) testSelector.getItemAt(1);
+            BpcTestType type1 = (BpcTestType) testSelector.getItemAt(0);
+            BpcTestType type2 = (BpcTestType) testSelector.getItemAt(1);
 
-            if (!(type1 == TestType.TETRAD_WISHART && type2 == TestType.TETRAD_DELTA)) {
+            if (!(type1 == BpcTestType.TETRAD_WISHART && type2 == BpcTestType.TETRAD_DELTA)) {
                 testSelector.removeAllItems();
-                testSelector.addItem(TestType.TETRAD_WISHART);
-                testSelector.addItem(TestType.TETRAD_DELTA);
+                testSelector.addItem(BpcTestType.TETRAD_WISHART);
+                testSelector.addItem(BpcTestType.TETRAD_DELTA);
             }
         }
 
-        TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
+        BpcTestType tetradTestType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
         testSelector.setSelectedItem(tetradTestType);
 
-        if (paramsPureClusters.get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
-            testSelector.setSelectedItem(TestType.TETRAD_WISHART);
-            getParams().set("tetradTestType", TestType.TETRAD_WISHART);
+        if (paramsPureClusters.get("tetradTestType", BpcTestType.TETRAD_WISHART) == BpcTestType.TETRAD_WISHART) {
+            testSelector.setSelectedItem(BpcTestType.TETRAD_WISHART);
+            getParams().set("tetradTestType", BpcTestType.TETRAD_WISHART);
         } else {
-            testSelector.setSelectedItem(TestType.TETRAD_DELTA);
-            getParams().set("tetradTestType", TestType.TETRAD_DELTA);
+            testSelector.setSelectedItem(BpcTestType.TETRAD_DELTA);
+            getParams().set("tetradTestType", BpcTestType.TETRAD_DELTA);
         }
 
         algorithmSelector.addActionListener(e -> {
@@ -118,20 +118,20 @@ class BuildPureClustersIndTestParamsEditor2 extends JComponent {
 
             if (type == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
                 testSelector.removeAllItems();
-                testSelector.addItem(TestType.SAG);
-                testSelector.addItem(TestType.GAP);
-                testSelector.setSelectedItem(TestType.GAP);
+                testSelector.addItem(BpcTestType.SAG);
+                testSelector.addItem(BpcTestType.GAP);
+                testSelector.setSelectedItem(BpcTestType.GAP);
             } else {
                 testSelector.removeAllItems();
-                testSelector.addItem(TestType.TETRAD_WISHART);
-                testSelector.addItem(TestType.TETRAD_DELTA);
+                testSelector.addItem(BpcTestType.TETRAD_WISHART);
+                testSelector.addItem(BpcTestType.TETRAD_DELTA);
 
-                if (getParams().get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
-                    testSelector.setSelectedItem(TestType.TETRAD_WISHART);
-                    getParams().set("tetradTestType", TestType.TETRAD_WISHART);
+                if (getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART) == BpcTestType.TETRAD_WISHART) {
+                    testSelector.setSelectedItem(BpcTestType.TETRAD_WISHART);
+                    getParams().set("tetradTestType", BpcTestType.TETRAD_WISHART);
                 } else {
-                    testSelector.setSelectedItem(TestType.TETRAD_DELTA);
-                    getParams().set("tetradTestType", TestType.TETRAD_DELTA);
+                    testSelector.setSelectedItem(BpcTestType.TETRAD_DELTA);
+                    getParams().set("tetradTestType", BpcTestType.TETRAD_DELTA);
                 }
             }
         });

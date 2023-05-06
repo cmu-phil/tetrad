@@ -42,12 +42,12 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
             double alpha = parameters.getDouble(Params.ALPHA);
 
             boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
-            TestType testType;
+            BpcTestType testType;
 
             if (wishart) {
-                testType = TestType.TETRAD_WISHART;
+                testType = BpcTestType.TETRAD_WISHART;
             } else {
-                testType = TestType.TETRAD_DELTA;
+                testType = BpcTestType.TETRAD_DELTA;
             }
 
             BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType);

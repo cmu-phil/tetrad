@@ -74,13 +74,13 @@ public class TestMimbuild {
             List<List<Node>> partition;
 
             if (algorithm.equals("FOFC")) {
-                Fofc fofc = new Fofc(data, TestType.TETRAD_WISHART,
+                Fofc fofc = new Fofc(data, BpcTestType.TETRAD_WISHART,
                         Fofc.Algorithm.GAP, 0.001);
                 searchGraph = fofc.search();
                 partition = fofc.getClusters();
             } else if (algorithm.equals("BPC")) {
-                final TestType testType = TestType.TETRAD_WISHART;
-                final TestType purifyType = TestType.TETRAD_BASED;
+                final BpcTestType testType = BpcTestType.TETRAD_WISHART;
+                final BpcTestType purifyType = BpcTestType.TETRAD_BASED;
 
                 BuildPureClusters bpc = new BuildPureClusters(
                         data, 0.001,

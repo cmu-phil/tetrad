@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.search.BpcAlgorithmType;
-import edu.cmu.tetrad.search.TestType;
+import edu.cmu.tetrad.search.BpcTestType;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.DoubleTextField;
 
@@ -60,17 +60,17 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
         JComboBox testSelector = new JComboBox();
 
         if (!discreteData) {
-            TestType[] descriptions = TestType.getTestDescriptions();
+            BpcTestType[] descriptions = BpcTestType.getTestDescriptions();
             testSelector.removeAllItems();
-            for (TestType description : descriptions) {
+            for (BpcTestType description : descriptions) {
                 testSelector.addItem(description);
             }
 
-            testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
+            testSelector.setSelectedItem(getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART));
 
             testSelector.addActionListener(e -> {
                 JComboBox combo = (JComboBox) e.getSource();
-                TestType index = (TestType) combo.getSelectedItem();
+                BpcTestType index = (BpcTestType) combo.getSelectedItem();
                 getParams().set("tetradTestType", index);
             });
         }
@@ -89,21 +89,21 @@ class BuildPureClustersIndTestParamsEditor extends JComponent {
 
             if (type == BpcAlgorithmType.FIND_TWO_FACTOR_CLUSTERS) {
                 testSelector.removeAllItems();
-                testSelector.addItem(TestType.SAG);
-                testSelector.addItem(TestType.GAP);
+                testSelector.addItem(BpcTestType.SAG);
+                testSelector.addItem(BpcTestType.GAP);
             } else {
                 testSelector.removeAllItems();
-                testSelector.addItem(TestType.TETRAD_WISHART);
-                testSelector.addItem(TestType.TETRAD_DELTA);
+                testSelector.addItem(BpcTestType.TETRAD_WISHART);
+                testSelector.addItem(BpcTestType.TETRAD_DELTA);
 
             }
             testSelector.revalidate();
 
 
-            if (paramsPureClusters.get("tetradTestType", TestType.TETRAD_WISHART) == TestType.TETRAD_WISHART) {
-                testSelector.setSelectedItem(TestType.TETRAD_WISHART);
+            if (paramsPureClusters.get("tetradTestType", BpcTestType.TETRAD_WISHART) == BpcTestType.TETRAD_WISHART) {
+                testSelector.setSelectedItem(BpcTestType.TETRAD_WISHART);
             } else {
-                testSelector.setSelectedItem(TestType.TETRAD_DELTA);
+                testSelector.setSelectedItem(BpcTestType.TETRAD_DELTA);
             }
 
         });

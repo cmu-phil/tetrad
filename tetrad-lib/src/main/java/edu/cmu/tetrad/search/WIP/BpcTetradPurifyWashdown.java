@@ -47,9 +47,9 @@ public class BpcTetradPurifyWashdown {
      * @param testType A Test type.
      * @param alpha    An alpha cutoff
      * @see edu.cmu.tetrad.data.CovarianceMatrix
-     * @see TestType
+     * @see BpcTestType
      */
-    public BpcTetradPurifyWashdown(ICovarianceMatrix cov, TestType testType, double alpha) {
+    public BpcTetradPurifyWashdown(ICovarianceMatrix cov, BpcTestType testType, double alpha) {
         this.variables = cov.getVariables();
         this.test = new ContinuousTetradTest(cov, testType, alpha);
     }
@@ -61,9 +61,9 @@ public class BpcTetradPurifyWashdown {
      * @param testType A Test type.
      * @param alpha    An alpha cutoff
      * @see DataSet
-     * @see TestType
+     * @see BpcTestType
      */
-    public BpcTetradPurifyWashdown(DataSet dataSet, TestType testType, double alpha) {
+    public BpcTetradPurifyWashdown(DataSet dataSet, BpcTestType testType, double alpha) {
         this.variables = dataSet.getVariables();
         this.test = new ContinuousTetradTest(dataSet, testType, alpha);
     }

@@ -79,13 +79,13 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
             ICovarianceMatrix covMatrix = (ICovarianceMatrix) source;
             CorrelationMatrix corrMatrix = new CorrelationMatrix(covMatrix);
             double alpha = getParams().getDouble("alpha", 0.001);
-            TestType sigTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
+            BpcTestType sigTestType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
             test = new ContinuousTetradTest(covMatrix, sigTestType, alpha);
 //            sextadTest = new DeltaSextadTest(covMatrix);
         } else if (source instanceof DataSet) {
             DataSet data = (DataSet) source;
             double alpha = getParams().getDouble("alpha", 0.001);
-            TestType sigTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
+            BpcTestType sigTestType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
             test = new ContinuousTetradTest(data, sigTestType, alpha);
 //            sextadTest = new DeltaSextadTest(data);
         } else {

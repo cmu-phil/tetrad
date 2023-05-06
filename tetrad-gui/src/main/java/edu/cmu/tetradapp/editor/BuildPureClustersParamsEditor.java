@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.search.TestType;
+import edu.cmu.tetrad.search.BpcTestType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.DataWrapper;
@@ -86,23 +86,23 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
             }
         });
 
-        TestType[] descriptions = TestType.getTestDescriptions();
+        BpcTestType[] descriptions = BpcTestType.getTestDescriptions();
         JComboBox testSelector = new JComboBox(descriptions);
-        testSelector.setSelectedItem(getParams().get("tetradTestType", TestType.TETRAD_WISHART));
+        testSelector.setSelectedItem(getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART));
 
         testSelector.addActionListener(e -> {
             JComboBox combo = (JComboBox) e.getSource();
-            TestType testType = (TestType) combo.getSelectedItem();
+            BpcTestType testType = (BpcTestType) combo.getSelectedItem();
             getParams().set("tetradTestType", testType);
         });
 
-        TestType[] purifyDescriptions = TestType.getPurifyTestDescriptions();
+        BpcTestType[] purifyDescriptions = BpcTestType.getPurifyTestDescriptions();
         JComboBox purifySelector = new JComboBox(purifyDescriptions);
-        purifySelector.setSelectedItem(getParams().get("purifyTestType", TestType.NONE));
+        purifySelector.setSelectedItem(getParams().get("purifyTestType", BpcTestType.NONE));
 
         purifySelector.addActionListener(e -> {
             JComboBox combo = (JComboBox) e.getSource();
-            TestType testType = (TestType) combo.getSelectedItem();
+            BpcTestType testType = (BpcTestType) combo.getSelectedItem();
             getParams().set("purifyTestType", testType);
         });
 
@@ -156,8 +156,8 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
             b3.add(purifySelector);
             b.add(b3);
         } else {
-            this.params.set("purifyTestType", TestType.DISCRETE_LRT);
-            this.params.set("tetradTestType", TestType.DISCRETE);
+            this.params.set("purifyTestType", BpcTestType.DISCRETE_LRT);
+            this.params.set("tetradTestType", BpcTestType.DISCRETE);
         }
 
         setLayout(new BorderLayout());

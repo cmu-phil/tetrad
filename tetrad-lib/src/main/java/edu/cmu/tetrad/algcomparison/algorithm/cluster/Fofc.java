@@ -43,12 +43,12 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
             double alpha = parameters.getDouble(Params.ALPHA);
 
             boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
-            TestType testType;
+            BpcTestType testType;
 
             if (wishart) {
-                testType = TestType.TETRAD_WISHART;
+                testType = BpcTestType.TETRAD_WISHART;
             } else {
-                testType = TestType.TETRAD_DELTA;
+                testType = BpcTestType.TETRAD_DELTA;
             }
 
             boolean gap = parameters.getBoolean(Params.USE_GAP, true);
