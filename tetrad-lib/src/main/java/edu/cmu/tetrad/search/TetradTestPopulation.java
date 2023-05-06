@@ -36,7 +36,6 @@ import java.util.List;
  *
  * @author Ricardo Silva
  */
-
 public class TetradTestPopulation implements TetradTest {
     private final CorrelationMatrix CorrelationMatrix;
     private final boolean[] bvalues;

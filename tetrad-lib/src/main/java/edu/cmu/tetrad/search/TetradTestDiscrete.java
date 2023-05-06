@@ -132,8 +132,6 @@ public final class TetradTestDiscrete implements TetradTest {
             this.rhoGrid[i - 1] = -1. + (2. / TetradTestDiscrete.RHO_GRID_SIZE) * i;
         }
 
-//        this.rawdata = this.dataSet.getIntMatrixTransposed();
-
         // Store and order possible values
         this.values = new int[numColumns][];
         this.valueIndices = new int[numColumns];
@@ -272,7 +270,6 @@ public final class TetradTestDiscrete implements TetradTest {
     /**
      * Tests the tetrad (v1, v3) x (v2, v4) = (v1, v4) x (v2, v3), and only that.
      */
-
     public boolean tetradScore1(int v1, int v2, int v3, int v4) {
         if (oneFactorTest(v1, v2, v3, v4)) {
             return false;
@@ -283,7 +280,6 @@ public final class TetradTestDiscrete implements TetradTest {
     /**
      * Tests if all tetrad constraints hold
      */
-
     public boolean tetradScore3(int v1, int v2, int v3, int v4) {
         return oneFactorTest(v1, v2, v3, v4);
     }
