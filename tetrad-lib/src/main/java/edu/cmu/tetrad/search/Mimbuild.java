@@ -63,7 +63,6 @@ import java.util.List;
  * @see Bpc
  * @see Fofc
  * @see #getLatentsCov()
- *
  */
 public class Mimbuild {
 
