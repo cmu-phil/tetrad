@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Scores a DAG using the SemBicScore.
+ * Scores an entire DAG using the SemBicScore.
  *
  * @author josephramsey
  * @see SemBicScore

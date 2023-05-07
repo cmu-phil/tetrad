@@ -35,7 +35,7 @@ import javax.help.UnsupportedOperationException;
 import java.util.*;
 
 /**
- * This ia BIC score for a linear, Gaussian MAG (Mixed Ancestral Graph). It
+ * Gives ia BIC score for a linear, Gaussian MAG (Mixed Ancestral Graph). It
  * will perform the same as SemBicScore for DAGs.
  *
  * @author Bryan Andrews

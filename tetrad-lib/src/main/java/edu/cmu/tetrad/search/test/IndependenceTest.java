@@ -32,9 +32,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * <p>Interface implemented by classes that do conditional independence testing.
- * These classes are capable of serving as conditional independence "oracles"
- * for constraint-based searches.</p>
+ * <p>Gives an interface that can be implemented by classes that do conditional
+ * independence testing. These classes are capable of serving as conditional
+ * independence "oracles" for constraint-based searches.</p>
  *
  * @author josephramsey
  */

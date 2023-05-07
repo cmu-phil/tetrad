@@ -52,8 +52,17 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author josephramsey
  */
 public final class ConditionalCorrelationIndependence {
+
+    /**
+     * Gives a choice of kernels to use for the independence judgmnts for conditional correlation independence.
+     * @see ConditionalCorrelationIndependence
+     */
     public enum Kernel {Epinechnikov, Gaussian}
 
+    /**
+     * Gives a choice of basis functions to use for judgments of independence for conditional correlation independence.
+     * @see ConditionalCorrelationIndependence
+     */
     public enum Basis {Polynomial, Cosine}
 
     /**

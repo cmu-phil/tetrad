@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import static org.apache.commons.math3.util.FastMath.*;
 
-/*
+/**
  * Implements a degenerate Gaussian score as a LRT.
  *
  * http://proceedings.mlr.press/v104/andrews19a/andrews19a.pdf

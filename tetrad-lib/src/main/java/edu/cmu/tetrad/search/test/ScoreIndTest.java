@@ -37,10 +37,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Interface implemented by classes that do conditional independence testing. These classes are capable of serving as
- * conditional independence "oracles" for constraint-based searches.
+ * <p>Gives a way of interpreting a score as an independence test. The contract is that
+ * the score returned will be negative for independence and positive for dependence;
+ * this simply reports these differences.</p>
  *
- * @author Don Crimbchin (djc2@andrew.cmu.edu)
+ * @author doncrimbchin
  * @author josephramsey
  */
 public class ScoreIndTest implements IndependenceTest {

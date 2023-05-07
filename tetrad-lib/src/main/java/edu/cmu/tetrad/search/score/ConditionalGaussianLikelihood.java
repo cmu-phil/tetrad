@@ -82,8 +82,8 @@ public class ConditionalGaussianLikelihood {
     }
 
     /**
-     * A return value for a likelihood--returns a likelihood value and the degrees of freedom
-     * for it.
+     * Gives return value for a conditional Gaussain likelihood, returning a likelihood
+     * value and the degrees of freedom for it.
      */
     public static class Ret {
         private final double lik;
