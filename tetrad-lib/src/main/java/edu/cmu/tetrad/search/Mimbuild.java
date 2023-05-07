@@ -42,13 +42,28 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * <p>>An implemetation of Mimbuild. The search will first infer the covariance matrix
- * over the latents and then will use GRaSP to infer the structure grpah over the
- * latents, using the SemBicScore with the given penalty discount (default 2).</p
- * <p>The covariance matrix over the latents may be retried if one desires to use
- * a different method to infer the structure graph over the latents.</p>
+ * <p>>Provides an implemntation of Mimbuild, an algorithm that takes a clustering
+ * of variables, each of which is explained by a single latent, then forms the
+ * implied covariance matrix over the latent variables, then runs a CPDAG search
+ * to in the structure over the latent themselves.</p>
+ *
+ * <p>Specifically, the search will first infer the covariance matrix over the
+ * latents and then will use the GRaSP algorithm (see) to infer the structure
+ * graph over the latents, using the SEM Bic score with the given penalty discount
+ * (default 2).</p
+ *
+ * <p>One may wish to obtain the implied correlation matrix over the latents and
+ * run one's own choice of CPDDAG algroithm on it with one's on test or score;
+ * a method is available to return this covariance matrix.</p>
+ *
+ * <p>A suitable clustering for Mimbuild may be obtained using the BPC or FOFC
+ * algorithm (see).</p>
  *
  * @author josephramsey
+ * @see Bpc
+ * @see Fofc
+ * @see #getLatentsCov()
+ *
  */
 public class Mimbuild {
 
@@ -67,9 +82,6 @@ public class Mimbuild {
      */
     private Knowledge knowledge = new Knowledge();
 
-    /**
-     * The estimated covariance matrix over the latents.
-     */
     private ICovarianceMatrix latentsCov;
 
     /**
@@ -178,6 +190,8 @@ public class Mimbuild {
     }
 
     /**
+     * The estimated covariance matrix over the latents.
+     */ /**
      * Returns the inferred covariance matrix over the late4nt variables.
      *
      * @return Thsi covariance matrix.

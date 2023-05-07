@@ -55,7 +55,8 @@ import static org.apache.commons.math3.util.FastMath.*;
 public class Lofs {
 
     /**
-     * The options for scores that can be used for some scores.
+     * Gives a list of options for non-Gaussian transformations that can be used
+     * for some scores.
      */
     public enum Score {
         andersonDarling, skew, kurtosis, fifthMoment, absoluteValue,
@@ -63,7 +64,7 @@ public class Lofs {
     }
 
     /**
-     * A list of rules for doing the non-Gaussian orientations.
+     * Give a list of options for rules for doing the non-Gaussian orientations.
      */
     public enum Rule {
         IGCI, R1TimeLag, R1, R2, R3, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
