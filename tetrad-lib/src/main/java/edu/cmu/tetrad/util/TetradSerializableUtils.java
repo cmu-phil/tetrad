@@ -760,7 +760,7 @@ public class TetradSerializableUtils {
                         classes.add(_clazz);
                     }
                 } catch (ClassNotFoundException e) {
-                    System.out.println("Clazz not found: : " + path);
+                    System.out.println("Package not found: : " + packagePath);
 //                    e.printStackTrace();
                 }
             }
