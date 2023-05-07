@@ -39,7 +39,7 @@ import java.util.*;
  * clusters of measured variables in a dataset that are explained by single latents.
  * The algorithm outputs these clusters, which can then be used for further analysis.
  * The reference is this:</p>
- * <p>Silva, R., Scheines, R., Glymour, C., Spirtes, P., & Chickering, D. M. (2006).
+ * <p>Silva, R., Scheines, R., Glymour, C., Spirtes, P., &amp; Chickering, D. M. (2006).
  * Learning the Structure of Linear Latent Variable Models. Journal of Machine Learning
  * Research, 7(2).</p>
  * <p>Some more References:

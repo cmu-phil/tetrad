@@ -50,13 +50,13 @@ import java.util.Set;
  *
  * <p>For further discussion of using d-separation in the GES search, see:</p>
  *
- * <p>Nandy, P., Hauser, A., & Maathuis, M. H. (2018). High-dimensional consistency
+ * <p>Nandy, P., Hauser, A., &amp; Maathuis, M. H. (2018). High-dimensional consistency
  * in score-based and hybrid structure learning. The Annals of Statistics, 46(6A),
  * 3151-3183.</p>
  *
  * <p>For more discussion please see:</p>
  *
- * <p>Shen, X., Zhu, S., Zhang, J., Hu, S., & Chen, Z. (2022, August). Reframed GES
+ * <p>Shen, X., Zhu, S., Zhang, J., Hu, S., &amp; Chen, Z. (2022, August). Reframed GES
  * with a neural conditional dependence measure. In Uncertainty in Artificial
  * Intelligence (pp. 1782-1791). PMLR.</p>
  *

@@ -49,7 +49,7 @@ import java.util.Set;
  * <p>This algorithm, with the Spirtes final orientation rules, was given in an earlier version of
  * this book:</p>
  *
- * <p>Spirtes, P., Glymour, C. N., Scheines, R., & Heckerman, D. (2000). Causation,
+ * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
  * prediction, and search. MIT press.</p>
  *
  * <p>The algorithm with the Zhang final orintation rules was given in this reference:</p>

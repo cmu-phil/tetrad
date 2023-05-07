@@ -47,7 +47,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>Implements the LiNG-D algorithm as well as a number of ancillary
  * methods for LiNG-D and LiNGAM. The reference is here:</p>
  *
- * <p>Lacerda, G., Spirtes, P. L., Ramsey, J., & Hoyer, P. O. (2012). Discovering
+ * <p>Lacerda, G., Spirtes, P. L., Ramsey, J., &amp; Hoyer, P. O. (2012). Discovering
  * cyclic causal models by independent components analysis. arXiv preprint
  * arXiv:1206.3273.</p>
  *

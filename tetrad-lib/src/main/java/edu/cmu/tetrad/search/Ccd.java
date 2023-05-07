@@ -34,7 +34,7 @@ import java.util.*;
 /**
  * <p>Implemented the Cyclic Causal Discovery (CCD) algorithm by Thomas Richardson.
  * A reference for this is here:</p>
- * <p>Mooij, J. M., & Claassen, T. (2020, August). Constraint-based causal discovery
+ * <p>Mooij, J. M., &amp; Claassen, T. (2020, August). Constraint-based causal discovery
  * using partial ancestral graphs in the presence of cycles. In Conference on Uncertainty
  * in Artificial Intelligence (pp. 1159-1168). PMLR.</p>
  * <p>See also Chapter 7 of Glymour and Cooper, eds., Computation, Causation, and Discovery</p>

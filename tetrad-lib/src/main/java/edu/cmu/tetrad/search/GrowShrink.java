@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * <p>Implements the Grow-Shrink algorithm of Margaritis and Thrun, a simple yet correct
  * and useful Markov blanket search.</p>
- * <p>Margaritis, D., & Thrun, S. (1999). Bayesian network induction via local neighborhoods.
+ * <p>Margaritis, D., &amp; Thrun, S. (1999). Bayesian network induction via local neighborhoods.
  * Advances in neural information processing systems, 12.</p>
  *
  * @author josephramsey

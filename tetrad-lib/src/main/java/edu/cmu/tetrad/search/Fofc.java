@@ -42,7 +42,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * measured variables in a dataset that each be explained by a single latent variable.
  * A reference is the following</p>
  *
- * <p>Kummerfeld, E., & Ramsey, J. (2016, August). Causal clustering for 1-factor measurement
+ * <p>Kummerfeld, E., &amp; Ramsey, J. (2016, August). Causal clustering for 1-factor measurement
  * models. In Proceedings of the 22nd ACM SIGKDD international conference on knowledge
  * discovery and data mining (pp. 1655-1664).</p>
  *
@@ -50,7 +50,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * a certain pattern in the exchangeability of latent paths with respect to the data).
  * The notion of vanishng tetrads is old one but is explained in this book:</p>
  *
- * <p>Spirtes, P., Glymour, C. N., Scheines, R., & Heckerman, D. (2000). Causation,
+ * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
  * prediction, and search. MIT press.</p>
  *
  * @author peterspirtes

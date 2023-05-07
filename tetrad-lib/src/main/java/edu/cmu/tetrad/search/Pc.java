@@ -47,7 +47,7 @@ import java.util.Set;
  * algorithm was proposed earlier than this, but the standard reference for
  * the algorithm is in Chapter 6 of the following book:</p>
  *
- * <p>Spirtes, P., Glymour, C. N., Scheines, R., & Heckerman, D. (2000). Causation,
+ * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
  * prediction, and search. MIT press.</p>
  *
  * <p>A modified rule set capable of dealing effectively with knowledge of required

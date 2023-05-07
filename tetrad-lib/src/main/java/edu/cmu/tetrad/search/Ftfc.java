@@ -44,7 +44,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * a single latent variable. A reference for the one-factor versiono of the algorithm
  * (FOFC) is the following</p>
  *
- * <p>Kummerfeld, E., & Ramsey, J. (2016, August). Causal clustering for 1-factor measurement
+ * <p>Kummerfeld, E., &amp; Ramsey, J. (2016, August). Causal clustering for 1-factor measurement
  * models. In Proceedings of the 22nd ACM SIGKDD international conference on knowledge
  * discovery and data mining (pp. 1655-1664).</p>
  *

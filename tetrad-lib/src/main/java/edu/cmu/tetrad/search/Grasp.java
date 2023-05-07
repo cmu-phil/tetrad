@@ -23,7 +23,8 @@ import static java.util.Collections.shuffle;
  * <p>Implements the GRaSP algorithms, which uses a certain procedure to search
  * in the space of permutations of variables for ones that imply CPDAGs that are
  * especailly close to the CPDAG of the true model. The reference is here:</p>
- * <p>Lam, W. Y., Andrews, B., & Ramsey, J. (2022, August). Greedy relaxations of
+ *
+ * <p>Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations of
  * the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence
  * (pp. 1052-1062). PMLR.</p>
  *

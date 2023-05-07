@@ -36,7 +36,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>Implements scores motivated by the Generalized Information Criterion (GIC)
  * approach as given in Kim et al. (2012).</p>
  *
- * <p>Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection criteria on
+ * <p>Kim, Y., Kwon, S., &amp; Choi, H. (2012). Consistent model selection criteria on
  * high dimensions. The Journal of Machine Learning Research, 13(1), 1037-1057.
  * Foster and George.</p>
  *

@@ -51,7 +51,7 @@ import java.util.*;
  *
  * <p>This algorithm was described in the earlier edition of this book:</p>
  *
- * <p>Spirtes, P., Glymour, C. N., Scheines, R., & Heckerman, D. (2000). Causation,
+ * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
  * prediction, and search. MIT press.</p>
  *
  * @author josephramsey.

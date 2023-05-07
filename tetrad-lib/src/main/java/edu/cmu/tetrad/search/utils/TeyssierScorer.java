@@ -20,7 +20,7 @@ import static org.apache.commons.math3.util.FastMath.floor;
  * keep track of the score using the Teyssier and Kohler method. You can move a variable to a new position,
  * and you can bookmark a state and come back to it.
  *
- * <p>Teyssier, M., & Koller, D. (2012). Ordering-based search: A simple and effective algorithm for
+ * <p>Teyssier, M., &amp; Koller, D. (2012). Ordering-based search: A simple and effective algorithm for
  * learning Bayesian networks. arXiv preprint arXiv:1207.1429.</p>
  *
  * @author josephramsey

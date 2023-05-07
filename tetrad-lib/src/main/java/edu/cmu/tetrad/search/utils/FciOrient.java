@@ -44,7 +44,7 @@ import java.util.*;
  * in his Ph.D. dissertation, which is both arrow and tail complete. The
  * references for these are as follows.</p>
  *
- * <p>Spirtes, P., Glymour, C. N., Scheines, R., & Heckerman, D. (2000).
+ * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000).
  * Causation, prediction, and search. MIT press.</p>
  *
  * <p>Zhang, J. (2008). On the completeness of orientation rules for causal
