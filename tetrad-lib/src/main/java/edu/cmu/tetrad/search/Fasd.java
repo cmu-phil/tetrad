@@ -44,7 +44,7 @@ import java.util.*;
  * @author josephramsey.
  * @see Fas
  */
-public class FasDeterministic implements IFas {
+public class Fasd implements IFas {
 
     /**
      * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
@@ -110,12 +110,12 @@ public class FasDeterministic implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public FasDeterministic(Graph graph, IndependenceTest test) {
+    public Fasd(Graph graph, IndependenceTest test) {
         this.graph = graph;
         this.test = test;
     }
 
-    public FasDeterministic(IndependenceTest test) {
+    public Fasd(IndependenceTest test) {
         this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
     }

@@ -19,10 +19,11 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.ImagesScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
@@ -37,7 +38,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tries to find a good shifting of variables to minimize average BIC
+ * <p>>Tries to find a good shifting of variables to minimize average BIC for
+ * time-series data. The idea is that the data one is presented with may have
+ * the variables temporally shifted with respect to one another. ShiftSearch
+ * attempts to find a shifting of the variables that reduces this temporal
+ * shifting.</>
  *
  * @author josephramsey
  */

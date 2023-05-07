@@ -39,23 +39,12 @@ import java.util.*;
 
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
- * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
- * Insufficient Systems").
- * <p>
- * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
- * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * <p>Adapts FciOrientfor the SvarFCI algorithm. The main difference is that if an edge is orient,
+ * it will also orient all homologous edges to preserve the time-repeating structure assumed by
+ * SvarFCI. Based on (but not identicial to) code by Entner and Hoyer for their 2010 paper. Modified
+ * by DMalinsky 4/20/2016.</p>
  *
- * @author Erin Korber, June 2004
- * @author Alex Smith, December 2008
- * @author josephramsey
- * @author Choh-Man Teng
- * @author Daniel Malinsky
- * <p>
- * This is a copy of FciOrient.java for the SvarFCI algorithm. The main difference is that if an edge is orient, it will
- * also orient all homologous edges to preserve the time-repeating structure assumed by SvarFCI. Based on (but not
- * identicial to) code by Entner and Hoyer for their 2010 paper. Modified by DMalinsky 4/20/2016.
+ * @author dmalinsky
  */
 public final class SvarFciOrient {
 

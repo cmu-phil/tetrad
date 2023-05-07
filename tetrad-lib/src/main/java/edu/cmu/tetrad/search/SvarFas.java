@@ -36,15 +36,15 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * This is a copy of Fas.java for the SvarFCI algorithm. The main difference is that if an edge is removed, it will also
- * remove all homologous edges to preserve the time-repeating structure assumed by SvarFCI. Based on (but not identicial
- * to) code by Entner and Hoyer for their 2010 paper. Modified by DMalinsky 4/21/2016.
+ * <p>Adapts Fas.java for the SvarFCI algorithm. The main difference is that if an edge is
+ * removed, it will also remove all homologous edges to preserve the time-repeating s
+ * tructure assumed by SvarFCI. Based on (but not identical to) code by Entner and Hoyer
+ * for their 2010 paper. Modified by dmalinsky 4/21/2016.</p>
  *
- * @author josephramsey
- * @author DMalinsky
+ * @author dmalinsky
  * @see Fas
  */
-public class TsFas implements IFas {
+public class SvarFas implements IFas {
 
     /**
      * The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node
@@ -100,7 +100,7 @@ public class TsFas implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      */
-    public TsFas(IndependenceTest test) {
+    public SvarFas(IndependenceTest test) {
         this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
     }

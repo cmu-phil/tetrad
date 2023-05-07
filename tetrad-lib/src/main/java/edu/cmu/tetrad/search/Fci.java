@@ -57,11 +57,12 @@ import java.util.Set;
  * <p>Zhang, J. (2008). On the completeness of orientation rules for causal discovery in the presence
  * of latent confounders and selection bias. Artificial Intelligence, 172(16-17), 1873-1896.</p>
  *
- * @author Erin Korber, June 2004
- * @author Alex Smith, December 2008
- * @author Choh-Man Teng
+ * @author peterspirtes
+ * @author clarkglymour
+ * @author jijizhang
  * @author josephramsey
  * @see FciOrient
+ * @see Pc
  */
 public final class Fci implements IGraphSearch {
     private SepsetMap sepsets;

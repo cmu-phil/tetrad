@@ -47,11 +47,8 @@ import java.util.List;
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
  *
- * @author Erin Korber, June 2004
- * @author Alex Smith, December 2008
- * @author josephramsey
- * @author Choh-Man Teng
  * @author Daniel Malinsky
+ * @see Fci
  */
 public final class SvarFci implements IGraphSearch {
 
@@ -129,7 +126,7 @@ public final class SvarFci implements IGraphSearch {
 
     public Graph search() {
         getIndependenceTest().getVariables();
-        return search(new TsFas(getIndependenceTest()));
+        return search(new SvarFas(getIndependenceTest()));
 //        return search(new Fas(getIndependenceTest()));
     }
 

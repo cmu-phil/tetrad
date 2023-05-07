@@ -4,13 +4,14 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
+import edu.cmu.tetrad.search.utils.PermutationSearch;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Interface to help implement suborder searches for various types of permutation algorithms.
+ * An interface for suborder searches for various types of permutation algorithms.
  * A "suborder search" is a search for permutation &lt;x1a,...x1n, x2a,...,x2m, x3a,...,x3l&gt>
  * that searches for a good permutation of x2a,...,x2m with x1a,...,x1n as a prefix.
  * This is used by PermutationSearch to form a complete permutation search algorithm,
@@ -19,6 +20,8 @@ import java.util.Set;
  *
  * @author bryanandrews
  * @see PermutationSearch
+ * @see Boss
+ * @see Sp
  */
 public interface SuborderSearch {
 

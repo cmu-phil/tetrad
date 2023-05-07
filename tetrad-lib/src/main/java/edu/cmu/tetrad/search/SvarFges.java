@@ -40,24 +40,26 @@ import java.util.concurrent.*;
 
 
 /**
- * GesSearch is an implementation of the GES algorithm, as specified in Chickering (2002) "Optimal structure
- * identification with greedy search" Journal of Machine Learning Research. It works for both BayesNets and SEMs.
- * <p>
- * Some code optimization could be done for the scoring part of the graph for discrete models (method scoreGraphChange).
- * Some of Andrew Moore's approaches for caching sufficient statistics, for instance.
- * <p>
- * To speed things up, it has been assumed that variables X and Y with zero correlation do not correspond to edges in
- * the graph. This is a restricted form of the heuristicSpeedup assumption, something GES does not assume. This
- * the graph. This is a restricted form of the heuristicSpeedup assumption, something GES does not assume. This
- * heuristicSpeedup assumption needs to be explicitly turned on using setHeuristicSpeedup(true).
- * <p>
- * A number of other optimizations were added 5/2015. See code for details.
+ * Adapts FGES to the SVAR case. FGES is an implementation of the GES algorithm, as specified in
+ * Chickering (2002) "Optimal structure identification with greedy search" Journal of Machine
+ * Learning Research. It works for both BayesNets and SEMs.</p>
  *
- * @author Ricardo Silva, Summer 2003
- * @author josephramsey, Revisions 5/2015
+ * <p>Some code optimization could be done for the scoring part of the graph for discrete models
+ * (method scoreGraphChange). Some of Andrew Moore's approaches for caching sufficient statistics,
+ * for instance.</p>
+ *
+ * <p>To speed things up, it has been assumed that variables X and Y with zero correlation do not
+ * correspond to edges in the graph. This is a restricted form of the heuristicSpeedup assumption,
+ * something GES does not assume. This is the graph. This is a restricted form of the
+ * heuristicSpeedup assumption, something GES does not assume. This heuristicSpeedup assumption
+ * needs to be explicitly turned on using setHeuristicSpeedup(true).</p>
+ *
+ * <p>A number of other optimizations were added 5/2015. See code for details.</p>
+ *
  * @author Daniel Malinsky
+ * @see Fges
  */
-public final class TsFges implements IGraphSearch, DagScorer {
+public final class SvarFges implements IGraphSearch, DagScorer {
 
     /**
      * Internal.
@@ -175,7 +177,7 @@ public final class TsFges implements IGraphSearch, DagScorer {
      * values in case of conditional independence. See Chickering (2002),
      * locally consistent scoring criterion.
      */
-    public TsFges(Score score) {
+    public SvarFges(Score score) {
         if (score == null) throw new NullPointerException();
         setScore(score);
         this.graph = new EdgeListGraph(getVariables());
@@ -479,12 +481,12 @@ public final class TsFges implements IGraphSearch, DagScorer {
         protected Boolean compute() {
             for (int i = this.from; i < this.to; i++) {
                 if ((i + 1) % 1000 == 0) {
-                    TsFges.this.count[0] += 1000;
-                    TsFges.this.out.println("Initializing effect edges: " + (TsFges.this.count[0]));
+                    SvarFges.this.count[0] += 1000;
+                    SvarFges.this.out.println("Initializing effect edges: " + (SvarFges.this.count[0]));
                 }
 
                 Node y = this.nodes.get(i);
-                TsFges.this.neighbors.put(y, this.emptySet);
+                SvarFges.this.neighbors.put(y, this.emptySet);
 
                 for (int j = i + 1; j < this.nodes.size(); j++) {
                     if (Thread.currentThread().isInterrupted()) {
@@ -503,17 +505,17 @@ public final class TsFges implements IGraphSearch, DagScorer {
                         }
                     }
 
-                    if (TsFges.this.adjacencies != null && !TsFges.this.adjacencies.isAdjacentTo(x, y)) {
+                    if (SvarFges.this.adjacencies != null && !SvarFges.this.adjacencies.isAdjacentTo(x, y)) {
                         continue;
                     }
 
-                    int child = TsFges.this.hashIndices.get(y);
-                    int parent = TsFges.this.hashIndices.get(x);
-                    double bump = TsFges.this.score.localScoreDiff(parent, child);
+                    int child = SvarFges.this.hashIndices.get(y);
+                    int parent = SvarFges.this.hashIndices.get(x);
+                    double bump = SvarFges.this.score.localScoreDiff(parent, child);
 
                     if (bump > 0) {
                         Edge edge = Edges.undirectedEdge(x, y);
-                        TsFges.this.effectEdgesGraph.addEdge(edge);
+                        SvarFges.this.effectEdgesGraph.addEdge(edge);
                     }
 
                     if (bump > 0.0) {
@@ -546,7 +548,7 @@ public final class TsFges implements IGraphSearch, DagScorer {
             protected Boolean compute() {
                 Queue<NodeTaskEmptyGraph> tasks = new ArrayDeque<>();
 
-                int numNodesPerTask = FastMath.max(100, nodes.size() / TsFges.this.maxThreads);
+                int numNodesPerTask = FastMath.max(100, nodes.size() / SvarFges.this.maxThreads);
 
                 for (int i = 0; i < nodes.size(); i += numNodesPerTask) {
                     NodeTaskEmptyGraph task = new NodeTaskEmptyGraph(i, FastMath.min(nodes.size(), i + numNodesPerTask),
@@ -561,7 +563,7 @@ public final class TsFges implements IGraphSearch, DagScorer {
                         }
                     }
 
-                    while (tasks.size() > TsFges.this.maxThreads) {
+                    while (tasks.size() > SvarFges.this.maxThreads) {
                         NodeTaskEmptyGraph _task = tasks.poll();
 
                         if (_task != null) {
@@ -627,21 +629,21 @@ public final class TsFges implements IGraphSearch, DagScorer {
                 if (this.to - this.from <= this.chunk) {
                     for (int i = this.from; i < this.to; i++) {
                         if ((i + 1) % 1000 == 0) {
-                            TsFges.this.count[0] += 1000;
-                            TsFges.this.out.println("Initializing effect edges: " + (TsFges.this.count[0]));
+                            SvarFges.this.count[0] += 1000;
+                            SvarFges.this.out.println("Initializing effect edges: " + (SvarFges.this.count[0]));
                         }
 
                         Node y = nodes.get(i);
 
                         Set<Node> g = new HashSet<>();
 
-                        for (Node n : TsFges.this.graph.getAdjacentNodes(y)) {
-                            for (Node m : TsFges.this.graph.getAdjacentNodes(n)) {
-                                if (TsFges.this.graph.isAdjacentTo(y, m)) {
+                        for (Node n : SvarFges.this.graph.getAdjacentNodes(y)) {
+                            for (Node m : SvarFges.this.graph.getAdjacentNodes(n)) {
+                                if (SvarFges.this.graph.isAdjacentTo(y, m)) {
                                     continue;
                                 }
 
-                                if (TsFges.this.graph.isDefCollider(m, n, y)) {
+                                if (SvarFges.this.graph.isDefCollider(m, n, y)) {
                                     continue;
                                 }
 
@@ -660,11 +662,11 @@ public final class TsFges implements IGraphSearch, DagScorer {
                                 }
                             }
 
-                            if (TsFges.this.adjacencies != null && !TsFges.this.adjacencies.isAdjacentTo(x, y)) {
+                            if (SvarFges.this.adjacencies != null && !SvarFges.this.adjacencies.isAdjacentTo(x, y)) {
                                 continue;
                             }
 
-                            if (TsFges.this.removedEdges.contains(Edges.undirectedEdge(x, y))) {
+                            if (SvarFges.this.removedEdges.contains(Edges.undirectedEdge(x, y))) {
                                 continue;
                             }
 
@@ -734,15 +736,15 @@ public final class TsFges implements IGraphSearch, DagScorer {
                         }
 
                         if ((i + 1) % 1000 == 0) {
-                            TsFges.this.count[0] += 1000;
-                            TsFges.this.out.println("Initializing effect edges: " + (TsFges.this.count[0]));
+                            SvarFges.this.count[0] += 1000;
+                            SvarFges.this.out.println("Initializing effect edges: " + (SvarFges.this.count[0]));
                         }
 
                         Node y = nodes.get(i);
                         List<Node> cond = new ArrayList<>();
-                        Set<Node> D = new HashSet<>(TsFges.this.graph.paths().getDconnectedVars(y, cond));
+                        Set<Node> D = new HashSet<>(SvarFges.this.graph.paths().getDconnectedVars(y, cond));
                         D.remove(y);
-                        TsFges.this.effectEdgesGraph.getAdjacentNodes(y).forEach(D::remove);
+                        SvarFges.this.effectEdgesGraph.getAdjacentNodes(y).forEach(D::remove);
 
                         for (Node x : D) {
                             if (existsKnowledge()) {
@@ -755,7 +757,7 @@ public final class TsFges implements IGraphSearch, DagScorer {
                                 }
                             }
 
-                            if (TsFges.this.adjacencies != null && !TsFges.this.adjacencies.isAdjacentTo(x, y)) {
+                            if (SvarFges.this.adjacencies != null && !SvarFges.this.adjacencies.isAdjacentTo(x, y)) {
                                 continue;
                             }
 
@@ -984,18 +986,18 @@ public final class TsFges implements IGraphSearch, DagScorer {
 
                         List<Node> adj;
 
-                        if (TsFges.this.mode == Mode.heuristicSpeedup) {
-                            adj = TsFges.this.effectEdgesGraph.getAdjacentNodes(x);
-                        } else if (TsFges.this.mode == Mode.coverNoncolliders) {
+                        if (SvarFges.this.mode == Mode.heuristicSpeedup) {
+                            adj = SvarFges.this.effectEdgesGraph.getAdjacentNodes(x);
+                        } else if (SvarFges.this.mode == Mode.coverNoncolliders) {
                             Set<Node> g = new HashSet<>();
 
-                            for (Node n : TsFges.this.graph.getAdjacentNodes(x)) {
-                                for (Node m : TsFges.this.graph.getAdjacentNodes(n)) {
-                                    if (TsFges.this.graph.isAdjacentTo(x, m)) {
+                            for (Node n : SvarFges.this.graph.getAdjacentNodes(x)) {
+                                for (Node m : SvarFges.this.graph.getAdjacentNodes(n)) {
+                                    if (SvarFges.this.graph.isAdjacentTo(x, m)) {
                                         continue;
                                     }
 
-                                    if (TsFges.this.graph.isDefCollider(m, n, x)) {
+                                    if (SvarFges.this.graph.isDefCollider(m, n, x)) {
                                         continue;
                                     }
 
@@ -1004,8 +1006,8 @@ public final class TsFges implements IGraphSearch, DagScorer {
                             }
 
                             adj = new ArrayList<>(g);
-                        } else if (TsFges.this.mode == Mode.allowUnfaithfulness) {
-                            HashSet<Node> D = new HashSet<>(TsFges.this.graph.paths().getDconnectedVars(x, new ArrayList<>()));
+                        } else if (SvarFges.this.mode == Mode.allowUnfaithfulness) {
+                            HashSet<Node> D = new HashSet<>(SvarFges.this.graph.paths().getDconnectedVars(x, new ArrayList<>()));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {
@@ -1013,13 +1015,13 @@ public final class TsFges implements IGraphSearch, DagScorer {
                         }
 
                         for (Node w : adj) {
-                            if (TsFges.this.adjacencies != null && !(TsFges.this.adjacencies.isAdjacentTo(w, x))) {
+                            if (SvarFges.this.adjacencies != null && !(SvarFges.this.adjacencies.isAdjacentTo(w, x))) {
                                 continue;
                             }
 
                             if (w == x) continue;
 
-                            if (!TsFges.this.graph.isAdjacentTo(w, x)) {
+                            if (!SvarFges.this.graph.isAdjacentTo(w, x)) {
                                 clearArrow(w, x);
                                 calculateArrowsForward(w, x);
                             }
@@ -1144,7 +1146,7 @@ public final class TsFges implements IGraphSearch, DagScorer {
                 if (this.to - this.from <= this.chunk) {
                     for (int _w = this.from; _w < this.to; _w++) {
                         Node w = this.adj.get(_w);
-                        Edge e = TsFges.this.graph.getEdge(w, this.r);
+                        Edge e = SvarFges.this.graph.getEdge(w, this.r);
 
                         if (e != null) {
                             if (e.pointsTowards(this.r)) {
@@ -1152,7 +1154,7 @@ public final class TsFges implements IGraphSearch, DagScorer {
                                 clearArrow(this.r, w);
 
                                 calculateArrowsBackward(w, this.r);
-                            } else if (Edges.isUndirectedEdge(TsFges.this.graph.getEdge(w, this.r))) {
+                            } else if (Edges.isUndirectedEdge(SvarFges.this.graph.getEdge(w, this.r))) {
                                 clearArrow(w, this.r);
                                 clearArrow(this.r, w);
 
@@ -1660,7 +1662,7 @@ public final class TsFges implements IGraphSearch, DagScorer {
                 }
 
                 Edge edge = this.graph.getEdge(t, u);
-                Node c = TsFges.traverseSemiDirected(t, edge);
+                Node c = SvarFges.traverseSemiDirected(t, edge);
                 if (c == null) continue;
                 if (cond.contains(c)) continue;
 

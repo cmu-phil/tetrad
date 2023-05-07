@@ -118,7 +118,7 @@ public final class SvarGfci implements IGraphSearch {
             chooseScore();
         }
 
-        TsFges fges = new TsFges(this.score);
+        SvarFges fges = new SvarFges(this.score);
         fges.setKnowledge(this.knowledge);
         fges.setVerbose(this.verbose);
         fges.setNumCPDAGsToStore(0);

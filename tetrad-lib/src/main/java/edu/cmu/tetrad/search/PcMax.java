@@ -39,11 +39,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Implements the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of Spirtes, Glymour, and Scheines, "Causation,
- * Prediction, and Search," 2nd edition, with a modified rule set in step D due to Chris Meek. For the modified rule
- * set, see Chris Meek (1995), "Causal inference and causal explanation with background knowledge."
+ * Modifies the PC algorithm to use the Max P rule for orienting ushielded colliders.
  *
  * @author josephramsey.
+ * @see PcMax
+ * @see Pc
+ * @see Fasd
  */
 public class PcMax implements IGraphSearch {
 

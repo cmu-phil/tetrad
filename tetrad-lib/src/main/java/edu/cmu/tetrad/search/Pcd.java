@@ -37,11 +37,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Implements the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of Spirtes, Glymour, and Scheines, "Causation,
- * Prediction, and Search," 2nd edition, with a modified rule set in step D due to Chris Meek. For the modified rule
- * set, see Chris Meek (1995), "Causal inference and causal explanation with background knowledge."
+ * Modifies the PC algorithm to handle the deterministic case.
  *
+ * @author peterspirtes
  * @author josephramsey.
+ * @see Fasd
+ * @see Pc
  */
 public class Pcd implements IGraphSearch {
 

@@ -39,12 +39,28 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Implements the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of Spirtes,
- * Glymour, and Scheines, "Causation, Prediction, and Search," 2nd edition, with a
- * modified rule set in step D due to Chris Meek. For the modified rule set, see Chris
- * Meek (1995), "Causal inference and causal explanation with background knowledge."
+ * <p>Implements the PC (Peter and Clark) algorithm, which uses conditional
+ * independence testing as an oracle to first of all remove extraneous edges
+ * from a complete graph, then to orient the unshielded colliders in the graph,
+ * and finally to make any additional orientations that are capable of avoiding
+ * additional unshielded colliders in the graph. An earlier version of this
+ * algorithm was proposed earlier than this, but the standard reference for
+ * the algorithm is in Chapter 6 of the following book:</p>
  *
- * @author josephramsey.
+ * <p>Spirtes, P., Glymour, C. N., Scheines, R., & Heckerman, D. (2000). Causation,
+ * prediction, and search. MIT press.</p>
+ *
+ * <p>A modified rule set capable of dealing effectively with knowledge of required
+ * and forbidden edges is due to Chris Meek, with this reference:
+ *
+ * <p>Meek, C. (1995), "Causal inference and causal explanation with background
+ * knowledge."</p>
+ *
+ * @author peterspirtes
+ * @author chrismeek
+ * @author clarkglymour
+ * @author josephramsey
+ * @see Fci
  */
 public class Pc implements IGraphSearch {
 
