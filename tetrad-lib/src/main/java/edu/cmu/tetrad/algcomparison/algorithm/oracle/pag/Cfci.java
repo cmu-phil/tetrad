@@ -24,7 +24,7 @@ import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 /**
  * Conserative FCI.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 public class Cfci implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {

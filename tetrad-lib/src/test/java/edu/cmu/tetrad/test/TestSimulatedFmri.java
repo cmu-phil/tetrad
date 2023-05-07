@@ -45,7 +45,7 @@ import java.text.ParseException;
 /**
  * Pulling this test out for Madelyn.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class TestSimulatedFmri {
 

@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Wrapper for Fisher Z test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class PositiveCorrScore implements ScoreWrapper {
     static final long serialVersionUID = 23L;

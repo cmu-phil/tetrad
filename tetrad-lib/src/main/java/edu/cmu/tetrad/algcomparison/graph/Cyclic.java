@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Returns a cyclic graph build up from small cyclic graph components.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class Cyclic implements RandomGraph {
     static final long serialVersionUID = 23L;

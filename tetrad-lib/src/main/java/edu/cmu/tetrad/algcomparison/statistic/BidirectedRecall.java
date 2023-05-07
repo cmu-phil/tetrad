@@ -10,7 +10,7 @@ import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 /**
  * The bidirected edge precision.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class BidirectedRecall implements Statistic {
     static final long serialVersionUID = 23L;

@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Runs algorithm on data set (simulation is OK), printing out error statistics.
  *
- * @author jdramsey 2016.03.24
+ * @author josephramsey 2016.03.24
  * @author dmalinsky 2016.03.28
  */
 public class ComparisonScript {

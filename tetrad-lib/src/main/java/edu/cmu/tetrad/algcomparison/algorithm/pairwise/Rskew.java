@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * RSkew.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "RSkew",

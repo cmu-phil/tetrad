@@ -42,7 +42,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * approach with S-Plus illustrations (Vol. 18). OUP Oxford.
  *
  * @author Vineet Raghu on 7/3/2016
- * @author jdramsey refactoring 7/4/2018
+ * @author josephramsey refactoring 7/4/2018
  */
 public class Kci implements IndependenceTest {
 

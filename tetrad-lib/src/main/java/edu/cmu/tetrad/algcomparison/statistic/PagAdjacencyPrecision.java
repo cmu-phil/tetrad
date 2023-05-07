@@ -10,7 +10,7 @@ import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
  * The adjacency precision. The true positives are the number of adjacencies in both
  * the true and estimated graphs.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class PagAdjacencyPrecision implements Statistic {
     static final long serialVersionUID = 23L;

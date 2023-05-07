@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * R3.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "R3",

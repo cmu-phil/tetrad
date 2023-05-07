@@ -23,7 +23,7 @@ import java.util.List;
  * datasets should be taken at a time (randomly). This cannot given multiple
  * values.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {

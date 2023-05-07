@@ -30,7 +30,7 @@ import static edu.cmu.tetrad.util.Params.*;
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
  * datasets should be taken at a time (randomly). This cannot given multiple values.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 @edu.cmu.tetrad.annotation.Algorithm(

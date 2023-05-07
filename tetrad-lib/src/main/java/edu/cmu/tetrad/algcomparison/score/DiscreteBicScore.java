@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Wrapper for Discrete BIC test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Discrete BIC Score",

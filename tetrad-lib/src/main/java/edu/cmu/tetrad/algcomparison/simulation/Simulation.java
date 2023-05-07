@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * The interface that simulations must implement.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public interface Simulation extends HasParameters, TetradSerializable {
     long serialVersionUID = 23L;

@@ -28,7 +28,7 @@ import java.util.List;
  * values.
  *
  * @author mglymour
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK-Vote",

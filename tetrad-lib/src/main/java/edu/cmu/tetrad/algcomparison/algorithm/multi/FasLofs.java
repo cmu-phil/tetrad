@@ -22,7 +22,7 @@ import java.util.List;
  * Requires that the parameter 'randomSelectionSize' be set to indicate how many
  * datasets should be taken at a time (randomly). This cannot given multiple values.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class FasLofs implements Algorithm, HasKnowledge {
     static final long serialVersionUID = 23L;

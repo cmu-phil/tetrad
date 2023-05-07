@@ -27,7 +27,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 /**
  * FGES (the heuristic version).
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 @Experimental

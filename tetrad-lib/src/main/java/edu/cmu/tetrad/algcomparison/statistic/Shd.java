@@ -10,7 +10,7 @@ import org.apache.commons.math3.util.FastMath;
  * Calculates the structural Hamming distance (SHD) between the estimated graph and
  * the true graph.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class Shd implements Statistic {
     static final long serialVersionUID = 23L;

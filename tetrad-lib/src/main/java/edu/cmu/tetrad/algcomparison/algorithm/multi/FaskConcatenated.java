@@ -26,7 +26,7 @@ import java.util.List;
  * datasets should be taken at a time (randomly). This cannot given multiple
  * values.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 //@edu.cmu.tetrad.annotation.Algorithm(
 //        name = "FASK Concatenated",

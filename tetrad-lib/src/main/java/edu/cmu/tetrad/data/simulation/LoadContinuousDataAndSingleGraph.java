@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 @Experimental
 public class LoadContinuousDataAndSingleGraph implements Simulation, HasParameterValues {

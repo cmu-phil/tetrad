@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Wrapper for Fisher Z test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @TestOfIndependence(
         name = "CG-LRT (Conditional Gaussian Likelihood Ratio Test)",

@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Wrapper for Fisher Z test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 //@edu.cmu.tetrad.annotation.Score(
 //        name = "Fisher Z Score",

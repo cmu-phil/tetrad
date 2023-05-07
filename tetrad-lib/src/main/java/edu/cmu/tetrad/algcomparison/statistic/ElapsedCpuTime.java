@@ -9,7 +9,7 @@ import org.apache.commons.math3.util.FastMath;
  * the elapsed time is calculated by the comparison class and recorded if this statistic is
  * used.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class ElapsedCpuTime implements Statistic {
     static final long serialVersionUID = 23L;

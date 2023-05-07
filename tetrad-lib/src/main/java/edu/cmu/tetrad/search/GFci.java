@@ -52,11 +52,18 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * path step in the final FCI orientation rules, both a score and a
  * test need to be used to construct a GFCI algorihtm.</p>
  *
+ * <p>Note that various score-based algorithms could be used in place of FGES
+ * for the initial step; in this repository we give three other options,
+ * GRaSP-FCI, BFCI (BOSS FCI), and SP-FCI (see).</p>
+ *
  * @author Juan Miguel Ogarrio
  * @author peterspirtes
  * @author josephramsey
  * @see Fci
  * @see FciOrient
+ * @see GraspFci
+ * @see BFci
+ * @see SpFci
  */
 public final class GFci implements IGraphSearch {
     private Graph graph;

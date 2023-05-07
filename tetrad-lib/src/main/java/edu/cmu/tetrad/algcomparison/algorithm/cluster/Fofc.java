@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Find One Factor Clusters.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FOFC",

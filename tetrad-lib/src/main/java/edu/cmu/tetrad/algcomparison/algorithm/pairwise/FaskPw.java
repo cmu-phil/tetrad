@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * FASK-PW (pairwise).
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK-PW",

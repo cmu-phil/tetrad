@@ -54,7 +54,7 @@ import java.util.*;
 /**
  * Stores an algorithms in the format of the algorithm comparison API.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable,
         Unmarshallable, IndTestProducer,

@@ -11,7 +11,7 @@ import org.apache.commons.math3.util.FastMath;
  * Thus, if the true does not contains X-&gt;Y,Y-&gt;X and estimated graph does contain it,
  * one false positive is counted.
  *
- * @author jdramsey, rubens (November 2016)
+ * @author josephramsey, rubens (November 2016)
  */
 public class TwoCycleFalsePositive implements Statistic {
     static final long serialVersionUID = 23L;

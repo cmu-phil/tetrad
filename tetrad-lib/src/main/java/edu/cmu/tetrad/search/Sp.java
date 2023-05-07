@@ -15,10 +15,14 @@ import java.util.*;
  * return all such sparsest permutations and their corresponding DAGs, but in this version
  * it return one of them, and converts the result into a CPDAG.</p>
  *
- * <p>Knowledge can be used with this search. If tiered knowledge is used, then the procedure
- * is carried out for each tier separately, given the variable preceding that tier, which
- * allows the SP algorithm to address tiered (e.g., time series) problems with more than 11
- * variables.</p>
+ * <p>Note that SP considers all permutations of the algorithm, which is exponential in the
+ * number of variables. So SP without knowledge is limited to about 10 variables per
+ * knowledge tier.</p>
+ *
+ * <p>However, notably, tiered Knowledge can be used with this search. If tiered knowledge
+ * is used, then the procedure is carried out for each tier separately, given the variable
+ * preceding that tier, which allows the SP algorithm to address tiered (e.g., time series)
+ * problems with more than 11 variables.</p>
  *
  * <p>This class is meant to be used in the context of the PermutationSearch class (see).
  * the proper use is PermutationSearch search = new PermutationSearch(new Sp(score));</p>
@@ -29,6 +33,8 @@ import java.util.*;
  * @author bryanandrews
  * @author josephramsey
  * @see PermutationSearch
+ * @see Knowledge
+ * @see SpFci
  */
 public class Sp implements SuborderSearch {
     private final Score score;

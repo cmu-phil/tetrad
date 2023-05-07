@@ -39,22 +39,27 @@ import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirecte
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * <p>Changes the implementation of the GFCI algorithm to use Boss
- * instead of SP (Sparest Permutation) as the initial step. This tends to
- * produce a accurate PAG than GFCI as a result, for the latent variables
- * case. The reference for GFCI is here:</p>
+ /**
+ * <p>Uses SP in place of FGES for the initial step in the GFCI algorithm. 
+ * This tends to produce a accurate PAG than GFCI as a result, for the latent 
+ * variables case. This is a simple substitution; the reference for GFCI is here:</p>
  * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
  * FGES.</p>
- * <p>For BOSS only a score is needed, but there are steps in GFCI that require
+ * 
+ * <p>For SP only a score is needed, but there are steps in GFCI that require
  * a test, so for this method, both a test and a score need to be given.</p>
+ * 
+ * <p>Note that SP considers all permutations of the algorithm, which is
+ * exponential in the number of variables. So SP is limited to about 10
+ * variables.</p>
  *
- * @author jdramsey
+ * @author josephramsey
  * @author bryan andrews
- * @see Boss
+ * @see Grasp
  * @see GFci
  * @see BFci
- * @see Sp
+ * @see GraspFci
  */
 public final class SpFci implements IGraphSearch {
 

@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class LatentCommonAncestorTruePositiveBidirected implements Statistic {
     static final long serialVersionUID = 23L;

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Creates a random graph by adding forward edges.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class RandomTwoFactorMim implements RandomGraph {
     static final long serialVersionUID = 23L;

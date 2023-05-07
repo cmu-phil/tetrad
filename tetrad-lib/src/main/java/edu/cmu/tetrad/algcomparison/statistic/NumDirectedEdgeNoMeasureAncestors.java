@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumDirectedEdgeNoMeasureAncestors implements Statistic {
     static final long serialVersionUID = 23L;

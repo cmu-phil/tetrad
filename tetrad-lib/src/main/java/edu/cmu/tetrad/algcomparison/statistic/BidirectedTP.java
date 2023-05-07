@@ -9,7 +9,7 @@ import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class BidirectedTP implements Statistic {
     static final long serialVersionUID = 23L;

@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * PC.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "PC-MB",

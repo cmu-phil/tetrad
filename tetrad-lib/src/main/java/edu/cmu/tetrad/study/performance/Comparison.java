@@ -27,7 +27,7 @@ import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 /**
  * Does a comparison of algorithm results across algorithm type, sample sizes, etc.
  *
- * @author jdramsey 2016.03.24
+ * @author josephramsey 2016.03.24
  */
 public class Comparison {
 

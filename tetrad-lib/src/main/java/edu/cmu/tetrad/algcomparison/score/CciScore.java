@@ -17,7 +17,7 @@ import java.util.List;
 ///**
 // * Wrapper for CCI Score.
 // *
-// * @author jdramsey
+// * @author josephramsey
 // */
 //@edu.cmu.tetrad.annotation.Score(name = "CCI-Score (Conditional Correlation Independence Score)", command = "cci-score", dataType = DataType.Continuous)
 //@General

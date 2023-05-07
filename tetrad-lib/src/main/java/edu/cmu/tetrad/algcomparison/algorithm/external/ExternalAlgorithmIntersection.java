@@ -38,7 +38,7 @@ import java.util.Set;
  * write.matrix(A, file=name, sep="\t")
  * }
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class ExternalAlgorithmIntersection extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;

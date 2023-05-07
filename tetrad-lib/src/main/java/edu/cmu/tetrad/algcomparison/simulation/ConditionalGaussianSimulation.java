@@ -18,7 +18,7 @@ import java.util.*;
 /**
  * A simulation method based on the conditional Gaussian assumption.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class ConditionalGaussianSimulation implements Simulation {
 

@@ -40,7 +40,7 @@ import java.util.*;
  * parents. It essentially stores an ordered pair of [Graph, List[DataSet]]. It
  * is edited by SimulationEditor.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class Simulation extends DataWrapper implements
         GraphSource, MultipleGraphSource {

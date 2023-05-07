@@ -9,7 +9,7 @@ import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 /**
  * The bidirected false negatives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class BidirectedFP implements Statistic {
     static final long serialVersionUID = 23L;

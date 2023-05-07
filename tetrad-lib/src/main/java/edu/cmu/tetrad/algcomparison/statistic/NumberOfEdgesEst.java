@@ -7,7 +7,7 @@ import org.apache.commons.math3.util.FastMath;
 /**
  * Prints the number of edges in the estimated graph.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumberOfEdgesEst implements Statistic {
     static final long serialVersionUID = 23L;

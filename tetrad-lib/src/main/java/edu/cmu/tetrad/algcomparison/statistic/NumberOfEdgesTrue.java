@@ -7,7 +7,7 @@ import org.apache.commons.math3.util.FastMath;
 /**
  * Prints the number of edges in the true graph.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumberOfEdgesTrue implements Statistic {
     static final long serialVersionUID = 23L;

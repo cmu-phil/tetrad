@@ -39,7 +39,7 @@ import java.io.IOException;
  * write.matrix(A, file=name, sep="\t")
  * }
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class ExternalAlgorithmBnlearnMmhc extends ExternalAlgorithm {
     static final long serialVersionUID = 23L;

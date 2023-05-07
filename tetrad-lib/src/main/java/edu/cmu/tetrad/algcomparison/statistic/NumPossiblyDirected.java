@@ -7,7 +7,7 @@ import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumPossiblyDirected implements Statistic {
     static final long serialVersionUID = 23L;

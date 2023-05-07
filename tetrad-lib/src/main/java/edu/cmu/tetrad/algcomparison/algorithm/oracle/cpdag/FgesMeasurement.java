@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * FGES (the heuristic version).
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {

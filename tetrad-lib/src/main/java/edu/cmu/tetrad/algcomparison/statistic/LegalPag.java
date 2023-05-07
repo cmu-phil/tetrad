@@ -7,7 +7,7 @@ import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 /**
  * Legal PAG
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class LegalPag implements Statistic {
     static final long serialVersionUID = 23L;

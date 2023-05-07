@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Wrapper for Daudin Conditional Independence test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @TestOfIndependence(
         name = "CCI-Test (Conditional Correlation Independence Test)",

@@ -20,7 +20,7 @@ import java.util.concurrent.RecursiveAction;
 /**
  * Stability selection.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class StabilitySelection implements Algorithm {
 

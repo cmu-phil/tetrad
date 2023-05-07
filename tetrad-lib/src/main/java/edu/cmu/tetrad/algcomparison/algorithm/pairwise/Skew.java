@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Skew.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "Skew",

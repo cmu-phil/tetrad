@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
  * .
  * Result of a comparison.
  *
- * @author jdramsey 2016.03.24
+ * @author josephramsey 2016.03.24
  */
 public class ComparisonResult {
     private final ComparisonParameters params;

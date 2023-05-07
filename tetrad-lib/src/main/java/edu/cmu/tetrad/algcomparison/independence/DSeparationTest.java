@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Wrapper for D-separation test. Requires a true DAG as input.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @TestOfIndependence(
         name = "D-Separation Test",

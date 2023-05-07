@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * A list of algorithm to be compared.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class Algorithms {
     private final List<Algorithm> algorithms = new ArrayList<>();

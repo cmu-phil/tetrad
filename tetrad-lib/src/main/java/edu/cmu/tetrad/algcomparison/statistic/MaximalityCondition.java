@@ -8,7 +8,7 @@ import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import java.util.List;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class MaximalityCondition implements Statistic {
     static final long serialVersionUID = 23L;

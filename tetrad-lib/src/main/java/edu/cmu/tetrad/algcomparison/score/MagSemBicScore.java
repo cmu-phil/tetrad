@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Wrapper for linear, Gaussian SEM BIC score.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "MAG SEM BIC Score",

@@ -22,7 +22,7 @@ import java.util.*;
  * some carefully selected functions to test nonlinearity and non-Gaussianity.
  *
  * @author ekummerfeld@gmail.com
- * @author jdramsey
+ * @author josephramsey
  */
 public class GeneralSemSimulationSpecial1 implements Simulation {
     static final long serialVersionUID = 23L;

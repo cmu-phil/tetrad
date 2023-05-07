@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * SvarFCI.
  *
- * @author jdramsey
+ * @author josephramsey
  * @author dmalinsky
  */
 @edu.cmu.tetrad.annotation.Algorithm(

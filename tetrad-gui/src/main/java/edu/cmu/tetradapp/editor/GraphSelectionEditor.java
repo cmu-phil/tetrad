@@ -55,7 +55,7 @@ import java.util.*;
 /**
  * Lets the user select a subgraph of a possible large graph and display it.
  *
- * @author jdramsey
+ * @author josephramsey
  * @author Zhou Yuan
  */
 public class GraphSelectionEditor extends JPanel implements GraphEditable, TripleClassifier {

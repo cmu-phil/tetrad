@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * FTFC.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FTFC",

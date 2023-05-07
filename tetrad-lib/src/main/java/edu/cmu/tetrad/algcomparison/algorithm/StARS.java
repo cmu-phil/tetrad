@@ -19,7 +19,7 @@ import java.util.concurrent.RecursiveAction;
 /**
  * StARS
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class StARS implements Algorithm {
 

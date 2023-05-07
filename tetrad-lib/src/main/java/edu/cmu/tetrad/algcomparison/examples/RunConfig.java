@@ -26,7 +26,7 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 /**
  * An example script to save out data files and graphs from a simulation.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class RunConfig {
     public static void main(String... args) {

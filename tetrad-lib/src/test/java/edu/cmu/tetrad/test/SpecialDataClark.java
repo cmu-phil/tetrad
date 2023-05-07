@@ -26,7 +26,7 @@ import static edu.cmu.tetrad.util.StatUtils.skewness;
 import static org.apache.commons.math3.util.FastMath.abs;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class SpecialDataClark implements Simulation {
     static final long serialVersionUID = 23L;

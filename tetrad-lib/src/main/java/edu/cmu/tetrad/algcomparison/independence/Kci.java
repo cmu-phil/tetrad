@@ -17,7 +17,7 @@ import java.util.List;
  * <p>
  * Note that should work with Linear, Gaussian variables but is general.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @TestOfIndependence(
         name = "KCI-Test (Kernel Conditional Independence Test)",

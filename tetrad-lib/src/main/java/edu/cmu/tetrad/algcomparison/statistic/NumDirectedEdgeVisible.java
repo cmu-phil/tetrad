@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumDirectedEdgeVisible implements Statistic {
     static final long serialVersionUID = 23L;

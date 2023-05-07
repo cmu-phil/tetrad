@@ -42,7 +42,7 @@ import java.util.*;
 /**
  * An example script to simulate data and run a comparison analysis on it.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class TestAutisticClassification {
     enum Type {LEAVE_ONE_OUT, TRAIN_TEST}

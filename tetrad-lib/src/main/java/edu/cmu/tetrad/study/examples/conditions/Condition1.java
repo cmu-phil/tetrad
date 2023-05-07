@@ -39,7 +39,7 @@ import edu.cmu.tetrad.util.Parameters;
  * saves them. For other formats, specialty data loaders can be written to implement the
  * Simulation interface.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class Condition1 {
     public void generateTetradResults() {

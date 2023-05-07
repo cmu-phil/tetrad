@@ -8,7 +8,7 @@ import java.io.Serializable;
 /**
  * The interface that each statistic needs to implement.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public interface Statistic extends Serializable {
     long serialVersionUID = 23L;

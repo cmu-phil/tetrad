@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Tags an an algorithm that loads up external graphs for inclusion in reports.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public abstract class ExternalAlgorithm implements Algorithm {
     protected String path;

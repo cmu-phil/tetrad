@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.data;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public interface IDataReader {
 

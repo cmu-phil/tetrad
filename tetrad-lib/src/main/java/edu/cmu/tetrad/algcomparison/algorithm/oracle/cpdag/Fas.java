@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * FAS.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FAS",

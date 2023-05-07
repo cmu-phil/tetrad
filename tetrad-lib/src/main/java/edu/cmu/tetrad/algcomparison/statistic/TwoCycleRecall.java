@@ -10,7 +10,7 @@ import edu.cmu.tetrad.graph.Graph;
  * Thus, if the true contains X-&gt;Y,Y-&gt;X and estimated graph does not contain it, one false negative
  * is counted.
  *
- * @author jdramsey, rubens (November 2016)
+ * @author josephramsey, rubens (November 2016)
  */
 public class TwoCycleRecall implements Statistic {
     static final long serialVersionUID = 23L;

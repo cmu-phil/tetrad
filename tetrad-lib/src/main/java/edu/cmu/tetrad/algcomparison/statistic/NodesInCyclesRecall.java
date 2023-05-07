@@ -12,7 +12,7 @@ import java.util.Set;
  * The adjacency precision. The true positives are the number of adjacencies in both
  * the true and estimated graphs.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class NodesInCyclesRecall implements Statistic {
     static final long serialVersionUID = 23L;

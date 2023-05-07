@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * PC.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 public class Pcd implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {

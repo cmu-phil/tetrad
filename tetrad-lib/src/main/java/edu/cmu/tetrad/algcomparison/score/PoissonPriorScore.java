@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Wrapper for the Poisson prior score (Bryan)
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "Poisson Prior Score",

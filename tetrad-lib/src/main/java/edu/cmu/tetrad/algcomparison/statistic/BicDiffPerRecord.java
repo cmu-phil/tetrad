@@ -12,7 +12,7 @@ import static org.apache.commons.math3.util.FastMath.tanh;
 /**
  * Difference between the true and estiamted BIC scores.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class BicDiffPerRecord implements Statistic {
     static final long serialVersionUID = 23L;

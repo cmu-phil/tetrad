@@ -10,7 +10,7 @@ import static org.apache.commons.math3.util.FastMath.tanh;
 /**
  * Estimated BIC score.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class BicEst implements Statistic {
     static final long serialVersionUID = 23L;

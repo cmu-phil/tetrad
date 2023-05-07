@@ -13,7 +13,7 @@ import java.util.*;
  * Stores descriptions of the parameters for the simulation box. All parameters
  * that go into the interface need to be described here.
  *
- * @author jdramsey
+ * @author josephramsey
  * @author Zhou Yuan zhy19@pitt.edu
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */

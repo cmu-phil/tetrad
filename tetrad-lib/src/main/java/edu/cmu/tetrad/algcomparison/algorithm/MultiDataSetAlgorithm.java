@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Implements an algorithm that takes multiple data sets as input.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public interface MultiDataSetAlgorithm extends Algorithm {
 

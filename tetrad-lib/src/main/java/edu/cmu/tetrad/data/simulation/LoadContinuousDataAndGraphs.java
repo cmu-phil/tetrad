@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class LoadContinuousDataAndGraphs implements Simulation {
     static final long serialVersionUID = 23L;

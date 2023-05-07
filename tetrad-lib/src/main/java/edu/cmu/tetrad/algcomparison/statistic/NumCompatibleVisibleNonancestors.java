@@ -12,7 +12,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.compatible;
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumCompatibleVisibleNonancestors implements Statistic {
     static final long serialVersionUID = 23L;

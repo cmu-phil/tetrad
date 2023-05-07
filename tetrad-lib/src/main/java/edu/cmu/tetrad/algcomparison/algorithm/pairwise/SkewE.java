@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * SkewE.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 //@Experimental
 //@edu.cmu.tetrad.annotation.Algorithm(

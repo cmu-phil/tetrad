@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Stores AD trees for data sets for reuse.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class AdTrees {
     private static final Map<DataSet, AdLeafTree> adTrees = new HashMap<>();

@@ -21,7 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  * @author Daniel Malinsky
  */
 public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {

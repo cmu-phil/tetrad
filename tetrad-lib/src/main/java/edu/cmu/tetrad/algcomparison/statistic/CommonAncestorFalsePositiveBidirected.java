@@ -10,7 +10,7 @@ import static edu.cmu.tetrad.algcomparison.statistic.CommonAncestorTruePositiveB
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class CommonAncestorFalsePositiveBidirected implements Statistic {
     static final long serialVersionUID = 23L;

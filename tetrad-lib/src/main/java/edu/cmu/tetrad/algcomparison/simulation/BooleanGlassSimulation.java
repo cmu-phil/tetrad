@@ -22,7 +22,7 @@ import java.util.*;
  * A version of the Lee and Hastic simulation which is guaranteed to generate a discrete
  * data set.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Experimental
 public class BooleanGlassSimulation implements Simulation {

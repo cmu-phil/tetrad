@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 public class FactorAnalysis implements Algorithm {

@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * LiNGAM.
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "LiNGAM",

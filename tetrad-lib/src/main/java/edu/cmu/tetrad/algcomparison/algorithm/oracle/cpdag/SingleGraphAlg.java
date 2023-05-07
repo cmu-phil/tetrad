@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * PC.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class SingleGraphAlg implements Algorithm, HasKnowledge {
 

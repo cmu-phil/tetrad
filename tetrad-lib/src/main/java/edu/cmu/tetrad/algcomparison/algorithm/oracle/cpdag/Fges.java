@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * FGES (the heuristic version).
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FGES",

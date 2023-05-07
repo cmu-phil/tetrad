@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Wrapper for linear, Gaussian Extended BIC score (Chen and Chen).
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "EBIC Score",

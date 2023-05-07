@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
  * The adjacency recall. The true positives are the number of adjacencies in both
  * the true and estimated graphs.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class AdjacencyRecall implements Statistic {
     static final long serialVersionUID = 23L;

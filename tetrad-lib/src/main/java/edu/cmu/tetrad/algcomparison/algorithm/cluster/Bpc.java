@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Build Pure Clusters.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "BPC",

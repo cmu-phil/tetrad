@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Tanh.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 public class Tanh implements Algorithm, TakesExternalGraph {

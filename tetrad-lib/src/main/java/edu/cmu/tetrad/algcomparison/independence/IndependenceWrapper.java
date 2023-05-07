@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Interface that algorithm must implement.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public interface IndependenceWrapper extends HasParameters, TetradSerializable {
     long serialVersionUID = 23L;

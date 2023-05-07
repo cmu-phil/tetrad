@@ -40,7 +40,7 @@ import edu.cmu.tetrad.util.Params;
 /**
  * An example script to simulate data and run a comparison analysis on it.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class LingamStudy {
     public static void main(String... args) {

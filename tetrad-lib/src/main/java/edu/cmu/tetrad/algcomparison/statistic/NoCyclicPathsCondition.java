@@ -5,7 +5,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class NoCyclicPathsCondition implements Statistic {
     static final long serialVersionUID = 23L;

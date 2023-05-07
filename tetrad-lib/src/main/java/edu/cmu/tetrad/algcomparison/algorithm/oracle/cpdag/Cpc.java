@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * CPC.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "CPC",

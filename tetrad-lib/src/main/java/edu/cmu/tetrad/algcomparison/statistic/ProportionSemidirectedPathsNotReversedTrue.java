@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import java.util.List;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class ProportionSemidirectedPathsNotReversedTrue implements Statistic {
     static final long serialVersionUID = 23L;

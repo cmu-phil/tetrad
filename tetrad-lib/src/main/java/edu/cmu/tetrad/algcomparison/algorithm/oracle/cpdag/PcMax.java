@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * PC-Max.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "PC-Max",

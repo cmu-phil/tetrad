@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.*;
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumCorrectDDAncestors implements Statistic {
     static final long serialVersionUID = 23L;

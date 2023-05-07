@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * An interface to represent a random graph of some sort.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public interface RandomGraph extends TetradSerializable {
     long serialVersionUID = 23L;

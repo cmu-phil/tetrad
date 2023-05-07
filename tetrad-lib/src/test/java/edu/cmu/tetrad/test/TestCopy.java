@@ -42,7 +42,7 @@ public final class TestCopy {
     /**
      * An example script to simulate data and run a comparison analysis on it.
      *
-     * @author jdramsey
+     * @author josephramsey
      */
     public static void main(String... args) {
         Parameters parameters = new Parameters();
