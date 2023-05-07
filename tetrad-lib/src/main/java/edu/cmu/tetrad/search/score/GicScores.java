@@ -25,8 +25,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.util.FastMath;
 
@@ -35,8 +33,9 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p></[>Implements scores motivated by the Generalized Information Criterion (GIC)
+ * <p>Implements scores motivated by the Generalized Information Criterion (GIC)
  * approach as given in Kim et al. (2012).</p>
+ *
  * <p>Kim, Y., Kwon, S., & Choi, H. (2012). Consistent model selection criteria on
  * high dimensions. The Journal of Machine Learning Research, 13(1), 1037-1057.
  * Foster and George.</p>
@@ -310,6 +309,13 @@ public class GicScores implements Score {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    /**
+     * Gives the options for the rules to use for calculating the scores. The "GIC"
+     * rules, and RICc, are the rules proposed in the Kim et al. paper for
+     * generalized information criteria.'
+     *
+     * @see GicScores
+     */
     public enum RuleType {MANUAL, BIC, NANDY, GIC2, RIC, RICc, GIC5, GIC6}
 
 

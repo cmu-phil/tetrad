@@ -46,6 +46,12 @@ import static org.apache.commons.math3.util.FastMath.log;
  */
 public class SemBicScore implements Score {
 
+    /**
+     * Gives two options for calculating the BIC score, one describe by Chickering and the
+     * other due to Nandy et al.
+     */
+    public enum RuleType {CHICKERING, NANDY}
+
     // The sample size of the covariance matrix.
     private final int sampleSize;
     // A  map from variable names to their indices.
@@ -510,9 +516,6 @@ public class SemBicScore implements Score {
         ICovarianceMatrix cov = getCovariances().getSubmatrix(cols);
         return new SemBicScore(cov);
     }
-
-    public enum RuleType {CHICKERING, NANDY}
-
 }
 
 
