@@ -18,11 +18,14 @@
 // along with this program; if not, write to the Free Software               //
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Fci;
+import edu.cmu.tetrad.search.GFci;
+import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
@@ -32,20 +35,26 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * <p>This class performs the final orientation steps of the FCI algorithms.
- * There are two versions of these final orientation steps, one due to
+ * <p>Performs the final orientation steps of the FCI algorithms, which
+ * is a useful tool to use in a variety of FCI-like algorithms.</p>
+ *
+ * <p>There are two versions of these final orientation steps, one due to
  * Peter Spirtes (the original, in Causation, Prediction and Search),
  * which is arrow complete, and the other which Jiji Zhang worked out
  * in his Ph.D. dissertation, which is both arrow and tail complete. The
  * references for these are as follows.</p>
+ *
  * <p>Spirtes, P., Glymour, C. N., Scheines, R., & Heckerman, D. (2000).
  * Causation, prediction, and search. MIT press.</p>
+ *
  * <p>Zhang, J. (2008). On the completeness of orientation rules for causal
  * discovery in the presence of latent confounders and selection bias.
  * Artificial Intelligence, 172(16-17), 1873-1896.</p>
+ *
  * <p>These final rules are used in all algorithms in Tetrad that
  * follow and refine the FCI algorithm--for example, the GFCI and RFCI
  * algorihtms.</p>
+ *
  * <p>We've made the methods for each of the separate rules publicly
  * accessible in case someone wants to use the individual rules in the
  * context of their own algorithms.</p>

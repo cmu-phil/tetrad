@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fci;
-import edu.cmu.tetrad.search.FciOrient;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;

@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.search.utils.SepsetsPossibleDsep;
 import edu.cmu.tetrad.search.utils.SepsetsSet;
@@ -34,14 +35,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveTask;
 
 /**
- * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
- * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * <p>Modifies FCI to do orientation of unshielded colliders (X*-*Y*-*Z with X and Z not adjacent)
+ * using the max-P rule (see the PC-Max algorithm). This reference is relevant:</p>
  *
- * @author Erin Korber, June 2004
- * @author Alex Smith, December 2008
+ * <p>Raghu, V. K., Zhao, W., Pu, J., Leader, J. K., Wang, R., Herman, J., ... & Wilson, D. O.
+ * (2019). Feasibility of lung cancer prediction from low-dose CT scan and smoking factors using
+ * causal models. Thorax, 74(7), 643-649.</p>
+ *
  * @author Joseph Ramsey
- * @author Choh-Man Teng
  * @see Fci
  */
 public final class FciMax implements IGraphSearch {

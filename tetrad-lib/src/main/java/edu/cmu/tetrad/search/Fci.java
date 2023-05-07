@@ -26,6 +26,7 @@ import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -60,6 +61,7 @@ import java.util.Set;
  * @author Alex Smith, December 2008
  * @author Choh-Man Teng
  * @author josephramsey
+ * @see FciOrient
  */
 public final class Fci implements IGraphSearch {
     private SepsetMap sepsets;
