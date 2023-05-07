@@ -39,9 +39,24 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * <p>Implements the Zhang-Shen bound score. This is an adaptation of
  * Theorem 1 in the following:</p>
+ *
  * <p>Zhang, Y., & Shen, X. (2010). Model selection procedure for
  * high‐dimensional data. Statistical Analysis and Data Mining: The
  * ASA Data Science Journal, 3(5), 350-358</p>
+ *
+ * <p>The score uses Theorem 1 in the above to numerically search
+ * for a lambda value that is bounded by a given probability risk,
+ * between 0 and 1, if outputting a local false positive parent for
+ * a variable. There is a parameter m0, which is a maximum number
+ * of parents for a particular variable, which is free. The solution
+ * of this score is to increase m0 from 0 upward, re-evaluating
+ * with each scoring that is done using that variable as a target
+ * node. Thus, over time, a lower bound on m0 is estimated with
+ * more and more precision. So as the score is used in the context
+ * of FGES or GRaSP, for instance, so long as the score for a given
+ * node is visited more than once, the scores output by the procedure
+ * can be expected to improve, though setting m0 to 0 for all variables
+ * does not give bad results even by itself.</p>
  *
  * @author josephramsey
  */
