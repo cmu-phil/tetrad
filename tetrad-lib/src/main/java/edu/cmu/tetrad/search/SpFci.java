@@ -39,7 +39,6 @@ import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirecte
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- /**
  * <p>Uses SP in place of FGES for the initial step in the GFCI algorithm. 
  * This tends to produce a accurate PAG than GFCI as a result, for the latent 
  * variables case. This is a simple substitution; the reference for GFCI is here:</p>
