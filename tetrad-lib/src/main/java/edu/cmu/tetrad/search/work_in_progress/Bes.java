@@ -1,7 +1,9 @@
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Boss;
+import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.SublistGenerator;
@@ -19,45 +21,38 @@ import static org.apache.commons.math3.util.FastMath.min;
 
 
 /**
- * <p>Implements a version of the BES (Best Equivalent Search) algorithm
- * that takes a permutation as input and yields a permtuation as output,
- * where the related DAG or CPDAG models are implied by the ordering or
- * variables in these permutations. BES is the second step of the GES
- * algorithm (e.g., FGES). The first step in GES starts with an
- * empty graph and adds edges (with corresponding reorientations of
- * edges), yielding a Markov model. The second step, this one, BES,
- * starts with this Markov model and then tries to remove edges from
- * it (with corresponding reorientation) to improve the BES scores.</p>
- * <p>The advantage of doing this is that BES can then be used as
- * a step in certain permutation-based algorithms like BOSS to allow
- * correct models to be inferred under the assumption of faithfulness.</p>
+ * <p>Extracts the backward step of GES for use GES but also in other
+ * algorithms. The GES algorithm consists of a forward phase (FES = Forward
+ * Equivalence Search) and a backward phase (BES = Backward Equivalence Search).
+ * We find the BES step by itself is useful in a number of algorithms, so we
+ * extract this step and give as a separate algorithm.</p>
+ * <p>The idea of the backward search is to start with a model that is
+ * Markov and removed edges from it and do the corresponding reorientations,
+ * improving the score each time, until the score can no longer be improved.</p>
+ * <p>We use the optimized implementation used in the FGES implementation
+ * of GES.</p>
  *
  * @author bryanandrews
  * @author josephramsey
  * @see Fges
- * @see Bes
  * @see Boss
  */
-public class BesPermutation {
+public class Bes {
     private final List<Node> variables;
     private final Score score;
     private Knowledge knowledge = new Knowledge();
     private boolean verbose = true;
+    private int depth = 4;
 
-    /**
-     * Constructor.
-     *
-     * @param score The score that BES (from FGES) will use.
-     */
-    public BesPermutation(@NotNull Score score) {
+    public Bes(@NotNull Score score) {
         this.score = score;
         this.variables = score.getVariables();
     }
 
     /**
-     * Returns the variables.
+     * Returns the variables being searched over.
      *
-     * @return This list.
+     * @return These variables as a list.
      */
     @NotNull
     public List<Node> getVariables() {
@@ -67,39 +62,47 @@ public class BesPermutation {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True iff so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Sets the knowledge that BES will use.
+     * Sets the knowledge for the search.
      *
      * @param knowledge This knowledge.
+     * @see Knowledge
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge(knowledge);
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
-    private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
-
-        int i = -1;
-
-        for (Node n : nodes) {
-            hashIndices.put(n, ++i);
-        }
+    /**
+     * Sets the depth for the search, which is the maximum number of variables conditioned on.
+     *
+     * @param depth This maximum; for unlimited depth use -1; otherwise, give a nonzero integer.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
+        this.depth = depth;
     }
 
-    public void bes(Graph graph, List<Node> order, List<Node> suborder) {
+    /**
+     * Runs BES for a graph over the given list of variables
+     *
+     * @param graph     The graph.
+     * @param variables The variables the search should be restricted to.
+     */
+    public void bes(Graph graph, List<Node> variables) {
         Map<Node, Integer> hashIndices = new HashMap<>();
         SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
         Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
         int[] arrowIndex = new int[1];
 
-        buildIndexing(order, hashIndices);
+        buildIndexing(variables, hashIndices);
 
-        reevaluateBackward(new HashSet<>(order), graph, hashIndices, arrowIndex, sortedArrowsBack, arrowsMapBackward);
+        reevaluateBackward(new HashSet<>(variables), graph, hashIndices, arrowIndex, sortedArrowsBack, arrowsMapBackward);
 
         while (!sortedArrowsBack.isEmpty()) {
             Arrow arrow = sortedArrowsBack.first();
@@ -126,7 +129,7 @@ public class BesPermutation {
                 continue;
             }
 
-            if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX(), graph, suborder)) {
+            if (!validDelete(x, y, arrow.getHOrT(), arrow.getNaYX(), graph)) {
                 continue;
             }
 
@@ -145,6 +148,10 @@ public class BesPermutation {
 
             reevaluateBackward(new HashSet<>(process), graph, hashIndices, arrowIndex, sortedArrowsBack, arrowsMapBackward);
         }
+    }
+
+    private Knowledge getKnowledge() {
+        return knowledge;
     }
 
     private void delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX, Graph graph) {
@@ -196,15 +203,6 @@ public class BesPermutation {
         }
     }
 
-    private double deleteEval(Node x, Node
-            y, Set<Node> complement, Set<Node> parents, Map<Node, Integer> hashIndices) {
-        Set<Node> set = new HashSet<>(complement);
-        set.addAll(parents);
-        set.remove(x);
-
-        return -scoreGraphChange(x, y, set, hashIndices);
-    }
-
     private double scoreGraphChange(Node x, Node y, Set<Node> parents, Map<Node, Integer> hashIndices) {
         int xIndex = hashIndices.get(x);
         int yIndex = hashIndices.get(y);
@@ -227,78 +225,51 @@ public class BesPermutation {
         return score.localScoreDiff(xIndex, yIndex, parentIndices);
     }
 
+    private double deleteEval(Node x, Node
+            y, Set<Node> complement, Set<Node> parents, Map<Node, Integer> hashIndices) {
+        Set<Node> set = new HashSet<>(complement);
+        set.addAll(parents);
+        set.remove(x);
+
+        return -scoreGraphChange(x, y, set, hashIndices);
+    }
+
     private Set<Node> revertToCPDAG(Graph graph) {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(knowledge);
+        rules.setKnowledge(getKnowledge());
         rules.setAggressivelyPreventCycles(true);
         boolean meekVerbose = false;
         rules.setVerbose(meekVerbose);
         return rules.orientImplied(graph);
     }
 
-    private boolean validDelete(Node x, Node y, Set<Node> H, Set<Node> naYX, Graph graph, List<Node> suborder) {
+    private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
+
+        int i = -1;
+
+        for (Node n : nodes) {
+            hashIndices.put(n, ++i);
+        }
+    }
+
+    private boolean validDelete(Node x, Node y, Set<Node> H, Set<Node> naYX, Graph graph) {
+        boolean violatesKnowledge = false;
+
         if (existsKnowledge()) {
             for (Node h : H) {
-                if (knowledge.isForbidden(x.getName(), h.getName())) return false;
-                if (knowledge.isForbidden(y.getName(), h.getName())) return false;
+                if (knowledge.isForbidden(x.getName(), h.getName())) {
+                    violatesKnowledge = true;
+                }
+
+                if (knowledge.isForbidden(y.getName(), h.getName())) {
+                    violatesKnowledge = true;
+                }
             }
         }
 
         Set<Node> diff = new HashSet<>(naYX);
         diff.removeAll(H);
-        if (!isClique(diff, graph)) return false;
-
-        if (existsKnowledge()) {
-            graph = new EdgeListGraph(graph);
-            Edge oldxy = graph.getEdge(x, y);
-            graph.removeEdge(oldxy);
-
-            for (Node h : H) {
-                if (graph.isParentOf(h, y) || graph.isParentOf(h, x)) continue;
-                Edge oldyh = graph.getEdge(y, h);
-                graph.removeEdge(oldyh);
-                graph.addEdge(directedEdge(y, h));
-
-                Edge oldxh = graph.getEdge(x, h);
-                if (!Edges.isUndirectedEdge(oldxh)) continue;
-                graph.removeEdge(oldxh);
-                graph.addEdge(directedEdge(x, h));
-            }
-
-            revertToCPDAG(graph);
-            List<Node> initialOrder = new ArrayList<>(suborder);
-            Collections.reverse(initialOrder);
-
-            while (!initialOrder.isEmpty()) {
-                Iterator<Node> itr = initialOrder.iterator();
-                Node b;
-                do {
-                    if (itr.hasNext()) b = itr.next();
-                    else return false;
-                } while (invalidSink(b, graph));
-                graph.removeNode(b);
-                itr.remove();
-            }
-
-        }
-
-        return true;
-    }
-
-    private boolean invalidSink(Node x, Graph graph) {
-        LinkedList<Node> neighbors = new LinkedList<>();
-
-        for (Edge edge : graph.getEdges(x)) {
-            if (edge.getDistalEndpoint(x) == Endpoint.ARROW) return true;
-            if (edge.getProximalEndpoint(x) == Endpoint.TAIL) neighbors.add(edge.getDistalNode(x));
-        }
-
-        while (!neighbors.isEmpty()) {
-            Node y = neighbors.pop();
-            for (Node z : neighbors) if (!graph.isAdjacentTo(y, z)) return true;
-        }
-
-        return false;
+        return isClique(diff, graph) && !violatesKnowledge;
     }
 
     private boolean existsKnowledge() {
@@ -410,10 +381,10 @@ public class BesPermutation {
     }
 
     private void calculateArrowsBackward(Node a, Node b, Graph
-            graph, Map<Edge, ArrowConfigBackward> arrowsMapBackward, Map<Node,
-            Integer> hashIndices, int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) {
+            graph, Map<Edge, ArrowConfigBackward> arrowsMapBackward, Map<Node, Integer> hashIndices,
+                                         int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) {
         if (existsKnowledge()) {
-            if (!knowledge.noEdgeRequired(a.getName(), b.getName())) {
+            if (!getKnowledge().noEdgeRequired(a.getName(), b.getName())) {
                 return;
             }
         }
@@ -428,7 +399,6 @@ public class BesPermutation {
         if (storedConfig != null && storedConfig.equals(config)) return;
         arrowsMapBackward.put(directedEdge(a, b), new ArrowConfigBackward(naYX, parents));
 
-        int depth = -1;
         int _depth = min(depth, _naYX.size());
 
         final SublistGenerator gen = new SublistGenerator(_naYX.size(), _depth);//_naYX.size());
@@ -493,6 +463,7 @@ public class BesPermutation {
             return Objects.hash(nayx, parents);
         }
     }
+
 
     private static class Arrow implements Comparable<Arrow> {
 
