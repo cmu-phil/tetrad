@@ -42,7 +42,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Implments Mimbuild using the theory of treks and ranks.
+ * Implements Mimbuild using the theory of treks and ranks.
  *
  * @author adambrodie
  */
