@@ -723,8 +723,7 @@ public class TetradSerializableUtils {
      * @return all of the classes x in the given directory (recursively) such
      * that clazz.isAssignableFrom(x).
      */
-    private List<Class> getAssignableClasses(File path,
-                                             Class<TetradSerializable> clazz) {
+    private List<Class> getAssignableClasses(File path, Class<TetradSerializable> clazz) {
         if (!path.isDirectory()) {
             throw new IllegalArgumentException("Not a directory: " + path);
         }
@@ -752,16 +751,17 @@ public class TetradSerializableUtils {
                 }
 
                 packagePath = packagePath.substring(0, index);
+                Class _clazz;
 
                 try {
-                    Class _clazz =
-                            getClass().getClassLoader().loadClass(packagePath);
+                    _clazz = getClass().getClassLoader().loadClass(packagePath);
 
                     if (clazz.isAssignableFrom(_clazz) && !_clazz.isInterface()) {
                         classes.add(_clazz);
                     }
                 } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                    System.out.println("Clazz not found: : " + path);
+//                    e.printStackTrace();
                 }
             }
         }

@@ -43,11 +43,15 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Checks the conditional independence X _||_ Y | S, where S is a set of continuous variable, and X and Y are discrete
- * variable not in S, using the Hilbert-Schmidth Independence Criterion (HSIC), a kernel based nonparametric test for
- * conditional independence.
+ * Checks the conditional independence X _||_ Y | S, where S is a set of continuous variable,
+ * and X and Y are discrete variable not in S, using the Hilbert-Schmidth Independence
+ * Criterion (HSIC), a kernel based nonparametric test for conditional independence.
+ *
+ * The Kpc algorithm by Tillman had run PC using this test; to run Kpc, simply select this test
+ * for PC.
  *
  * @author Robert Tillman
+ * @see edu.cmu.tetrad.search.work_in_progress.Kpc
  */
 
 public final class IndTestHsic implements IndependenceTest {
