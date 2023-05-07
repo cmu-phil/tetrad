@@ -19,11 +19,13 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.Fas;
+import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.test.IndTestHsic;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
@@ -39,8 +41,13 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Kernelized PC algorithm. This is the same as the PC class, the nonparametric kernel-based HSIC test is used for
- * independence testing and the parameters for this test can be set directly when Kpc is initialized.
+ * <p>Kernelized PC algorithm. This is the same as the PC class, the nonparametric
+ * kernel-based HSIC test is used for independence testing and the parameters for
+ * this test can be set directly when Kpc is initialized.</p>
+ *
+ * <p>Moving this to the work_in_progress package because it has not been tested
+ * in a very long time, and there is another option available that has been
+ * tested, namely, to run PC using the KCI test due to Kun Zhang.</p>
  *
  * @author Robert Tillman.
  */

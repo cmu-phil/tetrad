@@ -19,12 +19,20 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * <p>Implements the IDA algorithm</p>
+ * <p>Implements the IDA algorithm, as given in Maathuis et al. (2009)
+ * The reference is here:</p>
+ *
  * <p>Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
  * "Estimating high-dimensional intervention effects from observational data."
  * The Annals of Statistics 37.6A (2009): 3133-3164.</p>
  *
+ * <p>The IDA algorithm seeks to give a list of possible parents
+ * of a given variable Y and their corresponding lower-bounded effects on
+ * Y.</p>
+ *
  * @author josephramsey
+ * @see Cstar
+ * @see NodeEffects
  */
 public class Ida {
     private final DataSet dataSet;
@@ -60,8 +68,9 @@ public class Ida {
      * Returns the minimum effects of X on Y for X in V \ {Y}, sorted downward by minimum effect
      *
      * @param y The child variable.
-     * @return Two sorted lists, one of nodes, the other of corresponding minimum effects, sorted downward by
-     * minimum effect size.
+     * @return Two sorted lists, one of possible parents, the other of corresponding minimum effects,
+     * sorted downward by minimum effect size.
+     * @see Ida
      */
     public NodeEffects getSortedMinEffects(Node y) {
         Map<Node, Double> allEffects = calculateMinimumEffectsOnY(y);
@@ -81,7 +90,8 @@ public class Ida {
     }
 
     /**
-     * A list of nodes and corresponding minimum effects.
+     * Gives a list of nodes (parents or children) and corresponding minimum effects
+     * for the IDA algorithm.
      *
      * @author josephramsey
      */

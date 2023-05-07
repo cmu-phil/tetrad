@@ -19,9 +19,10 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IMbSearch;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 
@@ -29,9 +30,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Implements the Inter-IAMB algorithm.
+ * Implements IAMB.
  */
-public class InterIamb implements IMbSearch {
+public class Iamb implements IMbSearch {
 
     /**
      * The independence test used to perform the search.
@@ -48,7 +49,7 @@ public class InterIamb implements IMbSearch {
      *
      * @param test The source of conditional independence information for the search.
      */
-    public InterIamb(IndependenceTest test) {
+    public Iamb(IndependenceTest test) {
         if (test == null) {
             throw new NullPointerException();
         }
@@ -73,10 +74,6 @@ public class InterIamb implements IMbSearch {
             Node f = null;
 
             for (Node v : remaining) {
-                if (v == target) {
-                    continue;
-                }
-
                 double _strength = associationStrength(v, target, cmb);
 
                 if (_strength > strength) {
@@ -93,18 +90,18 @@ public class InterIamb implements IMbSearch {
                 cmb.add(f);
                 cont = true;
             }
+        }
 
-            // Backward phase.
-            for (Node _f : new LinkedList<>(cmb)) {
-                cmb.remove(_f);
+        // Backward phase.
 
-                if (this.independenceTest.checkIndependence(_f, target, cmb).isIndependent()) {
-                    continue;
-                }
+        for (Node f : new LinkedList<>(cmb)) {
+            cmb.remove(f);
 
-                cmb.add(_f);
+            if (this.independenceTest.checkIndependence(f, target, cmb).isIndependent()) {
+                continue;
             }
 
+            cmb.add(f);
         }
 
         return cmb;
@@ -116,7 +113,7 @@ public class InterIamb implements IMbSearch {
     }
 
     public String getAlgorithmName() {
-        return "InterIAMB";
+        return "IAMB";
     }
 
     public int getNumIndependenceTests() {
