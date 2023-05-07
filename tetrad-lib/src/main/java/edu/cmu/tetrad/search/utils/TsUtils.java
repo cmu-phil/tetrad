@@ -47,7 +47,7 @@ import java.util.List;
  * by somebody.
  *
  * @author josephramsey
- * @author Daniel Malinsky (some improvements)
+ * @author danielmalinsky (some improvements)
  */
 public class TsUtils {
 

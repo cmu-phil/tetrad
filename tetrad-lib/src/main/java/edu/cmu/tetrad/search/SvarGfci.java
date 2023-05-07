@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * Adapts GFCI to the SVAR case.
  *
- * @author Daniel Malinsky
+ * @author danielmalinsky
  * @see GFci
  */
 public final class SvarGfci implements IGraphSearch {

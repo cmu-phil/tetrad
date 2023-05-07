@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 /**
  * @author Tyler Gibson
- * @author Daniel Malinsky
+ * @author danielmalinsky
  */
 public class TsPagFromDagGraphWrapper extends GraphWrapper implements DoNotAddOldModel {
     static final long serialVersionUID = 23L;

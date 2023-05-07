@@ -60,7 +60,7 @@ import java.util.concurrent.ForkJoinPool;
  * and a list of parameters and their values.
  *
  * @author josephramsey
- * @author Daniel Malinsky
+ * @author danielmalinsky
  */
 public class Comparison {
 

@@ -29,7 +29,7 @@ import java.util.List;
  * SvarFCI.
  *
  * @author josephramsey
- * @author Daniel Malinsky
+ * @author danielmalinsky
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "SvarGFCI",

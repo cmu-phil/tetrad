@@ -56,7 +56,7 @@ import java.util.concurrent.*;
  *
  * <p>A number of other optimizations were added 5/2015. See code for details.</p>
  *
- * @author Daniel Malinsky
+ * @author danielmalinsky
  * @see Fges
  */
 public final class SvarFges implements IGraphSearch, DagScorer {

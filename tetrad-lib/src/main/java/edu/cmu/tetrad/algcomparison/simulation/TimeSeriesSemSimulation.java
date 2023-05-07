@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * @author josephramsey
- * @author Daniel Malinsky
+ * @author danielmalinsky
  */
 public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 

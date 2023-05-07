@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * This class finds the PAG to which a DAG belongs, for a time series model.
  *
- * @author Daniel Malinsky
+ * @author danielmalinsky
  * @see Fci
  * @see DagToPag
  */
