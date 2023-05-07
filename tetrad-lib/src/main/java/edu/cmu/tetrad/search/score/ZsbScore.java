@@ -40,7 +40,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>Implements the Zhang-Shen bound score. This is an adaptation of
  * Theorem 1 in the following:</p>
  *
- * <p>Zhang, Y., & Shen, X. (2010). Model selection procedure for
+ * <p>Zhang, Y., &amp; Shen, X. (2010). Model selection procedure for
  * high‐dimensional data. Statistical Analysis and Data Mining: The
  * ASA Data Science Journal, 3(5), 350-358</p>
  *

@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * <p>Calculates the BDeu score, which the BDe (Bayes Dirichlet Equivalent) score
  * with uniform priors. A good discussion of BD* scores can be found here:</p>
- * <p>Heckerman, D., Geiger, D. & Chickering, D.M. Learning Bayesian networks:
+ * <p>Heckerman, D., Geiger, D. &amp; Chickering, D.M. Learning Bayesian networks:
  * The combination of knowledge and statistical data. Mach Learn 20, 197–243 (1995).
  * https://doi.org/10.1007/BF00994016</p>
  *

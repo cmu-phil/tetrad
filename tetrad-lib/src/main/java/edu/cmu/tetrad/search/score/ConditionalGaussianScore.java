@@ -34,9 +34,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implements a conditional Gaussian BIC score for FGS.
+ * Implements a conditional Gaussian BIC score for FGS, which calculates a BIC
+ * score for mixed discrete/Gaussian data using the conditional Gaussian
+ * likelihood function (see).
  *
  * @author josephramsey
+ * @see ConditionalGaussianLikelihood
+ * @see DegenerateGaussianScore
  */
 public class ConditionalGaussianScore implements Score {
 
@@ -54,6 +58,21 @@ public class ConditionalGaussianScore implements Score {
 
     /**
      * Constructs the score using a covariance matrix.
+     *
+     * @param dataSet A dataset with a mixture of continuous and discrete variables.
+     *                It may be all continuous or all discrete.
+     * @param penaltyDiscount A multiplier on the penalty term in the BIC score.
+     * @param discretize When a discrete variable is a child of a continuous variable, one
+     *                   (expensive) way to solve the problem is to do a numerical integration.
+     *                   A less expensive (and often more accurate) way to solve the problem
+     *                   is to discretize the child with a certian number of discrete categories.
+     *                   if this parameter is set to True, a separate copy of all variables
+     *                   is maintained that is discretized in this way, and these are substituted
+     *                   for the discrete children when this sort of problem needs to be solved.
+     *                   This information needs to be known in the constructor since one needs
+     *                   to know right away whether ot create this separate discretized version
+     *                   of the continuous columns.
+     * @see #setNumCategoriesToDiscretize
      */
     public ConditionalGaussianScore(DataSet dataSet, double penaltyDiscount, boolean discretize) {
         if (dataSet == null) {
