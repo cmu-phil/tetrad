@@ -425,7 +425,9 @@ public class Cstar {
         return graph;
     }
 
-    // A single record in the returned table.
+    /**
+     * A single record in the returned table for CSTaR.
+     */
     public static class Record implements TetradSerializable {
         static final long serialVersionUID = 23L;
 

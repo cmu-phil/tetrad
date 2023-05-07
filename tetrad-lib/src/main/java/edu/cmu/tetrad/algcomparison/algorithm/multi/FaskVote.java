@@ -70,7 +70,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
                 _dataSets.add((DataSet) d);
             }
 
-            edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, this.score, this.test);
+            edu.cmu.tetrad.search.work_in_progress.FaskVote search = new edu.cmu.tetrad.search.work_in_progress.FaskVote(_dataSets, this.score, this.test);
 
             search.setKnowledge(this.knowledge);
             return search.search(parameters);

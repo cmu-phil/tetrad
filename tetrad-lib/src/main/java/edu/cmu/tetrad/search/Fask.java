@@ -136,12 +136,12 @@ import static org.apache.commons.math3.util.FastMath.*;
 public final class Fask implements IGraphSearch {
 
     /**
-     * The method to use for finding the initial adjacencies.
+     * The method to use for finding the initial adjacencies for FASK.
      */
     public enum AdjacencyMethod {FAS_STABLE, FGES, EXTERNAL_GRAPH, NONE}
 
     /**
-     * The left-right rule to use. Options include the FASK left-right rule and three left-right rules
+     * The left-right rule to use for FASK. Options include the FASK left-right rule and three left-right rules
      * from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
      * paper, "empirical" versions were given in which the variables are multiplied through by the
      * signs of the skewnesses; we follow this advice here (with good results). These others are provided
