@@ -41,10 +41,12 @@ import static org.apache.commons.math3.util.FastMath.pow;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>These are methods for linear, non-Gaussian Orientation with a Fixed graph
- * Structure (LOFS). The options for different types of scores are given in the enum
- * Lofs.Score. The options for rules to use to do the orientations are given in the
- * enum, Lofs.Rule. Most of these are taken from the literature and ca be googled.</p>
+ * <p>Implements a number of methods which take a fixed graph as input and use linear,
+ * non-Gaussian methods to orient the edges in the graph. where the acronym stands for
+ * linear, non-Gaussian Orientation with a Fixed graph Structure (LOFS). The options
+ * for different types of scores are given in the enum Lofs.Score. The options for rules
+ * to use to do the orientations are given in the enum, Lofs.Rule. Most of these are
+ * taken from the literature and ca be googled.</p>
  *
  * @author josephramsey
  * @see Score
