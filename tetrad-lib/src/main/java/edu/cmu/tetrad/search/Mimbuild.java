@@ -50,7 +50,7 @@ import java.util.List;
  * <p>Specifically, the search will first infer the covariance matrix over the
  * latents and then will use the GRaSP algorithm (see) to infer the structure
  * graph over the latents, using the SEM Bic score with the given penalty discount
- * (default 2).</p
+ * (default 2).</p>
  *
  * <p>One may wish to obtain the implied correlation matrix over the latents and
  * run one's own choice of CPDDAG algroithm on it with one's on test or score;

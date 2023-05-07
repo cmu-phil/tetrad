@@ -41,6 +41,7 @@ import java.util.*;
  * That is, if X _||_ Y | Z, but Z determines X or Y, then the edge X---Y is
  * not removed.</p>
  *
+ * @author peterspirtes
  * @author josephramsey.
  * @see Fas
  */

@@ -38,18 +38,23 @@ import java.util.List;
 
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
- * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
- * Insufficient Systems").
- * <p>
- * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
- * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * <p>Implements the Really Fast Causal Inference (RFCI) algorithm, which aims to
+ * do a correct inference of inferrable causal structure under the assumption
+ * that unmeasured common causes of variables in the data may exist. The graph
+ * returned is slightly different from the partial ancestral graph (PAG) returned
+ * by the FCI algorithm. The goal of of the algorithm is to avoid certain
+ * expensive steps in the FCI procedure in a correct way. This was introduced
+ * here:</p>
+ *
+ * <p>Colombo, D., Maathuis, M. H., Kalisch, M., & Richardson, T. S. (2012). Learning
+ * high-dimensional directed acyclic graphs with latent and selection variables. The
+ * Annals of Statistics, 294-321.</p>
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
  * @author josephramsey
  * @author Choh-Man Teng
+ * @see Fci
  */
 public final class Rfci implements IGraphSearch {
 

@@ -49,7 +49,7 @@ import java.util.*;
  * <p>Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads."
  * Sociological Methods and Research 19, 80-92.</p>
  * <p>Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of
- * Psychology 19, 180-187. </p
+ * Psychology 19, 180-187. </p>
  * <p>Bron, C. and Kerbosch, J. (1973) "Algorithm 457: Finding all cliques of an undirected graph".
  * Communications of ACM 16, 575-577.</p>
  *
