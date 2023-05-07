@@ -50,6 +50,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see GFci
  * @see GraspFci
  * @see SpFci
+ * @see Fges
  */
 public final class BFci implements IGraphSearch {
 

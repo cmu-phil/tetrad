@@ -2,7 +2,6 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.work_in_progress.Bes;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.Score;
