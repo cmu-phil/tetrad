@@ -54,6 +54,8 @@ import java.util.*;
  * Communications of ACM 16, 575-577.</p>
  *
  * @author Ricardo Silva
+ * @see Fofc
+ * @see Ftfc
  */
 public final class Bpc {
     private boolean outputMessage;

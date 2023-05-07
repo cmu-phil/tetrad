@@ -39,12 +39,13 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * This code restricts the FGES algorithm to the operations needed just
+ * <p>Restricts the FGES algorithm (see) to the operations needed just
  * to find the graph over the Markov blanket of a variable X (or a graph
  * over the Markov blankets of a list of variables X1,..,Xn), together
- * with the target X (or, respectively, the targets X1,...,Xn).
+ * with the target X (or, respectively, the targets X1,...,Xn).</p>
  *
  * @author josephramsey
+ * @see Fges
  */
 public final class FgesMb {
 

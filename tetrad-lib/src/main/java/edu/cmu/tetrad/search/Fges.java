@@ -45,21 +45,30 @@ import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * FGES is an implementation of the GES algorithm, as specified in
- * Chickering (2002) "Optimal structure identification with greedy search"
- * Journal of Machine Learning Research. It works for both BayesNets and SEMs.
- * <p>
- * To speed things up, it has been assumed that variables X and Y with zero
+ * <p>Imlements the Greedy Equivalence Search (GES) algorithm, originally due to
+ * Chris Meek but developed significantly by Max Chickering, with some
+ * optimizations that allow it to scale accurately to thousands of variables
+ * for the sparse case.</p>
+ *
+ * <p>Specificlly, FGES is an implementation of the GES algorithm as specified
+ * in this paper:</p>
+
+ * <p>Chickering (2002) "Optimal structure identification with greedy search"
+ * Journal of Machine Learning Research.</p>
+ *
+ * <p>It works for both BayesNets and SEMs.</p>
+ *
+ * <p>To speed things up, it has been assumed that variables X and Y with zero
  * correlation do not correspond to edges in the graph. This is a restricted
  * form of the heuristicSpeedup assumption, something GES does not assume. This
  * the graph. This is a restricted form of the heuristicSpeedup assumption,
  * something GES does not assume. This heuristicSpeedup assumption needs to be
- * explicitly turned on using setHeuristicSpeedup(true).
- * <p>
- * A number of other optimizations were added 5/2015. See code for details.
+ * explicitly turned on using setHeuristicSpeedup(true).</p>
  *
- * @author Ricardo Silva, Summer 2003
- * @author Joseph Ramsey, Revisions 5/2015
+ * <p>A number of other optimizations were also. See code for details.</p>
+ *
+ * @author Ricardo Silva
+ * @author josephramsey
  */
 public final class Fges implements IGraphSearch, DagScorer {
     private final Set<Node> emptySet = new HashSet<>();

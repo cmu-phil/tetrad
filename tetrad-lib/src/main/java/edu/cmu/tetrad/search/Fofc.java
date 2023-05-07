@@ -37,11 +37,19 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 
 
 /**
- * Implements FindOneFactorCluster by Erich Kummerfeld (adaptation of a two factor
- * quartet algorithm to a one factor tetrad algorithm).
+ * <p>Implements the Find One Factor Clusters (FOFC) algorithm by Erich Kummerfeld, which
+ * uses reasoning about vanishing tetrads of algorithms to infer clusters of the
+ * measured variables in a dataset that each be explained by a single latent variable.
+ * A reference is the following</p>
  *
- * @author Joseph Ramsey
+ * <p>Kummerfeld, E., & Ramsey, J. (2016, August). Causal clustering for 1-factor measurement
+ * models. In Proceedings of the 22nd ACM SIGKDD international conference on knowledge
+ * discovery and data mining (pp. 1655-1664).</p>
+ *
+ * @author josephramsey
  * @author erichkummerfeld
+ * @see Ftfc
+ * @see Bpc
  */
 public class Fofc {
     public enum Algorithm {SAG, GAP}
