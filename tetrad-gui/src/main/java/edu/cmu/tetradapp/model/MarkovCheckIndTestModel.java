@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Stores a list of independence facts.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;

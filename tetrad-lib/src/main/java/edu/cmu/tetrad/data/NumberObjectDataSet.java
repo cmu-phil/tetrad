@@ -73,7 +73,7 @@ import java.util.*;
  * very large data sets, it makes more sense to disallow memory-hogging
  * manipulations than to throw out-of-memory errors. </ul>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see edu.cmu.tetrad.data.Variable
  * @see Knowledge
  */

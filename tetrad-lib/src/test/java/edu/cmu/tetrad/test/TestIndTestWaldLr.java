@@ -45,7 +45,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests the IndTestTimeSeries class.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 @Ignore
 public class TestIndTestWaldLr {

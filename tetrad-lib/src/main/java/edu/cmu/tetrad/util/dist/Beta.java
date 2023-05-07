@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.RandomUtil;
  * Implements a Beta distribution for purposes of drawing random numbers.
  * The parameters are alpha and beta. See Wikipedia.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Beta implements Distribution {
     static final long serialVersionUID = 23L;

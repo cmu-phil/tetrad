@@ -50,7 +50,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
  * Panel (to be put in a dialog) for letting the user choose how a data file
  * should be loaded.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class LoadDataDialog extends JPanel {
 

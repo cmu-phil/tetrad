@@ -43,7 +43,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * TODO: Some of these tests give answers different from Bollen now. Why?
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestDeltaTetradTest {
 

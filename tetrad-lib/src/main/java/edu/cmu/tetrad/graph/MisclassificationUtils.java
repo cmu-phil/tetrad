@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * Some utilities for generating misclassification tables for graphs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class MisclassificationUtils {
 

@@ -43,7 +43,7 @@ import java.util.*;
  * the true DAG.</p>
  *
  * @author Frank C. Wimberly
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class Ccd implements IGraphSearch {
     private final IndependenceTest independenceTest;

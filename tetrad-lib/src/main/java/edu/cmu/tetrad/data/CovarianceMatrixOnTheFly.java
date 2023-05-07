@@ -44,7 +44,7 @@ import java.util.concurrent.RecursiveTask;
  * positive definiteness is "spot-checked"--that is, checked for various
  * submatrices.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @see CorrelationMatrix
  */
 public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {

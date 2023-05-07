@@ -32,7 +32,7 @@ import java.util.List;
  * Implements a polynomial as a sum of a list of terms whose variables are
  * identified as integers in the set {0, 1, 2, ...}.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class Polynomial implements TetradSerializable {
     static final long serialVersionUID = 23L;

@@ -32,7 +32,7 @@ import java.util.List;
  * Determines sepsets, collider, and noncolliders by examining d-separation facts in
  * a DAG.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class DagSepsets implements SepsetProducer {
     private final EdgeListGraph dag;

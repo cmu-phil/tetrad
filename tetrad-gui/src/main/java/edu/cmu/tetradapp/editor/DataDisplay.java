@@ -33,7 +33,7 @@ import java.beans.PropertyChangeSupport;
 /**
  * Displays a DataSet object as a JTable.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class DataDisplay extends JPanel implements DataModelContainer,
         PropertyChangeListener {

@@ -29,7 +29,7 @@ import java.io.ObjectInputStream;
 /**
  * Identifies a particular factor (by name) at a particular lag (integer).
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class LaggedFactor implements Comparable, TetradSerializable {
     static final long serialVersionUID = 23L;

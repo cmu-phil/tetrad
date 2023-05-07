@@ -54,7 +54,7 @@ import java.util.Collections;
  * & Shimizu, S. (2012). Causal discovery of linear acyclic models with arbitrary
  * distributions. arXiv preprint arXiv:1206.3260.</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see Fas
  * @see Fask
  */

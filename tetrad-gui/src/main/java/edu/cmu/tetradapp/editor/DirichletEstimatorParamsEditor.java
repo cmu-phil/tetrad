@@ -31,7 +31,7 @@ import java.awt.*;
 /**
  * Edits the parameters for simulating data from Bayes nets.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class DirichletEstimatorParamsEditor extends JPanel implements ParameterEditor {
 

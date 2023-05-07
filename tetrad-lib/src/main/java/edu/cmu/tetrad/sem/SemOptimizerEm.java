@@ -38,7 +38,7 @@ import java.util.List;
  * variables, SemOptimizerRegression should be more efficient.
  *
  * @author Ricardo Silva
- * @author Joseph Ramsey Cleanup, modernization.
+ * @author josephramsey Cleanup, modernization.
  */
 public class SemOptimizerEm implements SemOptimizer {
     static final long serialVersionUID = 23L;

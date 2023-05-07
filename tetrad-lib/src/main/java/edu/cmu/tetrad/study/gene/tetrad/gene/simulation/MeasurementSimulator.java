@@ -55,7 +55,7 @@ import java.util.Arrays;
  * see the TestMeasurementSimulator class. This is a JUnit test class that
  * contains several examples of code use.&gt; 0
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @see TestMeasurementSimulator
  */
 public class MeasurementSimulator implements TetradSerializable {

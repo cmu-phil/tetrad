@@ -36,7 +36,7 @@ import java.util.Arrays;
  * 1.7xyz^2 -&gt; 1.7*(V0)(V1)(V2)(V2) <li> -5.0z^3y^2 -&gt; -5.0*(V2)(V2)(V2)(V1)(V1)
  * </ol>
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class PolynomialTerm implements TetradSerializable {
     static final long serialVersionUID = 23L;

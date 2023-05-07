@@ -51,7 +51,7 @@ import java.util.Map;
  * Edits a SEM PM model.
  *
  * @author Donald Crimbchin
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class SemPmEditor extends JPanel implements DelegatesEditing,
         LayoutEditable {

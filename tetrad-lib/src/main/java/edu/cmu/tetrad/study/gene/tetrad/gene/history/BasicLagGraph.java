@@ -42,7 +42,7 @@ import java.util.*;
  * &gt;= 0, although of course lagged factors used for edge specifications must
  * have lags &gt;= 1.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class BasicLagGraph implements LagGraph {
     static final long serialVersionUID = 23L;

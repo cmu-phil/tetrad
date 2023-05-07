@@ -49,7 +49,7 @@ import java.util.Map;
 /**
  * Displays a DataSet object as a JTable.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TabularDataJTable extends JTable implements DataModelContainer,
         PropertyChangeListener {

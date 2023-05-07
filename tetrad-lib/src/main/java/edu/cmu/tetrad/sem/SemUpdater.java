@@ -40,7 +40,7 @@ import java.util.List;
  * in the Bayes net, possibly with additional information about which variables
  * in the Bayes net have been manipulated.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see edu.cmu.tetrad.bayes.Evidence
  * @see edu.cmu.tetrad.bayes.Proposition
  * @see edu.cmu.tetrad.bayes.Manipulation

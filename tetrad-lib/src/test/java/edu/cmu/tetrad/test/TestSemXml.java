@@ -44,7 +44,7 @@ import java.util.List;
 /**
  * Tests the Bayes XML parsing/rendering.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestSemXml extends TestCase {
 

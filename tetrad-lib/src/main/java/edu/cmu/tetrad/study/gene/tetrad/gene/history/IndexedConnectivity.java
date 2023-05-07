@@ -36,7 +36,7 @@ import java.util.SortedSet;
  * time to the next. However, for certain uses of lag graphs, the graph itself
  * may be assumed to be static, so this optimization is useful.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class IndexedConnectivity implements TetradSerializable {
     static final long serialVersionUID = 23L;

@@ -37,7 +37,7 @@ import java.util.Date;
  * in the future without disturbing serialization. It must be the case that
  * metadata can load even if the SessionWrapper cannot load.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TetradMetadata
         implements TetradSerializable, TetradMetadataIndirectRef {

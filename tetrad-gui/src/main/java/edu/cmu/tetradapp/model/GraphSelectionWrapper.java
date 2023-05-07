@@ -38,7 +38,7 @@ import java.util.*;
  * Holds a tetrad-style graph with all of the constructors necessary for it to
  * serve as a model for the tetrad application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer {
     static final long serialVersionUID = 23L;

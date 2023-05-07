@@ -61,7 +61,7 @@ import java.util.List;
  * the only condition being that the false value must be less than the true
  * value.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class BooleanGlassFunction implements UpdateFunction {
     static final long serialVersionUID = 23L;

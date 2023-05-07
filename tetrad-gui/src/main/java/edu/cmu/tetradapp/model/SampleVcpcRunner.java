@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SampleVcpcRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {

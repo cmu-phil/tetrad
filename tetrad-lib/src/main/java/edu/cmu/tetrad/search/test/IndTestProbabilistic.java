@@ -36,7 +36,7 @@ import java.util.*;
 /**
  * Uses BCInference by Cooper and Bui to calculate probabilistic conditional independence judgments.
  *
- * @author Joseph Ramsey 3/2014
+ * @author josephramsey 3/2014
  */
 public class IndTestProbabilistic implements IndependenceTest {
 

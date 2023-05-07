@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the IndTestTimeSeries class.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestIndTestGSquare {
     private final String[] discreteFiles = {

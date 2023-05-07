@@ -34,7 +34,7 @@ import java.util.*;
  * for vanishing tetrads." Sociological Methods and Research 19, 80-92 and Bollen and Ting, Confirmatory Tetrad
  * Analysis.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class DeltaTetradTest {
     private DataSet dataSet;

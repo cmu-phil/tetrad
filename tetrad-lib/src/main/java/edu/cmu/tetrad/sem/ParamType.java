@@ -31,7 +31,7 @@ import java.io.ObjectStreamException;
  * model; VAR parmaeters are variances among the error terms; COVAR freeParameters
  * are (non-variance) covariances among the error terms.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ParamType implements TetradSerializable {
     static final long serialVersionUID = 23L;

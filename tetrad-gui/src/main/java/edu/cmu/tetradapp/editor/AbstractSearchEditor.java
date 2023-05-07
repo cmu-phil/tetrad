@@ -56,7 +56,7 @@ import java.util.ArrayList;
  * threading for you, provide a stop button for algorithm, and do logging. The
  * execute button used must be getExecuteButton(), or else logging won't work.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public abstract class AbstractSearchEditor extends JPanel implements GraphEditable, IndTestTypeSetter {
 

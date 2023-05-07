@@ -33,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Implements some tests of the FDR (False Discovery Rate) test.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestFdr {
 

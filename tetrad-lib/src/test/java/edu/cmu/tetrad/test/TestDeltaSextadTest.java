@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests the BooleanFunction class.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestDeltaSextadTest {
 

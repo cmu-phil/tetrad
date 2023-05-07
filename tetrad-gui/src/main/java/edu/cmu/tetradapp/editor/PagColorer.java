@@ -30,7 +30,7 @@ import javax.swing.*;
 /**
  * Colors a graph using the PAG coloring. Optionally checks to make sure it's  legal PAG.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class PagColorer extends JCheckBoxMenuItem {
 

@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestFgesFa {
 

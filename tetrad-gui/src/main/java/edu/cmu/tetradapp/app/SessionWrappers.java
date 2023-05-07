@@ -32,7 +32,7 @@ import edu.cmu.tetradapp.model.SessionWrapper;
  * A collection of public static methods to help construct SessionWrappers
  * manually.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 final class SessionWrappers {
 

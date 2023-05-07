@@ -32,7 +32,7 @@ import java.util.List;
  * <p>Implements a linear update function, Gi.0 = L(Parents(G0.0)) + ei, where P
  * is a polynomial function and ei is a random noise term.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class LinearFunction implements UpdateFunction {
     static final long serialVersionUID = 23L;

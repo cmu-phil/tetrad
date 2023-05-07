@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>Ramsey, J. (2016). Improving accuracy and scalability of the pc
  * algorithm by maximizing p-value. arXiv preprint arXiv:1610.00378.</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see PcMax
  */
 public final class MaxP {

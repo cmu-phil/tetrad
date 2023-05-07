@@ -45,7 +45,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
  * Scheines, "Causation, Prediction and Search," 2nd edition, page 94.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
  */
 public final class IndTestPositiveCorr implements IndependenceTest {

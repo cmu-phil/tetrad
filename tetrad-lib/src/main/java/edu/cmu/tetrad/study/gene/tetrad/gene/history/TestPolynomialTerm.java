@@ -28,7 +28,7 @@ import junit.framework.TestSuite;
 /**
  * Tests the PolynomialTerm class.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class TestPolynomialTerm extends TestCase {
 

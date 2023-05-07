@@ -39,7 +39,7 @@ import java.awt.event.ActionEvent;
  * Copies a selection of session nodes in the frontmost session editor, to the
  * clipboard.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class SelectLatentsAction extends AbstractAction implements ClipboardOwner {
 

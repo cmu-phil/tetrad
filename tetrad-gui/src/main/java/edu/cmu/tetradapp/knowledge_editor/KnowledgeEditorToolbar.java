@@ -47,7 +47,7 @@ import java.util.Map;
  * can take in the session editor workbench, whether it's selecting and moving a
  * node, adding a node of a particular type, or adding an edge.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 class KnowledgeEditorToolbar extends JPanel {
 

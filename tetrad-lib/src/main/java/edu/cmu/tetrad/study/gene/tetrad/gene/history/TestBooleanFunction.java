@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Tests the BooleanFunction class.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class TestBooleanFunction extends TestCase {
 

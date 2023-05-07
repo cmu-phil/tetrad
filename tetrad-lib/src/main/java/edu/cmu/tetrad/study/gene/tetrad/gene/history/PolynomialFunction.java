@@ -32,7 +32,7 @@ import java.util.ArrayList;
  * <p>Implements a polynomial update function, Gi.0 = P(Parents(G0.0)) + ei,
  * where P is a polynomial function and ei is a random noise term.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class PolynomialFunction implements UpdateFunction {
     static final long serialVersionUID = 23L;

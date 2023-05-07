@@ -38,7 +38,7 @@ import java.util.List;
  * Categorical Data, 2nd Edition, 142.
  *
  * @author Frank Wimberly original version
- * @author Joseph Ramsey revision 10/01
+ * @author josephramsey revision 10/01
  */
 public final class GSquareTest {
 

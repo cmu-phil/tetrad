@@ -29,7 +29,7 @@ import java.io.ObjectInputStream;
 /**
  * Implements a knowledge edge X--&gt;Y as a simple ordered pair of strings.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class KnowledgeEdge implements TetradSerializable {
     static final long serialVersionUID = 23L;

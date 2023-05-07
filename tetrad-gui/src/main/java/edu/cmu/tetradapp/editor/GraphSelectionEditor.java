@@ -544,7 +544,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
      * Puts up a panel showing some graph properties, e.g., number of nodes and
      * edges in the graph, etc.
      *
-     * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+     * @author josephramsey
      */
     public static class GraphSelectionTextInputAction extends AbstractAction implements ClipboardOwner {
 

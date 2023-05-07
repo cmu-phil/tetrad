@@ -43,7 +43,7 @@ import java.util.Set;
  * Displays data objects and allows users to edit these objects as well as load
  * and save them.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class DataEditor extends JPanel implements KnowledgeEditable,
         PropertyChangeListener {

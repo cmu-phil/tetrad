@@ -34,7 +34,7 @@ import java.util.*;
  * Implements the Min-Max Markov Blanks (MMMB) algorithm as defined in Tsamardinos, Aliferis, and Statnikov, Time and
  * Sample Efficient Discovery of Markov Blankets and Direct Causal Relations (KDD 2003).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class Mmmb implements IMbSearch {
 

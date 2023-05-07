@@ -29,7 +29,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestSemGraph extends TestCase {
 

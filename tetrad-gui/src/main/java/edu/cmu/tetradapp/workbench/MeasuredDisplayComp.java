@@ -28,7 +28,7 @@ import java.awt.geom.RoundRectangle2D;
 /**
  * The display component for measured nodes--an opaque rounded rectangle.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class MeasuredDisplayComp extends JComponent implements DisplayComp {
     private boolean selected;

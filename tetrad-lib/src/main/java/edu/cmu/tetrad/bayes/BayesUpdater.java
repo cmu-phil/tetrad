@@ -32,7 +32,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * well--that is, P(AND_i{Xi = xi'} | evidence). Also, not all updaters can take
  * manipulation information into account. See implementations for details.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see Evidence
  * @see Proposition
  * @see Manipulation

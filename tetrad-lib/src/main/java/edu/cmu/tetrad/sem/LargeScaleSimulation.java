@@ -47,7 +47,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * Stores a SEM model, pared down, for purposes of simulating data sets with
  * large numbers of variables and sample sizes.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class LargeScaleSimulation {
 

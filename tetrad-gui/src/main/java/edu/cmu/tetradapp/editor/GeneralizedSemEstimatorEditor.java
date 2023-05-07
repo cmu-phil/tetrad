@@ -46,7 +46,7 @@ import java.util.prefs.Preferences;
  * Edits a SEM PM model.
  *
  * @author Donald Crimbchin
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class GeneralizedSemEstimatorEditor extends JPanel implements DelegatesEditing, LayoutEditable {
 

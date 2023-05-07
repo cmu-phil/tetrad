@@ -34,7 +34,7 @@ import java.util.List;
  * Stores a correlation matrix together with variable names and sample size;
  * intended as a representation of a data set.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class CorrelationMatrix extends CovarianceMatrix {
     static final long serialVersionUID = 23L;

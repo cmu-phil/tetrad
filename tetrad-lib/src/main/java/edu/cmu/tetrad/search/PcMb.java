@@ -37,7 +37,7 @@ import java.util.*;
  * independence information. This CPDAG may be used to generate the actual list of DAG's that might be Markov
  * blankets. Note that this code has been converted to be consistent with the CPC algorithm.</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class PcMb implements IMbSearch, IGraphSearch {
 

@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Calculates some scores for Bayes nets as a whole.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class BayesProperties {
     private final DataSet dataSet;

@@ -30,7 +30,7 @@ import edu.cmu.tetrad.session.SessionModel;
  * just presents the underlying workbench. There are no additional parameters to
  * the PM.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class BooleanGlassGenePm extends GenePm implements SessionModel {
     static final long serialVersionUID = 23L;

@@ -38,7 +38,7 @@ import java.util.*;
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class VcpcFastRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {

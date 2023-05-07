@@ -39,7 +39,7 @@ import java.util.List;
  * Analysis of Cross-Classified Categorical Data," 2nd edition. The formula for degrees of freedom used in this test are
  * equivalent to the formulation on page 142 of Fienberg.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see GSquareTest
  */
 public final class IndTestGSquare implements IndependenceTest {

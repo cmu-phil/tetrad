@@ -28,7 +28,7 @@ import java.awt.datatransfer.Clipboard;
  * accidentally pasted to other applications. Data that should be pastable to
  * other applications should use the System clipboard, Toolkit.getDefaultToolkit().getSystemClipboard().
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class InternalClipboard extends Clipboard {
     private static final InternalClipboard ourInstance = new InternalClipboard();

@@ -28,7 +28,7 @@ import org.apache.commons.math3.util.FastMath;
 /**
  * A translation from Tibshirani's 2008 Fortran implementation of glasso.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Glasso {
 

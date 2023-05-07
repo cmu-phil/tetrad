@@ -35,7 +35,7 @@ import java.text.NumberFormat;
  * otherwise annoying GUI-related functions like keeping the textbox the right
  * size and listening to itself.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class DoubleTextField extends JTextField {
 

@@ -30,7 +30,7 @@ import java.io.ObjectStreamException;
  * A typesafe enumeration of the types of independence tests that are used for basic
  * search algorithm in this package.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class IndTestType implements TetradSerializable {
     static final long serialVersionUID = 23L;

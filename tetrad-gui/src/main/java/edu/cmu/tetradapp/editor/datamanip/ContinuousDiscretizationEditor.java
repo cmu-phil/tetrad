@@ -37,7 +37,7 @@ import java.util.prefs.Preferences;
 /**
  * Edits discretization parameters for a continuous variable.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Tyler Gibson
  */
 class ContinuousDiscretizationEditor extends JPanel implements DiscretizationEditor {

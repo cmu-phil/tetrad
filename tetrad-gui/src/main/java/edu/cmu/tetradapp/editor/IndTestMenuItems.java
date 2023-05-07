@@ -33,7 +33,7 @@ import javax.swing.*;
 /**
  * A common way to add menu items to independence test menus to make these menus consistent across editors.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class IndTestMenuItems {
     static void addIndependenceTestChoices(JMenu test, IndTestTypeSetter setter) {

@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * Wraps the MeasurementSimulator class as an instantiated model.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class BooleanGlassGeneIm implements SessionModel {
     static final long serialVersionUID = 23L;

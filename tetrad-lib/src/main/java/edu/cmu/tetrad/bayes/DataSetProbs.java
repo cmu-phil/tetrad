@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Estimates maximum likelihood probabilities directly from data on the fly.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class DataSetProbs implements DiscreteProbs {
     static final long serialVersionUID = 23L;

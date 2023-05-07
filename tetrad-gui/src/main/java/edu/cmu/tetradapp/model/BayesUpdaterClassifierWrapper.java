@@ -33,7 +33,7 @@ import java.io.ObjectInputStream;
 /**
  * Wraps a DirichletEstimator.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class BayesUpdaterClassifierWrapper implements SessionModel {
     static final long serialVersionUID = 23L;

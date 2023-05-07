@@ -42,7 +42,7 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * Calculates independence from pooled residuals.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class IndTestFisherZPercentIndependent implements IndependenceTest {
     private final List<Node> variables;

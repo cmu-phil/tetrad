@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Initializes a graph by adding the previous time step only of each variable.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class PreviousStepOnly implements GraphInitializer {
     public PreviousStepOnly() {

@@ -48,7 +48,7 @@ import java.util.concurrent.*;
  * A number of other optimizations were added 5/2015. See code for details.
  *
  * @author Ricardo Silva, Summer 2003
- * @author Joseph Ramsey, Revisions 5/2015
+ * @author josephramsey, Revisions 5/2015
  * <p>
  * This Orients a given undirected graph such that the edges in the graph are a superset
  * of the edges in the oriented graph

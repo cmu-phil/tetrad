@@ -55,7 +55,7 @@ import java.util.Set;
  * parents being added to appropriate SessionNodes underlying. Double clicking
  * these nodes launches corresponding model editors.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @see SessionEditorWorkbench
  * @see edu.cmu.tetrad.graph.Edge
  * @see edu.cmu.tetrad.session.SessionNode

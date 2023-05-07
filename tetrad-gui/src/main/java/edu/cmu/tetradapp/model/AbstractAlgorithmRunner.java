@@ -40,7 +40,7 @@ import java.util.*;
  * either a dataModel model or a workbench model as parent. Contains basic
  * methods for executing algorithm and returning results.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public abstract class AbstractAlgorithmRunner
         implements AlgorithmRunner, ParamsResettable, Unmarshallable {

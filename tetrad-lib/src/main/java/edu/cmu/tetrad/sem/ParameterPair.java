@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * HashSets.  The hashCode() method is overridden so that the hashcode of (a1,
  * b1) == the hashcode of (a2, b2) just in case a1 == a2 and b1 == b2.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ParameterPair implements TetradSerializable {
     static final long serialVersionUID = 23L;

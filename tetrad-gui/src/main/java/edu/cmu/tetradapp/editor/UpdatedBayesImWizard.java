@@ -51,7 +51,7 @@ import java.util.List;
  * of parent values for selectedNode N, the probabilities for the values of N
  * conditional on that combination of parent values must sum to 1.0
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class UpdatedBayesImWizard extends JPanel {
     private final Evidence evidence;
@@ -499,7 +499,7 @@ public final class UpdatedBayesImWizard extends JPanel {
 /**
  * This is the JTable which displays the getModel parameter set.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @see BayesImEditorWizard
  * @see UpdaterEditingTableModel
  */
@@ -639,7 +639,7 @@ final class UpdaterEditingTable extends JTable {
  * These conditional probabilities may be edited.  As they are being edited for
  * a given row, the only condition is that they be greater than or equal to 0.0.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class UpdaterEditingTableModel extends AbstractTableModel {
 

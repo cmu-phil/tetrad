@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * Instantiations of this interface know how to randomize update graphs in
  * particular ways.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public interface GraphRandomizer extends TetradSerializable {
     long serialVersionUID = 23L;

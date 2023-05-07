@@ -747,7 +747,7 @@ public class StandardizedSemIm implements Simulator {
      * Stores a coefficient range--i.e. the edge and coefficient value for which the range is needed,
      * plus the low and high ends of the range to which the coefficient value may be adjusted.
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     public static final class ParameterRange implements TetradSerializable {
         static final long serialVersionUID = 23L;

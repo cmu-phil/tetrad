@@ -42,7 +42,7 @@ import java.util.List;
 
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestLingamPattern {
 

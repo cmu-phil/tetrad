@@ -30,7 +30,7 @@ import java.util.List;
  * Interface to indicate a class whose knowledge is capable of being edited by
  * the knowledge editor.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface KnowledgeEditable {
 

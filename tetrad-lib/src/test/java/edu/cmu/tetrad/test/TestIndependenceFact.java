@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
 /**
  * Implements some tests of the FDR (False Discovery Rate) test.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestIndependenceFact {
 

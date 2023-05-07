@@ -44,7 +44,7 @@ import java.util.*;
  * <p>
  * Improves the P value of a SEM IM by adding, removing, or reversing single edges.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 
 public final class HbsmsBeam implements Hbsms {

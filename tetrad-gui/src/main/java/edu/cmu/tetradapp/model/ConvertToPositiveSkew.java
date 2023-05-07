@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Converts a continuous data set to a correlation matrix.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ConvertToPositiveSkew extends DataWrapper {
     static final long serialVersionUID = 23L;

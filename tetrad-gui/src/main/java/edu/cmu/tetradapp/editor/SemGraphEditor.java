@@ -61,7 +61,7 @@ import java.util.*;
  * editing tetrad-style graphs.
  *
  * @author Aaron Powers
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Zhou Yuan
  */
 public final class SemGraphEditor extends JPanel

@@ -27,7 +27,7 @@ import edu.cmu.tetrad.session.SessionModel;
 /**
  * Constructs as a randomized update workbench.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class RandomActiveLagGraph extends ActiveLagGraph
         implements SessionModel {

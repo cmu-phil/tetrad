@@ -60,7 +60,7 @@ import java.util.Map;
 /**
  * Lets the user interact with a SEM estimator.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class SemEstimatorEditor extends JPanel {
 

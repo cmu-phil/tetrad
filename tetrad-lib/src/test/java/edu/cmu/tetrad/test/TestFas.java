@@ -38,7 +38,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestFas {
 

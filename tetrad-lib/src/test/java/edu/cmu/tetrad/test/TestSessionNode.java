@@ -47,7 +47,7 @@ import static org.junit.Assert.*;
  * happens: (a) parents are added or removed; (b) models are created or
  * destroyed. The adding and removing of listeners must also be tested.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestSessionNode {
 

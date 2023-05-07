@@ -41,7 +41,7 @@ import java.util.List;
  * saying that all categories for that variable are allowed, so the proposition
  * by default allows all categories for all variables--i.e. it is a tautology.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class Proposition implements TetradSerializable {
     static final long serialVersionUID = 23L;

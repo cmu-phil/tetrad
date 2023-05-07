@@ -29,7 +29,7 @@ import javax.swing.*;
  * editing tetrad-style graphs.
  *
  * @author Aaron Powers
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class GraphFileMenu extends JMenu {
 

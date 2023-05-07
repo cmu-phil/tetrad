@@ -37,7 +37,7 @@ import java.text.NumberFormat;
  * Puts up a panel showing some graph properties, e.g., number of nodes and
  * edges in the graph, etc.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class GraphPropertiesAction extends AbstractAction implements ClipboardOwner {
     private GraphWorkbench workbench;

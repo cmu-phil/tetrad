@@ -34,7 +34,7 @@ import java.io.ObjectInputStream;
  * this fixes is that a BlockRealMatrix cannot represent a matrix with zero
  * rows; this uses an Array2DRowRealMatrix to represent that case.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Matrix implements TetradSerializable {
     static final long serialVersionUID = 23L;

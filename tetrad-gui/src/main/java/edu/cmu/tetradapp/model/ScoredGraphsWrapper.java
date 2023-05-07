@@ -43,7 +43,7 @@ import java.util.Map;
 /**
  * Holds a list of graphs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ScoredGraphsWrapper implements SessionModel, GraphSource, Unmarshallable, DoNotAddOldModel {
     static final long serialVersionUID = 23L;

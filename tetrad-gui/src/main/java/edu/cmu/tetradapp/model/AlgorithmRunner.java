@@ -36,7 +36,7 @@ import edu.cmu.tetrad.util.Parameters;
  * source graph is, and must know what their result graph is (if it has been
  * calculated).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
         TripleClassifier, SimulationParamsSource, MultipleGraphSource {

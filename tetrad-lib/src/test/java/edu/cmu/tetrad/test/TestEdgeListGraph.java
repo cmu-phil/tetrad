@@ -37,7 +37,7 @@ import static org.junit.Assert.assertTrue;
  * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the
  * Graph interface.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestEdgeListGraph {
     private Node x1, x2, x3, x4, x5;

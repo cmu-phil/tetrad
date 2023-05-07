@@ -27,7 +27,7 @@ import edu.cmu.tetradapp.util.IndTestType;
 /**
  * Helps to set independence test types.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 interface IndTestTypeSetter {
     void setTestType(IndTestType testType);

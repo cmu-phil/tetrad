@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the PC search.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestPcStableMax {
 

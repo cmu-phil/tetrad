@@ -46,7 +46,7 @@ import java.util.*;
  * This logisticRegression makes multiple assumptions: 1. IIA 2. Large sample size (multiple regressions needed on subsets of
  * sample)
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Augustus Mayo.
  */
 public class IndTestMultinomialLogisticRegression implements IndependenceTest {

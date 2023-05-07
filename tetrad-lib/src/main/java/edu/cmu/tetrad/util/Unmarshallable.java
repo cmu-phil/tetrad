@@ -26,7 +26,7 @@ import java.io.Serializable;
 /**
  * <p>Interface to tag classes that should not be cloned by marshalling.&gt; 0
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface Unmarshallable extends Serializable {
 }

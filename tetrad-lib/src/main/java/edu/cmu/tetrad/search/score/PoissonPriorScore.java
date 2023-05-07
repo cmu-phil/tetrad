@@ -36,7 +36,7 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * Implements Poisson prior score (Bryan).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class PoissonPriorScore implements Score {
 

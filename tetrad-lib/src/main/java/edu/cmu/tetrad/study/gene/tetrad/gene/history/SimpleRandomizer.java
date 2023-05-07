@@ -41,7 +41,7 @@ import java.util.List;
  * account of the fact that one edge has already been added in each case, so
  * that the total indegree for each factor is correctly distributed.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class SimpleRandomizer implements GraphInitializer {
     static final long serialVersionUID = 23L;

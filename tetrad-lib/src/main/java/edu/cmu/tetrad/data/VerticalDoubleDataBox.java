@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * Stores a 2D array of double data.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class VerticalDoubleDataBox implements DataBox {
     static final long serialVersionUID = 23L;

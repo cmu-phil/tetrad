@@ -52,7 +52,7 @@ import java.util.prefs.Preferences;
 /**
  * Lists independence facts specified by user and allows the list to be sorted by independence fact or by p value.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class IndependenceFactsEditor extends JPanel {
     private IndTestModel model;

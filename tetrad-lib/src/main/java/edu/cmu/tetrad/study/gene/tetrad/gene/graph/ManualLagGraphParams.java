@@ -30,7 +30,7 @@ import java.io.ObjectInputStream;
  * Stores the parameters needed to generate a new lag graph, whether randomized
  * or manually constructed.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ManualLagGraphParams implements TetradSerializable {
     static final long serialVersionUID = 23L;

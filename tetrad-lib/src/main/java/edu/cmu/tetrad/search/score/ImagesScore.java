@@ -42,7 +42,7 @@ import java.util.List;
  * ensure that all of the scores share the same (object-identical)
  * variables.</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see Fges
  * @see Grasp
  * @see Boss

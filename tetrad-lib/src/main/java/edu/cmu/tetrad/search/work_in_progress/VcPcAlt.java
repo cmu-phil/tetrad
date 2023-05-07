@@ -39,7 +39,7 @@ import java.util.*;
  * Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
  * locally.
  *
- * @author Joseph Ramsey (this version).
+ * @author josephramsey (this version).
  */
 public final class VcPcAlt implements IGraphSearch {
 

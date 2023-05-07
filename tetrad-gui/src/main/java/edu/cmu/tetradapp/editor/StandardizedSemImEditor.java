@@ -39,7 +39,7 @@ import java.util.Map;
  * variances are equal to 1, and (c) the error covariance matrix is always
  * positive definite. Simulations produce standardized data.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class StandardizedSemImEditor extends JPanel implements LayoutEditable {
 

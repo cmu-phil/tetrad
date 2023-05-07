@@ -60,7 +60,7 @@ import java.util.*;
  * editing tetrad-style graphs.
  *
  * @author Aaron Powers
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Zhou Yuan 8/22/2018
  */
 public final class GraphEditor extends JPanel implements GraphEditable, LayoutEditable, IndTestProducer {

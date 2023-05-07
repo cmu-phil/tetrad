@@ -34,7 +34,7 @@ import java.util.Set;
  * directed edges, with no cycles. Variables are permitted to be either measured
  * or latent, with at most one edge per node pair, and no edges to self.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class Dag implements Graph {
     static final long serialVersionUID = 23L;

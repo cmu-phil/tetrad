@@ -29,7 +29,7 @@ import java.io.ObjectInputStream;
 /**
  * Implements the basic machinery used by all history objects.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class GeneHistory implements TetradSerializable {
     static final long serialVersionUID = 23L;

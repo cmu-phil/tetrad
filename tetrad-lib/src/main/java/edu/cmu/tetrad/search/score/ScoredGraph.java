@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Stores a graph with a score.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ScoredGraph implements Comparable<ScoredGraph>, TetradSerializable {
     static final long serialVersionUID = 23L;

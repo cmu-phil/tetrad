@@ -35,7 +35,7 @@ import java.beans.PropertyChangeListener;
  * Extends AbstractWorkbench in the ways needed to display required and
  * forbidden edges and edit a Knowledge object.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see edu.cmu.tetradapp.workbench.AbstractWorkbench
  */
 public class KnowledgeWorkbench extends AbstractWorkbench {

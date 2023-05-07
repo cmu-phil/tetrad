@@ -31,7 +31,7 @@ package edu.cmu.tetrad.util;
  * by this class is an array x[] of b integers i, 0 &lt;= i &lt; a, such that x[j] &lt;
  * x[j + 1] for each j from 0 to b - 1.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class CombinationGenerator {
 

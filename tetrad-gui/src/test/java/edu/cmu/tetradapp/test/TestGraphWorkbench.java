@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the GraphWorkbench class.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestGraphWorkbench {
 

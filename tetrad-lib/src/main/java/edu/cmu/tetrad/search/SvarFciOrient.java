@@ -49,7 +49,7 @@ import java.util.*;
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Choh-Man Teng
  * @author Daniel Malinsky
  * <p>

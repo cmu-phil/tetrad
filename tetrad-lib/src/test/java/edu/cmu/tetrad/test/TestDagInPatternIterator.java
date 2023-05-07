@@ -35,7 +35,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestDagInPatternIterator {
 

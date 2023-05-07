@@ -32,7 +32,7 @@ import java.io.ObjectInputStream;
  * Wraps a data model so that a random sample will automatically be drawn on
  * construction from a BayesIm.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class BootstrapSamplerWrapper extends DataWrapper {
     static final long serialVersionUID = 23L;

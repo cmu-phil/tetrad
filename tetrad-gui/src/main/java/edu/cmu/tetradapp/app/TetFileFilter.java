@@ -27,7 +27,7 @@ import java.io.File;
 /**
  * Filters out all but .tet file when loading and saving.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class TetFileFilter extends FileFilter {
 

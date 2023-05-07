@@ -51,7 +51,7 @@ import java.beans.PropertyChangeListener;
  * the original node from the tracking edge and (2) the node which is nearest to
  * the mouse release position.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Willie Wheeler
  */
 public class DisplayEdge extends JComponent implements IDisplayEdge {

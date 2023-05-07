@@ -35,7 +35,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the BooleanFunction class.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestPcd {
 

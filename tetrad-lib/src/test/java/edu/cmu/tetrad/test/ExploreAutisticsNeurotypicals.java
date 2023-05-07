@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class ExploreAutisticsNeurotypicals {
 

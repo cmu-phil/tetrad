@@ -34,7 +34,7 @@ import java.lang.reflect.Modifier;
  * to set this to false while debugging, but Tetrad must not be posted with this
  * set to false.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestWatchedProcessDialogs {
 

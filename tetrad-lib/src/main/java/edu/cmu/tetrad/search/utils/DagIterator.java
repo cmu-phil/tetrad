@@ -32,7 +32,7 @@ import java.util.LinkedList;
  * Given a graph, lists all DAGs that result from directing the undirected edges in that graph every possible way. Uses
  * a Meek-algorithm-type method.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class DagIterator {
 

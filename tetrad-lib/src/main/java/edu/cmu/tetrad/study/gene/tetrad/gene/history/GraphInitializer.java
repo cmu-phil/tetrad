@@ -26,7 +26,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.history;
  * Instantiations of this interface know how to randomize lag graphs in
  * particular ways.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public interface GraphInitializer {
 

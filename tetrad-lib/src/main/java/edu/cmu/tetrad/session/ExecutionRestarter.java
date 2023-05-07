@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * Interface indicating that a parameter object can and should be reinitialized
  * at each new execution in a simulation edu.cmu.tetrad.study.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see SimulationStudy
  */
 public interface ExecutionRestarter extends TetradSerializable {

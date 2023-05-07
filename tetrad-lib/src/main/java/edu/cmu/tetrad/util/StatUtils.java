@@ -49,7 +49,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * to the the expiration date. Commercial (for profit) use requires written
  * permission."
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class StatUtils {
     private static final double logCoshExp = StatUtils.logCoshExp();

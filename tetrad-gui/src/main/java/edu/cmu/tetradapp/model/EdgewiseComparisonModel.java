@@ -40,7 +40,7 @@ import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
  * Compares a target workbench with a reference workbench by counting errors of
  * omission and commission.  (for edge presence only, not orientation).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
  */
 public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldModel {

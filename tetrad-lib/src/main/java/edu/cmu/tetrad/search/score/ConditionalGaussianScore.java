@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * Implements a conditional Gaussian BIC score for FGS.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ConditionalGaussianScore implements Score {
 

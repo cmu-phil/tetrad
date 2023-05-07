@@ -45,7 +45,7 @@ import static org.junit.Assert.fail;
 
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestSearchGraph {
 

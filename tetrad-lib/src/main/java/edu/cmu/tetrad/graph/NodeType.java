@@ -29,7 +29,7 @@ import java.io.ObjectStreamException;
  * A typesafe enum of the types of the types of nodes in a graph (MEASURED,
  * LATENT, ERROR).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class NodeType implements TetradSerializable {
     static final long serialVersionUID = 23L;

@@ -50,7 +50,7 @@ import java.util.List;
  * It is assumed that the CPDAG is the result of a CPDAG search such as PC or GES. In any
  * case, it is important that the residuals be independent for ICA to work.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class LingamPattern {
     private final Graph cpdag;

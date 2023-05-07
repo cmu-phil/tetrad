@@ -14,7 +14,7 @@ import java.util.*;
  * <p>
  * Continuous variables in the data set are ignored.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class AdLeafTree {
 

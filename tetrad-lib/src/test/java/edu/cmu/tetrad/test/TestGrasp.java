@@ -80,7 +80,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 @SuppressWarnings("ALL")
 public final class TestGrasp {

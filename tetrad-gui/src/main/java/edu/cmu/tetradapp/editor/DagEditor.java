@@ -62,7 +62,7 @@ import java.util.Map;
  * editing tetrad-style graphs.
  *
  * @author Aaron Powers
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Zhou Yuan
  */
 public final class DagEditor extends JPanel

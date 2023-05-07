@@ -42,7 +42,7 @@ import java.util.List;
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the FCI algorithm.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class IonRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, DoNotAddOldModel, IonInput {

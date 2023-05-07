@@ -46,7 +46,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Lofs.Score. The options for rules to use to do the orientations are given in the
  * enum, Lofs.Rule. Most of these are taken from the literature and ca be googled.</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see Score
  * @see Rule
  */

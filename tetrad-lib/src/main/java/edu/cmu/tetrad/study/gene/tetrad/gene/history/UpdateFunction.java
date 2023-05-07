@@ -38,7 +38,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * is no requirement that the function be checked against the graph explicitly
  * to make sure the graph is actually implemented.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public interface UpdateFunction extends TetradSerializable {
     long serialVersionUID = 23L;

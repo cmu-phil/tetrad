@@ -44,7 +44,7 @@ import java.util.prefs.Preferences;
 /**
  * Edits an expression for a node in the generalized SEM PM.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class GeneralizedExpressionEditor extends JComponent {
     /**

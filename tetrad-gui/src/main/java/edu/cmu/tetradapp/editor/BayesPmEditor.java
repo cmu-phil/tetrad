@@ -35,7 +35,7 @@ import java.beans.PropertyChangeListener;
  * editing tetrad-style graphs.
  *
  * @author Aaron Powers
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class BayesPmEditor extends JPanel
         implements PropertyChangeListener, DelegatesEditing {

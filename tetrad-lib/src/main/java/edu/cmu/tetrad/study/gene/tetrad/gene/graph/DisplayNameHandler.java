@@ -27,7 +27,7 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor;
  * Translates display names of lagged variables (e.g. "V1:L1") into model names
  * (e.g. "V1:1") and vice-versa.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class DisplayNameHandler {
 

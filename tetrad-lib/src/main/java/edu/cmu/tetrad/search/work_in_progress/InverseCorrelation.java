@@ -33,7 +33,7 @@ import org.apache.commons.math3.util.FastMath;
 /**
  * Returns edges whose entries in the precision matrix exceed a certain threshold.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class InverseCorrelation {
 

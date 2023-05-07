@@ -46,7 +46,7 @@ import java.util.List;
  * calculated using generalized inverses, so linearly dependent variables do not throw exceptions. Must supply a
  * continuous data set; don't know how to do this with covariance or correlation matrices.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
  */
 public final class IndTestFisherZGeneralizedInverse implements IndependenceTest {

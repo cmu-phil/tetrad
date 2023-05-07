@@ -30,7 +30,7 @@ import java.io.ObjectInputStream;
  * Holds an ordered pair (index, lag) to represent a causal parent of a factor,
  * where the factor at the given index is independently known.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class IndexedParent implements TetradSerializable {
     static final long serialVersionUID = 23L;

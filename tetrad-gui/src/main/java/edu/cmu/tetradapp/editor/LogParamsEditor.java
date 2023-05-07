@@ -32,7 +32,7 @@ import java.awt.*;
 /**
  * Edits the parameters for simulating data from Bayes nets.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @author Frank Wimberly based on similar classes by Joe Ramsey
  */
 public class LogParamsEditor extends JPanel implements ParameterEditor {

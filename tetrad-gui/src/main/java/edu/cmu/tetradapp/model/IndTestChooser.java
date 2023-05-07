@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * Chooses an independence test for a particular data source.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 final class IndTestChooser {
     public IndependenceTest getTest(Object dataSource, Parameters params) {

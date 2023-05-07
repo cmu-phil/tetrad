@@ -42,7 +42,7 @@ import java.util.*;
  * parameters. Specific values for the Bayes net are stored in a BayesIM object
  * (see).
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @see edu.cmu.tetrad.graph.Dag
  * @see BayesIm
  */

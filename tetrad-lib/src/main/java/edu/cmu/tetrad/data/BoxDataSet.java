@@ -59,7 +59,7 @@ import java.util.*;
  * the data set, but it may be retrieved by algorithms and used.
  * <p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see edu.cmu.tetrad.data.Variable
  * @see Knowledge
  */

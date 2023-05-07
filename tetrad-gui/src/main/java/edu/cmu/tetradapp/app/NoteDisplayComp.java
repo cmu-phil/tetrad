@@ -29,7 +29,7 @@ import java.awt.*;
 /**
  * Provides a modified appearance for session nodes to be used for notes.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 

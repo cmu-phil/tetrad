@@ -34,7 +34,7 @@ import java.text.NumberFormat;
 /**
  * Implements a particular simulation for experimental purposes.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class LinearSimExp1 {
 

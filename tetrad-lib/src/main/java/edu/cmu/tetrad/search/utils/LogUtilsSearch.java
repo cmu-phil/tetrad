@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Contains utilities for logging search steps.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class LogUtilsSearch {
     public static String edgeOrientedMsg(String reason, Edge edge) {

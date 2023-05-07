@@ -25,7 +25,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util;
 /**
  * Represents a graph that's output by a genetic search algorithm.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface OutputGraph {
 

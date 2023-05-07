@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * Interface to indicate a class that has a graph in it that can be laid out.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface LayoutEditable {
 

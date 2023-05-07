@@ -38,7 +38,7 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * Implements the extended BIC (EBIC) score (Chen and Chen)..
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class EbicScore implements Score {
     private DataSet dataSet;

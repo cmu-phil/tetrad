@@ -48,7 +48,7 @@ import java.util.*;
  * <p>
  * The index value used to indicate missing data is -99.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class DiscreteVariable extends AbstractVariable {
 

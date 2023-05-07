@@ -43,7 +43,7 @@ import java.util.*;
  * discretized.
  *
  * @author Tyler Gibson
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class DiscretizationParamsEditor extends JPanel implements FinalizingParameterEditor {
 

@@ -29,7 +29,7 @@ import junit.framework.TestSuite;
  * Test the Reveal evaluator.
  *
  * @author Frank Wimberly
- * @author Joseph Ramsey (translation to unit test)
+ * @author josephramsey (translation to unit test)
  */
 public class TestRevealEvaluator extends TestCase {
     private static final int ngenes = 6;

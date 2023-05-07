@@ -30,7 +30,7 @@ import java.util.*;
  * Given a pattern, lists all of the DAGs in that pattern. In the form of an iterator--call hasNext() to see if there's
  * another one and next() to get it. next() will return null if there are no more.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class DagInCpcagIterator {
 

@@ -46,7 +46,7 @@ import java.util.Map;
  * Holds a tetrad-style graph with all of the constructors necessary for it to
  * serve as a model for the tetrad application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProducer,
         SimulationParamsSource, GraphSettable, MultipleGraphSource {

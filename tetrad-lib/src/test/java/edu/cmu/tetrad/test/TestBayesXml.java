@@ -38,7 +38,7 @@ import static org.junit.Assert.fail;
 /**
  * Tests the Bayes XML parsing/rendering.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestBayesXml {
 

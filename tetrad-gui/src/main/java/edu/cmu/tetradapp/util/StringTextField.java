@@ -33,7 +33,7 @@ import java.awt.event.FocusEvent;
  * but which also handles other GUI-related functions like keeping the text box
  * the right size and handling focus events.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class StringTextField extends JTextField {
 

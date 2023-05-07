@@ -28,7 +28,7 @@ import java.util.EventObject;
  * been added or removed, an edge has been added or removed, a model has been
  * created or destroyed.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SessionEvent extends EventObject {
     public static final int NODE_ADDED = 0;

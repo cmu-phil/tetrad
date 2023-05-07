@@ -34,7 +34,7 @@ import java.io.ObjectInputStream;
 /**
  * Wraps MeasurementSimulator so that it may be used as a parameter object.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class MeasurementSimulatorParams implements TetradSerializable {
     static final long serialVersionUID = 23L;

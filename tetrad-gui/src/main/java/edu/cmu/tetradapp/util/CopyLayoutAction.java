@@ -33,7 +33,7 @@ import java.awt.event.ActionEvent;
  * Copies the getModel graph in a given container, storing it so that another
  * container can be laid out the same way.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class CopyLayoutAction extends AbstractAction implements ClipboardOwner {
 

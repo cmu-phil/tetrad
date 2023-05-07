@@ -42,7 +42,7 @@ import java.util.Set;
  * consistent score criterion. This is not a true score; rather, a 0 is returned
  * in case dseparation holds and a 1 in case dseparation does not hold.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GraphScore implements Score {
 

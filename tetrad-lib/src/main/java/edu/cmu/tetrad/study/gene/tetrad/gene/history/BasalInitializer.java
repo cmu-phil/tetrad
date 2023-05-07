@@ -35,7 +35,7 @@ import java.io.ObjectInputStream;
  * and to a random value chosen from a N(basal, initStDev) distribution
  * otherwise.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class BasalInitializer implements Initializer {
     static final long serialVersionUID = 23L;

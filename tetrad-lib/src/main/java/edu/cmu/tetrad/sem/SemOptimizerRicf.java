@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 /**
  * Optimizes a SEM using RICF (see that class).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SemOptimizerRicf implements SemOptimizer {
     static final long serialVersionUID = 23L;

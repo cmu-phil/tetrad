@@ -37,7 +37,7 @@ import java.util.StringTokenizer;
  * </pre>
  * and converts them into LagGraphs.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class HandleyConvert {
 

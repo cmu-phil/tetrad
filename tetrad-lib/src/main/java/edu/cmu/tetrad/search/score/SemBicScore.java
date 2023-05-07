@@ -42,7 +42,7 @@ import static org.apache.commons.math3.util.FastMath.log;
 /**
  * Implements the continuous BIC score for FGES.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SemBicScore implements Score {
 

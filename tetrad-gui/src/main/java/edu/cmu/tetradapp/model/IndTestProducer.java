@@ -29,7 +29,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
  * source graph is, and must know what their result graph is (if it has been
  * calculated).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface IndTestProducer {
 

@@ -33,7 +33,7 @@ import java.util.Arrays;
  * Creates a data set in which missing values in each column are filled using
  * the mode of that column.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class ModeInterpolator implements DataFilter {
 

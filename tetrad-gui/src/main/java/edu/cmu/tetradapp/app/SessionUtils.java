@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Some utility methods relevant to sessions.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 final class SessionUtils {
 

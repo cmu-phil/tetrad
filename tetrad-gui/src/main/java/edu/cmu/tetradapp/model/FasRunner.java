@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class FasRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {

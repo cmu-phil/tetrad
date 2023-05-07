@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Extends AbstractWorkbench in the ways needed to display tetrad-style graphs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Willie Wheeler
  * @see AbstractWorkbench
  */

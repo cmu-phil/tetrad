@@ -35,7 +35,7 @@ import static org.apache.commons.math3.util.FastMath.log;
 /**
  * Model for a conditional histogram for mixed continuous and discrete variables.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Histogram {
     private Node target;

@@ -32,7 +32,7 @@ import java.util.Map;
  * the dimensionality is set to null, the table cannot be used until a non-null
  * dimensionality is set.&gt; 0
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class MultiDimIntTable {
 

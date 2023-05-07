@@ -49,7 +49,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * We use Nadaraya-Watson kernel regression, though we further restrict the sample size to nearby points.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class ConditionalCorrelationIndependence {
     public enum Kernel {Epinechnikov, Gaussian}

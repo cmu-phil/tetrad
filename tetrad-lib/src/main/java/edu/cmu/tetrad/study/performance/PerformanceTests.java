@@ -51,7 +51,7 @@ import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 /**
  * Runs some basic performance tests of various algorithm.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class PerformanceTests {
     private PrintStream out = System.out;

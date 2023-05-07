@@ -622,7 +622,7 @@ public class RandomGraph {
      * to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139,
      * USA."
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     public static final class UniformGraphGenerator {
         public static final int ANY_DAG = 0;

@@ -30,7 +30,7 @@ import java.io.ObjectInputStream;
 /**
  * Implements a parametric gene model.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public abstract class GenePm implements TetradSerializable {
     static final long serialVersionUID = 23L;

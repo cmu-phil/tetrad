@@ -35,7 +35,7 @@ import java.awt.event.ActionEvent;
 /**
  * Closes the frontmost session of the given desktop.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class AboutTetradAction extends AbstractAction {
 

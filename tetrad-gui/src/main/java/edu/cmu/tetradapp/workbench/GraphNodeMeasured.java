@@ -38,7 +38,7 @@ import java.util.List;
  * dialog that lets the user modify the name of the variable and whether the
  * variable is latent.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GraphNodeMeasured extends DisplayNode {
 

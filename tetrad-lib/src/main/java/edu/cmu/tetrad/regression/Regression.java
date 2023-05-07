@@ -30,7 +30,7 @@ import java.util.List;
  * Implements a multiple regression model, allowing data to be specified
  * either as a tabular data set or as a covariance matrix plus list of means.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface Regression {
 

@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * Calculates independence from pooled residuals.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class IndTestFisherZConcatenateResiduals implements IndependenceTest {
 

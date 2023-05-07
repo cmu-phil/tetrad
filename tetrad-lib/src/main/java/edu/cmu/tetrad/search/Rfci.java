@@ -48,7 +48,7 @@ import java.util.List;
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Choh-Man Teng
  */
 public final class Rfci implements IGraphSearch {

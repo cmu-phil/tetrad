@@ -26,7 +26,7 @@ import static edu.cmu.tetrad.util.Params.*;
  * an adjacency graph, as an alternative to bootstrapping.</p>
  *
  * @author Madelyn Glymour
- * @author Joseph Ramsey 9/5/2020
+ * @author josephramsey 9/5/2020
  */
 public class FaskVote {
     private final IndependenceWrapper test;

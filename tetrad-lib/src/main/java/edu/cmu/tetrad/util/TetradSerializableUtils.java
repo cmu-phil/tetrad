@@ -47,7 +47,7 @@ import java.util.zip.ZipOutputStream;
  * Contains methods used by TestSerialization to ensure that previous "stable"
  * versions of Tetrad will by loadable by later "stable" versions of Tetrad.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see #safelySerializableTypes
  */
 public class TetradSerializableUtils {

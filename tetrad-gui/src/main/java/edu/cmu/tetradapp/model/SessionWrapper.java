@@ -43,7 +43,7 @@ import java.util.*;
  * Wraps a Session as a Graph so that an AbstractWorkbench can be used to edit
  * it.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @see edu.cmu.tetrad.session.Session
  * @see edu.cmu.tetrad.graph.Graph
  */

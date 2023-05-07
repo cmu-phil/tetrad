@@ -46,7 +46,7 @@ import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 /**
  * Contains some tests for Dan Malinsky, that might be of interest to others.
  *
- * @author Joseph Ramsey.
+ * @author josephramsey.
  */
 public class PerformanceTestsDan {
     private void testIdaOutputForDan() {

@@ -32,7 +32,7 @@ import java.io.ObjectStreamException;
  * discrete variable is an ordinal discrete variable for which relative
  * distances between categories can be specified.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class DiscreteVariableType implements TetradSerializable {
     static final long serialVersionUID = 23L;

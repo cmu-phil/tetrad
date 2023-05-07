@@ -33,7 +33,7 @@ import java.util.*;
 /**
  * Stores a list of independence facts.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class IndependenceFacts implements DataModel {
     static final long serialVersionUID = 23L;

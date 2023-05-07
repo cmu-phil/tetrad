@@ -31,7 +31,7 @@ import java.util.prefs.Preferences;
 /**
  * Stores some static methods useful for graph editing.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GraphEditorUtils {
 

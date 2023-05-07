@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * new field. SECTION_MARKER is replaces tabs by " *\t *". LAUNCH_TIME replaces
  * tabs by ",". Custom replaces tabs by a specified regular expression.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class DelimiterType implements TetradSerializable {
 

@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * model could be considered as variables. This allows us to use d-separation as a graphical indicator of what
  * independence in models ideally should be.&gt; 0
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class SepsetMap implements TetradSerializable {
     static final long serialVersionUID = 23L;

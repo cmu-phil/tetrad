@@ -35,7 +35,7 @@ import org.apache.commons.math3.util.FastMath;
  * Tests the MeasurementSimulator class using diagnostics devised by Richard
  * Scheines. The diagnostics are described in the Javadocs, below.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class TestMeasurementSimulator extends TestCase {
 

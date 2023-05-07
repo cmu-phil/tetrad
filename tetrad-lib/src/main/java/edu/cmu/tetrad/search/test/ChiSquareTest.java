@@ -34,7 +34,7 @@ import java.util.Arrays;
  * Calculates marginal chi square test results for a discrete dataset.
  *
  * @author Frank Wimberly original version
- * @author Joseph Ramsey revision 10/01, believe it or now also 2020.
+ * @author josephramsey revision 10/01, believe it or now also 2020.
  */
 public class ChiSquareTest {
 

@@ -31,7 +31,7 @@ import java.io.ObjectInputStream;
  * Stores a boolean function from a set of boolean-valued parents to a single
  * boolean-valued column.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class BooleanFunction implements TetradSerializable {
     static final long serialVersionUID = 23L;

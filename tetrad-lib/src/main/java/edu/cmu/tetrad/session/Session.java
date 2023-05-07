@@ -69,7 +69,7 @@ import java.util.Set;
  * various models that the Session can construct, this has to be tested
  * separately.&gt; 0
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see SessionNode
  * @see SessionListener
  * @see SessionAdapter

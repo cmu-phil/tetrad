@@ -59,7 +59,7 @@ import java.util.List;
  * Clearly we can use any goodness of fit test we think is appropriate -
  * the default being the chi-square test.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 
 public class Washdown {

@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Implements Chickering and Meek's (2002) locally consistent score criterion.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class IndTestScore implements Score {
 

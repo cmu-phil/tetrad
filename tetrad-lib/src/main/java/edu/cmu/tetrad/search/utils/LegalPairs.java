@@ -29,7 +29,7 @@ import java.util.List;
  * Determines whether nodes indexed as (n1, center, n2) form a legal pair of edges in a graph for purposes of some
  * algorithm that uses this information. The pair would be n1---center---n2.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface LegalPairs {
 

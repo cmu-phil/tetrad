@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * A distribution from which noise values are drawn.  Each call to nextRandom()
  * draws a new noise value from the distribution.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public interface RandomDistribution extends TetradSerializable {
     long serialVersionUID = 23L;

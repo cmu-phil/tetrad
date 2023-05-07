@@ -33,7 +33,7 @@ import java.io.ObjectInputStream;
  * A node in a SessionWrapper; wraps a SessionNode and presents it as a
  * GraphNode.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @see edu.cmu.tetrad.session.SessionNode
  * @see edu.cmu.tetrad.graph.GraphNode
  * @see SessionWrapper

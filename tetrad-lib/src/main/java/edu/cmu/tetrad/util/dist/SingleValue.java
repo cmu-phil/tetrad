@@ -25,7 +25,7 @@ package edu.cmu.tetrad.util.dist;
  * A pretend distribution that always returns the given value when
  * nextRandom() is called.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class SingleValue implements Distribution {
     static final long serialVersionUID = 23L;

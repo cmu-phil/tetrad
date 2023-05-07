@@ -42,7 +42,7 @@ import java.util.*;
  * <p>Heuristic Best Significant Model Search using the GES algorithm.</p>
  * <p>Improves the P value of a SEM IM by adding, removing, or reversing single edges.</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class HbsmsGes implements Hbsms {
     private Knowledge knowledge = new Knowledge();

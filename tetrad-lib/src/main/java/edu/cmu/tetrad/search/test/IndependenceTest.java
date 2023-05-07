@@ -36,7 +36,7 @@ import java.util.List;
  * These classes are capable of serving as conditional independence "oracles"
  * for constraint-based searches.</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface IndependenceTest {
 

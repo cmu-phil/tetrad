@@ -32,7 +32,7 @@ import java.util.List;
  * purposes--creating data sets, creating graphs, comparing one data to another,
  * and so on.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface VariableSource extends TetradSerializable {
     long serialVersionUID = 23L;

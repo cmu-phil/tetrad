@@ -38,7 +38,7 @@ import java.util.List;
  * Checks independence facts for variables associated with the nodes in a given graph by
  * checking d-separation facts on the underlying nodes.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class IndTestDSep implements IndependenceTest {
 

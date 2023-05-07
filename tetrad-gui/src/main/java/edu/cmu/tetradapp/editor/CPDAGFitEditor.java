@@ -35,7 +35,7 @@ import java.util.List;
  * Provides a little display/editor for notes in the session workbench. This
  * may be elaborated in the future to allow marked up text.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class CPDAGFitEditor extends JPanel {
 

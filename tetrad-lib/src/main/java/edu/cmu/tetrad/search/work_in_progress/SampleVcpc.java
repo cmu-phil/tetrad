@@ -48,7 +48,7 @@ import java.util.*;
  * Implements a conservative version of PC, in which the Markov condition is assumed but faithfulness is tested
  * locally.
  *
- * @author Joseph Ramsey (this version).
+ * @author josephramsey (this version).
  */
 public final class SampleVcpc implements IGraphSearch {
 

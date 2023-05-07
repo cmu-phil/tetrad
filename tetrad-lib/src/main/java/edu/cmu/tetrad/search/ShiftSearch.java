@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * Tries to find a good shifting of variables to minimize average BIC
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ShiftSearch {
     private final List<DataModel> dataSets;

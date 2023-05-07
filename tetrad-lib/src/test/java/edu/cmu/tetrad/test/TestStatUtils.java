@@ -47,7 +47,7 @@ import static org.junit.Assert.assertFalse;
 /**
  * Tests basic functionality of the statistical utilities.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestStatUtils {
 

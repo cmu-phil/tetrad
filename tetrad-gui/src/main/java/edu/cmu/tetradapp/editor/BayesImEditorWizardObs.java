@@ -31,7 +31,7 @@ import java.awt.*;
  * Allows the user to choose a variable in a Bayes net and edit the parameters
  * associated with that variable.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 //////////////////////////////////////
 // there is only one JPD table

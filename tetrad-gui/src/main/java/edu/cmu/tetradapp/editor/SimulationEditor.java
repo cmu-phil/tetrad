@@ -50,7 +50,7 @@ import java.util.prefs.Preferences;
  * parents, and using the information those objects contain. For a Simulation
  * you need a RandomGraph and you need to pick a particular style of Simulation.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public final class SimulationEditor extends JPanel implements KnowledgeEditable, PropertyChangeListener {

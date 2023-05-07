@@ -32,7 +32,7 @@ import java.util.List;
  * with an extra category that represents the missing values, with missing
  * values being reported as belong this category.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class ExtraCategoryInterpolator implements DataFilter {
     public DataSet filter(DataSet dataSet) {

@@ -50,7 +50,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * This variant does each depth twice, gathering up the p values in the first round, using FDR to estimate a cutoff
  * for acceptance, and rerunning using the specified cutoff.
  *
- * @author Joseph Ramsey.
+ * @author josephramsey.
  */
 public class FasFdr implements IFas {
     private final Matrix cov;

@@ -42,7 +42,7 @@ import java.util.List;
  * of parent values for node N, the probabilities for the values of N
  * conditional on that combination of parent values must sum to 1.0
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @author Frank Wimberly adapted for EM Bayes estimation.
  */
 final class EMBayesEstimatorEditorWizard extends JPanel {

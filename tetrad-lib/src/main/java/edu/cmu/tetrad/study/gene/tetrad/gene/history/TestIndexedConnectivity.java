@@ -29,7 +29,7 @@ import junit.framework.TestSuite;
  * Tests the IndexedConnectivity class by constructing graphs with randomly
  * chosen parameters and seeing if they have the required properties.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class TestIndexedConnectivity extends TestCase {
 

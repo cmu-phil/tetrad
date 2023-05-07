@@ -50,7 +50,7 @@ import java.util.List;
  * then updated for each case in the test data to produce classifications.
  *
  * @author Frank Wimberly
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ClassifierMbDiscrete implements ClassifierDiscrete {
     private DataSet train;

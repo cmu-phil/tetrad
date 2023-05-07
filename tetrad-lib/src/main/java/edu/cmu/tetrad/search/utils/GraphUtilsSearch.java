@@ -44,7 +44,7 @@ import static org.apache.commons.math3.util.FastMath.max;
  * Graph utilities for search algorithm. Lots of orientation method, for
  * instance.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class GraphUtilsSearch {
 
@@ -1597,7 +1597,7 @@ public final class GraphUtilsSearch {
     /**
      * Simple class to store edges for the reachability search.
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     private static class ReachabilityEdge {
 

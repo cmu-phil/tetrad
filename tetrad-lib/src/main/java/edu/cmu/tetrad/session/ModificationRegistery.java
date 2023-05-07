@@ -34,7 +34,7 @@ import java.util.Set;
  * have been made that will require models downstream to be reconstructed.
  *
  * @author William Taysom
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class ModificationRegistery {
     private static final Set<Object> EDITED_MODELS = new HashSet<>();

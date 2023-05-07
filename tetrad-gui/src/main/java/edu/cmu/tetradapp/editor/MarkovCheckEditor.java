@@ -61,7 +61,7 @@ import static org.apache.commons.math3.util.FastMath.min;
 /**
  * Lists independence facts specified by user and allows the list to be sorted by independence fact or by p value.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class MarkovCheckEditor extends JPanel {
     private Graph dag;

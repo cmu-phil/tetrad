@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * Implements the MMHC algorithm.
  *
- * @author Joseph Ramsey (this version).
+ * @author josephramsey (this version).
  */
 public class Mmhc implements IGraphSearch {
 

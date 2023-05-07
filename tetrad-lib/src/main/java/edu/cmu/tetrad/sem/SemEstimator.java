@@ -40,7 +40,7 @@ import java.util.List;
  * @author Frank Wimberly
  * @author Ricardo Silva
  * @author Don Crimbchin
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class SemEstimator implements TetradSerializable {
     static final long serialVersionUID = 23L;

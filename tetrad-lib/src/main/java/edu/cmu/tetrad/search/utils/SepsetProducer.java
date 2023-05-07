@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * <p>A covenience structure that can generate and keep track of sepsets</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see SepsetMap
  */
 public interface SepsetProducer {

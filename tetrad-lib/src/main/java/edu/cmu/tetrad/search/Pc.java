@@ -44,7 +44,7 @@ import java.util.Set;
  * modified rule set in step D due to Chris Meek. For the modified rule set, see Chris
  * Meek (1995), "Causal inference and causal explanation with background knowledge."
  *
- * @author Joseph Ramsey.
+ * @author josephramsey.
  */
 public class Pc implements IGraphSearch {
 

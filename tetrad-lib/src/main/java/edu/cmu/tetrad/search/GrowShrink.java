@@ -33,7 +33,7 @@ import java.util.List;
  * <p>Margaritis, D., & Thrun, S. (1999). Bayesian network induction via local neighborhoods.
  * Advances in neural information processing systems, 12.</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GrowShrink implements IMbSearch {
 

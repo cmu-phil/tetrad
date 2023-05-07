@@ -36,7 +36,7 @@ import java.io.ObjectInputStream;
  * modelled currently.) Causes of differentiation may be nutrition, temperature,
  * etc.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class DishModel implements TetradSerializable {
     static final long serialVersionUID = 23L;

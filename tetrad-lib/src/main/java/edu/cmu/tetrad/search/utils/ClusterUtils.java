@@ -35,7 +35,7 @@ import java.util.Set;
  * <p>The method of this class are used only internally and so are not documented
  * for public use.</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ClusterUtils {
     public static final String LATENT_PREFIX = "_L";

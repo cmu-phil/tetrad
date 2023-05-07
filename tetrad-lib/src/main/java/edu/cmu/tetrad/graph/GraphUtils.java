@@ -40,7 +40,7 @@ import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
 /**
  * Basic graph utilities.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class GraphUtils {
 

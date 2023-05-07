@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
  * expanded template may not be parseable. If it is not, the original template was ill-formedm, and
  * the expansion should be disgarded.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TemplateExpander {
     private static final TemplateExpander INSTANCE = new TemplateExpander();

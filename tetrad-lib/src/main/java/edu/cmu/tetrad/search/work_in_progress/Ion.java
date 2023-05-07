@@ -40,7 +40,7 @@ import java.util.*;
  * form an input PAG_of_the_true_DAG that are consistent (same d-separations and d-connections) with every input PAG_of_the_true_DAG.
  *
  * @author Robert Tillman
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Ion {
 

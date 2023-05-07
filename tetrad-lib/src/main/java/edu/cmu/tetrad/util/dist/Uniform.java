@@ -32,7 +32,7 @@ import java.text.NumberFormat;
  * For given a, b (a &lt; b), returns a point chosen uniformly from [a, b]. The
  * parameters are 0 = a, 1 = b.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class Uniform implements Distribution {
     static final long serialVersionUID = 23L;

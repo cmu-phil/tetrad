@@ -33,7 +33,7 @@ import java.util.*;
  * internal frames currently on the desktop.  When the user selects one of these
  * titles, the corresponding internal frame is moved to the front.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @author Chirayu Kong Wongchokprasitti chw20@pitt.edu
  */
 final class WindowMenuListener implements MenuListener, ActionListener {

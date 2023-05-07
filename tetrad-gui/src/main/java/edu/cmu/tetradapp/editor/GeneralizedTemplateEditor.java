@@ -46,7 +46,7 @@ import java.util.*;
 /**
  * Edits an expression for a node in the generalized SEM PM.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class GeneralizedTemplateEditor extends JComponent {
 

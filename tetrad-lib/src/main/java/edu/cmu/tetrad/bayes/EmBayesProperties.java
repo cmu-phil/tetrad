@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * Calculates some scores for Bayes nets as a whole.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class EmBayesProperties {
     public interface Estimator {

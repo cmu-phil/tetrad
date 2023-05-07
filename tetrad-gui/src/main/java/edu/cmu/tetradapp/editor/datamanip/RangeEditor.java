@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * An editor that allows one to edit a range while discretizing continuous data.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Tyler Gibson
  */
 @SuppressWarnings("SuspiciousMethodCalls")

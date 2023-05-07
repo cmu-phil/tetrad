@@ -70,7 +70,7 @@ import static org.apache.commons.math3.util.FastMath.pow;
  * Thanks to Pucktada Treeratpituk, Frank Wimberly, and Willie Wheeler for
  * advice and earlier versions.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class MlBayesIm implements BayesIm {
 

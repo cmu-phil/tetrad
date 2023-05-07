@@ -32,7 +32,7 @@ import java.util.SortedSet;
  * Tests the SimpleRandomizer class by constructing graphs with randomly chosen
  * parameters and seeing if they have the required properties.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class TestSimpleRandomizer extends TestCase {
     LagGraph lagGraph = new BasicLagGraph();

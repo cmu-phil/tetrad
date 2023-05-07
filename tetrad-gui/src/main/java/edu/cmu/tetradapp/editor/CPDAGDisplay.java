@@ -43,7 +43,7 @@ import java.util.List;
  * Assumes that the search method of the CPDAG search has been run and shows the
  * various options for DAG's consistent with correlation information over the variables.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class CPDAGDisplay extends JPanel implements GraphEditable {
     private GraphWorkbench workbench;

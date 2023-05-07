@@ -33,7 +33,7 @@ import java.text.DecimalFormat;
 /**
  * Edits the parameters for simulating data from SEMs.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class SemImParamsEditor extends JPanel implements ParameterEditor {
 

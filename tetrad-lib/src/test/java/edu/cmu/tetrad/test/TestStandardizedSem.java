@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestStandardizedSem {
 

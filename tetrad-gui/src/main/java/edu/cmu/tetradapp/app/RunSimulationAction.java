@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * Sets up parameters for logging.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class RunSimulationAction extends AbstractAction {
 

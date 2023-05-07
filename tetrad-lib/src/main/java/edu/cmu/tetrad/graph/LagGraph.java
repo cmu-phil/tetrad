@@ -29,7 +29,7 @@ import java.util.*;
  * taken from previous time lags. This is intended to be interpreted as a
  * repeating time series graph for purposes of simulation.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class LagGraph implements Graph {
     static final long serialVersionUID = 23L;

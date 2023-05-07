@@ -38,7 +38,7 @@ import java.util.*;
  * search is different for different algorithm, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
  *
- * @author Joseph Ramsey.
+ * @author josephramsey.
  */
 public class VcFas {
 

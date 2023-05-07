@@ -35,7 +35,7 @@ import java.util.*;
  * of values per variables this could get to be a very large table, it might not
  * be a good idea to use this class except for unit testing.&gt; 0
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 
 //////////////////////////////////////////////////////////////////////

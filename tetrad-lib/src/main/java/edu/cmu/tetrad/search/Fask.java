@@ -131,7 +131,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * --twoCycleScreeningThreshold 0 --orientationAlpha 0.1 -structurePrior 0
  * </p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class Fask implements IGraphSearch {
 

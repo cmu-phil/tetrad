@@ -114,7 +114,7 @@ import static junit.framework.TestCase.fail;
  * </pre>
  * <p>Or Joshua Block, Effective Java.&gt; 0                                                                                     fd
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * // * @see edu.cmu.tetradapp.util.TetradSerializableUtils
  */
 public class TestSerialization {

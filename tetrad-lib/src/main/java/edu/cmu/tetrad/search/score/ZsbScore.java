@@ -43,7 +43,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * high‐dimensional data. Statistical Analysis and Data Mining: The
  * ASA Data Science Journal, 3(5), 350-358</p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ZsbScore implements Score {
 

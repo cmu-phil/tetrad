@@ -32,7 +32,7 @@ import java.awt.event.ActionEvent;
 /**
  * Deletes a selection of session nodes from the frontmost session editor.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class DeleteSubsessionAction extends AbstractAction
         implements ClipboardOwner {

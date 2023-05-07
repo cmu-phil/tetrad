@@ -41,7 +41,7 @@ import java.util.List;
  * Checks conditional independence for continuous variables using Cramer's T-test formula (Cramer, Mathematical Methods
  * of Statistics (1951), page 413).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class IndTestCramerT implements IndependenceTest {
 

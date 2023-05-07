@@ -37,7 +37,7 @@ import java.util.Set;
  * Sociological Methods and Research 19, 80-92 and Bollen and Ting, Confirmatory Tetrad
  * Analysis.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class DeltaSextadTest {
     static final long serialVersionUID = 23L;
