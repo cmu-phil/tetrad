@@ -27,7 +27,8 @@ import edu.cmu.tetrad.util.Matrix;
 
 /**
  * <p>Implements an interpretation of the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen,
- * and Kerminen, A linear nongaussian acyclic model for causal discovery, JMLR 7 (2006).</p>
+ * and Kerminen, a linear nongaussian acyclic model for causal discovery, JMLR 7 (2006).</p>
+ *
  * <p>The focus for this implementation was making super-simple code, not so much
  * because the method was trivial (it's not) but out of an attempt to compartmentalize.
  * Bootstrapping and other forms of improving the estimate of BHat were not addressed,
@@ -38,9 +39,11 @@ import edu.cmu.tetrad.util.Matrix;
  * threshold for finding a strong diagonal and a threshold on the B matrix for finding edges
  * in the final graph; these are finicky. So there's more work to do, and the implementation may
  * improve in the future.</p>
+ *
  * <p>Both N Rooks and Hungarian Algorithm were tested for finding the best strong diagonal;
  * these were not compared head to head, though the initial impression was that N Rooks was better,
  * so this version uses it.</p>
+ * 
  * <p>This implementation has two parameters, a threshold (for N Rooks) on the minimum values
  * in absolute value for including entries in a possible strong diagonal for W, and a threshold
  * for BHat for including edges in the final graph.</p>
