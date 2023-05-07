@@ -30,7 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implements Chickering and Meek's (2002) locally consistent score criterion.
+ * Gives a method of interpreting a test as a score. Various independence tests
+ * will calcualte p-values; this simply reports alpha - p as a score, which will
+ * be higher for greater dependence.
  *
  * @author josephramsey
  */
@@ -80,7 +82,6 @@ public class IndTestScore implements Score {
         this.test.checkIndependence(this.variables.get(x), this.variables.get(y), getVariableList(z));
         return this.test.getScore();
     }
-
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.

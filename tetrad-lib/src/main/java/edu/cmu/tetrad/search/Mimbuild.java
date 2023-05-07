@@ -42,7 +42,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * <p>>Provides an implemntation of Mimbuild, an algorithm that takes a clustering
+ * <p>Provides an implemntation of Mimbuild, an algorithm that takes a clustering
  * of variables, each of which is explained by a single latent, then forms the
  * implied covariance matrix over the latent variables, then runs a CPDAG search
  * to in the structure over the latent themselves.</p>
