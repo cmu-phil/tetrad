@@ -36,7 +36,10 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * This adjusts FAS for the deterministic case.
+ * <p>Adjusts FAS (see) for the deterministic case by refusing to removed edges
+ * based on conditional independence tests that are judged to be deterministic.
+ * That is, if X _||_ Y | Z, but Z determines X or Y, then the edge X---Y is
+ * not removed.</p>
  *
  * @author Joseph Ramsey.
  * @see Fas
