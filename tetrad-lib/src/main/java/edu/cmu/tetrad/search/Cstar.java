@@ -20,18 +20,17 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
- * <p>
- * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., and Bühlmann, P. (2012).
- * Causal stability ranking. Bioinformatics, 28(21), 2819-2823.
- * <p>
- * Meinshausen, N., and Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society:
- * Series B (Statistical Methodology), 72(4), 417-473.
- * <p>
- * Colombo, D., and Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning.
- * The Journal of Machine Learning Research, 15(1), 3741-3782.
+ * <p>Iplements the CStaR algorithm (Steckoven et al., 2012), which finds a CPDAG of thd data and then
+ * tries all orientations of the undirected edges about a variable in the CPDAG to estimate a
+ * minimum bound on the effect for a given edge. Soem references include the following:</p>
+ * <p>Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., and Bühlmann, P. (2012).
+ * Causal stability ranking. Bioinformatics, 28(21), 2819-2823.</p>
+ * <p>Meinshausen, N., and Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society:
+ * Series B (Statistical Methodology), 72(4), 417-473.</p>
+ * <p>Colombo, D., and Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning.
+ * The Journal of Machine Learning Research, 15(1), 3741-3782.</p>
  *
- * @author jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class Cstar {
     private boolean parallelized = false;
@@ -778,8 +777,16 @@ public class Cstar {
         return results;
     }
 
-    public enum CpdagAlgorithm {FGES, PC_STABLE, GRaSP}
+    /**
+     * An enumeration of the options available for estiting the CPDAG
+     * used for the algorthm.
+     */
+    public enum CpdagAlgorithm {PC_STABLE, FGES, GRaSP}
 
+    /**
+     * An enumeration of the methods for selecting samples from the full
+     * dataset.
+     */
     public enum SampleStyle {BOOTSTRAP, SPLIT}
 
     private static class Tuple {

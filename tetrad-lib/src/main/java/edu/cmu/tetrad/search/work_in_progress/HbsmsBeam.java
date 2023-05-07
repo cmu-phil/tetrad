@@ -47,7 +47,7 @@ import java.util.*;
  * @author Joseph Ramsey
  */
 
-public final class HbmsBeam implements Hbsms {
+public final class HbsmsBeam implements Hbsms {
     private final CovarianceMatrix cov;
     private Knowledge knowledge;
     private final Graph externalGraph;
@@ -61,7 +61,7 @@ public final class HbmsBeam implements Hbsms {
     private final Scorer scorer;
     private int beamWidth = 1;
 
-    public HbmsBeam(Graph graph, DataSet data, Knowledge knowledge) {
+    public HbsmsBeam(Graph graph, DataSet data, Knowledge knowledge) {
         if (graph == null) graph = new EdgeListGraph(data.getVariables());
 
         this.knowledge = knowledge;
@@ -71,7 +71,7 @@ public final class HbmsBeam implements Hbsms {
         this.scorer = new DagScorer(this.cov);
     }
 
-    public HbmsBeam(Graph graph, CovarianceMatrix cov, Knowledge knowledge) {
+    public HbsmsBeam(Graph graph, CovarianceMatrix cov, Knowledge knowledge) {
         if (graph == null) graph = new EdgeListGraph(cov.getVariables());
 
         this.knowledge = knowledge;
@@ -294,18 +294,18 @@ public final class HbmsBeam implements Hbsms {
         Edge firstEdge = move.getFirstEdge();
         Edge secondEdge = move.getSecondEdge();
 
-        if (firstEdge != null && move.getType() == HbmsBeam.Move.Type.ADD) {
+        if (firstEdge != null && move.getType() == HbsmsBeam.Move.Type.ADD) {
             graph.removeEdge(firstEdge.getNode1(), firstEdge.getNode2());
             graph.addEdge(firstEdge);
-        } else if (firstEdge != null && move.getType() == HbmsBeam.Move.Type.REMOVE) {
+        } else if (firstEdge != null && move.getType() == HbsmsBeam.Move.Type.REMOVE) {
             graph.removeEdge(firstEdge);
-        } else if (firstEdge != null && move.getType() == HbmsBeam.Move.Type.DOUBLE_REMOVE) {
+        } else if (firstEdge != null && move.getType() == HbsmsBeam.Move.Type.DOUBLE_REMOVE) {
             graph.removeEdge(firstEdge);
             graph.removeEdge(secondEdge);
-        } else if (firstEdge != null && move.getType() == HbmsBeam.Move.Type.REDIRECT) {
+        } else if (firstEdge != null && move.getType() == HbsmsBeam.Move.Type.REDIRECT) {
             graph.removeEdge(graph.getEdge(firstEdge.getNode1(), firstEdge.getNode2()));
             graph.addEdge(firstEdge);
-        } else if (firstEdge != null && secondEdge != null && move.getType() == HbmsBeam.Move.Type.ADD_COLLIDER) {
+        } else if (firstEdge != null && secondEdge != null && move.getType() == HbsmsBeam.Move.Type.ADD_COLLIDER) {
             Edge existingEdge1 = graph.getEdge(firstEdge.getNode1(), firstEdge.getNode2());
             Edge existingEdge2 = graph.getEdge(secondEdge.getNode1(), secondEdge.getNode2());
 
@@ -319,10 +319,10 @@ public final class HbmsBeam implements Hbsms {
 
             graph.addEdge(firstEdge);
             graph.addEdge(secondEdge);
-        } else if (firstEdge != null && secondEdge != null && move.getType() == HbmsBeam.Move.Type.REMOVE_COLLIDER) {
+        } else if (firstEdge != null && secondEdge != null && move.getType() == HbsmsBeam.Move.Type.REMOVE_COLLIDER) {
             graph.removeEdge(firstEdge);
             graph.removeEdge(secondEdge);
-        } else if (firstEdge != null && secondEdge != null && move.getType() == HbmsBeam.Move.Type.SWAP) {
+        } else if (firstEdge != null && secondEdge != null && move.getType() == HbsmsBeam.Move.Type.SWAP) {
             graph.removeEdge(firstEdge);
             Edge secondEdgeStar = graph.getEdge(secondEdge.getNode1(), secondEdge.getNode2());
 
@@ -363,7 +363,7 @@ public final class HbmsBeam implements Hbsms {
 
                 if (!graph.paths().isAncestorOf(nodes.get(j), nodes.get(i))) {
                     Edge edge = Edges.directedEdge(nodes.get(i), nodes.get(j));
-                    moves.add(new Move(edge, HbmsBeam.Move.Type.ADD));
+                    moves.add(new Move(edge, HbsmsBeam.Move.Type.ADD));
                 }
             }
         }
@@ -393,7 +393,7 @@ public final class HbmsBeam implements Hbsms {
                 continue;
             }
 
-            moves.add(new Move(Edges.directedEdge(j, i), HbmsBeam.Move.Type.REDIRECT));
+            moves.add(new Move(Edges.directedEdge(j, i), HbsmsBeam.Move.Type.REDIRECT));
         }
 
         return moves;
@@ -430,14 +430,14 @@ public final class HbmsBeam implements Hbsms {
 
         private final Edge edge;
         private Edge secondEdge;
-        private final HbmsBeam.Move.Type type;
+        private final HbsmsBeam.Move.Type type;
 
-        public Move(Edge edge, HbmsBeam.Move.Type type) {
+        public Move(Edge edge, HbsmsBeam.Move.Type type) {
             this.edge = edge;
             this.type = type;
         }
 
-        public Move(Edge edge, Edge secondEdge, HbmsBeam.Move.Type type) {
+        public Move(Edge edge, Edge secondEdge, HbsmsBeam.Move.Type type) {
             this.edge = edge;
             this.secondEdge = secondEdge;
             this.type = type;
@@ -451,7 +451,7 @@ public final class HbmsBeam implements Hbsms {
             return this.secondEdge;
         }
 
-        public HbmsBeam.Move.Type getType() {
+        public HbsmsBeam.Move.Type getType() {
             return this.type;
         }
 

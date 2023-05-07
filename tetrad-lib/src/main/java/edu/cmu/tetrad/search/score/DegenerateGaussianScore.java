@@ -40,8 +40,16 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * <p></->Implements a degenerate Gaussian BIC score for FGES.</p>
- * <a href="http://proceedings.mlr.press/v104/andrews19a/andrews19a.pdf">...</a>
+ * <p>This implements the degenerate Gaussian BIC score for FGES.
+ * The degenerate Gaussian score replaces each discrete variable
+ * in the data with a list of 0/1 continuous indicator columns for
+ * each of the categories but one (the last one implied). This
+ * data, now all continuous, is given to the SEM BIC score and
+ * methods used to help determine conditional independence for the
+ * mixed continuous/discrete case from this information. The
+ * references is as follows:</p>
+ * <a href="http://proceedings.mlr.press/v104/andrews19a/andrews19a.pdf">
+ * http://proceedings.mlr.press/v104/andrews19a/andrews19a.pdf</a>
  *
  * @author Bryan Andrews
  */

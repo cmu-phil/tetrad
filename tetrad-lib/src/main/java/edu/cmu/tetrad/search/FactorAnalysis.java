@@ -33,12 +33,14 @@ import java.util.LinkedList;
 import static org.apache.commons.math3.util.FastMath.abs;
 
 /**
- * Useful references: "Factor Analysis of Data Matrices" - Paul Horst (1965) This work has good specifications and
- * explanations of factor analysis algorithm and methods of communality estimation.
- * <p>
- * "Applied Factor Analysis" - R.J. Rummel (1970) This book is a good companion to the book listed above.  While it
- * doesn't specify any actual algorithm, it has a great introduction to the subject that gives the reader a good
- * appreciation of the philosophy and the mathematics behind factor analysis.
+ * <p>Implements the classical Factor Analysis algorithm. Some references include:</p>
+ * <p>Horst, P. (1965). Factor analysis of data matrices. Holt, Rinehart and Winston.
+ * This work has good specifications and explanations of factor analysis algorithm and
+ * methods of communality estimation.</p>
+ * <p>Rummel, R. J. (1988). Applied factor analysis. Northwestern University Press. This
+ * book is a good companion to the book listed above.  While it doesn't specify any actual
+ * algorithm, it has a great introduction to the subject that gives the reader a good
+ * appreciation of the philosophy and the mathematics behind factor analysis.</p>
  *
  * @author Mike Freenor
  */

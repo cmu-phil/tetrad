@@ -30,10 +30,15 @@ import org.apache.commons.math3.special.Gamma;
 import java.util.List;
 
 /**
- * Calculates the BDe score.
+ * <p>Calculates the BDe score (Bayes Dirichlet Equivalent) score for analyzing
+ * discrete multinomial data. A good discussion of BD* scores can be found here:</p>
+ * <p>Heckerman, D., Geiger, D. & Chickering, D.M. Learning Bayesian networks:
+ * The combination of knowledge and statistical data. Mach Learn 20, 197–243 (1995).
+ * https://doi.org/10.1007/BF00994016</p>
  *
  * @author josephramsey
- */
+ * @see BdeuScore
+ * */
 public class BdeScore implements DiscreteScore {
     private final DataSet dataSet;
 

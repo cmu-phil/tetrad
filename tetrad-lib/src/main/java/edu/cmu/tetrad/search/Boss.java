@@ -11,11 +11,12 @@ import java.util.*;
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
- * <p>Implements the BOSS (Best Order Permutation Search) algorithm. This procedure uses
- * an optimization of the BOSS algorithm (reference to be included in a future version),
- * looking for a permutation such that when a DAG is built it has the fewest number of
- * edges (i.e., is a most 'frugal' or a 'sparsest' DAG). Returns the CPDAG of this discovered
- * frugal DAG.</p>
+ * <p>Implements an algorithms called BOSS (Bost order Score Search), which
+ * intercalalates calls to a permutation discvoery step with called to BES, in order
+ * to find an optimal permutation implying a DAG and therefore a CPDAG that is
+ * highly accurate. This follows up on work by Raskutti and Uhler on the SP
+ * (Sparsest Permutation) algorithm and work by Lam, Andrews and Ramsey on the
+ * GRaSP algorithm and is currently under development.</p>
  *
  * <p>Knowledge can be used with this search. If tiered knowledge is used, then the procedure
  * is carried out for each tier separately, given the variable preceding that tier, which
@@ -27,6 +28,8 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  *
  * @author bryanandrews
  * @author josephramsey
+ * @see Sp
+ * @see Grasp
  * @see PermutationSearch
  */
 public class Boss implements SuborderSearch {

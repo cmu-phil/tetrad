@@ -38,17 +38,16 @@ import java.util.List;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
+ * <p>Changes the implementation of the GFCI algorithm to use Boss
+ * instead of FGES as the initial step. This tends to produce a accurate PAG than
+ * GFCI as a result, for the latent variables case. The reference for GFCI
+ * is here:</p>
  * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
  * FGES.</p>
+ * <p>For BOSS only a score is needed, but there are steps in GFCI that require
+ * a test, so for this method, both a test and a score need to be given.</p>
  *
- * <p>This uses PermutationSearch (see), calling the BOSS algorithm (see).</p>
- *
- * <p>An independence test must be provided for the definite discriminating path step
- * of FCI. Otherwise, the provided score is used throughout.</p>
- *
- * @author Juan Miguel Ogarrio
- * @author ps7z
  * @author jdramsey
  * @author bryan andrews
  * @see PermutationSearch

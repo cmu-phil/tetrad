@@ -20,15 +20,22 @@ import static java.util.Collections.shuffle;
 
 
 /**
- * <p>Implements the GRaSP algorithms, with various execution flags. GRaSP can use
- * either a score or an independence test; you can provide both, though if you do
- * you need to use the paremeters to choose which one will be used. The score
- * options is more scalable and accurate, though the independence option is
- * perhaps a little easier ot deal with theoretically.</p>
- * <p>Reference:</p>
+ * <p>Implements the GRaSP algorithms, which uses a certain procedure to search
+ * in the space of permutations of variables for ones that imply CPDAGs that are
+ * especailly close to the CPDAG of the true model. The reference is here:</p>
  * <p>Lam, W. Y., Andrews, B., & Ramsey, J. (2022, August). Greedy relaxations of
  * the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence
  * (pp. 1052-1062). PMLR.</p>
+ *
+ * <p></p>GRaSP can use either a score or an independence test; you can provide
+ * both, though if you do you need to use the paremeters to choose which one will
+ * be used. The score options is more scalable and accurate, though the independence
+ * option is perhaps a little easier ot deal with theoretically</p>
+ *
+ * <p>Knowledge can be used with this search. If tiered knowledge is used, then
+ * the procedure is carried out for each tier separately, given the variable preceding
+ * that tier, which allows the SP algorithm to address tiered (e.g., time series)
+ * problems with larger numbers of variables.</p>
  *
  * @author bryanandrews
  * @author josephramsey

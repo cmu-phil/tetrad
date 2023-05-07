@@ -41,17 +41,21 @@ import java.util.List;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * <p>Replaces FGES in GFCI by GRaSP using a score, which is another score-based
- * (but more accurate) algorithm.</p>
+ * <p>Changes the implementation of the GFCI algorithm to use Boss
+ * instead of GRaSP as the initial step. This tends to produce a accurate PAG than
+ * GFCI as a result, for the latent variables case. The reference for GFCI
+ * is here:</p>
  * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
  * FGES.</p>
+ * <p>For BOSS only a score is needed, but there are steps in GFCI that require
+ * a test, so for this method, both a test and a score need to be given.</p>
  *
- * @author peterspirtes
- * @author josephramsey
- * @author bryanandrews
+ * @author jdramsey
+ * @author bryan andrews
+ * @see Boss
  * @see GFci
- * @see Grasp
+ * @see Fci
  */
 public final class GraspFci implements IGraphSearch {
 

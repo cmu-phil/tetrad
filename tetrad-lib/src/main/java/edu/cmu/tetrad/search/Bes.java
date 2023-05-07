@@ -19,11 +19,21 @@ import static org.apache.commons.math3.util.FastMath.min;
 
 
 /**
- * Implements the backward equivalence search of FGES.
+ * <p>Extracts the backward step of GES for use GES but also in other
+ * algorithms. The GES algorithm consists of a forward phase (FES = Forward
+ * Equivalence Search) and a backward phase (BES = Backward Equivalence Search).
+ * We find the BES step by itself is useful in a number of algorithms, so we
+ * extract this step and give as a separate algorithm.</p>
+ * <p>The idea of the backward search is to start with a model that is
+ * Markov and removed edges from it and do the corresponding reorientations,
+ * improving the score each time, until the score can no longer be improved.</p>
+ * <p>We use the optimized implementation used in the FGES implementation
+ * of GES.</p>
  *
  * @author bryanandrews
  * @author josephramsey
  * @see Fges
+ * @see Boss
  */
 public class Bes {
     private final List<Node> variables;

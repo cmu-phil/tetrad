@@ -31,11 +31,13 @@ import org.apache.commons.math3.util.FastMath;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * A Java implementation of FastIca following the R package fastICA. The only
- * difference (I believe) is that the R package can handle complex numbers,
- * whereas this implementation cannot.
- * <p>
- * The documention of the R version is as follows, all of which is true of this
+ * <p>Translates a version of the FastICA algorithm used in R from Fortran
+ * into Java for use in Tetrad. This can be used in various algorithms that
+ * assume linearity and non-gaussianity, as for example LiNGAM and LiNG-D.
+ * There is one difference from the R, in that in R FastICA can operate over
+ * complex numbers, whereeas here it is restricted to real numbers.</p>
+ *
+ * <p>The documention of the R version is as follows, all of which is true of this
  * translation (so far as I know) except for its being in R and its allowing
  * complex values.
  * <p>
@@ -134,9 +136,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and
  * Applications, _Neural Networks_, *13(4-5)*:411-430
  * <p>
- * This code has been well-tested.
  *
- * @author Joseph Ramsey (of the translation, that is, not the original.)
+ * @author josephramsey
  */
 public class FastIca {
 
@@ -672,7 +673,6 @@ public class FastIca {
             Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
             x.assignRow(i, u);
         }
-
     }
 
     private void center(Matrix x) {

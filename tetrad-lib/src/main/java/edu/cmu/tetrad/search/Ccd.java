@@ -32,11 +32,15 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.util.*;
 
 /**
- * <p>This class provides the data structures and methods for carrying out the Cyclic Causal Discovery algorithm (CCD)
- * described by Thomas Richardson and Peter Spirtes in Chapter 7 of Computation, Causation, and Discovery by Glymour and
- * Cooper eds.  The comments that appear below are keyed to the algorithm specification on pp. 269-271. The search
- * method returns an instance of a Graph but it also constructs two lists of node triples which represent the underlines
- * and dotted underlines that the algorithm discovers.</p>
+ * <p>Implemented the Cyclic Causal Discovery (CCD) algorithm by Thomas Richardson.
+ * A reference for this is here:</p>
+ * <p>Mooij, J. M., & Claassen, T. (2020, August). Constraint-based causal discovery
+ * using partial ancestral graphs in the presence of cycles. In Conference on Uncertainty
+ * in Artificial Intelligence (pp. 1159-1168). PMLR.</p>
+ * <p>See also Chapter 7 of Glymour and Cooper, eds., Computation, Causation, and Discovery</p>
+ * <p>The graph takes continuous data from a cyclic model as input and returns a cyclic
+ * PAG graphs, with various types of underlining, that represents a Markov equivalence of
+ * the true DAG.</p>
  *
  * @author Frank C. Wimberly
  * @author Joseph Ramsey

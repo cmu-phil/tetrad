@@ -35,28 +35,23 @@ import java.util.*;
 
 
 /**
- * BuildPureClusters is an implementation of the automated clustering and purification methods
- * described on the report "Learning Measurement Models" CMU-CALD-03-100.
- * <p>
- * The output is only the purified model. Future versions may include options to visualize the
- * measurement pattern in the GUI (it shows up in the console window, though.)
- * <p>
- * References:
- * <p>
- * Silva, R.; Scheines, R.; Spirtes, P.; Glymour, C. (2003). "Learning measurement models".
+ * <p>Implements the Build Pure Clusters algorithm, which allows one to identify
+ * clusters of measured variables in a dataset that are explained by single latents.
+ * The algorithm outputs these clusters, which can then be used for further analysis.
+ * The reference is this:</p>
+ * <p>Silva, R., Scheines, R., Glymour, C., Spirtes, P., & Chickering, D. M. (2006).
+ * Learning the Structure of Linear Latent Variable Models. Journal of Machine Learning
+ * Research, 7(2).</p>
+ * <p>Some more References:
+ * <p>Silva, R.; Scheines, R.; Spirtes, P.; Glymour, C. (2003). "Learning measurement models".
  * Technical report CMU-CALD-03-100, Center for Automated Learning and Discovery, Carnegie Mellon
- * University.
- * <p>
- * Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads."
- * Sociological Methods and Research 19, 80-92.
- * <p>
- * Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of
- * Psychology 19, 180-187.
- * <p>
- * Bron, C. and Kerbosch, J. (1973) "Algorithm 457: Finding all cliques of an undirected graph".
- * Communications of ACM 16, 575-577.
- * <p>
- * --Cleaned up by jdramsey 2022-03-28
+ * University.</p>
+ * <p>Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads."
+ * Sociological Methods and Research 19, 80-92.</p>
+ * <p>Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of
+ * Psychology 19, 180-187. </p
+ * <p>Bron, C. and Kerbosch, J. (1973) "Algorithm 457: Finding all cliques of an undirected graph".
+ * Communications of ACM 16, 575-577.</p>
  *
  * @author Ricardo Silva
  */
