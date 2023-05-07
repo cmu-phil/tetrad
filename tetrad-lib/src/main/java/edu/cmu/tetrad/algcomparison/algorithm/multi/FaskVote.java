@@ -8,6 +8,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -36,6 +37,7 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
+@Experimental
 public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;

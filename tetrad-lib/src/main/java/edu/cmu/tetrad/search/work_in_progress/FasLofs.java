@@ -19,12 +19,16 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.Fas;
+import edu.cmu.tetrad.search.Fask;
+import edu.cmu.tetrad.search.IGraphSearch;
+import edu.cmu.tetrad.search.Lofs;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -33,11 +37,26 @@ import edu.cmu.tetrad.util.MillisecondTimes;
 import java.util.Collections;
 
 /**
- * Fast adjacency search followed by robust skew orientation. Checks are done for adding
+ * <p>Runs Fast Adjacency Search (FAS) and then orients each edge using the robust
+ * skew orientation algorithm. Checks are done for adding
  * two-cycles. The two-cycle checks do not require non-Gaussianity. The robust skew
- * orientation of edges left or right does.
+ * orientation of edges left or right does.</p>
+ *
+ * <p>Moving this to the work_in_progress package because the functionality can be
+ * generalized. Instead of hard-coding FAS, an arbitrary algorithm can be used
+ * to obtain adjacencies. Instead of hard-coding robust skew, and arbitrary algorithm
+ * can be used to to pairwise orientation. Instead of orienting all edges, an
+ * option can be given to just orient the edges that are unoriented in the input
+ * graph (see, e.g., PC LiNGAM). This was an early attempt at this. For PC-LiNGAM,
+ * see this paper:</p>
+ *
+ * <p>Hoyer, P. O., Hyvarinen, A., Scheines, R., Spirtes, P. L., Ramsey, J., Lacerda, G.,
+ * & Shimizu, S. (2012). Causal discovery of linear acyclic models with arbitrary
+ * distributions. arXiv preprint arXiv:1206.3260.</p>
  *
  * @author Joseph Ramsey
+ * @see Fas
+ * @see Fask
  */
 public final class FasLofs implements IGraphSearch {
 
