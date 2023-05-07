@@ -38,22 +38,36 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 
 
 /**
- * Implements FindOneFactorCluster by Erich Kummerfeld (adaptation of a two factor
- * sextet algorithm to a one factor IntSextad algorithm).
+ * <p>Implements the Find Two Factor Clusters (FOFC) algorithm by Erich Kummerfeld
+ * and Peter Spirtes, which uses reasoning about vanishing tetrads of algorithms to
+ * infer clusters of the measured variables in a dataset that each be explained by
+ * a single latent variable. A reference for the one-factor versiono of the algorithm
+ * (FOFC) is the following</p>
  *
- * @author Joseph Ramsey
+ * <p>Kummerfeld, E., & Ramsey, J. (2016, August). Causal clustering for 1-factor measurement
+ * models. In Proceedings of the 22nd ACM SIGKDD international conference on knowledge
+ * discovery and data mining (pp. 1655-1664).</p>
+ *
+ * <p>The two-factor version of the algorithm substitutes sextad tests for
+ * tetrad tests and searches for clusters of at leat 6 variables that can be
+ * explained by two latent factors by calculating vanishing sextads.</p>
+ *
+ * @author peterspirtes
  * @author erichkummerfeld
+ * @author josephramsey
+ * @see Fofc
+ * @see Bpc
  */
 public class Ftfc {
 
-    public Algorithm getAlgorithm() {
-        return this.algorithm;
-    }
-
-    public void setAlgorithm(Algorithm algorithm) {
-        this.algorithm = algorithm;
-    }
-
+    /**
+     * Gives the options to be used in FOFC to sort through the various possibilities
+     * for forming clusters to find the best options. SAG (Seed and Grow) looks
+     * for good seed clusters and then grows them by adding one variable at a time.
+     * GAP (Grow and Pick) grows out all the cluster initially and then just
+     * picks from among these. SAG is generally faster; GAP is generally slower but
+     * more accurate.
+     */
     public enum Algorithm {SAG, GAP}
 
     private final CorrelationMatrix corr;
@@ -72,7 +86,7 @@ public class Ftfc {
     private List<List<Node>> clusters;
 
     private boolean verbose;
-    private Algorithm algorithm = Algorithm.GAP;
+    private final Algorithm algorithm;
 
     /**
      * Conctructor.
@@ -182,102 +196,102 @@ public class Ftfc {
     }
 
 
-    // renjiey
-    private int findFrequentestIndex(Integer[] outliers) {
-        Map<Integer, Integer> map = new HashMap<>();
+//    // renjiey
+//    private int findFrequentestIndex(Integer[] outliers) {
+//        Map<Integer, Integer> map = new HashMap<>();
+//
+//        for (Integer outlier : outliers) {
+//            if (map.containsKey(outlier)) {
+//                map.put(outlier, map.get(outlier) + 1);
+//            } else {
+//                map.put(outlier, 1);
+//            }
+//        }
+//
+//        Set<Map.Entry<Integer, Integer>> set = map.entrySet();
+//        Iterator<Map.Entry<Integer, Integer>> it = set.iterator();
+//        int nums = 0;// how many times variable occur
+//        int key = 0;// the number occur the most times
+//
+//        while (it.hasNext()) {
+//            Map.Entry<Integer, Integer> entry = it.next();
+//            if (entry.getValue() > nums) {
+//                nums = entry.getValue();
+//                key = entry.getKey();
+//            }
+//        }
+//
+//        return (key);
+//    }
 
-        for (Integer outlier : outliers) {
-            if (map.containsKey(outlier)) {
-                map.put(outlier, map.get(outlier) + 1);
-            } else {
-                map.put(outlier, 1);
-            }
-        }
+//    // This is the main function. It removea variables in the data such that the remaining correlation matrix
+//    // does not contain extreme value
+//    // Inputs: correlation matrix, upper and lower bound for unacceptable correlations
+//    // Output: and dynamic array of removed variables
+//    // renjiey
+//    private ArrayList<Integer> removeVariables(Matrix correlationMatrix, double lowerBound, double upperBound,
+//                                               double percentBound) {
+//        Integer[] outlier = new Integer[correlationMatrix.rows() * (correlationMatrix.rows() - 1)];
+//        int count = 0;
+//        for (int i = 2; i < (correlationMatrix.rows() + 1); i++) {
+//            for (int j = 1; j < i; j++) {
+//
+//                if ((abs(correlationMatrix.get(i - 1, j - 1)) < lowerBound)
+//                        || (abs(correlationMatrix.get(i - 1, j - 1)) > upperBound)) {
+//                    outlier[count * 2] = i;
+//                    outlier[count * 2 + 1] = j;
+//
+//                } else {
+//                    outlier[count * 2] = 0;
+//                    outlier[count * 2 + 1] = 0;
+//                }
+//                count = count + 1;
+//            }
+//        }
+//
+//        //find out the variables that should be deleted
+//        ArrayList<Integer> removedVariables = new ArrayList<>();
+//
+//        // Added the percent bound jdramsey
+//        while (outlier.length > 1 && removedVariables.size() < percentBound * correlationMatrix.rows()) {
+//            //find out the variable that occurs most frequently in outlier
+//            int worstVariable = findFrequentestIndex(outlier);
+//            if (worstVariable > 0) {
+//                removedVariables.add(worstVariable);
+//            }
+//
+//            //remove the correlations having the bad variable (change the relevant variables to 0)
+//            for (int i = 1; i < outlier.length + 1; i++) {
+//                if (outlier[i - 1] == worstVariable) {
+//                    outlier[i - 1] = 0;
+//
+//                    if (i % 2 != 0) {
+//                        outlier[i] = 0;
+//                    } else {
+//                        outlier[i - 2] = 0;
+//                    }
+//                }
+//            }
+//
+//            //delete zero elements in outlier
+//            outlier = removeZeroIndex(outlier);
+//        }
+//
+//        log(removedVariables.size() + " variables removed: " + variablesForIndices(removedVariables), true);
+//
+//        return (removedVariables);
+//    }
 
-        Set<Map.Entry<Integer, Integer>> set = map.entrySet();
-        Iterator<Map.Entry<Integer, Integer>> it = set.iterator();
-        int nums = 0;// how many times variable occur
-        int key = 0;// the number occur the most times
-
-        while (it.hasNext()) {
-            Map.Entry<Integer, Integer> entry = it.next();
-            if (entry.getValue() > nums) {
-                nums = entry.getValue();
-                key = entry.getKey();
-            }
-        }
-
-        return (key);
-    }
-
-    // This is the main function. It remove variables in the data such that the remaining correlation matrix
-    // does not contain extreme value
-    // Inputs: correlation matrix, upper and lower bound for unacceptable correlations
-    // Output: and dynamic array of removed variables
-    // renjiey
-    private ArrayList<Integer> removeVariables(Matrix correlationMatrix, double lowerBound, double upperBound,
-                                               double percentBound) {
-        Integer[] outlier = new Integer[correlationMatrix.rows() * (correlationMatrix.rows() - 1)];
-        int count = 0;
-        for (int i = 2; i < (correlationMatrix.rows() + 1); i++) {
-            for (int j = 1; j < i; j++) {
-
-                if ((abs(correlationMatrix.get(i - 1, j - 1)) < lowerBound)
-                        || (abs(correlationMatrix.get(i - 1, j - 1)) > upperBound)) {
-                    outlier[count * 2] = i;
-                    outlier[count * 2 + 1] = j;
-
-                } else {
-                    outlier[count * 2] = 0;
-                    outlier[count * 2 + 1] = 0;
-                }
-                count = count + 1;
-            }
-        }
-
-        //find out the variables that should be deleted
-        ArrayList<Integer> removedVariables = new ArrayList<>();
-
-        // Added the percent bound jdramsey
-        while (outlier.length > 1 && removedVariables.size() < percentBound * correlationMatrix.rows()) {
-            //find out the variable that occurs most frequently in outlier
-            int worstVariable = findFrequentestIndex(outlier);
-            if (worstVariable > 0) {
-                removedVariables.add(worstVariable);
-            }
-
-            //remove the correlations having the bad variable (change the relevant variables to 0)
-            for (int i = 1; i < outlier.length + 1; i++) {
-                if (outlier[i - 1] == worstVariable) {
-                    outlier[i - 1] = 0;
-
-                    if (i % 2 != 0) {
-                        outlier[i] = 0;
-                    } else {
-                        outlier[i - 2] = 0;
-                    }
-                }
-            }
-
-            //delete zero elements in outlier
-            outlier = removeZeroIndex(outlier);
-        }
-
-        log(removedVariables.size() + " variables removed: " + variablesForIndices(removedVariables), true);
-
-        return (removedVariables);
-    }
-
-    // renjiey
-    private Integer[] removeZeroIndex(Integer[] outlier) {
-        List<Integer> list = new ArrayList<>(Arrays.asList(outlier));
-        for (Integer element : outlier) {
-            if (element < 1) {
-                list.remove(element);
-            }
-        }
-        return list.toArray(new Integer[1]);
-    }
+//    // renjiey
+//    private Integer[] removeZeroIndex(Integer[] outlier) {
+//        List<Integer> list = new ArrayList<>(Arrays.asList(outlier));
+//        for (Integer element : outlier) {
+//            if (element < 1) {
+//                list.remove(element);
+//            }
+//        }
+//        return list.toArray(new Integer[1]);
+//    }
 
     private Set<List<Integer>> findPurepentads(List<Integer> variables) {
         if (variables.size() < 6) {
@@ -456,7 +470,7 @@ public class Ftfc {
                 }
 
                 for (List<Integer> c : new HashSet<>(purePentads)) {
-                    if (_cluster.containsAll(c)) {
+                    if (new HashSet<>(_cluster).containsAll(c)) {
                         purePentads.remove(c);
                     }
                 }
@@ -574,12 +588,7 @@ public class Ftfc {
 
         List<List<Integer>> list = new ArrayList<>(grown);
 
-        Collections.sort(list, new Comparator<List<Integer>>() {
-            @Override
-            public int compare(List<Integer> o1, List<Integer> o2) {
-                return o2.size() - o1.size();
-            }
-        });
+        list.sort((o1, o2) -> o2.size() - o1.size());
 
         List<Integer> all = new ArrayList<>();
 
@@ -785,11 +794,11 @@ public class Ftfc {
         return 1.0 - q;
     }
 
-    private int dofDrton(int n) {
-        int dof = ((n - 2) * (n - 3)) / 2 - 2;
-        if (dof < 0) dof = 0;
-        return dof;
-    }
+//    private int dofDrton(int n) {
+//        int dof = ((n - 2) * (n - 3)) / 2 - 2;
+//        if (dof < 0) dof = 0;
+//        return dof;
+//    }
 
     private int dofHarman(int n) {
         int dof = n * (n - 5) / 2 + 1;
@@ -879,72 +888,72 @@ public class Ftfc {
         return est.estimate();
     }
 
-    private SemIm estimateModel(List<List<Integer>> clusters) {
-        Graph g = new EdgeListGraph();
-
-        List<Node> upperLatents = new ArrayList<>();
-        List<Node> lowerLatents = new ArrayList<>();
-
-        for (int i = 0; i < clusters.size(); i++) {
-            List<Integer> cluster = clusters.get(i);
-            Node l1 = new GraphNode("L1." + (i + 1));
-            l1.setNodeType(NodeType.LATENT);
-
-            Node l2 = new GraphNode("L2." + (i + 1));
-            l2.setNodeType(NodeType.LATENT);
-
-            upperLatents.add(l1);
-            lowerLatents.add(l2);
-
-            g.addNode(l1);
-            g.addNode(l2);
-
-            for (Integer aCluster : cluster) {
-                Node n = this.variables.get(aCluster);
-                g.addNode(n);
-                g.addDirectedEdge(l1, n);
-                g.addDirectedEdge(l2, n);
-            }
-        }
-
-        for (int i = 0; i < upperLatents.size(); i++) {
-            for (int j = i + 1; j < upperLatents.size(); j++) {
-                g.addDirectedEdge(upperLatents.get(i), upperLatents.get(j));
-                g.addDirectedEdge(lowerLatents.get(i), lowerLatents.get(j));
-            }
-        }
-
-        for (int i = 0; i < upperLatents.size(); i++) {
-            for (int j = 0; j < lowerLatents.size(); j++) {
-                if (i == j) continue;
-                g.addDirectedEdge(upperLatents.get(i), lowerLatents.get(j));
-            }
-        }
-
-        SemPm pm = new SemPm(g);
-
-        for (Node node : upperLatents) {
-            Parameter p = pm.getParameter(node, node);
-            p.setFixed(true);
-            p.setStartingValue(1.0);
-        }
-
-        for (Node node : lowerLatents) {
-            Parameter p = pm.getParameter(node, node);
-            p.setFixed(true);
-            p.setStartingValue(1.0);
-        }
-
-        SemEstimator est;
-
-        if (this.dataModel instanceof DataSet) {
-            est = new SemEstimator((DataSet) this.dataModel, pm, new SemOptimizerEm());
-        } else {
-            est = new SemEstimator((CovarianceMatrix) this.dataModel, pm, new SemOptimizerEm());
-        }
-
-        return est.estimate();
-    }
+//    private SemIm estimateModel(List<List<Integer>> clusters) {
+//        Graph g = new EdgeListGraph();
+//
+//        List<Node> upperLatents = new ArrayList<>();
+//        List<Node> lowerLatents = new ArrayList<>();
+//
+//        for (int i = 0; i < clusters.size(); i++) {
+//            List<Integer> cluster = clusters.get(i);
+//            Node l1 = new GraphNode("L1." + (i + 1));
+//            l1.setNodeType(NodeType.LATENT);
+//
+//            Node l2 = new GraphNode("L2." + (i + 1));
+//            l2.setNodeType(NodeType.LATENT);
+//
+//            upperLatents.add(l1);
+//            lowerLatents.add(l2);
+//
+//            g.addNode(l1);
+//            g.addNode(l2);
+//
+//            for (Integer aCluster : cluster) {
+//                Node n = this.variables.get(aCluster);
+//                g.addNode(n);
+//                g.addDirectedEdge(l1, n);
+//                g.addDirectedEdge(l2, n);
+//            }
+//        }
+//
+//        for (int i = 0; i < upperLatents.size(); i++) {
+//            for (int j = i + 1; j < upperLatents.size(); j++) {
+//                g.addDirectedEdge(upperLatents.get(i), upperLatents.get(j));
+//                g.addDirectedEdge(lowerLatents.get(i), lowerLatents.get(j));
+//            }
+//        }
+//
+//        for (int i = 0; i < upperLatents.size(); i++) {
+//            for (int j = 0; j < lowerLatents.size(); j++) {
+//                if (i == j) continue;
+//                g.addDirectedEdge(upperLatents.get(i), lowerLatents.get(j));
+//            }
+//        }
+//
+//        SemPm pm = new SemPm(g);
+//
+//        for (Node node : upperLatents) {
+//            Parameter p = pm.getParameter(node, node);
+//            p.setFixed(true);
+//            p.setStartingValue(1.0);
+//        }
+//
+//        for (Node node : lowerLatents) {
+//            Parameter p = pm.getParameter(node, node);
+//            p.setFixed(true);
+//            p.setStartingValue(1.0);
+//        }
+//
+//        SemEstimator est;
+//
+//        if (this.dataModel instanceof DataSet) {
+//            est = new SemEstimator((DataSet) this.dataModel, pm, new SemOptimizerEm());
+//        } else {
+//            est = new SemEstimator((CovarianceMatrix) this.dataModel, pm, new SemOptimizerEm());
+//        }
+//
+//        return est.estimate();
+//    }
 
     private List<Integer> sextet(int n1, int n2, int n3, int n4, int n5, int n6) {
         List<Integer> sextet = new ArrayList<>();
@@ -979,8 +988,8 @@ public class Ftfc {
 
     private boolean vanishes(List<Integer> sextet) {
 
-        PermutationGenerator gen = new PermutationGenerator(6);
-        int[] perm;
+//        PermutationGenerator gen = new PermutationGenerator(6);
+//        int[] perm;
 
 //        while ((perm = gen.next()) != null) {
 //            int n1 = sextet.get(perm[0]);
