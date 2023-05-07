@@ -53,12 +53,18 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @see Rule
  */
 public class Lofs {
+
+    /**
+     * The options for scores that can be used for some scores.
+     */
     public enum Score {
         andersonDarling, skew, kurtosis, fifthMoment, absoluteValue,
         exp, expUnstandardized, expUnstandardizedInverted, other, logcosh, entropy
     }
 
-    // orientStrongerDirection list of past and present rules.
+    /**
+     * A list of rules for doing the non-Gaussian orientations.
+     */
     public enum Rule {
         IGCI, R1TimeLag, R1, R2, R3, Tanh, EB, Skew, SkewE, RSkew, RSkewE,
         Patel, Patel25, Patel50, Patel75, Patel90, FastICA, RC
