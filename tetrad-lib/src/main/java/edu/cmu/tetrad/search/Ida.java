@@ -145,10 +145,6 @@ public class Ida {
 
         trueDag = GraphUtils.replaceNodes(trueDag, this.dataSet.getVariables());
 
-        if (trueDag == null) {
-            throw new NullPointerException("True graph is null.");
-        }
-
         List<Node> regressors = new ArrayList<>();
         regressors.add(x);
         regressors.addAll(trueDag.getParents(x));
