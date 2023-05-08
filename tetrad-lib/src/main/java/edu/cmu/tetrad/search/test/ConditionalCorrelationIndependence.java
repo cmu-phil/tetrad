@@ -55,12 +55,14 @@ public final class ConditionalCorrelationIndependence {
 
     /**
      * Gives a choice of kernels to use for the independence judgmnts for conditional correlation independence.
+     *
      * @see ConditionalCorrelationIndependence
      */
     public enum Kernel {Epinechnikov, Gaussian}
 
     /**
      * Gives a choice of basis functions to use for judgments of independence for conditional correlation independence.
+     *
      * @see ConditionalCorrelationIndependence
      */
     public enum Basis {Polynomial, Cosine}
@@ -139,7 +141,9 @@ public final class ConditionalCorrelationIndependence {
     //=================PUBLIC METHODS====================//
 
     /**
-     * @return the p-value of the test. Can be compared to alpha.
+     * Returns the p-value of the test, x _||_ y | z. Can be compared to alpha.
+     *
+     * @return This p-value.
      */
     public double isIndependent(Node x, Node y, List<Node> z) {
         try {
@@ -285,7 +289,7 @@ public final class ConditionalCorrelationIndependence {
     }
 
     /**
-     * Number of functions to use in (truncated) basis
+     * Sets the number of functions to use in (truncated) basis
      *
      * @param numFunctions This number.
      */
@@ -350,8 +354,11 @@ public final class ConditionalCorrelationIndependence {
     }
 
     /**
-     * @return the minimal scores value calculated by the method for the most
-     * recent independence check.
+     * Returns the minimal scores value calculated by the method for the most
+     * recent independence check, less the cutoff so that negative scores correspond
+     * to independence.
+     *
+     * @return This minimal score.
      */
     public double getScore() {
         return abs(this.score) - this.cutoff;//  alpha - getPValue();

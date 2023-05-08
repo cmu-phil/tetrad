@@ -45,12 +45,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables. Partial correlations are
- * calculated using generalized inverses, so linearly dependent variables do not throw exceptions. Must supply a
- * continuous data set; don't know how to do this with covariance or correlation matrices.
+ * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables by
+ * regressing X on {Y} U Z and testing whether the coefficient for Y is zero.
  *
  * @author josephramsey
- * @author Frank Wimberly adapted IndTestCramerT for Fisher's Z
+ * @author Frank Wimberly
  */
 public final class IndTestRegression implements IndependenceTest {
 

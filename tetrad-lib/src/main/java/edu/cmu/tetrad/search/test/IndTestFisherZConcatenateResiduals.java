@@ -39,9 +39,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Calculates independence from pooled residuals.
+ * Calculates independence from pooled residuals using the Fisher Z method.
  *
  * @author josephramsey
+ * @see IndTestFisherZ
  */
 public final class IndTestFisherZConcatenateResiduals implements IndependenceTest {
 
@@ -69,8 +70,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     /**
      * Constructor.
+     *
      * @param dataSets The continuous datasets to analyze.
-     * @param alpha The alpha significance cutoff value.
+     * @param alpha    The alpha significance cutoff value.
      */
     public IndTestFisherZConcatenateResiduals(List<DataSet> dataSets, double alpha) {
         System.out.println("# data sets = " + dataSets.size());
@@ -107,13 +109,11 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     * Determines whether x _||_ y | z.
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
-     * @param z the list of conditioning variables.
-     * @return True iff x _||_ y | z.
-     * @throws RuntimeException if a matrix singularity is encountered.
+     * @return an independence result
+     * @see IndependenceResult
+     * @throws org.apache.commons.math3.linear.SingularMatrixException if a matrix singularity is encountered.
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
 
@@ -177,15 +177,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     }
 
-    private Node getVariable(List<Node> variables, String name) {
-        for (Node node : variables) {
-            if (name.equals(node.getName())) {
-                return node;
-            }
-        }
-
-        return null;
-    }
 
     /**
      * @return the probability associated with the most recently computed independence test.
@@ -232,6 +223,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     /**
      * Returns the concatenated data.
+     *
      * @return This data
      */
     public DataSet getData() {
@@ -240,6 +232,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     /**
      * Returns teh covaraince matrix of the concatenated data.
+     *
      * @return This covariance matrix.
      */
     @Override
@@ -254,8 +247,9 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * Return a number that is positive when dependence holds and more positive
+     * Returns a number that is positive when dependence holds and more positive
      * for greater dependence.
+     *
      * @return This number
      * @see Fges
      */
@@ -273,6 +267,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     /**
      * Return True if verbose output should be printed.
+     *
      * @return True if so.
      */
     public boolean isVerbose() {
@@ -281,6 +276,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
     /**
      * Sets whether verbose output is printed.
+     *
      * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
@@ -322,6 +318,17 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         }
 
         return _f;
+    }
+
+
+    private Node getVariable(List<Node> variables, String name) {
+        for (Node node : variables) {
+            if (name.equals(node.getName())) {
+                return node;
+            }
+        }
+
+        return null;
     }
 
 }

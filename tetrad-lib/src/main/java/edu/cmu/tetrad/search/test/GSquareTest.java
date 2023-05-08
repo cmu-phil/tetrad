@@ -33,9 +33,11 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Performs conditional independence tests of discrete data using the G Square method.
- * Degrees of freedom are calculated as in Fienberg, The Analysis of Cross-Classified
- * Categorical Data, 2nd Edition, 142.
+ * <p>Performs conditional independence tests of discrete data using the G Square method.
+ * Degrees of freedom are calculated as in Fienberg (2007), this reference:</p>
+ *
+ * <p>Fienberg, S. E. (2007). The analysis of cross-classified categorical data.
+ * Springer Science & Business Media.</p>
  *
  * @author Frank Wimberly original version
  * @author josephramsey revision 10/01

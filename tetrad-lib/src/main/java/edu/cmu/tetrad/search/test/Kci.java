@@ -6,8 +6,6 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
@@ -121,16 +119,19 @@ public class Kci implements IndependenceTest {
     //====================================PUBLIC METHODS==================================//
 
     /**
-     * Returns an Independence test for a subset of the variables.
+     * @throws javax.help.UnsupportedOperationException Method not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
      * Returns True if the given independence question is judged true, false if not. The independence question is of the
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are variables in the list returned by
      * getVariableNames().
+     *
+     * @return The independence result.
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         if (Thread.currentThread().isInterrupted()) {
@@ -236,6 +237,8 @@ public class Kci implements IndependenceTest {
     /**
      * Returns the list of variables over which this independence checker is capable of determinining independence
      * relations.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return this.variables;
@@ -243,6 +246,8 @@ public class Kci implements IndependenceTest {
 
     /**
      * Returns the variable by the given name.
+     *
+     * @return This variable.
      */
     public Node getVariable(String name) {
         return this.data.getVariable(name);
@@ -250,6 +255,8 @@ public class Kci implements IndependenceTest {
 
     /**
      * Returns true if y is determined the variable in z.
+     *
+     * @return True if so.
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException();
@@ -258,7 +265,7 @@ public class Kci implements IndependenceTest {
     /**
      * Returns the significance level of the independence test.
      *
-     * @throws UnsupportedOperationException if there is no significance level.
+     * @return This alpha.
      */
     public double getAlpha() {
         return this.alpha;
@@ -266,13 +273,17 @@ public class Kci implements IndependenceTest {
 
     /**
      * Sets the significance level.
+     *
+     * @param alpha This alpha.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
     /**
-     * @return a string representation of this test.
+     * Returns a string representation of this test.
+     *
+     * @return This string.
      */
     public String toString() {
         return "KCI, alpha = " + new DecimalFormat("0.0###").format(getAlpha());
@@ -280,87 +291,120 @@ public class Kci implements IndependenceTest {
 
 
     /**
-     * @return The data model for the independence test.
+     * Returns The data model for the independence test.
+     *
+     * @return This data.
      */
     public DataModel getData() {
         return this.data;
     }
 
-
+    /**
+     * @throws UnsupportedOperationException Method not implemented.
+     */
     public ICovarianceMatrix getCov() {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
+    /**
+     * Returns a list consisting of the dataset for this test.
+     *
+     * @return This dataset in a list.
+     */
     public List<DataSet> getDataSets() {
         LinkedList<DataSet> L = new LinkedList<>();
         L.add(this.data);
         return L;
     }
 
+    /**
+     * Returns the sample size.
+     *
+     * @return This size.
+     */
     public int getSampleSize() {
         return this.data.getNumRows();
     }
 
-    public List<Matrix> getCovMatrices() {
-        throw new UnsupportedOperationException();
-    }
-
+    /**
+     * Returns alpha - p.
+     *
+     * @return This number.
+     */
     public double getScore() {
         return getAlpha() - facts.get(latestFact).getPValue();
     }
 
-    public boolean isApproximate() {
-        return this.approximate;
-    }
-
+    /**
+     * Sets whether the approximate algorithm should be used.
+     *
+     * @param approximate True if so.
+     */
     public void setApproximate(boolean approximate) {
         this.approximate = approximate;
     }
 
-    private double getWidthMultiplier() {
-        return this.widthMultiplier;
-    }
-
+    /**
+     * Sets the width multiplier.
+     *
+     * @param widthMultiplier This multipler.
+     */
     public void setWidthMultiplier(double widthMultiplier) {
         if (widthMultiplier <= 0) throw new IllegalStateException("Width must be > 0");
         this.widthMultiplier = widthMultiplier;
     }
 
-    private int getNumBootstraps() {
-        return this.numBootstraps;
-    }
-
+    /**
+     * Sets the number of bootstraps to do.
+     *
+     * @param numBootstraps This number.
+     */
     public void setNumBootstraps(int numBootstraps) {
         if (numBootstraps < 1) throw new IllegalArgumentException("Num bootstraps should be >= 1: " + numBootstraps);
         this.numBootstraps = numBootstraps;
     }
 
-
-    public double getThreshold() {
-        return this.threshold;
-    }
-
+    /**
+     * Sets the threshold.
+     *
+     * @param threshold This number.
+     */
     public void setThreshold(double threshold) {
         if (threshold < 0.0) throw new IllegalArgumentException("Threshold must be >= 0.0: " + threshold);
         this.threshold = threshold;
     }
 
+    /**
+     * Sets the epsilon.
+     *
+     * @param epsilon This number.
+     */
     public void setEpsilon(double epsilon) {
         this.epsilon = epsilon;
     }
 
+    /**
+     * Returns true if verbose output is printed.
+     *
+     * @return True if so.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output is printed.
+     *
+     * @param verbose True if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    /**
-     * KCI independence for the unconditional case. Uses Theorem 4 from the paper.
+    /*
+     * Returns the KCI independence result for the unconditional case. Uses Theorem 4 from the paper.
      *
      * @return true just in case independence holds.
      */
@@ -372,11 +416,11 @@ public class Kci implements IndependenceTest {
 
         Matrix H = Matrix.identity(N).minus(Ones.times(Ones.transpose()).scalarMult(1.0 / N));
 
-        Matrix kx = center(kernelMatrix(_data, x, null, getWidthMultiplier(), hash, N, _h), H);
-        Matrix ky = center(kernelMatrix(_data, y, null, getWidthMultiplier(), hash, N, _h), H);
+        Matrix kx = center(kernelMatrix(_data, x, null, this.widthMultiplier, hash, N, _h), H);
+        Matrix ky = center(kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h), H);
 
         try {
-            if (isApproximate()) {
+            if (this.approximate) {
                 double sta = kx.times(ky).trace();
                 double mean_appr = kx.trace() * ky.trace() / N;
                 double var_appr = 2 * kx.times(kx).trace() * ky.times(ky).trace() / (N * N);
@@ -398,8 +442,8 @@ public class Kci implements IndependenceTest {
         }
     }
 
-    /**
-     * KCI independence for the conditional case. Uses Theorem 3 from the paper.
+    /*
+     * Returns the KCI independence result for the conditional case. Uses Theorem 3 from the paper.
      *
      * @return true just in case independence holds.
      */
@@ -409,9 +453,9 @@ public class Kci implements IndependenceTest {
         Matrix ky;
 
         try {
-            Matrix KXZ = center(kernelMatrix(_data, x, z, getWidthMultiplier(), hash, N, _h), H);
-            Matrix Ky = center(kernelMatrix(_data, y, null, getWidthMultiplier(), hash, N, _h), H);
-            Matrix KZ = center(kernelMatrix(_data, null, z, getWidthMultiplier(), hash, N, _h), H);
+            Matrix KXZ = center(kernelMatrix(_data, x, z, this.widthMultiplier, hash, N, _h), H);
+            Matrix Ky = center(kernelMatrix(_data, y, null, this.widthMultiplier, hash, N, _h), H);
+            Matrix KZ = center(kernelMatrix(_data, null, z, this.widthMultiplier, hash, N, _h), H);
 
             Matrix Rz = (KZ.plus(I.scalarMult(this.epsilon)).inverse().scalarMult(this.epsilon));
 
@@ -442,7 +486,7 @@ public class Kci implements IndependenceTest {
         // Calculate formula (9).
         int sum = 0;
 
-        for (int j = 0; j < getNumBootstraps(); j++) {
+        for (int j = 0; j < this.numBootstraps; j++) {
             double tui = 0.0;
 
             for (double lambdax : evx) {
@@ -457,7 +501,7 @@ public class Kci implements IndependenceTest {
         }
 
         // Calculate p.
-        double p = sum / (double) getNumBootstraps();
+        double p = sum / (double) this.numBootstraps;
         boolean indep = p > getAlpha();
         IndependenceResult result = new IndependenceResult(fact, indep, p);
         this.facts.put(fact, result);
@@ -493,7 +537,7 @@ public class Kci implements IndependenceTest {
 
         Matrix uuprod = prod > N ? UU.times(UU.transpose()) : UU.transpose().times(UU);
 
-        if (isApproximate()) {
+        if (this.approximate) {
             double sta = kx.times(ky).trace();
             double mean_appr = uuprod.trace();
             double var_appr = 2.0 * uuprod.times(uuprod).trace();
@@ -513,7 +557,7 @@ public class Kci implements IndependenceTest {
             // Calculate formulas (13) and (14).
             int sum = 0;
 
-            for (int j = 0; j < getNumBootstraps(); j++) {
+            for (int j = 0; j < this.numBootstraps; j++) {
                 double s = 0.0;
 
                 for (double lambdaStar : eigenu) {
@@ -525,7 +569,7 @@ public class Kci implements IndependenceTest {
                 if (s > T) sum++;
             }
 
-            double p = sum / (double) getNumBootstraps();
+            double p = sum / (double) this.numBootstraps;
             boolean indep = p > getAlpha();
             IndependenceResult result = new IndependenceResult(fact, indep, p);
             this.facts.put(fact, result);
@@ -680,7 +724,7 @@ public class Kci implements IndependenceTest {
                 double[] arr = ed.getRealEigenvalues();
 
                 List<Integer> indx = series(arr.length); // 1 2 3...
-                topIndices = getTopIndices(arr, indx, getThreshold());
+                topIndices = getTopIndices(arr, indx, Kci.this.threshold);
 
                 this.D = new Matrix(topIndices.size(), topIndices.size());
 
@@ -706,7 +750,7 @@ public class Kci implements IndependenceTest {
                 double[] evxAll = svd.getSingularValues();
 
                 List<Integer> indx = series(evxAll.length); // 1 2 3...
-                topIndices = getTopIndices(evxAll, indx, getThreshold());
+                topIndices = getTopIndices(evxAll, indx, Kci.this.threshold);
 
                 D = new Matrix(topIndices.size(), topIndices.size());
 

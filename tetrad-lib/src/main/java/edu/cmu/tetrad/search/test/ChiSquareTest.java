@@ -90,6 +90,10 @@ public class ChiSquareTest {
      * Calculates chi square for a conditional crosstabulation table for independence question 0 _||_ 1 | 2, 3, ...max
      * by summing up chi square and degrees of freedom for each conditional table in turn, where rows or columns that
      * consist entirely of zeros have been removed.
+     *
+     * @param testIndices These indices, in order.
+     * @return a Chi square test result.
+     * @see Result
      */
     public Result calcChiSquare(int[] testIndices) {
 
@@ -195,6 +199,8 @@ public class ChiSquareTest {
     }
 
     /**
+     * Returns a judgment of whether a set of parent variables determines a child variables.
+     *
      * @param testIndices An array of indices for variables in the dataset supplied in the constructor.
      * @param p           The probability that some marginal for some table dominates. A good value is 0.99.
      * @return True if the variable at index 0 is determined by the variables at the other indices.
@@ -252,7 +258,9 @@ public class ChiSquareTest {
     }
 
     /**
-     * @return the getModel significance level being used for tests.
+     * Returns the model significance level being used for tests.
+     *
+     * @return this level.
      */
     public double getAlpha() {
         return this.alpha;
@@ -260,6 +268,8 @@ public class ChiSquareTest {
 
     /**
      * Sets the significance level to be used for tests.
+     *
+     * @param alpha This significance level.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {

@@ -82,16 +82,18 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * @return an Independence test for a subset of the searchVariables.
+     * @throws javax.help.UnsupportedOperationException Method not implemented
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
-     * @return True if the given independence question is judged true, False if not.
-     * The independence question is of the form x _||_ y | z, z = z1,...,zn, where
-     * x, y, z1,...,zn are searchVariables in the list returned by getVariableNames().
+     * Returns and independence result that states whetehr x _||_y | z and what the
+     * p-value of the test is.
+     *
+     * @return an independence result (see)
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
@@ -151,31 +153,36 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for tis test.
+     * Returns the probability associated with the most recently executed independence test,
+     * or Double.NaN if p value is not meaningful for this test.
      */
     public double getPValue() {
         return this.pValue;
     }
 
     /**
-     * @return the list of searchVariables over which this independence checker is capable of determinining independence
+     * Returns the list of variables over which this independence checker is capable of determining independence
      * relations.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return new ArrayList<>(this.data.getVariables());
     }
 
     /**
-     * @return true if y is determined the variable in z.
+     * Returns true if y is determined the variable in z.
+     *
+     * @return True if so.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
     }
 
     /**
-     * @return the significance level of the independence test.
-     * @throws UnsupportedOperationException if there is no significance level.
+     * Returns the significance level of the independence test.
+     *
+     * @return This level.
      */
     public double getAlpha() {
         return this.alpha;
@@ -183,6 +190,8 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     /**
      * Sets the significance level.
+     *
+     * @param alpha This level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -191,7 +200,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     /**
      * Returns the data.
      *
-     * @return This.
+     * @return This data.
      */
     public DataSet getData() {
         return this.data;
@@ -209,7 +218,9 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * @return a string representation of this test.
+     * Returns a string representation of this test.
+     *
+     * @return This string.
      */
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.0000");

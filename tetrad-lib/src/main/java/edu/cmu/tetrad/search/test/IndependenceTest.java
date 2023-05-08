@@ -63,7 +63,9 @@ public interface IndependenceTest {
     DataModel getData();
 
     /**
-     * @return A score that is higher with more likely models.
+     * Return A score that is higher with more likely models.
+     *
+     * @return This score.
      */
     double getScore();
 
@@ -91,14 +93,18 @@ public interface IndependenceTest {
     //==============================DEFAULT METHODS=========================//
 
     /**
-     * @return an Independence test for a subset of the variables.
+     * Returns an Independence test for a sublist of the variables.
+     *
+     * @param vars The sublist of variables.
      */
     default IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException("Independence subset feature is not implemented.");
     }
 
     /**
-     * @return and IndependenceResult (see).
+     * Checks the independence fact in question and returns and independence result.
+     *
+     * @return The independence result.
      * @see IndependenceResult
      */
     default IndependenceResult checkIndependence(Node x, Node y, Node... z) {
@@ -106,6 +112,11 @@ public interface IndependenceTest {
         return checkIndependence(x, y, zList);
     }
 
+    /**
+     * Returns the sample size.
+     *
+     * @return This size.
+     */
     default int getSampleSize() {
         DataModel data = getData();
         if (data instanceof CovarianceMatrix) {
@@ -118,7 +129,9 @@ public interface IndependenceTest {
     }
 
     /**
-     * @return the variable by the given name.
+     * Returns The variable by the given name.
+     *
+     * @return This variables.
      */
     default Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
@@ -132,7 +145,9 @@ public interface IndependenceTest {
     }
 
     /**
-     * @return the list of names for the variables in getNodesInEvidence.
+     * Returns the list of names for the variables in getNodesInEvidence.
+     *
+     * @return this list.
      */
     default List<String> getVariableNames() {
         List<Node> variables = getVariables();
@@ -144,14 +159,18 @@ public interface IndependenceTest {
     }
 
     /**
-     * @return true if y is determined the variable in z.
+     * Returns true if y is determined the variable in z.
+     *
+     * @return True if so.
      */
     default boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException("Determines method is not implmeented.");
     }
 
     /**
-     * @return the significance level of the independence test.
+     * Returns the significance level of the independence test.
+     *
+     * @return This level.
      * @throws UnsupportedOperationException if there is no significance level.
      */
     default double getAlpha() {
@@ -160,15 +179,29 @@ public interface IndependenceTest {
 
     /**
      * Sets the significance level.
+     *
+     * @param alpha This level.
      */
     default void setAlpha(double alpha) {
         throw new UnsupportedOperationException("The setAlpha() method is not implemented for this test.");
     }
 
+    /**
+     * Returns the covariance matrix.
+     *
+     * @return This matrix.
+     * @throws UnsupportedOperationException If this method is not suppored for a particular test.
+     */
     default ICovarianceMatrix getCov() {
         throw new UnsupportedOperationException("The getCov() method is not implemented for this test.");
     }
 
+    /**
+     * Returns the datasets for this test
+     *
+     * @return these datasets.
+     * @throws javax.help.UnsupportedOperationException If this method is not supported for a particular test.
+     */
     default List<DataSet> getDataSets() {
         throw new UnsupportedOperationException("The getDataSets() method is not implemented for this test.");
     }

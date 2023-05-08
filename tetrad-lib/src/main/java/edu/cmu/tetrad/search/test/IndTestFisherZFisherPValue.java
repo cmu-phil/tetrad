@@ -39,8 +39,13 @@ import java.util.*;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Calculates independence from pooled residuals.
+ * <p>Calculates independence from multiple datasets from using the Fisher method
+ * of pooling independence results. See this paper for details:</p>
  *
+ * <p>Tillman, R. E., & Eberhardt, F. (2014). Learning causal structure from
+ * multiple datasets with similar variable sets. Behaviormetrika, 41(1), 41-64.</p>
+ *
+ * @author robertillman
  * @author josephramsey
  */
 public final class IndTestFisherZFisherPValue implements IndependenceTest {
@@ -57,8 +62,9 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
     /**
      * Constructor.
+     *
      * @param dataSets The continuous datasets to analyze.
-     * @param alpha The alpha significance cutoff value.
+     * @param alpha    The alpha significance cutoff value.
      */
     public IndTestFisherZFisherPValue(List<DataSet> dataSets, double alpha) {
 
@@ -156,7 +162,9 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * @return the probability associated with the most recently computed independence test.
+     * Returns the probability associated with the most recently computed independence test.
+     *
+     * @return This p-value.
      */
     public double getPValue() {
         return this.pValue;
@@ -165,6 +173,8 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
+     *
+     * @param This alpha.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -176,14 +186,18 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
     /**
      * Gets the getModel significance level.
+     *
+     * @return this alpha.
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
-     * @return the list of variables over which this independence checker is capable of determinine independence
+     * Returns the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return this.variables;
@@ -198,6 +212,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
     /**
      * Returns the concatenated data.
+     *
      * @return This data
      */
     public DataSet getData() {
@@ -205,7 +220,8 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * Returns teh covaraince matrix of the concatenated data.
+     * Returns the covariance matrix of the concatenated data.
+     *
      * @return This covariance matrix.
      */
     public ICovarianceMatrix getCov() {
@@ -219,8 +235,9 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * Return a number that is positive when dependence holds and more positive
+     * Returns a number that is positive when dependence holds and more positive
      * for greater dependence.
+     *
      * @return This number
      * @see Fges
      */
@@ -230,14 +247,17 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * @return a string representation of this test.
+     * Returns a string representation of this test.
+     *
+     * @return This string.
      */
     public String toString() {
         return "Fisher Z, Fisher P Value Percent = " + round(.5 * 100);
     }
 
     /**
-     * Return True if verbose output should be printed.
+     * Returns True if verbose output should be printed.
+     *
      * @return True if so.
      */
     public boolean isVerbose() {
@@ -246,6 +266,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
 
     /**
      * Sets whether verbose output is printed.
+     *
      * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {

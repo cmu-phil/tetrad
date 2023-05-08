@@ -136,21 +136,27 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * @return the chi Square value.
+     * Returns the chi Square value.
+     *
+     * @return This value.
      */
     public double getChiSquare() {
         return this.xSquare;
     }
 
     /**
-     * @return degrees of freedom associated with the most recent call of isIndependent
+     * Returns the degrees of freedom associated with the most recent call of isIndependent.
+     *
+     * @return These degrees.
      */
     public int getDf() {
         return this.df;
     }
 
     /**
-     * @return the p value associated with the most recent call of isIndependent.
+     * Returns the p value associated with the most recent call of isIndependent.
+     *
+     * @return This p-value.
      */
     public double getPValue() {
         return this.pValue;
@@ -159,9 +165,6 @@ public final class IndTestChiSquare implements IndependenceTest {
     /**
      * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
-     * @param z the list of conditioning varNames.
      * @return True iff x _||_ y | z.
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
@@ -211,11 +214,13 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
+     * Returns True if the variables z determing the variable z.
+     *
      * @param z  The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
-     * @param x1 The one variable whose determination by z we want to know.
+     * @param x The one variable whose determination by z we want to know.
      * @return true if it is estimated that z determines x or z determines y.
      */
-    public boolean determines(List<Node> z, Node x1) {
+    public boolean determines(List<Node> z, Node x) {
         if (z == null) {
             throw new NullPointerException();
         }
@@ -229,7 +234,7 @@ public final class IndTestChiSquare implements IndependenceTest {
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
         int[] testIndices = new int[1 + z.size()];
-        testIndices[0] = this.variables.indexOf(x1);
+        testIndices[0] = this.variables.indexOf(x);
 
         for (int i = 0; i < z.size(); i++) {
             testIndices[i + 1] = this.variables.indexOf(z.get(i));
@@ -250,7 +255,7 @@ public final class IndTestChiSquare implements IndependenceTest {
 
         if (countDetermined) {
             StringBuilder sb = new StringBuilder();
-            sb.append("Determination found: ").append(x1).append(
+            sb.append("Determination found: ").append(x).append(
                     " is determined by {");
 
             for (int i = 0; i < z.size(); i++) {
@@ -289,8 +294,10 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * @return the list of variables over which this independence checker is capable of determinine
+     * Returns the list of variables over which this independence checker is capable of determinine
      * independence relations-- that is, all the variables in the given graph or the given data set.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return Collections.unmodifiableList(this.variables);

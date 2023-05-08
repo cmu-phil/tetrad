@@ -60,6 +60,12 @@ public final class IndTestTrekSep implements IndependenceTest {
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
+     *
+     * @param covMatrix  The covariance over the measures.
+     * @param alpha      The significance level.
+     * @param clustering The clustering of the measured variables. In each cluster, all measured variable in
+     *                   the cluster are explained by a single latent.
+     * @param latents    The list of latent variables for the clusters, in order.
      */
     public IndTestTrekSep(ICovarianceMatrix covMatrix, double alpha, List<List<Node>> clustering, List<Node> latents) {
         this.clustering = clustering;
@@ -74,7 +80,9 @@ public final class IndTestTrekSep implements IndependenceTest {
     //==========================PUBLIC METHODS=============================//
 
     /**
-     * Creates a new independence test instance for a subset of the variables.
+     * Creates a new independence test instance for a sublist of the variables.
+     *
+     * @param vars The sublist.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -106,8 +114,8 @@ public final class IndTestTrekSep implements IndependenceTest {
      * @param x the one variable being compared.
      * @param y the second variable being compared.
      * @param z the list of conditioning variables.
-     * @return true iff x _||_ y | z.
-     * @throws RuntimeException if a matrix singularity is encountered.
+     * @return True iff x _||_ y | z.
+     * @throws org.apache.commons.math3.linear.SingularMatrixException if a matrix singularity is encountered.
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         int n = sampleSize();
@@ -158,7 +166,9 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * @return the probability associated with the most recently computed independence test.
+     * Returns the probability associated with the most recently computed independence test.
+     *
+     * @return This p-value.
      */
     public double getPValue() {
         return this.pValue;
@@ -167,6 +177,8 @@ public final class IndTestTrekSep implements IndependenceTest {
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
+     *
+     * @param alpha This significance level.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -177,30 +189,39 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * Gets the getModel significance level.
+     * Gets the model significance level.
+     *
+     * @return This alpha.
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
-     * @return the list of variables over which this independence checker is capable of determinine independence
+     * Returns the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return this.latents;
     }
 
     /**
-     * @return the variable with the given name.
+     * Returns the variable with the given name.
+     *
+     * @return This variable.
      */
     public Node getVariable(String name) {
         return this.nameMap.get(name);
     }
 
     /**
-     * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
+     * If <code>isDeterminismAllowed()</code>, defers to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
+     *
+     * @return True if so
+     * @throws UnsupportedOperationException If the above condition is not met.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         int[] parents = new int[z.size()];
@@ -237,29 +258,49 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * @return the data set being analyzed.
+     * Returns the data set being analyzed.
+     *
+     * @return This data.
      */
     public DataSet getData() {
         return this.dataSet;
     }
 
     /**
-     * @return a string representation of this test.
+     * Returns a string representation of this test.
+     *
+     * @return This string.
      */
     public String toString() {
         return "t-Separation test, alpha = " + IndTestTrekSep.nf.format(getAlpha());
     }
 
+    /**
+     * Sets the varialbe to this list (of the same length). Useful is multiple test are used that
+     * need the same object-identical lists of variables.
+     *
+     * @param variables This list.
+     */
     public void setVariables(List<Node> variables) {
         if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
         this.variables = new ArrayList<>(variables);
         this.covMatrix.setVariables(variables);
     }
 
+    /**
+     * Returns the covariance matrix.
+     *
+     * @return This matrix.
+     */
     public ICovarianceMatrix getCov() {
         return this.covMatrix;
     }
 
+    /**
+     * Returns a singleton list consisting just of the dataset for this test.
+     *
+     * @return This lsit.
+     */
     @Override
     public List<DataSet> getDataSets() {
 
@@ -270,21 +311,41 @@ public final class IndTestTrekSep implements IndependenceTest {
         return dataSets;
     }
 
+    /**
+     * Returns the sample size.
+     *
+     * @return This size.
+     */
     @Override
     public int getSampleSize() {
         return this.covMatrix.getSampleSize();
     }
 
+    /**
+     * Returns alpha - p.
+     *
+     * @return This nubmer.
+     */
     @Override
     public double getScore() {
-        return getPValue();
+        return alpha - getPValue();
     }
 
+    /**
+     * Returns true if verbose output should be printed.
+     *
+     * @return True if so.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

@@ -35,8 +35,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Checks independence facts for variables associated with the nodes in a given graph by
- * checking d-separation facts on the underlying nodes.
+ * <p>Checks independence facts for variables associated with the nodes in a given graph by
+ * checking d-separation facts on the underlying nodes. We use the IndependenceTest
+ * interface here so that this d-separation test can be used in place of a statistical
+ * conditional independence test in algorithms to provide oracle information.</p>
  *
  * @author josephramsey
  */
@@ -136,7 +138,9 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * Returns a test over a buset of the variables.
+     * Returns a test over a subset of the variables.
+     *
+     * @return This test.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -163,7 +167,9 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * @return the list of observed varialbes in the given graph.
+     * Returns the list of observed varialbes in the given graph.
+     *
+     * @return This lsit.
      */
     private List<Node> calcVars(List<Node> nodes, boolean keepLatents) {
         if (keepLatents) {
@@ -176,12 +182,10 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * Checks the indicated d-separation fact.
+     * Checks the indicated d-separation fact, dsep(x , y | z).
      *
-     * @param x one node.
-     * @param y a second node.
-     * @param z a List of nodes (conditioning variables)
-     * @return True iff x _||_ y | z
+     * @return An independence result for dsep(x, y | z).
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         if (z == null) {
@@ -237,8 +241,10 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * Auxiliary method to calculate dseparation facts directly from nodes instead
+     * Auxiliary method to calculate dsep(x, y | z) directly from nodes instead
      * of from variables.
+     *
+     * @return True if so.
      */
     public boolean isDSeparated(Node x, Node y, List<Node> z) {
         if (z == null) {
@@ -255,25 +261,29 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * Needed for IndependenceTest interface. P value is not meaningful here.
+     * This obviousy does not return an actual p-value, though it does return
+     * a number that is positive for depdendence and negative for independence,
+     * satisfying the contract.
+     *
+     * @return This value.
      */
     public double getPValue() {
         return this.pvalue;
     }
 
+
     /**
-     * @return the list of TetradNodes over which this independence checker is capable
+     * Return the list of TetradNodes over which this independence checker is capable
      * of determinine independence relations-- that is, all the variables in the given
      * graph or the given data set.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return Collections.unmodifiableList(_observedVars);
     }
 
     /**
-     * We're assuming faithfuless (i.e., calculating d-separation facts), so is markes
-     * no sense to give judgments of determination of a varialbe by a set of variables.
-     *
      * @throws UnsupportedOperationException Since this method is not feasible.
      */
     public boolean determines(List<Node> z, Node x1) {
@@ -281,9 +291,11 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * Returns an alpha level, 0.5.
+     * Returns an alpha level, 0.5. This is an arbitrary nubmer that will help decide whether
+     * a pseudo p-value returned by the test represents a dependence or an independence.
      *
      * @return 0.5.
+     * @see #getPValue()
      */
     public double getAlpha() {
         return 0.5;
@@ -291,7 +303,8 @@ public class IndTestDSep implements IndependenceTest {
 
     /**
      * @throws UnsupportedOperationException it makes no sense to set an alpha level
-     *                                       for a d-separation test.
+     *                                       for a d-separation test away from the default.
+     * @see #getAlpha()
      */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException("Method mot implemented.");
@@ -314,7 +327,9 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * @return the underlying graph.
+     * Returns the underlying graph that is being used to calculate d-separation relationships.
+     *
+     * @return This graph.
      */
     public Graph getGraph() {
         return this.graph;
@@ -337,7 +352,9 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * @return 1 for d-connections, -1 for d-separations
+     * Returns 1 for d-connections, -1 for d-separations
+     *
+     * @return This number.
      */
     @Override
     public double getScore() {
@@ -345,7 +362,9 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * @return True just in case verbose output should be printed.
+     * Returns True just in case verbose output should be printed.
+     *
+     * @return True if so.
      */
     public boolean isVerbose() {
         return verbose;
@@ -353,6 +372,7 @@ public class IndTestDSep implements IndependenceTest {
 
     /**
      * Sets whether verbose output should be printed.
+     *
      * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {

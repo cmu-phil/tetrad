@@ -5,7 +5,7 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.search.test.IndTestMnlrLr;
+import edu.cmu.tetrad.search.work_in_progress.IndTestMnlrLr;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 

@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Checks conditional independence of variable in a continuous data set using a
  * conditional correlation test for the nonlinear nonGaussian with additive error
- * case.
+ * case. This is for additive (but otherwise general) models.
  *
  * @author josephramsey
  */
@@ -102,10 +102,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     //==========================PUBLIC METHODS=============================//
 
     /**
-     * Creates a new IndTestCramerT instance for a subset of the variables.
+     * @throws UnsupportedOperationException This method is not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
@@ -156,30 +156,36 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * @return The getModel significance level.
+     * Returns the model significance level.
+     *
+     * @return This level.
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
-     * @return the list of variables over which this independence checker is capable
+     * Returns the list of variables over which this independence checker is capable
      * of determinine independence relations-- that is, all the variables in the given
      * graph or the given data set.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return this.variables;
     }
 
     /**
-     * @throws UnsupportedOperationException Since such code is not avialable.
+     * @throws UnsupportedOperationException Since such code is not available.
      */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("The 'determine' method is not implemented");
+        throw new UnsupportedOperationException("The 'determines' method is not implemented");
     }
 
     /**
-     * @return the data set being analyzed.
+     * Returns the data set being analyzed.
+     *
+     * @return This dataset.
      */
     public DataSet getData() {
         return this.dataSet;
@@ -197,7 +203,9 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * @return a string representation of this test.
+     * Returns a string representation of this test.
+     *
+     * @return This string.
      */
     public String toString() {
         return "Conditional Correlation, q = " + IndTestConditionalCorrelation.nf.format(getAlpha());
@@ -271,10 +279,10 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     /**
      * Sets the kernal regression sample size.
      *
-     * @param i This size.
+     * @param size This size.
      */
-    public void setKernelRegressionSampleSize(int i) {
-        this.cci.setKernelRegressionSampleSize(i);
+    public void setKernelRegressionSampleSize(int size) {
+        this.cci.setKernelRegressionSampleSize(size);
     }
 }
 

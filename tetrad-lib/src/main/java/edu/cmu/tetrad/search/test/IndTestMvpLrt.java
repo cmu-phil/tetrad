@@ -24,8 +24,8 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.score.MvpLikelihood;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -35,8 +35,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
- * This test is valid for both ordinal and non-ordinal discrete searchVariables.
+ * <p>Performs a test of conditional independence X _||_ Y | Z1...Zn where all
+ * variables are either continuous or discrete. This test is valid for both ordinal
+ * and non-ordinal discrete searchVariables.</p>
+ *
+ * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2018). Scoring Bayesian networks of
+ * mixed variables. International journal of data science and analytics, 6, 3-18.</p>
  *
  * @author Bryan Andrews
  */
@@ -53,6 +57,14 @@ public class IndTestMvpLrt implements IndependenceTest {
     // P Values
     private double pValue = Double.NaN;
 
+    /**
+     * Constructor.
+     *
+     * @param data       The mixed continuous/discrete dataset.
+     * @param alpha      The significance level.
+     * @param fDegree    The f degree.
+     * @param discretize True if continuous children should be discretized.
+     */
     public IndTestMvpLrt(DataSet data, double alpha, int fDegree, boolean discretize) {
         this.data = data;
         this.likelihood = new MvpLikelihood(data, -1, fDegree, discretize);
@@ -69,16 +81,20 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
-     * @return an Independence test for a subset of the searchVariables.
+     * Returns an independence test for a sublist of the searchVariables.
+     *
+     * @return this test.
+     * @see IndependenceTest
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
     }
 
     /**
-     * @return true if the given independence question is judged true, false if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
+     * Returns an independence result for x _||_ y | z.
+     *
+     * @return This result.
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
 
@@ -141,31 +157,36 @@ public class IndTestMvpLrt implements IndependenceTest {
     }
 
     /**
-     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for tis test.
+     * Returns The probability associated with the most recently executed independence test, of Double.NaN if p value is
+     * not meaningful for this test.
+     *
+     * @return This p-value.
      */
     public double getPValue() {
         return this.pValue;
     }
 
     /**
-     * @return the list of searchVariables over which this independence checker is capable of determinining independence
+     * Returns the list of searchVariables over which this independence checker is capable of determinining independence
      * relations.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return this.data.getVariables();
     }
 
-
     /**
-     * @return true if y is determined the variable in z.
+     * @throws javax.help.UnsupportedOperationException Method not implemented.
      */
     public boolean determines(List<Node> z, Node y) {
-        return false; //stub
+        throw new UnsupportedOperationException("Method not implemented.");
     }
 
     /**
-     * @return the significance level of the independence test.
+     * Returns the significance level of the independence test.
+     *
+     * @return This level.
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
@@ -174,27 +195,47 @@ public class IndTestMvpLrt implements IndependenceTest {
 
     /**
      * Sets the significance level.
+     *
+     * @param alpha This level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
+    /**
+     * Returns the data.
+     *
+     * @return This data.
+     */
     public DataSet getData() {
         return this.data;
     }
 
-
+    /**
+     * Returns alph - p.
+     *
+     * @return This score.
+     */
     @Override
-
     public double getScore() {
         return getAlpha() - getPValue();
     }
 
+    /**
+     * Returns true if verbose output is printed.
+     *
+     * @return True if so.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Returns whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

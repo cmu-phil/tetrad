@@ -27,10 +27,10 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.Kernel;
 import edu.cmu.tetrad.search.utils.KernelGaussian;
 import edu.cmu.tetrad.search.utils.KernelUtils;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -43,12 +43,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Checks the conditional independence X _||_ Y | S, where S is a set of continuous variable,
+ * <p>Checks the conditional independence X _||_ Y | S, where S is a set of continuous variable,
  * and X and Y are discrete variable not in S, using the Hilbert-Schmidth Independence
- * Criterion (HSIC), a kernel based nonparametric test for conditional independence.
+ * Criterion (HSIC), a kernel based nonparametric test for conditional independence.</p>
  *
- * The Kpc algorithm by Tillman had run PC using this test; to run Kpc, simply select this test
- * for PC.
+ * <p>The Kpc algorithm by Tillman had run PC using this test; to run Kpc, simply select this test
+ * for PC.</p>
  *
  * @author Robert Tillman
  * @see edu.cmu.tetrad.search.work_in_progress.Kpc
@@ -123,6 +123,13 @@ public final class IndTestHsic implements IndependenceTest {
         this.dataSet = dataSet;
     }
 
+    /**
+     * Constructs a new HSIC Independence test. The given significance level is used.
+     *
+     * @param data      A matrix of continuous data.
+     * @param variables The list of variables for the data.
+     * @param alpha     The alpha level of the test.
+     */
     public IndTestHsic(Matrix data, List<Node> variables, double alpha) {
         DataSet dataSet = new BoxDataSet(new DoubleDataBox(data.toArray()), variables);
 
@@ -137,6 +144,8 @@ public final class IndTestHsic implements IndependenceTest {
 
     /**
      * Creates a new IndTestHsic instance for a subset of the variables.
+     *
+     * @return This sublist.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -166,7 +175,7 @@ public final class IndTestHsic implements IndependenceTest {
      * @param x the one variable being compared.
      * @param y the second variable being compared.
      * @param z the list of conditioning variables.
-     * @return true iff x _||_ y | z.
+     * @return True iff x _||_ y | z.
      */
     public IndependenceResult checkIndependence(Node y, Node x, List<Node> z) {
 
@@ -508,12 +517,10 @@ public final class IndTestHsic implements IndependenceTest {
         return empHSIC;
     }
 
-    public double getThreshold() {
-        return this.thresh;
-    }
-
     /**
-     * @return the probability associated with the most recently computed independence test.
+     * Returns the probability associated with the most recently computed independence test.
+     *
+     * @return This p-value.
      */
     public double getPValue() {
         return this.pValue;
@@ -521,6 +528,8 @@ public final class IndTestHsic implements IndependenceTest {
 
     /**
      * Sets the significance level at which independence judgments should be made.
+     *
+     * @param alpha This alpha.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -534,6 +543,8 @@ public final class IndTestHsic implements IndependenceTest {
     /**
      * Sets the precision for the Incomplete Choleksy factorization method for approximating Gram matrices. A value &lt;= 0
      * indicates that the Incomplete Cholesky method should not be used and instead use the exact matrices.
+     *
+     * @param precision This precision.
      */
     public void setIncompleteCholesky(double precision) {
         this.useIncompleteCholesky = precision;
@@ -541,13 +552,17 @@ public final class IndTestHsic implements IndependenceTest {
 
     /**
      * Set the number of bootstrap samples to use
+     *
+     * @param numBootstraps This number.
      */
-    public void setPerms(int perms) {
-        this.perms = perms;
+    public void setPerms(int numBootstraps) {
+        this.perms = numBootstraps;
     }
 
     /**
-     * Sets the regularizer
+     * Sets the regularizer.
+     *
+     * @param regularizer This value.
      */
     public void setRegularizer(double regularizer) {
         this.regularizer = regularizer;
@@ -555,35 +570,27 @@ public final class IndTestHsic implements IndependenceTest {
 
     /**
      * Gets the getModel significance level.
+     *
+     * @return This alpha.
      */
     public double getAlpha() {
         return this.alpha;
     }
 
     /**
-     * Gets the getModel precision for the Incomplete Cholesky
-     */
-    public double getPrecision() {
-        return this.useIncompleteCholesky;
-    }
-
-    /**
-     * Gets the getModel number of bootstrap samples used
-     */
-    public int getPerms() {
-        return this.perms;
-    }
-
-    /**
-     * @return the list of variables over which this independence checker is capable of determinine independence
+     * Returns the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return this.variables;
     }
 
     /**
-     * @return the variable with the given name.
+     * Returns the variable with the given name.
+     *
+     * @return This string.
      */
     public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
@@ -597,25 +604,37 @@ public final class IndTestHsic implements IndependenceTest {
 
 
     /**
-     * @return the data set being analyzed.
+     * Returns the data set being analyzed.
+     *
+     * @return This data.
      */
     public DataSet getData() {
         return this.dataSet;
     }
 
 
+    /**
+     * Returns the score for this this test, alpha - p.
+     *
+     * @return This score.
+     */
     @Override
     public double getScore() {
-        return getPValue();
+        return alpha - getPValue();
     }
 
     /**
-     * @return a string representation of this test.
+     * Returns a string representation of this test.
+     *
+     * @return This string.
      */
     public String toString() {
         return "HSIC, alpha = " + IndTestHsic.nf.format(getAlpha());
     }
 
+    /**
+     * @throws UnsupportedOperationException Method not supported.
+     */
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Method not implemented");
     }

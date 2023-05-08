@@ -35,7 +35,6 @@ import java.util.List;
  * Checks conditional independence against a list of conditional independence facts, manually entered.
  *
  * @author josephramsey
- * @see ChiSquareTest
  */
 public final class IndTestIndependenceFacts implements IndependenceTest {
 

@@ -111,7 +111,9 @@ public final class IndTestGSquare implements IndependenceTest {
     }
 
     /**
-     * Creates a new IndTestGSquare for a subset of the variables.
+     * Creates a new IndTestGSquare for a sublist of the variables.
+     *
+     * @param vars This sublist.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
         if (vars.isEmpty()) {
@@ -134,7 +136,9 @@ public final class IndTestGSquare implements IndependenceTest {
     }
 
     /**
-     * @return the p value associated with the most recent call of isIndependent.
+     * Returns the p value associated with the most recent call of isIndependent.
+     *
+     * @return This p-value.
      */
     public double getPValue() {
         return this.pValue;
@@ -146,7 +150,7 @@ public final class IndTestGSquare implements IndependenceTest {
      * @param x the one variable being compared.
      * @param y the second variable being compared.
      * @param z the list of conditioning varNames.
-     * @return true iff x _||_ y | z.
+     * @return True iff x _||_ y | z.
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         if (x == null) {
@@ -222,24 +226,32 @@ public final class IndTestGSquare implements IndependenceTest {
     }
 
     /**
-     * @return the list of variables over which this independence checker is capable of determinine independence
+     * Return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return Collections.unmodifiableList(this.variables);
     }
 
-
+    /**
+     * Returns a String representation of this test.
+     *
+     * @return This string.
+     */
     public String toString() {
         return "G Square, alpha = " + IndTestGSquare.nf.format(getAlpha());
     }
 
     /**
-     * @param z  The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
-     * @param x1 The one variable whose determination by z we want to know.
+     * Returns a judgment whether the variables in z determine x.
+     *
+     * @param z The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
+     * @param x The one variable whose determination by z we want to know.
      * @return true if it is estimated that z determines x or z determines y.
      */
-    public boolean determines(List<Node> z, Node x1) {
+    public boolean determines(List<Node> z, Node x) {
         if (z == null) {
             throw new NullPointerException();
         }
@@ -253,7 +265,7 @@ public final class IndTestGSquare implements IndependenceTest {
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
         int[] testIndices = new int[1 + z.size()];
-        testIndices[0] = this.variables.indexOf(x1);
+        testIndices[0] = this.variables.indexOf(x);
 
         for (int i = 0; i < z.size(); i++) {
             testIndices[i + 1] = this.variables.indexOf(z.get(i));
@@ -270,11 +282,11 @@ public final class IndTestGSquare implements IndependenceTest {
         //        System.out.println("Testing " + x + " _||_ " + y + " | " + z);
 
         boolean determined =
-                this.gSquareTest.isDetermined(testIndices, getDeterminationP());
+                this.gSquareTest.isDetermined(testIndices, this.determinationP);
 
         if (determined) {
             StringBuilder sb = new StringBuilder();
-            sb.append("Determination found: ").append(x1).append(
+            sb.append("Determination found: ").append(x).append(
                     " is determined by {");
 
             for (int i = 0; i < z.size(); i++) {
@@ -293,29 +305,50 @@ public final class IndTestGSquare implements IndependenceTest {
         return determined;
     }
 
-    public double getDeterminationP() {
-        return this.determinationP;
-    }
-
+    /**
+     * Sets the threshold for making judgments of detemrination.
+     *
+     * @param determinationP This threshold.
+     */
     public void setDeterminationP(double determinationP) {
         this.determinationP = determinationP;
     }
 
+    /**
+     * Returns the data.
+     *
+     * @return This data.
+     */
     public DataSet getData() {
         return this.dataSet;
     }
 
 
+    /**
+     * Returns the score, alpha - p.
+     *
+     * @return This score.
+     */
     @Override
     public double getScore() {
-        return getPValue();
+        return alpha - getPValue();
     }
 
+    /**
+     * Returns True if verbose output is printed.
+     *
+     * @return True if so.
+     */
     @Override
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output is printed.
+     *
+     * @param verbose True if so.
+     */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

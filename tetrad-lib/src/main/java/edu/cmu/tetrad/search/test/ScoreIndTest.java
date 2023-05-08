@@ -41,7 +41,6 @@ import java.util.List;
  * the score returned will be negative for independence and positive for dependence;
  * this simply reports these differences.</p>
  *
- * @author doncrimbchin
  * @author josephramsey
  */
 public class ScoreIndTest implements IndependenceTest {
@@ -71,13 +70,11 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     * Determines whether x _||_ y | z
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
-     * @param z the list of conditioning variables.
-     * @return true iff x _||_ y | z.
+     * @return The independence result.
      * @throws RuntimeException if a matrix singularity is encountered.
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
         List<Node> z1 = new ArrayList<>(z);
@@ -103,34 +100,30 @@ public class ScoreIndTest implements IndependenceTest {
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
     }
 
-    private int[] varIndices(List<Node> z) {
-        int[] indices = new int[z.size()];
-
-        for (int i = 0; i < z.size(); i++) {
-            indices[i] = this.variables.indexOf(z.get(i));
-        }
-
-        return indices;
-    }
-
     /**
-     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for tis test.
+     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
+     * not meaningful for this test.
+     *
+     * @return This p-value.
      */
     public double getPValue() {
         return this.bump;
     }
 
     /**
-     * @return the list of variables over which this independence checker is capable of determinining independence
+     * Returns the list of variables over which this independence checker is capable of determinining independence
      * relations.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return this.variables;
     }
 
     /**
-     * @return the variable by the given name.
+     * Returns the variable by the given name.
+     *
+     * @return This variable.
      */
     public Node getVariable(String name) {
         for (Node node : this.variables) {
@@ -143,14 +136,18 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * @return true if y is determined the variable in z.
+     * Returns true if y is determined the variable in z.
+     *
+     * @return True is so.
      */
     public boolean determines(List<Node> z, Node y) {
         return this.score.determines(z, y);
     }
 
     /**
-     * @return the significance level of the independence test.
+     * Returns the significance level of the independence test.
+     *
+     * @return This level.
      * @throws UnsupportedOperationException if there is no significance level.
      */
     public double getAlpha() {
@@ -159,6 +156,7 @@ public class ScoreIndTest implements IndependenceTest {
 
     /**
      * Sets the significance level.
+     *
      * @param alpha This level.
      */
     public void setAlpha(double alpha) {
@@ -173,6 +171,7 @@ public class ScoreIndTest implements IndependenceTest {
 
     /**
      * Returns the covariance matrix.
+     *
      * @return This matrix.
      */
     public ICovarianceMatrix getCov() {
@@ -183,11 +182,12 @@ public class ScoreIndTest implements IndependenceTest {
      * @throws UnsupportedOperationException Not implemented.
      */
     public List<DataSet> getDataSets() {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Method not implemented");
     }
 
     /**
      * Returns the sample size.
+     *
      * @return This size.
      */
     public int getSampleSize() {
@@ -195,15 +195,18 @@ public class ScoreIndTest implements IndependenceTest {
     }
 
     /**
-     * @return A score that is higher with more likely models.
+     * Returns A score that is higher with more likely models.
+     *
+     * @return This score.
      */
     public double getScore() {
         return this.bump;
     }
 
     /**
-     * Returns the score that this test wraps.
-     * @return This score
+     * Returns the score object that this test wraps.
+     *
+     * @return This score object.
      * @see Score
      */
     public Score getWrappedScore() {
@@ -212,6 +215,7 @@ public class ScoreIndTest implements IndependenceTest {
 
     /**
      * Returns true if verbose ouput should be printed.
+     *
      * @return True if so.
      */
     @Override
@@ -221,6 +225,7 @@ public class ScoreIndTest implements IndependenceTest {
 
     /**
      * Sets whether verbose output should be printed.
+     *
      * @param verbose True if so.
      */
     @Override
@@ -230,11 +235,23 @@ public class ScoreIndTest implements IndependenceTest {
 
     /**
      * Returns a String representation of this test.
+     *
      * @return This string.
      */
     @Override
     public String toString() {
         return this.score.toString() + " Interpreted as a Test";
+    }
+
+
+    private int[] varIndices(List<Node> z) {
+        int[] indices = new int[z.size()];
+
+        for (int i = 0; i < z.size(); i++) {
+            indices[i] = this.variables.indexOf(z.get(i));
+        }
+
+        return indices;
     }
 }
 

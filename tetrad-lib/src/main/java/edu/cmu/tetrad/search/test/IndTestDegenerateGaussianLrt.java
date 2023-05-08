@@ -43,9 +43,11 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Implements a degenerate Gaussian score as a LRT.
+ * <p>Implements a degenerate Gaussian score as a LRT. The reference is here:</p>
  *
- * http://proceedings.mlr.press/v104/andrews19a/andrews19a.pdf
+ * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2019, July). Learning high-dimensional
+ * directed acyclic graphs with mixed data-types. In The 2019 ACM SIGKDD Workshop
+ * on Causal Discovery (pp. 4-21). PMLR.</p>
  *
  * @author Bryan Andrews
  */
@@ -69,7 +71,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     private final Map<Integer, List<Integer>> embedding;
 
     /**
-     * A return value for a likelihood--returns a likelihood value and the degrees of freedom
+     * Stores a return value for a likelihood--i.e., a likelihood value and the degrees of freedom
      * for it.
      */
     public static class Ret {
@@ -195,17 +197,17 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
 
     /**
-     * @param vars A sublist of the dataset variables.
-     * @return an Independence test for a subset of the searchVariables.
+     * @throws UnsupportedOperationException This method is not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
-     * @return True if the given independence question is judged true, False if not. The independence question is of the
-     * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
-     * getVariableNames().
+     * Returns an independence result specifying whether x _||_ y | Z and what its p-value are.
+     *
+     * @return This result
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
 
@@ -272,31 +274,38 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * @return the probability associated with the most recently executed independence test, of Double.NaN if p value is
+     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
      * not meaningful for tis test.
+     *
+     * @return This p-value.
      */
     public double getPValue() {
         return this.pValue;
     }
 
     /**
-     * @return the list of searchVariables over which this independence checker is capable of determinining independence
+     * Returns the list of searchVariables over which this independence checker is capable of determinining independence
      * relations.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
     }
 
     /**
-     * @return true if y is determined the variable in z.
+     * Returns true if y is determined the variable in z.
+     *
+     * @return True if so.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
     }
 
     /**
-     * @return the significance level of the independence test.
-     * @throws UnsupportedOperationException if there is no significance level.
+     * Returns  the significance level of the independence test.
+     *
+     * @return this level.
      */
     public double getAlpha() {
         return this.alpha;
@@ -304,13 +313,17 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
     /**
      * Sets the significance level.
+     *
+     * @param alpha This level.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
     /**
-     * @return The dataset being analyzed.
+     * Returns the dataset being analyzed.
+     *
+     * @return This data.
      */
     public DataSet getData() {
         return this.dataSet;
@@ -320,6 +333,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     /**
      * Returns a value that more positive for stronger dependence and positive
      * only if dependence holds.
+     *
      * @return This value.
      * @see Fges
      */
@@ -329,7 +343,9 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * @return a string representation of this test.
+     * Returns a string representation of this test.
+     *
+     * @return This string.
      */
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.0000");
@@ -338,6 +354,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
     /**
      * Returns true iff verbose output should be printed.
+     *
      * @return True if so.
      */
     @Override
@@ -347,13 +364,13 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
     /**
      * Sets whether verbose output should be printed.
+     *
      * @param verbose True if so.
      */
     @Override
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-
 
     /**
      * Calculates the sample log likelihood

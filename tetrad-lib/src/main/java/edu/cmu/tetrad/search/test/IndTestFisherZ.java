@@ -143,7 +143,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
      * matrix and the given significance level.
      *
-     * @param covMatrix The covaraince matrix.
+     * @param covMatrix The covariance matrix.
      * @param alpha     The alpha level of the test.
      */
     public IndTestFisherZ(ICovarianceMatrix covMatrix, double alpha) {
@@ -195,11 +195,8 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     /**
-     * Determines whether variable x is independent of variable y given a list of conditioning variables z.
+     * Determines whether variable x _||_ y | z given a list of conditioning variables z.
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
-     * @param z the list of conditioning variables.
      * @return Independence result for x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      * @see IndependenceResult
@@ -233,7 +230,9 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     /**
-     * @return the probability associated with the most recently computed independence test.
+     * Returns the probability associated with the most recently computed independence test.
+     *
+     * @return This probability.
      */
     public double getPValue() {
         return this.p;
@@ -242,9 +241,6 @@ public final class IndTestFisherZ implements IndependenceTest {
     /**
      * Returns the p-value for x _||_ y | z.
      *
-     * @param x Node 1
-     * @param y Node 2
-     * @param z The conditioning varialbes.
      * @return The p-value.
      * @throws SingularMatrixException If a singularity occurs when invering a matrix.
      */
@@ -284,7 +280,9 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     /**
-     * Gets the getModel significance level.
+     * Gets the model significance level.
+     *
+     * @return This alpha.
      */
     public double getAlpha() {
         return this.alpha;
@@ -293,6 +291,8 @@ public final class IndTestFisherZ implements IndependenceTest {
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
+     *
+     * @param alpha This alpha.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -303,15 +303,17 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     /**
-     * @return the list of variables over which this independence checker is capable of determinine independence
+     * Returns the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return this.variables;
     }
 
     /**
-     * Sets teh variables to a new list of the same size. Useful if multiple independence tests
+     * Sets the variables to a new list of the same size. Useful if multiple independence tests
      * are needed with object-identical sets of variables.
      *
      * @param variables The new list of variables.
@@ -323,21 +325,27 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     /**
-     * @return the variable with the given name.
+     * Returns the variable with the given name.
+     *
+     * @return This variable.
      */
     public Node getVariable(String name) {
         return this.nameMap.get(name);
     }
 
     /**
-     * @return the data set being analyzed.
+     * Returns the data set being analyzed.
+     *
+     * @return This data.
      */
     public DataSet getData() {
         return this.dataSet;
     }
 
     /**
-     * @return the correlation matrix being analyzed.
+     * Returns the correlation matrix being analyzed.
+     *
+     * @return This correlation matrix.
      */
     public ICovarianceMatrix getCov() {
         return this.cor;
