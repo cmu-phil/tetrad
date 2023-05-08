@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;

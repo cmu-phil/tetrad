@@ -31,12 +31,12 @@ public class MagSemBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.score.MagSemBicScore semBicScore;
+        edu.cmu.tetrad.search.work_in_progress.MagSemBicScore semBicScore;
 
         if (dataSet instanceof DataSet) {
-            semBicScore = new edu.cmu.tetrad.search.score.MagSemBicScore((DataSet) this.dataSet);
+            semBicScore = new edu.cmu.tetrad.search.work_in_progress.MagSemBicScore((DataSet) this.dataSet);
         } else if (dataSet instanceof ICovarianceMatrix) {
-            semBicScore = new edu.cmu.tetrad.search.score.MagSemBicScore((ICovarianceMatrix) this.dataSet);
+            semBicScore = new edu.cmu.tetrad.search.work_in_progress.MagSemBicScore((ICovarianceMatrix) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
