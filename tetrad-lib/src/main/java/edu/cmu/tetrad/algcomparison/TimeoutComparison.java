@@ -39,7 +39,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesExternalGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.data.simulation.LoadDataAndGraphs;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 import org.reflections.Reflections;
@@ -53,7 +53,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * Nov 14, 2017 12:00:31 PM
@@ -508,7 +508,7 @@ public class TimeoutComparison {
 
                     if (isSaveCPDAGs()) {
                         File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
-                        GraphPersistence.saveGraph(GraphUtilsSearch.cpdagForDag(graph), file3, false);
+                        GraphPersistence.saveGraph(GraphSearchUtils.cpdagForDag(graph), file3, false);
                     }
 
                     if (isSavePags()) {
@@ -1148,7 +1148,7 @@ public class TimeoutComparison {
         if (this.comparisonGraph == ComparisonGraph.true_DAG) {
             comparisonGraph = new EdgeListGraph(trueGraph);
         } else if (this.comparisonGraph == ComparisonGraph.CPDAG_of_the_true_DAG) {
-            comparisonGraph = GraphUtilsSearch.cpdagForDag(new EdgeListGraph(trueGraph));
+            comparisonGraph = GraphSearchUtils.cpdagForDag(new EdgeListGraph(trueGraph));
         } else if (this.comparisonGraph == ComparisonGraph.PAG_of_the_true_DAG) {
             comparisonGraph = dagToPag(new EdgeListGraph(trueGraph));
         } else {

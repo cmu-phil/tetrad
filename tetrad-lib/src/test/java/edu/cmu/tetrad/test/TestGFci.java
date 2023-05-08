@@ -33,7 +33,7 @@ import edu.cmu.tetrad.search.test.IndTestChiSquare;
 import edu.cmu.tetrad.search.test.IndTestDSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -109,11 +109,11 @@ public class TestGFci {
 //        dagToPag.setMaxPathLength(maxPathLength);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = GraphUtilsSearch.dagToPag(dag);
+        Graph truePag = GraphSearchUtils.dagToPag(dag);
 
         outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
 
-        int[][] counts = GraphUtilsSearch.graphComparison(truePag, outGraph, null);
+        int[][] counts = GraphSearchUtils.graphComparison(truePag, outGraph, null);
 
         int[][] expectedCounts = {
                 {0, 0, 0, 0, 0, 0},
@@ -192,7 +192,7 @@ public class TestGFci {
 //            dagToPag.setCompleteRuleSetUsed(false);
 //            Graph pag2 = dagToPag.convert();
 
-            Graph pag2 = GraphUtilsSearch.dagToPag(dag);
+            Graph pag2 = GraphSearchUtils.dagToPag(dag);
 
             assertEquals(pag2, pag1);
         }

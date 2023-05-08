@@ -29,7 +29,7 @@ import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
@@ -292,7 +292,7 @@ public final class Fask implements IGraphSearch {
 
         TetradLogger.getInstance().forceLogMessage("");
 
-        GraphUtilsSearch.pcOrientbk(this.knowledge, G, G.getNodes());
+        GraphSearchUtils.pcOrientbk(this.knowledge, G, G.getNodes());
 
         Graph graph = new EdgeListGraph(G.getNodes());
 

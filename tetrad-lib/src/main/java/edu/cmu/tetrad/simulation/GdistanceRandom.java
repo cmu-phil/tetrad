@@ -3,7 +3,7 @@ package edu.cmu.tetrad.simulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,8 +53,8 @@ public class GdistanceRandom {
 
         //convert those dags to CPDAGs
         if (this.verbose) System.out.println("converting dags to CPDAGs");
-        Graph graph1 = GraphUtilsSearch.cpdagFromDag(dag1);
-        Graph graph2 = GraphUtilsSearch.cpdagFromDag(dag2);
+        Graph graph1 = GraphSearchUtils.cpdagFromDag(dag1);
+        Graph graph2 = GraphSearchUtils.cpdagFromDag(dag2);
 
         //run Gdistance on these two graphs
         if (this.verbose) System.out.println("running Gdistance on the CPDAGs");

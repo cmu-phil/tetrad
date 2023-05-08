@@ -31,7 +31,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.search.Bpc;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MimUtils;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
@@ -107,7 +107,7 @@ public class TestMimbuild {
                     mimbuild.setPenaltyDiscount(1);
                     mimbuild.setMinClusterSize(3);
                     mimbuildStructure = mimbuild.search(partition, latentVarList, new CovarianceMatrix(data));
-                    int shd = GraphUtilsSearch.structuralHammingDistance(mimStructure, mimbuildStructure);
+                    int shd = GraphSearchUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
                     assertEquals(7, shd);
                 } else if (mimbuildMethod == 3) {
 //                    System.out.println("Mimbuild Trek\n");
@@ -115,7 +115,7 @@ public class TestMimbuild {
                     mimbuild.setAlpha(0.1);
                     mimbuild.setMinClusterSize(3);
                     mimbuildStructure = mimbuild.search(partition, latentVarList, new CovarianceMatrix(data));
-                    int shd = GraphUtilsSearch.structuralHammingDistance(mimStructure, mimbuildStructure);
+                    int shd = GraphSearchUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
                     assertEquals(3, shd);
                 } else {
                     throw new IllegalStateException();

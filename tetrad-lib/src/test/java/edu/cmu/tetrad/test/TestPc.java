@@ -29,7 +29,7 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestDSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -44,7 +44,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -222,7 +222,7 @@ public class TestPc {
             IndTestDSep test = new IndTestDSep(graph);
             Pc pc = new Pc(test);
             Graph CPDAG = pc.search();
-            Graph CPDAG2 = GraphUtilsSearch.cpdagFromDag(graph);
+            Graph CPDAG2 = GraphSearchUtils.cpdagFromDag(graph);
             assertEquals(CPDAG, CPDAG2);
         }
     }

@@ -1351,7 +1351,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         nodes.add(a);
 
         List<Edge> edges = graph.getEdges(a);
-        GraphUtilsSearch.basicCpdagRestricted2(graph, a);
+        GraphSearchUtils.basicCpdagRestricted2(graph, a);
         addRequiredEdges(graph);
         Set<Node> visited = meekOrientRestricted(graph, getKnowledge());
 

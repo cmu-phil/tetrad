@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
@@ -33,7 +33,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
-import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 
 /**
@@ -112,7 +112,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
 
         Graph comparisonGraph = getComparisonGraph(referenceGraph, params);
 
-        return GraphUtilsSearch.graphComparisonString(refName, comparisonGraph,
+        return GraphSearchUtils.graphComparisonString(refName, comparisonGraph,
                 targetName, this.targetGraph, false);
     }
 
@@ -143,7 +143,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
             return new EdgeListGraph(graph);
         } else if ("CPDAG".equals(type)) {
             params.set("graphComparisonType", "CPDAG");
-            return GraphUtilsSearch.cpdagForDag(graph);
+            return GraphSearchUtils.cpdagForDag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
             return dagToPag(graph);

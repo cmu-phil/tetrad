@@ -137,7 +137,7 @@ public final class SpFci implements IGraphSearch {
         }
 
         Knowledge knowledge2 = new Knowledge(knowledge);
-        addForbiddenReverseEdgesForDirectedEdges(GraphUtilsSearch.cpdagForDag(graph), knowledge2);
+        addForbiddenReverseEdgesForDirectedEdges(GraphSearchUtils.cpdagForDag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);
@@ -323,8 +323,8 @@ public final class SpFci implements IGraphSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            Node from = GraphUtilsSearch.translate(edge.getFrom(), variables);
-            Node to = GraphUtilsSearch.translate(edge.getTo(), variables);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -343,8 +343,8 @@ public final class SpFci implements IGraphSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            Node from = GraphUtilsSearch.translate(edge.getFrom(), variables);
-            Node to = GraphUtilsSearch.translate(edge.getTo(), variables);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;

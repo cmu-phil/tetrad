@@ -32,7 +32,7 @@ import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.SemIm;
@@ -277,7 +277,7 @@ public final class SampleVcpcFast implements IGraphSearch {
             if (this.verbose) {
                 System.out.println("CPC orientation...");
             }
-            GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, allNodes);
+            GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
             orientUnshieldedTriples(this.knowledge, getIndependenceTest(), getDepth());
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
             MeekRules meekRules = new MeekRules();
@@ -734,10 +734,10 @@ public final class SampleVcpcFast implements IGraphSearch {
                 if (this.graph.isAdjacentTo(x, z)) {
                     continue;
                 }
-                GraphUtilsSearch.CpcTripleType type = GraphUtilsSearch.getCpcTripleType(x, y, z, test, depth, graph);
+                GraphSearchUtils.CpcTripleType type = GraphSearchUtils.getCpcTripleType(x, y, z, test, depth, graph);
 
 
-                if (type == GraphUtilsSearch.CpcTripleType.COLLIDER) {
+                if (type == GraphSearchUtils.CpcTripleType.COLLIDER) {
                     if (this.colliderAllowed(x, y, z, knowledge)) {
                         graph.setEndpoint(x, y, Endpoint.ARROW);
                         graph.setEndpoint(z, y, Endpoint.ARROW);
@@ -746,7 +746,7 @@ public final class SampleVcpcFast implements IGraphSearch {
                     }
 
                     colliderTriples.add(new Triple(x, y, z));
-                } else if (type == GraphUtilsSearch.CpcTripleType.AMBIGUOUS) {
+                } else if (type == GraphSearchUtils.CpcTripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     ambiguousTriples.add(triple);
                     graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());

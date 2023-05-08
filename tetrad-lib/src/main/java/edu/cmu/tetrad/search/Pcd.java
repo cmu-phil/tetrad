@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -254,8 +254,8 @@ public class Pcd implements IGraphSearch {
 
         enumerateTriples();
 
-        GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, nodes);
-        GraphUtilsSearch.pcdOrientC(getIndependenceTest(), this.knowledge, this.graph);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphSearchUtils.pcdOrientC(getIndependenceTest(), this.knowledge, this.graph);
 
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);

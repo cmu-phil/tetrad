@@ -54,7 +54,7 @@ import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.*;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.GraphoidAxioms;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
@@ -2586,7 +2586,7 @@ public final class TestGrasp {
             Graph trueGraph = RandomGraph.randomGraph(20, 8, 40,
                     100, 100, 100, false);
 
-            Graph truePag = GraphUtilsSearch.dagToPag(trueGraph);
+            Graph truePag = GraphSearchUtils.dagToPag(trueGraph);
 
             trueGraphMap.put(i, new HashMap<>());
             trueGraphs.add(trueGraph);
@@ -3079,8 +3079,8 @@ public final class TestGrasp {
                         g2 = GraphUtils.replaceNodes(g2, g1.getNodes());
 
                         if (g1.equals(g2)) gsCount++;
-                        gsShd += GraphUtilsSearch.structuralHammingDistance(
-                                GraphUtilsSearch.cpdagForDag(g1), GraphUtilsSearch.cpdagForDag(g2));
+                        gsShd += GraphSearchUtils.structuralHammingDistance(
+                                GraphSearchUtils.cpdagForDag(g1), GraphSearchUtils.cpdagForDag(g2));
 
                         for (int i = 0; i < alpha.length; i++) {
 //                            test.setAlpha(alpha[i]);
@@ -3094,8 +3094,8 @@ public final class TestGrasp {
                             g3 = GraphUtils.replaceNodes(g3, g1.getNodes());
 
                             if (g1.equals(g3)) pearlCounts[i]++;
-                            pearlShd[i] += GraphUtilsSearch.structuralHammingDistance(
-                                    GraphUtilsSearch.cpdagForDag(g1), GraphUtilsSearch.cpdagForDag(g3));
+                            pearlShd[i] += GraphSearchUtils.structuralHammingDistance(
+                                    GraphSearchUtils.cpdagForDag(g1), GraphSearchUtils.cpdagForDag(g3));
                         }
                     }
 

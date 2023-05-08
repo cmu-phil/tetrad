@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -259,7 +259,7 @@ public final class VcPcFast implements IGraphSearch {
         if (this.verbose) {
             System.out.println("CPC orientation...");
         }
-        GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, allNodes);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
         orientUnshieldedTriples(this.knowledge, getIndependenceTest(), getDepth());
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
         MeekRules meekRules = new MeekRules();
@@ -704,8 +704,8 @@ public final class VcPcFast implements IGraphSearch {
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
-        if (!GraphUtilsSearch.isArrowheadAllowed(x, y, knowledge)) return false;
-        return GraphUtilsSearch.isArrowheadAllowed(z, y, knowledge);
+        if (!GraphSearchUtils.isArrowheadAllowed(x, y, knowledge)) return false;
+        return GraphSearchUtils.isArrowheadAllowed(z, y, knowledge);
     }
 
     /**

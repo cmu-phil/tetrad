@@ -4,7 +4,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.TextTable;
 
 import java.util.ArrayList;
@@ -63,7 +63,7 @@ public class HsimUtils {
 
     //this method returns an array of doubles, which are standard error metrics for graph learning
     public static double[] errorEval(Graph estCPDAG, Graph truePattern) {
-        GraphUtils.GraphComparison comparison = GraphUtilsSearch.getGraphComparison2(estCPDAG, truePattern);
+        GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison2(estCPDAG, truePattern);
 
         int adjTp = comparison.getAdjCor();
         int adjFp = comparison.getAdjFp();

@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
@@ -285,7 +285,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
 
         this.logger.log("info", "BEGINNING step 4 (PC Orient).");
 
-        GraphUtilsSearch.pcOrientbk(this.knowledge, graph, graph.getNodes());
+        GraphSearchUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
 
         List<Node> _visited = new LinkedList<>(getA());
         orientUnshieldedTriples(this.knowledge, graph, getDepth(), _visited);

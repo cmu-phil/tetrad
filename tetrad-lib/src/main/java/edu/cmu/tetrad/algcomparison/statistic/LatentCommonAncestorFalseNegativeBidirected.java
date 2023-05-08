@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.*;
 import java.util.List;
 
 import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePositiveBidirected.existsLatentCommonAncestor;
-import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * The bidirected true positives.

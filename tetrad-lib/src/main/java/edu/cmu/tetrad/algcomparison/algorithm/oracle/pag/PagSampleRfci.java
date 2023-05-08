@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.utils.GraphUtilsSearch.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * Jan 29, 2023 3:45:09 PM

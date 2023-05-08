@@ -4,7 +4,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import static edu.cmu.tetrad.graph.GraphUtils.compatible;
 
@@ -30,7 +30,7 @@ public class NumCompatibleEdges implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         GraphUtils.addPagColoring(estGraph);
 
-        Graph pag = GraphUtilsSearch.dagToPag(trueGraph);
+        Graph pag = GraphSearchUtils.dagToPag(trueGraph);
 
         int tp = 0;
         int fp = 0;

@@ -3,7 +3,7 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 /**
  * @author josephramsey
@@ -23,7 +23,7 @@ public class NoCyclicPathsInMagCondition implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph mag = GraphUtilsSearch.pagToMag(estGraph);
+        Graph mag = GraphSearchUtils.pagToMag(estGraph);
 
         for (Node n : mag.getNodes()) {
             if (mag.paths().existsDirectedPathFromTo(n, n)) {

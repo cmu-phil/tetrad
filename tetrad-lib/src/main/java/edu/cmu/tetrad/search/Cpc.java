@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -285,8 +285,8 @@ public final class Cpc implements IGraphSearch {
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
 
-        GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, independenceTest.getVariables());
-        GraphUtilsSearch.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, independenceTest.getVariables());
+        GraphSearchUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 

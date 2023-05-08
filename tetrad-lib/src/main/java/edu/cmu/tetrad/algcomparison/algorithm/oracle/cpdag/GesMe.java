@@ -11,7 +11,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import org.apache.commons.math3.util.FastMath;
@@ -191,7 +191,7 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
         if (this.compareToTrue) {
             return new EdgeListGraph(graph);
         } else {
-            return GraphUtilsSearch.cpdagForDag(new EdgeListGraph(graph));
+            return GraphSearchUtils.cpdagForDag(new EdgeListGraph(graph));
         }
     }
 

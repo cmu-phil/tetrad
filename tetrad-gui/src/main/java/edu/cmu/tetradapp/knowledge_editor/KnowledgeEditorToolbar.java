@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.knowledge_editor;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
@@ -234,7 +234,7 @@ class KnowledgeEditorToolbar extends JPanel {
             KnowledgeGraph graph = (KnowledgeGraph) this.workbench.getGraph();
             Knowledge knowledge = graph.getKnowledge();
             try {
-                GraphUtilsSearch.arrangeByKnowledgeTiers(graph, knowledge);
+                GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
                 this.workbench.setGraph(graph);
             } catch (IllegalArgumentException ex) {
                 System.out.print(ex.getMessage());

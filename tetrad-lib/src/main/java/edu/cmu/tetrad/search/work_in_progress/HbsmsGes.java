@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
 import edu.cmu.tetrad.search.utils.MeekRules;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.DagScorer;
 import edu.cmu.tetrad.sem.Scorer;
 import edu.cmu.tetrad.sem.SemIm;
@@ -62,7 +62,7 @@ public final class HbsmsGes implements Hbsms {
         DagInCpcagIterator iterator = new DagInCpcagIterator(graph, getKnowledge(), allowArbitraryOrientations,
                 allowNewColliders);
         graph = iterator.next();
-        graph = GraphUtilsSearch.cpdagForDag(graph);
+        graph = GraphSearchUtils.cpdagForDag(graph);
 
         if (GraphUtils.containsBidirectedEdge(graph)) {
             throw new IllegalArgumentException("Contains bidirected edge.");
@@ -110,7 +110,7 @@ public final class HbsmsGes implements Hbsms {
     }
 
     public Score scoreGraph(Graph graph) {
-        Graph dag = GraphUtilsSearch.dagFromCPDAG(graph, getKnowledge());
+        Graph dag = GraphSearchUtils.dagFromCPDAG(graph, getKnowledge());
 
         this.scorer.score(dag);
         return new Score(this.scorer);
@@ -582,7 +582,7 @@ public final class HbsmsGes implements Hbsms {
      * Appendix C of (Chickering, 2002).
      */
     private void rebuildCPDAG(Graph graph) {
-        GraphUtilsSearch.basicCpdag(graph);
+        GraphSearchUtils.basicCpdag(graph);
         addRequiredEdges(graph);
         pdagWithBk(graph, getKnowledge());
 

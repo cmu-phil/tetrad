@@ -31,7 +31,7 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestDSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -200,7 +200,7 @@ public class TestFci {
 //        DagToPag dagToPag = new DagToPag(trueGraph);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = GraphUtilsSearch.dagToPag(trueGraph);
+        Graph truePag = GraphSearchUtils.dagToPag(trueGraph);
 
         assertEquals(graph, truePag);
     }

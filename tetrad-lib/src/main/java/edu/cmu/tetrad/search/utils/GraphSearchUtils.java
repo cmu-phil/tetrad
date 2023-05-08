@@ -45,7 +45,7 @@ import static org.apache.commons.math3.util.FastMath.max;
  *
  * @author josephramsey
  */
-public final class GraphUtilsSearch {
+public final class GraphSearchUtils {
 
     /**
      * Orients according to background knowledge.
@@ -56,8 +56,8 @@ public final class GraphUtilsSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            Node from = GraphUtilsSearch.translate(edge.getFrom(), nodes);
-            Node to = GraphUtilsSearch.translate(edge.getTo(), nodes);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), nodes);
+            Node to = GraphSearchUtils.translate(edge.getTo(), nodes);
 
             if (from == null || to == null) {
                 continue;
@@ -78,8 +78,8 @@ public final class GraphUtilsSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            Node from = GraphUtilsSearch.translate(edge.getFrom(), nodes);
-            Node to = GraphUtilsSearch.translate(edge.getTo(), nodes);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), nodes);
+            Node to = GraphSearchUtils.translate(edge.getTo(), nodes);
 
             if (from == null || to == null) {
                 continue;
@@ -129,7 +129,7 @@ public final class GraphUtilsSearch {
                     continue;
                 }
 
-                List<Node> sepset = GraphUtilsSearch.sepset(graph, x, z, new HashSet<>(), new HashSet<>(),
+                List<Node> sepset = GraphSearchUtils.sepset(graph, x, z, new HashSet<>(), new HashSet<>(),
                         test);
 
                 if (sepset == null) {
@@ -162,8 +162,8 @@ public final class GraphUtilsSearch {
                     continue;
                 }
 
-                if (!GraphUtilsSearch.isArrowheadAllowed(x, y, knowledge)
-                        || !GraphUtilsSearch.isArrowheadAllowed(z, y, knowledge)) {
+                if (!GraphSearchUtils.isArrowheadAllowed(x, y, knowledge)
+                        || !GraphSearchUtils.isArrowheadAllowed(z, y, knowledge)) {
                     continue;
                 }
 
@@ -241,7 +241,7 @@ public final class GraphUtilsSearch {
 
                 //I think the null check needs to be here --AJ
                 if (sepset != null && !sepset.contains(b)
-                        && GraphUtilsSearch.isArrowheadAllowed(a, b, knowledge)) {
+                        && GraphSearchUtils.isArrowheadAllowed(a, b, knowledge)) {
                     boolean result = true;
                     if (knowledge != null) {
                         result = !knowledge.isRequired(((Object) b).toString(), ((Object) c).toString())
@@ -358,14 +358,14 @@ public final class GraphUtilsSearch {
      */
     public static Graph cpdagFromDag(Graph dag) {
         Graph graph = new EdgeListGraph(dag);
-        GraphUtilsSearch.basicCpdag(graph);
+        GraphSearchUtils.basicCpdag(graph);
         MeekRules rules = new MeekRules();
         rules.orientImplied(graph);
         return graph;
     }
 
     public static Graph dagFromCPDAG(Graph graph) {
-        return GraphUtilsSearch.dagFromCPDAG(graph, null);
+        return GraphSearchUtils.dagFromCPDAG(graph, null);
     }
 
     public static Graph dagFromCPDAG(Graph graph, Knowledge knowledge) {
@@ -392,7 +392,7 @@ public final class GraphUtilsSearch {
                 Node y = edge.getNode2();
 
                 if (Edges.isUndirectedEdge(edge) && !graph.paths().isAncestorOf(y, x)) {
-                    GraphUtilsSearch.direct(x, y, dag);
+                    GraphSearchUtils.direct(x, y, dag);
                     rules.orientImplied(dag);
                     continue NEXT;
                 }
@@ -475,6 +475,10 @@ public final class GraphUtilsSearch {
         return mag;
     }
 
+    /**
+     * Stores a result for checking whether a graph is a legal PAG--(a) whether it is (a
+     * boolean), and (b) the reason why it is not, if it is not (a String).
+     */
     public static class LegalPagRet {
         private final boolean legalPag;
         private final String reason;
@@ -511,7 +515,7 @@ public final class GraphUtilsSearch {
             return new LegalPagRet(false, legalMag.getReason() + " in a MAG implied by this graph");
         }
 
-        Graph pag2 = GraphUtilsSearch.dagToPag(mag);
+        Graph pag2 = GraphSearchUtils.dagToPag(mag);
 
         if (!pag.equals(pag2)) {
             String edgeMismatch = "";
@@ -538,6 +542,10 @@ public final class GraphUtilsSearch {
         return new LegalPagRet(true, "This is a legal PAG");
     }
 
+    /**
+     * Stores a result for checking whether a graph is a legal MAG--(a) whether it is (a
+     * boolean), and (b) the reason why it is not, if it is not (a String).
+     */
     public static class LegalMagRet {
         private final boolean legalMag;
         private final String reason;
@@ -872,7 +880,7 @@ public final class GraphUtilsSearch {
             cpdag = GraphUtils.removeBidirectedOrientations(cpdag);
         }
 
-        return GraphUtilsSearch.getDagsInCpdagMeek(cpdag, new Knowledge());
+        return GraphSearchUtils.getDagsInCpdagMeek(cpdag, new Knowledge());
     }
 
     public static List<Graph> getDagsInCpdagMeek(Graph cpdag, Knowledge knowledge) {
@@ -943,6 +951,7 @@ public final class GraphUtilsSearch {
 
         return graphs;
     }
+
 
     // The published version.
     public static CpcTripleType getCpcTripleType(Node x, Node y, Node z,
@@ -1035,8 +1044,8 @@ public final class GraphUtilsSearch {
 
         try {
             estGraph = GraphUtils.replaceNodes(estGraph, trueGraph.getNodes());
-            trueGraph = GraphUtilsSearch.cpdagForDag(trueGraph);
-            estGraph = GraphUtilsSearch.cpdagForDag(estGraph);
+            trueGraph = GraphSearchUtils.cpdagForDag(trueGraph);
+            estGraph = GraphSearchUtils.cpdagForDag(estGraph);
 
             // Will check mixedness later.
             if (trueGraph.paths().existsDirectedCycle()) {
@@ -1068,7 +1077,7 @@ public final class GraphUtilsSearch {
                         return -99;
                     }
 
-                    int error = GraphUtilsSearch.structuralHammingDistanceOneEdge(e1, e2);
+                    int error = GraphSearchUtils.structuralHammingDistanceOneEdge(e1, e2);
                     shd += error;
                 }
             }
@@ -1536,7 +1545,7 @@ public final class GraphUtilsSearch {
     }
 
     public static int[][] graphComparison(Graph trueCpdag, Graph estCpdag, PrintStream out) {
-        GraphUtils.GraphComparison comparison = GraphUtilsSearch.getGraphComparison2(estCpdag, trueCpdag);
+        GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison2(estCpdag, trueCpdag);
 
         if (out != null) {
             out.println("Adjacencies:");
@@ -1589,6 +1598,10 @@ public final class GraphUtilsSearch {
         return new DagToPag(trueGraph).convert();
     }
 
+    /**
+     * Gives the options for triple type for a conservative unshielded collider orientation,
+     * which may be "collider" or "noncollider" or "ambiguous".
+     */
     public enum CpcTripleType {
         COLLIDER, NONCOLLIDER, AMBIGUOUS
     }

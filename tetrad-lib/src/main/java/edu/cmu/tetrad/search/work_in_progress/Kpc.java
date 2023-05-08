@@ -28,7 +28,7 @@ import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.test.IndTestHsic;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -259,8 +259,8 @@ public class Kpc implements IGraphSearch {
 
         enumerateTriples();
 
-        GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, nodes);
-        GraphUtilsSearch.orientCollidersUsingSepsets(this.sepset, this.knowledge, this.graph, this.verbose, true);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphSearchUtils.orientCollidersUsingSepsets(this.sepset, this.knowledge, this.graph, this.verbose, true);
         MeekRules rules = new MeekRules();
         rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         rules.setKnowledge(this.knowledge);

@@ -8,7 +8,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -135,7 +135,7 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
         if (this.compareToTrue) {
             return new EdgeListGraph(graph);
         } else {
-            return GraphUtilsSearch.cpdagForDag(new EdgeListGraph(graph));
+            return GraphSearchUtils.cpdagForDag(new EdgeListGraph(graph));
         }
     }
 

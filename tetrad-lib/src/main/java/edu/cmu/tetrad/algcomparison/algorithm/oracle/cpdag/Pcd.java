@@ -7,7 +7,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.work_in_progress.SemBicScoreDeterministic;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -71,7 +71,7 @@ public class Pcd implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphUtilsSearch.cpdagForDag(graph);
+        return GraphSearchUtils.cpdagForDag(graph);
     }
 
     @Override

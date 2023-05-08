@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.work_in_progress.HbsmsBeam;
 import edu.cmu.tetrad.search.work_in_progress.Hbsms;
 import edu.cmu.tetrad.search.work_in_progress.HbsmsGes;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.*;
@@ -258,12 +258,12 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(this.graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
-            GraphUtilsSearch.arrangeByKnowledgeTiers(this.graph, knowledge);
+            GraphSearchUtils.arrangeByKnowledgeTiers(this.graph, knowledge);
         } else {
             LayoutUtil.circleLayout(this.graph, 200, 200, 150);
         }
 
-        setResultGraph(GraphUtilsSearch.cpdagForDag(this.graph));
+        setResultGraph(GraphSearchUtils.cpdagForDag(this.graph));
     }
 
     public boolean supportsKnowledge() {

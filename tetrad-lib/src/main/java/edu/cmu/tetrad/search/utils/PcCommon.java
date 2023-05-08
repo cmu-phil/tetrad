@@ -42,16 +42,42 @@ import java.util.Set;
  * @author josephramsey
  */
 public final class PcCommon implements IGraphSearch {
+
+    /**
+     * Gives the type of FAS used, regular or stable.
+     *
+     * @see Pc
+     * @see Cpc
+     * @see PcMax
+     */
     public enum FasType {REGULAR, STABLE}
 
+    /**
+     * Give the options for the collider discovery algroithm to use--FAS with sepsets reasoning,
+     * FAS with conservative reasoning, or FAS with Max P reasoning.
+     *
+     * @see Fas
+     * @see Cpc
+     * @see PcMax
+     */
     public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
 
+    /**
+     * Gives the type of conflict to be used, priority (when there is a conflict, keep the
+     * orientation that has already been made, bidirected (when there is a conflict, orient
+     * a bidirected edge), or overwrite (when there is a conflict, use the new orientation).
+     *
+     * @see Pc
+     * @see Cpc
+     * @see PcMax
+     */
     public enum ConflictRule {PRIORITY, BIDIRECTED, OVERWRITE}
 
     /**
      * The independence test used for the PC search.
      */
     private final IndependenceTest independenceTest;
+
     /**
      * The logger for this class. The config needs to be set.
      */
@@ -346,7 +372,7 @@ public final class PcCommon implements IGraphSearch {
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
 
-        GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
 
         if (this.colliderDiscovery == ColliderDiscovery.FAS_SEPSETS) {
             orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, this.conflictRule);

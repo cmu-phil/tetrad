@@ -39,7 +39,7 @@ import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
@@ -411,7 +411,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             if (_knowledge.getVariablesNotInTiers().size()
                     < _knowledge.getVariables().size()) {
                 for (Graph graph : graphList) {
-                    GraphUtilsSearch.arrangeByKnowledgeTiers(graph, _knowledge);
+                    GraphSearchUtils.arrangeByKnowledgeTiers(graph, _knowledge);
                 }
             }
         } else {

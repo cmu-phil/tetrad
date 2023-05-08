@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -257,7 +257,7 @@ public final class VcPc implements IGraphSearch {
         if (this.verbose) {
             System.out.println("CPC orientation...");
         }
-        GraphUtilsSearch.pcOrientbk(this.knowledge, this.graph, allNodes);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, allNodes);
         orientUnshieldedTriples(this.knowledge, independenceTest, getDepth());
         MeekRules meekRules = new MeekRules();
 

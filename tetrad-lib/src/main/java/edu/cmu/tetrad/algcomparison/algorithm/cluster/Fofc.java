@@ -12,7 +12,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.search.utils.ClusterSignificance;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -135,7 +135,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphUtilsSearch.cpdagForDag(graph);
+        return GraphSearchUtils.cpdagForDag(graph);
     }
 
     @Override

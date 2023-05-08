@@ -31,7 +31,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.SemGraph;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.*;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
@@ -89,7 +89,7 @@ public final class CPDAGFitModel implements SessionModel {
 
             for (int i = 0; i < dataModels.size(); i++) {
                 DataSet dataSet = (DataSet) dataModels.get(0);
-                Graph dag = GraphUtilsSearch.dagFromCPDAG(graphs.get(0));
+                Graph dag = GraphSearchUtils.dagFromCPDAG(graphs.get(0));
                 BayesPm pm = new BayesPmWrapper(dag, new DataWrapper(dataSet)).getBayesPm();
                 this.bayesPms.add(pm);
                 this.bayesIms.add(estimate(dataSet, pm));
@@ -100,7 +100,7 @@ public final class CPDAGFitModel implements SessionModel {
 
             for (int i = 0; i < dataModels.size(); i++) {
                 DataSet dataSet = (DataSet) dataModels.get(0);
-                Graph dag = GraphUtilsSearch.dagFromCPDAG(graphs.get(0));
+                Graph dag = GraphSearchUtils.dagFromCPDAG(graphs.get(0));
 
                 try {
                     SemPm pm = new SemPm(dag);
@@ -109,7 +109,7 @@ public final class CPDAGFitModel implements SessionModel {
                 } catch (Exception e) {
                     e.printStackTrace();
 
-                    Graph mag = GraphUtilsSearch.pagToMag(graphs.get(0));
+                    Graph mag = GraphSearchUtils.pagToMag(graphs.get(0));
 //                    Ricf.RicfResult result = estimatePag(dataSet, mag);
 
                     SemGraph graph = new SemGraph(mag);

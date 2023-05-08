@@ -11,7 +11,7 @@ import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.utils.BayesImParser;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.study.performance.Comparison;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -172,7 +172,7 @@ public class RBExperiments {
 
         // get the true underlying PAG
 
-        Graph PAG_True = GraphUtilsSearch.dagToPag(dag);
+        Graph PAG_True = GraphSearchUtils.dagToPag(dag);
 
         PAG_True = GraphUtils.replaceNodes(PAG_True, data.getVariables());
 
@@ -199,7 +199,7 @@ public class RBExperiments {
 
         // learn structure of constraints using empirical data
         Graph depCPDAG = runFGS(depData);
-        Graph estDepBN = GraphUtilsSearch.dagFromCPDAG(depCPDAG);
+        Graph estDepBN = GraphSearchUtils.dagFromCPDAG(depCPDAG);
         System.out.println("estDepBN: " + estDepBN.getEdges());
         out.println("DepGraph(nodes,edges):" + estDepBN.getNumNodes() + "," + estDepBN.getNumEdges());
         System.out.println("Dependency graph done!");
@@ -297,7 +297,7 @@ public class RBExperiments {
 
         tableColumns.add(Comparison.TableColumn.SHD);
 
-        GraphUtils.GraphComparison comparison = GraphUtilsSearch.getGraphComparison(trueGraph, graph);
+        GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(trueGraph, graph);
 
         List<Node> variables = new ArrayList<>();
         for (Comparison.TableColumn column : tableColumns) {

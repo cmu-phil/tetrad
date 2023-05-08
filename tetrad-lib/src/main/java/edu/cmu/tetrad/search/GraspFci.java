@@ -343,8 +343,8 @@ public final class GraspFci implements IGraphSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            Node from = GraphUtilsSearch.translate(edge.getFrom(), variables);
-            Node to = GraphUtilsSearch.translate(edge.getTo(), variables);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -363,8 +363,8 @@ public final class GraspFci implements IGraphSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            Node from = GraphUtilsSearch.translate(edge.getFrom(), variables);
-            Node to = GraphUtilsSearch.translate(edge.getTo(), variables);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;

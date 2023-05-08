@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -47,7 +47,7 @@ public class MagInPagWrapper extends GraphWrapper implements DoNotAddOldModel {
     }
 
     private static Graph getGraph(Graph graph) {
-        return GraphUtilsSearch.pagToMag(graph);
+        return GraphSearchUtils.pagToMag(graph);
     }
 
 

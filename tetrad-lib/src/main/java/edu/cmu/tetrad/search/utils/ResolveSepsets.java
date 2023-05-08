@@ -36,12 +36,20 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Provides some utilities for resolving inconsistencies that arise between sepsets
- * learned for overlapping datasets. This occurs frequently when using the DCI and ION algorithm.
+ * <p></p>Provides some utilities for resolving inconsistencies that arise
+ * between sepsets learned for overlapping datasets. This occurs frequently when
+ * using the DCI and ION algorithm. A reference is here:</p>
+ *
+ * <p>Tillman, R. E., & Eberhardt, F. (2014). Learning causal structure from
+ * multiple datasets with similar variable sets. Behaviormetrika, 41(1), 41-64.</p>
  *
  * @author roberttillman
  */
 public final class ResolveSepsets {
+
+    /**
+     * Gives the method to be used to resolve sepsets when they conflict.
+     */
     public enum Method {
         fisher, fisher2, tippett, worsleyfriston, stouffer, mudholkergeorge,
         mudholkergeorge2, average, averagetest, random, fdr, majority

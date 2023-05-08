@@ -9,7 +9,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
@@ -75,7 +75,7 @@ public class HsimAutoC {
         Graph estGraph = fges.search();
         //if (verbose) System.out.println(estGraph);
 
-        Graph estGraphDAG = GraphUtilsSearch.dagFromCPDAG(estGraph);
+        Graph estGraphDAG = GraphSearchUtils.dagFromCPDAG(estGraph);
         Dag estDAG = new Dag(estGraphDAG);
         //Dag estDAG = new Dag(estGraph);
 

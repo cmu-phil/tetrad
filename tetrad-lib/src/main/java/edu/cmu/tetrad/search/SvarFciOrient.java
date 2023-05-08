@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.GraphUtilsSearch;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -885,8 +885,8 @@ public final class SvarFciOrient {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            Node from = GraphUtilsSearch.translate(edge.getFrom(), variables);
-            Node to = GraphUtilsSearch.translate(edge.getTo(), variables);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
 
             if (from == null || to == null) {
@@ -909,8 +909,8 @@ public final class SvarFciOrient {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            Node from = GraphUtilsSearch.translate(edge.getFrom(), variables);
-            Node to = GraphUtilsSearch.translate(edge.getTo(), variables);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
