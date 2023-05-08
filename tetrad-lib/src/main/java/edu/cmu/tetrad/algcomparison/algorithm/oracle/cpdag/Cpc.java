@@ -68,8 +68,8 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(knowledge);
 //            search.setConcurrent(parameters.getBoolean(Params.CONCURRENT_FAS));
-            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
-            search.setMaxPPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
+//            search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
+//            search.setMaxPPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
             return search.search();
         } else {
             Cpc pcAll = new Cpc(this.test);
@@ -105,13 +105,8 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
-//        parameters.add(Params.CONCURRENT_FAS);
-//        parameters.add(Params.COLLIDER_DISCOVERY_RULE);
         parameters.add(Params.CONFLICT_RULE);
         parameters.add(Params.DEPTH);
-//        parameters.add(Params.FAS_HEURISTIC);
-        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
-        parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);

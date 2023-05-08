@@ -24,7 +24,8 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.PcCommon;
@@ -32,9 +33,7 @@ import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -53,10 +52,10 @@ import java.util.Set;
  * @see Fasd
  * @see Knowledge
  */
-public class PcMax implements IGraphSearch {
+public final class PcMax implements IGraphSearch {
 
     /**
-     * The independence test used for the PC search.g
+     * The independence test used for the PC search.
      */
     private final IndependenceTest independenceTest;
 
@@ -66,24 +65,31 @@ public class PcMax implements IGraphSearch {
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * Sepset information accumulated in the search.
-     */
-    private SepsetMap sepsets;
-
-    /**
-     * The maximum number of nodes conditioned on in the search. The default it 1000.
+     * The maximum number of nodes conditioned on in the search.
      */
     private int depth = 1000;
 
-    /**
-     * The graph that's constructed during the search.
-     */
     private Graph graph;
 
     /**
-     * Elapsed time of the most recent search.
+     * Elapsed time of last search.
      */
     private long elapsedTime;
+
+    /**
+     * Set of unshielded colliders from the triple orientation step.
+     */
+    private Set<Triple> colliderTriples;
+
+    /**
+     * Set of unshielded noncolliders from the triple orientation step.
+     */
+    private Set<Triple> noncolliderTriples;
+
+    /**
+     * Set of ambiguous unshielded triples.
+     */
+    private Set<Triple> ambiguousTriples;
 
     /**
      * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
@@ -97,25 +103,31 @@ public class PcMax implements IGraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The number of independence tests in the last search.
+     * The sepsets.
      */
-    private int numIndependenceTests;
+    private SepsetMap sepsets;
 
+    /**
+     * Whether verbose output about independencies is output.
+     */
     private boolean verbose;
+
     private boolean stable;
-    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
+    private boolean useHeuristic = false;
+    private int maxPPathLength = -1;
+    private final PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
 
     //=============================CONSTRUCTORS==========================//
 
     /**
-     * Constructs a new PC search using the given independence test as oracle.
+     * Constructs a CPC algorithm that uses the given independence test as oracle. This does
+     * not make a copy of the independence test, for fear of duplicating the data set!
      *
-     * @param independenceTest The oracle for conditional independence facts. This does not make a copy of the
-     *                         independence test, for fear of duplicating the data set!
+     * @param independenceTest The test to user for oracle conditional independence information.
      */
     public PcMax(IndependenceTest independenceTest) {
         if (independenceTest == null) {
-            throw new NullPointerException("Independence test is null.");
+            throw new NullPointerException();
         }
 
         this.independenceTest = independenceTest;
@@ -124,7 +136,7 @@ public class PcMax implements IGraphSearch {
     //==============================PUBLIC METHODS========================//
 
     /**
-     * Returns true iff edges will not be added if they would create cycles.
+     * Returns true just in case edges will not be added if they would create cycles.
      *
      * @return True if so.
      */
@@ -133,22 +145,40 @@ public class PcMax implements IGraphSearch {
     }
 
     /**
-     * Sets whether cycles should be aggressively checked.
+     * Sets to true just in case edges will not be added if they would create cycles.
      *
-     * @param aggressivelyPreventCycles Set to true just in case edges will not be added
-     *                                  if they would create cycles.
+     * @param aggressivelyPreventCycles True if so.
      */
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
     /**
-     * Returns the independence test being used in the search.
+     * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
+     * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multicore systems.
      *
-     * @return This test.
+     * @param depth This maximum.
      */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
+        }
+
+        if (depth == Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
+                    "due to a known bug.");
+        }
+
+        this.depth = depth;
+    }
+
+    /**
+     * Returns the elapsed time of search in milliseconds, after <code>search()</code> has been run.
+     *
+     * @return This time.
+     */
+    public long getElapsedTime() {
+        return this.elapsedTime;
     }
 
     /**
@@ -161,119 +191,79 @@ public class PcMax implements IGraphSearch {
     }
 
     /**
-     * Sets the knowledge specification to be used in the search. May not be null.
+     * Sets the knowledge specification used in the search. Non-null.
      *
      * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException("Knowledge is null.");
-        }
-
         this.knowledge = knowledge;
     }
 
     /**
-     * Returns the sepset map from the most recent search. Non-null after the first call to
-     * <code>search()</code>.
+     * Rreturn the independence test used in the search, set in the constructor.
      *
-     * @return This map.
+     * @return This.
      */
-    public SepsetMap getSepsets() {
-        return this.sepsets;
+    public IndependenceTest getIndependenceTest() {
+        return this.independenceTest;
     }
 
     /**
-     * Returns the current depth of search--that is, the maximum number of conditioning nodes
-     * for any conditional independence checked.
+     * Returns the depth of the search--that is, the maximum number of variables
+     * conditioned on in any conditional independence test.
      *
-     * @return This depth.
+     * @return This.
      */
     public int getDepth() {
         return this.depth;
     }
 
     /**
-     * Sets the depth of the search--that is, the maximum number of conditioning nodes for any conditional independence
-     * checked.
+     * Returns the set of ambiguous triples found during the most recent run of the algorithm.
+     * Non-null after a call to <code>search()</code>.
      *
-     * @param depth The depth of the search. The default is 1000. A value of -1 may be used to indicate that the depth
-     *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multicore
-     *              machines.
+     * @return This set.
      */
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
-        }
-
-        if (depth > 1000) {
-            throw new IllegalArgumentException("Depth must be <= 1000.");
-        }
-
-        this.depth = depth;
+    public Set<Triple> getAmbiguousTriples() {
+        return new HashSet<>(this.ambiguousTriples);
     }
 
     /**
-     * Runs PC starting with a complete graph over all nodes of the given conditional independence
-     * test, using the given independence test and knowledge and returns the resultant graph. The
-     * returned graph will be a CPDAG if the independence information is consistent with the
-     * hypothesis that there are no latent common causes. It may however, contain cycles or bidirected
-     * edges if this assumption is not born out, either due to the actual presence of latent common
-     * causes, or due to statistical errors in conditional independence judgments.
+     * Returns the edges in the search graph as a set of undirected edges.
      *
-     * @return The CPDAG found.
+     * @return These edges.
      */
-    @Override
+    public Set<Edge> getAdjacencies() {
+        return new HashSet<>(GraphUtils.undirectedGraph(this.graph).getEdges());
+    }
+
+    /**
+     * Runs CPC starting with a fully connected graph over all the variables in the domain
+     * of the independence test. See PC for caveats. The number of possible cycles and
+     * bidirected edges is far less with CPC than with PC.
+     *
+     * @return The e-pattern for the search, which is a graphical representation of a set
+     * of possible CPDAGs.
+     */
     public Graph search() {
-        return search(this.independenceTest.getVariables());
-    }
-
-    /**
-     * Runs PC starting with a complete graph over the given list of nodes, using the given
-     * independence test and knowledge and returns the resultant graph. The returned graph will
-     * be a CPDAG if the independence information is consistent with the hypothesis that there are
-     * no latent common causes. It may, however, contain cycles or bidirected edges if this
-     * assumption is not born out, either due to the actual presence of latent common causes, or
-     * due to statistical errors in conditional independence judgments.
-     * <p>
-     * All the given nodes must be in the domain of the given conditional independence test.
-     *
-     * @param nodes the sublist of nodes to search over.
-     * @return The CPDAG found.
-     */
-    public Graph search(List<Node> nodes) {
-        nodes = new ArrayList<>(nodes);
-
-        IFas fas = new Fas(getIndependenceTest());
-        fas.setVerbose(this.verbose);
-        return search(fas, nodes);
-    }
-
-    /**
-     * Runs the search using a particular implementation of the fast adjacency search
-     * (FAS), over the given sublist of nodes.
-     *
-     * @param fas   The fast adjacency search to use.
-     * @param nodes The sublist of nodes.
-     * @return The result graph
-     * @see #search()
-     * @see IFas
-     */
-    public Graph search(IFas fas, List<Node> nodes) {
-        this.logger.log("info", "Starting PC algorithm");
+        this.logger.log("info", "Starting CPC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
+
+        Fas fas = new Fas(getIndependenceTest());
 
         long startTime = MillisecondTimes.timeMillis();
 
-        if (getIndependenceTest() == null) {
-            throw new NullPointerException("Null independence test.");
-        }
+        fas.setKnowledge(getKnowledge());
+        fas.setDepth(getDepth());
+        fas.setVerbose(this.verbose);
 
-        List<Node> allNodes = getIndependenceTest().getVariables();
-        if (!new HashSet<>(allNodes).containsAll(nodes)) {
-            throw new IllegalArgumentException("All of the given nodes must " +
-                    "be in the domain of the independence test provided.");
-        }
+        // Note that we are ignoring the sepset map returned by this method
+        // on purpose; it is not used in this search.
+        this.graph = fas.search();
+        this.sepsets = fas.getSepsets();
 
         PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
@@ -288,83 +278,111 @@ public class PcMax implements IGraphSearch {
 
         search.setColliderDiscovery(PcCommon.ColliderDiscovery.MAX_P);
         search.setConflictRule(conflictRule);
-        search.setUseHeuristic(true);
-        search.setMaxPathLength(-1);
+        search.setUseHeuristic(useHeuristic);
+        search.setMaxPathLength(maxPPathLength);
         search.setVerbose(verbose);
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
 
-        this.numIndependenceTests = fas.getNumIndependenceTests();
-
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, independenceTest.getVariables());
         GraphSearchUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
 
-        this.logger.log("graph", "\nReturning this graph: " + this.graph);
+        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
-        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
+        long endTime = MillisecondTimes.timeMillis();
+        this.elapsedTime = endTime - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.log("info", "Finishing PC Algorithm.");
-        this.logger.flush();
+        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+        TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
 
+        this.colliderTriples = search.getColliderTriples();
+        this.noncolliderTriples = search.getNoncolliderTriples();
+        this.ambiguousTriples = search.getAmbiguousTriples();
+
+        logTriples();
+
+        TetradLogger.getInstance().flush();
         return this.graph;
     }
 
     /**
-     * Returns the elapsed time of the search, in milliseconds.
+     * Returns a map for x _||_ y | z1,..,zn from {x, y} to {z1,...,zn}.
      *
-     * @return This time.
+     * @return This map.
      */
-    public long getElapsedTime() {
-        return this.elapsedTime;
+    public SepsetMap getSepsets() {
+        return this.sepsets;
     }
 
     /**
-     * Returns the adjacencies in the graph.
-     * @return This set.
+     * The graph that's constructed during the search.
+     *
+     * @return This graph.
      */
-    public Set<Edge> getAdjacencies() {
-        return new HashSet<>(this.graph.getEdges());
-    }
-
-    /**
-     * Returns the number of independence test performed in the search.
-     * @return This numbger.
-     */
-    public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
-    }
-
-    /**
-     * Returns the nodes in graph.
-     * @return This list.
-     */
-    public List<Node> getNodes() {
-        return this.graph.getNodes();
+    public Graph getGraph() {
+        return this.graph;
     }
 
     /**
      * Sets whether verbose output should be printed.
-     * @param verbose True is fo.
+     *
+     * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Sets whether the stable option should be used.
+     * Sets whether the stable FAS search should be used.
+     *
      * @param stable True if so.
      */
     public void setStable(boolean stable) {
         this.stable = stable;
     }
 
-    public void setConflictRule(PcCommon.ConflictRule conflictRule) {
-        this.conflictRule = conflictRule;
+    /**
+     * Sets whether the heuristic should be used for max p.
+     *
+     * @param useHeuristic True if so.
+     */
+    public void setUseHeuristic(boolean useHeuristic) {
+        this.useHeuristic = useHeuristic;
     }
+
+    /**
+     * Sets the max path length for the max p heuristic.
+     *
+     * @param maxPPathLength This length.
+     */
+    public void setMaxPPathLength(int maxPPathLength) {
+        this.maxPPathLength = maxPPathLength;
+    }
+
+    //==========================PRIVATE METHODS===========================//
+
+    private void logTriples() {
+        TetradLogger.getInstance().log("info", "\nCollider triples:");
+
+        for (Triple triple : this.colliderTriples) {
+            TetradLogger.getInstance().log("info", "Collider: " + triple);
+        }
+
+        TetradLogger.getInstance().log("info", "\nNoncollider triples:");
+
+        for (Triple triple : this.noncolliderTriples) {
+            TetradLogger.getInstance().log("info", "Noncollider: " + triple);
+        }
+
+        TetradLogger.getInstance().log("info", "\nAmbiguous triples (i.e. list of triples for which " +
+                "\nthere is ambiguous data about whether they are colliders or not):");
+
+        for (Triple triple : getAmbiguousTriples()) {
+            TetradLogger.getInstance().log("info", "Ambiguous: " + triple);
+        }
+    }
+
 }
-
-
 
 
