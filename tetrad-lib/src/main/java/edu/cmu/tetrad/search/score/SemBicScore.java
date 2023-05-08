@@ -40,7 +40,8 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * Implements the continuous BIC score for FGES.
+ * Implements the linear, Gaussian BIC score, with a 'penalty discount' multiplier
+ * on the BIC penalty.
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>
