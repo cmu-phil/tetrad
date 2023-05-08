@@ -112,6 +112,11 @@ public final class SvarGfci implements IGraphSearch {
         this.independenceTest = test;
     }
 
+    /**
+     * Runs the search and returns a PAG.
+     *
+     * @return a PAG.
+     */
     public Graph search() {
         this.logger.log("info", "Starting svarGFCI algorithm.");
         this.logger.log("info", "Independence test = " + this.independenceTest + ".");
@@ -174,15 +179,11 @@ public final class SvarGfci implements IGraphSearch {
         return this.graph;
     }
 
-    public void setMaxIndegree(int maxIndegree) {
-        if (maxIndegree < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + maxIndegree);
-        }
-
-        this.maxIndegree = maxIndegree;
-    }
-
+    /**
+     * Sets the knowledge for the search.
+     *
+     * @param knowledge The knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -192,7 +193,9 @@ public final class SvarGfci implements IGraphSearch {
     }
 
     /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
+     * Sets whether the complete ruleset is used.
+     *
+     * @param completeRuleSetUsed True if Zhang's complete rule set should be used, False if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
@@ -200,6 +203,8 @@ public final class SvarGfci implements IGraphSearch {
     }
 
     /**
+     * Sets the maximum length of any discriminating path.
+     *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
@@ -210,32 +215,13 @@ public final class SvarGfci implements IGraphSearch {
         this.maxPathLength = maxPathLength;
     }
 
+    /**
+     * Sets whether verbose output is printed.
+     *
+     * @param verbose true if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
-    }
-
-    public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
-        this.covarianceMatrix = covarianceMatrix;
-    }
-
-    public void setIndependenceTest(IndependenceTest independenceTest) {
-        this.independenceTest = independenceTest;
-    }
-
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
-    }
-
-    public void setSamplePrior(double samplePrior) {
-        this.samplePrior = samplePrior;
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        this.structurePrior = structurePrior;
     }
 
     private void chooseScore() {
