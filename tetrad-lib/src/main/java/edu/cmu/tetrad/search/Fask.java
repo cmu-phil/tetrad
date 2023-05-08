@@ -47,7 +47,8 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * <p>Implements the FASK (Fast Adjacency Skewness) algorithm, which makes decisions for adjacency
  * and orientation using a combination of conditional independence testing, judgments of nonlinear
- * adjacency, and pairwsie orientation due to non-Gaussianity. The reference is this:
+ * adjacency, and pairwsie orientation due to non-Gaussianity. The reference is this:</p>
+ *
  * <p>Sanchez-Romero, R., Ramsey, J. D., Zhang, K., Glymour, M. R., Huang, B., and Glymour, C.
  * (2019). Estimating feedforward and feedback effective connections from fMRI time series: Assessments
  * of statistical methods. Network Neuroscience, 3(2), 274-30</p>

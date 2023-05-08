@@ -42,7 +42,14 @@ import java.util.concurrent.*;
  * <p>Restricts the FGES algorithm (see) to the operations needed just
  * to find the graph over the Markov blanket of a variable X (or a graph
  * over the Markov blankets of a list of variables X1,..,Xn), together
- * with the target X (or, respectively, the targets X1,...,Xn).</p>
+ * with the target X (or, respectively, the targets X1,...,Xn). The
+ * reference is this:</p>
+ *
+ * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., & Glymour, C. (2017).
+ * A million variables and more: the fast greedy equivalence search algorithm
+ * for learning high-dimensional graphical causal models, with an application
+ * to functional magnetic resonance images. International journal of data science
+ * and analytics, 3, 121-129.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>

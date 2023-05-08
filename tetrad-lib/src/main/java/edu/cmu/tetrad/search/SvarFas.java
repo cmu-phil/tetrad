@@ -36,7 +36,7 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * <p>Adapts Fas.java for the SvarFCI algorithm. The main difference is that if an edge is
+ * <p>Adapts FAS for the SvarFCI algorithm. The main difference is that if an edge is
  * removed, it will also remove all homologous edges to preserve the time-repeating s
  * tructure assumed by SvarFCI. Based on (but not identical to) code by Entner and Hoyer
  * for their 2010 paper. Modified by dmalinsky 4/21/2016.</p>
@@ -224,14 +224,6 @@ public class SvarFas implements IFas {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * @throws UnsupportedOperationException This method is not used.
-     */
-    @Override
-    public Graph search(List<Node> nodes) {
-        throw new UnsupportedOperationException("This method is not used.");
     }
 
     /**

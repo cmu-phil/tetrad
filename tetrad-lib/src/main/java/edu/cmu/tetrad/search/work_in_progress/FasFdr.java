@@ -181,14 +181,6 @@ public class FasFdr implements IFas {
         this.verbose = verbose;
     }
 
-    /**
-     * @throws UnsupportedOperationException This method is not used.
-     */
-    @Override
-    public Graph search(List<Node> nodes) {
-        throw new UnsupportedOperationException("Method not used.");
-    }
-
     @Override
     public long getElapsedTime() {
         return 0;

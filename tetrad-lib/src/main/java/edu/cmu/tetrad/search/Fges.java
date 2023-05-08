@@ -49,9 +49,15 @@ import static org.apache.commons.math3.util.FastMath.min;
  * <p>Imlements the Greedy Equivalence Search (GES) algorithm, originally due to
  * Chris Meek but developed significantly by Max Chickering, with some
  * optimizations that allow it to scale accurately to thousands of variables
- * for the sparse case.</p>
+ * for the sparse case. The reference is this:</p>
  *
- * <p>Specificlly, FGES is an implementation of the GES algorithm as specified
+ * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., & Glymour, C. (2017).
+ * A million variables and more: the fast greedy equivalence search algorithm
+ * for learning high-dimensional graphical causal models, with an application
+ * to functional magnetic resonance images. International journal of data science
+ * and analytics, 3, 121-129.</p>
+ *
+ * <p>Specifically, FGES is an implementation of the GES algorithm as specified
  * in this paper:</p>
  *
  * <p>Chickering (2002) "Optimal structure identification with greedy search"

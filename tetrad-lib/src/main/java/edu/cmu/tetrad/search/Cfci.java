@@ -271,14 +271,18 @@ public final class Cfci implements IGraphSearch {
     }
 
     /**
-     * @return true if Zhang's complete rule set should be used, false if only R1-T1 (the rule set of the original FCI)
+     * Returns true if Zhang's complete rule set should be used, false if only R1-T1 (the rule set of the original FCI)
      * should be used. False by default.
+     *
+     * @return True for the complete ruleset.
      */
     public boolean isCompleteRuleSetUsed() {
         return this.completeRuleSetUsed;
     }
 
     /**
+     * Sets whether the complete ruleset should be used.
+     *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-T1 (the rule
      *                            set of the original FCI) should be used. False by default.
      */

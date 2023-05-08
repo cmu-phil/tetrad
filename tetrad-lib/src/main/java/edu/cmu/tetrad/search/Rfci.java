@@ -153,12 +153,20 @@ public final class Rfci implements IGraphSearch {
     //========================PUBLIC METHODS==========================//
 
     /**
-     * @return
+     * Runs the search and returns the RFCI PAG.
+     *
+     * @return This PAG.
      */
     public Graph search() {
         return search(getIndependenceTest().getVariables());
     }
 
+    /**
+     * Searches of a specific sublist of nodes.
+     *
+     * @param nodes The sublist.
+     * @return The RFCI PAG
+     */
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
 
@@ -266,6 +274,58 @@ public final class Rfci implements IGraphSearch {
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
+
+
+    /**
+     * Returns the maximum length of any discriminating path, or -1 of unlimited.
+     *
+     * @return This number.
+     */
+    public int getMaxPathLength() {
+        return this.maxPathLength == Integer.MAX_VALUE ? -1 : this.maxPathLength;
+    }
+
+    /**
+     * Sets the maximum path length for discriminating paths.
+     *
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     */
+    public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
+        this.maxPathLength = maxPathLength == -1
+                ? Integer.MAX_VALUE : maxPathLength;
+    }
+
+    /**
+     * Returns whether verbose output should be printed.
+     *
+     * @return True if so.
+     */
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    /**
+     * Sets whether verbose output is printed.
+     *
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Returns the independence test.
+     *
+     * @return This test.
+     */
+    public IndependenceTest getIndependenceTest() {
+        return this.independenceTest;
+    }
+
 
     //===========================PRIVATE METHODS=========================//
 
@@ -491,44 +551,6 @@ public final class Rfci implements IGraphSearch {
                 }
             }
         }
-    }
-
-
-    /**
-     * @return the maximum length of any discriminating path, or -1 of unlimited.
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength == Integer.MAX_VALUE ? -1 : this.maxPathLength;
-    }
-
-    /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength == -1
-                ? Integer.MAX_VALUE : maxPathLength;
-    }
-
-    /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * The independence test.
-     */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
     }
 }
 

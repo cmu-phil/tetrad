@@ -125,7 +125,9 @@ public final class SpFci implements IGraphSearch {
     //========================PUBLIC METHODS==========================//
 
     /**
-     * @return The discovered PAG.
+     * Runs the search and returns the discovered PAG.
+     *
+     * @return This PAG.
      */
     public Graph search() {
         List<Node> nodes = getIndependenceTest().getVariables();
@@ -196,17 +198,28 @@ public final class SpFci implements IGraphSearch {
         return this.maxDegree;
     }
 
-
+    /**
+     * Returns the knowledge.
+     *
+     * @return This knowedge.
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Sets the knoweldge used in the search.
+     *
+     * @param knowledge This knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
     /**
-     * @return true if Zhang's complete rule set should be used, false if only
+     * Returns whether the complete rule set is used.
+     *
+     * @return True if Zhang's complete rule set should be used, Talse if only
      * R1-R4 (the rule set of the original FCI) should be used. False by
      * default.
      */
@@ -215,6 +228,8 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
+     * Sets whether Zhang's complete ruleset is used.
+     *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set
      *                            should be used, false if only R1-R4 (the rule set of the original FCI)
      *                            should be used. False by default.
@@ -224,14 +239,18 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
-     * @return the maximum length of any discriminating path, or -1 of
+     * Returns the maximum length of any discriminating path, or -1 of
      * unlimited.
+     *
+     * @return This length.
      */
     public int getMaxPathLength() {
         return this.maxPathLength;
     }
 
     /**
+     * Sets the max path length for discriminating paths.
+     *
      * @param maxPathLength the maximum length of any discriminating path, or -1
      *                      if unlimited.
      */

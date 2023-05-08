@@ -97,7 +97,6 @@ public final class SvarFci implements IGraphSearch {
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-    private double penaltyDiscount = 2;
 
 
     //============================CONSTRUCTORS============================//
@@ -115,10 +114,22 @@ public final class SvarFci implements IGraphSearch {
 
     //========================PUBLIC METHODS==========================//
 
+    /**
+     * Returns the depth of search--i.e., the maximum number of conditioning variables
+     * for tests.
+     *
+     * @return This maximum.
+     */
     public int getDepth() {
         return this.depth;
     }
 
+    /**
+     * Sets the depth of search.
+     *
+     * @param depth This depth
+     * @see #getDepth()
+     */
     public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
@@ -128,13 +139,24 @@ public final class SvarFci implements IGraphSearch {
         this.depth = depth;
     }
 
+    /**
+     * Runs the search and returns the PAG.
+     *
+     * @return This PAG.
+     */
     public Graph search() {
         getIndependenceTest().getVariables();
         return search(new SvarFas(getIndependenceTest()));
 //        return search(new Fas(getIndependenceTest()));
     }
 
-
+    /**
+     * Runs the search using a particular implementation of FAS.
+     *
+     * @param fas The FAS to use.
+     * @return The PAG.
+     * @see IFas
+     */
     public Graph search(IFas fas) {
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
@@ -150,32 +172,30 @@ public final class SvarFci implements IGraphSearch {
         SepsetProducer sp = new SepsetsPossibleDsep(this.graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
         sp.setVerbose(this.verbose);
 
-        if (isPossibleDsepSearchDone()) {
-            SvarFciOrient svarFciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
-            svarFciOrient.setKnowledge(this.knowledge);
-            svarFciOrient.ruleR0(this.graph);
+        SvarFciOrient svarFciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
+        svarFciOrient.setKnowledge(this.knowledge);
+        svarFciOrient.ruleR0(this.graph);
 
-            for (Edge edge : new ArrayList<>(this.graph.getEdges())) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
+        for (Edge edge : new ArrayList<>(this.graph.getEdges())) {
+            Node x = edge.getNode1();
+            Node y = edge.getNode2();
 
-                List<Node> sepset = sp.getSepset(x, y);
+            List<Node> sepset = sp.getSepset(x, y);
 
-                if (sepset != null) {
-                    this.graph.removeEdge(x, y);
-                    this.sepsets.set(x, y, sepset);
+            if (sepset != null) {
+                this.graph.removeEdge(x, y);
+                this.sepsets.set(x, y, sepset);
 
 
-                    System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
+                System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
 
-                    // This is another added component to enforce repeating structure, specifically for possibleDsep
-                    removeSimilarPairs(getIndependenceTest(), x, y, sepset); // added 4.27.2016
-                }
+                // This is another added component to enforce repeating structure, specifically for possibleDsep
+                removeSimilarPairs(getIndependenceTest(), x, y, sepset); // added 4.27.2016
             }
-
-            // Reorient all edges as o-o.
-            this.graph.reorientAllWith(Endpoint.CIRCLE);
         }
+
+        // Reorient all edges as o-o.
+        this.graph.reorientAllWith(Endpoint.CIRCLE);
 
         // Step CI C (Zhang's step F3.)
         long time5 = MillisecondTimes.timeMillis();
@@ -195,14 +215,29 @@ public final class SvarFci implements IGraphSearch {
         return this.graph;
     }
 
+    /**
+     * Returns the map from node pairs to sepsets.
+     *
+     * @return This map.
+     */
     public SepsetMap getSepsets() {
         return this.sepsets;
     }
 
+    /**
+     * Returns the knowledge for the search.
+     *
+     * @return This knowledge.
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge for the search.
+     *
+     * @param knowledge This knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException();
@@ -212,6 +247,8 @@ public final class SvarFci implements IGraphSearch {
     }
 
     /**
+     * Returns whether Zhang's complete ruleset is to be used.
+     *
      * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
      * should be used. False by default.
      */
@@ -220,6 +257,8 @@ public final class SvarFci implements IGraphSearch {
     }
 
     /**
+     * Sets whether Zhang's complete ruleset is to be used.
+     *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
@@ -227,19 +266,18 @@ public final class SvarFci implements IGraphSearch {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
-    public boolean isPossibleDsepSearchDone() {
-        return true;
-    }
-
     /**
-     * @return the maximum length of any discriminating path, or -1 of unlimited.
+     * Returns the maximum length of any discriminating path, or -1 of unlimited.
+     * @return This length.
      */
     public int getMaxPathLength() {
         return this.maxPathLength == Integer.MAX_VALUE ? -1 : this.maxPathLength;
     }
 
     /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * Sets the maximum length of any discriminating path, or -1 if unlimited.
+     *
+     * @param maxPathLength This length.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -250,29 +288,29 @@ public final class SvarFci implements IGraphSearch {
     }
 
     /**
-     * True iff verbose output should be printed.
+     * Returns whether verbose output is to be printed.
+     *
+     * @return True if so.
      */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output is to be printed.
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * The independence test.
+     * Returns independence test.
+     *
+     * @return This test.
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
-    }
-
-    public double getPenaltyDiscount() {
-        return this.penaltyDiscount;
-    }
-
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        this.penaltyDiscount = penaltyDiscount;
     }
 
     //===========================PRIVATE METHODS=========================//

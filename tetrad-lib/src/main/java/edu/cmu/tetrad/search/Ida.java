@@ -154,6 +154,7 @@ public class Ida {
 
     /**
      * Returns the distance between the effects and the true effect.
+     *
      * @return This difference.
      */
     public double distance(LinkedList<Double> effects, double trueEffect) {

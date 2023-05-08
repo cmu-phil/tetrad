@@ -35,7 +35,11 @@ import static org.apache.commons.math3.util.FastMath.*;
  * into Java for use in Tetrad. This can be used in various algorithms that
  * assume linearity and non-gaussianity, as for example LiNGAM and LiNG-D.
  * There is one difference from the R, in that in R FastICA can operate over
- * complex numbers, whereeas here it is restricted to real numbers.</p>
+ * complex numbers, whereeas here it is restricted to real numbers. A
+ * useful reference is this:</p>
+ *
+ * <p>Oja, E., & Hyvarinen, A. (2000). Independent component analysis:
+ * algorithms and applications. Neural networks, 13(4-5), 411-430.</p>
  *
  * <p>The documention of the R version is as follows, all of which is true of this
  * translation (so far as I know) except for its being in R and its allowing
@@ -44,7 +48,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Description:
  * <p>
  * This is an R and C code implementation of the FastICA algorithm of Aapo
- * Hyvarinen et al. (URL: <a href="http://www.cis.hut.fi/aapo/">...</a>) to perform Independent
+ * Hyvarinen et al. (URL: http://www.cis.hut.fi/aapo/) to perform Independent
  * Component Analysis (ICA) and Projection Pursuit.
  * <p>
  * Usage:

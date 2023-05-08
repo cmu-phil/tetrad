@@ -38,7 +38,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Modifies the PC algorithm to use the Max P rule for orienting ushielded colliders.
+ * <p></p>Modifies the PC algorithm to use the Max P rule for orienting ushielded
+ * colliders. The reference is this:</p>
+ *
+ * <p>Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm
+ * by maximizing p-value. arXiv preprint arXiv:1610.00378.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -99,9 +103,6 @@ public class PcMax implements IGraphSearch {
 
     private boolean verbose;
     private boolean stable;
-    //    private boolean concurrent;
-    private boolean useMaxP = false;
-    private int maxPPathLength = -1;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
 
     //=============================CONSTRUCTORS==========================//
@@ -123,28 +124,37 @@ public class PcMax implements IGraphSearch {
     //==============================PUBLIC METHODS========================//
 
     /**
-     * @return true iff edges will not be added if they would create cycles.
+     * Returns true iff edges will not be added if they would create cycles.
+     *
+     * @return True if so.
      */
     public boolean isAggressivelyPreventCycles() {
         return this.aggressivelyPreventCycles;
     }
 
     /**
-     * @param aggressivelyPreventCycles Set to true just in case edges will not be added if they would create cycles.
+     * Sets whether cycles should be aggressively checked.
+     *
+     * @param aggressivelyPreventCycles Set to true just in case edges will not be added
+     *                                  if they would create cycles.
      */
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
 
     /**
-     * @return the independence test being used in the search.
+     * Returns the independence test being used in the search.
+     *
+     * @return This test.
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
     }
 
     /**
-     * @return the knowledge specification used in the search. Non-null.
+     * Returns the knowledge specification used in the search. Non-null.
+     *
+     * @return this knowledge.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -152,6 +162,8 @@ public class PcMax implements IGraphSearch {
 
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
+     *
+     * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -162,15 +174,20 @@ public class PcMax implements IGraphSearch {
     }
 
     /**
-     * @return the sepset map from the most recent search. Non-null after the first call to <code>search()</code>.
+     * Returns the sepset map from the most recent search. Non-null after the first call to
+     * <code>search()</code>.
+     *
+     * @return This map.
      */
     public SepsetMap getSepsets() {
         return this.sepsets;
     }
 
     /**
-     * @return the current depth of search--that is, the maximum number of conditioning nodes for any conditional
-     * independence checked.
+     * Returns the current depth of search--that is, the maximum number of conditioning nodes
+     * for any conditional independence checked.
+     *
+     * @return This depth.
      */
     public int getDepth() {
         return this.depth;
@@ -197,11 +214,14 @@ public class PcMax implements IGraphSearch {
     }
 
     /**
-     * Runs PC starting with a complete graph over all nodes of the given conditional independence test, using the given
-     * independence test and knowledge and returns the resultant graph. The returned graph will be a CPDAG if the
-     * independence information is consistent with the hypothesis that there are no latent common causes. It may,
-     * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
-     * of latent common causes, or due to statistical errors in conditional independence judgments.
+     * Runs PC starting with a complete graph over all nodes of the given conditional independence
+     * test, using the given independence test and knowledge and returns the resultant graph. The
+     * returned graph will be a CPDAG if the independence information is consistent with the
+     * hypothesis that there are no latent common causes. It may however, contain cycles or bidirected
+     * edges if this assumption is not born out, either due to the actual presence of latent common
+     * causes, or due to statistical errors in conditional independence judgments.
+     *
+     * @return The CPDAG found.
      */
     @Override
     public Graph search() {
@@ -209,13 +229,17 @@ public class PcMax implements IGraphSearch {
     }
 
     /**
-     * Runs PC starting with a complete graph over the given list of nodes, using the given independence test and
-     * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information
-     * is consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
-     * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
-     * or due to statistical errors in conditional independence judgments.
+     * Runs PC starting with a complete graph over the given list of nodes, using the given
+     * independence test and knowledge and returns the resultant graph. The returned graph will
+     * be a CPDAG if the independence information is consistent with the hypothesis that there are
+     * no latent common causes. It may, however, contain cycles or bidirected edges if this
+     * assumption is not born out, either due to the actual presence of latent common causes, or
+     * due to statistical errors in conditional independence judgments.
      * <p>
      * All the given nodes must be in the domain of the given conditional independence test.
+     *
+     * @param nodes the sublist of nodes to search over.
+     * @return The CPDAG found.
      */
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
@@ -225,6 +249,16 @@ public class PcMax implements IGraphSearch {
         return search(fas, nodes);
     }
 
+    /**
+     * Runs the search using a particular implementation of the fast adjacency search
+     * (FAS), over the given sublist of nodes.
+     *
+     * @param fas   The fast adjacency search to use.
+     * @param nodes The sublist of nodes.
+     * @return The result graph
+     * @see #search()
+     * @see IFas
+     */
     public Graph search(IFas fas, List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
@@ -254,8 +288,8 @@ public class PcMax implements IGraphSearch {
 
         search.setColliderDiscovery(PcCommon.ColliderDiscovery.MAX_P);
         search.setConflictRule(conflictRule);
-        search.setUseHeuristic(useMaxP);
-        search.setMaxPathLength(maxPPathLength);
+        search.setUseHeuristic(true);
+        search.setMaxPathLength(-1);
         search.setVerbose(verbose);
 
         this.graph = search.search();
@@ -278,38 +312,52 @@ public class PcMax implements IGraphSearch {
     }
 
     /**
-     * @return the elapsed time of the search, in milliseconds.
+     * Returns the elapsed time of the search, in milliseconds.
+     *
+     * @return This time.
      */
     public long getElapsedTime() {
         return this.elapsedTime;
     }
 
+    /**
+     * Returns the adjacencies in the graph.
+     * @return This set.
+     */
     public Set<Edge> getAdjacencies() {
         return new HashSet<>(this.graph.getEdges());
     }
 
+    /**
+     * Returns the number of independence test performed in the search.
+     * @return This numbger.
+     */
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
 
+    /**
+     * Returns the nodes in graph.
+     * @return This list.
+     */
     public List<Node> getNodes() {
         return this.graph.getNodes();
     }
 
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True is fo.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets whether the stable option should be used.
+     * @param stable True if so.
+     */
     public void setStable(boolean stable) {
         this.stable = stable;
-    }
-
-    public void setUseMaxP(boolean useMaxP) {
-        this.useMaxP = useMaxP;
-    }
-
-    public void setMaxPPathLength(int maxPPathLength) {
-        this.maxPPathLength = maxPPathLength;
     }
 
     public void setConflictRule(PcCommon.ConflictRule conflictRule) {

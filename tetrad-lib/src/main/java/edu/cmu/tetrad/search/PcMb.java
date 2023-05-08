@@ -33,9 +33,13 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * <p>Searches for a CPDAG representing all the Markov blankets for a given target T consistent with the given
- * independence information. This CPDAG may be used to generate the actual list of DAG's that might be Markov
- * blankets. Note that this code has been converted to be consistent with the CPC algorithm.</p>
+ * <p>Searches for a CPDAG representing all the Markov blankets for a given target T consistent
+ * with the given independence information. This CPDAG may be used to generate the actual list
+ * of DAG's that might be Markov blankets. Note that this code has been converted to be consistent
+ * with the CPC algorithm. The reference is here:</p>
+ *
+ * <p>Bai, X., Padman, R., Ramsey, J., & Spirtes, P. (2008). Tabu search-enhanced graphical models
+ * for classification in high dimensions. INFORMS Journal on Computing, 20(3), 423-437.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -406,42 +410,56 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * @return the set of triples identified as ambiguous by the CPC algorithm during the most recent search.
+     * Returns the set of triples identified as ambiguous by the CPC algorithm during the
+     * most recent search.
+     *
+     * @return This set.
      */
     public Set<Triple> getAmbiguousTriples() {
         return new HashSet<>(this.ambiguousTriples);
     }
 
     /**
-     * @return the number of independence tests performed during the most recent search.
+     * Returns the number of independence tests performed during the most recent search.
+     *
+     * @return This number.
      */
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
 
     /**
-     * @return the target of the most recent search.
+     * Returns the targets of the most recent search.
+     *
+     * @return This list.
      */
     public List<Node> getTargets() {
         return this.targets;
     }
 
     /**
-     * @return the elapsed time of the most recent search.
+     * Returns the elapsed time of the most recent search.
+     *
+     * @return This time.
      */
     public long getElapsedTime() {
         return this.elapsedTime;
     }
 
     /**
-     * @return "PC-MB."
+     * Returns "PC-MB."
+     *
+     * @return This string.
      */
     public String getAlgorithmName() {
         return "PC-MB";
     }
 
     /**
-     * @return Ibid.
+     * Returns the depth of the search--that is, the maximum number of variables
+     * conditioned on in any conditional independence test.
+     *
+     * @return This depth.
      */
     public int getDepth() {
         return this.depth;
@@ -450,7 +468,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     /**
      * Sets the maximum number of conditioning variables for any conditional independence test.
      *
-     * @param depth Ibid.
+     * @param depth This depth.
      */
     public void setDepth(int depth) {
         //  If it's -1 to set it to some unreasonably high number like 1000
@@ -462,14 +480,19 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * @return Ibid.
+     * Returns the result graph.
+     *
+     * @return This graph.
      */
     public Graph resultGraph() {
         return this.resultGraph;
     }
 
     /**
-     * @return just the Markov blanket (not the Markov blanket DAG).
+     * Returns the Markov blanket variables (not the Markov blanket DAG).
+     *
+     * @param target The target variable.
+     * @return This list.
      */
     public List<Node> findMb(Node target) {
         Graph graph = search(Collections.singletonList(target));
@@ -479,14 +502,18 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * @return The test used in search.
+     * Returns the test used in search.
+     *
+     * @return This test.
      */
     public IndependenceTest getTest() {
         return this.test;
     }
 
     /**
-     * @return The knowledge used in search.
+     * Returns The knowledge used in search.
+     *
+     * @return This knowledge.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -495,7 +522,8 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     /**
      * Sets knowledge, to which the algorithm is in fact sensitive.
      *
-     * @param knowledge See the Knowledge class.
+     * @param knowledge This knowledge.
+     * @see Knowledge
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);

@@ -37,6 +37,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * <p>Horst, P. (1965). Factor analysis of data matrices. Holt, Rinehart and Winston.
  * This work has good specifications and explanations of factor analysis algorithm and
  * methods of communality estimation.</p>
+ *
  * <p>Rummel, R. J. (1988). Applied factor analysis. Northwestern University Press. This
  * book is a good companion to the book listed above.  While it doesn't specify any actual
  * algorithm, it has a great introduction to the subject that gives the reader a good
@@ -112,6 +113,8 @@ public class FactorAnalysis {
      * END PSEUDO-CODE
      * <p>
      * At the end of the method, the list of column vectors is actually assembled into a TetradMatrix.
+     *
+     * @return The matrix of residuals.
      */
     public Matrix successiveResidual() {
         this.factorLoadingVectors = new LinkedList<>();
@@ -147,6 +150,12 @@ public class FactorAnalysis {
         return result;
     }
 
+    /**
+     * Returns the matrix result for the varimax algorithm.
+     *
+     * @param factorLoadingMatrix The matrix of factor loadings.
+     * @return The result matrix.
+     */
     public Matrix successiveFactorVarimax(Matrix factorLoadingMatrix) {
         if (factorLoadingMatrix.columns() == 1)
             return factorLoadingMatrix;

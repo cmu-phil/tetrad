@@ -34,9 +34,11 @@ import java.util.*;
 /**
  * <p>Implemented the Cyclic Causal Discovery (CCD) algorithm by Thomas Richardson.
  * A reference for this is here:</p>
+ *
  * <p>Mooij, J. M., &amp; Claassen, T. (2020, August). Constraint-based causal discovery
  * using partial ancestral graphs in the presence of cycles. In Conference on Uncertainty
  * in Artificial Intelligence (pp. 1159-1168). PMLR.</p>
+ *
  * <p>See also Chapter 7 of Glymour and Cooper, eds., Computation, Causation, and Discovery</p>
  * <p>The graph takes continuous data from a cyclic model as input and returns a cyclic
  * PAG graphs, with various types of underlining, that represents a Markov equivalence of

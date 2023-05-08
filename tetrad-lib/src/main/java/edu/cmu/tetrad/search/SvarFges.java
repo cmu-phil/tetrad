@@ -1919,7 +1919,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             this.removedEdges.add(Edges.undirectedEdge(x1, y1));
         }
     }
-
 }
 
 

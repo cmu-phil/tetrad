@@ -37,8 +37,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * <p>Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
- * locally.</p>
+ * <p>Implements a convervative version of PC, in which the Markov condition is assumed
+ * but faithfulness is tested locally. The reference is here:</p>
+ *
+ * <p>Ramsey, J., Zhang, J., & Spirtes, P. L. (2012). Adjacency-faithfulness and
+ * conservative causal inference. arXiv preprint arXiv:1206.6843.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -116,8 +119,10 @@ public final class Cpc implements IGraphSearch {
     //=============================CONSTRUCTORS==========================//
 
     /**
-     * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
-     * independence test, for fear of duplicating the data set!
+     * Constructs a CPC algorithm that uses the given independence test as oracle. This does
+     * not make a copy of the independence test, for fear of duplicating the data set!
+     *
+     * @param independenceTest The test to user for oracle conditional independence information.
      */
     public Cpc(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -130,7 +135,9 @@ public final class Cpc implements IGraphSearch {
     //==============================PUBLIC METHODS========================//
 
     /**
-     * @return true just in case edges will not be added if they would create cycles.
+     * Returns true just in case edges will not be added if they would create cycles.
+     *
+     * @return True if so.
      */
     public boolean isAggressivelyPreventCycles() {
         return this.aggressivelyPreventCycles;
@@ -147,7 +154,7 @@ public final class Cpc implements IGraphSearch {
 
     /**
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
-     * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
+     * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multicore systems.
      *
      * @param depth This maximum.
      */

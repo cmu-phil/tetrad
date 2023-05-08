@@ -141,7 +141,7 @@ public class Fasd implements IFas {
      * more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
      * adjacencies in the data.
      *
-     * @return a SepSet, which indicates which variables are independent conditional on which other variables
+     * @return a graph which indicates which variables are independent conditional on which other variables
      */
     public Graph search() {
         this.logger.log("info", "Starting Fast Adjacency Search.");
@@ -260,22 +260,42 @@ public class Fasd implements IFas {
         this.verbose = verbose;
     }
 
-
+    /**
+     * Returns the elapsed time.
+     *
+     * @return This time.
+     */
     @Override
     public long getElapsedTime() {
         return 0;
     }
 
+    /**
+     * Returns the nodes beign searched over.
+     *
+     * @return This list.
+     */
     @Override
     public List<Node> getNodes() {
         return this.test.getVariables();
     }
 
+    /**
+     * Returns an empty list. Not used.
+     *
+     * @param node Whichever node.
+     * @return An empty list.
+     */
     @Override
     public List<Triple> getAmbiguousTriples(Node node) {
-        return null;
+        return new ArrayList<>();
     }
 
+    /**
+     * Sets the output to send prints to.
+     *
+     * @param out This print stream.
+     */
     @Override
     public void setOut(PrintStream out) {
         this.out = out;
