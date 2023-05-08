@@ -69,7 +69,7 @@ public class Boss implements SuborderSearch {
                 }
             } while (improved);
 
-            bes(prefix, suborder);
+//            bes(prefix, suborder);
 
             score = update(prefix, suborder);
             if (score > bestScore) {
@@ -132,10 +132,10 @@ public class Boss implements SuborderSearch {
             }
 
             scores[--i] += score;
-            if (scores[i] + 1e-9 > scores[best]) best = i;
+            if (scores[i] + 1e-6 > scores[best]) best = i;
         }
 
-        if (scores[curr] + 1e-9 > scores[best]) return false;
+        if (scores[curr] + 1e-6 > scores[best]) return false;
         if (best > curr) best--;
         suborder.remove(x);
         suborder.add(best, x);
