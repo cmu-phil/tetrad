@@ -39,16 +39,16 @@ import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirecte
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * <p>Uses SP in place of FGES for the initial step in the GFCI algorithm. 
- * This tends to produce a accurate PAG than GFCI as a result, for the latent 
+ * <p>Uses SP in place of FGES for the initial step in the GFCI algorithm.
+ * This tends to produce a accurate PAG than GFCI as a result, for the latent
  * variables case. This is a simple substitution; the reference for GFCI is here:</p>
  * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
  * FGES.</p>
- * 
+ *
  * <p>For SP only a score is needed, but there are steps in GFCI that require
  * a test, so for this method, both a test and a score need to be given.</p>
- * 
+ *
  * <p>Note that SP considers all permutations of the algorithm, which is
  * exponential in the number of variables. So SP is limited to about 10
  * variables.</p>
@@ -106,6 +106,13 @@ public final class SpFci implements IGraphSearch {
     private boolean doDiscriminatingPathRule = true;
 
     //============================CONSTRUCTORS============================//
+
+    /**
+     * Constructor; requires by ta test and a score, over the same variables.
+     *
+     * @param test  The test.
+     * @param score The score.
+     */
     public SpFci(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
@@ -118,7 +125,7 @@ public final class SpFci implements IGraphSearch {
     //========================PUBLIC METHODS==========================//
 
     /**
-     * @return the discovered CPDAG.
+     * @return The discovered PAG.
      */
     public Graph search() {
         List<Node> nodes = getIndependenceTest().getVariables();
@@ -167,6 +174,11 @@ public final class SpFci implements IGraphSearch {
         return this.graph;
     }
 
+    /**
+     * Sets the max degree of the search.
+     *
+     * @param maxDegree This maximum.
+     */
     public void setMaxDegree(int maxDegree) {
         if (maxDegree < -1) {
             throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0: " + maxDegree);
@@ -177,47 +189,13 @@ public final class SpFci implements IGraphSearch {
 
     /**
      * Returns The maximum indegree of the output graph.
+     *
+     * @return This maximum.
      */
     public int getMaxDegree() {
         return this.maxDegree;
     }
 
-    // Due to Spirtes.
-    public void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
-        this.graph = new EdgeListGraph(graph);
-        this.graph.reorientAllWith(Endpoint.CIRCLE);
-        fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
-
-        List<Node> nodes = this.graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (fgesGraph.isDefCollider(a, b, c)) {
-                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
-
-                    if (sepset != null && !sepset.contains(b)) {
-                        this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                        this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                    }
-                }
-            }
-        }
-    }
 
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -266,56 +244,88 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
-     * True iff verbose output should be printed.
+     * Sets whether verbose output is printed.
+     *
+     * @param verbose True if so.
      */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * The independence test.
+     * Returns the independence test used in search.
+     *
+     * @return This test.
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
     }
 
-    public ICovarianceMatrix getCovMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public ICovarianceMatrix getCovarianceMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
-        this.covarianceMatrix = covarianceMatrix;
-    }
-
-    public PrintStream getOut() {
-        return this.out;
-    }
-
+    /**
+     * Sets the output stream used to print.
+     *
+     * @param out This print stream.
+     */
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
-    public void setIndependenceTest(IndependenceTest independenceTest) {
-        this.independenceTest = independenceTest;
-    }
-
+    /**
+     * Sets the maximum number of variables conditioned on.
+     *
+     * @param depth This maximum.
+     */
     public void setDepth(int depth) {
         this.depth = depth;
     }
 
+    /**
+     * Sets whether the discriminating path search is done.
+     *
+     * @param doDiscriminatingPathRule True if so.
+     */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
     //===========================================PRIVATE METHODS=======================================//
+
+    // Due to Spirtes.
+    private void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
+        this.graph = new EdgeListGraph(graph);
+        this.graph.reorientAllWith(Endpoint.CIRCLE);
+        fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
+
+        List<Node> nodes = this.graph.getNodes();
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (fgesGraph.isDefCollider(a, b, c)) {
+                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
+                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
+                    List<Node> sepset = sepsets.getSepset(a, c);
+
+                    if (sepset != null && !sepset.contains(b)) {
+                        this.graph.setEndpoint(a, b, Endpoint.ARROW);
+                        this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * Orients according to background knowledge

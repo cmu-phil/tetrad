@@ -152,23 +152,9 @@ public final class Rfci implements IGraphSearch {
 
     //========================PUBLIC METHODS==========================//
 
-    public int getDepth() {
-        return this.depth;
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + depth);
-        }
-
-        this.depth = depth;
-    }
-
-    public long getElapsedTime() {
-        return this.elapsedTime;
-    }
-
+    /**
+     * @return
+     */
     public Graph search() {
         return search(getIndependenceTest().getVariables());
     }
@@ -179,6 +165,13 @@ public final class Rfci implements IGraphSearch {
         return search(new Fas(getIndependenceTest()), nodes);
     }
 
+    /**
+     * Runs the search and returns the RFCI PAG.
+     *
+     * @param fas   The type of FAS to use for the initial step.
+     * @param nodes The nodes to search over.
+     * @return The RFCI PAG.
+     */
     public Graph search(IFas fas, List<Node> nodes) {
         long beginTime = MillisecondTimes.timeMillis();
         independenceTest.setVerbose(verbose);
@@ -224,14 +217,52 @@ public final class Rfci implements IGraphSearch {
         return this.graph;
     }
 
+    /**
+     * Sets the maximum number of variables conditioned on in any test.
+     *
+     * @param depth This maximum.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException(
+                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+        }
+
+        this.depth = depth;
+    }
+
+    /**
+     * Returns the elapsed time of the search.
+     *
+     * @return This time.
+     */
+    public long getElapsedTime() {
+        return this.elapsedTime;
+    }
+
+    /**
+     * Returns the map from node pairs to sepsets found in search.
+     *
+     * @return This map.
+     */
     public SepsetMap getSepsets() {
         return this.sepsets;
     }
 
+    /**
+     * Returns the knowledge used in search.
+     *
+     * @return This knowledge.
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge used in search.
+     *
+     * @param knowledge This knoweldge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
