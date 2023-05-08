@@ -33,6 +33,7 @@ public class Boss implements SuborderSearch {
     private final Map<Node, Set<Node>> parents;
     private Map<Node, GrowShrinkTree> gsts;
     private Knowledge knowledge = new Knowledge();
+    private PermutationBes bes = null;
     private int numStarts = 1;
 
 
@@ -69,7 +70,7 @@ public class Boss implements SuborderSearch {
                 }
             } while (improved);
 
-//            bes(prefix, suborder);
+            if (this.bes != null) bes(prefix, suborder);
 
             score = update(prefix, suborder);
             if (score > bestScore) {
@@ -99,11 +100,8 @@ public class Boss implements SuborderSearch {
         while (itr.hasNext()) {
             Node z = itr.next();
 
-//            if x is a required parent of z
-//            we insert x to the right of z
-//            this might be wrong...
+            // THE CORRECTNESS OF THIS NEEDS TO BE VERIFIED
             if (this.knowledge.isRequired(x.getName(), z.getName())) break;
-
 
             scores[i++] = this.gsts.get(x).trace(Z, all) + score;
             if (z != x) {
@@ -121,9 +119,7 @@ public class Boss implements SuborderSearch {
         while (itr.hasPrevious()) {
             Node z = itr.previous();
 
-//            if z is a required parent of x
-//            we insert x to the left of z
-//            this might be wrong...
+            // THE CORRECTNESS OF THIS NEEDS TO BE VERIFIED
             if(this.knowledge.isRequired(z.getName(), x.getName())) break;
 
             if (z != x) {
@@ -143,16 +139,20 @@ public class Boss implements SuborderSearch {
         return true;
     }
 
-    private void bes(List<Node> prefix, List<Node> suborder) {
-        PermutationBes bes = new PermutationBes(this.score);
-        bes.setKnowledge(this.knowledge);
-        bes.setVerbose(false);
+    public void useBes(boolean use) {
+        this.bes = null;
+        if (use) {
+            this.bes = new PermutationBes(this.score);
+            this.bes.setVerbose(false);
+        }
+    }
 
+    private void bes(List<Node> prefix, List<Node> suborder) {
         List<Node> all = new ArrayList<>(prefix);
         all.addAll(suborder);
 
         Graph graph = PermutationSearch.getGraph(all, this.parents, this.knowledge, true);
-        bes.bes(graph, all, suborder);
+        this.bes.bes(graph, all, suborder);
         graph.paths().makeValidOrder(suborder);
     }
 
@@ -187,6 +187,7 @@ public class Boss implements SuborderSearch {
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
+        this.bes.setKnowledge(knowledge);
     }
 
     public void setNumStarts(int numStarts) {
