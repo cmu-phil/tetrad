@@ -36,7 +36,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * <p></p>Provides some utilities for resolving inconsistencies that arise
+ * <p>Provides some utilities for resolving inconsistencies that arise
  * between sepsets learned for overlapping datasets. This occurs frequently when
  * using the DCI and ION algorithm. A reference is here:</p>
  *
