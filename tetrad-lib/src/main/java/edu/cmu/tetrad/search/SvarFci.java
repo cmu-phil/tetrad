@@ -47,15 +47,11 @@ import java.util.List;
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)</p>
  *
- * <p>Some references are as follows:</p>
+ * <p>The references is as follows:</p>
  *
  * <p>Malinsky, D., & Spirtes, P. (2018, August). Causal structure learning from multivariate
  * time series in settings with unmeasured confounding. In Proceedings of 2018 ACM SIGKDD
  * workshop on causal discovery (pp. 23-47). PMLR.</p>
- *
- * <p>Malinsky, D., & Spirtes, P. (2019, April). Learning the structure of a nonstationary
- * vector autoregression. In The 22nd International Conference on Artificial Intelligence
- * and Statistics (pp. 2986-2994). PMLR.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
