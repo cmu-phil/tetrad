@@ -30,6 +30,9 @@ import java.util.concurrent.*;
  * <p>Colombo, D., and Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning.
  * The Journal of Machine Learning Research, 15(1), 3741-3782.</p>
  *
+ * <p>This class is not configured to respect knowledge of forbidden and required
+ * edges.</p>
+ *
  * @author josephramsey
  */
 public class Cstar {

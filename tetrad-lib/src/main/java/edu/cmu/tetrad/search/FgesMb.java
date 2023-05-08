@@ -44,8 +44,12 @@ import java.util.concurrent.*;
  * over the Markov blankets of a list of variables X1,..,Xn), together
  * with the target X (or, respectively, the targets X1,...,Xn).</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author josephramsey
  * @see Fges
+ * @see Knowledge
  */
 public final class FgesMb {
 

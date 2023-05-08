@@ -68,8 +68,15 @@ import static org.apache.commons.math3.util.FastMath.min;
  *
  * <p>A number of other optimizations were also. See code for details.</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author Ricardo Silva
  * @author josephramsey
+ * @see Grasp
+ * @see Boss
+ * @see Sp
+ * @see Knowledge
  */
 public final class Fges implements IGraphSearch, DagScorer {
     private final Set<Node> emptySet = new HashSet<>();

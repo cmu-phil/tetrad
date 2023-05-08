@@ -56,6 +56,9 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * for the initial step; in this repository we give three other options,
  * GRaSP-FCI, BFCI (BOSS FCI), and SP-FCI (see).</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author Juan Miguel Ogarrio
  * @author peterspirtes
  * @author josephramsey
@@ -65,6 +68,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see BFci
  * @see SpFci
  * @see Fges
+ * @see Knowledge
  */
 public final class GFci implements IGraphSearch {
     private Graph graph;

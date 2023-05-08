@@ -45,8 +45,12 @@ import java.util.List;
 /**
  * Adapts GFCI to the SVAR case.
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author danielmalinsky
  * @see GFci
+ * @see Knowledge
  */
 public final class SvarGfci implements IGraphSearch {
 

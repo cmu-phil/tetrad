@@ -56,11 +56,15 @@ import java.util.Set;
  * <p>Meek, C. (1995), "Causal inference and causal explanation with background
  * knowledge."</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author peterspirtes
  * @author chrismeek
  * @author clarkglymour
  * @author josephramsey
  * @see Fci
+ * @see Knowledge
  */
 public class Pc implements IGraphSearch {
 

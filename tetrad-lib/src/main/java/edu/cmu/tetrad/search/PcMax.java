@@ -41,10 +41,14 @@ import java.util.Set;
 /**
  * Modifies the PC algorithm to use the Max P rule for orienting ushielded colliders.
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author josephramsey.
  * @see PcMax
  * @see Pc
  * @see Fasd
+ * @see Knowledge
  */
 public class PcMax implements IGraphSearch {
 

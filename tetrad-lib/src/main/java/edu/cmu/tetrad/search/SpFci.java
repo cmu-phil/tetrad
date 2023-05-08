@@ -53,6 +53,9 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * exponential in the number of variables. So SP is limited to about 10
  * variables.</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author josephramsey
  * @author bryan andrews
  * @see Grasp
@@ -60,6 +63,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see BFci
  * @see GraspFci
  * @see Fges
+ * @see Knowledge
  */
 public final class SpFci implements IGraphSearch {
 

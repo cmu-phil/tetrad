@@ -59,10 +59,14 @@ import java.util.List;
  * <p>A suitable clustering for Mimbuild may be obtained using the BPC or FOFC
  * algorithm (see).</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author josephramsey
  * @see Bpc
  * @see Fofc
  * @see #getLatentsCov()
+ * @see Knowledge
  */
 public class Mimbuild {
 

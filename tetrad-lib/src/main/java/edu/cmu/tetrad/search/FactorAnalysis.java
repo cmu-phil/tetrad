@@ -42,6 +42,9 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * algorithm, it has a great introduction to the subject that gives the reader a good
  * appreciation of the philosophy and the mathematics behind factor analysis.</p>
  *
+ * <p>This class is not configured to respect knowledge of forbidden and required
+ * edges.</p>
+ *
  * @author Mike Freenor
  */
 public class FactorAnalysis {

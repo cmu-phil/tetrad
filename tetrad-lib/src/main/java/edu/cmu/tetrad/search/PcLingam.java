@@ -59,6 +59,9 @@ import java.util.List;
  * <p>This may be replaced by a more general algorithm that allows alternatives for the
  * CPDAG search and for the the non-Gaussian orientation method.</p>
  *
+ * <p>This class is not configured to respect knowledge of forbidden and required
+ * edges.</p>
+ *
  * @author peterspirtes
  * @author patrickhoyer
  * @author josephramsey

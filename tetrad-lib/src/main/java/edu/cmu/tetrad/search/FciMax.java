@@ -42,8 +42,13 @@ import java.util.concurrent.RecursiveTask;
  * (2019). Feasibility of lung cancer prediction from low-dose CT scan and smoking factors using
  * causal models. Thorax, 74(7), 643-649.</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author josephramsey
  * @see Fci
+ * @see PcMax
+ * @see Knowledge
  */
 public final class FciMax implements IGraphSearch {
 

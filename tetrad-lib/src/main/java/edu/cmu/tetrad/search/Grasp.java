@@ -38,8 +38,15 @@ import static java.util.Collections.shuffle;
  * that tier, which allows the SP algorithm to address tiered (e.g., time series)
  * problems with larger numbers of variables.</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author bryanandrews
  * @author josephramsey
+ * @see Fges
+ * @see Boss
+ * @see Sp
+ * @see Knowledge
  */
 public class Grasp {
     private final List<Node> variables;

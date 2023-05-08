@@ -70,6 +70,9 @@ import static org.apache.commons.math3.util.FastMath.*;
  * in absolute value for including entries in a possible strong diagonal for W, and a threshold
  * for BHat for including edges in the final graph.</p>
  *
+ * <p>This class is not configured to respect knowledge of forbidden and required
+ * edges.</p>
+ *
  * @author peterspirtes
  * @author gustavolacerda
  * @author patrickhoyer

@@ -50,11 +50,15 @@ import java.util.List;
  * high-dimensional directed acyclic graphs with latent and selection variables. The
  * Annals of Statistics, 294-321.</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
  * @author josephramsey
  * @author Choh-Man Teng
  * @see Fci
+ * @see Knowledge
  */
 public final class Rfci implements IGraphSearch {
 

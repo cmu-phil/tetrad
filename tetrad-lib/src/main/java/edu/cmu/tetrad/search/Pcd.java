@@ -39,10 +39,14 @@ import java.util.Set;
 /**
  * Modifies the PC algorithm to handle the deterministic case.
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author peterspirtes
  * @author josephramsey.
  * @see Fasd
  * @see Pc
+ * @see Knowledge
  */
 public class Pcd implements IGraphSearch {
 

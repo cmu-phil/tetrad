@@ -44,7 +44,11 @@ import java.util.*;
  * SvarFCI. Based on (but not identicial to) code by Entner and Hoyer for their 2010 paper. Modified
  * by DMalinsky 4/20/2016.</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author dmalinsky
+ * @see Knowledge
  */
 public final class SvarFciOrient {
 

@@ -56,8 +56,12 @@ import java.util.concurrent.*;
  *
  * <p>A number of other optimizations were added 5/2015. See code for details.</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author danielmalinsky
  * @see Fges
+ * @see Knowledge
  */
 public final class SvarFges implements IGraphSearch, DagScorer {
 

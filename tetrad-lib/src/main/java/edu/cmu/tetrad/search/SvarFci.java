@@ -47,8 +47,12 @@ import java.util.List;
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
  * (By a remark of Zhang's, the rule applications can be staged in this way.)
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author danielmalinsky
  * @see Fci
+ * @see Knowledge
  */
 public final class SvarFci implements IGraphSearch {
 

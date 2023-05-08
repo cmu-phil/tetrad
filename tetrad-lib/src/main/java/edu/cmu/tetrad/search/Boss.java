@@ -27,11 +27,15 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * <p>This class is meant to be used in the context of the PermutationSearch class (see).
  * the proper use is PermutationSearch search = new PermutationSearch(new Sp(score));</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author bryanandrews
  * @author josephramsey
  * @see Sp
  * @see Grasp
  * @see PermutationSearch
+ * @see Knowledge
  */
 public class Boss implements SuborderSearch {
     private final BesPermutation bes;

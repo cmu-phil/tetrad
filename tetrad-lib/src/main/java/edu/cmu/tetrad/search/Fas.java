@@ -54,9 +54,13 @@ import java.util.*;
  * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
  * prediction, and search. MIT press.</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author josephramsey.
  * @see Pc
  * @see Fci
+ * @see Knowledge
  */
 public class Fas implements IFas {
 

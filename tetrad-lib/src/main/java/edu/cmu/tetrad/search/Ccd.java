@@ -42,6 +42,9 @@ import java.util.*;
  * PAG graphs, with various types of underlining, that represents a Markov equivalence of
  * the true DAG.</p>
  *
+ * <p>This class is not configured to respect knowledge of forbidden and required
+ * edges.</p>
+ *
  * @author Frank C. Wimberly
  * @author josephramsey
  */

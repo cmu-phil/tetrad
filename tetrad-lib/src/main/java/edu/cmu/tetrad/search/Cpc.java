@@ -40,7 +40,13 @@ import java.util.Set;
  * Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
  * locally.
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author josephramsey (this version).
+ * @see Pc
+ * @see PcMax
+ * @see Knowledge
  */
 public final class Cpc implements IGraphSearch {
 

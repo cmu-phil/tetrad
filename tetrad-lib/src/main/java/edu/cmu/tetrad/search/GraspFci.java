@@ -47,6 +47,9 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * <p>For GRaSP only a score is needed, but there are steps in GFCI that require
  * a test, so for this method, both a test and a score need to be given.</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author josephramsey
  * @author bryanandrews
  * @see Grasp
@@ -54,6 +57,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see BFci
  * @see SpFci
  * @see Fges
+ * @see Knowledge
  */
 public final class GraspFci implements IGraphSearch {
 

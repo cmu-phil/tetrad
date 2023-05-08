@@ -48,9 +48,13 @@ import static org.apache.commons.math3.util.FastMath.*;
  * to use to do the orientations are given in the enum, Lofs.Rule. Most of these are
  * taken from the literature and ca be googled.</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author josephramsey
  * @see Score
  * @see Rule
+ * @see Knowledge
  */
 public class Lofs {
 

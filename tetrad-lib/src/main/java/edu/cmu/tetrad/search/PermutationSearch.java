@@ -23,10 +23,14 @@ import java.util.*;
  * many more varaibles than otherwise, so long as tiered knowledge is available
  * to organize the search.</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author bryanandrews
  * @see SuborderSearch
  * @see Boss
  * @see Sp
+ * @see Knowledge
  */
 public class PermutationSearch {
     private final SuborderSearch suborderSearch;

@@ -131,7 +131,12 @@ import static org.apache.commons.math3.util.FastMath.*;
  * --twoCycleScreeningThreshold 0 --orientationAlpha 0.1 -structurePrior 0
  * </p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author josephramsey
+ * @see Knowledge
+ * @see Lofs
  */
 public final class Fask implements IGraphSearch {
 

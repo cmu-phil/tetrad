@@ -17,10 +17,14 @@ import java.util.Set;
  * where PermutationSearch handles an optimization for tiered knowledge where each
  * tier can be search separately in order. (See the documentation for that class.)
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author bryanandrews
  * @see PermutationSearch
  * @see Boss
  * @see Sp
+ * @see Knowledge
  */
 public interface SuborderSearch {
 

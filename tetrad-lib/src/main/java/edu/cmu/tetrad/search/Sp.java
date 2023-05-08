@@ -30,11 +30,15 @@ import java.util.*;
  * <p>Raskutti, G., &amp; Uhler, C. (2018). Learning directed acyclic graph models based on
  * sparsest permutations. Stat, 7(1), e183.</p>
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author bryanandrews
  * @author josephramsey
  * @see PermutationSearch
  * @see Knowledge
  * @see SpFci
+ * @see Knowledge
  */
 public class Sp implements SuborderSearch {
     private final Score score;

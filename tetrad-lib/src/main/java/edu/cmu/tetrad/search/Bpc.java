@@ -53,6 +53,9 @@ import java.util.*;
  * <p>Bron, C. and Kerbosch, J. (1973) "Algorithm 457: Finding all cliques of an undirected graph".
  * Communications of ACM 16, 575-577.</p>
  *
+ *  <p>This class is not configured to respect knowledge of forbidden and required
+ *  edges.</p>
+ *
  * @author Ricardo Silva
  * @see Fofc
  * @see Ftfc

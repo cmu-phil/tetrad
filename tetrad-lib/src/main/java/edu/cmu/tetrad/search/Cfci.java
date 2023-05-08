@@ -39,10 +39,14 @@ import java.util.*;
  * collider orienatation is conservative, there may be ambiguous triples; these
  * may be retrieved using that accessor method.
  *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
  * @see Fci
  * @see #getAmbiguousTriples()
+ * @see Knowledge
  */
 public final class Cfci implements IGraphSearch {
 
