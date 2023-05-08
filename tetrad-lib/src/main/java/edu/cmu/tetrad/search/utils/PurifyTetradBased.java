@@ -29,9 +29,9 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import java.util.*;
 
 /**
- * A clean-up of Ricardo's tetrad-based purify.
+ * Implements a tetrad-based purify method.
  *
- * @author Joe Ramsey
+ * @author ricardosilva
  */
 public class PurifyTetradBased implements IPurify {
     private final TetradTest tetradTest;

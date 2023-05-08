@@ -35,8 +35,9 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.*;
 
 /**
- * Purify is a implementation of the automated purification methods described on CPS and the report "Learning
- * Measurement Models" CMU-CALD-03-100.
+ * Implements the Purify algorithm, which is a implementation of the automated
+ * purification methods described on CPS and the report "Learning Measurement Models"
+ * CMU-CALD-03-100.
  * <p>
  * No background knowledge is allowed yet. Future versions of this algorithm will include it.
  * <p>

@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Holds some utility methods for Purify, Build Clusters, and Mimbuild.
+ * Provides some utility methods for Purify, Build Clusters, and Mimbuild.
  *
  * @author josephramsey
  */

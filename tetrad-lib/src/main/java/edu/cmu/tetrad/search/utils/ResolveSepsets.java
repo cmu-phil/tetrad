@@ -36,10 +36,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Utilities for resolving inconsistencies that arise between sepsets learned for overlapping datasets. This occurs
- * frequently when using the DCI and ION algorithm. f
+ * Provides some utilities for resolving inconsistencies that arise between sepsets
+ * learned for overlapping datasets. This occurs frequently when using the DCI and ION algorithm.
  *
- * @author Robert Tillman
+ * @author roberttillman
  */
 public final class ResolveSepsets {
     public enum Method {

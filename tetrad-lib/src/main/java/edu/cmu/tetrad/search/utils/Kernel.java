@@ -25,7 +25,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 
 /**
- * Interface implemented by classes that evaluate scalar valued kernels
+ * Gives an implemented  that is implemented by classes that evaluate scalar
+ * valued kernels
  *
  * @author Robert Tillman
  */

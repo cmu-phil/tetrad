@@ -34,8 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>A sepset producer using conditional independence tests to generate the Sepset map,
- * for the case where possible dsep sets are required.</p>
+ * <p>Provides a sepset producer using conditional independence tests to generate
+ * the Sepset map, for the case where possible dsep sets are required.</p>
  *
  * @author josephramsey
  * @see SepsetProducer

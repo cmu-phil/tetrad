@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 /**
- * <p>A tree-based score-caching data structure useful for permutation searches.
+ * <p>Provides a tree-based score-caching data structure useful for permutation searches.
  * The use of this caching data structure speeds these algorithms up
  * significantly.</p>
  *

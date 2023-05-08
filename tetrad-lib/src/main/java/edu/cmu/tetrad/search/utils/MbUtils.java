@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import java.util.*;
 
 /**
- * Some useful utilities for dealing with Markov blankets and Markov blanket DAGs.
+ * Provides some useful utilities for dealing with Markov blankets and Markov blanket DAGs.
  *
  * @author josephramsey
  */

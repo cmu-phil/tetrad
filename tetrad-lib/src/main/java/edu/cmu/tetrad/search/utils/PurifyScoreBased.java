@@ -34,8 +34,9 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA. User: josephramsey Date: May 17, 2010 Time: 6:17:53 PM To change this template use File |
- * Settings | File Templates.
+ * Implements a score-based Purify method.
+ *
+ * @author ricardosilva
  */
 public class PurifyScoreBased implements IPurify {
     private final boolean outputMessage = true;

@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * An enumeration of the test types for BuildPureClusters, and Purify.
+ * Enumerates the algorihtm types for BuildPureClusters, and Purify.
  */
 public enum BpcAlgorithmType implements TetradSerializable {
     BUILD_PURE_CLUSTERS,

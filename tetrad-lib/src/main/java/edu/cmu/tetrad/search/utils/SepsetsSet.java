@@ -28,7 +28,8 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import java.util.List;
 
 /**
- * <p>A sepset producer using conditional independence tests to generate the Sepset map.</p>
+ * <p>Provides a sepset producer using conditional independence tests to generate
+ * the Sepset map.</p>
  *
  * @author josephramsey
  * @see SepsetProducer

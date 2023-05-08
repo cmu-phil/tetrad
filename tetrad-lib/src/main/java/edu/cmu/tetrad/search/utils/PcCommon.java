@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Common implementation of variaous PC-like algorithms, with options for
+ * Prodies some common implementation pieces of variaous PC-like algorithms, with options for
  * collider discovery type, FAS type, and conflict rule.
  *
  * @author josephramsey

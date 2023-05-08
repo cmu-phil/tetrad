@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class takes an xml element representing a bayes im and converts it to
+ * Takes an xml element representing a bayes im and converts it to
  * a BayesIM
  *
  * @author mattheweasterday

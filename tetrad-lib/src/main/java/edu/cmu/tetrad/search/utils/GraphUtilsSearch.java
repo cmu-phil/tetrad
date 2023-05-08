@@ -41,8 +41,7 @@ import static java.util.Collections.sort;
 import static org.apache.commons.math3.util.FastMath.max;
 
 /**
- * Graph utilities for search algorithm. Lots of orientation method, for
- * instance.
+ * Provides some graph utilities for search algorithm.
  *
  * @author josephramsey
  */

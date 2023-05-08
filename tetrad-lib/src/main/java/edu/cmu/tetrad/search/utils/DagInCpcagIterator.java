@@ -27,8 +27,9 @@ import edu.cmu.tetrad.graph.*;
 import java.util.*;
 
 /**
- * Given a pattern, lists all of the DAGs in that pattern. In the form of an iterator--call hasNext() to see if there's
- * another one and next() to get it. next() will return null if there are no more.
+ * Given a CPDAG, lists all the DAGs in that DPCAG. In the form of an iterator--
+ * call hasNext() to see if there's another one and next() to get it. next() will
+ * return null if there are no more.
  *
  * @author josephramsey
  */

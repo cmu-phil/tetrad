@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * An interface for Purify algorithm.
+ * Provides an interface for Purify algorithm.
  * @author josephramsey
  */
 public interface IPurify {

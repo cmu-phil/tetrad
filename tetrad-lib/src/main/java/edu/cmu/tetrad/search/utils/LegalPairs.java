@@ -26,8 +26,9 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Determines whether nodes indexed as (n1, center, n2) form a legal pair of edges in a graph for purposes of some
- * algorithm that uses this information. The pair would be n1---center---n2.
+ * Determines whether nodes indexed as (n1, center, n2) form a legal pair of
+ * edges in a graph for purposes of some algorithm that uses this information.
+ * The pair would be n1---center---n2.
  *
  * @author josephramsey
  */

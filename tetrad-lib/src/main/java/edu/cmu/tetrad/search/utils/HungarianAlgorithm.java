@@ -5,8 +5,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * <p>An implemetation of the Kuhn–Munkres assignment algorithm of the year 1957.
- * <a href="https://en.wikipedia.org/wiki/Hungarian_algorithm">...</a>.</p>
+ * <p>Provides an implemetation of the Kuhn–Munkres assignment algorithm of
+ * the year 1957. https://en.wikipedia.org/wiki/Hungarian_algorithm.</p>
  * <p>From: https://github.com/aalmi/HungarianAlgorithm</p>
  * <p>This is not our code; please see the references given. We've just
  * made a few tweaks to make it work better in Tetrad. Thanks aalmi.</p>

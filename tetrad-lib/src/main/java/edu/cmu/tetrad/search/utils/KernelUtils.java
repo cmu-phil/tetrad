@@ -29,7 +29,7 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.List;
 
 /**
- * Various kernel utilities
+ * Provides various kernel utilities.
  *
  * @author Robert Tillman
  */

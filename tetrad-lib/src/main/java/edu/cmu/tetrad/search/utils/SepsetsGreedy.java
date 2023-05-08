@@ -33,8 +33,8 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.List;
 
 /**
- * <p>A SepsetProcuder that selects the first sepset it comes to from among the extra
- * sepsets or the adjacents of i or k, or null if none is found.</p>
+ * <p>Provides a SepsetProcuder that selects the first sepset it comes to from
+ * among the extra sepsets or the adjacents of i or k, or null if none is found.</p>
  *
  * @author josephramsey
  * @see SepsetProducer

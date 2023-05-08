@@ -30,9 +30,9 @@ import java.util.*;
 // EXPERIMENTAL!!
 
 /**
- * A clean-up of Ricardo's Sextad-based purify.
+ * Implments a sextad-based Purify method.
  *
- * @author Joe Ramsey
+ * @author ricardosilva
  */
 public class PurifySextadBased {
     private final DeltaSextadTest sextadTest;

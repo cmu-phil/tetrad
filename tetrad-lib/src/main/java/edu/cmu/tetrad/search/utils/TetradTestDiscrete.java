@@ -33,7 +33,7 @@ import java.util.List;
 //import edu.cmu.tetrad.sem.MimBuildEstimator;
 
 /**
- * Implementation of a test of tetrad constraints with discrete variables. We are assuming that variables are ordinal or
+ * Implements a test of tetrad constraints with discrete variables. We are assuming that variables are ordinal or
  * binary. Such tests are a core statistical procedure in algorithm BuildPureClusters and Purify. An "underlying
  * latent variable" approach is used to test tetrads indirectly by fitting discrete one-factor and two-factor models.
  * See Bartholomew and Knott (1999) for details. A two-stage procedure for fitting polychorics correlations (Olsson,

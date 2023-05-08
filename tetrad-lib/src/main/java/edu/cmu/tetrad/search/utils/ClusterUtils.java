@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Some general utilities for dealing with clustering input and output.</p>
+ * <p>Provides some general utilities for dealing with clustering input and output.</p>
  * <p>The method of this class are used only internally and so are not documented
  * for public use.</p>
  *

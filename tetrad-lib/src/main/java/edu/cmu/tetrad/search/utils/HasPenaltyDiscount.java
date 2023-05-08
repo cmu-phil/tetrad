@@ -3,7 +3,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.search.score.Score;
 
 /**
- * Interface for an algorithm can can get/set a value for penalty disoucnt.
+ * Provides an interface for an algorithm can can get/set a value for penalty disoucnt.
  *
  * @author josephramsey
  */

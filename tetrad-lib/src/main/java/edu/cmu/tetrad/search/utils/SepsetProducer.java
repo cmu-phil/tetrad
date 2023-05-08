@@ -27,7 +27,8 @@ import edu.cmu.tetrad.search.utils.SepsetMap;
 import java.util.List;
 
 /**
- * <p>A covenience structure that can generate and keep track of sepsets</p>
+ * <p>Provides a covenience interface for classes that can generate and keep
+ * track of sepsets.</p>
  *
  * @author josephramsey
  * @see SepsetMap
