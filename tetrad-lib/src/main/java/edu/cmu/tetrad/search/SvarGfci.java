@@ -51,6 +51,7 @@ import java.util.List;
  * @author danielmalinsky
  * @see GFci
  * @see Knowledge
+ * @see SvarFci
  */
 public final class SvarGfci implements IGraphSearch {
 

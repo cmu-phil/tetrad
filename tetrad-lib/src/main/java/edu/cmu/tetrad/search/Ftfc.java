@@ -44,15 +44,16 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 
 
 /**
- * <p>Implements the Find Two Factor Clusters (FOFC) algorithm by Erich Kummerfeld
- * and Peter Spirtes, which uses reasoning about vanishing tetrads of algorithms to
- * infer clusters of the measured variables in a dataset that each be explained by
- * a single latent variable. A reference for the one-factor versiono of the algorithm
- * (FOFC) is the following</p>
+ * <p>Implements the Find Two Factor Clusters (FOFC) algorithm, which uses reasoning
+ * about vanishing tetrads of algorithms to infer clusters of the measured variables
+ * in a dataset that each be explained by a single latent variable. The reference
+ * is as follows:</p>
  *
- * <p>Kummerfeld, E., &amp; Ramsey, J. (2016, August). Causal clustering for 1-factor measurement
- * models. In Proceedings of the 22nd ACM SIGKDD international conference on knowledge
- * discovery and data mining (pp. 1655-1664).</p>
+ * <p>Kummerfeld, E. & Ramsey, J. & Yang, R. & Spirtes, P. & Scheines, R. (2014).
+ * Causal Clustering for 2-Factor Measurement Models. In T. Calders, F. Esposito,
+ * E. Hullermeier, and R. Meo, editors, Machine Learning and Knowledge Discovery in
+ * Databases, volume 8725 of Lecture Notes in Computer Science, pages 34-49. Springer
+ * Berlin Heidelberg.</p>
  *
  * <p>The two-factor version of the algorithm substitutes sextad tests for
  * tetrad tests and searches for clusters of at leat 6 variables that can be

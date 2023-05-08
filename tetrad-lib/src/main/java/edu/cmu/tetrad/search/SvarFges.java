@@ -62,6 +62,7 @@ import java.util.concurrent.*;
  * @author danielmalinsky
  * @see Fges
  * @see Knowledge
+ * @see SvarFci
  */
 public final class SvarFges implements IGraphSearch, DagScorer {
 

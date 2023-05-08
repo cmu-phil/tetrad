@@ -39,13 +39,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
+ * <p>Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
  * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
- * Insufficient Systems").
- * <p>
- * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
+ * Insufficient Systems").</p>
+ *
+ * <p>This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
  * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * (By a remark of Zhang's, the rule applications can be staged in this way.)</p>
+ *
+ * <p>Some references are as follows:</p>
+ *
+ * <p>Malinsky, D., & Spirtes, P. (2018, August). Causal structure learning from multivariate
+ * time series in settings with unmeasured confounding. In Proceedings of 2018 ACM SIGKDD
+ * workshop on causal discovery (pp. 23-47). PMLR.</p>
+ *
+ * <p>Malinsky, D., & Spirtes, P. (2019, April). Learning the structure of a nonstationary
+ * vector autoregression. In The 22nd International Conference on Artificial Intelligence
+ * and Statistics (pp. 2986-2994). PMLR.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>

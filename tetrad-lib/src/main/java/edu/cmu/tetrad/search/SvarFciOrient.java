@@ -49,6 +49,7 @@ import java.util.*;
  *
  * @author dmalinsky
  * @see Knowledge
+ * @see SvarFci
  */
 public final class SvarFciOrient {
 
