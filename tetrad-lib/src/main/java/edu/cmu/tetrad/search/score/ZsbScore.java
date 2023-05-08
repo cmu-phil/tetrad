@@ -37,8 +37,8 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>Implements the Zhang-Shen bound score. This is an adaptation of
- * Theorem 1 in the following:</p>
+ * <p>Implements an unpublished score based on a risk bound due to
+ * Zhang and Shen. It adapts Theorem 1 in the following reference:</p>
  *
  * <p>Zhang, Y., &amp; Shen, X. (2010). Model selection procedure for
  * high‐dimensional data. Statistical Analysis and Data Mining: The
@@ -57,6 +57,10 @@ import static org.apache.commons.math3.util.FastMath.*;
  * node is visited more than once, the scores output by the procedure
  * can be expected to improve, though setting m0 to 0 for all variables
  * does not give bad results even by itself.</p>
+ *
+ * <p>This score is conservative for large, dense models and faster
+ * than other available scores in this package. The risk bound is
+ * easily interpreted.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence,
  * and negative scores indicate independence.</p>

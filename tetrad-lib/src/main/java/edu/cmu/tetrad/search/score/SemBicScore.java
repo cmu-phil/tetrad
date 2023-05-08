@@ -40,13 +40,38 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * Implements the linear, Gaussian BIC score, with a 'penalty discount' multiplier
- * on the BIC penalty.
+ * <p>Implements the linear, Gaussian BIC score, with a 'penalty discount' multiplier
+ * on the BIC penalty. The formula used for the score is BIC = 2L - ck ln n, where
+ * c is the penalty discount and L is the linear, Gaussian log likelihood--that is,
+ * the sum of the log likelihoods of the individual records, which are assumed to
+ * be i.i.d.</p>
+ *
+ * <p>For FGES, Chickering uses the standard linear, Gaussian BIC score, so we will
+ * for lack of a better reference give his paper:</p>
+ *
+ * <p>Chickering (2002) "Optimal structure identification with greedy search"
+ * Journal of Machine Learning Research.</p>
+ *
+ * <p>The version of the score due to Nandy et al. is given in this reference:</p>
+ *
+ * <p>Nandy, P., Hauser, A., & Maathuis, M. H. (2018). High-dimensional consistency
+ * in score-based and hybrid structure learning. The Annals of Statistics, 46(6A),
+ * 3151-3183.</p>
+ *
+ * <p>This score may be used anywhere though where a linear, Gaussian score is needed.
+ * Anectodally, the score is fairly robust to non-Gaussianity, though with some
+ * additional unfaithfulness over and above waht the score would give for Guassian
+ * data, a detriment that can be overcome to an extent by use a permutation
+ * algorithm such as SP, GRaSP, or BOSS</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>
  *
  * @author josephramsey
+ * @see edu.cmu.tetrad.search.Fges
+ * @see edu.cmu.tetrad.search.Sp
+ * @see edu.cmu.tetrad.search.Grasp
+ * @see edu.cmu.tetrad.search.Boss
  */
 public class SemBicScore implements Score {
 

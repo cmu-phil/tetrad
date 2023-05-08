@@ -27,7 +27,9 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Stores a graph with a score.
+ * Stores a graph with a score for the graph. The equals, hashcode, and compare methods
+ * are overridden so that it will be easy to put these stored graphs into sets and
+ * lists.
  *
  * @author josephramsey
  */

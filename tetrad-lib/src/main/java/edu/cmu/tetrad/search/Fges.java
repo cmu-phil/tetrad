@@ -26,10 +26,10 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.ScoredGraph;
+import edu.cmu.tetrad.search.utils.Bes;
 import edu.cmu.tetrad.search.utils.DagScorer;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
-import edu.cmu.tetrad.search.utils.Bes;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -53,7 +53,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  *
  * <p>Specificlly, FGES is an implementation of the GES algorithm as specified
  * in this paper:</p>
-
+ *
  * <p>Chickering (2002) "Optimal structure identification with greedy search"
  * Journal of Machine Learning Research.</p>
  *
@@ -180,7 +180,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
     //==========================PUBLIC METHODS==========================//
 
-     /**
+    /**
      * Greedy equivalence search: Start from the empty graph, add edges till
      * model is significant. Then start deleting edges till a minimum is
      * achieved.
@@ -237,6 +237,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      * are unconditionally depedendent, then there is an edge between X and Y in the graph.
      * This could in principle be false, as for a path cancelation wheter one path is A->B->C->D
      * and the other path is A->D.
+     *
      * @param faithfulnessAssumed True if so.
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
