@@ -19,13 +19,14 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.SvarFci;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -39,7 +40,7 @@ import java.util.*;
 
 
 /**
- * <p>Adapts FciOrientfor the SvarFCI algorithm. The main difference is that if an edge is orient,
+ * <p>Adapts FciOrient for the SvarFCI algorithm. The main difference is that if an edge is orient,
  * it will also orient all homologous edges to preserve the time-repeating structure assumed by
  * SvarFCI. Based on (but not identicial to) code by Entner and Hoyer for their 2010 paper. Modified
  * by DMalinsky 4/20/2016.</p>

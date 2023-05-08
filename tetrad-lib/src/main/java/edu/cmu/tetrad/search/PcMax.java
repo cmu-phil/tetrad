@@ -37,7 +37,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * <p></p>Modifies the PC algorithm to use the Max P rule for orienting ushielded
+ * <p>Modifies the PC algorithm to use the Max P rule for orienting ushielded
  * colliders. The reference is this:</p>
  *
  * <p>Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm

@@ -49,7 +49,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * in a dataset that each be explained by a single latent variable. The reference
  * is as follows:</p>
  *
- * <p>Kummerfeld, E. & Ramsey, J. & Yang, R. & Spirtes, P. & Scheines, R. (2014).
+ * <p>Kummerfeld, E. &amp; Ramsey, J. &amp; Yang, R. &amp; Spirtes, P. &amp; Scheines, R. (2014).
  * Causal Clustering for 2-Factor Measurement Models. In T. Calders, F. Esposito,
  * E. Hullermeier, and R. Meo, editors, Machine Learning and Knowledge Discovery in
  * Databases, volume 8725 of Lecture Notes in Computer Science, pages 34-49. Springer
