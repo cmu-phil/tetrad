@@ -136,6 +136,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * edges, including knowledge of temporal tiers.</p>
  *
  * @author josephramsey
+ * @author rubensanchez
  * @see Knowledge
  * @see Lofs
  */
