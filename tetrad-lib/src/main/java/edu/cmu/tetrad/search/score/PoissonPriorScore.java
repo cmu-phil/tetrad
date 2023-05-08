@@ -156,10 +156,6 @@ public class PoissonPriorScore implements Score {
         return bump > 0;
     }
 
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }

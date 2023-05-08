@@ -45,6 +45,12 @@ public class MvpScore implements Score {
     // Log number of instances
     private final double logn;
 
+    /**
+     * Constructor.
+     * @param dataSet The mixed dataset being analyzed.
+     * @param structurePrior The structure prior
+     * @param fDegree The f degree.
+     */
     public MvpScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
         if (dataSet == null) {
@@ -57,6 +63,9 @@ public class MvpScore implements Score {
         this.logn = FastMath.log(dataSet.getNumRows());
     }
 
+    /**
+     * The local score of the child given its parents.
+     */
     public double localScore(int i, int... parents) {
 
         double lik = this.likelihood.getLik(i, parents);
@@ -76,20 +85,28 @@ public class MvpScore implements Score {
         }
     }
 
+    /**
+     * localScore(y | z, x) - localScore(y | z).
+     */
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
     }
 
-
     /**
-     * Specialized scoring method for a single parent. Used to speed up the effect edges search.
+     * Returns the sample size.
+     * @return This size.
      */
-
-
     public int getSampleSize() {
         return this.dataSet.getNumRows();
     }
 
+    /**
+     * A method for FGES returning a judgment of whether an edge with a given
+     * bump counts as a effect edge.
+     * @param bump The bump.
+     * @return True if so.
+     * @see edu.cmu.tetrad.search.Fges
+     */
     @Override
     public boolean isEffectEdge(double bump) {
         return bump > 0;

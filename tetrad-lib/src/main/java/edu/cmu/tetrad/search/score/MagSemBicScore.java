@@ -164,12 +164,6 @@ public class MagSemBicScore implements Score {
             List<Node> head = heads.get(l);
             Set<Node> tail = tails.get(l);
 
-//            System.out.print("head: ");
-//            System.out.println(head);
-//            System.out.print("tail: ");
-//            System.out.println(tail);
-//            System.out.println();
-
             head.remove(v1);
             int h = head.size();
             int max = h + tail.size();
