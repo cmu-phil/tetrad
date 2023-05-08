@@ -138,6 +138,12 @@ public class Fofc {
         this.corr = new CorrelationMatrix(dataSet);
     }
 
+    /**
+     * Runs the search and returns a graph of clusters with the ir respective
+     * latent parents.
+     *
+     * @return This graph.
+     */
     public Graph search() {
         Set<List<Integer>> allClusters;
 

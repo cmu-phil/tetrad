@@ -117,6 +117,8 @@ public final class Cfci implements IGraphSearch {
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
+     *
+     * @param independenceTest The independence to use as an oracle.
      */
     public Cfci(IndependenceTest independenceTest) {
         if (independenceTest == null) {

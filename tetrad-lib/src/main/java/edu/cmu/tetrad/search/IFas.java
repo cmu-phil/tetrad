@@ -31,31 +31,21 @@ import java.io.PrintStream;
 import java.util.List;
 
 /**
- * An interface for fast adjacency searches (i.e. PC adjacency searches).
+ * Gives an interface for fast adjacency searches (i.e. PC adjacency searches).
  *
  * @author josephramsey
  */
 public interface IFas {
     void setKnowledge(Knowledge knowledge);
-
     SepsetMap getSepsets();
-
     void setDepth(int depth);
-
     Graph search();
-
     Graph search(List<Node> nodes);
-
     long getElapsedTime();
-
     int getNumIndependenceTests();
-
     List<Node> getNodes();
-
     List<Triple> getAmbiguousTriples(Node node);
-
     void setVerbose(boolean verbose);
-
     void setOut(PrintStream out);
 }
 

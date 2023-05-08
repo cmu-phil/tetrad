@@ -55,7 +55,7 @@ public class Fasd implements IFas {
      * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
      * x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
      */
-    private final Graph graph;
+    private Graph graph;
 
     /**
      * The independence test. This should be appropriate to the types
@@ -85,11 +85,6 @@ public class Fasd implements IFas {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The number of dependence judgements. Temporary.
-     */
-    private int numDependenceJudgement;
-
-    /**
      * The sepsets found during the search.
      */
     private SepsetMap sepset = new SepsetMap();
@@ -98,8 +93,6 @@ public class Fasd implements IFas {
      * The depth 0 graph, specified initially.
      */
     private Graph externalGraph;
-
-//    private List<Double> pValues = new ArrayList<Double>();
 
     private final NumberFormat nf = new DecimalFormat("0.00E0");
 
@@ -114,15 +107,30 @@ public class Fasd implements IFas {
 
     /**
      * Constructs a new FastAdjacencySearch.
+     *
+     * @param graph An initial graph of edges that will be removed.
+     * @param test  A test to use as a conditional independence oracle.
      */
     public Fasd(Graph graph, IndependenceTest test) {
         this.graph = graph;
         this.test = test;
     }
 
+    /**
+     * Constructs a new FastAdjacencySearch.
+     *
+     * @param test A test to use as a conditional independence oracle.
+     */
     public Fasd(IndependenceTest test) {
         this.graph = new EdgeListGraph(test.getVariables());
         this.test = test;
+    }
+
+    /**
+     * @throws UnsupportedOperationException This contructor is not implemented.
+     */
+    public Graph search(List<Node> nodes) {
+        throw new UnsupportedOperationException("Constructor not implemented.");
     }
 
     /**
@@ -184,10 +192,12 @@ public class Fasd implements IFas {
         return this.graph;
     }
 
-    public int getDepth() {
-        return this.depth;
-    }
 
+    /**
+     * Sets the maximum number of variables conditoined on in any test.
+     *
+     * @param depth This maximum.
+     */
     public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
@@ -197,10 +207,11 @@ public class Fasd implements IFas {
         this.depth = depth;
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
+    /**
+     * Sets the knowledge to be used in the search.
+     *
+     * @param knowledge This knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
             throw new NullPointerException("Cannot set knowledge to null");
@@ -208,18 +219,30 @@ public class Fasd implements IFas {
         this.knowledge = knowledge;
     }
 
+    /**
+     * Returns the nubmer of conditional independence tests done in the course of search.
+     *
+     * @return This number.
+     */
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
 
-    public int getNumDependenceJudgments() {
-        return this.numDependenceJudgement;
-    }
-
+    /**
+     * Returns the map of node pairs to sepsets from the search.
+     *
+     * @return This map.
+     */
     public SepsetMap getSepsets() {
         return this.sepset;
     }
 
+    /**
+     * Sets the external graph. Adjacencies not in this external graph will not be judged
+     * adjacent in the search result.
+     *
+     * @param externalGraph This graph.
+     */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
@@ -228,15 +251,15 @@ public class Fasd implements IFas {
         return this.verbose;
     }
 
+    /**
+     * Sets whether verbose output will be printed.
+     *
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    @Override
-    public Graph search(List<Node> nodes) {
-        nodes = new ArrayList<>(nodes);
-        return null;
-    }
 
     @Override
     public long getElapsedTime() {
@@ -289,10 +312,6 @@ public class Fasd implements IFas {
                 } catch (Exception e) {
                     e.printStackTrace();
                     result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN);
-                }
-
-                if (!result.isIndependent()) {
-                    this.numDependenceJudgement++;
                 }
 
                 boolean noEdgeRequired =
@@ -399,10 +418,6 @@ public class Fasd implements IFas {
 
                         } catch (Exception e) {
                             independent = false;
-                        }
-
-                        if (!independent) {
-                            this.numDependenceJudgement++;
                         }
 
                         boolean noEdgeRequired =

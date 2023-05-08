@@ -4,9 +4,6 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.Sp;
-import edu.cmu.tetrad.search.SuborderSearch;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GrowShrinkTree;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -41,6 +38,12 @@ public class PermutationSearch {
     private Knowledge knowledge = new Knowledge();
     private boolean verbose = false;
 
+    /**
+     * Constructs a new PermutationSearch using the given SuborderSearch.
+     *
+     * @param suborderSearch The SuborderSearch (see).
+     * @see SuborderSearch
+     */
     public PermutationSearch(SuborderSearch suborderSearch) {
         this.suborderSearch = suborderSearch;
         this.variables = suborderSearch.getVariables();
@@ -58,6 +61,11 @@ public class PermutationSearch {
         }
     }
 
+    /**
+     * Performe the search and return a CPDAG.
+     *
+     * @return The CPDAG.
+     */
     public Graph search() {
         List<int[]> tasks = new ArrayList<>();
         if (!this.knowledge.isEmpty() && this.knowledge.getVariablesNotInTiers().isEmpty()) {
@@ -87,11 +95,30 @@ public class PermutationSearch {
     }
 
     // TO DO: moved to a better place like GraphUtils
+
+    /**
+     * Construct a graph given a specification of the parents for each node.
+     *
+     * @param nodes   The nodes.
+     * @param parents A map from each node to its parents.
+     * @param cpDag   Whether a CPDAG is wanted, if false, a DAG.
+     * @return The construted graph.
+     */
     public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, boolean cpDag) {
         return getGraph(nodes, parents, null, cpDag);
     }
 
     // TO DO: moved to a better place like GraphUtils
+
+    /**
+     * Construct a graph given a specification of the parents for each node.
+     *
+     * @param nodes     The nodes.
+     * @param parents   A map from each node to its parents.
+     * @param knowledge the knoweldge to use to construct the graph.
+     * @param cpDag     Whether a CPDAG is wanted, if false, a DAG.
+     * @return The construted graph.
+     */
     public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, Knowledge knowledge, boolean cpDag) {
         Graph graph = new EdgeListGraph(nodes);
 
@@ -110,22 +137,26 @@ public class PermutationSearch {
         return graph;
     }
 
+    /**
+     * Returns the variables.
+     * @return This lsit.
+     */
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
     }
 
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
+    /**
+     * Sets whether verbose output should be printed.
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
+    /**
+     * Sets the knowledge to be used in the search.
+     * @param knowledge This knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
         this.suborderSearch.setKnowledge(knowledge);

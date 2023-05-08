@@ -121,7 +121,7 @@ public final class FciMax implements IGraphSearch {
     //============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a new FCI search for the given independence test and background knowledge.
+     * Constructor.
      */
     public FciMax(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -133,8 +133,10 @@ public final class FciMax implements IGraphSearch {
     }
 
     /**
-     * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
-     * search over.
+     * Constructor.
+     *
+     * @param independenceTest The test to use for oracle conditional independence information.
+     * @param searchVars       A specific list of variables to search over.
      */
     public FciMax(IndependenceTest independenceTest, List<Node> searchVars) {
         if (independenceTest == null) {
@@ -166,23 +168,11 @@ public final class FciMax implements IGraphSearch {
 
     //========================PUBLIC METHODS==========================//
 
-    public int getDepth() {
-        return this.depth;
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + depth);
-        }
-
-        this.depth = depth;
-    }
-
-    public long getElapsedTime() {
-        return this.elapsedTime;
-    }
-
+    /**
+     * Performs the search and returns the PAG.
+     *
+     * @return This PAG.
+     */
     public Graph search() {
         long start = MillisecondTimes.timeMillis();
 
@@ -208,7 +198,7 @@ public final class FciMax implements IGraphSearch {
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
-        if (isPossibleDsepSearchDone()) {
+        if (this.possibleDsepSearchDone) {
             new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest)).ruleR0(graph);
             graph.paths().removeByPossibleDsep(independenceTest, sepsets);
 
@@ -236,6 +226,138 @@ public final class FciMax implements IGraphSearch {
         this.elapsedTime = stop - start;
 
         return graph;
+    }
+
+    /**
+     * Sets the maximum nubmer of variables conditonied in any test.
+     *
+     * @param depth This maximum.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException(
+                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+        }
+
+        this.depth = depth;
+    }
+
+    /**
+     * Returns the elapsed time of search.
+     *
+     * @return This time.
+     */
+    public long getElapsedTime() {
+        return this.elapsedTime;
+    }
+
+    /**
+     * Retrieves the map from variable pairs to sepsets from the FAS search.
+     *
+     * @return This map.
+     */
+    public SepsetMap getSepsets() {
+        return this.sepsets;
+    }
+
+    /**
+     * Retrieves the background knowledge that was set.
+     *
+     * @return This knoweldge,
+     */
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    /**
+     * Sets background knowledge for the search.
+     *
+     * @param knowledge This knowledge,
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge == null) {
+            throw new NullPointerException();
+        }
+
+        this.knowledge = knowledge;
+    }
+
+    /**
+     * Sets whether Zhang's complete ruleset is used in the search.
+     *
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
+     *                            set of the original FCI) should be used. False by default.
+     */
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
+    }
+
+    /**
+     * Sets whether the (time-consuming) possible dsep step should be done.
+     *
+     * @param possibleDsepSearchDone True if so.
+     */
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+        this.possibleDsepSearchDone = possibleDsepSearchDone;
+    }
+
+    /**
+     * Sets the maximum length of any discriminating path, or -1 if unlimited.
+     *
+     * @param maxPathLength This maximum.
+     */
+    public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
+        this.maxPathLength = maxPathLength;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Returns the independence test used in search.
+     *
+     * @return This test.
+     */
+    public IndependenceTest getIndependenceTest() {
+        return this.independenceTest;
+    }
+
+    /**
+     * Sets the FAS heuristic from PC used in search.
+     *
+     * @param heuristic This heuristic.
+     * @see Pc
+     */
+    public void setHeuristic(int heuristic) {
+        this.heuristic = heuristic;
+    }
+
+    /**
+     * Sets whetehr the stable option will be used for search.
+     *
+     * @param stable True if so.
+     */
+    public void setStable(boolean stable) {
+        this.stable = stable;
+    }
+
+    /**
+     * Sets whether the discriminating path rule will be used in search.
+     *
+     * @param doDiscriminatingPathRule True if so.
+     */
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
     private void addColliders(Graph graph) {
@@ -358,118 +480,6 @@ public final class FciMax implements IGraphSearch {
                 scores.put(new Triple(a, b, c), score);
             }
         }
-    }
-
-    /**
-     * Retrieves the sepset map from FAS.
-     */
-    public SepsetMap getSepsets() {
-        return this.sepsets;
-    }
-
-    /**
-     * Retrieves the background knowledge that was set.
-     */
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    /**
-     * Sets background knowledge for the search.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
-    }
-
-    /**
-     * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
-     * should be used. False by default.
-     */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
-    }
-
-    /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. False by default.
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * True iff the (time-consuming) possible dsep step should be done.
-     */
-    public boolean isPossibleDsepSearchDone() {
-        return this.possibleDsepSearchDone;
-    }
-
-    /**
-     * True iff the (time-consuming) possible dsep step should be done.
-     */
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
-    }
-
-    /**
-     * @return the maximum length of any discriminating path, or -1 of unlimited.
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength == Integer.MAX_VALUE ? -1 : this.maxPathLength;
-    }
-
-    /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    /**
-     * True iff verbose output should be printed.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * The independence test.
-     */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
-    }
-
-    /**
-     * The FAS heuristic.
-     */
-    public void setHeuristic(int heuristic) {
-        this.heuristic = heuristic;
-    }
-
-    /**
-     * The FAS stable option.
-     */
-    public void setStable(boolean stable) {
-        this.stable = stable;
-    }
-
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 }
 

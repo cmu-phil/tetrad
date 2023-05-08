@@ -39,22 +39,28 @@ import java.util.*;
  * clusters of measured variables in a dataset that are explained by single latents.
  * The algorithm outputs these clusters, which can then be used for further analysis.
  * The reference is this:</p>
+ *
  * <p>Silva, R., Scheines, R., Glymour, C., Spirtes, P., &amp; Chickering, D. M. (2006).
  * Learning the Structure of Linear Latent Variable Models. Journal of Machine Learning
  * Research, 7(2).</p>
- * <p>Some more References:
+ *
+ * <p>Some more References:</p>
+ *
  * <p>Silva, R.; Scheines, R.; Spirtes, P.; Glymour, C. (2003). "Learning measurement models".
  * Technical report CMU-CALD-03-100, Center for Automated Learning and Discovery, Carnegie Mellon
  * University.</p>
+ *
  * <p>Bollen, K. (1990). "Outlier screening and distribution-free test for vanishing tetrads."
  * Sociological Methods and Research 19, 80-92.</p>
+ *
  * <p>Wishart, J. (1928). "Sampling errors in the theory of two factors". British Journal of
  * Psychology 19, 180-187. </p>
+ *
  * <p>Bron, C. and Kerbosch, J. (1973) "Algorithm 457: Finding all cliques of an undirected graph".
  * Communications of ACM 16, 575-577.</p>
  *
- *  <p>This class is not configured to respect knowledge of forbidden and required
- *  edges.</p>
+ * <p>This class is not configured to respect knowledge of forbidden and required
+ * edges.</p>
  *
  * @author Ricardo Silva
  * @see Fofc
@@ -70,7 +76,7 @@ public final class Bpc {
     private int[] labels;
     private boolean scoreTestMode;
 
-    /**
+    /*
      * Color code for the different edges that show up during search
      */
     final int EDGE_NONE = 0;
@@ -90,7 +96,12 @@ public final class Bpc {
     //**************************** INITIALIZATION ***********************************/
 
     /**
-     * Constructor BuildPureClusters
+     * Constructor.
+     *
+     * @param covarianceMatrix The covariance matrix to analyze.
+     * @param alpha            The significance cutoff to use.
+     * @param sigTestType      The type of the significance test to use.
+     * @see BpcTestType
      */
     public Bpc(ICovarianceMatrix covarianceMatrix, double alpha,
                BpcTestType sigTestType) {
@@ -102,6 +113,14 @@ public final class Bpc {
         initAlgorithm(alpha, sigTestType);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param dataSet     The dataset to analyze.
+     * @param alpha       The significance cutoff to use.
+     * @param sigTestType The type of the significance test to use.
+     * @see BpcTestType
+     */
     public Bpc(DataSet dataSet, double alpha, BpcTestType sigTestType) {
         if (dataSet.isContinuous()) {
             this.dataSet = dataSet;
@@ -115,7 +134,10 @@ public final class Bpc {
 
 
     /**
-     * @return the result search graph, or null if there is no model.
+     * Runs the search and returns the graph, or null if there is no model. This
+     * will be a graph with clusters having their latents as parents.
+     *
+     * @return This graph.
      */
     public Graph search() {
         long start = MillisecondTimes.timeMillis();
@@ -167,6 +189,8 @@ public final class Bpc {
 
     /**
      * Returns the wrapped covariance matrix.
+     *
+     * @return This.
      */
     public ICovarianceMatrix getCovarianceMatrix() {
         return this.covarianceMatrix;

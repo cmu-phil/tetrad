@@ -87,7 +87,9 @@ public final class Fci implements IGraphSearch {
     //============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a new FCI search for the given independence test and background knowledge.
+     * Constructor.
+     *
+     * @param independenceTest The test to use for oracle conditional independence information.
      */
     public Fci(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -99,8 +101,10 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
-     * search over.
+     * Constructor.
+     *
+     * @param independenceTest The test to use for oracle conditional independence information.
+     * @param searchVars       A specific list of variables to search over.
      */
     public Fci(IndependenceTest independenceTest, List<Node> searchVars) {
         if (independenceTest == null) {
@@ -132,23 +136,6 @@ public final class Fci implements IGraphSearch {
 
     //========================PUBLIC METHODS==========================//
 
-    public int getDepth() {
-        return this.depth;
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + depth);
-        }
-
-        this.depth = depth;
-    }
-
-    public long getElapsedTime() {
-        return this.elapsedTime;
-    }
-
     public Graph search() {
         long start = MillisecondTimes.timeMillis();
 
@@ -173,7 +160,7 @@ public final class Fci implements IGraphSearch {
         // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
         SepsetsSet sepsets1 = new SepsetsSet(this.sepsets, this.independenceTest);
 
-        if (isPossibleDsepSearchDone()) {
+        if (this.possibleDsepSearchDone) {
             new FciOrient(sepsets1).ruleR0(graph);
             graph.paths().removeByPossibleDsep(independenceTest, sepsets);
 
@@ -204,14 +191,43 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Retrieves the sepset map from FAS.
+     * Sets the depth of search, which is the maximum number of variables conditioned on
+     * in any test.
+     *
+     * @param depth This maximum.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException(
+                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+        }
+
+        this.depth = depth;
+    }
+
+    /**
+     * Returns the elapsed time of search.
+     *
+     * @return This time.
+     */
+    public long getElapsedTime() {
+        return this.elapsedTime;
+    }
+
+    /**
+     * Returns the sepset map from FAS.
+     *
+     * @return This map.
+     * @see SepsetMap
      */
     public SepsetMap getSepsets() {
         return this.sepsets;
     }
 
     /**
-     * Retrieves the background knowledge that was set.
+     * Returns the background knowledge that was set.
+     *
+     * @return This knowledge.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -219,6 +235,8 @@ public final class Fci implements IGraphSearch {
 
     /**
      * Sets background knowledge for the search.
+     *
+     * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -229,44 +247,28 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
-     * should be used. False by default.
-     */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
-    }
-
-    /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. False by default.
+     * Sets whether the Zhang complete rule set should be used; if false if only R1-R4 (the rule
+     * set of the original FCI) should be used. False by default.
+     *
+     * @param completeRuleSetUsed True for the complete Zhang ruleset.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
-     * True iff the (time-consuming) possible dsep step should be done.
-     */
-    public boolean isPossibleDsepSearchDone() {
-        return this.possibleDsepSearchDone;
-    }
-
-    /**
-     * True iff the (time-consuming) possible dsep step should be done.
+     * Sets whether the (time-consuming) possible dsep step should be done.
+     *
+     * @param possibleDsepSearchDone True if so.
      */
     public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
     /**
-     * @return the maximum length of any discriminating path, or -1 of unlimited.
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength == Integer.MAX_VALUE ? -1 : this.maxPathLength;
-    }
-
-    /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * Sets the maximum length of any discriminating path, or -1 if unlimited.
+     *
+     * @param maxPathLength This maximum.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -277,35 +279,38 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    /**
-     * True iff verbose output should be printed.
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * The independence test.
+     * Returns the independence test used in search.
+     *
+     * @return This test.
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
     }
 
     /**
-     * The FAS heuristic.
+     * Sets which PC heuristic should be used in the intitial adjacency search.
+     *
+     * @param heuristic The neuristic option.
+     * @see Pc
      */
     public void setHeuristic(int heuristic) {
         this.heuristic = heuristic;
     }
 
     /**
-     * The FAS stable option.
+     * Sets whether the stable options hould be used in the initial adjacency search.
+     *
+     * @param stable True if so.
+     * @see Pc
      */
     public void setStable(boolean stable) {
         this.stable = stable;

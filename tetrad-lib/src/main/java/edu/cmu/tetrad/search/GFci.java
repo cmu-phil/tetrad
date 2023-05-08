@@ -97,6 +97,12 @@ public final class GFci implements IGraphSearch {
     }
 
     //========================PUBLIC METHODS==========================//
+
+    /**
+     * Runs the graph and returns the search PAG.
+     *
+     * @return This PAG.
+     */
     public Graph search() {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = getIndependenceTest().getVariables();
@@ -142,7 +148,9 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * @param maxDegree The maximum indegree of the output graph.
+     * Sets the maximum indegree of the output graph.
+     *
+     * @param maxDegree This maximum.
      */
     public void setMaxDegree(int maxDegree) {
         if (maxDegree < -1) {
@@ -154,14 +162,92 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Returns The maximum indegree of the output graph.
+     * Returns the knowledge used in search.
+     *
+     * @return This knowledge
      */
-    public int getMaxDegree() {
-        return this.maxDegree;
+    public Knowledge getKnowledge() {
+        return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge to use in search.
+     *
+     * @param knowledge This knowledge.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge == null) {
+            throw new NullPointerException();
+        }
+
+        this.knowledge = knowledge;
+    }
+
+    /**
+     * Sets whether Zhang's complete rules is used.
+     *
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set
+     *                            should be used, false if only R1-R4 (the rule set of the original FCI)
+     *                            should be used. False by default.
+     */
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
+    }
+
+    /**
+     * Sets the maximum path lenth for the discriminating path rule.
+     *
+     * @param maxPathLength the maximum length of any discriminating path, or -1
+     *                      if unlimited.
+     */
+    public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
+        this.maxPathLength = maxPathLength;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Returns the independence test used in search.
+     *
+     * @return This test.
+     */
+    public IndependenceTest getIndependenceTest() {
+        return this.independenceTest;
+    }
+
+    /**
+     * Sets the print stream used for output, default Sysem.out.
+     *
+     * @param out This print stream.
+     */
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
+
+    /**
+     * Sets whether one-edge faithfulness is assumed. For FGES
+     * @param faithfulnessAssumed True if so.
+     * @see Fges#setFaithfulnessAssumed(boolean)
+     */
+    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
+        this.faithfulnessAssumed = faithfulnessAssumed;
+    }
+
+    //===========================================PRIVATE METHODS=======================================//
+
     // Due to Spirtes.
-    public void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
+    private void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
         this.graph = new EdgeListGraph(graph);
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
@@ -196,104 +282,6 @@ public final class GFci implements IGraphSearch {
             }
         }
     }
-
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
-    }
-
-    /**
-     * @return true if Zhang's complete rule set should be used, false if only
-     * R1-R4 (the rule set of the original FCI) should be used. False by
-     * default.
-     */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
-    }
-
-    /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set
-     *                            should be used, false if only R1-R4 (the rule set of the original FCI)
-     *                            should be used. False by default.
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * @return the maximum length of any discriminating path, or -1 of
-     * unlimited.
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength;
-    }
-
-    /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1
-     *                      if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * The independence test.
-     */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
-    }
-
-    public ICovarianceMatrix getCovMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public ICovarianceMatrix getCovarianceMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
-        this.covarianceMatrix = covarianceMatrix;
-    }
-
-    public PrintStream getOut() {
-        return this.out;
-    }
-
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    public void setIndependenceTest(IndependenceTest independenceTest) {
-        this.independenceTest = independenceTest;
-    }
-
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
-    }
-
-    //===========================================PRIVATE METHODS=======================================//
 
     /**
      * Orients according to background knowledge

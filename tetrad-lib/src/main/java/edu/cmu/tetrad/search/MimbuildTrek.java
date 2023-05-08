@@ -95,6 +95,14 @@ public class MimbuildTrek {
 
     //=================================== PUBLIC METHODS =========================================//
 
+    /**
+     * Does the search and returns the graph.
+     *
+     * @param clustering  A clustering of the variables, each of which is explained by a single latent.
+     * @param latentNames The names of the latents, which cannot be known by the clustering algorithm.
+     * @param measuresCov The covariance matrix over the measured variables, from the data.
+     * @return A graph over the latents.
+     */
     public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) {
         List<String> _latentNames = new ArrayList<>(latentNames);
 
@@ -149,39 +157,53 @@ public class MimbuildTrek {
         return this.structureGraph;
     }
 
+    /**
+     * The clustering used.
+     *
+     * @return This clusterng.
+     */
     public List<List<Node>> getClustering() {
         return this.clustering;
     }
 
-    public double getAlpha() {
-        return this.alpha;
-    }
-
+    /**
+     * The alpha to use.
+     *
+     * @param alpha This alpha.
+     */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
+    /**
+     * The knowledge to use in the search.
+     *
+     * @param knowledge This knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
+    /**
+     * The covaraince matrix over the latents that is implied by the clustering.
+     *
+     * @return This covarianc matrix.
+     */
     public ICovarianceMatrix getLatentsCov() {
         return this.latentsCov;
     }
 
-    public double getMinimum() {
-        return this.minimum;
-    }
-
+    /**
+     * The p-value of the model.
+     * @return This p-value.
+     */
     public double getpValue() {
         return this.pValue;
     }
 
     /**
+     * The full graph discovered.
+     *
      * @return the allowUnfaithfulness discovered graph, with latents and indicators.
      */
     public Graph getFullGraph() {
@@ -203,12 +225,10 @@ public class MimbuildTrek {
         return graph;
     }
 
-    public double getEpsilon() {
-        return this.epsilon;
-    }
-
     /**
-     * Parameter convergence threshold. Default = 1e-4.
+     * Sets the parameter convergence threshold. Default = 1e-4.
+     *
+     * @param epsilon This threshold.
      */
     public void setEpsilon(double epsilon) {
         if (epsilon < 0) throw new IllegalArgumentException("Epsilon mut be >= 0: " + epsilon);

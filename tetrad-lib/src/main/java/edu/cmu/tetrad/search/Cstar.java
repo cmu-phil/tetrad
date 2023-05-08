@@ -4,8 +4,8 @@ import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.ConditionalGaussianScore;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.IndTestScore;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -48,13 +48,13 @@ public class Cstar {
     private boolean verbose;
 
     /**
-     * Constructs a new object.
+     * Constructor.
      */
     public Cstar() {
     }
 
     /**
-     * Returns a list of of records for making a CSTaR table.
+     * Returns a list of records for making a CSTaR table.
      *
      * @param allRecords the list of all records.
      * @return The list for the CSTaR table.
@@ -101,6 +101,12 @@ public class Cstar {
         return cstar;
     }
 
+    /**
+     * Sets whether the algorithm should be parallelized. Different runs of the algorithms
+     * can be run in different threads in parallel.
+     *
+     * @param parallelized True if so.
+     */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
@@ -112,8 +118,10 @@ public class Cstar {
      * @param possibleCauses  A set of variables in the datasets over which to search.
      * @param possibleEffects The effect variables.
      * @param test            This test is only used to make more tests like it for subsamples.
+     * @see Record
      */
-    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects,
+    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses,
+                                                     List<Node> possibleEffects,
                                                      IndependenceTest test) {
         return getRecords(dataSet, possibleCauses, possibleEffects, test, null);
     }
@@ -128,6 +136,7 @@ public class Cstar {
      * @param path            A path where interim results are to be stored. If null, interim results will not be stored.
      *                        If the path is specified, then if the process is stopped and restarted, previously
      *                        computed interim results will be loaded.
+     * @see Record
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, IndependenceTest test, String path) {
         System.out.println("path = " + path);
@@ -413,6 +422,8 @@ public class Cstar {
 
     /**
      * Makes a graph of the estimated predictors to the effect.
+     *
+     * @param records The list of records obtained from a method above.
      */
     public Graph makeGraph(List<Record> records) {
         List<Node> outNodes = new ArrayList<>();
@@ -429,7 +440,7 @@ public class Cstar {
     }
 
     /**
-     * A single record in the returned table for CSTaR.
+     * Represents a single record in the returned table for CSTaR.
      */
     public static class Record implements TetradSerializable {
         static final long serialVersionUID = 23L;

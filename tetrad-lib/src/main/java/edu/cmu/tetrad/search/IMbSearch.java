@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * An interface for Markov blanket searches.
+ * Gives an interface for Markov blanket searches.
  *
  * @author josephramsey
  */

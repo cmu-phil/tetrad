@@ -133,7 +133,7 @@ public class Ida {
 
     /**
      * Calculates the true effect of (x, y) given the true DAG (which
-     * must be provided.
+     * must be provided).
      *
      * @param trueDag The true DAG.
      * @return The true effect of (x, y).
@@ -152,6 +152,10 @@ public class Ida {
         return abs(getBeta(regressors, y));
     }
 
+    /**
+     * Returns the distance between the effects and the true effect.
+     * @return This difference.
+     */
     public double distance(LinkedList<Double> effects, double trueEffect) {
         effects = new LinkedList<>(effects);
         if (effects.isEmpty()) return Double.NaN; // counted as not estimated.
@@ -179,7 +183,7 @@ public class Ida {
      * sorted low to high in absolute value.
      * <p>
      * 1. First, estimate a pattern P from the data.
-     * 2. Then, consider all combinations C of siblings Z of X (Z--X) that include all of the parents of X in P.
+     * 2. Then, consider all combinations C of siblings Z of X (Z--X) that include all the parents of X in P.
      * 3. For each such C, regress Y onto {X} U C and record the coefficient beta for X in the regression.
      * 4. Report the list of such betas, sorted low to high.
      *

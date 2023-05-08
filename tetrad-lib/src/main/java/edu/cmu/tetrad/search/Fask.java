@@ -205,6 +205,8 @@ public final class Fask implements IGraphSearch {
     private Graph graph;
 
     /**
+     * Constructor.
+     *
      * @param dataSet A continuous dataset over variables V.
      * @param test    An independence test over variables V. (Used for FAS.)
      */
@@ -234,8 +236,8 @@ public final class Fask implements IGraphSearch {
      * of the robust skew rule (Pairwise Likelihood Ratios for Estimation of Non-Gaussian Structural
      * Equation Models, Smith and Hyvarinen), together with some heuristics for orienting two-cycles.
      *
-     * @return the graph. Some of the edges may be undirected (though it shouldn't be many in most cases)
-     * and some of the adjacencies may be two-cycles.
+     * @return the graph. Some edges may be undirected (though it shouldn't be many in most cases)
+     * and some adjacencies may be two-cycles.
      */
     public Graph search() {
         long start = MillisecondTimes.timeMillis();
@@ -273,11 +275,11 @@ public final class Fask implements IGraphSearch {
             fas.setKnowledge(this.knowledge);
             G = fas.search();
         } else if (this.adjacencyMethod == AdjacencyMethod.EXTERNAL_GRAPH) {
-            if (getExternalGraph() == null) throw new IllegalStateException("An external graph was not supplied.");
+            if (this.externalGraph == null) throw new IllegalStateException("An external graph was not supplied.");
 
-            Graph g1 = new EdgeListGraph(getExternalGraph().getNodes());
+            Graph g1 = new EdgeListGraph(this.externalGraph.getNodes());
 
-            for (Edge edge : getExternalGraph().getEdges()) {
+            for (Edge edge : this.externalGraph.getEdges()) {
                 Node x = edge.getNode1();
                 Node y = edge.getNode2();
 
@@ -420,6 +422,8 @@ public final class Fask implements IGraphSearch {
      * Returns the coefficient matrix for the search. If the search has not yet run, runs it,
      * then estimates coefficients of each node given its parents using linear regression and forms
      * the B matrix of coefficients from these estimates. B[i][j] != 0 means i-&gt;j with that coefficient.
+     *
+     * @return This matrix as a double[][] array.
      */
     public double[][] getB() {
         if (this.graph == null) search();
@@ -445,6 +449,8 @@ public final class Fask implements IGraphSearch {
     /**
      * Returns a natrux matrix of left-right scores for the search. If lr = getLrScores(), then
      * lr[i][j] is the left right scores leftRight(data[i], data[j]);
+     *
+     * @return This matrix as a double[][] array.
      */
     public double[][] getLrScores() {
         List<Node> variables = this.dataSet.getVariables();
@@ -499,24 +505,43 @@ public final class Fask implements IGraphSearch {
         this.knowledge = new Knowledge(knowledge);
     }
 
-    public Graph getExternalGraph() {
-        return this.externalGraph;
-    }
-
+    /**
+     * Sets the extermal graph to use. This graph will be used as a set of adjacencies ot be
+     * included in the graph is the "external graph" options is selected. It doesn't matter
+     * what the orientations of the graph are; the graph will be reoriented using the left-right
+     * rule selected.
+     *
+     * @param externalGraph This graph.
+     */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
     }
 
+    /**
+     * Sets the skew edge threshold.
+     *
+     * @param skewEdgeThreshold This threshold.
+     */
     public void setSkewEdgeThreshold(double skewEdgeThreshold) {
         this.skewEdgeThreshold = skewEdgeThreshold;
     }
 
+    /**
+     * Sets the cutoff for two cycle screening.
+     *
+     * @param twoCycleScreeningCutoff This cutoff.
+     */
     public void setTwoCycleScreeningCutoff(double twoCycleScreeningCutoff) {
         if (twoCycleScreeningCutoff < 0)
             throw new IllegalStateException("Two cycle screening threshold must be >= 0");
         this.twoCycleScreeningCutoff = twoCycleScreeningCutoff;
     }
 
+    /**
+     * Sets the orientation alpha.
+     *
+     * @param orientationAlpha This alpha.
+     */
     public void setOrientationAlpha(double orientationAlpha) {
         if (orientationAlpha < 0 || orientationAlpha > 1)
             throw new IllegalArgumentException("Two cycle testing alpha should be in [0, 1].");
@@ -524,18 +549,40 @@ public final class Fask implements IGraphSearch {
         this.orientationAlpha = orientationAlpha;
     }
 
+    /**
+     * Sets the left-right rule used
+     *
+     * @param leftRight This rule.
+     * @see LeftRight
+     */
     public void setLeftRight(LeftRight leftRight) {
         this.leftRight = leftRight;
     }
 
+    /**
+     * Sets the the adjacency method used.
+     *
+     * @param adjacencyMethod This method.
+     * @see AdjacencyMethod
+     */
     public void setAdjacencyMethod(AdjacencyMethod adjacencyMethod) {
         this.adjacencyMethod = adjacencyMethod;
     }
 
+    /**
+     * Sets the delta to use.
+     *
+     * @param delta This delta.
+     */
     public void setDelta(double delta) {
         this.delta = delta;
     }
 
+    /**
+     * Sets whether the empirical option is selected.
+     *
+     * @param empirical True if so.
+     */
     public void setEmpirical(boolean empirical) {
         this.empirical = empirical;
     }

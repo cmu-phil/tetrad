@@ -243,6 +243,8 @@ public class FastIca {
      * If algorithmType == PARALLEL the components are extracted simultaneously
      * (the default). if algorithmType == DEFLATION the components are extracted
      * one at a time.
+     *
+     * @param algorithmType This type.
      */
     public void setAlgorithmType(int algorithmType) {
         if (!(algorithmType == FastIca.DEFLATION || algorithmType == FastIca.PARALLEL)) {
@@ -253,14 +255,9 @@ public class FastIca {
     }
 
     /**
-     * The function type to be used, either LOGCOSH or EXP.
-     */
-    public int getFunction() {
-        return this.function;
-    }
-
-    /**
-     * The function type to be used, either LOGCOSH or EXP.
+     * Sets the function type to be used, either LOGCOSH or EXP.
+     *
+     * @param function This function, LOGCOSH or EXP.
      */
     public void setFunction(int function) {
         if (!(function == FastIca.LOGCOSH || function == FastIca.EXP)) {
@@ -271,16 +268,10 @@ public class FastIca {
     }
 
     /**
-     * Constant in range [1, 2] used in approximation to neg-entropy when 'fun
+     * Sets the FastICA alpha constant in range [1, 2] used in approximation to neg-entropy when 'fun
      * == "logcosh"'
-     */
-    public double getAlpha() {
-        return this.alpha;
-    }
-
-    /**
-     * Constant in range [1, 2] used in approximation to neg-entropy when 'fun
-     * == "logcosh"'
+     *
+     * @param alpha this constant.
      */
     public void setAlpha(double alpha) {
         if (!(alpha >= 1 && alpha <= 2)) {
@@ -293,13 +284,17 @@ public class FastIca {
     /**
      * A logical value indicating whether rows of the data matrix 'X' should be
      * standardized beforehand.
+     *
+     * @param rowNorm True if so.
      */
     public void setRowNorm(boolean rowNorm) {
         this.rowNorm = rowNorm;
     }
 
     /**
-     * Maximum number of iterations to perform.
+     * Sets the maximum number of iterations to allow.
+     *
+     * @param maxIterations This maximum.
      */
     public void setMaxIterations(int maxIterations) {
         if (maxIterations < 1) {
@@ -310,16 +305,10 @@ public class FastIca {
     }
 
     /**
-     * A positive scalar giving the tolerance at which the un-mixing matrix is
+     * Sets a positive scalar giving the tolerance at which the un-mixing matrix is
      * considered to have converged.
-     */
-    public double getTolerance() {
-        return this.tolerance;
-    }
-
-    /**
-     * A positive scalar giving the tolerance at which the un-mixing matrix is
-     * considered to have converged.
+     *
+     * @param tolerance This value.
      */
     public void setTolerance(double tolerance) {
         if (!(tolerance > 0)) {
@@ -330,22 +319,19 @@ public class FastIca {
     }
 
     /**
-     * A logical value indicating the level of output as the algorithm runs.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    /**
-     * A logical value indicating the level of output as the algorithm runs.
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
-     * then a matrix of normal r.v.'s is used.
+     * Sets the initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
+     * then a random matrix of normal r.v.'s is used.
+     *
+     * @param wInit This matrix.
      */
     public void setWInit(Matrix wInit) {
         this.wInit = wInit;

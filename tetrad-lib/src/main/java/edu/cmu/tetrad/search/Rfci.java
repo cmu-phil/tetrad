@@ -112,7 +112,7 @@ public final class Rfci implements IGraphSearch {
     //============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a new FCI search for the given independence test and background knowledge.
+     * Constructs a new RFCI search for the given independence test and background knowledge.
      */
     public Rfci(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -124,7 +124,7 @@ public final class Rfci implements IGraphSearch {
     }
 
     /**
-     * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
+     * Constructs a new RFCI search for the given independence test and background knowledge and a list of variables to
      * search over.
      */
     public Rfci(IndependenceTest independenceTest, List<Node> searchVars) {

@@ -68,12 +68,15 @@ public final class Ccd implements IGraphSearch {
     //======================================== PUBLIC METHODS ====================================//
 
     /**
-     * The search method assumes that the IndependenceTest provided to the constructor is a conditional independence
-     * oracle for the SEM (or Bayes network) which describes the causal structure of the population. The method returns
-     * a PAG instantiated as a Tetrad GaSearchGraph which represents the equivalence class of digraphs which are
-     * d-separation equivalent to the digraph of the underlying model (SEM or BN). Although they are not returned
-     * by the search method it also computes two lists of triples which, respectively store the underlines and dotted
-     * underlines of the PAG.
+     * The search method assumes that the IndependenceTest provided to the constructor is a
+     * conditional independence oracle for the SEM (or Bayes network) which describes the
+     * causal structure of the population. The method returns a PAG instantiated as a Tetrad
+     * GaSearchGraph which represents the equivalence class of digraphs which are d-separation
+     * equivalent to the digraph of the underlying model (SEM or BN). Although they are not
+     * returned by the search method it also computes two lists of triples which, respectively
+     * store the underlines and dotted underlines of the PAG.
+     *
+     * @return The CCD cyclic PAG for the data.
      */
     public Graph search() {
         Map<Triple, Set<Node>> supSepsets = new HashMap<>();

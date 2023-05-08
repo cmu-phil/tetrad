@@ -979,7 +979,7 @@ public class PerformanceTests {
 
             fges = new FgesMb(score);
             fges.setVerbose(false);
-            fges.setNumCPDAGsToStore(0);
+            fges.setNumCpdagsToStore(0);
             fges.setOut(System.out);
 //            fges.setHeuristicSpeedup(faithfulness);
             fges.setMaxDegree(maxIndegree);
@@ -1024,7 +1024,7 @@ public class PerformanceTests {
 
             fges = new FgesMb(score);
             fges.setVerbose(false);
-            fges.setNumCPDAGsToStore(0);
+            fges.setNumCpdagsToStore(0);
             fges.setOut(System.out);
 //            fges.setHeuristicSpeedup(faithfulness);
             fges.setMaxDegree(maxIndegree);

@@ -150,11 +150,11 @@ public final class PcMb implements IMbSearch, IGraphSearch {
 
     //===============================PUBLIC METHODS=======================//
 
-
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
-    }
-
+    /**
+     * Sets whether cycles should be aggressively prevented, using a cycle checker.
+     *
+     * @param aggressivelyPreventCycles True if so.
+     */
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
@@ -349,7 +349,9 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * Does a CPDAG search.
+     * Does the search.
+     *
+     * @return a CPDAG.
      */
     public Graph search() {
         this.numIndependenceTests = 0;
@@ -477,14 +479,14 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * @return Ibid.
+     * @return The test used in search.
      */
     public IndependenceTest getTest() {
         return this.test;
     }
 
     /**
-     * @return Ibid.
+     * @return The knowledge used in search.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -497,10 +499,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
-    }
-
-    public Graph getGraph() {
-        return this.graph;
     }
 
     //================================PRIVATE METHODS====================//
@@ -836,7 +834,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     private static boolean isArrowheadAllowed1(Node from, Node to,
-                                                Knowledge knowledge) {
+                                               Knowledge knowledge) {
         if (knowledge == null) {
             return true;
         }

@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -30,9 +29,7 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.io.PrintStream;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
@@ -68,9 +65,9 @@ public final class GraspFci implements IGraphSearch {
     private Knowledge knowledge = new Knowledge();
 
     // The conditional independence test.
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
 
-    // Flag for complete rule set, true if should use complete rule set, false otherwise.
+    // Flag for complete rule set, true if one should use complete rule set, false otherwise.
     private boolean completeRuleSetUsed = true;
 
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
@@ -82,14 +79,8 @@ public final class GraspFci implements IGraphSearch {
     // True iff verbose output should be printed.
     private boolean verbose;
 
-    // The covariance matrix beign searched over. Assumes continuous data.
-    ICovarianceMatrix covarianceMatrix;
-
     // The sample size.
     int sampleSize;
-
-    // The print stream that output is directed to.
-    private PrintStream out = System.out;
 
     // The score.
     private final Score score;
@@ -100,7 +91,6 @@ public final class GraspFci implements IGraphSearch {
     private boolean useScore = true;
     private boolean doDiscriminatingPathRule = true;
     private boolean ordered = false;
-    private int graspDepth = 3;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
 
@@ -115,15 +105,21 @@ public final class GraspFci implements IGraphSearch {
     }
 
     //========================PUBLIC METHODS==========================//
+
+    /**
+     * Run the search and return s a PAG.
+     *
+     * @return The PAG.
+     */
     public Graph search() {
-        List<Node> nodes = getIndependenceTest().getVariables();
+        List<Node> nodes = this.independenceTest.getVariables();
 
         if (nodes == null) {
             throw new NullPointerException("Nodes from test were null.");
         }
 
         this.logger.log("info", "Starting FCI algorithm.");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        this.logger.log("info", "Independence test = " + this.independenceTest + ".");
 
         this.graph = new EdgeListGraph(nodes);
 
@@ -135,6 +131,7 @@ public final class GraspFci implements IGraphSearch {
         alg.setUseScore(useScore);
         alg.setUseRaskuttiUhler(useRaskuttiUhler);
         alg.setUseDataOrder(useDataOrder);
+        int graspDepth = 3;
         alg.setDepth(graspDepth);
         alg.setUncoveredDepth(uncoveredDepth);
         alg.setNonSingularDepth(nonSingularDepth);
@@ -171,100 +168,18 @@ public final class GraspFci implements IGraphSearch {
         return this.graph;
     }
 
-    private List<Node> possibleParents(Node x, List<Node> adjx,
-                                       Knowledge knowledge, Node y) {
-        List<Node> possibleParents = new LinkedList<>();
-        String _x = x.getName();
-
-        for (Node z : adjx) {
-            if (z == x) continue;
-            if (z == y) continue;
-            String _z = z.getName();
-
-            if (possibleParentOf(_z, _x, knowledge)) {
-                possibleParents.add(z);
-            }
-        }
-
-        return possibleParents;
-    }
-
-    private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
-        return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
-    }
-
-
-    // Due to Spirtes.
-    public void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
-        this.graph = new EdgeListGraph(graph);
-        this.graph.reorientAllWith(Endpoint.CIRCLE);
-        fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
-
-        List<Node> nodes = this.graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (fgesGraph.isDefCollider(a, b, c)) {
-                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
-
-//                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
-//                        graph.setEndpoint(b, a, Endpoint.ARROW);
-//                    }
-//
-//                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
-//                        graph.setEndpoint(b, c, Endpoint.ARROW);
-//                    }
-                } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
-
-                    if (sepset != null && !sepset.contains(b)) {
-                        this.graph.setEndpoint(a, b, Endpoint.ARROW);
-                        this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                    }
-
-//                    if (graph.getEndpoint(b, a) == Endpoint.CIRCLE && knowledge.isForbidden(a.getName(), b.getName())) {
-//                        graph.setEndpoint(b, a, Endpoint.ARROW);
-//                    }
-//
-//                    if (graph.getEndpoint(c, b) == Endpoint.CIRCLE && knowledge.isForbidden(c.getName(), b.getName())) {
-//                        graph.setEndpoint(b, c, Endpoint.ARROW);
-//                    }
-                }
-            }
-        }
-    }
-
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
     /**
-     * @return true if Zhang's complete rule set should be used, false if only
-     * R1-R4 (the rule set of the original FCI) should be used. False by
-     * default.
+     * Sets the knoweldge used in search.
+     *
+     * @param knowledge This knoweldge.
      */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
+     * Sets whether Zhang's complete rules set is used.
+     *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set
      *                            should be used, false if only R1-R4 (the rule set of the original FCI)
      *                            should be used. False by default.
@@ -274,14 +189,8 @@ public final class GraspFci implements IGraphSearch {
     }
 
     /**
-     * @return the maximum length of any discriminating path, or -1 of
-     * unlimited.
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength;
-    }
-
-    /**
+     * Sets the maximum length of any discriminating path searched.
+     *
      * @param maxPathLength the maximum length of any discriminating path, or -1
      *                      if unlimited.
      */
@@ -294,45 +203,12 @@ public final class GraspFci implements IGraphSearch {
     }
 
     /**
-     * True iff verbose output should be printed.
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
      */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * The independence test.
-     */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
-    }
-
-    public ICovarianceMatrix getCovMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public ICovarianceMatrix getCovarianceMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
-        this.covarianceMatrix = covarianceMatrix;
-    }
-
-    public PrintStream getOut() {
-        return this.out;
-    }
-
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    public void setIndependenceTest(IndependenceTest independenceTest) {
-        this.independenceTest = independenceTest;
     }
 
     //===========================================PRIVATE METHODS=======================================//
@@ -410,11 +286,6 @@ public final class GraspFci implements IGraphSearch {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
-    public void setGraspDepth(int graspDepth) {
-        if (graspDepth < -1) throw new IllegalArgumentException("GRaSP depth should be >= -1.");
-        this.graspDepth = graspDepth;
-    }
-
     public void setSingularDepth(int uncoveredDepth) {
         if (uncoveredDepth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
         this.uncoveredDepth = uncoveredDepth;
@@ -427,6 +298,43 @@ public final class GraspFci implements IGraphSearch {
 
     public void setOrdered(boolean ordered) {
         this.ordered = ordered;
+    }
+
+    // Due to Spirtes.
+    public void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
+        this.graph = new EdgeListGraph(graph);
+        this.graph.reorientAllWith(Endpoint.CIRCLE);
+        fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
+
+        List<Node> nodes = this.graph.getNodes();
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (fgesGraph.isDefCollider(a, b, c)) {
+                    this.graph.setEndpoint(a, b, Endpoint.ARROW);
+                    this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
+                    List<Node> sepset = sepsets.getSepset(a, c);
+
+                    if (sepset != null && !sepset.contains(b)) {
+                        this.graph.setEndpoint(a, b, Endpoint.ARROW);
+                        this.graph.setEndpoint(c, b, Endpoint.ARROW);
+                    }
+                }
+            }
+        }
     }
 
 }

@@ -91,6 +91,15 @@ public final class BFci implements IGraphSearch {
     private boolean doDiscriminatingPathRule = true;
 
     //============================CONSTRUCTORS============================//
+
+    /**
+     * Constructor. The test and score should be for the same data.
+     *
+     * @param test  The test to use.
+     * @param score The score to use.
+     * @see IndependenceTest
+     * @see Score
+     */
     public BFci(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
@@ -160,43 +169,52 @@ public final class BFci implements IGraphSearch {
         // The maxDegree for the fast adjacency search.
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
+    /**
+     * Sets the knowledge to be used for the search.
+     *
+     * @param knowledge This knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
 
     /**
-     * @return true if Zhang's complete rule set should be used, false if only
-     * R1-R4 (the rule set of the original FCI) should be used. False by
+     * Returns True if Zhang's complete rule set should be used, false if only
+     * 1-R4 (the rule set of the original FCI) should be used. False by
      * default.
+     *
+     * @return This.
      */
     public boolean isCompleteRuleSetUsed() {
         return this.completeRuleSetUsed;
     }
 
     /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set
-     *                            should be used, false if only R1-R4 (the rule set of the original FCI)
-     *                            should be used. False by default.
+     * Sets whether the complete (Zhang's) ruleset should be used.
+     *
+     * @param completeRuleSetUsed True if Zhang's complete rule set should be used, false if
+     *                            only R1-R4 (the rule set of the original FCI) should be used.
+     *                            False by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
-     * @return the maximum length of any discriminating path, or -1 of
+     * Returns the maximum length of any discriminating path, or -1 of
      * unlimited.
+     *
+     * @return This maximum.
      */
     public int getMaxPathLength() {
         return this.maxPathLength;
     }
 
     /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1
-     *                      if unlimited.
+     * Returns the maximum length of any discriminating path, or -1
+     * if unlimited.
+     *
+     * @param maxPathLength This maximum.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -204,13 +222,6 @@ public final class BFci implements IGraphSearch {
         }
 
         this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
     }
 
     /**
@@ -224,6 +235,8 @@ public final class BFci implements IGraphSearch {
 
     /**
      * The independence test being used for some steps in final orientation.
+     *
+     * @return This test.
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;

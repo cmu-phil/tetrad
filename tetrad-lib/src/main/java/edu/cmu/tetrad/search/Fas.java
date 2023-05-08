@@ -57,6 +57,8 @@ import java.util.*;
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
  *
+ * @author peterspirtes
+ * @author clarkglymour
  * @author josephramsey.
  * @see Pc
  * @see Fci
@@ -108,13 +110,25 @@ public class Fas implements IFas {
     //==========================CONSTRUCTORS=============================//
 
     /**
-     * Constructs a new FastAdjacencySearch.
+     * Constructor.
+     *
+     * @param test The test to use for oracle conditional independence test results.
      */
     public Fas(IndependenceTest test) {
         this.test = test;
     }
 
     //==========================PUBLIC METHODS===========================//
+
+    /**
+     * Runs the search and returns the resulting (undirected) graph.
+     *
+     * @return This graph.
+     */
+    @Override
+    public Graph search() {
+        return search(test.getVariables());
+    }
 
     /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
@@ -124,7 +138,8 @@ public class Fas implements IFas {
      * more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
      * adjacencies in the data.
      *
-     * @return a SepSet, which indicates which variables are independent conditional on which other variables
+     * @param nodes A list of nodes to search over.
+     * @return An undirected graph that summarizes the conditional independendencies that obtain in the data.
      */
     public Graph search(List<Node> nodes) {
         long startTime = MillisecondTimes.timeMillis();
@@ -260,9 +275,6 @@ public class Fas implements IFas {
     }
 
     /**
-     * The number of independence tests.
-     */
-    /**
      * Returns the nubmer of independence tests that were done.
      *
      * @return This number.
@@ -288,16 +300,6 @@ public class Fas implements IFas {
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
-    }
-
-    /**
-     * Runs the search and returns the resulting (undirected) graph.
-     *
-     * @return This graph.
-     */
-    @Override
-    public Graph search() {
-        return search(test.getVariables());
     }
 
     /**

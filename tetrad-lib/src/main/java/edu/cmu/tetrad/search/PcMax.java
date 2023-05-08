@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -94,7 +93,7 @@ public class PcMax implements IGraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
 
     /**
-     * The number of indepdendence tests in the last search.
+     * The number of independence tests in the last search.
      */
     private int numIndependenceTests;
 
@@ -131,7 +130,7 @@ public class PcMax implements IGraphSearch {
     }
 
     /**
-     * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
+     * @param aggressivelyPreventCycles Set to true just in case edges will not be added if they would create cycles.
      */
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
@@ -182,7 +181,7 @@ public class PcMax implements IGraphSearch {
      * checked.
      *
      * @param depth The depth of the search. The default is 1000. A value of -1 may be used to indicate that the depth
-     *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
+     *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multicore
      *              machines.
      */
     public void setDepth(int depth) {
@@ -210,13 +209,13 @@ public class PcMax implements IGraphSearch {
     }
 
     /**
-     * Runs PC starting with a commplete graph over the given list of nodes, using the given independence test and
+     * Runs PC starting with a complete graph over the given list of nodes, using the given independence test and
      * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information
      * is consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
      * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
      * or due to statistical errors in conditional independence judgments.
      * <p>
-     * All of the given nodes must be in the domatein of the given conditional independence test.
+     * All the given nodes must be in the domain of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
@@ -253,22 +252,11 @@ public class PcMax implements IGraphSearch {
             search.setFasType(PcCommon.FasType.REGULAR);
         }
 
-//        if (concurrent) {
-//            search.setConcurrent(PcAll.Concurrent.YES);
-//        } else {
-//            search.setConcurrent(PcAll.Concurrent.NO);
-//        }
-
         search.setColliderDiscovery(PcCommon.ColliderDiscovery.MAX_P);
         search.setConflictRule(conflictRule);
         search.setUseHeuristic(useMaxP);
         search.setMaxPathLength(maxPPathLength);
-//        search.setExternalGraph(externalGraph);
         search.setVerbose(verbose);
-
-//        fas.setKnowledge(getKnowledge());
-//        fas.setDepth(getDepth());
-//        fas.setVerbose(this.verbose);
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
@@ -300,14 +288,6 @@ public class PcMax implements IGraphSearch {
         return new HashSet<>(this.graph.getEdges());
     }
 
-    public Set<Edge> getNonadjacencies() {
-        Graph complete = GraphUtils.completeGraph(this.graph);
-        Set<Edge> nonAdjacencies = complete.getEdges();
-        Graph undirected = GraphUtils.undirectedGraph(this.graph);
-        nonAdjacencies.removeAll(undirected.getEdges());
-        return new HashSet<>(nonAdjacencies);
-    }
-
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
@@ -323,10 +303,6 @@ public class PcMax implements IGraphSearch {
     public void setStable(boolean stable) {
         this.stable = stable;
     }
-
-//    public void setConcurrent(boolean concurrent) {
-//        this.concurrent = concurrent;
-//    }
 
     public void setUseMaxP(boolean useMaxP) {
         this.useMaxP = useMaxP;

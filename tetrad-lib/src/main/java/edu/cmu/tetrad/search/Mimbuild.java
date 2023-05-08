@@ -193,8 +193,6 @@ public class Mimbuild {
     }
 
     /**
-     * The estimated covariance matrix over the latents.
-     */ /**
      * Returns the inferred covariance matrix over the late4nt variables.
      *
      * @return Thsi covariance matrix.

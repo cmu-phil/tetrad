@@ -130,6 +130,11 @@ public class Boss implements SuborderSearch {
         update(prefix, suborder);
     }
 
+    /**
+     * Sets the knowledge to be used in the search.
+     *
+     * @param knowledge This knowledge.
+     */
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;

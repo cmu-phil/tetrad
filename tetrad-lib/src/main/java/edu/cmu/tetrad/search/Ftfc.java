@@ -27,8 +27,14 @@ import edu.cmu.tetrad.search.utils.BpcTestType;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.search.utils.DeltaSextadTest;
 import edu.cmu.tetrad.search.utils.Sextad;
-import edu.cmu.tetrad.sem.*;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.sem.SemEstimator;
+import edu.cmu.tetrad.sem.SemIm;
+import edu.cmu.tetrad.sem.SemOptimizerEm;
+import edu.cmu.tetrad.sem.SemPm;
+import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.ProbUtils;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.*;
@@ -127,6 +133,12 @@ public class Ftfc {
         this.corr = new CorrelationMatrix(dataSet);
     }
 
+    /**
+     * Runs the search and returns a graph of clusters, each of which has two common
+     * latent parents.
+     *
+     * @return This graph.
+     */
     public Graph search() {
         Set<List<Integer>> allClusters;
 

@@ -158,7 +158,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     private boolean parallelized = false;
 
     /**
-     * Construct a Score and pass it in here. The totalScore should return a
+     * Constroctor. Construct a Score and pass it in here. The totalScore should return a
      * positive value in case of conditional dependence and a negative values in
      * case of conditional independence. See Chickering (2002), locally
      * consistent scoring criterion. This by default uses all the processors on
@@ -180,11 +180,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
     //==========================PUBLIC METHODS==========================//
 
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
-    }
-
-    /**
+     /**
      * Greedy equivalence search: Start from the empty graph, add edges till
      * model is significant. Then start deleting edges till a minimum is
      * achieved.
@@ -237,7 +233,20 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * @return the background knowledge.
+     * Sets whether one-edge faithfulness should be assumed. This assumption is that if X and Y
+     * are unconditionally depedendent, then there is an edge between X and Y in the graph.
+     * This could in principle be false, as for a path cancelation wheter one path is A->B->C->D
+     * and the other path is A->D.
+     * @param faithfulnessAssumed True if so.
+     */
+    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
+        this.faithfulnessAssumed = faithfulnessAssumed;
+    }
+
+    /**
+     * Returns the background knowledge.
+     *
+     * @return This knowledge
      */
     public Knowledge getKnowledge() {
         return knowledge;

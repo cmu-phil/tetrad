@@ -103,12 +103,6 @@ public class GraspFci implements Algorithm, UsesScoreWrapper, TakesIndependenceW
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(this.knowledge);
 
-            Object obj = parameters.get(Params.PRINT_STREAM);
-
-            if (obj instanceof PrintStream) {
-                search.setOut((PrintStream) obj);
-            }
-
             return search.search();
         } else {
             GraspFci algorithm = new GraspFci(this.test, this.score);

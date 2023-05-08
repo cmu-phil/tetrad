@@ -63,15 +63,21 @@ public class Lingam {
     public Lingam() {
     }
 
+    /**
+     * Fits a LiNGAM model to the given dataset using a default method for estimting
+     * W.
+     * @param D A continuous dataset.
+     * @return The BHat matrix, where B[i][j] gives the coefficient of j->i if nonzero.
+     */
     public Matrix fit(DataSet D) {
         Matrix W = LingD.estimateW(D, 5000, 1e-6, 1.2);
         return fitW(W);
     }
 
     /**
-     * Searches given the W matrix from ICA.
+     * Searches given a W matrix is that is provided by the user, WX = e.
      *
-     * @param W the W matrix from ICA, WX = e.
+     * @param W A W matrix estimated by the user, possibly by some other method.
      * @return The estimated B Hat matrix.
      */
     public Matrix fitW(Matrix W) {

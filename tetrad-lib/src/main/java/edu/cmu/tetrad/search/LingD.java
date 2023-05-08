@@ -90,6 +90,12 @@ public class LingD {
     public LingD() {
     }
 
+    /**
+     * Fits a LiNG-D model to the given dataset using a default method for estimting
+     * W.
+     * @param D A continuous dataset.
+     * @return The BHat matrix, where B[i][j] gives the coefficient of j->i if nonzero.
+     */
     public List<Matrix> fit(DataSet D) {
         Matrix W = LingD.estimateW(D, 5000, 1e-6, 1.2);
         return fitW(W);

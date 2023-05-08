@@ -37,8 +37,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
- * locally.
+ * <p>Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
+ * locally.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -165,14 +165,18 @@ public final class Cpc implements IGraphSearch {
     }
 
     /**
-     * @return the elapsed time of search in milliseconds, after <code>search()</code> has been run.
+     * Returns the elapsed time of search in milliseconds, after <code>search()</code> has been run.
+     *
+     * @return This time.
      */
     public long getElapsedTime() {
         return this.elapsedTime;
     }
 
     /**
-     * @return the knowledge specification used in the search. Non-null.
+     * Returns the knowledge specification used in the search. Non-null.
+     *
+     * @return this knowledge.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -180,76 +184,58 @@ public final class Cpc implements IGraphSearch {
 
     /**
      * Sets the knowledge specification used in the search. Non-null.
+     *
+     * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
     /**
-     * @return the independence test used in the search, set in the constructor. This is not returning a copy, for fear
-     * of duplicating the data set!
+     * Rreturn the independence test used in the search, set in the constructor.
+     *
+     * @return This.
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
     }
 
     /**
-     * @return the depth of the search--that is, the maximum number of variables conditioned on in any conditional
-     * independence test.
+     * Returns the depth of the search--that is, the maximum number of variables
+     * conditioned on in any conditional independence test.
+     *
+     * @return This.
      */
     public int getDepth() {
         return this.depth;
     }
 
     /**
-     * @return the set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
-     * <code>search()</code>.
+     * Returns the set of ambiguous triples found during the most recent run of the algorithm.
+     * Non-null after a call to <code>search()</code>.
+     *
+     * @return This set.
      */
     public Set<Triple> getAmbiguousTriples() {
         return new HashSet<>(this.ambiguousTriples);
     }
 
     /**
-     * @return the set of collider triples found during the most recent run of the algorithm. Non-null after a call to
-     * <code>search()</code>.
-     */
-    public Set<Triple> getColliderTriples() {
-        return new HashSet<>(this.colliderTriples);
-    }
-
-    /**
-     * @return the set of noncollider triples found during the most recent run of the algorithm. Non-null after a call
-     * to <code>search()</code>.
-     */
-    public Set<Triple> getNoncolliderTriples() {
-        return new HashSet<>(this.noncolliderTriples);
-    }
-
-    /**
-     * Returns the edges in the search graph.
+     * Returns the edges in the search graph as a set of undirected edges.
      *
      * @return These edges.
      */
     public Set<Edge> getAdjacencies() {
-        return new HashSet<>(this.graph.getEdges());
+        return new HashSet<>(GraphUtils.undirectedGraph(this.graph).getEdges());
     }
 
     /**
-     * Returns the non-adjacencies in the seaarch graph.
+     * Runs CPC starting with a fully connected graph over all the variables in the domain
+     * of the independence test. See PC for caveats. The number of possible cycles and
+     * bidirected edges is far less with CPC than with PC.
      *
-     * @return These non-adjacencies.
-     */
-    public Set<Edge> getNonadjacencies() {
-        Graph complete = GraphUtils.completeGraph(this.graph);
-        Set<Edge> nonAdjacencies = complete.getEdges();
-        Graph undirected = GraphUtils.undirectedGraph(this.graph);
-        nonAdjacencies.removeAll(undirected.getEdges());
-        return new HashSet<>(nonAdjacencies);
-    }
-
-    /**
-     * Runs CPC starting with a fully connected graph over all of the variables in the domain of the independence test.
-     * See PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
+     * @return The e-pattern for the search, which is a graphical representation of a set
+     * of possible CPDAGs.
      */
     public Graph search() {
         this.logger.log("info", "Starting CPC algorithm");
@@ -331,21 +317,27 @@ public final class Cpc implements IGraphSearch {
     }
 
     /**
-     * @param verbose Whether verbose output should be printed.
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * @param stable Whether the stable FAS search should be used.
+     * Sets whether the stable FAS search should be used.
+     *
+     * @param stable True if so.
      */
     public void setStable(boolean stable) {
         this.stable = stable;
     }
 
     /**
-     * @param useHeuristic Whethe the heuristic should be used for max p.
+     * Sets whether the heuristic should be used for max p.
+     *
+     * @param useHeuristic True if so.
      */
     public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;

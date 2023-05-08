@@ -123,7 +123,7 @@ public class FactorAnalysis {
             unitVector.set(i, 0, 1);
         }
 
-        for (int i = 0; i < getNumFactors(); i++) {
+        for (int i = 0; i < this.numFactors; i++) {
             boolean found = successiveResidualHelper(residual, unitVector);
 
             if (!found) break;
@@ -208,8 +208,10 @@ public class FactorAnalysis {
 
                 hVectors.add(uVector.scalarMult(1.0 / alpha2));
 
-                if (!Double.isNaN(alpha1) && abs((alpha2 - alpha1)) < getThreshold()) {
-                    break;
+                if (!Double.isNaN(alpha1)) {
+                    if (abs((alpha2 - alpha1)) < this.threshold) {
+                        break;
+                    }
                 }
 
                 alpha1 = alpha2;
@@ -234,22 +236,29 @@ public class FactorAnalysis {
         return result;
     }
 
+    /**
+     * Sets the threshold.
+     *
+     * @param threshold This threshold.
+     */
     public void setThreshold(double threshold) {
         this.threshold = threshold;
     }
 
-    public double getThreshold() {
-        return this.threshold;
-    }
-
-    public int getNumFactors() {
-        return this.numFactors;
-    }
-
+    /**
+     * Sets the nubmer of factors to find.
+     *
+     * @param numFactors This number.
+     */
     public void setNumFactors(int numFactors) {
         this.numFactors = numFactors;
     }
 
+    /**
+     * Returns the matrix of residuals.
+     *
+     * @return This matrix.
+     */
     public Matrix getResidual() {
         return this.residual;
     }
@@ -306,7 +315,7 @@ public class FactorAnalysis {
             Matrix li = f.transpose().times(ui);
             double di = FastMath.sqrt(li.get(0, 0));
 
-            if (abs((d - di)) <= getThreshold()) {
+            if (abs((d - di)) <= this.threshold) {
                 break;
             }
 
