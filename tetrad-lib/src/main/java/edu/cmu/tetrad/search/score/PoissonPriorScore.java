@@ -46,6 +46,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>
  *
+ * @author bryanandrews
  * @author josephramsey
  */
 public class PoissonPriorScore implements Score {
