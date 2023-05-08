@@ -85,7 +85,6 @@ public class DeltaTetradTest {
         for (int i = 0; i < this.variables.size(); i++) {
             this.variablesHash.put(this.variables.get(i), i);
         }
-
     }
 
     /**

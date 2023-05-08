@@ -56,7 +56,6 @@ import java.util.*;
  *
  * @author Ricardo Silva
  */
-
 public class Purify {
     private boolean outputMessage;
 

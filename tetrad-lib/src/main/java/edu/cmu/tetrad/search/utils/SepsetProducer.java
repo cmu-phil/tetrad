@@ -22,7 +22,6 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.utils.SepsetMap;
 
 import java.util.List;
 
@@ -35,11 +34,15 @@ import java.util.List;
  */
 public interface SepsetProducer {
     List<Node> getSepset(Node a, Node b);
+
     boolean isUnshieldedCollider(Node i, Node j, Node k);
 
     double getScore();
+
     List<Node> getVariables();
+
     void setVerbose(boolean verbose);
+
     boolean isIndependent(Node d, Node c, List<Node> path);
 }
 

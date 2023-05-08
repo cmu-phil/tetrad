@@ -19,7 +19,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search.utils;
+package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.graph.*;
 
@@ -34,7 +34,6 @@ import java.util.*;
  * "from" node and Node2 is the "to" node (ie 1 o-&gt; 2).</p>
  *
  * @author Trevor Burns
- * @see Ion
  */
 public class GraphChange {
     private final List<Edge> removes;

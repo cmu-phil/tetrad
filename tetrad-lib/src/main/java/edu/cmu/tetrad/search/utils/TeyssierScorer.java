@@ -47,7 +47,8 @@ public class TeyssierScorer {
     /**
      * Constructor that takes both a test or a score. Only one of these is used, dependeint
      * on how the parameters are set.
-     * @param test The test.
+     *
+     * @param test  The test.
      * @param score The score
      * @see IndependenceTest
      * @see Score

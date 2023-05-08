@@ -28,10 +28,12 @@ import java.util.List;
 
 /**
  * Provides an interface for Purify algorithm.
+ *
  * @author josephramsey
  */
 public interface IPurify {
     List<List<Node>> purify(List<List<Node>> partition);
+
     void setTrueGraph(Graph mim);
 }
 

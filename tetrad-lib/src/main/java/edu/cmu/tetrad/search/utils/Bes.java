@@ -26,6 +26,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * Equivalence Search) and a backward phase (BES = Backward Equivalence Search).
  * We find the BES step by itself is useful in a number of algorithms, so we
  * extract this step and give as a separate algorithm.</p>
+ *
  * <p>The idea of the backward search is to start with a model that is
  * Markov and removed edges from it and do the corresponding reorientations,
  * improving the score each time, until the score can no longer be improved.</p>

@@ -50,6 +50,14 @@ public class BayesImParser {
     }
 
     /**
+     * Sets whether to use display names.
+     * @param useDisplayNames True if so.
+     */
+    public void setUseDisplayNames(boolean useDisplayNames) {
+        this.useDisplayNames = useDisplayNames;
+    }
+
+    /**
      * Takes an xml representation of a Bayes IM and reinstantiates the IM
      *
      * @param element the xml of the IM
@@ -248,10 +256,6 @@ public class BayesImParser {
         } else {
             return null;
         }
-    }
-
-    public void setUseDisplayNames(boolean useDisplayNames) {
-        this.useDisplayNames = useDisplayNames;
     }
 }
 

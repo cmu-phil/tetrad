@@ -30,7 +30,6 @@ import edu.cmu.tetrad.graph.Node;
  *
  * @author Robert Tillman
  */
-
 public interface Kernel {
 
     /**

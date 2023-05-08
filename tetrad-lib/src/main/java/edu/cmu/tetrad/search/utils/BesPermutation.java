@@ -83,15 +83,9 @@ public class BesPermutation {
         this.knowledge = new Knowledge(knowledge);
     }
 
-    private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
-
-        int i = -1;
-
-        for (Node n : nodes) {
-            hashIndices.put(n, ++i);
-        }
-    }
-
+    /**
+     * Runs BES.
+     */
     public void bes(Graph graph, List<Node> order, List<Node> suborder) {
         Map<Node, Integer> hashIndices = new HashMap<>();
         SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
@@ -572,6 +566,15 @@ public class BesPermutation {
 
         public Set<Node> getParents() {
             return parents;
+        }
+    }
+
+    private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
+
+        int i = -1;
+
+        for (Node n : nodes) {
+            hashIndices.put(n, ++i);
         }
     }
 }

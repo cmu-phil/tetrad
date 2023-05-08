@@ -39,7 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * algorithm by maximizing p-value. arXiv preprint arXiv:1610.00378.</p>
  *
  * @author josephramsey
- * @see PcMax
  */
 public final class MaxP {
     private final IndependenceTest independenceTest;

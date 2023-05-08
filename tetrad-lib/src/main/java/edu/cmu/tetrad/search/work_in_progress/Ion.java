@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.GraphChange;
 import edu.cmu.tetrad.search.utils.PossibleDConnectingPath;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.ChoiceGenerator;

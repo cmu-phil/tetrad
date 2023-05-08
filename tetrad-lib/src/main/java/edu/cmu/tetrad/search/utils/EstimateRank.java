@@ -29,10 +29,14 @@ import java.util.Arrays;
 
 /**
  * Estimates the rank of a matrix.
+ *
+ * @author adambrodie
  */
 public class EstimateRank {
 
-    //Compute canonical correlations from data.
+    /**
+     *  Compute canonical correlations from data.
+     */
     public static double[] CanCor(double[][] A, double[][] B) {
         RealMatrix Ua = new SingularValueDecomposition(new BlockRealMatrix(A)).getU();
         RealMatrix UTa = Ua.transpose();
@@ -40,7 +44,9 @@ public class EstimateRank {
         return new SingularValueDecomposition(UTa.multiply(Ub)).getSingularValues();
     }
 
-    //Compute canonical correlations from covariance matrix.
+    /**
+     * Compute canonical correlations from covariance matrix.
+     */
     public static double[] CanCor(int[] iA, int[] iB, double[][] cov) {
         RealMatrix covA = new BlockRealMatrix(cov).getSubMatrix(iA, iA);
         RealMatrix covB = new BlockRealMatrix(cov).getSubMatrix(iB, iB);
@@ -56,7 +62,9 @@ public class EstimateRank {
         return Cors;
     }
 
-    //Estimate rank from data.
+    /**
+     * Estimate rank from data.
+     */
     public static int Estimate(double[][] A, double[][] B, double alpha) {
         double[] Cors = CanCor(A, B);
         int rank = 0;
@@ -79,7 +87,9 @@ public class EstimateRank {
         return rank;
     }
 
-    //Estimate rank from covariance matrix.
+    /**
+     * Estimate rank from covariance matrix.
+     */
     public static int Estimate(int[] iA, int[] iB, double[][] cov, int N, double alpha) {
         double[] Cors = CanCor(iA, iB, cov);
         int rank = 0;

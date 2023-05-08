@@ -18,10 +18,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Provides some methods to check significance of clusters for clustering algroithms. It is assumed
- * that for each cluster there is a single latent that is a parent of all the nodes
- * in the cluster. Significance of these models is returned.</p>
- * <p>The methods in this class are used only internally and so have package scope only.</p>
+ * <p>Provides some methods to check significance of clusters for clustering algroithms.
+ * It is assumed that for each cluster there is a single latent that is a parent of all
+ * the nodes in the cluster. Significance of these models is returned.</p>
  *
  * @author josephramsey
  */
