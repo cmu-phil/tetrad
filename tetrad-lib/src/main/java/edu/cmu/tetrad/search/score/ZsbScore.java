@@ -59,7 +59,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * does not give bad results even by itself.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicates independence.</p>
+ * scores indicate independence.</p>
  *
  * @author josephramsey
  */

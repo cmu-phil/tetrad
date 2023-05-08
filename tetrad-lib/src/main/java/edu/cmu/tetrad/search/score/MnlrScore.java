@@ -31,7 +31,7 @@ import java.util.List;
  * Implements a mixed variable polynomial BIC score for fGES.
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicates independence.</p>
+ * scores indicate independence.</p>
  *
  * @author Bryan Andrews
  */

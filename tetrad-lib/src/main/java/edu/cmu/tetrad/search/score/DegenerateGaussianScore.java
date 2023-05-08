@@ -52,7 +52,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * http://proceedings.mlr.press/v104/andrews19a/andrews19a.pdf</a>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicates independence.</p>
+ * scores indicate independence.</p>
  *
  * @author Bryan Andrews
  */

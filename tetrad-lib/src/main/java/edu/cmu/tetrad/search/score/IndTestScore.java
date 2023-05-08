@@ -35,7 +35,7 @@ import java.util.List;
  * be higher for greater dependence.
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicates independence.</p>
+ * scores indicate independence.</p>
  *
  * @author josephramsey
  */

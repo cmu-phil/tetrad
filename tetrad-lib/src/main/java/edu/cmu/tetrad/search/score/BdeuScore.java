@@ -39,7 +39,7 @@ import java.util.List;
  * https://doi.org/10.1007/BF00994016</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicates independence.</p>
+ * scores indicate independence.</p>
  *
  * @author josephramsey
  * @see BdeScore
