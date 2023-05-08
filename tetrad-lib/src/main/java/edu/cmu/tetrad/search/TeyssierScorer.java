@@ -740,7 +740,7 @@ public class TeyssierScorer {
         Node n = this.pi.get(p);
         Set<Node> prefix = new HashSet<>(getPrefix(p));
         LinkedHashSet<Node> parents = new LinkedHashSet<>();
-        double sMax = this.trees.get(n).trace(prefix, parents);
+        double sMax = this.trees.get(n).trace(prefix, this.variables, parents);
 
         return new Pair(parents, Double.isNaN(sMax) ? Double.NEGATIVE_INFINITY : sMax);
     }

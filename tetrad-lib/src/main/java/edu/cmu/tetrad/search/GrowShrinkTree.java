@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Node;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,8 +24,18 @@ public class GrowShrinkTree {
         this.forbidden = new ArrayList<>();
     }
 
-    public double trace(Set<Node> prefix, Set<Node> parents) {
-        return this.root.trace(prefix, parents);
+    public double trace(Collection<Node> prefix, Collection<Node> all) {
+        Set<Node> available = new HashSet<>(all);
+        available.remove(this.node);
+        this.forbidden.forEach(available::remove);
+        return this.root.trace(new HashSet<>(prefix), available, new HashSet<>());
+    }
+
+    public double trace(Collection<Node> prefix, Collection<Node> all, Set<Node> parents) {
+        Set<Node> available = new HashSet<>(all);
+        available.remove(this.node);
+        this.forbidden.forEach(available::remove);
+        return this.root.trace(new HashSet<>(prefix), available, parents);
     }
 
     public Node getNode() {
@@ -100,6 +109,7 @@ public class GrowShrinkTree {
             this.growScore = this.tree.localScore(X);
         }
 
+        // remove this version of trace...
         public double trace(Set<Node> prefix, Set<Node> parents) {
 
             if (!this.grow) {
@@ -125,6 +135,69 @@ public class GrowShrinkTree {
                     prefix.remove(add);
                     parents.add(add);
                     return branch.trace(prefix, parents);
+                }
+            }
+
+            if (!this.shrink) {
+                this.shrink = true;
+                this.remove = new HashSet<>();
+                this.shrinkScore = this.growScore;
+                if (parents.isEmpty()) return this.shrinkScore;
+
+                Node best;
+                do {
+                    best = null;
+                    int[] X = new int[parents.size() - 1];
+
+                    for (Node remove : new HashSet<>(parents)) {
+                        if (this.tree.isRequired(remove)) continue;
+                        int i = 0;
+                        parents.remove(remove);
+                        for (Node parent : parents) X[i++] = this.tree.getIndex(parent);
+                        parents.add(remove);
+
+                        double s = this.tree.localScore(X);
+                        if (s > this.shrinkScore) {
+                            this.shrinkScore = s;
+                            best = remove;
+                        }
+                    }
+
+                    if (best != null) {
+                        parents.remove(best);
+                        this.remove.add(best);
+                    }
+                } while(best != null);
+
+            }
+            parents.removeAll(this.remove);
+            return this.shrinkScore;
+        }
+
+        public double trace(Set<Node> prefix, Set<Node> available, Set<Node> parents) {
+
+            if (!this.grow) {
+                this.grow = true;
+                this.branches = new ArrayList<>();
+                List<GSTNode> required = new ArrayList<>();
+
+                for (Node add : available) {
+                    GSTNode branch = new GSTNode(this.tree, add, parents);
+                    if (this.tree.isRequired(add)) required.add(branch);
+                    else if (branch.getGrowScore() >= this.growScore) this.branches.add(branch);
+                }
+
+                this.branches.sort(Collections.reverseOrder());
+                this.branches.addAll(0, required);
+            }
+
+            for (GSTNode branch : this.branches) {
+                Node add = branch.getAdd();
+                available.remove(add);
+                if (prefix.contains(add)) {
+                    prefix.remove(add);
+                    parents.add(add);
+                    return branch.trace(prefix, available, parents);
                 }
             }
 

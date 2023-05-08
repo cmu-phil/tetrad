@@ -24,11 +24,9 @@ package edu.cmu.tetrad.algcomparison.examples;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.BossTest;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Grasp;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
-import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.graph.ScaleFree;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
@@ -44,19 +42,26 @@ import edu.cmu.tetrad.util.Params;
 public class TestBoss {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-        parameters.set(Params.NUM_RUNS, 3);
+        parameters.set(Params.NUM_RUNS, 1);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
         parameters.set(Params.NUM_MEASURES, 100);
         parameters.set(Params.AVG_DEGREE, 10);
+        parameters.set(Params.SCALE_FREE_ALPHA, 0.05);
+        parameters.set(Params.SCALE_FREE_BETA, 0.9);
+        parameters.set(Params.SCALE_FREE_DELTA_IN, 1);
+        parameters.set(Params.SCALE_FREE_DELTA_OUT, 1);
         parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.COEF_LOW, 0);
         parameters.set(Params.COEF_HIGH, 1);
+        parameters.set(Params.RANDOMIZE_COLUMNS, true);
 
 //        parameters.set(Params.BOSS_ALG, 1);
 
-        parameters.set(Params.PENALTY_DISCOUNT, 2);
+        parameters.set(Params.PENALTY_DISCOUNT, 8);
         parameters.set(Params.SEM_BIC_STRUCTURE_PRIOR, 0);
         parameters.set(Params.ALPHA, 1e-2);
+
+//        parameters.set(Params.BOSS_ALG, 0, 1, 2, 3);
 
         parameters.set(Params.VERBOSE, false);
 
@@ -72,12 +77,13 @@ public class TestBoss {
         Algorithms algorithms = new Algorithms();
         algorithms.add(new Fges(new SemBicScore()));
         algorithms.add(new Boss(new SemBicScore()));
-        algorithms.add(new BossTest(new SemBicScore()));
-        algorithms.add(new Grasp(new FisherZ(), new SemBicScore()));
+//        algorithms.add(new BossTest(new SemBicScore()));
+//        algorithms.add(new Grasp(new FisherZ(), new SemBicScore()));
 //        algorithms.add(new SP(new SemBicScore()));
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
+        simulations.add(new SemSimulation(new ScaleFree()));
 
         Comparison comparison = new Comparison();
 

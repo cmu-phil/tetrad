@@ -28,14 +28,12 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * @see PermutationSearch
  */
 public class Boss implements SuborderSearch {
-    private final PermutationBes bes;
     private final Score score;
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
-    private final Map<Node, Double> scores;
     private Map<Node, GrowShrinkTree> gsts;
-    private int numStarts;
     private Knowledge knowledge = new Knowledge();
+    private int numStarts = 1;
 
 
     /**
@@ -46,142 +44,133 @@ public class Boss implements SuborderSearch {
         this.score = score;
         this.variables = score.getVariables();
         this.parents = new HashMap<>();
-        this.scores = new HashMap<>();
-
         for (Node x : this.variables) {
             this.parents.put(x, new HashSet<>());
         }
-
-        this.bes = new PermutationBes(score);
-        this.bes.setVerbose(false);
-        this.numStarts = 1;
     }
 
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
+        assert this.numStarts > 0;
         this.gsts = gsts;
-        makeValidKnowledgeOrder(suborder);
-        List<Node> bestSuborder = new ArrayList<>(suborder);
-        double bestScore = update(prefix, suborder);
 
-        Map<Node, Set<Node>> required = new HashMap<>();
-        for (Node y : suborder) {
-            for (Node z : suborder) {
-                if (this.knowledge.isRequired(y.getName(), z.getName())) {
-                    if (!required.containsKey(y)) required.put(y, new HashSet<>());
-                    required.get(y).add(z);
-                }
-            }
-        }
+        List<Node> bestSuborder = null;
+        double score, bestScore = Double.NEGATIVE_INFINITY;
+        boolean improved;
 
         for (int i = 0; i < this.numStarts; i++) {
             shuffle(suborder);
             makeValidKnowledgeOrder(suborder);
-            double s1, s2, s3;
-            s1 = update(prefix, suborder);
-            do {
-                s2 = s1;
-                do {
-                    s3 = s1;
-                    for (Node x : new ArrayList<>(suborder)) {
-                        if (betterMutation(prefix, suborder, required, x)) {
-                            s1 = update(prefix, suborder);
-                        }
-                    }
-                } while (s1 > s3);
-                do {
-                    s3 = s1;
-                    List<Node> Z = new ArrayList<>(prefix);
-                    Z.addAll(suborder);
-                    Graph graph = PermutationSearch.getGraph(Z, parents, this.knowledge, true);
-                    this.bes.bes(graph, Z, suborder);
-                    graph.paths().makeValidOrder(suborder);
-                    s1 = update(prefix, suborder);
-                } while (s1 > s3);
-            } while (s1 > s2);
 
-            if (s1 > bestScore) {
+            do {
+                improved = false;
+                for (Node x : new ArrayList<>(suborder)) {
+                    if (betterMutation(prefix, suborder, x)) improved = true;
+                }
+            } while (improved);
+
+            bes(prefix, suborder);
+
+            score = update(prefix, suborder);
+            if (score > bestScore) {
                 bestSuborder = new ArrayList<>(suborder);
-                bestScore = s1;
+                bestScore = score;
             }
         }
 
-        for (int i = 0; i < suborder.size(); i++) {
-            suborder.set(i, bestSuborder.get(i));
-        }
+        suborder.clear();
+        suborder.addAll(bestSuborder);
         update(prefix, suborder);
     }
 
-    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Map<Node, Set<Node>> required, Node x) {
+
+    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
+        Set<Node> all = new HashSet<>(suborder);
+        all.addAll(prefix);
+
         ListIterator<Node> itr = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
-        int i = 0;
-
         Set<Node> Z = new HashSet<>(prefix);
+
+        int i = 0;
         double score = 0;
         int curr = 0;
 
         while (itr.hasNext()) {
             Node z = itr.next();
-            scores[i++] = gsts.get(x).trace(new HashSet<>(Z), new HashSet<>()) + score;
+
+//            if x is a required parent of z
+//            we insert x to the right of z
+//            this might be wrong...
+            if (this.knowledge.isRequired(x.getName(), z.getName())) break;
+
+
+            scores[i++] = this.gsts.get(x).trace(Z, all) + score;
             if (z != x) {
-                score += gsts.get(z).trace(new HashSet<>(Z), new HashSet<>());
+                score += this.gsts.get(z).trace(Z, all);
                 Z.add(z);
             } else curr = i - 1;
         }
-        scores[i] = gsts.get(x).trace(new HashSet<>(Z), new HashSet<>()) + score;
+
+        scores[i] = this.gsts.get(x).trace(Z, all) + score;
+        int best = i;
 
         Z.add(x);
         score = 0;
-        int best = i;
 
         while (itr.hasPrevious()) {
             Node z = itr.previous();
+
+//            if z is a required parent of x
+//            we insert x to the left of z
+//            this might be wrong...
+            if(this.knowledge.isRequired(z.getName(), x.getName())) break;
+
             if (z != x) {
                 Z.remove(z);
-                score += gsts.get(z).trace(new HashSet<>(Z), new HashSet<>());
+                score += gsts.get(z).trace(Z, all);
             }
+
             scores[--i] += score;
-            if (scores[i] > scores[best] && !violatesKnowledge(suborder, required)) best = i;
+            if (scores[i] + 1e-9 > scores[best]) best = i;
         }
 
-        if (best == curr) return false;
-        else if (best > curr) best--;
-
-        suborder.remove(curr);
+        if (scores[curr] + 1e-9 > scores[best]) return false;
+        if (best > curr) best--;
+        suborder.remove(x);
         suborder.add(best, x);
 
         return true;
     }
 
+    private void bes(List<Node> prefix, List<Node> suborder) {
+        PermutationBes bes = new PermutationBes(this.score);
+        bes.setKnowledge(this.knowledge);
+        bes.setVerbose(false);
+
+        List<Node> all = new ArrayList<>(prefix);
+        all.addAll(suborder);
+
+        Graph graph = PermutationSearch.getGraph(all, this.parents, this.knowledge, true);
+        bes.bes(graph, all, suborder);
+        graph.paths().makeValidOrder(suborder);
+    }
+
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
+        Set<Node> all = new HashSet<>(suborder);
+        all.addAll(prefix);
 
-        Iterator<Node> itr = suborder.iterator();
         Set<Node> Z = new HashSet<>(prefix);
-        while (itr.hasNext()) {
-            Node x = itr.next();
-            parents.get(x).clear();
-            scores.put(x, gsts.get(x).trace(new HashSet<>(Z), parents.get(x)));
-            score += scores.get(x);
+
+        for (Node x : suborder) {
+            Set<Node> parents = this.parents.get(x);
+            parents.clear();
+            score += this.gsts.get(x).trace(Z, all, parents);
             Z.add(x);
         }
 
         return score;
-    }
-
-    private boolean violatesKnowledge(List<Node> suborder, Map<Node, Set<Node>> required) {
-        for (int i = 0; i < suborder.size(); i++) {
-            Node y = suborder.get(i);
-            if (required.containsKey(y)) {
-                for (Node z : required.get(y)) {
-                    if (suborder.subList(0, i).contains(z)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     private void makeValidKnowledgeOrder(List<Node> order) {
@@ -195,15 +184,9 @@ public class Boss implements SuborderSearch {
         }
     }
 
-//    public void setDepth(int depth) {
-//        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-//        this.bes.setDepth(depth);
-//    }
-
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
-        this.bes.setKnowledge(knowledge);
     }
 
     public void setNumStarts(int numStarts) {
@@ -212,19 +195,16 @@ public class Boss implements SuborderSearch {
 
     @Override
     public List<Node> getVariables() {
-        return variables;
+        return this.variables;
     }
 
     @Override
     public Map<Node, Set<Node>> getParents() {
-        return parents;
+        return this.parents;
     }
 
     @Override
     public Score getScore() {
-        return score;
+        return this.score;
     }
 }
-
-
-

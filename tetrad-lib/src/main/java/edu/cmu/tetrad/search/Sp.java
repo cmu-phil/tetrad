@@ -127,14 +127,15 @@ public class Sp implements SuborderSearch {
 
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
+        Set<Node> all = new HashSet<>(suborder);
+        all.addAll(prefix);
 
-        Iterator<Node> itr = suborder.iterator();
         Set<Node> Z = new HashSet<>(prefix);
-        while (itr.hasNext()) {
-            Node x = itr.next();
-            parents.get(x).clear();
-            scores.put(x, gsts.get(x).trace(new HashSet<>(Z), parents.get(x)));
-            score += scores.get(x);
+
+        for (Node x : suborder) {
+            Set<Node> parents = this.parents.get(x);
+            parents.clear();
+            score += this.gsts.get(x).trace(Z, all, parents);
             Z.add(x);
         }
 

@@ -117,6 +117,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         params.add(Params.NUM_STARTS);
 //        params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
+        params.add(Params.BOSS_ALG);
 
 
         return params;
