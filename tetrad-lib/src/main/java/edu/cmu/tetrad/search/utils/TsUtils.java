@@ -265,6 +265,9 @@ public class TsUtils {
         return new BoxDataSet(new DoubleDataBox(shiftedData.toArray()), data.getVariables());
     }
 
+    /**
+     * Gives a result consisting of the residuals and collapsed var graphs.
+     */
     public static class VarResult {
 
         private final DataSet residuals;
