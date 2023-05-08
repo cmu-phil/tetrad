@@ -32,9 +32,9 @@ import java.util.List;
 /**
  * <p>Calculates the BDe score (Bayes Dirichlet Equivalent) score for analyzing
  * discrete multinomial data. A good discussion of BD* scores can be found here:</p>
+ *
  * <p>Heckerman, D., Geiger, D. &amp; Chickering, D.M. Learning Bayesian networks:
- * The combination of knowledge and statistical data. Mach Learn 20, 197–243 (1995).
- * https://doi.org/10.1007/BF00994016</p>
+ * The combination of knowledge and statistical data. Mach Learn 20, 197–243 (1995).</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>

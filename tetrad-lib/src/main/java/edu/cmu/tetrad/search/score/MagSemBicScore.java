@@ -35,7 +35,7 @@ import javax.help.UnsupportedOperationException;
 import java.util.*;
 
 /**
- * Gives ia BIC score for a linear, Gaussian MAG (Mixed Ancestral Graph). It
+ * Gives a BIC score for a linear, Gaussian MAG (Mixed Ancestral Graph). It
  * will perform the same as SemBicScore for DAGs.
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative

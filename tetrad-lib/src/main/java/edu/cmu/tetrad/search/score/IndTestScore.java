@@ -31,13 +31,16 @@ import java.util.List;
 
 /**
  * Gives a method of interpreting a test as a score. Various independence tests
- * will calcualte p-values; this simply reports alpha - p as a score, which will
- * be higher for greater dependence.
+ * will calculate p-values; they simply report alpha - p as a score, which will
+ * be higher for greater dependence. This class wraps such an independence test
+ * and returns the score reported by that test.
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>
  *
  * @author josephramsey
+ * @see IndependenceTest
+ * @see IndependenceTest#getScore()
  */
 public class IndTestScore implements Score {
 

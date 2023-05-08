@@ -34,9 +34,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Implements a conditional Gaussian BIC score for FGS, which calculates a BIC
+ * <p></p>Implements a conditional Gaussian BIC score for FGS, which calculates a BIC
  * score for mixed discrete/Gaussian data using the conditional Gaussian
- * likelihood function (see).
+ * likelihood function (see). The reference is here:</p>
+ *
+ * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
+ * International journal of data science and analytics, 6, 3-18.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>

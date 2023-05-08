@@ -58,8 +58,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * can be expected to improve, though setting m0 to 0 for all variables
  * does not give bad results even by itself.</p>
  *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * <p>As for all scores in Tetrad, higher scores mean more dependence,
+ * and negative scores indicate independence.</p>
  *
  * @author josephramsey
  */

@@ -26,12 +26,41 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Interface for a score suitable for FGES
+ * Interface for a score. Most methods are given defaults so that such a score will be
+ * easy to implement in Python usign JPype.
+ *
+ * @author josephramsey
  */
 public interface Score {
+
+    /**
+     * The score of a node given its parents.
+     *
+     * @param node    The node.
+     * @param parents The parents.
+     * @return The score.
+     */
     double localScore(int node, int... parents);
+
+    /**
+     * The variables of the score.
+     *
+     * @return This list.
+     */
     List<Node> getVariables();
+
+    /**
+     * The sample size of the data.
+     *
+     * @return This size.
+     */
     int getSampleSize();
+
+    /**
+     * A string representation of the score.
+     *
+     * @return This string.
+     */
     String toString();
 
     //==============================DEFAULT METHODS=========================//

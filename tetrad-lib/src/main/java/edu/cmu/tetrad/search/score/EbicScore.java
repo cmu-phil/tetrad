@@ -36,7 +36,10 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Implements the extended BIC (EBIC) score (Chen and Chen)..
+ * <p>Implements the extended BIC (EBIC) score. The reference is here:</p>
+ *
+ * <p>Chen, J., & Chen, Z. (2008). Extended Bayesian information criteria for
+ * model selection with large model spaces. Biometrika, 95(3), 759-771.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>

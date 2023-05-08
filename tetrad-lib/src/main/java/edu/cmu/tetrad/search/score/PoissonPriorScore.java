@@ -34,7 +34,14 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * Implements Poisson prior score (Bryan).
+ * <p>Implements Poisson prior score, a novel (unpubished) score that replaces the
+ * penalty term in BIC by the log of the Poisson distribution. The Poisson distribution
+ * has a lambda parameter, which is made a parameter of this score and acts like
+ * a structure prior for the score.</p>
+ *
+ * <p>Here is the Wikipedia page for the Poisson distribution, for reference:</p>
+ *
+ * <p>https://en.wikipedia.org/wiki/Poisson_distribution</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>

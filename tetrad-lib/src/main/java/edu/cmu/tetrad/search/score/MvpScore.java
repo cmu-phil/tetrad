@@ -28,7 +28,10 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.List;
 
 /**
- * Implements a mixed variable polynomial BIC score for fGES.
+ * <p>Implements a mixed variable polynomial BIC score. The reference is here:</p>
+ *
+ * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2018). Scoring Bayesian networks of
+ * mixed variables. International journal of data science and analytics, 6, 3-18.</p>
  *
  * @author Bryan Andrews
  */

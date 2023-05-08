@@ -37,8 +37,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * approach as given in Kim et al. (2012).</p>
  *
  * <p>Kim, Y., Kwon, S., &amp; Choi, H. (2012). Consistent model selection criteria on
- * high dimensions. The Journal of Machine Learning Research, 13(1), 1037-1057.
- * Foster and George.</p>
+ * high dimensions. The Journal of Machine Learning Research, 13(1), 1037-1057.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>

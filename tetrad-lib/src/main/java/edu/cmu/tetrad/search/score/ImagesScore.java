@@ -34,16 +34,16 @@ import java.util.List;
  * used for the IMaGES algorithm. The idea is that one pick and algorithm
  * that takes (only) a score as input, such as FGES or GRaSP or BOSS,
  * and then constructs an ImagesScore (which class) with a list of
- * datasets as input, feeds this ImagesScore to this algorithm through
- * the contructor, and then runs the algorithm to get an estimate
- * of the structure.</p>
- * <p>Importantly, only the variables from the first score will be
- * returned from the getVariables method, so it is up to the user to
- * ensure that all of the scores share the same (object-identical)
- * variables.</p>
+ * datasets as input, using same object-identical variables, and feeds this
+ * Images score to this algorithm through the contructor. One then runs the
+ * algorithm to get an estimate of the structure.</p>
  *
- * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
- * scores indicate independence.</p>
+ * <p>Importantly, only the variables from the first score will be returned
+ * from the getVariables method, so it is up to the user to ensure that all of
+ * the scores share the same (object-identical) variables.</p>
+ *
+ * <p>As for all scores in Tetrad, higher scores mean more dependence, and
+ * negative scores indicate independence.</p>
  *
  * @author josephramsey
  * @see Fges
@@ -60,7 +60,7 @@ public class ImagesScore implements Score {
 
     /**
      * Constructs an IMaGES score using the given list of individual scores.
-     * These scores will be be averaged to obtain the IMaGES score itself.
+     * These scores will be averaged to obtain the IMaGES score itself.
      *
      * @param scores The list of scores.
      */

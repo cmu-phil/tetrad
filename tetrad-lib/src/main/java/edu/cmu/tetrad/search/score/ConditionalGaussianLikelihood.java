@@ -39,14 +39,18 @@ import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * Implements a conditional Gaussian likelihood. Please note that this likelihood will be maximal only if the
- * continuous mixedVariables are jointly Gaussian conditional on the discrete mixedVariables; in all other cases, it will
- * be less than maximal. For an algorithm like FGS this is fine.
+ * <p>Implements a conditional Gaussian likelihood. Please note that this likelihood will be
+ * maximal only if the continuous variables are jointly Gaussian conditional on the
+ * discrete variables; in all other cases, it will be less than maximal. The reference is here:</p>
+ *
+ * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
+ * International journal of data science and analytics, 6, 3-18.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>
  *
- * * @author josephramsey
+ * @author bryanandrews
+ * @author josephramsey
  */
 public class ConditionalGaussianLikelihood {
 
