@@ -42,6 +42,9 @@ import java.util.Map;
 /**
  * Calculates Mixed Variables Polynomial likelihood.
  *
+ * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
+ * scores indicates independence.</p>
+ *
  * @author Bryan Andrews
  */
 public class MnlrLikelihood {

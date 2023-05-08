@@ -34,6 +34,9 @@ import java.util.List;
  * will calcualte p-values; this simply reports alpha - p as a score, which will
  * be higher for greater dependence.
  *
+ * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
+ * scores indicates independence.</p>
+ *
  * @author josephramsey
  */
 public class IndTestScore implements Score {

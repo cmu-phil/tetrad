@@ -36,6 +36,9 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * Implements Poisson prior score (Bryan).
  *
+ * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
+ * scores indicates independence.</p>
+ *
  * @author josephramsey
  */
 public class PoissonPriorScore implements Score {

@@ -43,7 +43,10 @@ import static org.apache.commons.math3.util.FastMath.log;
  * continuous mixedVariables are jointly Gaussian conditional on the discrete mixedVariables; in all other cases, it will
  * be less than maximal. For an algorithm like FGS this is fine.
  *
- * @author josephramsey
+ * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
+ * scores indicates independence.</p>
+ *
+ * * @author josephramsey
  */
 public class ConditionalGaussianLikelihood {
 

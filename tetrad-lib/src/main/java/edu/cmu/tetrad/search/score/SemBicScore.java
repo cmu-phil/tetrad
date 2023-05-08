@@ -42,6 +42,9 @@ import static org.apache.commons.math3.util.FastMath.log;
 /**
  * Implements the continuous BIC score for FGES.
  *
+ * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
+ * scores indicates independence.</p>
+ *
  * @author josephramsey
  */
 public class SemBicScore implements Score {

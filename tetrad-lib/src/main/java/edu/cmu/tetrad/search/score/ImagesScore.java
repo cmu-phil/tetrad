@@ -42,6 +42,9 @@ import java.util.List;
  * ensure that all of the scores share the same (object-identical)
  * variables.</p>
  *
+ * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
+ * scores indicates independence.</p>
+ *
  * @author josephramsey
  * @see Fges
  * @see Grasp

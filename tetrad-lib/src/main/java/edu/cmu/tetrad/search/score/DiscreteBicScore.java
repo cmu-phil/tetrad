@@ -35,6 +35,9 @@ import static org.apache.commons.math3.util.FastMath.log;
 /**
  * Calculates the discrete BIC score.
  *
+ * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
+ * scores indicates independence.</p>
+ *
  * @author josephramsey
  */
 public class DiscreteBicScore implements DiscreteScore {

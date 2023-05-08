@@ -38,6 +38,9 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * Implements the extended BIC (EBIC) score (Chen and Chen)..
  *
+ * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
+ * scores indicates independence.</p>
+ *
  * @author josephramsey
  */
 public class EbicScore implements Score {

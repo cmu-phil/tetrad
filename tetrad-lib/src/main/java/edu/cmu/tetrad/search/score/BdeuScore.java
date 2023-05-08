@@ -38,6 +38,9 @@ import java.util.List;
  * The combination of knowledge and statistical data. Mach Learn 20, 197–243 (1995).
  * https://doi.org/10.1007/BF00994016</p>
  *
+ * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
+ * scores indicates independence.</p>
+ *
  * @author josephramsey
  * @see BdeScore
  */

@@ -38,7 +38,10 @@ import java.util.List;
  * score for mixed discrete/Gaussian data using the conditional Gaussian
  * likelihood function (see).
  *
- * @author josephramsey
+ * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
+ * scores indicates independence.</p>
+ *
+ * * @author josephramsey
  * @see ConditionalGaussianLikelihood
  * @see DegenerateGaussianScore
  */
