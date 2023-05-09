@@ -44,6 +44,7 @@ public class BesPermutation {
     private final Score score;
     private Knowledge knowledge = new Knowledge();
     private boolean verbose = true;
+    private int depth = -1;
 
     /**
      * Constructor.
@@ -80,12 +81,23 @@ public class BesPermutation {
      * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge(knowledge);
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
-    /**
-     * Runs BES.
-     */
+//    public void setDepth(int depth) {
+//        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
+//        this.depth = depth;
+//    }
+
+    private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
+
+        int i = -1;
+
+        for (Node n : nodes) {
+            hashIndices.put(n, ++i);
+        }
+    }
+
     public void bes(Graph graph, List<Node> order, List<Node> suborder) {
         Map<Node, Integer> hashIndices = new HashMap<>();
         SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
@@ -222,9 +234,13 @@ public class BesPermutation {
         return score.localScoreDiff(xIndex, yIndex, parentIndices);
     }
 
+    public Knowledge getKnowledge() {
+        return knowledge;
+    }
+
     private Set<Node> revertToCPDAG(Graph graph) {
         MeekRules rules = new MeekRules();
-        rules.setKnowledge(knowledge);
+        rules.setKnowledge(getKnowledge());
         rules.setAggressivelyPreventCycles(true);
         boolean meekVerbose = false;
         rules.setVerbose(meekVerbose);
@@ -405,10 +421,10 @@ public class BesPermutation {
     }
 
     private void calculateArrowsBackward(Node a, Node b, Graph
-            graph, Map<Edge, ArrowConfigBackward> arrowsMapBackward, Map<Node,
-            Integer> hashIndices, int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) {
+            graph, Map<Edge, ArrowConfigBackward> arrowsMapBackward, Map<Node, Integer> hashIndices,
+                                         int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack) {
         if (existsKnowledge()) {
-            if (!knowledge.noEdgeRequired(a.getName(), b.getName())) {
+            if (!getKnowledge().noEdgeRequired(a.getName(), b.getName())) {
                 return;
             }
         }
@@ -423,7 +439,6 @@ public class BesPermutation {
         if (storedConfig != null && storedConfig.equals(config)) return;
         arrowsMapBackward.put(directedEdge(a, b), new ArrowConfigBackward(naYX, parents));
 
-        int depth = -1;
         int _depth = min(depth, _naYX.size());
 
         final SublistGenerator gen = new SublistGenerator(_naYX.size(), _depth);//_naYX.size());
@@ -488,6 +503,7 @@ public class BesPermutation {
             return Objects.hash(nayx, parents);
         }
     }
+
 
     private static class Arrow implements Comparable<Arrow> {
 
@@ -566,15 +582,6 @@ public class BesPermutation {
 
         public Set<Node> getParents() {
             return parents;
-        }
-    }
-
-    private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
-
-        int i = -1;
-
-        for (Node n : nodes) {
-            hashIndices.put(n, ++i);
         }
     }
 }

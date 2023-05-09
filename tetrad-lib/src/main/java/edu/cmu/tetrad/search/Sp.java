@@ -48,9 +48,9 @@ public class Sp implements SuborderSearch {
     private Map<Node, GrowShrinkTree> gsts;
     private Knowledge knowledge = new Knowledge();
 
+
     /**
      * This algorithm will work with an arbitrary score.
-     *
      * @param score The Score to use.
      */
     public Sp(Score score) {
@@ -108,50 +108,7 @@ public class Sp implements SuborderSearch {
         for (int i = 0; i < suborder.size(); i++) {
             suborder.set(i, bestSuborder.get(i));
         }
-
         update(prefix, suborder);
-    }
-
-    /**
-     * Sets the knowledge to be used in the search.
-     *
-     * @param knowledge This knowledge.
-     * @see Knowledge
-     */
-    @Override
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
-    }
-
-    /**
-     * Returns the variables in the data.
-     *
-     * @return This list.
-     */
-    @Override
-    public List<Node> getVariables() {
-        return variables;
-    }
-
-    /**
-     * Returns the map from nodes to their parents.
-     *
-     * @return This map.
-     */
-    @Override
-    public Map<Node, Set<Node>> getParents() {
-        return parents;
-    }
-
-    /**
-     * Returns the score being used for this search.
-     *
-     * @return This score.
-     * @see Score
-     */
-    @Override
-    public Score getScore() {
-        return score;
     }
 
     private void makeValidKnowledgeOrder(List<Node> order) {
@@ -179,99 +136,119 @@ public class Sp implements SuborderSearch {
         return false;
     }
 
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
+
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
+        Set<Node> all = new HashSet<>(suborder);
+        all.addAll(prefix);
 
-        Iterator<Node> itr = suborder.iterator();
         Set<Node> Z = new HashSet<>(prefix);
-        while (itr.hasNext()) {
-            Node x = itr.next();
-            parents.get(x).clear();
-            scores.put(x, gsts.get(x).trace(new HashSet<>(Z), parents.get(x)));
-            score += scores.get(x);
+
+        for (Node x : suborder) {
+            Set<Node> parents = this.parents.get(x);
+            parents.clear();
+            score += this.gsts.get(x).trace(Z, all, parents);
             Z.add(x);
         }
 
         return score;
     }
 
-    private static class SwapIterator implements Iterator<int[]> {
-        private int[] next;
-        private final int n;
-        private final int[] perm;
-        private final int[] dirs;
-
-        public SwapIterator(int size) {
-            this.n = size;
-            if (this.n <= 0) {
-                this.perm = null;
-                this.dirs = null;
-            } else {
-                this.perm = new int[n];
-                this.dirs = new int[n];
-                for (int i = 0; i < n; i++) {
-                    this.perm[i] = i;
-                    this.dirs[i] = -1;
-                }
-                this.dirs[0] = 0;
-            }
-        }
-
-        @Override
-        public int[] next() {
-            int[] next = makeNext();
-            this.next = null;
-            return next;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return makeNext() != null;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-
-        private int[] makeNext() {
-            if (this.next != null) return this.next;
-            if ((this.dirs == null) || (this.perm == null)) return null;
-
-            int i = -1;
-            int x = -1;
-            for (int j = 0; j < n; j++)
-                if ((this.dirs[j] != 0) && (this.perm[j] > x)) {
-                    x = this.perm[j];
-                    i = j;
-                }
-
-            if (i == -1) return null;
-
-            int k = i + this.dirs[i];
-            this.next = new int[]{i, k};
-
-            swap(i, k, this.dirs);
-            swap(i, k, this.perm);
-
-            if ((k == 0) || (k == n - 1) || (this.perm[k + this.dirs[k]] > x))
-                this.dirs[k] = 0;
-
-            for (int j = 0; j < n; j++)
-                if (this.perm[j] > x)
-                    this.dirs[j] = (j < k) ? +1 : -1;
-
-            return this.next;
-        }
-
-        private static void swap(int i, int j, int[] arr) {
-            int x = arr[i];
-            arr[i] = arr[j];
-            arr[j] = x;
-        }
+    @Override
+    public List<Node> getVariables() {
+        return variables;
     }
+
+    @Override
+    public Map<Node, Set<Node>> getParents() {
+        return parents;
+    }
+
+    @Override
+    public Score getScore() {
+        return score;
+    }
+
 }
 
+class SwapIterator implements Iterator<int[]> {
+    private int[] next;
+    private final int n;
+    private final int[] perm;
+    private final int[] dirs;
 
+    public SwapIterator(int size) {
+        this.n = size;
+        if (this.n <= 0) {
+            this.perm = null;
+            this.dirs = null;
+        } else {
+            this.perm = new int[n];
+            this.dirs = new int[n];
+            for (int i = 0; i < n; i++) {
+                this.perm[i] = i;
+                this.dirs[i] = -1;
+            }
+            this.dirs[0] = 0;
+        }
+    }
+
+    @Override
+    public int[] next() {
+        int[] next = makeNext();
+        this.next = null;
+        return next;
+    }
+
+    @Override
+    public boolean hasNext() {
+        return makeNext() != null;
+    }
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException();
+    }
+
+    private int[] makeNext() {
+        if (this.next != null) return this.next;
+        if ((this.dirs == null) || (this.perm == null)) return null;
+
+        int i = -1;
+        int x = -1;
+        for (int j = 0; j < n; j++)
+            if ((this.dirs[j] != 0) && (this.perm[j] > x)) {
+                x = this.perm[j];
+                i = j;
+            }
+
+        if (i == -1) return null;
+
+        int k = i + this.dirs[i];
+        this.next = new int[] {i, k};
+
+        swap(i, k, this.dirs);
+        swap(i, k, this.perm);
+
+        if ((k == 0) || (k == n - 1) || (this.perm[k + this.dirs[k]] > x))
+            this.dirs[k] = 0;
+
+        for (int j = 0; j < n; j++)
+            if (this.perm[j] > x)
+                this.dirs[j] = (j < k) ? +1 : -1;
+
+        return this.next;
+    }
+
+    private static void swap(int i, int j, int[] arr) {
+        int x = arr[i];
+        arr[i] = arr[j];
+        arr[j] = x;
+    }
+}
 
 
