@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * <p>Implements the CStaR algorithm (Steckoven et al., 2012), which finds a CPDAG of thd data and then
+ * <p>Implements the CStaR algorithm (Steckoven et al., 2012), which finds a CPDAG of that data and then
  * tries all orientations of the undirected edges about a variable in the CPDAG to estimate a
  * minimum bound on the effect for a given edge. Some references include the following:</p>
  *
