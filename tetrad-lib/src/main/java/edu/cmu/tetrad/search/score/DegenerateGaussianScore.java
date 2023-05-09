@@ -142,7 +142,7 @@ public class DegenerateGaussianScore implements Score {
 
     /**
      * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
-     *
+     *s
      * @param i       The child indes.
      * @param parents The indices of the parents.
      */
