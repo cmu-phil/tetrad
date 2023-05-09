@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public class GrowShrinkTree {
-    private final Score score;
+    private final   Score score;
     private final Map<Node, Integer> index;
     private final Node node;
     private final int nodeIndex;

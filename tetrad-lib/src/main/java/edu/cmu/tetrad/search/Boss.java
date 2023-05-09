@@ -91,7 +91,11 @@ public class Boss implements SuborderSearch {
         }
 
         suborder.clear();
-        suborder.addAll(bestSuborder);
+
+        if (bestSuborder != null) {
+            suborder.addAll(bestSuborder);
+        }
+
         update(prefix, suborder);
     }
 
@@ -155,6 +159,7 @@ public class Boss implements SuborderSearch {
         if (use) {
             this.bes = new BesPermutation(this.score);
             this.bes.setVerbose(false);
+            this.bes.setKnowledge(knowledge);
         }
     }
 
@@ -198,7 +203,10 @@ public class Boss implements SuborderSearch {
     @Override
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
-        this.bes.setKnowledge(knowledge);
+
+        if (this.bes != null) {
+            this.bes.setKnowledge(knowledge);
+        }
     }
 
     public void setNumStarts(int numStarts) {
