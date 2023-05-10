@@ -40,7 +40,7 @@ import static edu.cmu.tetrad.data.Discretizer.getEqualFrequencyBreakPoints;
 /**
  * <p>Calculates Mixed Variables Polynomial likelihood. The reference is here:</p>
  *
- * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2018). Scoring Bayesian networks of
+ * <p>Andrews, B., Ramsey, J., &amp; Cooper, G. F. (2018). Scoring Bayesian networks of
  * mixed variables. International journal of data science and analytics, 6, 3-18.</p>
  *
  * @author Bryan Andrews
