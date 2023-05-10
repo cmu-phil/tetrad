@@ -1,0 +1,94 @@
+package edu.cmu.tetrad.algcomparison.statistic.utils;
+
+import edu.cmu.tetrad.graph.*;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * A confusion matrix for orientations:
+ *
+ *  True    |  Estimated |  Orientation
+ * --------------------------------
+ * a <- b   |   a <- b   |   tp, tn
+ *          |   a -> b   |   fp, fn
+ *          |   a −− b   |   fn
+ *          |   a .. b   |   fn
+ * --------------------------------
+ * a .. b   |   a <- b   |   fp
+ *          |   a -> b   |   fp
+ *          |   a −− b   |
+ *          |   a .. b   |
+ *
+ * @author bryanandrews, josephramsey
+ */
+public class OrientationConfusion {
+    private int tp;
+    private int fp;
+    private int fn;
+    private int tn;
+
+    public OrientationConfusion(Graph truth, Graph est) {
+        this.tp = 0;
+        this.fp = 0;
+        this.fn = 0;
+        this.tn = 0;
+
+        for (Edge edge : truth.getEdges()) {
+            if (!edge.isDirected()) continue;
+            Node a = edge.getNode1();
+            Node b = edge.getNode1();
+
+            if (!est.isAdjacentTo(a, b)) {
+                this.fp++;
+                continue;
+            }
+
+            Edge other = est.getEdge(a, b);
+            boolean m1 = edge.getEndpoint1() == other.getProximalEndpoint(a);
+            boolean m2 = edge.getEndpoint1() == other.getProximalEndpoint(a);
+
+            if (m1 && m2) {
+                this.tp++;
+                this.tn++;
+                continue;
+            }
+
+            if (!m1 && !m2) {
+                this.fp++;
+                this.fn++;
+                continue;
+            }
+
+            if (other.getEndpoint1() != Endpoint.TAIL) continue;
+            if (other.getEndpoint2() != Endpoint.TAIL) continue;
+            this.fp++;
+        }
+
+        for (Edge edge : est.getEdges()) {
+            if (!edge.isDirected()) continue;
+            Node a = edge.getNode1();
+            Node b = edge.getNode1();
+
+            if (!truth.isAdjacentTo(a, b)) this.fp++;
+        }
+    }
+
+    public int getTp() {
+        return this.tp;
+    }
+
+    public int getFp() {
+        return this.fp;
+    }
+
+    public int getFn() {
+        return this.fn;
+    }
+
+    public int getTn() {
+        return this.tn;
+    }
+
+}
