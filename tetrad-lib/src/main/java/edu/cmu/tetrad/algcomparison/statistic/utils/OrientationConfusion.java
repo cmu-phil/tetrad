@@ -21,6 +21,8 @@ import java.util.Set;
  *          |   a −− b   |
  *          |   a .. b   |
  *
+ * The true graph should be a DAG!
+ *
  * @author bryanandrews, josephramsey
  */
 public class OrientationConfusion {
@@ -38,16 +40,16 @@ public class OrientationConfusion {
         for (Edge edge : truth.getEdges()) {
             if (!edge.isDirected()) continue;
             Node a = edge.getNode1();
-            Node b = edge.getNode1();
+            Node b = edge.getNode2();
 
             if (!est.isAdjacentTo(a, b)) {
-                this.fp++;
+                this.fn++;
                 continue;
             }
 
             Edge other = est.getEdge(a, b);
             boolean m1 = edge.getEndpoint1() == other.getProximalEndpoint(a);
-            boolean m2 = edge.getEndpoint1() == other.getProximalEndpoint(a);
+            boolean m2 = edge.getEndpoint2() == other.getProximalEndpoint(b);
 
             if (m1 && m2) {
                 this.tp++;
@@ -63,13 +65,13 @@ public class OrientationConfusion {
 
             if (other.getEndpoint1() != Endpoint.TAIL) continue;
             if (other.getEndpoint2() != Endpoint.TAIL) continue;
-            this.fp++;
+            this.fn++;
         }
 
         for (Edge edge : est.getEdges()) {
             if (!edge.isDirected()) continue;
             Node a = edge.getNode1();
-            Node b = edge.getNode1();
+            Node b = edge.getNode2();
 
             if (!truth.isAdjacentTo(a, b)) this.fp++;
         }
