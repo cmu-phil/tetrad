@@ -32,7 +32,7 @@ import java.util.logging.*;
  * formatter that outputs the text of the logging messages only. To remove the
  * stream, call removeStream(stream).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 @SuppressWarnings("UnusedDeclaration")
 public class LogUtils {

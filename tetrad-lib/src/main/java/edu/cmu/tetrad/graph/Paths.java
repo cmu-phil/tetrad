@@ -1,7 +1,7 @@
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SepsetMap;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
 import edu.cmu.tetrad.util.TetradSerializable;
@@ -907,7 +907,7 @@ public class Paths implements TetradSerializable {
                     List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
                     if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                     if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                    if (test.checkIndependence(a, b, sepset).independent()) {
+                    if (test.checkIndependence(a, b, sepset).isIndependent()) {
                         graph.removeEdge(edge);
 
                         if (sepsets != null) {
@@ -931,7 +931,7 @@ public class Paths implements TetradSerializable {
                         List<Node> sepset = GraphUtils.asList(choice, possibleDsep);
                         if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                         if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
-                        if (test.checkIndependence(a, b, sepset).independent()) {
+                        if (test.checkIndependence(a, b, sepset).isIndependent()) {
                             graph.removeEdge(edge);
 
                             if (sepsets != null) {

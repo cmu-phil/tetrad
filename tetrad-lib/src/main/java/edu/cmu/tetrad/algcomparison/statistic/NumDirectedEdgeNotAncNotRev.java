@@ -9,7 +9,7 @@ import edu.cmu.tetrad.graph.Node;
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumDirectedEdgeNotAncNotRev implements Statistic {
     static final long serialVersionUID = 23L;

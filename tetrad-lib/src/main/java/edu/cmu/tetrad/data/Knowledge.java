@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
  * following character is encountered. Thus, "X*a" will match "X123a" and
  * "X45a".
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public final class Knowledge implements TetradSerializable {

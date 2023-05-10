@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Interface that algorithm must implement.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public interface Algorithm extends HasParameters, TetradSerializable {
 

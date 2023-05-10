@@ -31,17 +31,19 @@ import org.apache.commons.math3.util.FastMath;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * A Java implementation of FastIca following the R package fastICA. The only
- * difference (I believe) is that the R package can handle complex numbers,
- * whereas this implementation cannot.
- * <p>
- * Performance. The R version scales up much better than this one does, the main
- * reason for which is that the calculation of the initial covariance matrix
- * (1/n) X'X is so much faster.
- * <p>
- * The documention of the R version is as follows, all of which is true of this
+ * <p>Translates a version of the FastICA algorithm used in R from Fortran
+ * into Java for use in Tetrad. This can be used in various algorithms that
+ * assume linearity and non-gaussianity, as for example LiNGAM and LiNG-D.
+ * There is one difference from the R, in that in R FastICA can operate over
+ * complex numbers, whereeas here it is restricted to real numbers. A
+ * useful reference is this:</p>
+ *
+ * <p>Oja, E., & Hyvarinen, A. (2000). Independent component analysis:
+ * algorithms and applications. Neural networks, 13(4-5), 411-430.</p>
+ *
+ * <p>The documention of the R version is as follows, all of which is true of this
  * translation (so far as I know) except for its being in R and its allowing
- * complex values:
+ * complex values.
  * <p>
  * Description:
  * <p>
@@ -138,9 +140,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and
  * Applications, _Neural Networks_, *13(4-5)*:411-430
  * <p>
- * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015&gt; 0
  *
- * @author Joseph Ramsey (of the translation, that is)
+ * @author josephramsey
  */
 public class FastIca {
 
@@ -246,6 +247,8 @@ public class FastIca {
      * If algorithmType == PARALLEL the components are extracted simultaneously
      * (the default). if algorithmType == DEFLATION the components are extracted
      * one at a time.
+     *
+     * @param algorithmType This type.
      */
     public void setAlgorithmType(int algorithmType) {
         if (!(algorithmType == FastIca.DEFLATION || algorithmType == FastIca.PARALLEL)) {
@@ -256,14 +259,9 @@ public class FastIca {
     }
 
     /**
-     * The function type to be used, either LOGCOSH or EXP.
-     */
-    public int getFunction() {
-        return this.function;
-    }
-
-    /**
-     * The function type to be used, either LOGCOSH or EXP.
+     * Sets the function type to be used, either LOGCOSH or EXP.
+     *
+     * @param function This function, LOGCOSH or EXP.
      */
     public void setFunction(int function) {
         if (!(function == FastIca.LOGCOSH || function == FastIca.EXP)) {
@@ -274,16 +272,10 @@ public class FastIca {
     }
 
     /**
-     * Constant in range [1, 2] used in approximation to neg-entropy when 'fun
+     * Sets the FastICA alpha constant in range [1, 2] used in approximation to neg-entropy when 'fun
      * == "logcosh"'
-     */
-    public double getAlpha() {
-        return this.alpha;
-    }
-
-    /**
-     * Constant in range [1, 2] used in approximation to neg-entropy when 'fun
-     * == "logcosh"'
+     *
+     * @param alpha this constant.
      */
     public void setAlpha(double alpha) {
         if (!(alpha >= 1 && alpha <= 2)) {
@@ -296,20 +288,17 @@ public class FastIca {
     /**
      * A logical value indicating whether rows of the data matrix 'X' should be
      * standardized beforehand.
+     *
+     * @param rowNorm True if so.
      */
     public void setRowNorm(boolean rowNorm) {
         this.rowNorm = rowNorm;
     }
 
     /**
-     * Maximum number of iterations to perform.
-     */
-    public int getMaxIterations() {
-        return this.maxIterations;
-    }
-
-    /**
-     * Maximum number of iterations to perform.
+     * Sets the maximum number of iterations to allow.
+     *
+     * @param maxIterations This maximum.
      */
     public void setMaxIterations(int maxIterations) {
         if (maxIterations < 1) {
@@ -320,16 +309,10 @@ public class FastIca {
     }
 
     /**
-     * A positive scalar giving the tolerance at which the un-mixing matrix is
+     * Sets a positive scalar giving the tolerance at which the un-mixing matrix is
      * considered to have converged.
-     */
-    public double getTolerance() {
-        return this.tolerance;
-    }
-
-    /**
-     * A positive scalar giving the tolerance at which the un-mixing matrix is
-     * considered to have converged.
+     *
+     * @param tolerance This value.
      */
     public void setTolerance(double tolerance) {
         if (!(tolerance > 0)) {
@@ -340,30 +323,19 @@ public class FastIca {
     }
 
     /**
-     * A logical value indicating the level of output as the algorithm runs.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    /**
-     * A logical value indicating the level of output as the algorithm runs.
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
-     * then a matrix of normal r.v.'s is used.
-     */
-    public Matrix getWInit() {
-        return this.wInit;
-    }
-
-    /**
-     * Initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
-     * then a matrix of normal r.v.'s is used.
+     * Sets the initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
+     * then a random matrix of normal r.v.'s is used.
+     *
+     * @param wInit This matrix.
      */
     public void setWInit(Matrix wInit) {
         this.wInit = wInit;
@@ -691,7 +663,6 @@ public class FastIca {
             Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
             x.assignRow(i, u);
         }
-
     }
 
     private void center(Matrix x) {

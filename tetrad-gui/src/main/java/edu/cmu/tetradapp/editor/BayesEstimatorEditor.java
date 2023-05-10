@@ -43,7 +43,7 @@ import java.text.NumberFormat;
  * probabilities of node values given combinations of parent values.
  *
  * @author Aaron Powers
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class BayesEstimatorEditor extends JPanel {
 

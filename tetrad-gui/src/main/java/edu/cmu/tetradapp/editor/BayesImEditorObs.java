@@ -36,7 +36,7 @@ import java.awt.*;
  * nodes have been specified).
  *
  * @author Aaron Powers
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 /////////////////////////////////////////////////////////////////
 // allow the user to set the probabilities of given combinations

@@ -4,9 +4,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndTestPositiveCorr;
-import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.ScoredIndTest;
+import edu.cmu.tetrad.search.work_in_progress.IndTestPositiveCorr;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.IndTestScore;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Wrapper for Fisher Z test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class PositiveCorrScore implements ScoreWrapper {
     static final long serialVersionUID = 23L;
@@ -28,7 +28,7 @@ public class PositiveCorrScore implements ScoreWrapper {
         double alpha = parameters.getDouble("alpha");
         this.alpha = alpha;
         IndTestPositiveCorr test = new IndTestPositiveCorr((DataSet) dataSet, alpha);
-        return new ScoredIndTest(test);
+        return new IndTestScore(test);
     }
 
     @Override

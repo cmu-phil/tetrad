@@ -42,7 +42,7 @@ import java.util.List;
  * Puts up a panel showing some graph properties, e.g., number of nodes and
  * edges in the graph, etc.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 class AllPathsAction extends AbstractAction implements ClipboardOwner {
     private final GraphWorkbench workbench;

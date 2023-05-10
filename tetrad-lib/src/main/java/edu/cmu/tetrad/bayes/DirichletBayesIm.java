@@ -74,7 +74,7 @@ import java.util.*;
  * <p>
  * Thanks to Bill Taysom for an earlier version.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class DirichletBayesIm implements BayesIm {
 

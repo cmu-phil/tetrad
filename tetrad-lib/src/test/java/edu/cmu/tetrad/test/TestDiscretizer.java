@@ -42,7 +42,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the column discretizer.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class TestDiscretizer {
 

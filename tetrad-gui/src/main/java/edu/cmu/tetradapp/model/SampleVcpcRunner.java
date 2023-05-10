@@ -23,11 +23,15 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.work_in_progress.SampleVcpc;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.util.IndTestType;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,7 +41,7 @@ import java.util.Set;
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SampleVcpcRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
@@ -191,7 +195,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
+            GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
             LayoutUtil.circleLayout(graph, 200, 200, 150);
         }
@@ -252,7 +256,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
         return true;
     }
 
-    public ImpliedOrientation getMeekRules() {
+    public MeekRules getMeekRules() {
         MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         meekRules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));

@@ -13,7 +13,7 @@ import org.apache.commons.math3.util.FastMath;
  * <p>
  * We calculate the correlation directly from the confusion matrix.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class MathewsCorrAdj implements Statistic {
     static final long serialVersionUID = 23L;

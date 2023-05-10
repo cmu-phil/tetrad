@@ -38,7 +38,7 @@ import java.util.List;
  * clone of the session elements list is made on creation, and once the data is
  * retrieved, it is deleted.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class SubsessionSelection implements Transferable {
 

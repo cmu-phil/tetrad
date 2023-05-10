@@ -30,7 +30,7 @@ import java.awt.*;
 /**
  * Edits the parameters for generating random graphs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GraphParamsEditor extends JPanel implements ParameterEditor {
     private Parameters params = new Parameters();

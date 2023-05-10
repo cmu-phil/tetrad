@@ -44,7 +44,7 @@ import java.util.prefs.Preferences;
  * Presents a dialog allowing the user to change the number format used to
  * render real numbers throughout Tetrad.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class NumberFormatAction extends AbstractAction
         implements ClipboardOwner {

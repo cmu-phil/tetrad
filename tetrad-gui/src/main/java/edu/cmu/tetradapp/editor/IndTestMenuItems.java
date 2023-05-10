@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
-import edu.cmu.tetrad.search.IndTestType;
+import edu.cmu.tetradapp.util.IndTestType;
 import edu.cmu.tetrad.util.JOptionUtils;
 
 import javax.swing.*;
@@ -33,7 +33,7 @@ import javax.swing.*;
 /**
  * A common way to add menu items to independence test menus to make these menus consistent across editors.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class IndTestMenuItems {
     static void addIndependenceTestChoices(JMenu test, IndTestTypeSetter setter) {

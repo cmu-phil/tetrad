@@ -15,7 +15,7 @@ import java.util.*;
  * Vicinity5 improves on Vicinity4 by allowing for the nodes to not be distributed evenly throughout
  * the location space. This is needed for fMRI data when the voxels are not perfect cubes.
  *
- * @author jdramsey
+ * @author josephramsey
  * @author Erich Kummerfeld
  */
 public class Vicinity {

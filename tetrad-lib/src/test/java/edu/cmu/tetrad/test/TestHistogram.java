@@ -45,7 +45,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests the Knowledge class.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestHistogram {
     private Knowledge knowledge;

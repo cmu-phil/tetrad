@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.RandomUtil;
  * Wraps a chi square distribution for purposes of drawing random samples.
  * Methods are provided to allow parameters to be manipulated in an interface.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Exponential implements Distribution {
     static final long serialVersionUID = 23L;

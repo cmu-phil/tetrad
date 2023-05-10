@@ -43,7 +43,7 @@ import java.beans.PropertyChangeListener;
  * tool, allows the user to create new bidirected edges. </ul>
  *
  * @author Donald Crimbchin
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see GraphEditor
  */
 public class GraphToolbar extends JPanel implements PropertyChangeListener {

@@ -39,7 +39,7 @@ import static org.apache.commons.math3.util.FastMath.round;
  * To see what this class does, try calling ChoiceGenerator.testPrint(5, 3), for
  * instance.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 @SuppressWarnings("WeakerAccess")
 public final class ChoiceGenerator {

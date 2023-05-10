@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * A special graph for testing a model of Clark's.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class SpecialGraphClark implements RandomGraph {
     static final long serialVersionUID = 23L;

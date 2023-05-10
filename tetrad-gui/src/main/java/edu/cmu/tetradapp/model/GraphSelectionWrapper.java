@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndTestDSep;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -38,7 +38,7 @@ import java.util.*;
  * Holds a tetrad-style graph with all of the constructors necessary for it to
  * serve as a model for the tetrad application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, IonInput, IndTestProducer {
     static final long serialVersionUID = 23L;

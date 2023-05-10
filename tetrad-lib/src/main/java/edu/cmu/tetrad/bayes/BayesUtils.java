@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Static utility methods for Bayes nets.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 final class BayesUtils {
 

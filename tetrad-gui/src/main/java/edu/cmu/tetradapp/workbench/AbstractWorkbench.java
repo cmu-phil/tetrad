@@ -42,7 +42,7 @@ import java.util.prefs.Preferences;
  * functionality).
  *
  * @author Aaron Powell
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Willie Wheeler
  * @see DisplayNode
  * @see DisplayEdge
@@ -2435,7 +2435,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * wrapped JComponents stay in the right place in the workbench--that is,
      * halfway along their respective edge, slightly off to the side.
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     private static final class GraphEdgeLabel extends JComponent implements PropertyChangeListener {
 
@@ -2546,7 +2546,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * wrapped JComponents stay in the right place in the workbench--that is,
      * slightly off to the right of the display node.
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     private static final class GraphNodeLabel extends JComponent {
 

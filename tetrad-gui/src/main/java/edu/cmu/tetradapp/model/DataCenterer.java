@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Converts a continuous data set to a correlation matrix.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class DataCenterer extends DataWrapper {
 

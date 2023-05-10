@@ -38,7 +38,7 @@ import java.util.prefs.Preferences;
 /**
  * Saves a session from a file.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 final class SaveSessionAction extends AbstractAction {

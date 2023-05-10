@@ -40,7 +40,7 @@ import java.util.Set;
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
 

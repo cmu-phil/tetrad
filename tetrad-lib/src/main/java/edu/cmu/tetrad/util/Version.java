@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * where "a" is the major version, "b" is the minor version, "c" is the minor
  * subversion, and "d" is the incremental release number for subversions.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 @SuppressWarnings("RedundantIfStatement")
 public class Version implements TetradSerializable {

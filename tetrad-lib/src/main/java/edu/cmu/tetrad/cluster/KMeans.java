@@ -40,7 +40,7 @@ import java.util.*;
  * Note that this algorithm is guaranteed to converge, since the total squared
  * error is guaranteed to be reduced at each step.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class KMeans implements ClusteringAlgorithm {
 

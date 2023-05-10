@@ -24,9 +24,9 @@ package edu.pitt.csb.mgm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphPersistence;
-import edu.cmu.tetrad.search.IndTestMultinomialLogisticRegression;
-import edu.cmu.tetrad.search.PcStable;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.Pc;
+import edu.cmu.tetrad.search.work_in_progress.IndTestMultinomialLogisticRegression;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 
 import java.io.File;
@@ -38,27 +38,31 @@ public class ExploreIndepTests {
     public static void main(String[] args) {
         try {
             String path = ExampleMixedSearch.class.getResource("test_data").getPath();
-            Graph trueGraph = SearchGraphUtils.cpdagFromDag(GraphPersistence.loadGraphTxt(new File(path, "DAG_0_graph.txt")));
+            Graph trueGraph = GraphSearchUtils.cpdagFromDag(GraphPersistence.loadGraphTxt(new File(path, "DAG_0_graph.txt")));
             DataSet ds = MixedUtils.loadDataSet(path, "DAG_0_data.txt");
 
             IndTestMultinomialLogisticRegression indMix = new IndTestMultinomialLogisticRegression(ds, .05);
             IndTestMultinomialLogisticRegressionWald indWalLin = new IndTestMultinomialLogisticRegressionWald(ds, .05, true);
             IndTestMultinomialLogisticRegressionWald indWalLog = new IndTestMultinomialLogisticRegressionWald(ds, .05, false);
 
-            PcStable s1 = new PcStable(indMix);
-            PcStable s2 = new PcStable(indWalLin);
-            PcStable s3 = new PcStable(indWalLog);
+            Pc s1 = new Pc(indMix);
+            Pc s2 = new Pc(indWalLin);
+            Pc s3 = new Pc(indWalLog);
+
+            s1.setStable(true);
+            s2.setStable(true);
+            s3.setStable(true);
 
             long time = MillisecondTimes.timeMillis();
-            Graph g1 = SearchGraphUtils.cpdagFromDag(s1.search());
+            Graph g1 = GraphSearchUtils.cpdagFromDag(s1.search());
             System.out.println("Mix Time " + ((MillisecondTimes.timeMillis() - time) / 1000.0));
 
             time = MillisecondTimes.timeMillis();
-            Graph g2 = SearchGraphUtils.cpdagFromDag(s2.search());
+            Graph g2 = GraphSearchUtils.cpdagFromDag(s2.search());
             System.out.println("Wald lin Time " + ((MillisecondTimes.timeMillis() - time) / 1000.0));
 
             time = MillisecondTimes.timeMillis();
-            Graph g3 = SearchGraphUtils.cpdagFromDag(s3.search());
+            Graph g3 = GraphSearchUtils.cpdagFromDag(s3.search());
             System.out.println("Wald log Time " + ((MillisecondTimes.timeMillis() - time) / 1000.0));
 
             System.out.println(MixedUtils.EdgeStatHeader);

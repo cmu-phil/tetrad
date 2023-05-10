@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.ImpliedOrientation;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Unmarshallable;
@@ -40,7 +40,7 @@ import java.util.*;
  * either a dataModel model or a workbench model as parent. Contains basic
  * methods for executing algorithm and returning results.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public abstract class AbstractAlgorithmRunner
         implements AlgorithmRunner, ParamsResettable, Unmarshallable {
@@ -265,7 +265,7 @@ public abstract class AbstractAlgorithmRunner
         return false;
     }
 
-    public ImpliedOrientation getMeekRules() {
+    public MeekRules getMeekRules() {
         return null;
     }
 

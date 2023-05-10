@@ -40,7 +40,7 @@ import java.util.Set;
  * Adds a new template session subgraph to the frontmost session editor. of one
  * of three types.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class ConstructTemplateAction extends AbstractAction {
 

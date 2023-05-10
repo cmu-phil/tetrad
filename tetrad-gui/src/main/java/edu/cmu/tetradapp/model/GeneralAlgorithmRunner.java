@@ -36,7 +36,12 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -49,7 +54,7 @@ import java.util.*;
 /**
  * Stores an algorithms in the format of the algorithm comparison API.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable,
         Unmarshallable, IndTestProducer,
@@ -271,7 +276,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
 
             if (this.algorithm instanceof HasKnowledge) {
-                Knowledge knowledge1 = TimeSeriesUtils.getKnowledge(getSourceGraph());
+                Knowledge knowledge1 = TsUtils.getKnowledge(getSourceGraph());
 
                 if (this.knowledge.isEmpty() && !knowledge1.isEmpty()) {
                     ((HasKnowledge) algo).setKnowledge(knowledge1);
@@ -406,7 +411,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             if (_knowledge.getVariablesNotInTiers().size()
                     < _knowledge.getVariables().size()) {
                 for (Graph graph : graphList) {
-                    SearchGraphUtils.arrangeByKnowledgeTiers(graph, _knowledge);
+                    GraphSearchUtils.arrangeByKnowledgeTiers(graph, _knowledge);
                 }
             }
         } else {
@@ -454,7 +459,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     @Override
-    public ImpliedOrientation getMeekRules() {
+    public MeekRules getMeekRules() {
         return null;
     }
 
@@ -591,7 +596,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                 // Grabbing this independence score for the independence tests interface. JR 2020.8.24
                 Score score = wrapper.getScore(getDataModelList().get(0), this.parameters);
-                this.independenceTests.add(new IndTestScore(score));
+                this.independenceTests.add(new ScoreIndTest(score));
             }
         }
 

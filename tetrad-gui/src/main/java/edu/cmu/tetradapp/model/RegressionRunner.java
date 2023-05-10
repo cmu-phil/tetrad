@@ -30,7 +30,7 @@ import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionCovariance;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.ImpliedOrientation;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -217,7 +217,7 @@ public class RegressionRunner implements AlgorithmRunner, RegressionModel {
         return false;
     }
 
-    public ImpliedOrientation getMeekRules() {
+    public MeekRules getMeekRules() {
         throw new UnsupportedOperationException();
     }
 

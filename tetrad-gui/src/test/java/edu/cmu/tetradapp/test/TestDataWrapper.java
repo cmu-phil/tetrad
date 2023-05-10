@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
 /**
  * Tests the basic functionality of the DataWrapper.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class TestDataWrapper {
 

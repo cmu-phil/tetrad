@@ -19,7 +19,7 @@ import java.util.Set;
 /**
  * Loads autistic/typical data files from a given directory and runs FASK on each one.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class FaskGraphs {
     private final List<String> filenames = new ArrayList<>();

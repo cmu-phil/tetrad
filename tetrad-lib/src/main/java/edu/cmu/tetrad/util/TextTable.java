@@ -26,7 +26,7 @@ package edu.cmu.tetrad.util;
  * columns either left justified or right justified, with a given number of
  * spaces between columns.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TextTable {
 

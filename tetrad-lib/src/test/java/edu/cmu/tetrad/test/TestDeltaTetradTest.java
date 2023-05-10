@@ -26,8 +26,8 @@ import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DeltaTetradTest;
-import edu.cmu.tetrad.search.Tetrad;
+import edu.cmu.tetrad.search.utils.DeltaTetradTest;
+import edu.cmu.tetrad.search.utils.Tetrad;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Matrix;
@@ -43,7 +43,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * TODO: Some of these tests give answers different from Bollen now. Why?
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestDeltaTetradTest {
 

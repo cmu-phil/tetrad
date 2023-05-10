@@ -2,12 +2,12 @@ package edu.cmu.tetrad.algcomparison.statistic;
 
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 /**
  * Legal PAG
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class LegalPag implements Statistic {
     static final long serialVersionUID = 23L;
@@ -24,7 +24,7 @@ public class LegalPag implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(estGraph);
+        GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(estGraph);
         System.out.println(legalPag.getReason());
 
         if (legalPag.isLegalPag()) {

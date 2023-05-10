@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * An interface for SemIM's; see implementations.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface ISemIm extends Simulator {
     long serialVersionUID = 23L;

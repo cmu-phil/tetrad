@@ -33,7 +33,7 @@ import java.util.List;
  * either a dataModel model or a workbench model as parent. Contains basic
  * methods for executing algorithm and returning results.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     static final long serialVersionUID = 23L;

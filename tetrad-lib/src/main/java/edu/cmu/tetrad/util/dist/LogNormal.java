@@ -27,7 +27,7 @@ import org.apache.commons.math3.util.FastMath;
 /**
  * Represents a lognormal distribution for purposes of sampling.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class LogNormal implements Distribution {
     static final long serialVersionUID = 23L;

@@ -26,7 +26,7 @@ package edu.cmu.tetrad.util;
  * Interface for a single-argument, double-valued function that can be passed to
  * mathematical routines. (Apologies in advance to ML programmers.)
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface Function {
 

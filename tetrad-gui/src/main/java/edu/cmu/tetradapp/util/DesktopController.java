@@ -35,7 +35,7 @@ import edu.cmu.tetrad.session.Session;
  * <p>Not pretty, but easier and cleaner by far than passing the reference to the
  * desktop down through all of the relevant classes in tetradapp.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class DesktopController implements DesktopControllable {
     private static DesktopControllable INSTANCE;

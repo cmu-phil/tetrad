@@ -33,7 +33,7 @@ import java.util.Map;
  * a fixed number of columns and a fixed number of rows, the length of each
  * column being constant.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface DataSet extends DataModel {
     long serialVersionUID = 23L;

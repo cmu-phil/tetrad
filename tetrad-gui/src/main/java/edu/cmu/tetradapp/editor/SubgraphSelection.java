@@ -36,7 +36,7 @@ import java.util.List;
  * of the graph elements list is made on creation, and once the data is
  * retrieved, it is deleted.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 class SubgraphSelection implements Transferable {
 

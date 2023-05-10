@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataModelList;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.ShiftSearch;
+import edu.cmu.tetrad.search.utils.ShiftSearch;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TaskManager;

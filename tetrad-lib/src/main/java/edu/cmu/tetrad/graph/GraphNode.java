@@ -31,7 +31,7 @@ import java.util.Map;
  * Implements a basic node in a graph--that is, a node that is not itself a
  * variable.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Willie Wheeler
  */
 public class GraphNode implements Node {

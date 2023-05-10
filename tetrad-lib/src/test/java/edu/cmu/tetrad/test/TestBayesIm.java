@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the BayesIm.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestBayesIm {
 

@@ -33,7 +33,7 @@ import java.beans.PropertyChangeSupport;
 /**
  * Presents a covariance matrix as a JTable.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class CovMatrixDisplay extends JPanel implements DataModelContainer {
     private final CovMatrixJTable covMatrixJTable;

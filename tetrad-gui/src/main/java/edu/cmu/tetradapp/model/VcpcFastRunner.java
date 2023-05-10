@@ -23,19 +23,21 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.work_in_progress.VcPcFast;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import edu.cmu.tetradapp.util.IndTestType;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the PC algorithm.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class VcpcFastRunner extends AbstractAlgorithmRunner
         implements IndTestProducer {
@@ -171,7 +173,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
         Knowledge knowledge = (Knowledge) getParams().get("knowledge", new Knowledge());
 
 
-        VcpcFast fvcpc = new VcpcFast(getIndependenceTest());
+        VcPcFast fvcpc = new VcPcFast(getIndependenceTest());
         fvcpc.setKnowledge(knowledge);
         fvcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         fvcpc.setDepth(getParams().getInt("depth", -1));
@@ -183,7 +185,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
+            GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
         } else {
             LayoutUtil.circleLayout(graph, 200, 200, 150);
         }
@@ -250,7 +252,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
         return true;
     }
 
-    public ImpliedOrientation getMeekRules() {
+    public MeekRules getMeekRules() {
         MeekRules meekRules = new MeekRules();
         meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
         meekRules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
@@ -269,7 +271,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
         return params instanceof Parameters && params.getBoolean("aggressivelyPreventCycles", false);
     }
 
-    private void setVcpcFastFields(VcpcFast fvcpc) {
+    private void setVcpcFastFields(VcPcFast fvcpc) {
         this.fvcpcAdjacent = fvcpc.getAdjacencies();
         this.fvcpcApparent = fvcpc.getApparentNonadjacencies();
         this.fvcpcDefinite = fvcpc.getDefiniteNonadjacencies();

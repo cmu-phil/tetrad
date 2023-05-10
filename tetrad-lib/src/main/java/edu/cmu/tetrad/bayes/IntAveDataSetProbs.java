@@ -37,7 +37,7 @@ import java.util.List;
  * then return the average over the estimated probabilities calculated this
  * way.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class IntAveDataSetProbs implements DiscreteProbs {
 

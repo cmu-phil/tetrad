@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Provides static methods for saving data to files.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class DataWriter {
 

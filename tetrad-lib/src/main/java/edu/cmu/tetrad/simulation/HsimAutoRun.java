@@ -5,9 +5,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataWriter;
 import edu.cmu.tetrad.data.VerticalIntDataBox;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.BdeuScore;
+import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.DataConvertUtils;
 import edu.cmu.tetrad.util.DelimiterUtils;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -90,7 +90,7 @@ public class HsimAutoRun {
             //if (verbose) System.out.println(estGraph);
 
             Graph estCPDAG = new EdgeListGraph(estGraph);
-            Graph estGraphDAG = SearchGraphUtils.dagFromCPDAG(estCPDAG);
+            Graph estGraphDAG = GraphSearchUtils.dagFromCPDAG(estCPDAG);
             Dag estDAG = new Dag(estGraphDAG);
 
             //===========Identify the nodes to be resimulated===========

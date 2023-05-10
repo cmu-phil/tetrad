@@ -39,7 +39,7 @@ import java.util.List;
  * the user modify the name of the variable and whether the variable is
  * latent.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Willie Wheeler
  */
 public class GraphNodeLatent extends DisplayNode {

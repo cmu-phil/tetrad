@@ -8,6 +8,7 @@ import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
@@ -27,7 +28,7 @@ import java.util.List;
  * values.
  *
  * @author mglymour
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK-Vote",
@@ -36,6 +37,7 @@ import java.util.List;
         dataType = DataType.Continuous
 )
 @Bootstrapping
+@Experimental
 public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -70,7 +72,7 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
                 _dataSets.add((DataSet) d);
             }
 
-            edu.cmu.tetrad.search.FaskVote search = new edu.cmu.tetrad.search.FaskVote(_dataSets, this.score, this.test);
+            edu.cmu.tetrad.search.work_in_progress.FaskVote search = new edu.cmu.tetrad.search.work_in_progress.FaskVote(_dataSets, this.score, this.test);
 
             search.setKnowledge(this.knowledge);
             return search.search(parameters);

@@ -25,6 +25,11 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -39,14 +44,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the PC search.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestPc {
 
@@ -217,7 +222,7 @@ public class TestPc {
             IndTestDSep test = new IndTestDSep(graph);
             Pc pc = new Pc(test);
             Graph CPDAG = pc.search();
-            Graph CPDAG2 = SearchGraphUtils.cpdagFromDag(graph);
+            Graph CPDAG2 = GraphSearchUtils.cpdagFromDag(graph);
             assertEquals(CPDAG, CPDAG2);
         }
     }
@@ -326,7 +331,7 @@ public class TestPc {
 
             SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
             score.setPenaltyDiscount(2.0);
-            GraphSearch search;
+            IGraphSearch search;
 
             switch (t) {
                 case 0:
@@ -695,7 +700,7 @@ public class TestPc {
 
             SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
             score.setPenaltyDiscount(4.0);
-            GraphSearch search;
+            IGraphSearch search;
             Graph out;
 
             Node target = null;

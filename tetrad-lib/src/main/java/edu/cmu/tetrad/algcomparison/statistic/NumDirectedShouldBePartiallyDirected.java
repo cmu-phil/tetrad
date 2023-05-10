@@ -11,7 +11,7 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumDirectedShouldBePartiallyDirected implements Statistic {
     static final long serialVersionUID = 23L;

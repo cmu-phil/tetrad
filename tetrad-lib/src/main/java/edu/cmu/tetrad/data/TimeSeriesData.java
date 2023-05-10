@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Stores time series data as a list of continuous columns.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TimeSeriesData implements DataModel {
     static final long serialVersionUID = 23L;

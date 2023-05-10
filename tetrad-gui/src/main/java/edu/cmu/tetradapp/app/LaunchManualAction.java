@@ -31,7 +31,7 @@ import java.net.URISyntaxException;
 /**
  * Closes the frontmost session of the given desktop.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class LaunchManualAction extends AbstractAction {
 

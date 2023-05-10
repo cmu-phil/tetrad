@@ -22,11 +22,13 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.search.utils.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
 
 /**
  * <p>Implements an interpretation of the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen,
- * and Kerminen, A linear nongaussian acyclic model for causal discovery, JMLR 7 (2006).</p>
+ * and Kerminen, a linear nongaussian acyclic model for causal discovery, JMLR 7 (2006).</p>
+ *
  * <p>The focus for this implementation was making super-simple code, not so much
  * because the method was trivial (it's not) but out of an attempt to compartmentalize.
  * Bootstrapping and other forms of improving the estimate of BHat were not addressed,
@@ -37,12 +39,17 @@ import edu.cmu.tetrad.util.Matrix;
  * threshold for finding a strong diagonal and a threshold on the B matrix for finding edges
  * in the final graph; these are finicky. So there's more work to do, and the implementation may
  * improve in the future.</p>
+ *
  * <p>Both N Rooks and Hungarian Algorithm were tested for finding the best strong diagonal;
  * these were not compared head to head, though the initial impression was that N Rooks was better,
  * so this version uses it.</p>
+ * 
  * <p>This implementation has two parameters, a threshold (for N Rooks) on the minimum values
  * in absolute value for including entries in a possible strong diagonal for W, and a threshold
  * for BHat for including edges in the final graph.</p>
+ *
+ * <p>This class is not configured to respect knowledge of forbidden and required
+ * edges.</p>
  *
  * @author josephramsey
  */
@@ -56,19 +63,25 @@ public class Lingam {
     public Lingam() {
     }
 
+    /**
+     * Fits a LiNGAM model to the given dataset using a default method for estimting
+     * W.
+     * @param D A continuous dataset.
+     * @return The BHat matrix, where B[i][j] gives the coefficient of j->i if nonzero.
+     */
     public Matrix fit(DataSet D) {
         Matrix W = LingD.estimateW(D, 5000, 1e-6, 1.2);
         return fitW(W);
     }
 
     /**
-     * Searches given the W matrix from ICA.
+     * Searches given a W matrix is that is provided by the user, WX = e.
      *
-     * @param W the W matrix from ICA, WX = e.
+     * @param W A W matrix estimated by the user, possibly by some other method.
      * @return The estimated B Hat matrix.
      */
     public Matrix fitW(Matrix W) {
-        PermutationMatrixPair bestPair = LingD.strongestDiagonalByCols(W, spineThreshold);
+        PermutationMatrixPair bestPair = LingD.strongestDiagonal(W, spineThreshold);
         return LingD.getScaledBHat(bestPair, bThreshold);
     }
 

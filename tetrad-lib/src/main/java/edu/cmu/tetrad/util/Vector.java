@@ -46,6 +46,12 @@ public class Vector implements TetradSerializable {
         }
     }
 
+    public void assign(Vector vector) {
+        for (int i = 0; i < this.data.getDimension(); i++) {
+            this.data.setEntry(i, vector.get(i));
+        }
+    }
+
     public Vector copy() {
         return new Vector(this.data.copy().toArray());
     }

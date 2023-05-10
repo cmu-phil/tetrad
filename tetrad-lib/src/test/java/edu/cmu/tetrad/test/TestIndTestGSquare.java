@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndTestGSquare;
+import edu.cmu.tetrad.search.test.IndTestGSquare;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import org.junit.Test;
 
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the IndTestTimeSeries class.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestIndTestGSquare {
     private final String[] discreteFiles = {
@@ -58,7 +58,7 @@ public class TestIndTestGSquare {
             Node y = v.get(1);
             ArrayList<Node> z = new ArrayList<>();
             z.add(v.get(2));
-            assertTrue(test.checkIndependence(x, y, z).independent());
+            assertTrue(test.checkIndependence(x, y, z).isIndependent());
 
             test.setDeterminationP(0.99);
             assertFalse(test.determines(z, x));

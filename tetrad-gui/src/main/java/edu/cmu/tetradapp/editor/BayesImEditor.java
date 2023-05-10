@@ -36,7 +36,7 @@ import java.awt.*;
  * probabilities of node values given combinations of parent values.
  *
  * @author Aaron Powers
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class BayesImEditor extends JPanel {
 

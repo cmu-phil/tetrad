@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.StatUtils;
 /**
  * An example script to simulate data and run a comparison analysis on it.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class TestFaskSimpleSimulaton {
 

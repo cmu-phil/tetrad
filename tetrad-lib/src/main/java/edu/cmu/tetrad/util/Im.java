@@ -24,7 +24,7 @@ package edu.cmu.tetrad.util;
 /**
  * Tagging interface for instantiated models.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface Im extends TetradSerializable {
     long serialVersionUID = 23L;

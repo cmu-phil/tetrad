@@ -41,7 +41,7 @@ import java.util.List;
  * from a variable conditional on its parents are not calculated; rather, these
  * are simply looked up in the underlying Bayes IM and returned.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class UpdatedBayesIm implements BayesIm {
 

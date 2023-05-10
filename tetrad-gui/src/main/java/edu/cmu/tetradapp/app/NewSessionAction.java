@@ -29,7 +29,7 @@ import java.awt.event.ActionEvent;
 /**
  * Opens a session from a file.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class NewSessionAction extends AbstractAction {
 

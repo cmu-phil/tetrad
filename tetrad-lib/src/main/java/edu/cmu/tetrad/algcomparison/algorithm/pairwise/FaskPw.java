@@ -11,8 +11,8 @@ import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fask;
-import edu.cmu.tetrad.search.IndTestFisherZ;
-import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * FASK-PW (pairwise).
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FASK-PW",

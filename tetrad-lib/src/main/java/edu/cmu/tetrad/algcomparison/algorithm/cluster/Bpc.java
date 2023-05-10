@@ -1,7 +1,6 @@
 package edu.cmu.tetrad.algcomparison.algorithm.cluster;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
@@ -10,6 +9,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.utils.BpcTestType;
+import edu.cmu.tetrad.search.utils.ClusterSignificance;
+import edu.cmu.tetrad.search.utils.ClusterUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -21,7 +24,7 @@ import java.util.List;
 /**
  * Build Pure Clusters.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "BPC",
@@ -29,10 +32,9 @@ import java.util.List;
         algoType = AlgType.search_for_structure_over_latents
 )
 @Bootstrapping
-public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
+public class Bpc implements Algorithm, ClusterAlgorithm {
 
     static final long serialVersionUID = 23L;
-    private Knowledge knowledge = new Knowledge();
 
     public Bpc() {
     }
@@ -44,16 +46,15 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
             double alpha = parameters.getDouble(Params.ALPHA);
 
             boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
-            TestType testType;
+            BpcTestType testType;
 
             if (wishart) {
-                testType = TestType.TETRAD_WISHART;
+                testType = BpcTestType.TETRAD_WISHART;
             } else {
-                testType = TestType.TETRAD_DELTA;
+                testType = BpcTestType.TETRAD_DELTA;
             }
 
-            BuildPureClusters bpc = new BuildPureClusters(cov, alpha, testType);
-            bpc.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            edu.cmu.tetrad.search.Bpc bpc = new edu.cmu.tetrad.search.Bpc(cov, alpha, testType);
 
             if (parameters.getInt(Params.CHECK_TYPE) == 1) {
                 bpc.setCheckType(ClusterSignificance.CheckType.Significance);
@@ -112,7 +113,6 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
                     parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
                     parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT),
                     parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(this.knowledge);
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             return search.search();
@@ -121,7 +121,7 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
+        return GraphSearchUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
     @Override
@@ -145,15 +145,5 @@ public class Bpc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         parameters.add(Params.VERBOSE);
 
         return parameters;
-    }
-
-    @Override
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    @Override
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 }

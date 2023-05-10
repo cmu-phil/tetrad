@@ -39,7 +39,7 @@ import java.util.Map;
 /**
  * Lets the user calculate updated probabilities for a SEM.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SemUpdaterEditor extends JPanel {
 

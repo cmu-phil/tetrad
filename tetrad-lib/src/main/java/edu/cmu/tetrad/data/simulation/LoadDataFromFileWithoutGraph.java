@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class LoadDataFromFileWithoutGraph implements Simulation, SimulationPath, ParameterValues {
     static final long serialVersionUID = 23L;

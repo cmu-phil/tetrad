@@ -3,8 +3,8 @@ package edu.cmu.tetrad.algcomparison.independence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.search.IndTestPositiveCorr;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.work_in_progress.IndTestPositiveCorr;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Wrapper for Fisher Z test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class PositiveCorr implements IndependenceWrapper {
     static final long serialVersionUID = 23L;

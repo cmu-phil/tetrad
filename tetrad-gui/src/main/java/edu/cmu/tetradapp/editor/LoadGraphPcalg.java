@@ -32,7 +32,7 @@ import java.io.File;
 import java.util.prefs.Preferences;
 
 /**
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 class LoadGraphPcalg extends AbstractAction {
 

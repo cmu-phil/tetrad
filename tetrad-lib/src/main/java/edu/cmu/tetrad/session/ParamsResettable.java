@@ -25,7 +25,7 @@ package edu.cmu.tetrad.session;
 /**
  * Tags models whose parameters can be reset.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface ParamsResettable {
     long serialVersionUID = 23L;

@@ -24,8 +24,8 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.DagInCPDAGIterator;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.DagInCpcagIterator;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestDagInPatternIterator {
 
@@ -55,12 +55,12 @@ public class TestDagInPatternIterator {
         Dag dag = new Dag(graph);
 
 
-        Graph CPDAG = SearchGraphUtils.cpdagFromDag(graph);
+        Graph CPDAG = GraphSearchUtils.cpdagFromDag(graph);
 
         System.out.println(CPDAG);
 
 
-        DagInCPDAGIterator iterator = new DagInCPDAGIterator(CPDAG);
+        DagInCpcagIterator iterator = new DagInCpcagIterator(CPDAG);
         int count = 0;
 
         while (iterator.hasNext()) {
@@ -80,7 +80,7 @@ public class TestDagInPatternIterator {
         CPDAG.addNode(y);
         CPDAG.addDirectedEdge(x, y);
 
-        DagInCPDAGIterator iterator = new DagInCPDAGIterator(CPDAG);
+        DagInCpcagIterator iterator = new DagInCpcagIterator(CPDAG);
         int count = 0;
 
         while (iterator.hasNext()) {
@@ -116,7 +116,7 @@ public class TestDagInPatternIterator {
         CPDAG.addUndirectedEdge(x1, x6);
         CPDAG.addUndirectedEdge(x4, x6);
 
-        DagInCPDAGIterator iterator = new DagInCPDAGIterator(CPDAG);
+        DagInCpcagIterator iterator = new DagInCpcagIterator(CPDAG);
         int count = 0;
 
         while (iterator.hasNext()) {
@@ -152,7 +152,7 @@ public class TestDagInPatternIterator {
         CPDAG.addUndirectedEdge(x1, x6);
         CPDAG.addUndirectedEdge(x4, x6);
 
-        DagInCPDAGIterator iterator = new DagInCPDAGIterator(CPDAG);
+        DagInCpcagIterator iterator = new DagInCpcagIterator(CPDAG);
         int count = 0;
 
         while (iterator.hasNext()) {
@@ -176,7 +176,7 @@ public class TestDagInPatternIterator {
         Dag dag1 = new Dag(RandomGraph.randomGraph(nodes1, 0, 3,
                 30, 15, 15, false));
 
-        Graph CPDAG = SearchGraphUtils.cpdagForDag(dag1);
+        Graph CPDAG = GraphSearchUtils.cpdagForDag(dag1);
         List<Node> nodes = CPDAG.getNodes();
 
         // Make random knowedge.
@@ -190,7 +190,7 @@ public class TestDagInPatternIterator {
         }
 
         if (!knowledge.isViolatedBy(CPDAG)) {
-            DagInCPDAGIterator iterator1 = new DagInCPDAGIterator(CPDAG);
+            DagInCpcagIterator iterator1 = new DagInCpcagIterator(CPDAG);
             Graph dag0 = null;
 
             while (iterator1.hasNext()) {
@@ -207,7 +207,7 @@ public class TestDagInPatternIterator {
         }
 
         if (!knowledge.isViolatedBy(CPDAG)) {
-            DagInCPDAGIterator iterator2 = new DagInCPDAGIterator(CPDAG, knowledge);
+            DagInCpcagIterator iterator2 = new DagInCpcagIterator(CPDAG, knowledge);
 
             while (iterator2.hasNext()) {
                 Graph dag = iterator2.next();
@@ -218,7 +218,7 @@ public class TestDagInPatternIterator {
             }
         }
 
-        DagInCPDAGIterator iterator3 = new DagInCPDAGIterator(CPDAG);
+        DagInCpcagIterator iterator3 = new DagInCpcagIterator(CPDAG);
         int count = 0;
 
         while (iterator3.hasNext()) {

@@ -38,7 +38,7 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
  * another edge X --&gt; Y may not be added, although an edge Y --&gt; X may be added.
  * Edges from nodes to themselves may also be added.&gt; 0
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Erin Korber additions summer 2004
  * @see edu.cmu.tetrad.graph.Endpoint
  */

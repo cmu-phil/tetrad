@@ -37,7 +37,7 @@ import java.util.List;
  * Note that because speed is of the essence, and Edge cannot be compared to an
  * object of any other type; this will throw an exception.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Edge implements TetradSerializable, Comparable<Edge> {
     static final long serialVersionUID = 23L;

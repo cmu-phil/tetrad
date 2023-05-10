@@ -39,7 +39,7 @@ import java.awt.event.ActionListener;
  * Copies a selection of session nodes in the frontmost session editor, to the
  * clipboard.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class FontSelectionAction extends AbstractAction
         implements ClipboardOwner {

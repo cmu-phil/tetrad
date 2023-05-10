@@ -26,6 +26,14 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.score.GraphScore;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestChiSquare;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -47,7 +55,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestGFci {
 
@@ -101,11 +109,11 @@ public class TestGFci {
 //        dagToPag.setMaxPathLength(maxPathLength);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = SearchGraphUtils.dagToPag(dag);
+        Graph truePag = GraphSearchUtils.dagToPag(dag);
 
         outGraph = GraphUtils.replaceNodes(outGraph, truePag.getNodes());
 
-        int[][] counts = SearchGraphUtils.graphComparison(truePag, outGraph, null);
+        int[][] counts = GraphSearchUtils.graphComparison(truePag, outGraph, null);
 
         int[][] expectedCounts = {
                 {0, 0, 0, 0, 0, 0},
@@ -184,7 +192,7 @@ public class TestGFci {
 //            dagToPag.setCompleteRuleSetUsed(false);
 //            Graph pag2 = dagToPag.convert();
 
-            Graph pag2 = SearchGraphUtils.dagToPag(dag);
+            Graph pag2 = GraphSearchUtils.dagToPag(dag);
 
             assertEquals(pag2, pag1);
         }

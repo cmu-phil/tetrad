@@ -27,8 +27,8 @@ import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.IndTestDSep;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -45,7 +45,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests the IndTestTimeSeries class.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 @Ignore
 public class TestIndTestWaldLr {

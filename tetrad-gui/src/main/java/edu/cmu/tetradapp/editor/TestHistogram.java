@@ -30,7 +30,7 @@ import junit.framework.TestSuite;
 /**
  * Tests data loaders against sample files.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestHistogram extends TestCase {
     public TestHistogram(String name) {

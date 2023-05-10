@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * A list of simulations to be compared.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class Simulations {
     static final long serialVersionUID = 23L;

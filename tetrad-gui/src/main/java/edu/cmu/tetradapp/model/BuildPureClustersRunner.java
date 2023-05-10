@@ -26,7 +26,13 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.work_in_progress.BpcTetradPurifyWashdown;
+import edu.cmu.tetrad.search.work_in_progress.Washdown;
+import edu.cmu.tetrad.search.utils.BpcAlgorithmType;
+import edu.cmu.tetrad.search.utils.BpcTestType;
+import edu.cmu.tetrad.search.Bpc;
+import edu.cmu.tetrad.search.utils.ClusterUtils;
+import edu.cmu.tetrad.search.utils.MimUtils;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
@@ -113,7 +119,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 
             searchGraph = washdown.search();
         } else {
-            TestType tetradTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
+            BpcTestType tetradTestType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
 
             if (algorithm == BpcAlgorithmType.TETRAD_PURIFY_WASHDOWN) {
                 BpcTetradPurifyWashdown bpc;
@@ -133,18 +139,18 @@ public class BuildPureClustersRunner extends AbstractMimRunner
 
                 searchGraph = bpc.search();
             } else if (algorithm == BpcAlgorithmType.BUILD_PURE_CLUSTERS) {
-                BuildPureClusters bpc;
+                Bpc bpc;
                 DataModel source = getData();
 
-                TestType testType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
+                BpcTestType testType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
 
                 if (source instanceof ICovarianceMatrix) {
-                    bpc = new BuildPureClusters((ICovarianceMatrix) source,
+                    bpc = new Bpc((ICovarianceMatrix) source,
                             getParams().getDouble("alpha", 0.001),
                             testType
                     );
                 } else if (source instanceof DataSet) {
-                    bpc = new BuildPureClusters(
+                    bpc = new Bpc(
                             (DataSet) source, getParams().getDouble("alpha", 0.001),
                             testType
                     );

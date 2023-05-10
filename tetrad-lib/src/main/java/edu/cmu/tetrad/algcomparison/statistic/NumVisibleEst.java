@@ -6,7 +6,7 @@ import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumVisibleEst implements Statistic {
     static final long serialVersionUID = 23L;

@@ -22,8 +22,11 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -35,20 +38,29 @@ import java.util.List;
 
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
- * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
- * Insufficient Systems").
- * <p>
- * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
- * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * <p>Implements the Really Fast Causal Inference (RFCI) algorithm, which aims to
+ * do a correct inference of inferrable causal structure under the assumption
+ * that unmeasured common causes of variables in the data may exist. The graph
+ * returned is slightly different from the partial ancestral graph (PAG) returned
+ * by the FCI algorithm. The goal of of the algorithm is to avoid certain
+ * expensive steps in the FCI procedure in a correct way. This was introduced
+ * here:</p>
+ *
+ * <p>Colombo, D., Maathuis, M. H., Kalisch, M., & Richardson, T. S. (2012). Learning
+ * high-dimensional directed acyclic graphs with latent and selection variables. The
+ * Annals of Statistics, 294-321.</p>
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
  *
  * @author Erin Korber, June 2004
  * @author Alex Smith, December 2008
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Choh-Man Teng
+ * @see Fci
+ * @see Knowledge
  */
-public final class Rfci implements GraphSearch {
+public final class Rfci implements IGraphSearch {
 
     /**
      * The RFCI-PAG being constructed.
@@ -71,11 +83,6 @@ public final class Rfci implements GraphSearch {
     private final List<Node> variables = new ArrayList<>();
 
     private final IndependenceTest independenceTest;
-
-    /**
-     * change flag for repeat rules
-     */
-    private boolean changeFlag = true;
 
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
@@ -105,7 +112,7 @@ public final class Rfci implements GraphSearch {
     //============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a new FCI search for the given independence test and background knowledge.
+     * Constructs a new RFCI search for the given independence test and background knowledge.
      */
     public Rfci(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -117,7 +124,7 @@ public final class Rfci implements GraphSearch {
     }
 
     /**
-     * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
+     * Constructs a new RFCI search for the given independence test and background knowledge and a list of variables to
      * search over.
      */
     public Rfci(IndependenceTest independenceTest, List<Node> searchVars) {
@@ -145,33 +152,34 @@ public final class Rfci implements GraphSearch {
 
     //========================PUBLIC METHODS==========================//
 
-    public int getDepth() {
-        return this.depth;
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + depth);
-        }
-
-        this.depth = depth;
-    }
-
-    public long getElapsedTime() {
-        return this.elapsedTime;
-    }
-
+    /**
+     * Runs the search and returns the RFCI PAG.
+     *
+     * @return This PAG.
+     */
     public Graph search() {
         return search(getIndependenceTest().getVariables());
     }
 
+    /**
+     * Searches of a specific sublist of nodes.
+     *
+     * @param nodes The sublist.
+     * @return The RFCI PAG
+     */
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
 
         return search(new Fas(getIndependenceTest()), nodes);
     }
 
+    /**
+     * Runs the search and returns the RFCI PAG.
+     *
+     * @param fas   The type of FAS to use for the initial step.
+     * @param nodes The nodes to search over.
+     * @return The RFCI PAG.
+     */
     public Graph search(IFas fas, List<Node> nodes) {
         long beginTime = MillisecondTimes.timeMillis();
         independenceTest.setVerbose(verbose);
@@ -217,17 +225,107 @@ public final class Rfci implements GraphSearch {
         return this.graph;
     }
 
+    /**
+     * Sets the maximum number of variables conditioned on in any test.
+     *
+     * @param depth This maximum.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException(
+                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+        }
+
+        this.depth = depth;
+    }
+
+    /**
+     * Returns the elapsed time of the search.
+     *
+     * @return This time.
+     */
+    public long getElapsedTime() {
+        return this.elapsedTime;
+    }
+
+    /**
+     * Returns the map from node pairs to sepsets found in search.
+     *
+     * @return This map.
+     */
     public SepsetMap getSepsets() {
         return this.sepsets;
     }
 
+    /**
+     * Returns the knowledge used in search.
+     *
+     * @return This knowledge.
+     */
     public Knowledge getKnowledge() {
         return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge used in search.
+     *
+     * @param knowledge This knoweldge.
+     */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
+
+
+    /**
+     * Returns the maximum length of any discriminating path, or -1 of unlimited.
+     *
+     * @return This number.
+     */
+    public int getMaxPathLength() {
+        return this.maxPathLength == Integer.MAX_VALUE ? -1 : this.maxPathLength;
+    }
+
+    /**
+     * Sets the maximum path length for discriminating paths.
+     *
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     */
+    public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
+        this.maxPathLength = maxPathLength == -1
+                ? Integer.MAX_VALUE : maxPathLength;
+    }
+
+    /**
+     * Returns whether verbose output should be printed.
+     *
+     * @return True if so.
+     */
+    public boolean isVerbose() {
+        return this.verbose;
+    }
+
+    /**
+     * Sets whether verbose output is printed.
+     *
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Returns the independence test.
+     *
+     * @return This test.
+     */
+    public IndependenceTest getIndependenceTest() {
+        return this.independenceTest;
+    }
+
 
     //===========================PRIVATE METHODS=========================//
 
@@ -264,7 +362,7 @@ public final class Rfci implements GraphSearch {
             if (this.knowledge.noEdgeRequired(i.getName(), j.getName()))  // if BK allows
             {
                 try {
-                    independent1 = this.independenceTest.checkIndependence(i, j, sepSet).independent();
+                    independent1 = this.independenceTest.checkIndependence(i, j, sepSet).isIndependent();
                 } catch (Exception e) {
                     independent1 = true;
                 }
@@ -274,7 +372,7 @@ public final class Rfci implements GraphSearch {
             if (this.knowledge.noEdgeRequired(j.getName(), k.getName()))  // if BK allows
             {
                 try {
-                    independent2 = this.independenceTest.checkIndependence(j, k, sepSet).independent();
+                    independent2 = this.independenceTest.checkIndependence(j, k, sepSet).isIndependent();
                 } catch (Exception e) {
                     independent2 = true;
                 }
@@ -370,11 +468,11 @@ public final class Rfci implements GraphSearch {
             if (!sepset.contains(j)
                     && this.graph.isAdjacentTo(i, j) && this.graph.isAdjacentTo(j, k)) {
 
-                if (!isArrowpointAllowed(i, j)) {
+                if (!FciOrient.isArrowheadAllowed(i, j, graph, knowledge)) {
                     continue;
                 }
 
-                if (!isArrowpointAllowed(k, j)) {
+                if (!FciOrient.isArrowheadAllowed(k, j, graph, knowledge)) {
                     continue;
                 }
 
@@ -424,15 +522,15 @@ public final class Rfci implements GraphSearch {
     /////////////////////////////////////////////////////////////////////////////
     private void setMinSepSet(List<Node> sepSet, Node x, Node y) {
         List<Node> empty = Collections.emptyList();
-        boolean indep;
+        boolean independent;
 
         try {
-            indep = this.independenceTest.checkIndependence(x, y, empty).independent();
+            independent = this.independenceTest.checkIndependence(x, y, empty).isIndependent();
         } catch (Exception e) {
-            indep = false;
+            independent = false;
         }
 
-        if (indep) {
+        if (independent) {
             getSepsets().set(x, y, empty);
             return;
         }
@@ -445,182 +543,14 @@ public final class Rfci implements GraphSearch {
             while ((combination = cg.next()) != null) {
                 List<Node> condSet = GraphUtils.asList(combination, sepSet);
 
-                indep = this.independenceTest.checkIndependence(x, y, condSet).independent();
+                independent = this.independenceTest.checkIndependence(x, y, condSet).isIndependent();
 
-                if (indep) {
+                if (independent) {
                     getSepsets().set(x, y, condSet);
                     return;
                 }
             }
         }
-    }
-
-    //////////////////////////////////////////////////
-    // Orients the graph according to rules for RFCI
-    //////////////////////////////////////////////////
-    private void doFinalOrientation() {
-
-
-        FciOrient orient = new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest));
-
-        // This loop handles Zhang's rules R1-R3 (same as in the original FCI)
-        this.changeFlag = true;
-
-        while (this.changeFlag) {
-            this.changeFlag = false;
-            orient.setChangeFlag(false);
-            orient.rulesR1R2cycle(this.graph);
-            orient.ruleR3(this.graph);
-            this.changeFlag = orient.isChangeFlag();
-            orient.ruleR4B(this.graph);   // some changes to the original R4 inline
-        }
-
-        // For RFCI always executes R5-10
-
-        // Now, by a remark on page 100 of Zhang's dissertation, we apply rule
-        // R5 once.
-        orient.ruleR5(this.graph);
-
-        // Now, by a further remark on page 102, we apply R6,R7 as many times
-        // as possible.
-        this.changeFlag = true;
-
-        while (this.changeFlag) {
-            this.changeFlag = false;
-            orient.setChangeFlag(false);
-            orient.ruleR6R7(this.graph);
-            this.changeFlag = orient.isChangeFlag();
-        }
-
-        // Finally, we apply R8-R10 as many times as possible.
-        this.changeFlag = true;
-
-        while (this.changeFlag) {
-            this.changeFlag = false;
-            orient.setChangeFlag(false);
-            orient.rulesR8R9R10(this.graph);
-            this.changeFlag = orient.isChangeFlag();
-        }
-    }
-
-    /**
-     * Orients according to background knowledge
-     */
-    private void fciOrientbk(Knowledge bk, Graph graph, List<Node> variables) {
-        this.logger.log("info", "Starting BK Orientation.");
-
-        for (Iterator<KnowledgeEdge> it =
-             bk.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            // Orient to*-&gt;from
-            graph.setEndpoint(to, from, Endpoint.ARROW);
-            graph.setEndpoint(from, to, Endpoint.CIRCLE);
-            this.changeFlag = true;
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        for (Iterator<KnowledgeEdge> it =
-             bk.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge edge = it.next();
-
-            //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
-
-            if (from == null || to == null) {
-                continue;
-            }
-
-            if (graph.getEdge(from, to) == null) {
-                continue;
-            }
-
-            graph.setEndpoint(to, from, Endpoint.TAIL);
-            graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.changeFlag = true;
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
-        }
-
-        this.logger.log("info", "Finishing BK Orientation.");
-    }
-
-
-    /**
-     * Helper method. Appears to check if an arrowpoint is permitted by background knowledge.
-     *
-     * @param x The possible other node.
-     * @param y The possible point node.
-     * @return Whether the arrowpoint is allowed.
-     */
-    private boolean isArrowpointAllowed(Node x, Node y) {
-        if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
-
-        if (this.graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return false;
-        }
-
-        if (this.graph.getEndpoint(y, x) == Endpoint.ARROW) {
-            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
-        }
-
-        if (this.graph.getEndpoint(y, x) == Endpoint.TAIL) {
-            if (!this.knowledge.isForbidden(x.getName(), y.getName())) return true;
-        }
-
-        return this.graph.getEndpoint(y, x) == Endpoint.CIRCLE;
-    }
-
-    /**
-     * @return the maximum length of any discriminating path, or -1 of unlimited.
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength == Integer.MAX_VALUE ? -1 : this.maxPathLength;
-    }
-
-    /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength == -1
-                ? Integer.MAX_VALUE : maxPathLength;
-    }
-
-    /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * The independence test.
-     */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
     }
 }
 

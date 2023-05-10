@@ -36,7 +36,7 @@ import java.util.*;
  * latent variables (no error variables). (b) The graph may contain only
  * directed edges (c) The graph may contain no directed cycles.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
     static final long serialVersionUID = 23L;

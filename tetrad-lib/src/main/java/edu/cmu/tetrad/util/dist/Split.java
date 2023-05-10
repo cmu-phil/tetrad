@@ -32,7 +32,7 @@ import java.text.NumberFormat;
  * Wraps a chi square distribution for purposes of drawing random samples.
  * Methods are provided to allow parameters to be manipulated in an interface.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 @SuppressWarnings("WeakerAccess")
 public class Split implements Distribution {

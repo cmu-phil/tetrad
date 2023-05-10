@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Returns a scale free graph.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class ScaleFree implements RandomGraph {
     static final long serialVersionUID = 23L;

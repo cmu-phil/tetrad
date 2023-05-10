@@ -22,49 +22,87 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 
 import java.io.PrintStream;
 import java.util.List;
 
 /**
- * An interface for fast adjacency searches (i.e. PC adjacency searches).
+ * Gives an interface for fast adjacency searches (i.e. PC adjacency searches).
+ *
+ * @author josephramsey
  */
-public interface IFas {
-    boolean isAggressivelyPreventCycles();
+public interface IFas extends IGraphSearch {
 
-    IndependenceTest getIndependenceTest();
-
-    Knowledge getKnowledge();
-
+    /**
+     * Sets the knoweledge for the search.
+     *
+     * @param knowledge This knowledge.
+     */
     void setKnowledge(Knowledge knowledge);
 
+    /**
+     * Returns the sepset map discovered during search--that is, the map from
+     * node pairs to the sepsets used in the search to removed the corresponding
+     * edges from the complete graph.
+     *
+     * @return This map.
+     */
     SepsetMap getSepsets();
 
-    int getDepth();
-
+    /**
+     * Sets the depth of the search--that is, the maximum number of variables
+     * conditioned on in the search.
+     *
+     * @param depth This maximum.
+     */
     void setDepth(int depth);
 
-    Graph search();
-
-    Graph search(List<Node> nodes);
-
+    /**
+     * Returns the elapsed time of the search.
+     *
+     * @return This time.
+     */
     long getElapsedTime();
 
+    /**
+     * Returns the number of independence tests done in the search.
+     *
+     * @return This number.
+     */
     int getNumIndependenceTests();
 
+    /**
+     * Returns the nodes searched over.
+     *
+     * @return This list.
+     */
     List<Node> getNodes();
 
+    /**
+     * Returns the list of ambiguous triples found for a given node.
+     *
+     * @param node The node
+     * @return The list.
+     * @see Cpc
+     * @see Cfci
+     */
     List<Triple> getAmbiguousTriples(Node node);
 
-    boolean isVerbose();
-
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
     void setVerbose(boolean verbose);
 
-    int getNumDependenceJudgments();
-
+    /**
+     * sets the print stream to send text to.
+     *
+     * @param out This print stream.
+     */
     void setOut(PrintStream out);
 }
 

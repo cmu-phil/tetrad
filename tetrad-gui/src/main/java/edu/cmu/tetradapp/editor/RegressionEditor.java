@@ -46,7 +46,7 @@ import java.awt.*;
  *
  * @author Tyler Gibosn
  * @author Aaron Powers
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM
  * Bayes estimator
  */
@@ -207,7 +207,7 @@ public class RegressionEditor extends JPanel {
      * <code>TextTable.emptyComponent</code> is just a white JPanel, for initial
      * use. After that, call <code>TextTable.component</code>.
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     private static class TextWithTable {
 

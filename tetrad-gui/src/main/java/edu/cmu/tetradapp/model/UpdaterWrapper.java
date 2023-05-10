@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.Parameters;
 /**
  * Stuff the GUI needs to know. Wrapped so that the GUI can access the params.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface UpdaterWrapper {
 

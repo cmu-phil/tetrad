@@ -30,7 +30,7 @@ import java.awt.geom.RoundRectangle2D;
 /**
  * Instantiates a rubberband suitable for selections.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class Rubberband extends JComponent {
 

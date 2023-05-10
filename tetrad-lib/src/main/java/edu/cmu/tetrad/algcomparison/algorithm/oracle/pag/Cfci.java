@@ -19,12 +19,12 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * Conserative FCI.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 public class Cfci implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {

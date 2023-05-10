@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * Interface implemented by classes that are capable of participating in the
  * transfer of knowledge objects.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see Knowledge
  */
 public interface KnowledgeTransferable extends TetradSerializable {

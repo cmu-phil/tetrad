@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.VerticalDoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.kernel.KernelGaussian;
+import edu.cmu.tetrad.search.utils.KernelGaussian;
 import org.junit.Test;
 
 import java.util.Collections;

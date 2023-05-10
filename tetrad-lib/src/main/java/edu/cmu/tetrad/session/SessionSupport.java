@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Handles firing of SessionSupport events to listeners.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SessionSupport {
 

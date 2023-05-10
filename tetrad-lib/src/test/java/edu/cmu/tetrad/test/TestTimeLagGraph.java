@@ -31,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestTimeLagGraph {
 

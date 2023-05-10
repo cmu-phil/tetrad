@@ -27,7 +27,7 @@ import java.text.NumberFormat;
 /**
  * Some utilities for handling arrays.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 final class ArrUtils {
 

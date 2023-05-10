@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the Knowledge class.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestIndependenceFacts {
     private IndependenceFactsModel facts;

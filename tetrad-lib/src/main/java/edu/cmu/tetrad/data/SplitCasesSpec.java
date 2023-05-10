@@ -36,7 +36,7 @@ import java.util.List;
  * order to remember how discretizations were done so that the user doesn't have
  * to keep typing in information over and over again.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class SplitCasesSpec implements TetradSerializable {
     static final long serialVersionUID = 23L;

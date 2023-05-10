@@ -38,7 +38,7 @@ import java.util.*;
  * equations of the model with parameters represented symbolically (i.e.
  * no values for parameters).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class GeneralizedSemPm implements Pm, TetradSerializable {
     static final long serialVersionUID = 23L;

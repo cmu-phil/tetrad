@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Implements a regression model from tabular continuous data.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class RegressionDataset implements Regression {
 

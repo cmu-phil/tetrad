@@ -46,7 +46,7 @@ import java.util.ArrayList;
 /**
  * This is the JTable which displays the getModel parameter set (an Model).
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 
 ////////////////////////////////////////////////////////

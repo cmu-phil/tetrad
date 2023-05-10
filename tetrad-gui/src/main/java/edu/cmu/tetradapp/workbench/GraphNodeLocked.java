@@ -37,7 +37,7 @@ import java.util.List;
  * Represents a locked policy variable in the workbench. Appears as a
  * padlock.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Willie Wheeler
  */
 public class GraphNodeLocked extends DisplayNode {

@@ -45,7 +45,7 @@ import java.beans.PropertyChangeSupport;
 /**
  * This is the JTable which displays the getModel parameter set (an Model).
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 class DirichletBayesImNodeCountsTable extends JTable {
     private int focusRow;
@@ -446,7 +446,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
      * edited.  As they are being edited for a given row, the only condition is
      * that they be greater than or equal to 0.0.
      *
-     * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+     * @author josephramsey
      */
     static final class Model extends AbstractTableModel {
 

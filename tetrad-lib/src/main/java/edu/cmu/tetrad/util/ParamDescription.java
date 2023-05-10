@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Describes a parameter.
  *
- * @author jdramsey
+ * @author josephramsey
  * @author Zhou Yuan zhy19@pitt.edu
  */
 public class ParamDescription {

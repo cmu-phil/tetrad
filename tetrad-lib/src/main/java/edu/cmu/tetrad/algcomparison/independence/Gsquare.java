@@ -4,8 +4,8 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.search.IndTestGSquare;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestGSquare;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Wrapper for Fisher Z test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @TestOfIndependence(
         name = "G Square Test",

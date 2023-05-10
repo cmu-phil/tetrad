@@ -27,7 +27,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * Stores a 2D array of data. Different implementations may store data in
  * different ways, allowing for space or time efficiency.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface DataBox extends TetradSerializable {
     long serialVersionUID = 23L;

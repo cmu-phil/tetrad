@@ -68,7 +68,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  *
  * @author Frank Wimberly
  * @author Ricardo Silva
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class SemIm implements Im, ISemIm {
 

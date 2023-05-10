@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.test;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ import static org.junit.Assert.assertTrue;
  * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the
  * Graph interface.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestEdgeListGraph {
     private Node x1, x2, x3, x4, x5;
@@ -162,7 +162,7 @@ public final class TestEdgeListGraph {
 
         graph2.removeEdge(nodes.get(0), nodes.get(1));
 
-        int shd = SearchGraphUtils.structuralHammingDistance(graph1, graph2);
+        int shd = GraphSearchUtils.structuralHammingDistance(graph1, graph2);
 
         assertEquals(3, shd);
     }

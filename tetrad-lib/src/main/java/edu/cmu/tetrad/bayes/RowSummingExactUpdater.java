@@ -35,7 +35,7 @@ import java.util.List;
  * the variables in the Bayes net are in evidence. Can be excruciatingly slow if
  * numVars - numVarsInEvidence is more than 15.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     static final long serialVersionUID = 23L;

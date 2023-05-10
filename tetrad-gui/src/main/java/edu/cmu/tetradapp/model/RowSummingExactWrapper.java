@@ -34,7 +34,7 @@ import java.text.NumberFormat;
 /**
  * Wraps a Bayes Updater for use in the Tetrad application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class RowSummingExactWrapper implements SessionModel, UpdaterWrapper, Unmarshallable {
     static final long serialVersionUID = 23L;

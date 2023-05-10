@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Implements an n-dimensional point.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Point implements Comparable<Point> {
 

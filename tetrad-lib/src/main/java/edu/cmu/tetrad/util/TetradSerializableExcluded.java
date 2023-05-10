@@ -31,7 +31,7 @@ import java.io.Serializable;
  * of those interfaces are not actually serialized.&gt; 0
  * <p>See TestSerialization and TestSerializiableUtils.&gt; 0
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface TetradSerializableExcluded extends Serializable {
 }

@@ -42,7 +42,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * impliedCovar, SEMimpliedCovar.
  *
  * @author Tianjiao Chu
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Kevin V. Bui
  */
 public final class MatrixUtils {

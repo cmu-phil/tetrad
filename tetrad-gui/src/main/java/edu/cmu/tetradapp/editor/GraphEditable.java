@@ -31,7 +31,7 @@ import java.util.List;
  * Interface for graph editors, useful for situations where graph editors need to
  * be treated generally.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface GraphEditable {
 

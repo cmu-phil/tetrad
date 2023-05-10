@@ -48,7 +48,7 @@ import java.util.*;
  * This avoids the problem of not knowing whether the exogenous node for a
  * node is itself or its associated error node.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class SemGraph implements Graph {
     static final long serialVersionUID = 23L;

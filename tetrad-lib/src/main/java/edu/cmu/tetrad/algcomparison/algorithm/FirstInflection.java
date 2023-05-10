@@ -14,7 +14,7 @@ import java.util.Set;
 /**
  * First inflection point.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class FirstInflection implements Algorithm {
 

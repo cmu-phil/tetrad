@@ -5,9 +5,9 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.search.ConditionalCorrelationIndependence;
-import edu.cmu.tetrad.search.IndTestConditionalCorrelation;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.ConditionalCorrelationIndependence;
+import edu.cmu.tetrad.search.test.IndTestConditionalCorrelation;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Wrapper for Daudin Conditional Independence test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @TestOfIndependence(
         name = "CCI-Test (Conditional Correlation Independence Test)",

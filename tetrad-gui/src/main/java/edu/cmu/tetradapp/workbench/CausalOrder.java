@@ -34,7 +34,7 @@ import java.util.*;
  * Lays out a graph by placing springs between the nodes and letting the system
  * settle (one node at a time).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 final class CausalOrder {
 

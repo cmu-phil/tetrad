@@ -34,7 +34,7 @@ import java.util.prefs.Preferences;
 /**
  * Saves out a PNG image for a component.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 class LoadGraph extends AbstractAction {
 

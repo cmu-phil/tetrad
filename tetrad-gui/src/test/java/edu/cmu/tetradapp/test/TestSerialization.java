@@ -113,7 +113,7 @@ import static org.junit.Assert.fail;
  * </pre>
  * <p>Or Joshua Block, Effective Java.</p>                                                                                     fd
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestSerialization {
 

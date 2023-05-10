@@ -4,7 +4,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public interface GraphSettable extends GraphSource {
     Parameters getParameters();

@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 /**
  * Tests the basic functionality of the Session.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestSession {
 

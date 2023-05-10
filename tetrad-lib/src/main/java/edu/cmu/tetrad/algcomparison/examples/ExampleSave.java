@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.Parameters;
 /**
  * An example script to save out data files and graphs from a simulation.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class ExampleSave {
     public static void main(String... args) {

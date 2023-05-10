@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class LoadContinuousDataSmithSim implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;

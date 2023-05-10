@@ -39,7 +39,7 @@ import java.util.List;
  * uniform way of testing whether an edge is in fact, e.g., a directed edge (or
  * any of the other types).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class Edges {
 

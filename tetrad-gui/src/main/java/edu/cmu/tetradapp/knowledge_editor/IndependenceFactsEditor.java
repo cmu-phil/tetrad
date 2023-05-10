@@ -41,7 +41,7 @@ import java.util.prefs.Preferences;
  * tiers is Tier0 --&gt; Tier1 --&gt; Tier2 --&gt; ..., but special graphical structures
  * among the tiers may be set as well.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class IndependenceFactsEditor extends JPanel {
     private final IndependenceFactsModel facts;

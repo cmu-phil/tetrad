@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * Edits which variables get assigned to which clusters.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class ClusterEditor extends JPanel {
 

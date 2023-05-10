@@ -26,7 +26,7 @@ package edu.cmu.tetrad.session;
  * Indicates that a model could not be created. As to which model it was, call
  * the getModelClass() method.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class CouldNotCreateModelException extends Exception {
     private final Class modelClass;

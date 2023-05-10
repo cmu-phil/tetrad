@@ -42,7 +42,7 @@ import java.util.prefs.Preferences;
  * whether the data should be split in original order or in a shuffled order.
  * The other set of parameters is what the breakpoints should be.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SplitCasesParamsEditor extends JPanel implements ParameterEditor {
 

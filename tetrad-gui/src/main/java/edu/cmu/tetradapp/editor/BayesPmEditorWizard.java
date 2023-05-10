@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  * A wizard to let the user go through a workbench systematically and set the
  * number of categories for each node along with the names of each category.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class BayesPmEditorWizard extends JPanel {
 
@@ -433,7 +433,7 @@ final class BayesPmEditorWizard extends JPanel {
     /**
      * Edits categories for each variable of a Bayes PM.
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     class CategoryEditor extends JPanel {
 

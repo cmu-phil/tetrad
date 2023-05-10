@@ -37,7 +37,7 @@ import java.util.Set;
  * randomUtil, in order to be able to cancelAll operations, they must be
  * serializable.)
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see Endpoint
  */
 public interface Graph extends TetradSerializable {

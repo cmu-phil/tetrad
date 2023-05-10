@@ -3,14 +3,14 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import java.util.List;
 
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class NoSemidirectedPrecision implements Statistic {
     static final long serialVersionUID = 23L;
@@ -29,7 +29,7 @@ public class NoSemidirectedPrecision implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0, fp = 0;
 
-        Graph cpdag = SearchGraphUtils.cpdagForDag(trueGraph);
+        Graph cpdag = GraphSearchUtils.cpdagForDag(trueGraph);
 
         List<Node> nodes = estGraph.getNodes();
 

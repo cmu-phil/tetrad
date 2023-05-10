@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.search.IndTestType;
+import edu.cmu.tetradapp.util.IndTestType;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -56,7 +56,7 @@ import java.util.ArrayList;
  * threading for you, provide a stop button for algorithm, and do logging. The
  * execute button used must be getExecuteButton(), or else logging won't work.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public abstract class AbstractSearchEditor extends JPanel implements GraphEditable, IndTestTypeSetter {
 

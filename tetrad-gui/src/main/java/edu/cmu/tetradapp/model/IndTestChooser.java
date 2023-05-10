@@ -23,8 +23,16 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.utils.ResolveSepsets;
+import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZGeneralizedInverse;
+import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZPercentIndependent;
+import edu.cmu.tetrad.search.work_in_progress.IndTestMultinomialLogisticRegression;
+import edu.cmu.tetrad.search.score.ImagesScore;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetradapp.util.IndTestType;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
 import java.util.ArrayList;
@@ -33,7 +41,7 @@ import java.util.List;
 /**
  * Chooses an independence test for a particular data source.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 final class IndTestChooser {
     public IndependenceTest getTest(Object dataSource, Parameters params) {
@@ -130,7 +138,7 @@ final class IndTestChooser {
             return new IndTestFisherZGeneralizedInverse(dataSet, params.getDouble("alpha", 0.001));
         }
         if (IndTestType.SEM_BIC == testType) {
-            return new IndTestScore(new SemBicScore(new CovarianceMatrix(dataSet)));
+            return new ScoreIndTest(new SemBicScore(new CovarianceMatrix(dataSet)));
         }
 
         {
@@ -147,9 +155,9 @@ final class IndTestChooser {
 
         if (IndTestType.TIPPETT == testType) {
             List<IndependenceTest> independenceTests = new ArrayList<>();
-            for (DataModel dataModel : dataSets) {
-                DataSet dataSet = (DataSet) dataModel;
-                independenceTests.add(new IndTestFisherZ(dataSet, params.getDouble("alpha", 0.001)));
+            for (DataSet dataModel : dataSets) {
+                independenceTests.add(new IndTestFisherZ(dataModel, params.getDouble("alpha",
+                        0.001)));
             }
 
             return new IndTestMulti(independenceTests, ResolveSepsets.Method.tippett);
@@ -160,8 +168,14 @@ final class IndTestChooser {
         }
 
         if (IndTestType.SEM_BIC == testType) {
-            List<DataModel> dataModels = new ArrayList<>(dataSets);
-            return new IndTestScore(new SemBicScoreImages(dataModels));
+            List<Score> scores = new ArrayList<>();
+            for (DataSet dataSet : dataSets) {
+                SemBicScore _score = new SemBicScore(dataSet);
+                scores.add(_score);
+            }
+
+            ImagesScore imagesScore = new ImagesScore(scores);
+            return new ScoreIndTest(imagesScore);
         }
 
         {

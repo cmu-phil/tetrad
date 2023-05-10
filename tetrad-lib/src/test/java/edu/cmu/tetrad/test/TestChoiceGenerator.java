@@ -34,7 +34,7 @@ import static org.junit.Assert.fail;
  * Implements basic tests of the choice generator. The choice generator should visit every
  * choice in a choose b exactly once, and then return null.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestChoiceGenerator {
 

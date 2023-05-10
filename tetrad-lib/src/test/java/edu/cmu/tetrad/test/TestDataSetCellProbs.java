@@ -32,7 +32,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestDataSetCellProbs {
 

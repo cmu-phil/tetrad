@@ -24,9 +24,9 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.LingamPattern;
-import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.search.PcLingam;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -42,7 +42,7 @@ import java.util.List;
 
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestLingamPattern {
 
@@ -77,7 +77,7 @@ public class TestLingamPattern {
         Score score = new SemBicScore(new CovarianceMatrix(dataSet));
         Graph estnumCPDAGsToStore = new Fges(score).search();
 
-        LingamPattern lingam = new LingamPattern(estnumCPDAGsToStore, dataSet);
+        PcLingam lingam = new PcLingam(estnumCPDAGsToStore, dataSet);
         lingam.search();
 
         double[] pvals = lingam.getPValues();

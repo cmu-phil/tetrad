@@ -32,7 +32,7 @@ import java.util.List;
  * Estimates probabilities directly from data on the fly using maximum
  * likelihood method.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class DirichletDataSetProbs implements DiscreteProbs {
 

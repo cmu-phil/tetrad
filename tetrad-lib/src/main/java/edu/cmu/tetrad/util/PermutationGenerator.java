@@ -37,7 +37,7 @@ import java.util.LinkedList;
  * To see what this class does, try calling PermutationGenerator.testPrint(5),
  * for instance.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class PermutationGenerator {
 

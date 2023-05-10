@@ -31,7 +31,7 @@ import java.awt.*;
  * complete is too long. The process to be run should override the watch()
  * method.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public abstract class WatchedProcess {
 

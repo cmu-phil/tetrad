@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the MatrixUtils class.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestMatrixUtils {
 

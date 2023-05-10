@@ -26,7 +26,7 @@ package edu.cmu.tetrad.data;
  * Interface implemented by classes whose purpose is to generate modifications
  * of data sets. See implementations for details.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface DataFilter {
 

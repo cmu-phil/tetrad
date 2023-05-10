@@ -38,6 +38,11 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.*;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.SemIm;
@@ -59,7 +64,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestFges {
 
@@ -109,7 +114,7 @@ public class TestFges {
         alg.setFaithfulnessAssumed(true);
         Graph estCPDAG = alg.search();
 
-        Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
+        Graph trueCPDAG = GraphSearchUtils.cpdagForDag(dag);
 
         estCPDAG = GraphUtils.replaceNodes(estCPDAG, vars);
 
@@ -167,8 +172,6 @@ public class TestFges {
 //        out.println("Finishing simulation");
 
         BdeScore score = new BdeScore(data);
-        score.setSamplePrior(samplePrior);
-        score.setStructurePrior(structurePrior);
 
         edu.cmu.tetrad.search.Fges ges = new edu.cmu.tetrad.search.Fges(score);
         ges.setVerbose(false);
@@ -176,9 +179,9 @@ public class TestFges {
 
         Graph estCPDAG = ges.search();
 
-        Graph trueCPDAG = SearchGraphUtils.cpdagForDag(dag);
+        Graph trueCPDAG = GraphSearchUtils.cpdagForDag(dag);
 
-        int[][] counts = SearchGraphUtils.graphComparison(trueCPDAG, estCPDAG, null);
+        int[][] counts = GraphSearchUtils.graphComparison(trueCPDAG, estCPDAG, null);
 
         int[][] expectedCounts = {
                 {2, 0, 0, 0, 0, 1},
@@ -199,7 +202,7 @@ public class TestFges {
         Graph graph = GraphUtils.convert("A-->B,A-->C,B-->D,C-->D");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         Graph CPDAG = fges.search();
-        assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
+        assertEquals(GraphSearchUtils.cpdagForDag(graph), CPDAG);
     }
 
     @Test
@@ -207,7 +210,7 @@ public class TestFges {
         Graph graph = GraphUtils.convert("A-->B,A-->C,A-->D,B-->E,C-->E,D-->E");
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         Graph CPDAG = fges.search();
-        assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
+        assertEquals(GraphSearchUtils.cpdagForDag(graph), CPDAG);
     }
 
     @Test
@@ -216,7 +219,7 @@ public class TestFges {
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(graph));
         fges.setFaithfulnessAssumed(false);
         Graph CPDAG = fges.search();
-        assertEquals(SearchGraphUtils.cpdagForDag(graph), CPDAG);
+        assertEquals(GraphSearchUtils.cpdagForDag(graph), CPDAG);
     }
 
 
@@ -454,7 +457,7 @@ public class TestFges {
                 fp1++;
             }
 
-            boolean dependent = !_test.checkIndependence(x, y).independent();
+            boolean dependent = !_test.checkIndependence(x, y).isIndependent();
 
             if (trueAncestral && dependent) {
                 tp2++;
@@ -674,7 +677,7 @@ public class TestFges {
             fges.setVerbose(true);
             fges.setParallelized(true);
             Graph CPDAG1 = fges.search();
-            Graph CPDAG2 = SearchGraphUtils.cpdagFromDag(dag);
+            Graph CPDAG2 = GraphSearchUtils.cpdagFromDag(dag);
             assertEquals(CPDAG2, CPDAG1);
         }
     }
@@ -1594,7 +1597,7 @@ public class TestFges {
                 z.add(nodes.get(c));
             }
 
-            boolean _dsep = dsep.checkIndependence(x, y, new ArrayList<>(z)).independent();
+            boolean _dsep = dsep.checkIndependence(x, y, new ArrayList<>(z)).isIndependent();
             double diff = scoreGraphChange(x, y, z, this.hashIndices, score);
             boolean diffNegative = diff < 0;
 

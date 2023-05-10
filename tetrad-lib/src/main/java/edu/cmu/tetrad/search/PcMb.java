@@ -23,6 +23,9 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
@@ -30,13 +33,22 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Searches for a CPDAG representing all the Markov blankets for a given target T consistent with the given
- * independence information. This CPDAG may be used to generate the actual list of DAG's that might be Markov
- * blankets. Note that this code has been converted to be consistent with the CPC algorithm.
+ * <p>Searches for a CPDAG representing all the Markov blankets for a given target T consistent
+ * with the given independence information. This CPDAG may be used to generate the actual list
+ * of DAG's that might be Markov blankets. Note that this code has been converted to be consistent
+ * with the CPC algorithm. The reference is here:</p>
  *
- * @author Joseph Ramsey
+ * <p>Bai, X., Padman, R., Ramsey, J., & Spirtes, P. (2008). Tabu search-enhanced graphical models
+ * for classification in high dimensions. INFORMS Journal on Computing, 20(3), 423-437.</p>
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
+ * @author josephramsey
+ * @see FgesMb
+ * @see Knowledge
  */
-public final class PcMb implements MbSearch, GraphSearch {
+public final class PcMb implements IMbSearch, IGraphSearch {
 
     /**
      * The independence test used to perform the search.
@@ -91,16 +103,6 @@ public final class PcMb implements MbSearch, GraphSearch {
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * Set of unshielded colliders from the triple orientation step.
-     */
-    private Set<Triple> colliderTriples;
-
-    /**
-     * Set of unshielded noncolliders from the triple orientation step.
-     */
-    private Set<Triple> noncolliderTriples;
-
-    /**
      * Set of ambiguous unshielded triples.
      */
     private Set<Triple> ambiguousTriples;
@@ -152,11 +154,11 @@ public final class PcMb implements MbSearch, GraphSearch {
 
     //===============================PUBLIC METHODS=======================//
 
-
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
-    }
-
+    /**
+     * Sets whether cycles should be aggressively prevented, using a cycle checker.
+     *
+     * @param aggressivelyPreventCycles True if so.
+     */
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
     }
@@ -170,8 +172,6 @@ public final class PcMb implements MbSearch, GraphSearch {
         long start = MillisecondTimes.timeMillis();
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
 
         if (targets == null) {
             throw new IllegalArgumentException(
@@ -294,7 +294,7 @@ public final class PcMb implements MbSearch, GraphSearch {
 
         this.logger.log("info", "BEGINNING step 4 (PC Orient).");
 
-        SearchGraphUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
+        GraphSearchUtils.pcOrientbk(this.knowledge, graph, graph.getNodes());
 
         List<Node> _visited = new LinkedList<>(getA());
         orientUnshieldedTriples(this.knowledge, graph, getDepth(), _visited);
@@ -353,13 +353,13 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     /**
-     * Does a CPDAG search.
+     * Does the search.
+     *
+     * @return a CPDAG.
      */
     public Graph search() {
         this.numIndependenceTests = 0;
         this.ambiguousTriples = new HashSet<>();
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
 
         // Some statistics.
         this.maxRemainingAtDepth = new int[20];
@@ -410,56 +410,56 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     /**
-     * @return the set of triples identified as ambiguous by the CPC algorithm during the most recent search.
+     * Returns the set of triples identified as ambiguous by the CPC algorithm during the
+     * most recent search.
+     *
+     * @return This set.
      */
     public Set<Triple> getAmbiguousTriples() {
         return new HashSet<>(this.ambiguousTriples);
     }
 
     /**
-     * @return the set of triples identified as colliders by the CPC algorithm during the most recent search.
-     */
-    public Set<Triple> getColliderTriples() {
-        return this.colliderTriples;
-    }
-
-    /**
-     * @return the set of triples identified as noncolliders by the CPC algorithm during the most recent search.
-     */
-    public Set<Triple> getNoncolliderTriples() {
-        return this.noncolliderTriples;
-    }
-
-    /**
-     * @return the number of independence tests performed during the most recent search.
+     * Returns the number of independence tests performed during the most recent search.
+     *
+     * @return This number.
      */
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
 
     /**
-     * @return the target of the most recent search.
+     * Returns the targets of the most recent search.
+     *
+     * @return This list.
      */
     public List<Node> getTargets() {
         return this.targets;
     }
 
     /**
-     * @return the elapsed time of the most recent search.
+     * Returns the elapsed time of the most recent search.
+     *
+     * @return This time.
      */
     public long getElapsedTime() {
         return this.elapsedTime;
     }
 
     /**
-     * @return "PC-MB."
+     * Returns "PC-MB."
+     *
+     * @return This string.
      */
     public String getAlgorithmName() {
         return "PC-MB";
     }
 
     /**
-     * @return Ibid.
+     * Returns the depth of the search--that is, the maximum number of variables
+     * conditioned on in any conditional independence test.
+     *
+     * @return This depth.
      */
     public int getDepth() {
         return this.depth;
@@ -468,7 +468,7 @@ public final class PcMb implements MbSearch, GraphSearch {
     /**
      * Sets the maximum number of conditioning variables for any conditional independence test.
      *
-     * @param depth Ibid.
+     * @param depth This depth.
      */
     public void setDepth(int depth) {
         //  If it's -1 to set it to some unreasonably high number like 1000
@@ -480,14 +480,19 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     /**
-     * @return Ibid.
+     * Returns the result graph.
+     *
+     * @return This graph.
      */
     public Graph resultGraph() {
         return this.resultGraph;
     }
 
     /**
-     * @return just the Markov blanket (not the Markov blanket DAG).
+     * Returns the Markov blanket variables (not the Markov blanket DAG).
+     *
+     * @param target The target variable.
+     * @return This list.
      */
     public List<Node> findMb(Node target) {
         Graph graph = search(Collections.singletonList(target));
@@ -497,14 +502,18 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     /**
-     * @return Ibid.
+     * Returns the test used in search.
+     *
+     * @return This test.
      */
     public IndependenceTest getTest() {
         return this.test;
     }
 
     /**
-     * @return Ibid.
+     * Returns The knowledge used in search.
+     *
+     * @return This knowledge.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -513,14 +522,11 @@ public final class PcMb implements MbSearch, GraphSearch {
     /**
      * Sets knowledge, to which the algorithm is in fact sensitive.
      *
-     * @param knowledge See the Knowledge class.
+     * @param knowledge This knowledge.
+     * @see Knowledge
      */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    public Graph getGraph() {
-        return this.graph;
+        this.knowledge = new Knowledge(knowledge);
     }
 
     //================================PRIVATE METHODS====================//
@@ -639,7 +645,7 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     private boolean independent(Node v, Node w, List<Node> z) {
-        boolean independent = getTest().checkIndependence(v, w, z).independent();
+        boolean independent = getTest().checkIndependence(v, w, z).isIndependent();
 
         this.numIndependenceTests++;
         return independent;
@@ -663,8 +669,6 @@ public final class PcMb implements MbSearch, GraphSearch {
     private void orientUnshieldedTriples(Knowledge knowledge, Graph graph, int depth, List<Node> nodes) {
         this.logger.log("info", "Starting Collider Orientation:");
 
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
 
         if (nodes == null) {
@@ -701,15 +705,12 @@ public final class PcMb implements MbSearch, GraphSearch {
                         graph.setEndpoint(z, y, Endpoint.ARROW);
                         this.logger.log("tripleClassifications", "Collider oriented: " + Triple.pathString(graph, x, y, z));
                     }
-
-                    this.colliderTriples.add(new Triple(x, y, z));
                 } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
                     graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
                 } else {
-                    this.noncolliderTriples.add(new Triple(x, y, z));
                     this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
                 }
             }
@@ -856,12 +857,12 @@ public final class PcMb implements MbSearch, GraphSearch {
     }
 
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
-        return PcMb.isArrowpointAllowed1(x, y, knowledge) &&
-                PcMb.isArrowpointAllowed1(z, y, knowledge);
+        return PcMb.isArrowheadAllowed1(x, y, knowledge) &&
+                PcMb.isArrowheadAllowed1(z, y, knowledge);
     }
 
-    private static boolean isArrowpointAllowed1(Node from, Node to,
-                                                Knowledge knowledge) {
+    private static boolean isArrowheadAllowed1(Node from, Node to,
+                                               Knowledge knowledge) {
         if (knowledge == null) {
             return true;
         }

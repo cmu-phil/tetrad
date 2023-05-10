@@ -22,9 +22,9 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.search.FciOrient;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.SepsetProducer;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
@@ -35,12 +35,12 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * Basic graph utilities.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class GraphUtils {
 
@@ -515,7 +515,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Counts the arrowpoints that are in graph1 but not in graph2.
+     * Counts the arrowheads that are in graph1 but not in graph2.
      */
     public static int countArrowptErrors(Graph graph1, Graph graph2) {
         if (graph1 == null) {
@@ -1766,7 +1766,7 @@ public final class GraphUtils {
             return new EdgeListGraph(graph);
         } else if ("CPDAG".equals(type)) {
             params.set("graphComparisonType", "CPDAG");
-            return SearchGraphUtils.cpdagForDag(graph);
+            return GraphSearchUtils.cpdagForDag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
             return dagToPag(graph);
@@ -1844,8 +1844,8 @@ public final class GraphUtils {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
-                    if (FciOrient.isArrowpointAllowed(a, b, graph, knowledge)
-                            && FciOrient.isArrowpointAllowed(c, b, graph, knowledge)) {
+                    if (FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                            && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                     }

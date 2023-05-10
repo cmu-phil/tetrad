@@ -24,6 +24,10 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.GrowShrink;
+import edu.cmu.tetrad.search.IMbSearch;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -44,7 +48,7 @@ public class TestMarkovBlanketSearches {
 
         IndTestDSep test = new IndTestDSep(graph);
 
-        MbSearch search = new GrowShrink(test);
+        IMbSearch search = new GrowShrink(test);
         List<Node> blanket = search.findMb(test.getVariable("T"));
 
         List<Node> b = new ArrayList<>();
@@ -64,7 +68,7 @@ public class TestMarkovBlanketSearches {
                 "PC3b-->C3,PC1b-->PC2a,PC1a<--PC3b,U,V");
 
         IndTestDSep test = new IndTestDSep(graph);
-        MbSearch mbSearch = new GrowShrink(test);
+        IMbSearch mbSearch = new GrowShrink(test);
         List<Node> blanket = mbSearch.findMb(test.getVariable("T"));
 
         List<Node> mbd = GraphUtils.markovBlanketDag(graph.getNode("T"), graph).getNodes();

@@ -27,7 +27,7 @@ import java.util.EventListener;
  * Listens for SessionEvents on a Session--nodes being added or removed, parents
  * being added or removed, models being created or destroyed.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface SessionListener extends EventListener {
 

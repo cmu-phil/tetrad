@@ -3,14 +3,14 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import org.apache.commons.math3.util.FastMath;
 
 /**
  * Calculates the structural Hamming distance (SHD) between the estimated graph and
  * the true graph.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class Shd implements Statistic {
     static final long serialVersionUID = 23L;
@@ -27,7 +27,7 @@ public class Shd implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        GraphUtils.GraphComparison comparison = SearchGraphUtils.getGraphComparison(trueGraph, estGraph);
+        GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(trueGraph, estGraph);
         return comparison.getShd();
     }
 

@@ -28,7 +28,7 @@ import java.util.prefs.Preferences;
 /**
  * Provides an application-wide "memory" of the number format to be used.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class NumberFormatUtil {
     private static final NumberFormatUtil INSTANCE = new NumberFormatUtil();

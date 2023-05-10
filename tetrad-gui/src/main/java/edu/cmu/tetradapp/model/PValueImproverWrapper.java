@@ -23,7 +23,11 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.work_in_progress.HbsmsBeam;
+import edu.cmu.tetrad.search.work_in_progress.Hbsms;
+import edu.cmu.tetrad.search.work_in_progress.HbsmsGes;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.*;
 
@@ -217,7 +221,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
             DataSet dataSet = (DataSet) dataModel;
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
-                search = new HbmsBeam(graph2, dataSet, knowledge);
+                search = new HbsmsBeam(graph2, dataSet, knowledge);
             } else if (getAlgorithmType() == AlgorithmType.FGES) {
                 search = new HbsmsGes(graph2, dataSet);
                 search.setKnowledge(knowledge);
@@ -228,7 +232,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
             CovarianceMatrix covarianceMatrix = (CovarianceMatrix) dataModel;
 
             if (getAlgorithmType() == AlgorithmType.BEAM) {
-                search = new HbmsBeam(graph2, covarianceMatrix, knowledge);
+                search = new HbsmsBeam(graph2, covarianceMatrix, knowledge);
             } else if (getAlgorithmType() == AlgorithmType.FGES) {
                 throw new IllegalArgumentException("GES method requires a dataset; a covariance matrix was provided.");
             } else {
@@ -254,19 +258,19 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         if (getSourceGraph() != null) {
             LayoutUtil.arrangeBySourceGraph(this.graph, getSourceGraph());
         } else if (knowledge.isDefaultToKnowledgeLayout()) {
-            SearchGraphUtils.arrangeByKnowledgeTiers(this.graph, knowledge);
+            GraphSearchUtils.arrangeByKnowledgeTiers(this.graph, knowledge);
         } else {
             LayoutUtil.circleLayout(this.graph, 200, 200, 150);
         }
 
-        setResultGraph(SearchGraphUtils.cpdagForDag(this.graph));
+        setResultGraph(GraphSearchUtils.cpdagForDag(this.graph));
     }
 
     public boolean supportsKnowledge() {
         return true;
     }
 
-    public ImpliedOrientation getMeekRules() {
+    public MeekRules getMeekRules() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge((Knowledge) this.params.get("knowledge", new Knowledge()));
         return rules;

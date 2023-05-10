@@ -34,7 +34,7 @@ import java.util.prefs.Preferences;
 /**
  * Some basic utilities for editor stuff.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class EditorUtils {
     public static Point getTopLeftPoint(List<Object> modelElements) {

@@ -32,7 +32,7 @@ import java.util.List;
  * parameters set so that it can be passed to another class to do clustering on
  * data.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface ClusteringAlgorithm {
 

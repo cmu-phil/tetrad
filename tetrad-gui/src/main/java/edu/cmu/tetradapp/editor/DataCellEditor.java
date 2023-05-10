@@ -32,7 +32,7 @@ import java.util.EventObject;
 /**
  * Edits a cell in a data table.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class DataCellEditor extends DefaultCellEditor {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();

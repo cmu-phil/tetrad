@@ -46,7 +46,7 @@ import java.util.TreeSet;
  * require repeated estimation of DAG models over the same variables.
  * Assumes all variables are measured.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class DagScorer implements TetradSerializable, Scorer {
     static final long serialVersionUID = 23L;

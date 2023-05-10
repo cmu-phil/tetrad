@@ -26,7 +26,7 @@ import org.apache.commons.math3.util.FastMath;
 /**
  * Some extra mathematical functions not contained in org.apache.commons.math3.util.FastMath.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class MathUtils {
 

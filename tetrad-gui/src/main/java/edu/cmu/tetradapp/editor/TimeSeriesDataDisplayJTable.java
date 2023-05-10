@@ -33,7 +33,7 @@ import java.awt.*;
 /**
  * Displays a DataSet object as a JTable.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TimeSeriesDataDisplayJTable extends JTable
         implements DataModelContainer {
@@ -77,7 +77,7 @@ public class TimeSeriesDataDisplayJTable extends JTable
  * Wraps a dataSet which is possibly smaller than the display window in a larger
  * AbstractTableModel which will fill the window.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class TimeSeriesDataDisplayTable extends AbstractTableModel {
 

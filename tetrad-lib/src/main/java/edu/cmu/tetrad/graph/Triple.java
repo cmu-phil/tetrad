@@ -30,7 +30,7 @@ import java.util.List;
  * Stores a triple (x, y, z) of nodes. Note that (x, y, z) = (z, y, x). Useful
  * for marking graphs.
  *
- * @author Joseph Ramsey, after Frank Wimberly.
+ * @author josephramsey, after Frank Wimberly.
  */
 public final class Triple implements TetradSerializable {
     static final long serialVersionUID = 23L;

@@ -4,12 +4,12 @@ import edu.cmu.tetrad.algcomparison.statistic.utils.BidirectedConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class BidirectedTP implements Statistic {
     static final long serialVersionUID = 23L;

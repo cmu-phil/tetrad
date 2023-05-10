@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.knowledge_editor;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.workbench.AbstractWorkbench;
@@ -47,7 +47,7 @@ import java.util.Map;
  * can take in the session editor workbench, whether it's selecting and moving a
  * node, adding a node of a particular type, or adding an edge.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 class KnowledgeEditorToolbar extends JPanel {
 
@@ -234,7 +234,7 @@ class KnowledgeEditorToolbar extends JPanel {
             KnowledgeGraph graph = (KnowledgeGraph) this.workbench.getGraph();
             Knowledge knowledge = graph.getKnowledge();
             try {
-                SearchGraphUtils.arrangeByKnowledgeTiers(graph, knowledge);
+                GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
                 this.workbench.setGraph(graph);
             } catch (IllegalArgumentException ex) {
                 System.out.print(ex.getMessage());

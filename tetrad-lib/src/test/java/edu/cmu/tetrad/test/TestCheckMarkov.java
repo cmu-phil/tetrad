@@ -5,9 +5,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.IndependenceResult;
-import edu.cmu.tetrad.search.Kci;
-import edu.cmu.tetrad.search.SearchLogUtils;
+import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.Kci;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -59,17 +59,17 @@ public class TestCheckMarkov {
                     + " non-descendants = " + nondesc);
 
             for (Node y : nondesc) {
-                System.out.print("\t" + SearchLogUtils.independenceFact(x, y, cond));
+                System.out.print("\t" + LogUtilsSearch.independenceFact(x, y, cond));
 
                 IndependenceResult result = test.checkIndependence(x, y, cond);
 
-                if (result.independent()) {
+                if (result.isIndependent()) {
                     numIndep++;
                 }
 
                 total++;
 
-                System.out.print(" " + (result.independent() ? "Independent" : "Dependent"));
+                System.out.print(" " + (result.isIndependent() ? "Independent" : "Dependent"));
                 System.out.print(" p = " + result.getPValue());
                 System.out.println();
             }

@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests to make sure the DelimiterType enumeration hasn't been tampered with.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestKnowledge {
 

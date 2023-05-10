@@ -67,7 +67,7 @@ import java.util.Map;
  * Edits a SEM instantiated model.
  *
  * @author Donald Crimbchin
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class SemImEditor extends JPanel implements LayoutEditable, DoNotScroll {
 

@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
  * can be constructed properly and whether the information can be extracted from
  * them properly.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestSessionEvent {
 

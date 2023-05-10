@@ -39,7 +39,7 @@ import java.text.NumberFormat;
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestBayesDiscreteBicScorer {
 

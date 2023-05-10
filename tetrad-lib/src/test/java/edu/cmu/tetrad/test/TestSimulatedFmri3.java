@@ -33,7 +33,7 @@ import edu.cmu.tetrad.util.Params;
 /**
  * Pulling this test out for Madelyn.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class TestSimulatedFmri3 {
 

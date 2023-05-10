@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.ClusterUtils;
+import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -39,7 +39,7 @@ import java.util.List;
  * Compares a target workbench with a reference workbench by counting errors of
  * omission and commission.  (for edge presence only, not orientation).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Erin Korber (added remove latents functionality July 2004)
  */
 public final class MeasurementModelWrapper implements ParamsResettable,

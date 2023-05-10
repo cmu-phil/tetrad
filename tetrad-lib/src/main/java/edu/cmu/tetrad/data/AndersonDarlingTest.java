@@ -36,7 +36,7 @@ import java.util.List;
  * Note that in the calculation, points x such that log(1 - normal_cdf(x))
  * is infinite are ignored.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class AndersonDarlingTest {
 

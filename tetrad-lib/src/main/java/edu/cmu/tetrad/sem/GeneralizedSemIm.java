@@ -51,7 +51,7 @@ import static edu.cmu.tetrad.util.StatUtils.sd;
  * model allows arbitrary equations for variables. This instantiated model
  * gives values for all of the parameters of the parameterized model.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GeneralizedSemIm implements Im, Simulator {
     static final long serialVersionUID = 23L;

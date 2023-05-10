@@ -30,7 +30,7 @@ import org.apache.commons.math3.util.FastMath;
  * true partial correlation is equal to zero.  Uses the equation (29.13.4) from
  * Cramer's _Mathematical Methods of Statistics_.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class PartialCorrelationPdf implements Function, TetradSerializable {
     static final long serialVersionUID = 23L;

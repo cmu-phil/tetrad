@@ -34,7 +34,7 @@ import java.io.IOException;
 /**
  * Saves out a PNG image for a component.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class SaveComponentImage extends AbstractAction {
 

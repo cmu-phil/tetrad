@@ -30,7 +30,7 @@ import junit.framework.TestSuite;
 /**
  * Tests the basic functionality of the SessionEditorWorkbench.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class TestSessionEditorWorkbench extends TestCase {
 

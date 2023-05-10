@@ -37,7 +37,7 @@ import java.util.ArrayList;
  * Wraps a dataSet which is possibly smaller than the display window in a larger
  * AbstractTableModel which will fill the window.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class TabularDataTable extends AbstractTableModel {
 

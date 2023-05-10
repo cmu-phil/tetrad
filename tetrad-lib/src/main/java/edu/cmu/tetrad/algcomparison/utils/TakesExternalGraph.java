@@ -5,7 +5,7 @@ import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 /**
  * Tags an algorithm that can take an external graph as input.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public interface TakesExternalGraph {
 

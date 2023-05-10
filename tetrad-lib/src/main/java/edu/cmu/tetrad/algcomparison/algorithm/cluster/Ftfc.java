@@ -7,8 +7,7 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.FindTwoFactorClusters;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -19,7 +18,7 @@ import java.util.List;
 /**
  * FTFC.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FTFC",
@@ -51,16 +50,16 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
             double alpha = parameters.getDouble(Params.ALPHA);
 
             boolean gap = parameters.getBoolean(Params.USE_GAP, true);
-            FindTwoFactorClusters.Algorithm algorithm;
+            edu.cmu.tetrad.search.Ftfc.Algorithm algorithm;
 
             if (gap) {
-                algorithm = FindTwoFactorClusters.Algorithm.GAP;
+                algorithm = edu.cmu.tetrad.search.Ftfc.Algorithm.GAP;
             } else {
-                algorithm = FindTwoFactorClusters.Algorithm.SAG;
+                algorithm = edu.cmu.tetrad.search.Ftfc.Algorithm.SAG;
             }
 
-            FindTwoFactorClusters search
-                    = new FindTwoFactorClusters(cov, algorithm, alpha);
+            edu.cmu.tetrad.search.Ftfc search
+                    = new edu.cmu.tetrad.search.Ftfc(cov, algorithm, alpha);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
@@ -79,7 +78,7 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
+        return GraphSearchUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
     @Override

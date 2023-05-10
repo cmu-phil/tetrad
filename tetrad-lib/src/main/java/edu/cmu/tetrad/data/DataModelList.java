@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Stores a list of data models and keeps track of which one is selected.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @see DataModel
  */
 public final class DataModelList extends AbstractList<DataModel>

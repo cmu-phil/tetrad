@@ -37,7 +37,7 @@ import edu.cmu.tetrad.util.Parameters;
 /**
  * Pulling this test out for Madelyn.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class TestKunMeasurementError {
 

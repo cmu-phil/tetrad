@@ -40,7 +40,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests Sem.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestSem {
 

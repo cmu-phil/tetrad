@@ -2,6 +2,8 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.GrowShrinkTree;
 
 import java.util.*;
 
@@ -13,17 +15,30 @@ import java.util.*;
  * return all such sparsest permutations and their corresponding DAGs, but in this version
  * it return one of them, and converts the result into a CPDAG.</p>
  *
- * <p>Knowledge can be used with this search. If tiered knowledge is used, then the procedure
- * is carried out for each tier separately, given the variable preceding that tier, which
- * allows the SP algorithm to address tiered (e.g., time series) problems with more than 11
- * variables.</p>
+ * <p>Note that SP considers all permutations of the algorithm, which is exponential in the
+ * number of variables. So SP without knowledge is limited to about 10 variables per
+ * knowledge tier.</p>
+ *
+ * <p>However, notably, tiered Knowledge can be used with this search. If tiered knowledge
+ * is used, then the procedure is carried out for each tier separately, given the variable
+ * preceding that tier, which allows the SP algorithm to address tiered (e.g., time series)
+ * problems with more than 11 variables.</p>
  *
  * <p>This class is meant to be used in the context of the PermutationSearch class (see).
  * the proper use is PermutationSearch search = new PermutationSearch(new Sp(score));</p>
  *
+ * <p>Raskutti, G., &amp; Uhler, C. (2018). Learning directed acyclic graph models based on
+ * sparsest permutations. Stat, 7(1), e183.</p>
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
  * @author bryanandrews
  * @author josephramsey
  * @see PermutationSearch
+ * @see Knowledge
+ * @see SpFci
+ * @see Knowledge
  */
 public class Sp implements SuborderSearch {
     private final Score score;
@@ -51,11 +66,12 @@ public class Sp implements SuborderSearch {
 
     /**
      * This is the method called by PermutationSearch per tier.
-     * @param prefix The variable preceding the suborder variables in the permutation, including
-     *               all variables from previous tiers.
+     *
+     * @param prefix   The variable preceding the suborder variables in the permutation, including
+     *                 all variables from previous tiers.
      * @param suborder The suborder of the variables list beign searched over. Only the order of the
      *                 variables in this suborder will be modified.
-     * @param gsts The GrowShrinkTree used for the search. This is an optimized score-caching class.
+     * @param gsts     The GrowShrinkTree used for the search. This is an optimized score-caching class.
      */
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
@@ -127,14 +143,15 @@ public class Sp implements SuborderSearch {
 
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
+        Set<Node> all = new HashSet<>(suborder);
+        all.addAll(prefix);
 
-        Iterator<Node> itr = suborder.iterator();
         Set<Node> Z = new HashSet<>(prefix);
-        while (itr.hasNext()) {
-            Node x = itr.next();
-            parents.get(x).clear();
-            scores.put(x, gsts.get(x).trace(new HashSet<>(Z), parents.get(x)));
-            score += scores.get(x);
+
+        for (Node x : suborder) {
+            Set<Node> parents = this.parents.get(x);
+            parents.clear();
+            score += this.gsts.get(x).trace(Z, all, parents);
             Z.add(x);
         }
 

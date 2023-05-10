@@ -34,7 +34,7 @@ import org.junit.Test;
 import java.util.List;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestSemUpdater {
 

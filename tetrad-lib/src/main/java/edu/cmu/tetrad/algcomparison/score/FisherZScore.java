@@ -4,9 +4,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndTestFisherZ;
-import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.ScoredIndTest;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.IndTestScore;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Wrapper for Fisher Z test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 //@edu.cmu.tetrad.annotation.Score(
 //        name = "Fisher Z Score",
@@ -35,7 +35,7 @@ public class FisherZScore implements ScoreWrapper {
         double alpha = parameters.getDouble(Params.ALPHA);
         this.alpha = alpha;
         IndTestFisherZ test = new IndTestFisherZ((DataSet) dataSet, alpha);
-        return new ScoredIndTest(test);
+        return new IndTestScore(test);
     }
 
     @Override

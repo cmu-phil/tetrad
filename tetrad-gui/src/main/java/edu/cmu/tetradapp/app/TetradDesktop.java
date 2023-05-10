@@ -48,7 +48,7 @@ import java.util.prefs.Preferences;
  * Constructs a desktop for the Tetrad application.
  *
  * @author Don Crimbchin (djc2@andrew.cmu.edu)
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @author Raul Salinas wsalinas@andrew.cmu.edu
  */
 public final class TetradDesktop extends JPanel implements DesktopControllable,

@@ -48,7 +48,7 @@ import java.util.List;
  * Allows the user to choose a variable in a Bayes net and edit the parameters
  * associated with that variable.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 
 /////////////////////////////////////////////////////////////////////
@@ -521,7 +521,7 @@ public class UpdatedBayesImWizardObs extends JPanel {
 /**
  * This is the JTable which displays the getModel parameter set.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @see BayesImEditorWizard
  * @see UpdaterEditingTableModel
  */
@@ -663,7 +663,7 @@ final class UpdaterEditingTableObs extends JTable {
  * These conditional probabilities may be edited.  As they are being edited for
  * a given row, the only condition is that they be greater than or equal to 0.0.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class UpdaterEditingTableModelObs extends AbstractTableModel {
 

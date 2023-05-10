@@ -34,7 +34,7 @@ import java.util.Map;
 /**
  * Represents a node that's just a string name.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
 

@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 
 /**
  * Specifies the methods that all algorithm runners must implement. All
@@ -29,7 +29,7 @@ import edu.cmu.tetrad.search.IndependenceTest;
  * source graph is, and must know what their result graph is (if it has been
  * calculated).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface IndTestProducer {
 

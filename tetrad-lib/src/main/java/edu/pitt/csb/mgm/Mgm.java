@@ -34,7 +34,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.GraphSearch;
+import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -52,7 +52,7 @@ import java.util.List;
  * Mixed Gaussian-Categorical Graphical Models
  * Created by ajsedgewick on 7/15/15.
  */
-public class Mgm extends ConvexProximal implements GraphSearch {
+public class Mgm extends ConvexProximal implements IGraphSearch {
     private final DoubleFactory2D factory2D = DoubleFactory2D.dense;
     private final DoubleFactory1D factory1D = DoubleFactory1D.dense;
 

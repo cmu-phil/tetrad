@@ -32,7 +32,7 @@ import java.util.Arrays;
  * Stores information for a variable source about evidence we have for each variable as
  * well as whether each variable has been manipulated.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class Manipulation implements TetradSerializable {
     static final long serialVersionUID = 23L;

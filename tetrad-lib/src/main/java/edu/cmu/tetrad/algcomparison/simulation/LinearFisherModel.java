@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class LinearFisherModel implements Simulation, TakesData {
 

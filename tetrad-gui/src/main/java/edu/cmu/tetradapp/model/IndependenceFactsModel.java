@@ -37,7 +37,7 @@ import java.util.*;
 /**
  * Stores a list of independence facts.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class IndependenceFactsModel implements KnowledgeBoxInput {
     static final long serialVersionUID = 23L;

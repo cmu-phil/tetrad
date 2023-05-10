@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.Graph;
  * X, so the updating operation on the manipulated model will produce different
  * results.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface ManipulatingBayesUpdater extends BayesUpdater {
     long serialVersionUID = 23L;

@@ -31,7 +31,7 @@ import javax.swing.*;
 /**
  * Edits the properties of a measurement params.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class DiscDetIndepParamsEditor extends JComponent {
 

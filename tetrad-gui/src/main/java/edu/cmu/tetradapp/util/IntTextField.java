@@ -35,7 +35,7 @@ import java.awt.event.FocusEvent;
  * variables to be within a certain range; see the <code>setFilter</code>
  * method.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class IntTextField extends JTextField {
 

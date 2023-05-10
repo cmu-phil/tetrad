@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
  * are listed. The parameter must have numerical values, and these will be
  * represented as continuous.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class ParameterColumn implements Statistic {
     static final long serialVersionUID = 23L;

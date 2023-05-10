@@ -35,14 +35,14 @@ import edu.cmu.tetrad.util.Parameters;
 /**
  * Tests to make sure the DelimiterType enumeration hasn't been tampered with.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestCopy {
 
     /**
      * An example script to simulate data and run a comparison analysis on it.
      *
-     * @author jdramsey
+     * @author josephramsey
      */
     public static void main(String... args) {
         Parameters parameters = new Parameters();

@@ -22,17 +22,24 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Implements the Grow-Shrink algorithm of Margaritis and Thrun. Reference: "Bayesian Network Induction via Local
- * Neighborhoods."
+ * <p>Implements the Grow-Shrink algorithm of Margaritis and Thrun, a simple yet correct
+ * and useful Markov blanket search.</p>
  *
- * @author Joseph Ramsey
+ * <p>Margaritis, D., &amp; Thrun, S. (1999). Bayesian network induction via local neighborhoods.
+ * Advances in neural information processing systems, 12.</p>
+ *
+ * <p>This class is not configured to respect knowledge of forbidden and required
+ * edges.</p>
+ *
+ * @author josephramsey
  */
-public class GrowShrink implements MbSearch {
+public class GrowShrink implements IMbSearch {
 
     /**
      * The independence test used to perform the search.
@@ -42,12 +49,12 @@ public class GrowShrink implements MbSearch {
     /**
      * The list of variables being searched over. Must contain the target.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * Constructs a new search.
      *
-     * @param test The source of conditional independence information for the search.
+     * @param test The test used for this search.
      */
     public GrowShrink(IndependenceTest test) {
         if (test == null) {
@@ -77,7 +84,7 @@ public class GrowShrink implements MbSearch {
             remaining.remove(target);
 
             for (Node node : remaining) {
-                if (!this.independenceTest.checkIndependence(node, target, blanket).independent()) {
+                if (!this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
                     blanket.add(node);
                     changed = true;
                 }
@@ -92,7 +99,7 @@ public class GrowShrink implements MbSearch {
             for (Node node : new LinkedList<>(blanket)) {
                 blanket.remove(node);
 
-                if (this.independenceTest.checkIndependence(node, target, blanket).independent()) {
+                if (this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
                     changed = true;
                     continue;
                 }
@@ -104,34 +111,20 @@ public class GrowShrink implements MbSearch {
         return blanket;
     }
 
+    /**
+     * Returns "Grow Shrink".
+     *
+     * @return This string.
+     */
     public String getAlgorithmName() {
         return "Grow Shrink";
     }
 
+    /**
+     * @throws UnsupportedOperationException Since independence tests are not counted.
+     */
     public int getNumIndependenceTests() {
-        return 0;
-    }
-
-    private Node getVariableForName(String targetName) {
-        Node target = null;
-
-        for (Node V : this.variables) {
-            if (V.getName().equals(targetName)) {
-                target = V;
-                break;
-            }
-        }
-
-        if (target == null) {
-            throw new IllegalArgumentException(
-                    "Target variable not in dataset: " + targetName);
-        }
-
-        return target;
-    }
-
-    public void setVariables(List<Node> variables) {
-        this.variables = variables;
+        throw new UnsupportedOperationException("Independence tests are not counted in the algorithm.");
     }
 }
 

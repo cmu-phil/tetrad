@@ -31,7 +31,7 @@ import java.io.ObjectInputStream;
  * Methods are provided to allow parameters to be manipulated in an interface.
  * See Wikipedia.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ChiSquare implements Distribution {
     static final long serialVersionUID = 23L;

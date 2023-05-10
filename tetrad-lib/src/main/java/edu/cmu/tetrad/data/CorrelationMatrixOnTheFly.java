@@ -42,7 +42,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * positive definiteness is "spot-checked"--that is, checked for various
  * submatrices.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @see CorrelationMatrix
  */
 public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {

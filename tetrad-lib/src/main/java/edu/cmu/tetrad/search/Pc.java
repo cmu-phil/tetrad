@@ -26,6 +26,10 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.PcCommon;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -35,13 +39,34 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Implements the PC ("Peter/Clark") algorithm, as specified in Chapter 6 of Spirtes, Glymour, and Scheines, "Causation,
- * Prediction, and Search," 2nd edition, with a modified rule set in step D due to Chris Meek. For the modified rule
- * set, see Chris Meek (1995), "Causal inference and causal explanation with background knowledge."
+ * <p>Implements the PC (Peter and Clark) algorithm, which uses conditional
+ * independence testing as an oracle to first of all remove extraneous edges
+ * from a complete graph, then to orient the unshielded colliders in the graph,
+ * and finally to make any additional orientations that are capable of avoiding
+ * additional unshielded colliders in the graph. An earlier version of this
+ * algorithm was proposed earlier than this, but the standard reference for
+ * the algorithm is in Chapter 6 of the following book:</p>
  *
- * @author Joseph Ramsey.
+ * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
+ * prediction, and search. MIT press.</p>
+ *
+ * <p>A modified rule set capable of dealing effectively with knowledge of required
+ * and forbidden edges is due to Chris Meek, with this reference:
+ *
+ * <p>Meek, C. (1995), "Causal inference and causal explanation with background
+ * knowledge."</p>
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
+ * @author peterspirtes
+ * @author chrismeek
+ * @author clarkglymour
+ * @author josephramsey
+ * @see Fci
+ * @see Knowledge
  */
-public class Pc implements GraphSearch {
+public class Pc implements IGraphSearch {
 
     /**
      * The independence test used for the PC search.g
@@ -91,10 +116,9 @@ public class Pc implements GraphSearch {
 
     private boolean verbose;
     private boolean stable;
-//    private boolean concurrent;
     private boolean useMaxP = false;
     private int maxPPathLength = -1;
-    private PcAll.ConflictRule conflictRule = PcAll.ConflictRule.OVERWRITE;
+    private final PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -115,13 +139,17 @@ public class Pc implements GraphSearch {
     //==============================PUBLIC METHODS========================//
 
     /**
-     * @return true iff edges will not be added if they would create cycles.
+     * Returns true iff edges will not be added if they would create cycles.
+     *
+     * @return True if so.
      */
     public boolean isAggressivelyPreventCycles() {
         return this.aggressivelyPreventCycles;
     }
 
     /**
+     * Sets whether cycles should be aggressively checked.
+     *
      * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
@@ -129,14 +157,18 @@ public class Pc implements GraphSearch {
     }
 
     /**
-     * @return the independence test being used in the search.
+     * Returns the independence test being used in the search.
+     *
+     * @return this test.
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
     }
 
     /**
-     * @return the knowledge specification used in the search. Non-null.
+     * Returns the knowledge specification used in the search. Non-null.
+     *
+     * @return This knowledge.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -144,6 +176,8 @@ public class Pc implements GraphSearch {
 
     /**
      * Sets the knowledge specification to be used in the search. May not be null.
+     *
+     * @param knowledge The knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -154,15 +188,20 @@ public class Pc implements GraphSearch {
     }
 
     /**
-     * @return the sepset map from the most recent search. Non-null after the first call to <code>search()</code>.
+     * Returns the sepset map from the most recent search. Non-null after the first call
+     * to <code>search()</code>.
+     *
+     * @return This map.
      */
     public SepsetMap getSepsets() {
         return this.sepsets;
     }
 
     /**
-     * @return the current depth of search--that is, the maximum number of conditioning nodes for any conditional
-     * independence checked.
+     * Returns the current depth of search--that is, the maximum number of conditioning nodes
+     * for any conditional independence checked.
+     *
+     * @return This depth.
      */
     public int getDepth() {
         return this.depth;
@@ -189,11 +228,19 @@ public class Pc implements GraphSearch {
     }
 
     /**
-     * Runs PC starting with a complete graph over all nodes of the given conditional independence test, using the given
-     * independence test and knowledge and returns the resultant graph. The returned graph will be a CPDAG if the
-     * independence information is consistent with the hypothesis that there are no latent common causes. It may,
-     * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
-     * of latent common causes, or due to statistical errors in conditional independence judgments.
+     * Runs PC starting with a complete graph over all nodes of the given conditional
+     * independence test, using the given independence test and knowledge and returns the
+     * resultant graph. The returned graph will be a CPDAG if the independence information is
+     * consistent with the hypothesis that there are no latent common causes. It may, however,
+     * contain cycles or bidirected edges if this assumption is not born out, either due to
+     * the actual presence of latent common causes, or due to statistical errors in conditional
+     * independence judgments.
+     *
+     * @return The found CPDAG. In some cases there may be some errant bidirected edges or
+     * cycles, depending on the settings and whether the faithfulness assumption holds. If
+     * the faithfulness assumption holds, bidirected edges will indicate the existence of
+     * latent variables, so a latent variable search like FCI should be run.
+     * @see Fci
      */
     @Override
     public Graph search() {
@@ -201,13 +248,18 @@ public class Pc implements GraphSearch {
     }
 
     /**
-     * Runs PC starting with a commplete graph over the given list of nodes, using the given independence test and
-     * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information
-     * is consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
-     * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
-     * or due to statistical errors in conditional independence judgments.
+     * Runs PC starting with a commplete graph over the given list of nodes, using the given
+     * independence test and knowledge and returns the resultant graph. The returned graph
+     * will be a CPDAG if the independence information is consistent with the hypothesis that
+     * there are no latent common causes. It may, however, contain cycles or bidirected edges
+     * if this assumption is not born out, either due to the actual presence of latent common
+     * causes, or due to statistical errors in conditional independence judgments.
      * <p>
-     * All of the given nodes must be in the domatein of the given conditional independence test.
+     * All the given nodes must be in the domatein of the given conditional independence test.
+     *
+     * @param nodes The sublist of nodes to search over.
+     * @return The search graph.
+     * @see #search()
      */
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
@@ -217,6 +269,16 @@ public class Pc implements GraphSearch {
         return search(fas, nodes);
     }
 
+    /**
+     * Runs the search using a particular implementation of the fast adjacency search
+     * (FAS), over the given sublist of nodes.
+     *
+     * @param fas   The fast adjacency search to use.
+     * @param nodes The sublist of nodes.
+     * @return The result graph
+     * @see #search()
+     * @see IFas
+     */
     public Graph search(IFas fas, List<Node> nodes) {
         this.logger.log("info", "Starting PC algorithm");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
@@ -233,41 +295,30 @@ public class Pc implements GraphSearch {
                     "be in the domain of the independence test provided.");
         }
 
-        edu.cmu.tetrad.search.PcAll search = new edu.cmu.tetrad.search.PcAll(independenceTest);
+        PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
         search.setHeuristic(1);
         search.setKnowledge(this.knowledge);
 
         if (stable) {
-            search.setFasType(PcAll.FasType.STABLE);
+            search.setFasType(PcCommon.FasType.STABLE);
         } else {
-            search.setFasType(PcAll.FasType.REGULAR);
+            search.setFasType(PcCommon.FasType.REGULAR);
         }
 
-//        if (concurrent) {
-//            search.setConcurrent(PcAll.Concurrent.YES);
-//        } else {
-//            search.setConcurrent(PcAll.Concurrent.NO);
-//        }
-
-        search.setColliderDiscovery(PcAll.ColliderDiscovery.FAS_SEPSETS);
+        search.setColliderDiscovery(PcCommon.ColliderDiscovery.FAS_SEPSETS);
         search.setConflictRule(conflictRule);
         search.setUseHeuristic(useMaxP);
         search.setMaxPathLength(maxPPathLength);
-//        search.setExternalGraph(externalGraph);
         search.setVerbose(verbose);
-
-//        fas.setKnowledge(getKnowledge());
-//        fas.setDepth(getDepth());
-//        fas.setVerbose(this.verbose);
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
 
         this.numIndependenceTests = fas.getNumIndependenceTests();
 
-        SearchGraphUtils.pcOrientbk(this.knowledge, this.graph, nodes);
-        SearchGraphUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphSearchUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
 
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
@@ -281,16 +332,28 @@ public class Pc implements GraphSearch {
     }
 
     /**
-     * @return the elapsed time of the search, in milliseconds.
+     * Returns the elapsed time of the search, in milliseconds.
+     *
+     * @return this time.
      */
     public long getElapsedTime() {
         return this.elapsedTime;
     }
 
+    /**
+     * Returns The edges of the searched graph.
+     *
+     * @return This set.
+     */
     public Set<Edge> getAdjacencies() {
         return new HashSet<>(this.graph.getEdges());
     }
 
+    /**
+     * Returns the non-adjacencies of the searched graph.
+     *
+     * @return This set.
+     */
     public Set<Edge> getNonadjacencies() {
         Graph complete = GraphUtils.completeGraph(this.graph);
         Set<Edge> nonAdjacencies = complete.getEdges();
@@ -299,36 +362,58 @@ public class Pc implements GraphSearch {
         return new HashSet<>(nonAdjacencies);
     }
 
+    /**
+     * Returns the number of independence tests performed in the search.
+     *
+     * @return This number.
+     */
     public int getNumIndependenceTests() {
         return this.numIndependenceTests;
     }
 
+    /**
+     * Returns the nodes of the search graph.
+     *
+     * @return This list.
+     */
     public List<Node> getNodes() {
         return this.graph.getNodes();
     }
 
+    /**
+     * Sets whether verbose output should be given.
+     *
+     * @param verbose True iff the case.
+     */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
+    /**
+     * Sets whether the stable adjacency search should be used.
+     *
+     * @param stable True iff the case.
+     */
     public void setStable(boolean stable) {
         this.stable = stable;
     }
 
-//    public void setConcurrent(boolean concurrent) {
-//        this.concurrent = concurrent;
-//    }
-
+    /**
+     * Sets whether the max p method should be used in the adjacency searc h.
+     *
+     * @param useMaxP iff the case.
+     */
     public void setUseMaxP(boolean useMaxP) {
         this.useMaxP = useMaxP;
     }
 
+    /**
+     * Sets the maximum path length for the PC heuristic.
+     *
+     * @param maxPPathLength this length.
+     */
     public void setMaxPPathLength(int maxPPathLength) {
         this.maxPPathLength = maxPPathLength;
-    }
-
-    public void setConflictRule(PcAll.ConflictRule conflictRule) {
-        this.conflictRule = conflictRule;
     }
 }
 

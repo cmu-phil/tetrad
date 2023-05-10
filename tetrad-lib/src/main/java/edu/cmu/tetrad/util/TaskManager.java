@@ -4,7 +4,7 @@ package edu.cmu.tetrad.util;
  * This cancels all processes that check the TaskManager.getInstance().isCanceled()
  * method.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TaskManager {
     private static final TaskManager instance = new TaskManager();

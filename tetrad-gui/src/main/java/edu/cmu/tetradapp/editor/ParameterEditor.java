@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.Parameters;
  * <code>setParantModel</code>, then <code>setup</code>. It is also assumed
  * that the implementing class will implement JComponent.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface ParameterEditor {
 

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class LoadDataAndGraphs implements Simulation {
 

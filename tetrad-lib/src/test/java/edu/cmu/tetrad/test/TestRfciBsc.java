@@ -6,9 +6,9 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndTestProbabilistic;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.XdslXmlParser;
+import edu.cmu.tetrad.search.test.IndTestProbabilistic;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.BayesImParser;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.RandomUtil;
 import nu.xom.Builder;
@@ -61,7 +61,7 @@ public class TestRfciBsc {
 //        dagToPag.setCompleteRuleSetUsed(false);
 //        Graph PAG_True = dagToPag.convert();
 
-        Graph PAG_True = SearchGraphUtils.dagToPag(dag);
+        Graph PAG_True = GraphSearchUtils.dagToPag(dag);
 
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
@@ -134,7 +134,7 @@ public class TestRfciBsc {
 //        dagToPag.setCompleteRuleSetUsed(false);
 //        Graph PAG_True = dagToPag.convert();
 
-        Graph PAG_True = SearchGraphUtils.dagToPag(dag);
+        Graph PAG_True = GraphSearchUtils.dagToPag(dag);
 
         PAG_True = GraphUtils.replaceNodes(PAG_True, dataSet.getVariables());
 
@@ -195,7 +195,7 @@ public class TestRfciBsc {
             File file = new File("src/test/resources/" + "Alarm.xdsl");
             System.out.println(file.getAbsolutePath());
             Document document = builder.build(file);
-            XdslXmlParser parser = new XdslXmlParser();
+            BayesImParser parser = new BayesImParser();
             parser.setUseDisplayNames(true);
             return parser.getBayesIm(document.getRootElement());
         } catch (ParsingException | IOException e) {

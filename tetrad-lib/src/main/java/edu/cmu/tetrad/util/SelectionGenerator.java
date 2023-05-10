@@ -32,7 +32,7 @@ package edu.cmu.tetrad.util;
  * To see what this class does, try calling SelectionGenerator.testPrint(5, 3), for
  * instance.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 @SuppressWarnings("WeakerAccess")
 public final class SelectionGenerator {

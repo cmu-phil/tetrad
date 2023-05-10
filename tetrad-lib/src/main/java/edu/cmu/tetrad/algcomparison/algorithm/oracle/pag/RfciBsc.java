@@ -17,7 +17,7 @@ import edu.cmu.tetrad.util.Params;
 import java.util.ArrayList;
 import java.util.List;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * Jan 4, 2019 4:32:05 PM

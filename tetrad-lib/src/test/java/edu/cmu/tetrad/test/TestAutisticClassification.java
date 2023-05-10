@@ -28,8 +28,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fas;
-import edu.cmu.tetrad.search.IndTestScore;
-import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.io.File;
@@ -42,7 +42,7 @@ import java.util.*;
 /**
  * An example script to simulate data and run a comparison analysis on it.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class TestAutisticClassification {
     enum Type {LEAVE_ONE_OUT, TRAIN_TEST}
@@ -459,7 +459,7 @@ public class TestAutisticClassification {
             DataSet dataSet = datasets.get(i);
 
             SemBicScore score = new SemBicScore(new CovarianceMatrix(dataSet));
-            Fas fas = new Fas(new IndTestScore(score));
+            Fas fas = new Fas(new ScoreIndTest(score));
             Graph graph = fas.search();
 
             System.out.println(graph);
