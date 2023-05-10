@@ -139,7 +139,7 @@ public class PermutationSearch {
 
     /**
      * Returns the variables.
-     * @return This lsit.
+     * @return This list.
      */
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);

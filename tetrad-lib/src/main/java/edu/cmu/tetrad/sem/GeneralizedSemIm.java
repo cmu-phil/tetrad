@@ -245,7 +245,7 @@ public class GeneralizedSemIm implements Im, Simulator {
     }
 
     /**
-     * @return a String representation of the IM, in this case a lsit of freeParameters and their values.
+     * @return a String representation of the IM, in this case a list of freeParameters and their values.
      */
     public String toString() {
         List<String> parameters = new ArrayList<>(this.pm.getParameters());

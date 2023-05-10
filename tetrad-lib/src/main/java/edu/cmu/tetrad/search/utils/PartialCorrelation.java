@@ -47,7 +47,7 @@ public class PartialCorrelation {
     /**
      * Constructor.
      *
-     * @param nodes      The lsit of nodes.
+     * @param nodes      The list of nodes.
      * @param cov        The covariance matrix, as a Matrix.
      * @param sampleSize The sample size.
      */

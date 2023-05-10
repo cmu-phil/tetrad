@@ -802,7 +802,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
     }
 
     /**
-     * @return the lsit of measured nodes.
+     * @return the list of measured nodes.
      */
     public List<Node> getMeasuredNodes() {
         return new ArrayList<>(this.measuredNodes);

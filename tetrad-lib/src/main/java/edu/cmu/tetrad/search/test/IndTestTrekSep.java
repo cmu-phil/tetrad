@@ -299,7 +299,7 @@ public final class IndTestTrekSep implements IndependenceTest {
     /**
      * Returns a singleton list consisting just of the dataset for this test.
      *
-     * @return This lsit.
+     * @return This list.
      */
     @Override
     public List<DataSet> getDataSets() {

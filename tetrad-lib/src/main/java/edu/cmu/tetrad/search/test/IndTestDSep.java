@@ -169,7 +169,7 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * Returns the list of observed varialbes in the given graph.
      *
-     * @return This lsit.
+     * @return This list.
      */
     private List<Node> calcVars(List<Node> nodes, boolean keepLatents) {
         if (keepLatents) {

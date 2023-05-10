@@ -115,7 +115,7 @@ public class MnlrScore implements Score {
 
     /**
      * Returns the variables.
-     * @return This lsit.
+     * @return This list.
      */
     @Override
     public List<Node> getVariables() {
