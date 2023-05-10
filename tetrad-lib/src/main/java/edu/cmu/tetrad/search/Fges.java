@@ -51,7 +51,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  * optimizations that allow it to scale accurately to thousands of variables
  * for the sparse case. The reference is this:</p>
  *
- * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., & Glymour, C. (2017).
+ * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017).
  * A million variables and more: the fast greedy equivalence search algorithm
  * for learning high-dimensional graphical causal models, with an application
  * to functional magnetic resonance images. International journal of data science
@@ -67,10 +67,9 @@ import static org.apache.commons.math3.util.FastMath.min;
  *
  * <p>To speed things up, it has been assumed that variables X and Y with zero
  * correlation do not correspond to edges in the graph. This is a restricted
- * form of the heuristicSpeedup assumption, something GES does not assume. This
- * the graph. This is a restricted form of the heuristicSpeedup assumption,
- * something GES does not assume. This heuristicSpeedup assumption needs to be
- * explicitly turned on using setHeuristicSpeedup(true).</p>
+ * form of the heuristic speedup assumption, something GES does not assume.
+ * This heuristicSpeedup assumption needs to be explicitly turned on using
+ * setHeuristicSpeedup(true).</p>
  *
  * <p>A number of other optimizations were also. See code for details.</p>
  *

@@ -52,7 +52,7 @@ import java.util.Set;
  * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
  * prediction, and search. MIT press.</p>
  *
- * <p>The algorithm with the Zhang final orintation rules was given in this reference:</p>
+ * <p>The algorithm with the Zhang final orientation rules was given in this reference:</p>
  *
  * <p>Zhang, J. (2008). On the completeness of orientation rules for causal discovery in the presence
  * of latent confounders and selection bias. Artificial Intelligence, 172(16-17), 1873-1896.</p>

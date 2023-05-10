@@ -38,7 +38,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * complex numbers, whereeas here it is restricted to real numbers. A
  * useful reference is this:</p>
  *
- * <p>Oja, E., & Hyvarinen, A. (2000). Independent component analysis:
+ * <p>Oja, E., &amp; Hyvarinen, A. (2000). Independent component analysis:
  * algorithms and applications. Neural networks, 13(4-5), 411-430.</p>
  *
  * <p>The documention of the R version is as follows, all of which is true of this

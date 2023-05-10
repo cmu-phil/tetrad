@@ -45,7 +45,7 @@ import java.util.concurrent.*;
  * with the target X (or, respectively, the targets X1,...,Xn). The
  * reference is this:</p>
  *
- * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., & Glymour, C. (2017).
+ * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017).
  * A million variables and more: the fast greedy equivalence search algorithm
  * for learning high-dimensional graphical causal models, with an application
  * to functional magnetic resonance images. International journal of data science
