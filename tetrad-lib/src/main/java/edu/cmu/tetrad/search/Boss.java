@@ -12,12 +12,12 @@ import java.util.*;
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
- * <p>Implements an algorithm called BOSS (Bost order Score Search), which
- * intercalates calls to a permutation discovery step with calls to BES, in order
- * to find an optimal permutation implying a DAG and, therefore a CPDAG that is
+ * <p>Implements an algorithm called BOSS (Best Order Score Search), which
+ * intercalates calls to a permutation discovery step with calls to BES in order
+ * to find an optimal permutation implying a DAG and, therefore, a CPDAG that is
  * highly accurate. This follows up on work by Raskutti and Uhler on the SP
  * (Sparsest Permutation) algorithm and work by Lam, Andrews, and Ramsey on the
- * GRaSP algorithm and is currently under development.</p>
+ * GRaSP algorithm is currently under development.</p>
  *
  * <p>Knowledge can be used with this search. If tiered knowledge is used, then the procedure
  * is carried out for each tier separately, given the variable preceding that tier, which
@@ -27,7 +27,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * <p>This class is meant to be used in the context of the PermutationSearch class (see).
  * the proper use is PermutationSearch search = new PermutationSearch(new Sp(score));</p>
  *
- * <p>This class is configured to respect knowledge of forbidden and required
+ * <p>This class is configured to respect the knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
  *
  * @author bryanandrews

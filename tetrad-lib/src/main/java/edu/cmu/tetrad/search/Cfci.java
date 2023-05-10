@@ -36,15 +36,15 @@ import java.util.*;
 
 /**
  * Adjusts FCI (see) to use conservative orientation as in CPC (see). Because the
- * collider orienatation is conservative, there may be ambiguous triples; these
+ * collider orientatation is conservative, there may be ambiguous triples; these
  * may be retrieved using that accessor method.
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
  *
- * @author Erin Korber, June 2004
- * @author Alex Smith, December 2008
+ * @author josephramsey
  * @see Fci
+ * @see Cpc
  * @see #getAmbiguousTriples()
  * @see Knowledge
  */

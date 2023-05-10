@@ -40,7 +40,7 @@ import java.util.Set;
  * <p>Implements a convervative version of PC, in which the Markov condition is assumed
  * but faithfulness is tested locally. The reference is here:</p>
  *
- * <p>Ramsey, J., Zhang, J., & Spirtes, P. L. (2012). Adjacency-faithfulness and
+ * <p>Ramsey, J., Zhang, J., &amp; Spirtes, P. L. (2012). Adjacency-faithfulness and
  * conservative causal inference. arXiv preprint arXiv:1206.6843.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
