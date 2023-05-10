@@ -13,10 +13,10 @@ import java.util.*;
 /**
  * <p>Implements common elements of a permutation search. The specific parts
  * for each permutation search are implemented as a SuborderSearch.</p>
- * <p>This class specificaly handls an optimization for tiered knowledge, whereby
+ * <p>This class specifically handles an optimization for tiered knowledge, whereby
  * tiers in the knowledge can be searched one at a time in order form lowest
- * to highest, taking all variables from previous tiesrs as a fixed previs
- * for an later tier. This allos these permutation searches to search over
+ * to highest, taking all variables from previous tiers as a fixed prefix
+ * for an later tier. This allows these permutation searches to search over
  * many more varaibles than otherwise, so long as tiered knowledge is available
  * to organize the search.</p>
  *
