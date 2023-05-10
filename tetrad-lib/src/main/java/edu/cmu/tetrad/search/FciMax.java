@@ -38,7 +38,7 @@ import java.util.concurrent.RecursiveTask;
  * <p>Modifies FCI to do orientation of unshielded colliders (X*-*Y*-*Z with X and Z not adjacent)
  * using the max-P rule (see the PC-Max algorithm). This reference is relevant:</p>
  *
- * <p>Raghu, V. K., Zhao, W., Pu, J., Leader, J. K., Wang, R., Herman, J., ... & Wilson, D. O.
+ * <p>Raghu, V. K., Zhao, W., Pu, J., Leader, J. K., Wang, R., Herman, J., ... &amp; Wilson, D. O.
  * (2019). Feasibility of lung cancer prediction from low-dose CT scan and smoking factors using
  * causal models. Thorax, 74(7), 643-649.</p>
  *

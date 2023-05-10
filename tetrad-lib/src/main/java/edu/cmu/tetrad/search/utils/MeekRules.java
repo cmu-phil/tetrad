@@ -155,7 +155,7 @@ public class MeekRules {
 
     /**
      * Sets whether orientations in the graph should be reverted to its
-     * unshielded colliders before performing any Meek rule orintations.
+     * unshielded colliders before performing any Meek rule orientations.
      *
      * @param revertToUnshieldedColliders True if so.
      */
