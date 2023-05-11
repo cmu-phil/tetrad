@@ -57,7 +57,7 @@ public class GraphPersistence {
             final String missingValueMarker = "*";
             final boolean hasHeader = false;
 
-            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, commentMarker, quoteCharacter, missingValueMarker, hasHeader, Delimiter.TAB);
+            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, commentMarker, quoteCharacter, missingValueMarker, hasHeader, Delimiter.COMMA);
 
             List<Node> nodes = dataSet.getVariables();
             Graph graph = new EdgeListGraph(nodes);
