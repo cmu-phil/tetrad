@@ -289,7 +289,7 @@ public final class SampleVcpc implements IGraphSearch {
         }
 
 
-        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.underlines().getAmbiguousTriples());
+        List<Triple> ambiguousTriples = new ArrayList<>(this.graph.getAmbiguousTriples());
 
         int[] dims = new int[ambiguousTriples.size()];
 
@@ -316,7 +316,7 @@ public final class SampleVcpc implements IGraphSearch {
 
             for (int k = 0; k < combination.length; k++) {
                 Triple triple = ambiguousTriples.get(k);
-                _graph.underlines().removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                _graph.removeAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
 
                 if (combination[k] == 0) {
                     newColliders.get(_graph).add(triple);
@@ -820,7 +820,7 @@ public final class SampleVcpc implements IGraphSearch {
                 } else if (type == GraphSearchUtils.CpcTripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     ambiguousTriples.add(triple);
-                    graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     Edge edge = Edges.undirectedEdge(x, z);
                     definitelyNonadjacencies.add(edge);
                 } else {

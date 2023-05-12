@@ -471,7 +471,7 @@ public class PerformanceTests {
 
         GraphSearchUtils.graphComparison(trueCPDAG, outGraph, this.out);
 
-        this.out.println("# ambiguous triples = " + outGraph.underlines().getAmbiguousTriples().size());
+        this.out.println("# ambiguous triples = " + outGraph.getAmbiguousTriples().size());
 
         this.out.close();
     }

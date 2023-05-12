@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+// This used ot be a field in the graph classes but that led to a circular dependency
+// between the graph and the graph reader/writer. So now it's a separate class.
 public class Underlines implements TripleClassifier, TetradSerializable {
     static final long serialVersionUID = 23L;
 

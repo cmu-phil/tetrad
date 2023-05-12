@@ -708,7 +708,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                 } else if (type == TripleType.AMBIGUOUS) {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
                 } else {
                     this.logger.log("tripleClassifications", "tripleClassifications: " + Triple.pathString(graph, x, y, z));
