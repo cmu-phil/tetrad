@@ -58,11 +58,11 @@ public class JsonUtils {
         // stuffRemovedSinceLastTripleAccess
         graph.removeTriplesNotInGraph();
 
-        // highlightedEdges
-        Set<Edge> highlightedEdges = JsonUtils.parseJSONArrayToTetradEdges(graph, jObj.getJSONArray("highlightedEdges"));
-        for (Edge edge : highlightedEdges) {
-            edge.setHighlighted(true);
-        }
+//        // highlightedEdges
+//        Set<Edge> highlightedEdges = JsonUtils.parseJSONArrayToTetradEdges(graph, jObj.getJSONArray("highlightedEdges"));
+//        for (Edge edge : highlightedEdges) {
+//            edge.setHighlighted(true);
+//        }
 
         return graph;
     }
@@ -98,12 +98,12 @@ public class JsonUtils {
     }
 
     public static Edge parseJSONObjectToTetradEdge(Graph graph, JSONObject jObj) {
-        Endpoint[] TYPES = new Endpoint[]{Endpoint.TAIL, Endpoint.ARROW, Endpoint.CIRCLE, Endpoint.STAR, Endpoint.NULL};
+//        Endpoint[] TYPES = new Endpoint[]{Endpoint.TAIL, Endpoint.ARROW, Endpoint.CIRCLE, Endpoint.STAR, Endpoint.NULL};
 
         Node node1 = graph.getNode(jObj.getJSONObject("node1").getString("name"));
         Node node2 = graph.getNode(jObj.getJSONObject("node2").getString("name"));
-        Endpoint endpoint1 = TYPES[jObj.getJSONObject("endpoint1").getInt("ordinal")];
-        Endpoint endpoint2 = TYPES[jObj.getJSONObject("endpoint2").getInt("ordinal")];
+        Endpoint endpoint1 = Endpoint.valueOf(jObj.getString("endpoint1"));
+        Endpoint endpoint2 = Endpoint.valueOf(jObj.getString("endpoint2"));
         Edge edge = new Edge(node1, node2, endpoint1, endpoint2);
 
         try {
