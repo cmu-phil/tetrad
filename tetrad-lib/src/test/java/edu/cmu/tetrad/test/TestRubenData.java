@@ -21,15 +21,19 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TestRubenData {
 
     public static void main(String... arge) {
-        new TestRubenData().test2();
+        new TestRubenData().test3();
     }
 
     public void test1() {
@@ -130,5 +134,30 @@ public class TestRubenData {
         Comparison comparison = new Comparison();
         comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
         comparison.compareFromSimulations("erich_out", simulations, algorithms, statistics, parameters);
+    }
+
+    public void test3() {
+        String path = "/Users/josephramsey/Downloads/emails.txt";
+
+        File file = new File(path);
+
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(file));
+
+            String line = in.readLine();
+            String[] tokens = line.split(";");
+
+            Set<String> emails = new HashSet<>();
+
+            for (String token : tokens) {
+                emails.add(token.trim());
+            }
+
+            System.out.println(emails.size());
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }
