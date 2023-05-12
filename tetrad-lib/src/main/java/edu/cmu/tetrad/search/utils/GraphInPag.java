@@ -138,7 +138,7 @@ public final class GraphInPag {
     }
 
     public static boolean graphInPagStep4(Graph pag, Graph dag) {
-        Set<Triple> pagUnderLines = pag.underlines().getUnderLines();
+        Set<Triple> pagUnderLines = pag.getUnderLines();
 
         for (Triple underline : pagUnderLines) {
             Node A = underline.getX();
@@ -158,7 +158,7 @@ public final class GraphInPag {
     }
 
     public static boolean graphInPagStep5(Graph pag, Graph dag) {
-        for (Triple triple : pag.underlines().getDottedUnderlines()) {
+        for (Triple triple : pag.getDottedUnderlines()) {
             Node A = triple.getX();
             Node B = triple.getY();
             Node C = triple.getZ();

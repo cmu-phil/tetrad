@@ -507,7 +507,7 @@ public final class PcCommon implements IGraphSearch {
                 } else {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    this.graph.underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    this.graph.addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                 }
             }
         }

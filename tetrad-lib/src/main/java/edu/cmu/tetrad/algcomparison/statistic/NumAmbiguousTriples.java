@@ -26,7 +26,7 @@ public class NumAmbiguousTriples implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        return estGraph.underlines().getAmbiguousTriples().size();
+        return estGraph.getAmbiguousTriples().size();
     }
 
     @Override

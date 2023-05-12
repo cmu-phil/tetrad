@@ -24,10 +24,7 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implements a graph capable of storing edges of type N1 *-# N2 where * and
@@ -360,8 +357,6 @@ public interface Graph extends TetradSerializable {
 
     void transferAttributes(Graph graph) throws IllegalArgumentException;
 
-    Underlines underlines();
-
     Paths paths();
 
     /**
@@ -390,6 +385,42 @@ public interface Graph extends TetradSerializable {
     void removeAttribute(String key);
 
     void addAttribute(String key, Object value);
+
+    Set<Triple> getUnderLines();
+
+    Set<Triple> getDottedUnderlines();
+
+    Set<Triple> getAmbiguousTriples();
+
+    /**
+     * States whether r-s-r is an underline triple or not.
+     */
+    boolean isAmbiguousTriple(Node x, Node y, Node z);
+
+    /**
+     * States whether r-s-r is an underline triple or not.
+     */
+    boolean isUnderlineTriple(Node x, Node y, Node z);
+
+    void addAmbiguousTriple(Node x, Node y, Node z);
+
+    void addUnderlineTriple(Node x, Node y, Node z);
+
+    void addDottedUnderlineTriple(Node x, Node y, Node z);
+
+    void removeAmbiguousTriple(Node x, Node y, Node z);
+
+    void removeUnderlineTriple(Node x, Node y, Node z);
+
+    void removeDottedUnderlineTriple(Node x, Node y, Node z);
+
+    void setUnderLineTriples(Set<Triple> triples);
+
+    void setDottedUnderLineTriples(Set<Triple> triples);
+
+    void setAmbiguousTriples(Set<Triple> triples);
+
+    void removeTriplesNotInGraph();
 }
 
 

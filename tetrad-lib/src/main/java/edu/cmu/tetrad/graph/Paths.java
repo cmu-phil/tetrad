@@ -619,7 +619,7 @@ public class Paths implements TetradSerializable {
 
         boolean collider = e1.getProximalEndpoint(b) == Endpoint.ARROW && e2.getProximalEndpoint(b) == Endpoint.ARROW;
 
-        if ((!collider || graph.underlines().isUnderlineTriple(a, b, c)) && !z.contains(b)) {
+        if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
         }
 
@@ -662,7 +662,7 @@ public class Paths implements TetradSerializable {
     private boolean reachable(Node a, Node b, Node c, List<Node> z) {
         boolean collider = graph.isDefCollider(a, b, c);
 
-        if ((!collider || graph.underlines().isUnderlineTriple(a, b, c)) && !z.contains(b)) {
+        if ((!collider || graph.isUnderlineTriple(a, b, c)) && !z.contains(b)) {
             return true;
         }
 

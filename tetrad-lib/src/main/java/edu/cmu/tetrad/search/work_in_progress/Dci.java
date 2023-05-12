@@ -1330,7 +1330,7 @@ public class Dci {
                     && !graph.isDefCollider(triple.getX(), triple.getY(), triple.getZ()) &&
                     graph.isAdjacentTo(triple.getX(), triple.getY()) &&
                     graph.isAdjacentTo(triple.getY(), triple.getZ()) &&
-                    !graph.underlines().isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ())) {
+                    !graph.isUnderlineTriple(triple.getX(), triple.getY(), triple.getZ())) {
                 this.currentPossibleColliders.add(triple);
             }
         }
@@ -1419,7 +1419,7 @@ public class Dci {
                             }
                         }
                         if (!graph.paths().existsDirectedCycle()) {
-                            graph.underlines().setUnderLineTriples(new HashSet<>());
+                            graph.setUnderLineTriples(new HashSet<>());
                             this.output.add(graph);
                         }
                     }
