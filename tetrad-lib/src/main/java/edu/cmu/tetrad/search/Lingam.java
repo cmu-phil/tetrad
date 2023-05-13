@@ -68,7 +68,7 @@ public class Lingam {
     }
 
     /**
-     * Searches given a W matrix is that is provided by the user, WX = e.
+     * Searches given a W matrix is that is provided by the user (where WX = e).
      *
      * @param W A W matrix estimated by the user, possibly by some other method.
      * @return The estimated B Hat matrix.
@@ -79,7 +79,8 @@ public class Lingam {
     }
 
     /**
-     * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
+     * The threshold to use for set small elemtns to zerp in the B Hat matrices for the
+     * LiNGAM algorithm.
      *
      * @param bThreshold Some value >= 0.
      */
