@@ -36,12 +36,12 @@ import edu.cmu.tetrad.util.Matrix;
  * because the method was trivial (it's not) but out of an attempt to compartmentalize.
  * Bootstrapping and other forms of improving the estimate of BHat were not addressed,
  * and no attempt was made here to ensure that LiNGAM outputs a DAG. Fpr acyclic inputs,
- * it does tend to, thought for cyclic inputs it tends to produce the cyclic DAG, so long
- * as coefficients are bounded somewhat away from zero. No attempt was made to implement
- * DirectLiNGAM since it was tangential to the effort to get LiNG-D to work. Only a passing
- * effort was made to ensure good performance on real data. There is one tuning parameters
- * (in addition to the FastICA paramters that are exposed), a threshold on the B Hat matrix
- * for finding edges in the final graph.</p>
+ * it does tend to for acyclic inputs in simulation, though for cyclic inputs it tends
+ * to produce the cyclic DAG, so long as coefficients are bounded somewhat away from zero.
+ * No attempt was made to implement DirectLiNGAM since it was tangential to the effort
+ * to get LiNG-D to work. Only a passing effort was made to ensure good performance on
+ * real data. There is one tuning parameters (in addition to the FastICA paramters that
+ * are exposed), a threshold on the B Hat matrix for finding edges in the final graph.</p>
  *
  * <p>We are using the Hungarian Algorithm to find the best diagonal for the W matrix
  * and are not doing any searches over all permutations.</p>
