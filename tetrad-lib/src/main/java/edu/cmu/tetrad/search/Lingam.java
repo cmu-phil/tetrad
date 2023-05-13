@@ -32,21 +32,15 @@ import edu.cmu.tetrad.util.Matrix;
  * <p>The focus for this implementation was making super-simple code, not so much
  * because the method was trivial (it's not) but out of an attempt to compartmentalize.
  * Bootstrapping and other forms of improving the estimate of BHat were not addressed,
- * and no attempt was made here to ensure that LiNGAM outputs a DAG. For high sample sizes
- * for an acyclic model it does tend to. No attempt was made to implement DirectLiNGAM
- * since it was tangential to the effort to get LiNG-D to work. Also, only a passing effort
- * to get either of these algorithms to handle real data. There are two tuning parameters--a
- * threshold for finding a strong diagonal and a threshold on the B matrix for finding edges
- * in the final graph; these are finicky. So there's more work to do, and the implementation may
- * improve in the future.</p>
+ * and no attempt was made here to ensure that LiNGAM outputs a DAG. Fpr acuyclic inputs,
+ * it does tend to. Also, no attempt was made to implement DirectLiNGAM since it was tangential
+ * to the effort to get LiNG-D to work. Also, only a passing effort to get either of these
+ * algorithms to handle real data. There are one tuning parameters (in addition to the FastICA
+ * paramters that are exposed)--a threshold on the B matrix for finding edges in the final
+ * graph. A future version may use bootstrapping with a p-value; this has not been addressed
+ * here.</p>
  *
- * <p>Both N Rooks and Hungarian Algorithm were tested for finding the best strong diagonal;
- * these were not compared head to head, though the initial impression was that N Rooks was better,
- * so this version uses it.</p>
- * 
- * <p>This implementation has two parameters, a threshold (for N Rooks) on the minimum values
- * in absolute value for including entries in a possible strong diagonal for W, and a threshold
- * for BHat for including edges in the final graph.</p>
+ * <p>We are using the Hungarian Algorithm to fine best diagonal for the W matrix.</p>
  *
  * <p>This class is not configured to respect knowledge of forbidden and required
  * edges.</p>
@@ -57,14 +51,14 @@ public class Lingam {
     private double bThreshold = 0.1;
 
     /**
-     * Constructs a new LiNGAM algorithm with the given alpha level (used for pruning).
+     * Constructor..
      */
     public Lingam() {
     }
 
     /**
-     * Fits a LiNGAM model to the given dataset using a default method for estimting
-     * W.
+     * Fits a LiNGAM model to the given dataset using a default method for estimmting W.
+     *
      * @param D A continuous dataset.
      * @return The BHat matrix, where B[i][j] gives the coefficient of j->i if nonzero.
      */
