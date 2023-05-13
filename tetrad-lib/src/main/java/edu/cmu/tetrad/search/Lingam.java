@@ -97,10 +97,6 @@ public class Lingam {
         PermutationMatrixPair bestPair = LingD.hungarianDiagonal(W);
         Matrix scaledBHat = LingD.getScaledBHat(bestPair, bThreshold);
 
-//        if (!acyclicityGuaranteed) {
-//            return scaledBHat;
-//        }
-
         List<Node> dummyVars = new ArrayList<>();
 
         for (int i = 0; i < scaledBHat.getNumRows(); i++) {
