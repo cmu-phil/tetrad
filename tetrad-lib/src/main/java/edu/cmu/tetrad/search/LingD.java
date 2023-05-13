@@ -283,7 +283,7 @@ public class LingD {
     }
 
     /**
-     * Scares the given matrix M by diving each entry (i, j) by M(j, j)
+     * Scales the given matrix M by diving each entry (i, j) by M(j, j)
      *
      * @param M The matrix to scale.
      * @return The scaled matrix.
