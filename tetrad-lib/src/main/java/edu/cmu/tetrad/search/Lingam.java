@@ -97,9 +97,9 @@ public class Lingam {
         PermutationMatrixPair bestPair = LingD.hungarianDiagonal(W);
         Matrix scaledBHat = LingD.getScaledBHat(bestPair, bThreshold);
 
-        if (!acyclicityGuaranteed) {
-            return scaledBHat;
-        }
+//        if (!acyclicityGuaranteed) {
+//            return scaledBHat;
+//        }
 
         List<Node> dummyVars = new ArrayList<>();
 
@@ -131,11 +131,12 @@ public class Lingam {
         coefs.sort(Comparator.comparingDouble(o -> abs(o.coef)));
 
         while (true) {
-            Record coef = coefs.removeFirst();
-            scaledBHat.set(coef.i, coef.j, 0.0);
-            if (LingD.isAcyclic(scaledBHat, dummyVars)) {
+            if (!acyclicityGuaranteed || LingD.isAcyclic(scaledBHat, dummyVars)) {
                 return scaledBHat;
             }
+
+            Record coef = coefs.removeFirst();
+            scaledBHat.set(coef.i, coef.j, 0.0);
         }
     }
 
