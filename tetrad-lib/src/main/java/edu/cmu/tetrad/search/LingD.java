@@ -54,9 +54,10 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>We use the N Rooks algorithm to find alternative cyclic models, as in the above
  * paper.</p>
  *
- * <p>This implementation has two parameters, a threshold (for N Rooks) on the minimum values
- * in absolute value for including entries in a possible strong diagonal for W, and a threshold
- * for BHat for including edges in the final graph.</p>
+ * <p>This implementation has two parameters, a threshold (for N Rooks) on the minimum
+ * values in absolute value for including entries in a possible strong diagonal for W,
+ * and a threshold for B Hat for setting zeros for small betas (i.e., pruning edges from
+ * the final graph.</p>
  *
  * <p>This class is not configured to respect knowledge of forbidden and required
  * edges.</p>
@@ -71,15 +72,13 @@ public class LingD {
     private double bThreshold = 0.1;
 
     /**
-     * Constructor. The W matrix needs to be estimated separately (e.g., using
-     * the Lingam.estimateW(.) method using the ICA method in Tetrad, or some
-     * method in Python or R) and passed into the search(W) method.
+     * Constructor.
      */
     public LingD() {
     }
 
     /**
-     * Fits a LiNG-D model to the given dataset using a default method for estimting
+     * Fits a LiNG-D model to the given dataset using a default method for estimating
      * W.
      * @param D A continuous dataset.
      * @return The BHat matrix, where B[i][j] gives the coefficient of j->i if nonzero.
@@ -91,7 +90,7 @@ public class LingD {
 
     /**
      * Performs the LiNG-D algorithm given a W matrix, which needs to be discovered
-     * elsewhere. The local algorithm is assumed--in fact, the W matrix is simply
+     * elsewhere. The 'local algorithm' is assumed--in fact, the W matrix is simply
      * thresholded without bootstrapping.
      *
      * @param W The W matrix to be used.
@@ -115,7 +114,7 @@ public class LingD {
     }
 
     /**
-     * Sets the threshold used to prune the B matrix for the local algorithms.
+     * Sets the threshold used to prune the B matrix for the local algorithm.
      *
      * @param bThreshold The threshold, a non-negative number.
      */
@@ -125,7 +124,8 @@ public class LingD {
     }
 
     /**
-     * Sets the threshold used to prune the matrix for purpose of searching for alterantive strong dia=gonals..
+     * Sets the threshold used to prune the matrix for purpose of searching for alterantive
+     * strong diagonals..
      *
      * @param spineThreshold The threshold, a non-negative number.
      */
@@ -136,8 +136,8 @@ public class LingD {
     }
 
     /**
-     * Estimates the W matrix using FastICA. Assumes the "parallel" option, using
-     * the "exp" function.
+     * Estimates the W matrix using FastICA. Assumes the "parallel" option, using the
+     * "exp" function.
      *
      * @param data             The dataset to estimate W for.
      * @param fastIcaMaxIter   Maximum number of iterations of ICA.
@@ -259,7 +259,7 @@ public class LingD {
     }
 
     /**
-     * Thresholds the givem matrix, sending any small entries to zero.
+     * Thresholds the givem matrix, sending any small entries in absolute value to zero.
      *
      * @param M         The matrix to threshold.
      * @param threshold The value such that M(i, j) is set to zero if |M(i, j)| < threshold.
@@ -281,8 +281,8 @@ public class LingD {
     }
 
     /**
-     * Returns the BHat matrix, permuted to causal order (lower triangle) and
-     * scaled so that the diagonal consists only of 1's.
+     * Returns the BHat matrix, permuted to the variable order of the original
+     * data and scaled so that the diagonal consists only of 1's.
      *
      * @param pair       The (column permutation, thresholded, column permuted W matrix)
      *                   pair.
