@@ -28,9 +28,9 @@ import edu.cmu.tetrad.util.Matrix;
 /**
  * <p>Implements an interpretation of the LiNGAM algorithm. The reference is here:</p>
  *
- * <p>Shimizu, S., Hoyer, P. O., Hyvärinen, A., Kerminen, A., & Jordan, M. (2006). A linear
- * non-Gaussian acyclic model for causal discovery. Journal of Machine Learning Research,
- * 7(10).</p>
+ * <p>Shimizu, S., Hoyer, P. O., Hyvärinen, A., Kerminen, A., &amp; Jordan, M. (2006).
+ * A linear non-Gaussian acyclic model for causal discovery. Journal of Machine Learning
+ * Research, 7(10).</p>
  *
  * <p>The focus for this implementation was making super-simple code, not so much
  * because the method was trivial (it's not) but out of an attempt to compartmentalize.
