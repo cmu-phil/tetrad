@@ -44,27 +44,15 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>Implements the LiNG-D algorithm as well as a number of ancillary
- * methods for LiNG-D and LiNGAM. The reference is here:</p>
+ * <p>Implements the LiNG-D algorithm as well as a number of ancillary methods for
+ * LiNG-D and LiNGAM. The reference is here:</p>
  *
  * <p>Lacerda, G., Spirtes, P. L., Ramsey, J., &amp; Hoyer, P. O. (2012). Discovering
  * cyclic causal models by independent components analysis. arXiv preprint
  * arXiv:1206.3273.</p>
  *
- * <p>The focus for this implementation was making super-simple code, not so much
- * because the method was trivial (it's not) but out of an attempt to compartmentalize.
- * Bootstrapping and other forms of improving the estimate of BHat were not addressed,
- * and no attempt was made here to ensure that LiNGAM outputs a DAG. For high sample sizes
- * for an acyclic model it does tend to. No attempt was made to implement DirectLiNGAM
- * since it was tangential to the effort to get LiNG-D to work. Also, only a passing effort
- * to get either of these algorithms to handle real data. There are two tuning parameters--a
- * threshold for finding a strong diagonal and a threshold on the B matrix for finding edges
- * in the final graph; these are finicky. So there's more work to do, and the implementation may
- * improve in the future.</p>
- *
- * <p>Both N Rooks and Hungarian Algorithm were tested for finding the best strong diagonal;
- * these were not compared head to head, though the initial impression was that N Rooks was better,
- * so this version uses it.</p>
+ * <p>We use the N Rooks algorithm to find alternative cyclic models, as in the above
+ * paper.</p>
  *
  * <p>This implementation has two parameters, a threshold (for N Rooks) on the minimum values
  * in absolute value for including entries in a possible strong diagonal for W, and a threshold
