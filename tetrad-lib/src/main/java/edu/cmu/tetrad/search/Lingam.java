@@ -54,7 +54,6 @@ import edu.cmu.tetrad.util.Matrix;
  * @author josephramsey
  */
 public class Lingam {
-    private double spineThreshold = 0.5;
     private double bThreshold = 0.1;
 
     /**
@@ -81,7 +80,7 @@ public class Lingam {
      * @return The estimated B Hat matrix.
      */
     public Matrix fitW(Matrix W) {
-        PermutationMatrixPair bestPair = LingD.strongestDiagonal(W, spineThreshold);
+        PermutationMatrixPair bestPair = LingD.hungarianDiagonal(W);
         return LingD.getScaledBHat(bestPair, bThreshold);
     }
 
@@ -93,17 +92,6 @@ public class Lingam {
     public void setBThreshold(double bThreshold) {
         if (bThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + bThreshold);
         this.bThreshold = bThreshold;
-    }
-
-    /**
-     * Sets the threshold used to prune the matrix for purpose of searching for alterantive strong dia=gonals..
-     *
-     * @param spineThreshold The threshold, a non-negative number.
-     */
-    public void setSpineThreshold(double spineThreshold) {
-        if (spineThreshold < 0)
-            throw new IllegalArgumentException("Expecting a non-negative number: " + spineThreshold);
-        this.spineThreshold = spineThreshold;
     }
 }
 
