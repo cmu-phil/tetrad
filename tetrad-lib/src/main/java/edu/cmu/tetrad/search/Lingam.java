@@ -26,27 +26,24 @@ import edu.cmu.tetrad.search.utils.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
 
 /**
- * <p>Implements an interpretation of the LiNGAM algorithm in Shimizu, Hoyer, Hyvarinen,
- * and Kerminen, a linear nongaussian acyclic model for causal discovery, JMLR 7 (2006).</p>
+ * <p>Implements an interpretation of the LiNGAM algorithm. The reference is here:</p>
+ *
+ * <p>Shimizu, S., Hoyer, P. O., Hyvärinen, A., Kerminen, A., & Jordan, M. (2006). A linear
+ * non-Gaussian acyclic model for causal discovery. Journal of Machine Learning Research,
+ * 7(10).</p>
  *
  * <p>The focus for this implementation was making super-simple code, not so much
  * because the method was trivial (it's not) but out of an attempt to compartmentalize.
  * Bootstrapping and other forms of improving the estimate of BHat were not addressed,
- * and no attempt was made here to ensure that LiNGAM outputs a DAG. For high sample sizes
- * for an acyclic model it does tend to. No attempt was made to implement DirectLiNGAM
- * since it was tangential to the effort to get LiNG-D to work. Also, only a passing effort
- * to get either of these algorithms to handle real data. There are two tuning parameters--a
- * threshold for finding a strong diagonal and a threshold on the B matrix for finding edges
- * in the final graph; these are finicky. So there's more work to do, and the implementation may
- * improve in the future.</p>
+ * and no attempt was made here to ensure that LiNGAM outputs a DAG. Fpr acuyclic inputs,
+ * it does tend to. Also, no attempt was made to implement DirectLiNGAM since it was tangential
+ * to the effort to get LiNG-D to work. Also, only a passing effort to get either of these
+ * algorithms to handle real data. There are one tuning parameters (in addition to the FastICA
+ * paramters that are exposed)--a threshold on the B matrix for finding edges in the final
+ * graph. A future version may use bootstrapping with a p-value; this has not been addressed
+ * here.</p>
  *
- * <p>Both N Rooks and Hungarian Algorithm were tested for finding the best strong diagonal;
- * these were not compared head to head, though the initial impression was that N Rooks was better,
- * so this version uses it.</p>
- * 
- * <p>This implementation has two parameters, a threshold (for N Rooks) on the minimum values
- * in absolute value for including entries in a possible strong diagonal for W, and a threshold
- * for BHat for including edges in the final graph.</p>
+ * <p>We are using the Hungarian Algorithm to fine best diagonal for the W matrix.</p>
  *
  * <p>This class is not configured to respect knowledge of forbidden and required
  * edges.</p>
@@ -54,18 +51,17 @@ import edu.cmu.tetrad.util.Matrix;
  * @author josephramsey
  */
 public class Lingam {
-    private double spineThreshold = 0.5;
     private double bThreshold = 0.1;
 
     /**
-     * Constructs a new LiNGAM algorithm with the given alpha level (used for pruning).
+     * Constructor..
      */
     public Lingam() {
     }
 
     /**
-     * Fits a LiNGAM model to the given dataset using a default method for estimting
-     * W.
+     * Fits a LiNGAM model to the given dataset using a default method for estimmting W.
+     *
      * @param D A continuous dataset.
      * @return The BHat matrix, where B[i][j] gives the coefficient of j->i if nonzero.
      */
@@ -75,35 +71,25 @@ public class Lingam {
     }
 
     /**
-     * Searches given a W matrix is that is provided by the user, WX = e.
+     * Searches given a W matrix is that is provided by the user (where WX = e).
      *
      * @param W A W matrix estimated by the user, possibly by some other method.
      * @return The estimated B Hat matrix.
      */
     public Matrix fitW(Matrix W) {
-        PermutationMatrixPair bestPair = LingD.strongestDiagonal(W, spineThreshold);
+        PermutationMatrixPair bestPair = LingD.hungarianDiagonal(W);
         return LingD.getScaledBHat(bestPair, bThreshold);
     }
 
     /**
-     * The threshold to use for estimated B Hat matrices for the LiNGAM algorithm.
+     * The threshold to use for set small elemtns to zerp in the B Hat matrices for the
+     * LiNGAM algorithm.
      *
      * @param bThreshold Some value >= 0.
      */
     public void setBThreshold(double bThreshold) {
         if (bThreshold < 0) throw new IllegalArgumentException("Expecting a non-negative number: " + bThreshold);
         this.bThreshold = bThreshold;
-    }
-
-    /**
-     * Sets the threshold used to prune the matrix for purpose of searching for alterantive strong dia=gonals..
-     *
-     * @param spineThreshold The threshold, a non-negative number.
-     */
-    public void setSpineThreshold(double spineThreshold) {
-        if (spineThreshold < 0)
-            throw new IllegalArgumentException("Expecting a non-negative number: " + spineThreshold);
-        this.spineThreshold = spineThreshold;
     }
 }
 
