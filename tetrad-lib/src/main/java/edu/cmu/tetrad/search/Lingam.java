@@ -60,7 +60,7 @@ public class Lingam {
     }
 
     /**
-     * Fits a LiNGAM model to the given dataset using a default method for estimmting W.
+     * Fits a LiNGAM model to the given dataset using a default method for estimating W.
      *
      * @param D A continuous dataset.
      * @return The BHat matrix, where B[i][j] gives the coefficient of j->i if nonzero.
