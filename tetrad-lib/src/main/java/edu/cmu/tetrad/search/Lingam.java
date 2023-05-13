@@ -45,14 +45,17 @@ import static org.apache.commons.math3.util.FastMath.abs;
  *
  * <p>The focus for this implementation was making super-simple code, not so much
  * because the method was trivial (it's not) but out of an attempt to compartmentalize.
- * Bootstrapping and other forms of improving the estimate of BHat were not addressed,
- * and no attempt was made here to ensure that LiNGAM outputs a DAG. Fpr acyclic inputs,
- * it does tend to for acyclic inputs in simulation, though for cyclic inputs it tends
- * to produce the cyclic DAG, so long as coefficients are bounded somewhat away from zero.
- * No attempt was made to implement DirectLiNGAM since it was tangential to the effort
- * to get LiNG-D to work. Only a passing effort was made to ensure good performance on
- * real data. There is one tuning parameters (in addition to the FastICA paramters that
- * are exposed), a threshold on the B Hat matrix for finding edges in the final graph.</p>
+ * Bootstrapping and other forms of improving the estimate of B Hat were not addressed.
+ * A parameter is included to set whether an acyclic model is to be enforced; it this
+ * is set to true, then as in the above reference small coefficients are set to zero
+ * until an acyclic model is achieved. Even without this fpr acyclic inputs, in our
+ * esperience, it does tend to produce an acyclic model in simulation, though for cyclic
+ * inputs it tends to produce the cyclic DAG, so long as coefficients are bounded somewhat
+ * away from zero. No attempt was made to implement DirectLiNGAM since it was tangential
+ * to the effort to get LiNG-D to work. Only a passing effort was made to ensure good
+ * performance on real data. There is an additional tuning parameters (in addition to the
+ * FastICA paramters that are exposed), a threshold on the absolute value of entries in the
+ * B Hat matrix for finding edges in the final graph.</p>
  *
  * <p>We are using the Hungarian Algorithm to find the best diagonal for the W matrix
  * and are not doing any searches over all permutations.</p>
