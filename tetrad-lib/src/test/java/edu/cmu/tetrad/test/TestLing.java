@@ -92,7 +92,6 @@ public class TestLing {
 
         Lingam lingam = new Lingam();
         lingam.setBThreshold(bThreshold);
-        lingam.setSpineThreshold(spineThreshold);
         Matrix lingamBhat = lingam.fit(dataSet);
         Graph lingamGraph = LingD.makeGraph(lingamBhat, dataSet.getVariables());
         System.out.println("Lingam graph = " + lingamGraph);
