@@ -221,7 +221,7 @@ public final class IndTestCramerT implements IndependenceTest {
         }
 
         // Invert submatrix.
-        if (submatrix.rank() != submatrix.rows()) {
+        if (submatrix.rank() != submatrix.getNumRows()) {
 //            if (TetradAlgebra.rank(submatrix) != submatrix.rows()) {
             throw new IllegalArgumentException(
                     "Matrix singularity detected while using correlations " +

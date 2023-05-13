@@ -76,7 +76,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         }
 
         this.ncov = new ArrayList<>();
-        for (Matrix d : this.data) this.ncov.add(d.transpose().times(d).scalarMult(1.0 / d.rows()));
+        for (Matrix d : this.data) this.ncov.add(d.transpose().times(d).scalarMult(1.0 / d.getNumRows()));
 
         setAlpha(alpha);
         this.rows = new int[dataSets.get(0).getNumRows()];
@@ -102,7 +102,7 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
             all[i + 2] = this.variablesMap.get(z.get(i));
         }
 
-        int sampleSize = this.data.get(0).rows();
+        int sampleSize = this.data.get(0).getNumRows();
         List<Double> pValues = new ArrayList<>();
 
         for (Matrix matrix : this.ncov) {

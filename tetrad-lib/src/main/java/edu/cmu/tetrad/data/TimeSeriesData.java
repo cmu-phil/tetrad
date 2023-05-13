@@ -81,7 +81,7 @@ public final class TimeSeriesData implements DataModel {
             }
         }
         this.data2 = matrix;
-        if (varNames.size() != matrix.columns()) {
+        if (varNames.size() != matrix.getNumColumns()) {
             throw new IllegalArgumentException(
                     "Number of columns in the data " +
                             "must match the number of variables.");
@@ -176,7 +176,7 @@ public final class TimeSeriesData implements DataModel {
     }
 
     public int getNumTimePoints() {
-        return getData().rows();
+        return getData().getNumRows();
     }
 
     public int getNumVars() {

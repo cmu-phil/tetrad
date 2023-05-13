@@ -348,8 +348,8 @@ public class FastIca {
      * @return this list, as an FastIca.IcaResult object.
      */
     public IcaResult findComponents() {
-        int n = this.X.columns();
-        int p = this.X.rows();
+        int n = this.X.getNumColumns();
+        int p = this.X.getNumRows();
 
         if (this.numComponents > min(n, p)) {
             TetradLogger.getInstance().log("info", "Requested number of components is too large.");
@@ -359,12 +359,12 @@ public class FastIca {
 
         if (this.wInit == null) {
             this.wInit = new Matrix(this.numComponents, this.numComponents);
-            for (int i = 0; i < this.wInit.rows(); i++) {
-                for (int j = 0; j < this.wInit.columns(); j++) {
+            for (int i = 0; i < this.wInit.getNumRows(); i++) {
+                for (int j = 0; j < this.wInit.getNumColumns(); j++) {
                     this.wInit.set(i, j, RandomUtil.getInstance().nextNormal(0, 1));
                 }
             }
-        } else if (this.wInit.rows() != this.wInit.columns()) {
+        } else if (this.wInit.getNumRows() != this.wInit.getNumColumns()) {
             throw new IllegalArgumentException("wInit is the wrong size.");
         }
 
@@ -389,7 +389,7 @@ public class FastIca {
         Matrix D = new Matrix(s.getS().getData());
         Matrix U = new Matrix(s.getU().getData());
 
-        for (int i = 0; i < D.rows(); i++) {
+        for (int i = 0; i < D.getNumRows(); i++) {
             D.set(i, i, 1.0 / FastMath.sqrt(D.get(i, i)));
         }
 
@@ -430,9 +430,9 @@ public class FastIca {
             TetradLogger.getInstance().log("info", "Deflation FastIca using exponential approx. to neg-entropy function");
         }
 
-        Matrix W = new Matrix(X.rows(), X.rows());
+        Matrix W = new Matrix(X.getNumRows(), X.getNumRows());
 
-        for (int i = 0; i < X.rows(); i++) {
+        for (int i = 0; i < X.getNumRows(); i++) {
             if (verbose) {
                 TetradLogger.getInstance().log("fastIcaDetails", "Component " + (i + 1));
             }
@@ -454,36 +454,36 @@ public class FastIca {
             while (_tolerance > tolerance && ++it <= maxIterations) {
                 Vector wx = X.transpose().times(w);
 
-                Vector gwx0 = new Vector(X.columns());
+                Vector gwx0 = new Vector(X.getNumColumns());
 
-                for (int j = 0; j < X.columns(); j++) {
+                for (int j = 0; j < X.getNumColumns(); j++) {
                     gwx0.set(j, g(alpha, wx.get(j)));
                 }
 
-                Matrix gwx = new Matrix(X.rows(), X.columns());
+                Matrix gwx = new Matrix(X.getNumRows(), X.getNumColumns());
 
-                for (int _i = 0; _i < X.rows(); _i++) {
+                for (int _i = 0; _i < X.getNumRows(); _i++) {
                     gwx.assignRow(i, gwx0);
                 }
 
                 // A weighting of X by gwx0.
-                Matrix xgwx = new Matrix(X.rows(), X.columns());
+                Matrix xgwx = new Matrix(X.getNumRows(), X.getNumColumns());
 
-                for (int _i = 0; _i < X.rows(); _i++) {
-                    for (int j = 0; j < X.columns(); j++) {
+                for (int _i = 0; _i < X.getNumRows(); _i++) {
+                    for (int j = 0; j < X.getNumColumns(); j++) {
                         xgwx.set(_i, j, X.get(_i, j) * gwx0.get(j));
                     }
                 }
 
-                Vector v1 = new Vector(X.rows());
+                Vector v1 = new Vector(X.getNumRows());
 
-                for (int k = 0; k < X.rows(); k++) {
+                for (int k = 0; k < X.getNumRows(); k++) {
                     v1.set(k, mean(xgwx.getRow(k)));
                 }
 
-                Vector g_wx = new Vector(X.columns());
+                Vector g_wx = new Vector(X.getNumColumns());
 
-                for (int k = 0; k < X.columns(); k++) {
+                for (int k = 0; k < X.getNumColumns(); k++) {
                     double t = g(alpha, wx.get(k));
                     g_wx.set(k, (1.0 - t * t));
                 }
@@ -500,16 +500,16 @@ public class FastIca {
                     for (int u = 0; u < i; u++) {
                         double k = 0.0;
 
-                        for (int j = 0; j < X.rows(); j++) {
+                        for (int j = 0; j < X.getNumRows(); j++) {
                             k += w1.get(j) * W.get(u, j);
                         }
 
-                        for (int j = 0; j < X.rows(); j++) {
+                        for (int j = 0; j < X.getNumRows(); j++) {
                             t.set(j, t.get(j) + k * W.get(u, j));
                         }
                     }
 
-                    for (int j = 0; j < X.rows(); j++) {
+                    for (int j = 0; j < X.getNumRows(); j++) {
                         w1.set(j, w1.get(j) - t.get(j));
                     }
                 }
@@ -518,7 +518,7 @@ public class FastIca {
 
                 _tolerance = 0.0;
 
-                for (int k = 0; k < X.rows(); k++) {
+                for (int k = 0; k < X.getNumRows(); k++) {
                     _tolerance += w1.get(k) * w.get(k);
                 }
 
@@ -575,12 +575,12 @@ public class FastIca {
     private Matrix icaParallel(Matrix X, int numComponents,
                                double tolerance, double alpha,
                                int maxIterations, boolean verbose, Matrix wInit) {
-        int p = X.columns();
+        int p = X.getNumColumns();
         Matrix W = wInit;
 
         SingularValueDecomposition sW = new SingularValueDecomposition(W.getApacheData());
         Matrix D = new Matrix(sW.getS().getData());
-        for (int i = 0; i < D.rows(); i++) D.set(i, i, 1.0 / D.get(i, i));
+        for (int i = 0; i < D.getNumRows(); i++) D.set(i, i, 1.0 / D.get(i, i));
 
         Matrix WTemp = new Matrix(sW.getU()).times(D);
         WTemp = WTemp.times(new Matrix(sW.getU()).transpose());
@@ -608,8 +608,8 @@ public class FastIca {
             Matrix v1 = gwx.times(X.transpose().scalarMult(1.0 / p));
             Matrix g_wx = gwx.like();
 
-            for (int i = 0; i < g_wx.rows(); i++) {
-                for (int j = 0; j < g_wx.columns(); j++) {
+            for (int i = 0; i < g_wx.getNumRows(); i++) {
+                for (int j = 0; j < g_wx.getNumColumns(); j++) {
                     double v = g_wx.get(i, j);
                     double w = alpha * (1.0 - v * v);
                     g_wx.set(i, j, w);
@@ -629,7 +629,7 @@ public class FastIca {
             SingularValueDecomposition sW1 = new SingularValueDecomposition(W1.getApacheData());
             Matrix U = new Matrix(sW1.getU());
             Matrix sD = new Matrix(sW1.getS());
-            for (int i = 0; i < sD.rows(); i++)
+            for (int i = 0; i < sD.getNumRows(); i++)
                 sD.set(i, i, 1.0 / sD.get(i, i));
 
             Matrix W1Temp = U.times(sD);
@@ -659,18 +659,18 @@ public class FastIca {
     }
 
     private void scale(Matrix x) {
-        for (int i = 0; i < x.rows(); i++) {
+        for (int i = 0; i < x.getNumRows(); i++) {
             Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
             x.assignRow(i, u);
         }
     }
 
     private void center(Matrix x) {
-        for (int i = 0; i < x.rows(); i++) {
+        for (int i = 0; i < x.getNumRows(); i++) {
             Vector u = x.getRow(i);
             double mean = mean(u);
 
-            for (int j = 0; j < x.columns(); j++) {
+            for (int j = 0; j < x.getNumColumns(); j++) {
                 x.set(i, j, x.get(i, j) - mean);
             }
         }

@@ -772,12 +772,12 @@ public class Lofs {
     // rowIndex is for the W matrix, not for the data.
     public double scoreRow(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
         if (this.col == null) {
-            this.col = new double[data.rows()];
+            this.col = new double[data.getNumRows()];
         }
 
         List<Integer> cols = rows.get(rowIndex);
 
-        for (int i = 0; i < data.rows(); i++) {
+        for (int i = 0; i < data.getNumRows(); i++) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }

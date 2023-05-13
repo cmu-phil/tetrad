@@ -53,13 +53,13 @@ public class PermutationMatrixPair {
      */
     public PermutationMatrixPair(Matrix M, int[] rowPerm, int[] colPerm) {
         if (rowPerm == null) {
-            rowPerm = new int[M.rows()];
-            for (int i = 0; i < M.rows(); i++) rowPerm[i] = i;
+            rowPerm = new int[M.getNumRows()];
+            for (int i = 0; i < M.getNumRows(); i++) rowPerm[i] = i;
         }
 
         if (colPerm == null) {
-            colPerm = new int[M.columns()];
-            for (int i = 0; i < M.columns(); i++) colPerm[i] = i;
+            colPerm = new int[M.getNumColumns()];
+            for (int i = 0; i < M.getNumColumns(); i++) colPerm[i] = i;
         }
 
         this.rowPerm = Arrays.copyOf(rowPerm, rowPerm.length);

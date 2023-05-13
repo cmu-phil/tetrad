@@ -280,8 +280,8 @@ public class Mimbuild {
         Matrix measurescov = _measurescov.getMatrix();
         Matrix latentscov = new Matrix(latents.size(), latents.size());
 
-        for (int i = 0; i < latentscov.rows(); i++) {
-            for (int j = i; j < latentscov.columns(); j++) {
+        for (int i = 0; i < latentscov.getNumRows(); i++) {
+            for (int j = i; j < latentscov.getNumColumns(); j++) {
                 if (i == j) latentscov.set(i, j, 1.0);
                 else {
                     final double v = .5;
@@ -317,7 +317,7 @@ public class Mimbuild {
         }
 
         // Variances of the measures.
-        double[] delta = new double[measurescov.rows()];
+        double[] delta = new double[measurescov.getNumRows()];
 
         Arrays.fill(delta, 1);
 
@@ -411,13 +411,13 @@ public class Mimbuild {
         int count = 0;
 
         // Non-redundant elements of cov(latents)
-        for (int i = 0; i < latentscov.rows(); i++) {
-            for (int j = i; j < latentscov.columns(); j++) {
+        for (int i = 0; i < latentscov.getNumRows(); i++) {
+            for (int j = i; j < latentscov.getNumColumns(); j++) {
                 count++;
             }
         }
 
-        System.out.println("# nnonredundant elemnts of cov(error) = " + latentscov.rows() * (latentscov.rows() + 1) / 2);
+        System.out.println("# nnonredundant elemnts of cov(error) = " + latentscov.getNumRows() * (latentscov.getNumRows() + 1) / 2);
 
         int _loadings = 0;
 
@@ -441,8 +441,8 @@ public class Mimbuild {
         double[] values = new double[count];
         count = 0;
 
-        for (int i = 0; i < latentscov.rows(); i++) {
-            for (int j = i; j < latentscov.rows(); j++) {
+        for (int i = 0; i < latentscov.getNumRows(); i++) {
+            for (int j = i; j < latentscov.getNumRows(); j++) {
                 values[count++] = latentscov.get(i, j);
             }
         }
@@ -555,7 +555,7 @@ public class Mimbuild {
 
             Matrix implied = impliedCovariance(this.indicatorIndices, this.loadings, this.measurescov, this.latentscov, this.delta);
 
-            Matrix I = Matrix.identity(implied.rows());
+            Matrix I = Matrix.identity(implied.getNumRows());
             Matrix diff = I.minus((implied.times(this.measuresCovInverse)));  // time hog. times().
 
             return 0.5 * (diff.times(diff)).trace();
@@ -565,7 +565,7 @@ public class Mimbuild {
 
     private Matrix impliedCovariance(int[][] indicatorIndices, double[][] loadings, Matrix cov, Matrix loadingscov,
                                      double[] delta) {
-        Matrix implied = new Matrix(cov.rows(), cov.columns());
+        Matrix implied = new Matrix(cov.getNumRows(), cov.getNumColumns());
 
         for (int i = 0; i < loadings.length; i++) {
             for (int j = 0; j < loadings.length; j++) {
@@ -578,7 +578,7 @@ public class Mimbuild {
             }
         }
 
-        for (int i = 0; i < implied.rows(); i++) {
+        for (int i = 0; i < implied.getNumRows(); i++) {
             implied.set(i, i, implied.get(i, i) + delta[i]);
         }
 

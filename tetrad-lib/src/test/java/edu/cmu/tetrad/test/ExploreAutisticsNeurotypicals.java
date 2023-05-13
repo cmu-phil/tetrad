@@ -469,7 +469,7 @@ public final class ExploreAutisticsNeurotypicals {
 
         List<Node> tvars = new ArrayList<>();
 
-        for (int i = 0; i < mt.columns(); i++) tvars.add(new ContinuousVariable("S" + (i + 1)));
+        for (int i = 0; i < mt.getNumColumns(); i++) tvars.add(new ContinuousVariable("S" + (i + 1)));
 
         dataSet = new BoxDataSet(new DoubleDataBox(mt.toArray()), tvars);
 

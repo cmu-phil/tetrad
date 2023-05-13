@@ -55,8 +55,8 @@ public class InverseCorrelation {
 
         Graph graph = new EdgeListGraph(this.data.getVariables());
 
-        for (int i = 0; i < inverse.rows(); i++) {
-            for (int j = i + 1; j < inverse.columns(); j++) {
+        for (int i = 0; i < inverse.getNumRows(); i++) {
+            for (int j = i + 1; j < inverse.getNumColumns(); j++) {
                 double a = inverse.get(i, j);
                 double b = inverse.get(i, i);
                 double c = inverse.get(j, j);

@@ -111,7 +111,7 @@ public class TsUtils {
             int index = timeSeries.getVariables().indexOf(target);
 
             if (missingVariables.contains(target)) {
-                for (int i2 = 0; i2 < residuals.rows(); i2++) {
+                for (int i2 = 0; i2 < residuals.getNumRows(); i2++) {
                     residuals.set(i2, index, Double.NaN);
                 }
 
@@ -249,14 +249,14 @@ public class TsUtils {
             _shifts[i] = shiftRange - (shifts[i] - min);
         }
 
-        if (shiftRange > data2.rows()) {
+        if (shiftRange > data2.getNumRows()) {
             throw new IllegalArgumentException("Range of shifts greater than sample size.");
         }
 
-        int shiftedDataLength = data2.rows() - shiftRange;
-        Matrix shiftedData = new Matrix(shiftedDataLength, data2.columns());
+        int shiftedDataLength = data2.getNumRows() - shiftRange;
+        Matrix shiftedData = new Matrix(shiftedDataLength, data2.getNumColumns());
 
-        for (int j = 0; j < shiftedData.columns(); j++) {
+        for (int j = 0; j < shiftedData.getNumColumns(); j++) {
             for (int i = 0; i < shiftedDataLength; i++) {
                 shiftedData.set(i, j, data2.get(i + _shifts[j], j));
             }
@@ -356,10 +356,10 @@ public class TsUtils {
         Matrix _data = data.getDoubleData();
 
         for (int k = 1; k <= d; k++) {
-            Matrix _data2 = new Matrix(_data.rows() - 1, _data.columns());
+            Matrix _data2 = new Matrix(_data.getNumRows() - 1, _data.getNumColumns());
 
-            for (int i = 1; i < _data.rows(); i++) {
-                for (int j = 0; j < _data.columns(); j++) {
+            for (int i = 1; i < _data.getNumRows(); i++) {
+                for (int j = 0; j < _data.getNumColumns(); j++) {
                     _data2.set(i - 1, j, _data.get(i, j) - _data.get(i - 1, j));
                 }
             }

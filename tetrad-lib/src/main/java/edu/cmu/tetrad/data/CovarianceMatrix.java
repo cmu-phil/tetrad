@@ -345,7 +345,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @return the size of the square matrix.
      */
     public final int getSize() {
-        return this._covariancesMatrix.columns();
+        return this._covariancesMatrix.getNumColumns();
     }
 
     /**

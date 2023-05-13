@@ -78,6 +78,11 @@ public class LingD {
     public LingD() {
     }
 
+    public static boolean isAcyclic(Matrix scaledBHat, List<Node> variables) {
+        Graph g = makeGraph(scaledBHat, variables);
+        return !g.paths().existsDirectedCycle();
+    }
+
     /**
      * Fits a LiNG-D model to the given dataset using a default method for estimating
      * W.
@@ -166,7 +171,7 @@ public class LingD {
 
         Matrix X = data.getDoubleData();
         X = DataUtils.centerData(X).transpose();
-        FastIca fastIca = new FastIca(X, X.rows());
+        FastIca fastIca = new FastIca(X, X.getNumRows());
         fastIca.setVerbose(false);
         fastIca.setMaxIterations(fastIcaMaxIter);
         fastIca.setAlgorithmType(FastIca.PARALLEL);
@@ -191,8 +196,8 @@ public class LingD {
     public static Graph makeGraph(Matrix B, List<Node> variables) {
         Graph g = new EdgeListGraph(variables);
 
-        for (int j = 0; j < B.columns(); j++) {
-            for (int i = 0; i < B.rows(); i++) {
+        for (int j = 0; j < B.getNumColumns(); j++) {
+            for (int i = 0; i < B.getNumRows(); i++) {
                 if (B.get(i, j) != 0) {
                     g.addDirectedEdge(variables.get(j), variables.get(i));
                 }
@@ -250,8 +255,8 @@ public class LingD {
     public static Matrix scale(Matrix M) {
         Matrix _M = M.like();
 
-        for (int i = 0; i < _M.rows(); i++) {
-            for (int j = 0; j < _M.columns(); j++) {
+        for (int i = 0; i < _M.getNumRows(); i++) {
+            for (int j = 0; j < _M.getNumColumns(); j++) {
                 _M.set(i, j, M.get(i, j) / M.get(j, j));
             }
         }
@@ -272,8 +277,8 @@ public class LingD {
 
         Matrix _M = M.copy();
 
-        for (int i = 0; i < M.rows(); i++) {
-            for (int j = 0; j < M.columns(); j++) {
+        for (int i = 0; i < M.getNumRows(); i++) {
+            for (int j = 0; j < M.getNumColumns(); j++) {
                 if (abs(M.get(i, j)) < threshold) _M.set(i, j, 0.0);
             }
         }
@@ -295,7 +300,7 @@ public class LingD {
     public static Matrix getScaledBHat(PermutationMatrixPair pair, double bThreshold) {
         Matrix WTilde = pair.getPermutedMatrix().transpose();
         WTilde = LingD.scale(WTilde);
-        Matrix BHat = Matrix.identity(WTilde.columns()).minus(WTilde);
+        Matrix BHat = Matrix.identity(WTilde.getNumColumns()).minus(WTilde);
         BHat = threshold(BHat, bThreshold);
         int[] perm = pair.getRowPerm();
         int[] inverse = LingD.inversePermutation(perm);
@@ -305,10 +310,10 @@ public class LingD {
 
     @NotNull
     private static PermutationMatrixPair hungarian(Matrix W) {
-        double[][] costMatrix = new double[W.rows()][W.columns()];
+        double[][] costMatrix = new double[W.getNumRows()][W.getNumColumns()];
 
-        for (int i = 0; i < W.rows(); i++) {
-            for (int j = 0; j < W.columns(); j++) {
+        for (int i = 0; i < W.getNumRows(); i++) {
+            for (int j = 0; j < W.getNumColumns(); j++) {
                 if (W.get(i, j) != 0) {
                     costMatrix[i][j] = 1.0 / abs(W.get(i, j));
                 } else {
@@ -328,10 +333,10 @@ public class LingD {
 
     @NotNull
     private static List<PermutationMatrixPair> pairsNRook(Matrix W, double spineThreshold) {
-        boolean[][] allowablePositions = new boolean[W.rows()][W.columns()];
+        boolean[][] allowablePositions = new boolean[W.getNumRows()][W.getNumColumns()];
 
-        for (int i = 0; i < W.rows(); i++) {
-            for (int j = 0; j < W.columns(); j++) {
+        for (int i = 0; i < W.getNumRows(); i++) {
+            for (int j = 0; j < W.getNumColumns(); j++) {
                 allowablePositions[i][j] = abs(W.get(i, j)) > spineThreshold;
             }
         }

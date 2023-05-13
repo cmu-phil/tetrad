@@ -173,9 +173,9 @@ public class SemBicScore implements Score {
 
     @NotNull
     public static Matrix bStar(Matrix b) {
-        Matrix byx = new Matrix(b.rows() + 1, 1);
+        Matrix byx = new Matrix(b.getNumRows() + 1, 1);
         byx.set(0, 0, 1);
-        for (int j = 0; j < b.rows(); j++) byx.set(j + 1, 0, -b.get(j, 0));
+        for (int j = 0; j < b.getNumRows(); j++) byx.set(j + 1, 0, -b.get(j, 0));
         return byx;
     }
 
@@ -234,7 +234,7 @@ public class SemBicScore implements Score {
         List<Integer> rows = new ArrayList<>();
 
         K:
-        for (int k = 0; k < data.rows(); k++) {
+        for (int k = 0; k < data.getNumRows(); k++) {
             if (Double.isNaN(data.get(k, i))) continue;
 
             for (int p : parents) {

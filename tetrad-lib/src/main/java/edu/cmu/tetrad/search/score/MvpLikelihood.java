@@ -222,9 +222,9 @@ public class MvpLikelihood {
 
     private double multipleRegression(Vector Y, Matrix X) {
 
-        int n = X.rows();
+        int n = X.getNumRows();
         Vector r;
-        if (X.columns() >= n) {
+        if (X.getNumColumns() >= n) {
             Vector ones = new Vector(n);
             for (int i = 0; i < n; i++) ones.set(i, 1);
             r = ones.scalarMult(ones.dotProduct(Y) / (double) n).minus(Y);
@@ -265,13 +265,13 @@ public class MvpLikelihood {
 
     private double approxMultinomialRegression(Matrix Y, Matrix X) {
 
-        int n = X.rows();
-        int d = Y.columns();
+        int n = X.getNumRows();
+        int d = Y.getNumColumns();
         double lik = 0.0;
         Matrix P;
 
 
-        if (d >= n || X.columns() >= n) {
+        if (d >= n || X.getNumColumns() >= n) {
             Matrix ones = new Matrix(n, 1);
             for (int i = 0; i < n; i++) ones.set(i, 0, 1);
             P = ones.times(ones.transpose().times(Y).scalarMult(1 / (double) n));
@@ -293,7 +293,7 @@ public class MvpLikelihood {
                 for (int j = 0; j < d; j++) {
                     min = FastMath.min(min, P.get(i, j));
                 }
-                if (X.columns() > 1 && min < bound) {
+                if (X.getNumColumns() > 1 && min < bound) {
                     min = (bound - center) / (min - center);
                     for (int j = 0; j < d; j++) {
                         P.set(i, j, min * P.get(i, j) + center * (1 - min));

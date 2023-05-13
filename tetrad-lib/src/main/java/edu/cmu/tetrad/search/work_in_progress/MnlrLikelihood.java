@@ -283,7 +283,7 @@ public class MnlrLikelihood {
 
     private double multipleRegression(Vector Y, Matrix X) {
 
-        int n = X.rows();
+        int n = X.getNumRows();
         Vector r;
 
         try {
@@ -317,8 +317,8 @@ public class MnlrLikelihood {
     private double MultinomialLogisticRegression(Matrix targets, Matrix subset) {
 
         Problem problem = new Problem();
-        problem.l = targets.rows(); // number of training examples
-        problem.n = subset.columns(); // number of features
+        problem.l = targets.getNumRows(); // number of training examples
+        problem.n = subset.getNumColumns(); // number of features
         problem.x = new FeatureNode[problem.l][problem.n]; // feature nodes
         problem.bias = 0;
         for (int i = 0; i < problem.l; i++) {
@@ -335,7 +335,7 @@ public class MnlrLikelihood {
         double num;
         double den;
 
-        for (int i = 0; i < targets.columns(); i++) {
+        for (int i = 0; i < targets.getNumColumns(); i++) {
             System.setOut(this.nullout);
             problem.y = targets.getColumn(i).toArray(); // target values
             models.add(i, Linear.train(problem, parameter));
@@ -345,7 +345,7 @@ public class MnlrLikelihood {
         for (int j = 0; j < problem.l; j++) {
             num = 0;
             den = 0;
-            for (int i = 0; i < targets.columns(); i++) {
+            for (int i = 0; i < targets.getNumColumns(); i++) {
                 double[] p = new double[models.get(i).getNrClass()];
                 Linear.predictProbability(models.get(i), problem.x[j], p);
                 if (targets.get(j, i) == 1) {

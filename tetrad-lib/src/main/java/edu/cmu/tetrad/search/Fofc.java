@@ -223,9 +223,9 @@ public class Fofc {
     // renjiey
     private ArrayList<Integer> removeVariables(Matrix correlationMatrix, double lowerBound, double upperBound,
                                                double percentBound) {
-        Integer[] outlier = new Integer[correlationMatrix.rows() * (correlationMatrix.rows() - 1)];
+        Integer[] outlier = new Integer[correlationMatrix.getNumRows() * (correlationMatrix.getNumRows() - 1)];
         int count = 0;
-        for (int i = 2; i < (correlationMatrix.rows() + 1); i++) {
+        for (int i = 2; i < (correlationMatrix.getNumRows() + 1); i++) {
             for (int j = 1; j < i; j++) {
 
                 if ((abs(correlationMatrix.get(i - 1, j - 1)) < lowerBound)
@@ -245,7 +245,7 @@ public class Fofc {
         ArrayList<Integer> removedVariables = new ArrayList<>();
 
         // Added the percent bound jdramsey
-        while (outlier.length > 1 && removedVariables.size() < percentBound * correlationMatrix.rows()) {
+        while (outlier.length > 1 && removedVariables.size() < percentBound * correlationMatrix.getNumRows()) {
             //find out the variable that occurs most frequently in outlier
             int worstVariable = findFrequentestIndex(outlier);
             if (worstVariable > 0) {

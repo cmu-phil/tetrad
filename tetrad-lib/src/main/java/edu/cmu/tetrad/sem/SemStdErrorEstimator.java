@@ -124,8 +124,8 @@ public class SemStdErrorEstimator {
         }
 
         ROWS:
-        for (int i = 0; i < hess.rows(); i++) {
-            for (int j = 0; j < hess.columns(); j++) {
+        for (int i = 0; i < hess.getNumRows(); i++) {
+            for (int j = 0; j < hess.getNumColumns(); j++) {
                 if (hess.get(i, j) != 0) {
                     continue ROWS;
                 }

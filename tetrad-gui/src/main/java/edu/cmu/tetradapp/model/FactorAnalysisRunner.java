@@ -87,7 +87,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
 
         this.output += tableString(unrotatedSolution, nf, Double.POSITIVE_INFINITY);
 
-        if (unrotatedSolution.columns() != 1) {
+        if (unrotatedSolution.getNumColumns() != 1) {
             this.output += "\n\nRotated Matrix (using sequential varimax):\n";
             this.output += tableString(this.rotatedSolution, nf, this.threshold);
         }
@@ -103,15 +103,15 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
 
         Vector<Node> factors = new Vector<>();
 
-        for (int i = 0; i < getRotatedSolution().columns(); i++) {
+        for (int i = 0; i < getRotatedSolution().getNumColumns(); i++) {
             ContinuousVariable factor = new ContinuousVariable("Factor" + (i + 1));
             factor.setNodeType(NodeType.LATENT);
             graph.addNode(factor);
             factors.add(factor);
         }
 
-        for (int i = 0; i < getRotatedSolution().rows(); i++) {
-            for (int j = 0; j < getRotatedSolution().columns(); j++) {
+        for (int i = 0; i < getRotatedSolution().getNumRows(); i++) {
+            for (int j = 0; j < getRotatedSolution().getNumColumns(); j++) {
                 if (FastMath.abs(getRotatedSolution().get(i, j)) > getThreshold()) {
                     graph.addDirectedEdge(factors.get(j), observedVariables.get(i));
                 }
@@ -122,10 +122,10 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
     }
 
     private String tableString(Matrix matrix, NumberFormat nf, double threshold) {
-        TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
+        TextTable table = new TextTable(matrix.getNumRows() + 1, matrix.getNumColumns() + 1);
 
-        for (int i = 0; i < matrix.rows() + 1; i++) {
-            for (int j = 0; j < matrix.columns() + 1; j++) {
+        for (int i = 0; i < matrix.getNumRows() + 1; i++) {
+            for (int j = 0; j < matrix.getNumColumns() + 1; j++) {
                 if (i > 0 && j == 0) {
                     table.setToken(i, 0, "X" + i);
                 } else if (i == 0 && j > 0) {

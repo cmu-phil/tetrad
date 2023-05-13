@@ -44,11 +44,11 @@ public class Lingam implements Algorithm, ReturnsBootstrapGraphs {
             int maxIter = parameters.getInt(Params.FAST_ICA_MAX_ITER);
             double alpha = parameters.getDouble(Params.FAST_ICA_A);
             double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
-            double bThreshold = parameters.getDouble(Params.THRESHOLD_B);
 
             Matrix W = LingD.estimateW(data, maxIter, tol, alpha);
             edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
-            lingam.setBThreshold(bThreshold);
+            lingam.setBThreshold(parameters.getDouble(Params.THRESHOLD_B));
+            lingam.setAcyclicityGuaranteed(parameters.getBoolean(Params.GUARANTEE_ACYCLIC));
 
             Matrix bHat = lingam.fitW(W);
             Graph graph = LingD.makeGraph(bHat, data.getVariables());
@@ -94,6 +94,7 @@ public class Lingam implements Algorithm, ReturnsBootstrapGraphs {
         parameters.add(Params.FAST_ICA_A);
         parameters.add(Params.FAST_ICA_TOLERANCE);
         parameters.add(Params.THRESHOLD_B);
+        parameters.add(Params.GUARANTEE_ACYCLIC);
         return parameters;
     }
 

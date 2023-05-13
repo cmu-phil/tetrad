@@ -523,14 +523,14 @@ public class Kci implements IndependenceTest {
         Matrix vdx = vx.times(dx);
         Matrix vdy = vy.times(dy);
 
-        int prod = vx.columns() * vy.columns();
+        int prod = vx.getNumColumns() * vy.getNumColumns();
         Matrix UU = new Matrix(N, prod);
 
         // stack
-        for (int i = 0; i < vx.columns(); i++) {
-            for (int j = 0; j < vy.columns(); j++) {
+        for (int i = 0; i < vx.getNumColumns(); i++) {
+            for (int j = 0; j < vy.getNumColumns(); j++) {
                 for (int k = 0; k < N; k++) {
-                    UU.set(k, i * dy.columns() + j, vdx.get(k, i) * vdy.get(k, j));
+                    UU.set(k, i * dy.getNumColumns() + j, vdx.get(k, i) * vdy.get(k, j));
                 }
             }
         }
@@ -696,7 +696,7 @@ public class Kci implements IndependenceTest {
         private List<Double> topEigenvalues;
 
         public Eigendecomposition(Matrix k) {
-            if (k.rows() == 0 || k.columns() == 0) {
+            if (k.getNumRows() == 0 || k.getNumColumns() == 0) {
                 throw new IllegalArgumentException("Empty matrix to decompose. Please don't do that to me.");
             }
 
@@ -762,7 +762,7 @@ public class Kci implements IndependenceTest {
 
                 V = new Matrix(V0.getRowDimension(), topIndices.size());
 
-                for (int i = 0; i < V.columns(); i++) {
+                for (int i = 0; i < V.getNumColumns(); i++) {
                     double[] t = V0.getColumn(topIndices.get(i));
                     V.assignColumn(i, new Vector(t));
                 }

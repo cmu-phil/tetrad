@@ -106,7 +106,7 @@ public class Glasso {
     }
 
     public Glasso(Matrix cov) {
-        this.n = cov.rows();
+        this.n = cov.getNumRows();
         this.ss = cov;
     }
 
@@ -294,8 +294,8 @@ public class Glasso {
     private double sum_abs(Matrix m) {
         double sum = 0.0;
 
-        for (int i = 0; i < m.rows(); i++) {
-            for (int j = 0; j < m.columns(); j++) {
+        for (int i = 0; i < m.getNumRows(); i++) {
+            for (int j = 0; j < m.getNumColumns(); j++) {
                 sum += FastMath.abs(m.get(i, j));
             }
         }
@@ -473,8 +473,8 @@ public class Glasso {
     }
 
     private void zero(Matrix wwi) {
-        for (int i = 0; i < wwi.rows(); i++) {
-            for (int j = 0; j < wwi.columns(); j++) {
+        for (int i = 0; i < wwi.getNumRows(); i++) {
+            for (int j = 0; j < wwi.getNumColumns(); j++) {
                 wwi.set(i, j, 0.0);
             }
         }
