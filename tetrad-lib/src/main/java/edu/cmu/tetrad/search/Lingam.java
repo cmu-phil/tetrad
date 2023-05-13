@@ -43,7 +43,7 @@ import edu.cmu.tetrad.util.Matrix;
  * graph. A future version may use bootstrapping with a p-value; this has not been addressed
  * here.</p>
  *
- * <p>We are using the Hungarian Algorithm to fine best diagonal for the W matrix.</p>
+ * <p>We are using the Hungarian Algorithm to find the best diagonal for the W matrix.</p>
  *
  * <p>This class is not configured to respect knowledge of forbidden and required
  * edges.</p>
