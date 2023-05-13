@@ -26,10 +26,15 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
+
+import static org.apache.commons.math3.util.FastMath.abs;
 
 /**
  * <p>Implements an interpretation of the LiNGAM algorithm. The reference is here:</p>
@@ -89,18 +94,6 @@ public class Lingam {
         PermutationMatrixPair bestPair = LingD.hungarianDiagonal(W);
         Matrix scaledBHat = LingD.getScaledBHat(bestPair, bThreshold);
 
-        List<Double> coefs = new ArrayList<>();
-
-        for (int i = 0; i < scaledBHat.getNumRows(); i++) {
-            for (int j = 0; j < scaledBHat.getNumColumns(); j++) {
-                if (i != j && scaledBHat.get(i, j) != 0) {
-                    coefs.add(Math.abs(scaledBHat.get(i, j)));
-                }
-            }
-        }
-
-        Collections.sort(coefs);
-
         if (!acyclicityGuaranteed) {
             return scaledBHat;
         }
@@ -111,22 +104,36 @@ public class Lingam {
             dummyVars.add(new GraphNode("dummy" + i));
         }
 
-        do {
+        class Record {
+            double coef;
+            int i;
+            int j;
+        }
 
-            F:
-            for (double coef : coefs) {
-                for (int i = 0; i < scaledBHat.getNumRows(); i++) {
-                    for (int j = 0; j < scaledBHat.getNumColumns(); j++) {
-                        if (coef == scaledBHat.get(i, j)) {
-                            scaledBHat.set(i, j, 0.0);
-                            break F;
-                        }
-                    }
+        LinkedList<Record> coefs = new LinkedList<>();
+
+        for (int i = 0; i < scaledBHat.getNumRows(); i++) {
+            for (int j = 0; j < scaledBHat.getNumColumns(); j++) {
+                if (i != j && scaledBHat.get(i, j) != 0.0) {
+                    Record record = new Record();
+                    record.coef = scaledBHat.get(i, j);
+                    record.i = i;
+                    record.j = j;
+
+                    coefs.add(record);
                 }
             }
-        } while (!LingD.isAcyclic(scaledBHat, dummyVars));
+        }
 
-        return scaledBHat;
+        coefs.sort(Comparator.comparingDouble(o -> abs(o.coef)));
+
+        while (true) {
+            Record coef = coefs.removeFirst();
+            scaledBHat.set(coef.i, coef.j, 0.0);
+            if (LingD.isAcyclic(scaledBHat, dummyVars)) {
+                return scaledBHat;
+            }
+        }
     }
 
     /**
