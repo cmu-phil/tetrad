@@ -66,6 +66,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author gustavolacerda
  * @author patrickhoyer
  * @author josephramsey
+ * @see Lingam
  */
 public class LingD {
     private double spineThreshold = 0.5;

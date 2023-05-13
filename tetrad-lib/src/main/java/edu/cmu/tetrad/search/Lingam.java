@@ -49,6 +49,7 @@ import edu.cmu.tetrad.util.Matrix;
  * edges.</p>
  *
  * @author josephramsey
+ * @see LingD
  */
 public class Lingam {
     private double bThreshold = 0.1;
