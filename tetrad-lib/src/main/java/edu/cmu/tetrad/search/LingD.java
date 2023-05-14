@@ -51,12 +51,36 @@ import static org.apache.commons.math3.util.FastMath.*;
  * cyclic causal models by independent components analysis. arXiv preprint
  * arXiv:1206.3273.</p>
  *
- * <p>We use the N Rooks algorithm to find alternative cyclic models, as in the above
- * paper.</p>
+ * <p>We use the N Rooks algorithm to find alternative strongest diagonals for
+ * permutations of the W matrix. The parameter that N Rooks requires is a
+ * spine threshold, which is the lowest number in absolute value that a W matrix
+ * entry can take in order to be part of a strongest diagonal; the implied
+ * permutation is the permutation that permutes rows so that this combination
+ * lies along the diagonal of W, which is then scaled, and the separate satisfactory
+ * B Hat matrices reported.</p>
  *
- * <p>For the N Rooks algorithm, the spine threshold is a number between 0 and 1. For B Hat,
- * the threshold is a number between 0 and 1. The default values are 0.5 and 0.1,
- * respectively.</p>
+ * <p>The B Hat matrices are further thresholded using a coefficinet threshold;
+ * values in B hat less than this minimum in absolute value are sent to zero
+ * and will not correspond to edges in the output model.</p>
+ *
+ * <p>There are also a number of methods that are used in the paper, but are not
+ * included in this class. These are included in the class Lingam.</p>
+ *
+ * <p>LiNG-D is a method for estimating a directed acyclic graph (DAG) from a
+ * dataset. The graph is estimated by finding a permutation of the columns of the
+ * dataset so that the resulting matrix has a strong diagonal. This permutation
+ * is then used to estimate a DAG. The method is an extension of LiNGAM, which
+ * estimates a DAG from a dataset using independent components analysis (ICA).
+ * LiNG-D is a more robust method than LiNGAM, and is particularly useful when
+ * the underlying DAG is cyclic. LiNG-D is also useful when the underlying DAG
+ * is acyclic, and it is often more accurate than LiNGAM in this case.</p>
+ *
+ * <p>LiNG-D works as follows. Let X be a dataset. The method first estimates a
+ * W matrix using ICA. This is done by using the FastICA algorithm to estimate
+ * independent components, and then using the inverse of the mixing matrix to
+ * estimate W. Let W be the estimated W matrix, and let B be the true B matrix
+ * (the matrix of coefficients in the underlying DAG). Let W' be a permutation
+ * of W such that the diagonal of W' is the
  *
  * <p>This class is not configured to respect knowledge of forbidden and required
  * edges.</p>
@@ -85,6 +109,7 @@ public class LingD {
     /**
      * Fits a LiNG-D model to the given dataset using a default method for estimating
      * W.
+     *
      * @param D A continuous dataset.
      * @return The BHat matrix, where B[i][j] gives the coefficient of j->i if nonzero.
      */
