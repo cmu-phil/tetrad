@@ -26,8 +26,7 @@ import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.PermutationMatrixPair;
 import edu.cmu.tetrad.util.Matrix;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
+import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -35,6 +34,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static org.apache.commons.math3.util.FastMath.abs;
+import static org.apache.commons.math3.util.FastMath.round;
 
 /**
  * <p>Implements an interpretation of the LiNGAM algorithm. The reference is here:</p>
@@ -94,14 +94,10 @@ public class Lingam {
      * @return The estimated B Hat matrix.
      */
     public Matrix fitW(Matrix W) {
+        double smallest = 0.01;
+
         PermutationMatrixPair bestPair = LingD.hungarianDiagonal(W);
         Matrix scaledBHat = LingD.getScaledBHat(bestPair, bThreshold);
-
-        List<Node> dummyVars = new ArrayList<>();
-
-        for (int i = 0; i < scaledBHat.getNumRows(); i++) {
-            dummyVars.add(new GraphNode("dummy" + i));
-        }
 
         class Record {
             double coef;
@@ -113,7 +109,7 @@ public class Lingam {
 
         for (int i = 0; i < scaledBHat.getNumRows(); i++) {
             for (int j = 0; j < scaledBHat.getNumColumns(); j++) {
-                if (i != j && scaledBHat.get(i, j) != 0.0) {
+                if (i != j && scaledBHat.get(i, j) > 0.1) {
                     Record record = new Record();
                     record.coef = scaledBHat.get(i, j);
                     record.i = i;
@@ -126,13 +122,33 @@ public class Lingam {
 
         coefs.sort(Comparator.comparingDouble(o -> abs(o.coef)));
 
-        while (true) {
-            if (!acyclicityGuaranteed || LingD.isAcyclic(scaledBHat, dummyVars)) {
-                return scaledBHat;
+        if (acyclicityGuaranteed) {
+            List<Node> dummyVars = new ArrayList<>();
+
+            for (int i = 0; i < scaledBHat.getNumRows(); i++) {
+                dummyVars.add(new GraphNode("dummy" + i));
             }
 
-            Record coef = coefs.removeFirst();
-            scaledBHat.set(coef.i, coef.j, 0.0);
+            Record coef = coefs.getFirst();
+
+            while (true) {
+                if (LingD.isAcyclic(scaledBHat, dummyVars)) {
+                    TetradLogger.getInstance().forceLogMessage("Effective threshold = " + coef.coef);
+                    return scaledBHat;
+                }
+
+                coef = coefs.removeFirst();
+                scaledBHat.set(coef.i, coef.j, 0.0);
+            }
+        } else {
+            int theshold = (int) round(0.05 * coefs.size());
+
+            for (int i = 0; i < theshold; i++) {
+                Record coef = coefs.removeFirst();
+                scaledBHat.set(coef.i, coef.j, 0.0);
+            }
+
+            return scaledBHat;
         }
     }
 
@@ -148,8 +164,8 @@ public class Lingam {
     }
 
     /**
-     * Whether or not the LiNGAM algorithm is guaranteed to produce an acyclic graph. This is
-     * is implemnted by setting small coefficients in B hat to zero until an acyclic model is
+     * Whether the LiNGAM algorithm is guaranteed to produce an acyclic graph. This is
+     * implemnted by setting small coefficients in B hat to zero until an acyclic model is
      * found.
      *
      * @param acyclicityGuaranteed True if so.

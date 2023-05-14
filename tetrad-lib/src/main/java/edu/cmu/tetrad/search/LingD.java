@@ -83,6 +83,20 @@ public class LingD {
         return !g.paths().existsDirectedCycle();
     }
 
+    public static boolean containsTwoCycle(Matrix scaledBHat, List<Node> variables) {
+        Graph g = makeGraph(scaledBHat, variables);
+
+        for (int i = 0; i < variables.size(); i++) {
+            for (int j = 0; j < variables.size(); j++) {
+                if (g.getEdges(variables.get(i), variables.get(j)).size() > 1) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Fits a LiNG-D model to the given dataset using a default method for estimating
      * W.
@@ -153,8 +167,6 @@ public class LingD {
      */
     public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance,
                                    double fastIcaA) {
-        data = data.copy();
-
         double[][] _data = data.getDoubleData().transpose().toArray();
         TetradLogger.getInstance().forceLogMessage("Anderson Darling P-values Per Variables (p < alpha means Non-Guassian)");
         TetradLogger.getInstance().forceLogMessage("");
