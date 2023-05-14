@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.HungarianAlgorithm;
 import edu.cmu.tetrad.search.utils.NRooks;
@@ -93,8 +94,19 @@ public class LingD {
     public LingD() {
     }
 
-    public static boolean isAcyclic(Matrix scaledBHat, List<Node> variables) {
-        Graph g = makeGraph(scaledBHat, variables);
+    /**
+     * Determines whether a BHat matrix parses to an acyclic graph..
+     *
+     * @param scaledBHat The BHat matrix..
+     */
+    public static boolean isAcyclic(Matrix scaledBHat) {
+        List<Node> dummyVars = new ArrayList<>();
+
+        for (int i = 0; i < scaledBHat.getNumRows(); i++) {
+            dummyVars.add(new GraphNode("dummy" + i));
+        }
+
+        Graph g = makeGraph(scaledBHat, dummyVars);
         return !g.paths().existsDirectedCycle();
     }
 

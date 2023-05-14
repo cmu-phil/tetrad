@@ -154,16 +154,11 @@ public class Lingam {
             }
 
             coefs.sort(Comparator.comparingDouble(o -> abs(o.coef)));
-            List<Node> dummyVars = new ArrayList<>();
-
-            for (int i = 0; i < scaledBHat.getNumRows(); i++) {
-                dummyVars.add(new GraphNode("dummy" + i));
-            }
 
             Record coef = coefs.getFirst();
 
             while (true) {
-                if (LingD.isAcyclic(scaledBHat, dummyVars)) {
+                if (LingD.isAcyclic(scaledBHat)) {
                     TetradLogger.getInstance().forceLogMessage("Effective threshold = " + coef.coef);
                     return scaledBHat;
                 }
