@@ -54,7 +54,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>We use the N Rooks algorithm to find alternative strongest diagonals for
  * permutations of the W matrix. The parameter that N Rooks requires is a
  * spine threshold, which is the lowest number in absolute value that a W matrix
- * entry can take in order to be part of a strongest diagonal; the implied
+ * entry can take to be part of a strongest diagonal; the implied
  * permutation is the permutation that permutes rows so that this combination
  * lies along the diagonal of W, which is then scaled, and the separate satisfactory
  * B Hat matrices reported.</p>

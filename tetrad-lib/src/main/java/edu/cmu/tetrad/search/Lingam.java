@@ -43,7 +43,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Research, 7(10).</p>
  *
  * <p>The focus for this implementation was making to make a version of LiNGAM that
- * woudl be compatible with LiNG-D (see). There are two parameters, one to choose
+ * would be compatible with LiNG-D (see). There are two parameters, one to choose
  * whether an acyclic result will be guaranteed, and another to set a threshold on
  * the absolute value of the coefficients in the B Hat matrix. The latter is used
  * to find edges in the final graph.</p>
@@ -64,10 +64,10 @@ import static org.apache.commons.math3.util.FastMath.*;
  * of coefficients in the linear model that generated the data. The graph is then
  * estimated by finding edges in B Hat.</p>
  *
- * <p>There is an option to guarantee acyclicity of the output, which will set
- * small coeffients to zero until an acyclic model is achieved. If this option
- * is not selected, coefficients above threshold will be sorted to high and
- * 5% of the lowest coefficients in B Hat set ot zero, which allows for certain
+ * <p>There is an option to guarantee the acyclicity of the output, which will set
+ * small coefficients to zero until an acyclic model is achieved. If this option
+ * is not selected, coefficients above the threshold will be sorted to high and
+ * 5% of the lowest coefficients in B Hat set to zero, which allows for certain
  * cyclic structures to be recovered.</p>
  *
  * <p>There are two methods for estimating W. The first is the default method,
@@ -91,7 +91,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * <p>We are using the Hungarian Algorithm to find the best diagonal for W</p>
  *
- * <p>This class is not configured to respect knowledge of forbidden and required
+ * <p>This class is not configured to respect   knowledge of forbidden and required
  * edges.</p>
  *
  * @author josephramsey
