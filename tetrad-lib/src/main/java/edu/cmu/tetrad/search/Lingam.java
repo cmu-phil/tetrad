@@ -91,9 +91,6 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * <p>We are using the Hungarian Algorithm to find the best diagonal for W</p>
  *
- * <p>This class is not configured to respect knowledge of forbidden and
- * required edges.</p>
- *
  * <p>This class is not configured to respect knowledge of forbidden and required
  * edges.</p>
  *

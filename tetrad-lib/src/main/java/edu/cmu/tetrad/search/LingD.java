@@ -59,7 +59,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * lies along the diagonal of W, which is then scaled, and the separate satisfactory
  * B Hat matrices reported.</p>
  *
- * <p>The B Hat matrices are further thresholded using a coefficinet threshold;
+ * <p>The B Hat matrices are further thresholded using a coefficient threshold;
  * values in B hat less than this minimum in absolute value are sent to zero
  * and will not correspond to edges in the output model.</p>
  *
@@ -71,16 +71,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * dataset so that the resulting matrix has a strong diagonal. This permutation
  * is then used to estimate a DAG. The method is an extension of LiNGAM, which
  * estimates a DAG from a dataset using independent components analysis (ICA).
- * LiNG-D is a more robust method than LiNGAM, and is particularly useful when
- * the underlying DAG is cyclic. LiNG-D is also useful when the underlying DAG
- * is acyclic, and it is often more accurate than LiNGAM in this case.</p>
- *
- * <p>LiNG-D works as follows. Let X be a dataset. The method first estimates a
- * W matrix using ICA. This is done by using the FastICA algorithm to estimate
- * independent components, and then using the inverse of the mixing matrix to
- * estimate W. Let W be the estimated W matrix, and let B be the true B matrix
- * (the matrix of coefficients in the underlying DAG). Let W' be a permutation
- * of W such that the diagonal of W' is the
+ * LiNG-D is particularly useful when the underlying data may have multiple
+ * consistent cyclic models.</p>
  *
  * <p>This class is not configured to respect knowledge of forbidden and required
  * edges.</p>
