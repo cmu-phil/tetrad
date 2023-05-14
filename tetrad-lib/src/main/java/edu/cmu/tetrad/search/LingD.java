@@ -44,7 +44,7 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>Implements the LiNG-D algorithm as well as a number of ancillary methods for
+ * <p>Implements the ICA LiNG-D algorithm as well as a number of ancillary methods for
  * LiNG-D and LiNGAM. The reference is here:</p>
  *
  * <p>Lacerda, G., Spirtes, P. L., Ramsey, J., &amp; Hoyer, P. O. (2012). Discovering
@@ -54,10 +54,9 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>We use the N Rooks algorithm to find alternative cyclic models, as in the above
  * paper.</p>
  *
- * <p>This implementation has two parameters, a threshold (for N Rooks) on the minimum
- * values in absolute value for including entries in a possible strong diagonal for W,
- * and a threshold for B Hat for setting zeros for small betas (i.e., pruning edges from
- * the final graph.</p>
+ * <p>For the N Rooks algorithm, the spine threshold is a number between 0 and 1. For B Hat,
+ * the threshold is a number between 0 and 1. The default values are 0.5 and 0.1,
+ * respectively.</p>
  *
  * <p>This class is not configured to respect knowledge of forbidden and required
  * edges.</p>
