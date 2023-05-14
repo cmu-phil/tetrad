@@ -68,7 +68,6 @@ public class Boss implements SuborderSearch {
     private BesPermutation bes = null;
     private int numStarts = 1;
 
-
     /**
      * This algorithm will work with an arbitrary score.
      *
@@ -121,6 +120,52 @@ public class Boss implements SuborderSearch {
         update(prefix, suborder);
     }
 
+    /**
+     * Sets up BOSS to use the BES algorithm to render BOSS correct under the
+     * faithfulness assumption.
+     * @param use True if BES should be used.
+     */
+    public void setUseBes(boolean use) {
+        this.bes = null;
+        if (use) {
+            this.bes = new BesPermutation(this.score);
+            this.bes.setVerbose(false);
+            this.bes.setKnowledge(knowledge);
+        }
+    }
+
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+
+        if (this.bes != null) {
+            this.bes.setKnowledge(knowledge);
+        }
+    }
+
+    /**
+     * Sets the number of random starts to use. The model with the best score
+     * from these restartes will be reported.
+     * @param numStarts The number of random starts to use.
+     */
+    public void setNumStarts(int numStarts) {
+        this.numStarts = numStarts;
+    }
+
+    @Override
+    public List<Node> getVariables() {
+        return this.variables;
+    }
+
+    @Override
+    public Map<Node, Set<Node>> getParents() {
+        return this.parents;
+    }
+
+    @Override
+    public Score getScore() {
+        return this.score;
+    }
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
         Set<Node> all = new HashSet<>(suborder);
@@ -176,15 +221,6 @@ public class Boss implements SuborderSearch {
         return true;
     }
 
-    public void useBes(boolean use) {
-        this.bes = null;
-        if (use) {
-            this.bes = new BesPermutation(this.score);
-            this.bes.setVerbose(false);
-            this.bes.setKnowledge(knowledge);
-        }
-    }
-
     private void bes(List<Node> prefix, List<Node> suborder) {
         List<Node> all = new ArrayList<>(prefix);
         all.addAll(suborder);
@@ -222,31 +258,4 @@ public class Boss implements SuborderSearch {
         }
     }
 
-    @Override
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
-
-        if (this.bes != null) {
-            this.bes.setKnowledge(knowledge);
-        }
-    }
-
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return this.variables;
-    }
-
-    @Override
-    public Map<Node, Set<Node>> getParents() {
-        return this.parents;
-    }
-
-    @Override
-    public Score getScore() {
-        return this.score;
-    }
 }
