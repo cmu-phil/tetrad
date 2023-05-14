@@ -176,8 +176,7 @@ public class Lingam {
     }
 
     /**
-     * The threshold to use for set small elemtns to zerp in the B Hat matrices for the
-     * LiNGAM algorithm.
+     * The threshold to use for set small elements to zero in the B Hat matrices.
      *
      * @param bThreshold Some value >= 0.
      */

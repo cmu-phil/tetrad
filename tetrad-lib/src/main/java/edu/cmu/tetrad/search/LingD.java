@@ -136,7 +136,7 @@ public class LingD {
     }
 
     /**
-     * Sets the threshold used to prune the B matrix for the local algorithm.
+     * The threshold to use for set small elements to zero in the B Hat matrices.
      *
      * @param bThreshold The threshold, a non-negative number.
      */
@@ -147,7 +147,7 @@ public class LingD {
 
     /**
      * Sets the threshold used to prune the matrix for purpose of searching for alterantive
-     * strong diagonals..
+     * strong diagonals.
      *
      * @param spineThreshold The threshold, a non-negative number.
      */
