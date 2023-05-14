@@ -131,30 +131,29 @@ public class Lingam {
         PermutationMatrixPair bestPair = LingD.hungarianDiagonal(W);
         Matrix scaledBHat = LingD.getScaledBHat(bestPair, bThreshold);
 
-        class Record {
-            double coef;
-            int i;
-            int j;
-        }
+        if (acyclicityGuaranteed) {
+            class Record {
+                double coef;
+                int i;
+                int j;
+            }
 
-        LinkedList<Record> coefs = new LinkedList<>();
+            LinkedList<Record> coefs = new LinkedList<>();
 
-        for (int i = 0; i < scaledBHat.getNumRows(); i++) {
-            for (int j = 0; j < scaledBHat.getNumColumns(); j++) {
-                if (i != j && scaledBHat.get(i, j) > 0.1) {
-                    Record record = new Record();
-                    record.coef = scaledBHat.get(i, j);
-                    record.i = i;
-                    record.j = j;
+            for (int i = 0; i < scaledBHat.getNumRows(); i++) {
+                for (int j = 0; j < scaledBHat.getNumColumns(); j++) {
+                    if (i != j && scaledBHat.get(i, j) > 0.1) {
+                        Record record = new Record();
+                        record.coef = scaledBHat.get(i, j);
+                        record.i = i;
+                        record.j = j;
 
-                    coefs.add(record);
+                        coefs.add(record);
+                    }
                 }
             }
-        }
 
-        coefs.sort(Comparator.comparingDouble(o -> abs(o.coef)));
-
-        if (acyclicityGuaranteed) {
+            coefs.sort(Comparator.comparingDouble(o -> abs(o.coef)));
             List<Node> dummyVars = new ArrayList<>();
 
             for (int i = 0; i < scaledBHat.getNumRows(); i++) {
