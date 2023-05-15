@@ -44,7 +44,7 @@ import java.util.List;
 /**
  * @author josephramsey
  */
-public class TestLingamPattern {
+public class TestIcaIcaLingamPattern {
 
     @Test
     public void test1() {

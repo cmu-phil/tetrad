@@ -67,7 +67,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>There are also a number of methods that are used in the paper, but are not
  * included in this class. These are included in the class Lingam.</p>
  *
- * <p>LiNG-D is a method for estimating a directed acyclic graph (DAG) from a
+ * <p>ICA-LiNG-D is a method for estimating a directed acyclic graph (DAG) from a
  * dataset. The graph is estimated by finding a permutation of the columns of the
  * dataset so that the resulting matrix has a strong diagonal. This permutation
  * is then used to estimate a DAG. The method is an extension of LiNGAM, which
@@ -82,16 +82,16 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @author gustavolacerda
  * @author patrickhoyer
  * @author josephramsey
- * @see Lingam
+ * @see IcaLingam
  */
-public class LingD {
+public class IcaLingD {
     private double spineThreshold = 0.5;
     private double bThreshold = 0.1;
 
     /**
      * Constructor.
      */
-    public LingD() {
+    public IcaLingD() {
     }
 
     /**
@@ -118,7 +118,7 @@ public class LingD {
      * @return The BHat matrix, where B[i][j] gives the coefficient of j->i if nonzero.
      */
     public List<Matrix> fit(DataSet D) {
-        Matrix W = LingD.estimateW(D, 5000, 1e-6, 1.2);
+        Matrix W = IcaLingD.estimateW(D, 5000, 1e-6, 1.2);
         return fitW(W);
     }
 
@@ -140,7 +140,7 @@ public class LingD {
         List<Matrix> results = new ArrayList<>();
 
         for (PermutationMatrixPair pair : pairs) {
-            Matrix bHat = LingD.getScaledBHat(pair, bThreshold);
+            Matrix bHat = IcaLingD.getScaledBHat(pair, bThreshold);
             results.add(bHat);
         }
 
@@ -325,11 +325,11 @@ public class LingD {
      */
     public static Matrix getScaledBHat(PermutationMatrixPair pair, double bThreshold) {
         Matrix WTilde = pair.getPermutedMatrix().transpose();
-        WTilde = LingD.scale(WTilde);
+        WTilde = IcaLingD.scale(WTilde);
         Matrix BHat = Matrix.identity(WTilde.getNumColumns()).minus(WTilde);
         BHat = threshold(BHat, abs(bThreshold));
         int[] perm = pair.getRowPerm();
-        int[] inverse = LingD.inversePermutation(perm);
+        int[] inverse = IcaLingD.inversePermutation(perm);
         PermutationMatrixPair inversePair = new PermutationMatrixPair(BHat, inverse, inverse);
         return inversePair.getPermutedMatrix();
     }

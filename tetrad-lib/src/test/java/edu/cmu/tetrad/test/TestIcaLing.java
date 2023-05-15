@@ -26,8 +26,8 @@ import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.search.LingD;
-import edu.cmu.tetrad.search.Lingam;
+import edu.cmu.tetrad.search.IcaLingD;
+import edu.cmu.tetrad.search.IcaLingam;
 import edu.cmu.tetrad.search.utils.NRooks;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
@@ -43,7 +43,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author josephramsey
  */
-public class TestLing {
+public class TestIcaLing {
 
     @Test
     public void test1() {
@@ -90,13 +90,13 @@ public class TestLing {
         double spineThreshold = 0.5;
         System.out.println("W threshold = " + bThreshold);
 
-        Lingam lingam = new Lingam();
-        lingam.setBThreshold(bThreshold);
-        Matrix lingamBhat = lingam.fit(dataSet);
-        Graph lingamGraph = LingD.makeGraph(lingamBhat, dataSet.getVariables());
+        IcaLingam icaLingam = new IcaLingam();
+        icaLingam.setBThreshold(bThreshold);
+        Matrix lingamBhat = icaLingam.fit(dataSet);
+        Graph lingamGraph = IcaLingD.makeGraph(lingamBhat, dataSet.getVariables());
         System.out.println("Lingam graph = " + lingamGraph);
 
-        boolean lingamStable = LingD.isStable(lingamBhat);
+        boolean lingamStable = IcaLingD.isStable(lingamBhat);
         System.out.println(lingamStable ? "Is Stable" : "Not stable");
 
         lingamGraph = GraphUtils.replaceNodes(lingamGraph, trueGraph.getNodes());
@@ -109,10 +109,10 @@ public class TestLing {
         // associated column-permuted W thresholded W matrices. For the constrained N rooks problme we
         // are allowed to place a "rook" at any position in the thresholded W matrix that is not zero.
         System.out.println("LiNG-D");
-        LingD lingD = new LingD();
-        lingD.setBThreshold(bThreshold);
-        lingD.setSpineThreshold(spineThreshold);
-        List<Matrix> bHats = lingD.fit(dataSet);
+        IcaLingD icaLingD = new IcaLingD();
+        icaLingD.setBThreshold(bThreshold);
+        icaLingD.setSpineThreshold(spineThreshold);
+        List<Matrix> bHats = icaLingD.fit(dataSet);
 
         if (bHats.isEmpty()) {
             throw new IllegalArgumentException("Could not find an N Rooks solution with that threshold.");
@@ -123,10 +123,10 @@ public class TestLing {
         for (Matrix bHat : bHats) {
             System.out.println("BHat = " + bHat);
 
-            Graph lingGraph = LingD.makeGraph(bHat, dataSet.getVariables());
+            Graph lingGraph = IcaLingD.makeGraph(bHat, dataSet.getVariables());
             System.out.println("\nGraph = " + lingGraph);
 
-            boolean stable = LingD.isStable(bHat);
+            boolean stable = IcaLingD.isStable(bHat);
             System.out.println(stable ? "Is Stable" : "Not stable");
 
             // For this example, there is exactly one graph (or should be, unless the example was changed).
