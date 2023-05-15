@@ -32,13 +32,13 @@ import java.util.LinkedList;
 import static org.apache.commons.math3.util.FastMath.abs;
 
 /**
- * <p>Implements the ICA LiNGAM algorithm. The reference is here:</p>
+ * <p>Implements the ICA-LiNGAM algorithm. The reference is here:</p>
  *
  * <p>Shimizu, S., Hoyer, P. O., Hyvärinen, A., Kerminen, A., &amp; Jordan, M. (2006).
  * A linear non-Gaussian acyclic model for causal discovery. Journal of Machine Learning
  * Research, 7(10).</p>
  *
- * <p>The focus for this implementation was making to make a version of LiNGAM that
+ * <p>The focus for this implementation was making to make a version of ICA-LiNGAM that
  * would be compatible with LiNG-D (see). There are two parameters, one to choose
  * whether an acyclic result will be guaranteed, and another to set a threshold on
  * the absolute value of the coefficients in the B Hat matrix. The latter is used
@@ -68,9 +68,9 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * cyclic structures to be recovered.</p>
  *
  * <p>There are two methods for estimating W. The first is the default method,
- * which is to use the LiNG-D algorithm to estimate W. The second is to provide
+ * which is to use the ICA-LiNG-D algorithm to estimate W. The second is to provide
  * a W matrix estimated by some other method. The latter method is useful for
- * comparing the performance of LiNGAM to other methods.</p>
+ * comparing the performance of ICA-LiNGAM to other methods.</p>
  *
  * <p>There is an option to set a threshold on the coefficients in B Hat. This
  * threshold is used to find edges in the final graph.</p>
@@ -107,7 +107,7 @@ public class IcaLingam {
     }
 
     /**
-     * Fits a LiNGAM model to the given dataset using a default method for estimating W.
+     * Fits an ICA-LiNGAM model to the given dataset using a default method for estimating W.
      *
      * @param D A continuous dataset.
      * @return The BHat matrix, where B[i][j] gives the coefficient of j->i if nonzero.
@@ -182,7 +182,7 @@ public class IcaLingam {
     }
 
     /**
-     * Whether the LiNGAM algorithm is guaranteed to produce an acyclic graph. This is
+     * Whether the ICA-LiNGAM algorithm is guaranteed to produce an acyclic graph. This is
      * implemnted by setting small coefficients in B hat to zero until an acyclic model is
      * found.
      *

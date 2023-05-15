@@ -45,7 +45,7 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * <p>Implements the ICA LiNG-D algorithm as well as a number of ancillary methods for
+ * <p>Implements the ICA-LiNG-D algorithm as well as a number of ancillary methods for
  * LiNG-D and LiNGAM. The reference is here:</p>
  *
  * <p>Lacerda, G., Spirtes, P. L., Ramsey, J., &amp; Hoyer, P. O. (2012). Discovering
