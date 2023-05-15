@@ -49,6 +49,7 @@ import java.util.List;
  *
  * @author adambrodie
  * @see Knowledge
+ * @see Mimbuild
  */
 public class MimbuildTrek {
 

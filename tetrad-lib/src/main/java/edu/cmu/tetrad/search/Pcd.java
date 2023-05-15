@@ -37,9 +37,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Modifies the PC algorithm to handle the deterministic case. Edges removals
+ * <p>Modifies the PC algorithm to handle the deterministic case. Edges removals
  * or orientations based on conditional independence test involving deterministic
- * relationships are not done.
+ * relationships are not done.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>

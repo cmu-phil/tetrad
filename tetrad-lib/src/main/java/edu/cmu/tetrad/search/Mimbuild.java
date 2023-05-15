@@ -42,7 +42,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * <p>Provides an implemntation of Mimbuild, an algorithm that takes a clustering
+ * <p>Provides an implementation of Mimbuild, an algorithm that takes a clustering
  * of variables, each of which is explained by a single latent, then forms the
  * implied covariance matrix over the latent variables, then runs a CPDAG search
  * to in the structure over the latent themselves.</p>
@@ -53,19 +53,20 @@ import java.util.List;
  * (default 2).</p>
  *
  * <p>One may wish to obtain the implied correlation matrix over the latents and
- * run one's own choice of CPDDAG algroithm on it with one's on test or score;
+ * run one's own choice of CPDDAG algorithm on it with one's own test or score;
  * a method is available to return this covariance matrix.</p>
  *
  * <p>A suitable clustering for Mimbuild may be obtained using the BPC or FOFC
  * algorithm (see).</p>
  *
- * <p>This class is configured to respect knowledge of forbidden and required
+ * <p>This class is configured to respect the knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
  *
  * @author josephramsey
  * @see Bpc
  * @see Fofc
  * @see #getLatentsCov()
+ * @see Grasp
  * @see Knowledge
  */
 public class Mimbuild {

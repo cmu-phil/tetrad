@@ -19,8 +19,7 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * <p>Implements the IDA algorithm, as given in Maathuis et al. (2009)
- * The reference is here:</p>
+ * <p>Implements the IDA algorithm. The reference is here:</p>
  *
  * <p>Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
  * "Estimating high-dimensional intervention effects from observational data."
