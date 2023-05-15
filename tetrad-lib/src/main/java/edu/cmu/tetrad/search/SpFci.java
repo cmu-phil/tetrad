@@ -42,8 +42,9 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * <p>Uses SP in place of FGES for the initial step in the GFCI algorithm.
  * This tends to produce a accurate PAG than GFCI as a result, for the latent
  * variables case. This is a simple substitution; the reference for GFCI is here:</p>
+ *
  * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
+ * for Latent Variable Models," JMLR 2016. Here, SP has been substituted for
  * FGES.</p>
  *
  * <p>For SP only a score is needed, but there are steps in GFCI that require
@@ -63,6 +64,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see BFci
  * @see GraspFci
  * @see Fges
+ * @see Sp
  * @see Knowledge
  */
 public final class SpFci implements IGraphSearch {
