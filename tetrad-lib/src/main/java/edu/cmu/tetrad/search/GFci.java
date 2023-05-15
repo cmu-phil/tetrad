@@ -43,8 +43,9 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * independence reasoning is used to add the remaining colliders into the graph.
  * Then, the FCI final orentation rules are applied. The reference is here:</p>
  *
- * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016.</p>
+ * <p>Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal
+ * search algorithm for latent variable models. In Conference on probabilistic graphical
+ * models (pp. 368-379). PMLR.</p>
  *
  * <p>Because the method both runs FGES (a score-based algorithm) and does
  * additional checking of conditional independencies, both as part of its

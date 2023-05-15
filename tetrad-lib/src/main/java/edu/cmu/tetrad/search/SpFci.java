@@ -47,6 +47,11 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * for Latent Variable Models," JMLR 2016. Here, SP has been substituted for
  * FGES.</p>
  *
+ * <p>The reference for the SP algorithm is here:</p>
+ *
+ * <p>Raskutti, G., &amp; Uhler, C. (2018). Learning directed acyclic graph models based
+ * on sparsest permutations. Stat, 7(1), e183.</p>
+ *
  * <p>For SP only a score is needed, but there are steps in GFCI that require
  * a test, so for this method, both a test and a score need to be given.</p>
  *
