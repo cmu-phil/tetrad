@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -90,6 +89,14 @@ public final class GFci implements IGraphSearch {
     private int depth = -1;
 
     //============================CONSTRUCTORS============================//
+
+    /**
+     * Constructs a new GFci algorithm with the given independence test and
+     * score.
+     *
+     * @param test The independence test to use.
+     * @param score The score to use.
+     */
     public GFci(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
@@ -239,11 +246,39 @@ public final class GFci implements IGraphSearch {
 
     /**
      * Sets whether one-edge faithfulness is assumed. For FGES
+     *
      * @param faithfulnessAssumed True if so.
      * @see Fges#setFaithfulnessAssumed(boolean)
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
+    }
+
+    /**
+     * Sets whether the discriminating path rule should be used.
+     *
+     * @param doDiscriminatingPathRule True if so.
+     */
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    /**
+     * Sets whether the possible d-sep search should be done.
+     *
+     * @param possibleDsepSearchDone True if so.
+     */
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+        this.possibleDsepSearchDone = possibleDsepSearchDone;
+    }
+
+    /**
+     * Sets the depth of the search for the possible d-sep search.
+     *
+     * @param depth This depth.
+     */
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 
     //===========================================PRIVATE METHODS=======================================//
@@ -332,17 +367,5 @@ public final class GFci implements IGraphSearch {
         }
 
         this.logger.log("info", "Finishing BK Orientation.");
-    }
-
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
     }
 }
