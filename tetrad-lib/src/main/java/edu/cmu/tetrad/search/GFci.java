@@ -193,11 +193,11 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether Zhang's complete rules is used.
+     * Sets whether Zhang's complete rules are used.
      *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set
      *                            should be used, false if only R1-R4 (the rule set of the original FCI)
-     *                            should be used. False by default.
+     *                            should be used. True by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
