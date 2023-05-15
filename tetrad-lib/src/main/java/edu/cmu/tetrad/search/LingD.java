@@ -305,7 +305,7 @@ public class LingD {
 
         for (int i = 0; i < M.getNumRows(); i++) {
             for (int j = 0; j < M.getNumColumns(); j++) {
-                if (abs(M.get(i, j)) < threshold) _M.set(i, j, 0.0);
+                if (abs(M.get(i, j)) < abs(threshold)) _M.set(i, j, 0.0);
             }
         }
 
@@ -327,7 +327,7 @@ public class LingD {
         Matrix WTilde = pair.getPermutedMatrix().transpose();
         WTilde = LingD.scale(WTilde);
         Matrix BHat = Matrix.identity(WTilde.getNumColumns()).minus(WTilde);
-        BHat = threshold(BHat, bThreshold);
+        BHat = threshold(BHat, abs(bThreshold));
         int[] perm = pair.getRowPerm();
         int[] inverse = LingD.inversePermutation(perm);
         PermutationMatrixPair inversePair = new PermutationMatrixPair(BHat, inverse, inverse);

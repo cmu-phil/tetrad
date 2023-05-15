@@ -129,7 +129,7 @@ public class Lingam {
      */
     public Matrix fitW(Matrix W) {
         PermutationMatrixPair bestPair = LingD.hungarianDiagonal(W);
-        Matrix scaledBHat = LingD.getScaledBHat(bestPair, bThreshold);
+        Matrix scaledBHat = LingD.getScaledBHat(bestPair, abs(bThreshold));
 
         if (acyclicityGuaranteed) {
             class Record {
@@ -142,7 +142,7 @@ public class Lingam {
 
             for (int i = 0; i < scaledBHat.getNumRows(); i++) {
                 for (int j = 0; j < scaledBHat.getNumColumns(); j++) {
-                    if (i != j && scaledBHat.get(i, j) > 0.1) {
+                    if (i != j && scaledBHat.get(i, j) != 0) {
                         Record record = new Record();
                         record.coef = scaledBHat.get(i, j);
                         record.i = i;
@@ -157,7 +157,7 @@ public class Lingam {
 
             Record coef = coefs.getFirst();
 
-            while (true) {
+            while (!coefs.isEmpty()) {
                 if (LingD.isAcyclic(scaledBHat)) {
                     TetradLogger.getInstance().forceLogMessage("Effective threshold = " + coef.coef);
                     return scaledBHat;
@@ -166,7 +166,11 @@ public class Lingam {
                 coef = coefs.removeFirst();
                 scaledBHat.set(coef.i, coef.j, 0.0);
             }
+
+            TetradLogger.getInstance().forceLogMessage("Effective threshold = " + abs(coef.coef));
+            return scaledBHat;
         } else {
+            TetradLogger.getInstance().forceLogMessage("Threshold = " + abs(bThreshold));
             return scaledBHat;
         }
     }
