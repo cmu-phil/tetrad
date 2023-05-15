@@ -363,7 +363,8 @@ public final class GFci implements IGraphSearch {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge",
+                    graph.getEdge(from, to)));
         }
 
         this.logger.log("info", "Finishing BK Orientation.");
