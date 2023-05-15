@@ -43,6 +43,9 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
  * FGES.</p>
  *
+ * <p>BOSS is a an algorithm that is currently being written up for publication,
+ * so we don't yet have a reference for it.</p>
+ *
  * <p>For BOSS only a score is needed, but there are steps in GFCI that require
  * a test, so for this method, both a test and a score need to be given.</p>
  *

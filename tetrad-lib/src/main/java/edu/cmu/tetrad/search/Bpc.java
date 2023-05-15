@@ -35,14 +35,26 @@ import java.util.*;
 
 
 /**
- * <p>Implements the Build Pure Clusters algorithm, which allows one to identify
- * clusters of measured variables in a dataset that are explained by single latents.
- * The algorithm outputs these clusters, which can then be used for further analysis.
- * The reference is this:</p>
+ * <p>Implements the Build Pure Clusters (BPC) algorithm, which allows one to identify
+ * clusters of measured variables in a dataset that are explained by a single latent.
+ * The algorithm outputs these clusters, which can then be used for further analysis,
+ * such as inferring structure over the latents. For the latter, see for instance the
+ * MimBuild algorithm.</p>
+ *
+ * <p>The reference for BPC is this:</p>
  *
  * <p>Silva, R., Scheines, R., Glymour, C., Spirtes, P., &amp; Chickering, D. M. (2006).
  * Learning the Structure of Linear Latent Variable Models. Journal of Machine Learning
  * Research, 7(2).</p>
+ *
+ * <p>For a more detailed description of the algorithm, see the paper above. The
+ * algorithm is based on the idea of finding cliques in the graph of the covariance
+ * matrix. The algorithm is initialized by finding all maximal cliques in the graph
+ * of the covariance matrix. Then, the algorithm iterates over the cliques, and
+ * for each clique, it tests whether the clique is explained by a single latent.
+ * If so, the clique is added to the set of clusters. If not, the clique is
+ * partitioned into smaller cliques, and the process is repeated for each of the
+ * smaller cliques. The algorithm stops when all cliques have been tested.</p>
  *
  * <p>Some more References:</p>
  *
