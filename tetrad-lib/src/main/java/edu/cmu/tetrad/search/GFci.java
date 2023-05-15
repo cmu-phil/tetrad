@@ -56,6 +56,8 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * for the initial step; in this repository we give three other options,
  * GRaSP-FCI, BFCI (BOSS FCI), and SP-FCI (see).</p>
  *
+ * <p>For more information on the algorithm, see the reference above.</p>
+ *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
  *
@@ -73,13 +75,12 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 public final class GFci implements IGraphSearch {
     private Graph graph;
     private Knowledge knowledge = new Knowledge();
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
     private boolean completeRuleSetUsed = true;
     private int maxPathLength = -1;
     private int maxDegree = -1;
     private final TetradLogger logger = TetradLogger.getInstance();
     private boolean verbose;
-    private ICovarianceMatrix covarianceMatrix;
     private PrintStream out = System.out;
     private boolean faithfulnessAssumed = true;
     private final Score score;
