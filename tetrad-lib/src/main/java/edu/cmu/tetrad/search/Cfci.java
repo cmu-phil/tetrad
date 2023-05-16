@@ -35,7 +35,7 @@ import java.util.*;
 
 
 /**
- * <p></p></>Adjusts FCI (see) to use conservative orientation as in CPC (see). Because the
+ * <p>Adjusts FCI (see) to use conservative orientation as in CPC (see). Because the
  * collider orientatation is conservative, there may be ambiguous triples; these
  * may be retrieved using that accessor method.</p>
  *
