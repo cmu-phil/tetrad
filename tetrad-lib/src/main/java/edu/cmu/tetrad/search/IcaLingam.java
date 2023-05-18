@@ -85,8 +85,8 @@ import static org.apache.commons.math3.util.FastMath.abs;
  *     model is achieved.</li>
  * </ol>
  *
- * <p>We are using the Hungarian Algorithm to find the best diagonal for W to solve
- * the linear assignment problem.</p>
+ * <p>We are using the Hungarian Algorithm to solve the linear assignment problem
+ * for finding the best diagonal for W.</p>
  *
  * <p>This class is not configured to respect knowledge of forbidden and required
  * edges.</p>
