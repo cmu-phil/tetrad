@@ -80,10 +80,9 @@ import static org.apache.commons.math3.util.FastMath.abs;
  *     <li>Estimate W using LiNG-D or using a user-provided W matrix.</li>
  *     <li>Find the strongest diagonal for W using a linear assignment process.</li>
  *     <li>Permute the matrix for this strongest diagonal and scele the matrix to produce B Hat</li>
- *     <li>Set a threshold on the absolute value of the coefficients in B Hat.</li>
- *     <li>Find edges in B Hat.</li>
- *     <li>Set small coefficients to zero until an acyclic model is achieved, if
- *     acyclicity is guaranteed.</li>
+ *     <li>Set entries in BHat less than the treshold in absolute value to zero.</li>
+ *     <li>If acyclicity is guaranteed, set small coefficients to zero until an acyclic
+ *     model is achieved.</li>
  * </ol>
  *
  * <p>We are using the Hungarian Algorithm to find the best diagonal for W to solve
