@@ -73,14 +73,12 @@ import static org.apache.commons.math3.util.FastMath.*;
  *
  * <p>We use the N Rooks algorithm to find alternative diagonals for
  * permutations of the W matrix. The parameter that N Rooks requires is a
- * threshold for entries in W to be included in possible diagonals, which is
- * the lowest number in absolute value that a W matrix entry can take to be part
- * of a diagonal; the implied permutation is the permutation that permutes rows
- * so that this combination lies along the diagonal of W, which is then scaled,
- * and the separate satisfactory B Hat matrices reported.</p>
- *
- * <p>The W Hat matrices are further thresholded, setting values below
- * this threshold in absolute value to zero.</p>
+ * threshold for entries in W to be included in possible diagonals, which
+ * is the lowest number in absolute value that a W matrix entry can take
+ * to be part of a diagonal; the implied permutations is the permutations
+ * that permutes rows so that these combination lies along the their
+ * respective diagonals in W, which are then scaled, and the separate
+ * satisfactory B Hat matrices reported.</p>
  *
  * <p>ICA-LiNG-D, which takes this W as an imput, is a method for estimating
  * a directed graph (DG) from a dataset. The graph is estimated by finding a
