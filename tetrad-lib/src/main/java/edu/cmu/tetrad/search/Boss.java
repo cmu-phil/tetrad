@@ -15,14 +15,14 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * <p>Implements Best Order Score Search (BOSS). The following references
  * are relevant:</p>
  *
- * <p>Lam, W. Y., Andrews, B., & Ramsey, J. (2022, August). Greedy relaxations
+ * <p>Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations
  * of the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence
  * (pp. 1052-1062). PMLR.</p>
  *
- * <p>Teyssier, M., & Koller, D. (2012). Ordering-based search: A simple and effective
+ * <p>Teyssier, M., &amp; Koller, D. (2012). Ordering-based search: A simple and effective
  * algorithm for learning Bayesian networks. arXiv preprint arXiv:1207.1429.</p>
  *
- * <p>Solus, L., Wang, Y., & Uhler, C. (2021). Consistency guarantees for greedy
+ * <p>Solus, L., Wang, Y., &amp; Uhler, C. (2021). Consistency guarantees for greedy
  * permutation-based causal inference algorithms. Biometrika, 108(4), 795-814.</p>
  *
  * <p>The BOSS algorithm is based on the idea that implied DAGs for permutations
