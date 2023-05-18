@@ -29,7 +29,7 @@ import java.util.*;
  * taken from previous time lags. This is intended to be interpreted as a
  * repeating time series graph for purposes of simulation.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class LagGraph implements Graph {
     static final long serialVersionUID = 23L;
@@ -39,6 +39,11 @@ public class LagGraph implements Graph {
     private final Map<String, List<Node>> laggedVariables = new HashMap<>();
 
     private final Map<String, Object> attributes = new HashMap<>();
+
+    private Set<Triple> underLineTriples = new HashSet<>();
+    private Set<Triple> dottedUnderLineTriples = new HashSet<>();
+    private Set<Triple> ambiguousTriples = new HashSet<>();
+
 
     private Paths paths;
 
@@ -284,11 +289,6 @@ public class LagGraph implements Graph {
     }
 
     @Override
-    public Underlines underlines() {
-        return graph.underlines();
-    }
-
-    @Override
     public Paths paths() {
         return this.paths;
     }
@@ -343,6 +343,129 @@ public class LagGraph implements Graph {
         this.attributes.put(key, value);
     }
 
+    public Set<Triple> getAmbiguousTriples() {
+        return new HashSet<>(this.ambiguousTriples);
+    }
+
+    public void setAmbiguousTriples(Set<Triple> triples) {
+        this.ambiguousTriples.clear();
+
+        for (Triple triple : triples) {
+            addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+        }
+    }
+
+    public Set<Triple> getUnderLines() {
+        return new HashSet<>(this.underLineTriples);
+    }
+
+    public Set<Triple> getDottedUnderlines() {
+        return new HashSet<>(this.dottedUnderLineTriples);
+    }
+
+    /**
+     * States whether r-s-r is an underline triple or not.
+     */
+    public boolean isAmbiguousTriple(Node x, Node y, Node z) {
+        return this.ambiguousTriples.contains(new Triple(x, y, z));
+    }
+
+    /**
+     * States whether r-s-r is an underline triple or not.
+     */
+    public boolean isUnderlineTriple(Node x, Node y, Node z) {
+        return this.underLineTriples.contains(new Triple(x, y, z));
+    }
+
+    public void addAmbiguousTriple(Node x, Node y, Node z) {
+        this.ambiguousTriples.add(new Triple(x, y, z));
+    }
+
+    public void addUnderlineTriple(Node x, Node y, Node z) {
+        Triple triple = new Triple(x, y, z);
+
+        if (!triple.alongPathIn(this)) {
+            return;
+        }
+
+        this.underLineTriples.add(new Triple(x, y, z));
+    }
+
+    public void addDottedUnderlineTriple(Node x, Node y, Node z) {
+        Triple triple = new Triple(x, y, z);
+
+        if (!triple.alongPathIn(this)) {
+            return;
+        }
+
+        this.dottedUnderLineTriples.add(triple);
+    }
+
+    public void removeAmbiguousTriple(Node x, Node y, Node z) {
+        this.ambiguousTriples.remove(new Triple(x, y, z));
+    }
+
+    public void removeUnderlineTriple(Node x, Node y, Node z) {
+        this.underLineTriples.remove(new Triple(x, y, z));
+    }
+
+    public void removeDottedUnderlineTriple(Node x, Node y, Node z) {
+        this.dottedUnderLineTriples.remove(new Triple(x, y, z));
+    }
+
+    public void setUnderLineTriples(Set<Triple> triples) {
+        this.underLineTriples.clear();
+
+        for (Triple triple : triples) {
+            addUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+        }
+    }
+
+    public void setDottedUnderLineTriples(Set<Triple> triples) {
+        this.dottedUnderLineTriples.clear();
+
+        for (Triple triple : triples) {
+            addDottedUnderlineTriple(triple.getX(), triple.getY(), triple.getZ());
+        }
+    }
+
+    public void removeTriplesNotInGraph() {
+        for (Triple triple : new HashSet<>(this.ambiguousTriples)) {
+            if (!containsNode(triple.getX()) || !containsNode(triple.getY())
+                    || !containsNode(triple.getZ())) {
+                this.ambiguousTriples.remove(triple);
+                continue;
+            }
+
+            if (!isAdjacentTo(triple.getX(), triple.getY())
+                    || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                this.ambiguousTriples.remove(triple);
+            }
+        }
+
+        for (Triple triple : new HashSet<>(this.underLineTriples)) {
+            if (!containsNode(triple.getX()) || !containsNode(triple.getY())
+                    || !containsNode(triple.getZ())) {
+                this.underLineTriples.remove(triple);
+                continue;
+            }
+
+            if (!isAdjacentTo(triple.getX(), triple.getY()) || !isAdjacentTo(triple.getY(), triple.getZ())) {
+                this.underLineTriples.remove(triple);
+            }
+        }
+
+        for (Triple triple : new HashSet<>(this.dottedUnderLineTriples)) {
+            if (!containsNode(triple.getX()) || !containsNode(triple.getY()) || !containsNode(triple.getZ())) {
+                this.dottedUnderLineTriples.remove(triple);
+                continue;
+            }
+
+            if (!isAdjacentTo(triple.getX(), triple.getY()) || isAdjacentTo(triple.getY(), triple.getZ())) {
+                this.dottedUnderLineTriples.remove(triple);
+            }
+        }
+    }
 }
 
 

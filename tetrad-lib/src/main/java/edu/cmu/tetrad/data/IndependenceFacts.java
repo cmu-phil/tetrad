@@ -24,7 +24,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestDSep;
 import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 
@@ -33,7 +33,7 @@ import java.util.*;
 /**
  * Stores a list of independence facts.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class IndependenceFacts implements DataModel {
     static final long serialVersionUID = 23L;
@@ -73,7 +73,7 @@ public class IndependenceFacts implements DataModel {
                     Z.add(nodes.get(choice[perm[i]]));
                 }
 
-                if (dsep.checkIndependence(x, y, Z).independent()) {
+                if (dsep.checkIndependence(x, y, Z).isIndependent()) {
                     facts.add(new IndependenceFact(x, y, Z));
                 }
             }

@@ -39,7 +39,7 @@ import java.util.List;
  * the condition B. Then the maximum likelihood estimate of condition A is
  * calculated.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     static final long serialVersionUID = 23L;

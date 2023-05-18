@@ -29,7 +29,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * interface. A single random number generator is used throughout Tetrad
  * to ensure randomness.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 @SuppressWarnings("UnusedDeclaration")
 public interface Distribution extends TetradSerializable {

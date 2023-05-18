@@ -33,7 +33,7 @@ import java.util.List;
  * Stores information for a SemIm about evidence we have for each variable as
  * well as whether each variable has been manipulated.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class SemEvidence implements TetradSerializable {
     static final long serialVersionUID = 23L;

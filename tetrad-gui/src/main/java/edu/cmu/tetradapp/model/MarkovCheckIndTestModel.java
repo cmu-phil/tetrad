@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Stores a list of independence facts.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;

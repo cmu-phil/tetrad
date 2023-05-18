@@ -32,7 +32,7 @@ import java.text.NumberFormat;
  * This is an editor for a JTable cell for editing numbers in conjunction with
  * tetrad.datatable.NumberCellRenderer.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see NumberCellRenderer
  */
 class NumberCellEditor extends DefaultCellEditor {

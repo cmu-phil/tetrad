@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.optim.InitialGuess;
@@ -41,14 +42,32 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * An implemetation of Mimbuild based on the Fgsl score. The search will attempt a GES search first and if that
- * throws and exception then a CPC search. The penalty penaltyDiscount parameter is for the GES search; the alpha
- * value is for the CPC search. Or you can just grab the latent covariance matrix and run whatever search you
- * want to. (I don't know why GES sometimes fails, it is a mystery.)
- * <p>
- * Uses a different (better) algorithm from Mimbuild. Preferable.
+ * <p>Provides an implementation of Mimbuild, an algorithm that takes a clustering
+ * of variables, each of which is explained by a single latent, then forms the
+ * implied covariance matrix over the latent variables, then runs a CPDAG search
+ * to in the structure over the latent themselves.</p>
  *
- * @author Joseph Ramsey
+ * <p>Specifically, the search will first infer the covariance matrix over the
+ * latents and then will use the GRaSP algorithm (see) to infer the structure
+ * graph over the latents, using the SEM Bic score with the given penalty discount
+ * (default 2).</p>
+ *
+ * <p>One may wish to obtain the implied correlation matrix over the latents and
+ * run one's own choice of CPDDAG algorithm on it with one's own test or score;
+ * a method is available to return this covariance matrix.</p>
+ *
+ * <p>A suitable clustering for Mimbuild may be obtained using the BPC or FOFC
+ * algorithm (see).</p>
+ *
+ * <p>This class is configured to respect the knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
+ * @author josephramsey
+ * @see Bpc
+ * @see Fofc
+ * @see #getLatentsCov()
+ * @see Grasp
+ * @see Knowledge
  */
 public class Mimbuild {
 
@@ -67,9 +86,6 @@ public class Mimbuild {
      */
     private Knowledge knowledge = new Knowledge();
 
-    /**
-     * The estimated covariance matrix over the latents.
-     */
     private ICovarianceMatrix latentsCov;
 
     /**
@@ -81,9 +97,7 @@ public class Mimbuild {
      * The p value of the optimization.
      */
     private double pValue;
-    private int numParams;
     private List<Node> latents;
-    private double epsilon = 1e-4;
     private double penaltyDiscount = 1;
     private int minClusterSize = 3;
 
@@ -92,6 +106,16 @@ public class Mimbuild {
 
     //=================================== PUBLIC METHODS =========================================//
 
+    /**
+     * Does a Mimbuild search.
+     *
+     * @param clustering  The clustering to use--this clusters the measured variables in such a way
+     *                    that each cluster is explained by a single latent variables.
+     * @param latentNames The names of the latent variables corresponding in order ot each cluster
+     *                    in the clustering.
+     * @param measuresCov The covariance matrix over the measured variables.
+     * @return The inferred graph over the latent variables.
+     */
     public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) {
         List<String> _latentNames = new ArrayList<>(latentNames);
 
@@ -150,42 +174,53 @@ public class Mimbuild {
         return this.structureGraph;
     }
 
+    /**
+     * Returns the clustering of measured variables, each of which is explained
+     * by a single latent.
+     *
+     * @return This clustering.
+     */
     public List<List<Node>> getClustering() {
         return this.clustering;
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
+    /**
+     * Sets the knowledge to be used in the search.
+     *
+     * @param knowledge This knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = knowledge;
     }
 
+    /**
+     * Returns the inferred covariance matrix over the late4nt variables.
+     *
+     * @return Thsi covariance matrix.
+     */
     public ICovarianceMatrix getLatentsCov() {
         return this.latentsCov;
     }
 
-    public List<String> getLatentNames(List<Node> latents) {
-        List<String> latentNames = new ArrayList<>();
-
-        for (Node node : latents) {
-            latentNames.add(node.getName());
-        }
-
-        return latentNames;
-    }
-
+    /**
+     * @return The minimum function (Fgsl) value achieved.
+     */
     public double getMinimum() {
         return this.minimum;
     }
 
+    /**
+     * @return The p value of the optimization.
+     */
     public double getpValue() {
         return this.pValue;
     }
 
     /**
-     * @return the allowUnfaithfulness discovered graph, with latents and indicators.
+     * The full graph inferred, including the edges from latents to measures and
+     * all fo the edges inferred among latents.
+     *
+     * @return This full graph.
      */
     public Graph getFullGraph() {
         Graph graph = new EdgeListGraph(this.structureGraph);
@@ -206,18 +241,11 @@ public class Mimbuild {
         return graph;
     }
 
-    public double getEpsilon() {
-        return this.epsilon;
-    }
-
     /**
-     * Parameter convergence threshold. Default = 1e-4.
+     * Sets the penalty discount of the score used to infer the structure graph.
+     *
+     * @param penaltyDiscount The penalty discount.
      */
-    public void setEpsilon(double epsilon) {
-        if (epsilon < 0) throw new IllegalArgumentException("Epsilon mut be >= 0: " + epsilon);
-        this.epsilon = epsilon;
-    }
-
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.penaltyDiscount = penaltyDiscount;
     }
@@ -253,8 +281,8 @@ public class Mimbuild {
         Matrix measurescov = _measurescov.getMatrix();
         Matrix latentscov = new Matrix(latents.size(), latents.size());
 
-        for (int i = 0; i < latentscov.rows(); i++) {
-            for (int j = i; j < latentscov.columns(); j++) {
+        for (int i = 0; i < latentscov.getNumRows(); i++) {
+            for (int j = i; j < latentscov.getNumColumns(); j++) {
                 if (i == j) latentscov.set(i, j, 1.0);
                 else {
                     final double v = .5;
@@ -290,7 +318,7 @@ public class Mimbuild {
         }
 
         // Variances of the measures.
-        double[] delta = new double[measurescov.rows()];
+        double[] delta = new double[measurescov.getNumRows()];
 
         Arrays.fill(delta, 1);
 
@@ -298,14 +326,14 @@ public class Mimbuild {
 
         optimizeNonMeasureVariancesQuick(indicators, measurescov, latentscov, loadings, indicatorIndices);
 
-        this.numParams = allParams1.length;
+        int numParams = allParams1.length;
 
         optimizeAllParamsSimultaneously(indicators, measurescov, latentscov, loadings, indicatorIndices, delta);
 
         double N = _measurescov.getSampleSize();
         int p = _measurescov.getDimension();
 
-        int df = (p) * (p + 1) / 2 - (this.numParams);
+        int df = (p) * (p + 1) / 2 - (numParams);
         double x = (N - 1) * this.minimum;
 
         System.out.println("p = " + p);
@@ -363,10 +391,6 @@ public class Mimbuild {
         this.minimum = pair.getValue();
     }
 
-    public int getNumParams() {
-        return this.numParams;
-    }
-
     private void optimizeAllParamsSimultaneously(Node[][] indicators, Matrix measurescov,
                                                  Matrix latentscov, double[][] loadings,
                                                  int[][] indicatorIndices, double[] delta) {
@@ -388,13 +412,13 @@ public class Mimbuild {
         int count = 0;
 
         // Non-redundant elements of cov(latents)
-        for (int i = 0; i < latentscov.rows(); i++) {
-            for (int j = i; j < latentscov.columns(); j++) {
+        for (int i = 0; i < latentscov.getNumRows(); i++) {
+            for (int j = i; j < latentscov.getNumColumns(); j++) {
                 count++;
             }
         }
 
-        System.out.println("# nnonredundant elemnts of cov(error) = " + latentscov.rows() * (latentscov.rows() + 1) / 2);
+        System.out.println("# nnonredundant elemnts of cov(error) = " + latentscov.getNumRows() * (latentscov.getNumRows() + 1) / 2);
 
         int _loadings = 0;
 
@@ -418,8 +442,8 @@ public class Mimbuild {
         double[] values = new double[count];
         count = 0;
 
-        for (int i = 0; i < latentscov.rows(); i++) {
-            for (int j = i; j < latentscov.rows(); j++) {
+        for (int i = 0; i < latentscov.getNumRows(); i++) {
+            for (int j = i; j < latentscov.getNumRows(); j++) {
                 values[count++] = latentscov.get(i, j);
             }
         }
@@ -532,7 +556,7 @@ public class Mimbuild {
 
             Matrix implied = impliedCovariance(this.indicatorIndices, this.loadings, this.measurescov, this.latentscov, this.delta);
 
-            Matrix I = Matrix.identity(implied.rows());
+            Matrix I = Matrix.identity(implied.getNumRows());
             Matrix diff = I.minus((implied.times(this.measuresCovInverse)));  // time hog. times().
 
             return 0.5 * (diff.times(diff)).trace();
@@ -542,7 +566,7 @@ public class Mimbuild {
 
     private Matrix impliedCovariance(int[][] indicatorIndices, double[][] loadings, Matrix cov, Matrix loadingscov,
                                      double[] delta) {
-        Matrix implied = new Matrix(cov.rows(), cov.columns());
+        Matrix implied = new Matrix(cov.getNumRows(), cov.getNumColumns());
 
         for (int i = 0; i < loadings.length; i++) {
             for (int j = 0; j < loadings.length; j++) {
@@ -555,7 +579,7 @@ public class Mimbuild {
             }
         }
 
-        for (int i = 0; i < implied.rows(); i++) {
+        for (int i = 0; i < implied.getNumRows(); i++) {
             implied.set(i, i, implied.get(i, i) + delta[i]);
         }
 

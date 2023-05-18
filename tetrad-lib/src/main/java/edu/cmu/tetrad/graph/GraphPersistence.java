@@ -57,7 +57,7 @@ public class GraphPersistence {
             final String missingValueMarker = "*";
             final boolean hasHeader = false;
 
-            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, commentMarker, quoteCharacter, missingValueMarker, hasHeader, Delimiter.TAB);
+            DataSet dataSet = SimpleDataLoader.loadContinuousData(file, commentMarker, quoteCharacter, missingValueMarker, hasHeader, Delimiter.COMMA);
 
             List<Node> nodes = dataSet.getVariables();
             Graph graph = new EdgeListGraph(nodes);
@@ -658,7 +658,7 @@ public class GraphPersistence {
             edges.appendChild(_edge);
         }
 
-        Set<Triple> ambiguousTriples = graph.underlines().getAmbiguousTriples();
+        Set<Triple> ambiguousTriples = graph.getAmbiguousTriples();
 
         if (!ambiguousTriples.isEmpty()) {
             Element underlinings = new Element("ambiguities");
@@ -672,7 +672,7 @@ public class GraphPersistence {
             }
         }
 
-        Set<Triple> underlineTriples = graph.underlines().getUnderLines();
+        Set<Triple> underlineTriples = graph.getUnderLines();
 
         if (!underlineTriples.isEmpty()) {
             Element underlinings = new Element("underlines");
@@ -686,7 +686,7 @@ public class GraphPersistence {
             }
         }
 
-        Set<Triple> dottedTriples = graph.underlines().getDottedUnderlines();
+        Set<Triple> dottedTriples = graph.getDottedUnderlines();
 
         if (!dottedTriples.isEmpty()) {
             Element dottedUnderlinings = new Element("dottedUnderlines");
@@ -921,7 +921,7 @@ public class GraphPersistence {
         if ("ambiguities".equals(graphElement.getChildElements().get(p).getLocalName())) {
             Element ambiguitiesElement = graphElement.getChildElements().get(p);
             Set<Triple> triples = parseTriples(variables, ambiguitiesElement, "ambiguity");
-            graph.underlines().setAmbiguousTriples(triples);
+            graph.setAmbiguousTriples(triples);
             p++;
         }
 
@@ -932,7 +932,7 @@ public class GraphPersistence {
         if ("underlines".equals(graphElement.getChildElements().get(p).getLocalName())) {
             Element ambiguitiesElement = graphElement.getChildElements().get(p);
             Set<Triple> triples = parseTriples(variables, ambiguitiesElement, "underline");
-            graph.underlines().setUnderLineTriples(triples);
+            graph.setUnderLineTriples(triples);
             p++;
         }
 
@@ -943,7 +943,7 @@ public class GraphPersistence {
         if ("dottedunderlines".equals(graphElement.getChildElements().get(p).getLocalName())) {
             Element ambiguitiesElement = graphElement.getChildElements().get(p);
             Set<Triple> triples = parseTriples(variables, ambiguitiesElement, "dottedunderline");
-            graph.underlines().setDottedUnderLineTriples(triples);
+            graph.setDottedUnderLineTriples(triples);
         }
 
         return graph;

@@ -25,25 +25,25 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
-import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.apache.commons.math3.util.FastMath;
 
-import static org.apache.commons.math3.util.FastMath.exp;
-import static org.apache.commons.math3.util.FastMath.tanh;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
- * A Java implementation of FastIca following the R package fastICA. The only
- * difference (I believe) is that the R package can handle complex numbers,
- * whereas this implementation cannot.
- * <p>
- * Performance. The R version scales up much better than this one does, the main
- * reason for which is that the calculation of the initial covariance matrix
- * (1/n) X'X is so much faster.
- * <p>
- * The documention of the R version is as follows, all of which is true of this
+ * <p>Translates a version of the FastICA algorithm used in R from Fortran
+ * into Java for use in Tetrad. This can be used in various algorithms that
+ * assume linearity and non-gaussianity, as for example LiNGAM and LiNG-D.
+ * There is one difference from the R, in that in R FastICA can operate over
+ * complex numbers, whereeas here it is restricted to real numbers. A
+ * useful reference is this:</p>
+ *
+ * <p>Oja, E., &amp; Hyvarinen, A. (2000). Independent component analysis:
+ * algorithms and applications. Neural networks, 13(4-5), 411-430.</p>
+ *
+ * <p>The documention of the R version is as follows, all of which is true of this
  * translation (so far as I know) except for its being in R and its allowing
- * complex values:
+ * complex values.
  * <p>
  * Description:
  * <p>
@@ -140,9 +140,8 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  * A. Hyvarinen and E. Oja (2000) Independent Component Analysis: Algorithms and
  * Applications, _Neural Networks_, *13(4-5)*:411-430
  * <p>
- * <p>Note: This code is currently broken; please do not use it until it's fixed. 11/24/2015&gt; 0
  *
- * @author Joseph Ramsey (of the translation, that is)
+ * @author josephramsey
  */
 public class FastIca {
 
@@ -248,6 +247,8 @@ public class FastIca {
      * If algorithmType == PARALLEL the components are extracted simultaneously
      * (the default). if algorithmType == DEFLATION the components are extracted
      * one at a time.
+     *
+     * @param algorithmType This type.
      */
     public void setAlgorithmType(int algorithmType) {
         if (!(algorithmType == FastIca.DEFLATION || algorithmType == FastIca.PARALLEL)) {
@@ -258,14 +259,9 @@ public class FastIca {
     }
 
     /**
-     * The function type to be used, either LOGCOSH or EXP.
-     */
-    public int getFunction() {
-        return this.function;
-    }
-
-    /**
-     * The function type to be used, either LOGCOSH or EXP.
+     * Sets the function type to be used, either LOGCOSH or EXP.
+     *
+     * @param function This function, LOGCOSH or EXP.
      */
     public void setFunction(int function) {
         if (!(function == FastIca.LOGCOSH || function == FastIca.EXP)) {
@@ -276,16 +272,10 @@ public class FastIca {
     }
 
     /**
-     * Constant in range [1, 2] used in approximation to neg-entropy when 'fun
+     * Sets the FastICA alpha constant in range [1, 2] used in approximation to neg-entropy when 'fun
      * == "logcosh"'
-     */
-    public double getAlpha() {
-        return this.alpha;
-    }
-
-    /**
-     * Constant in range [1, 2] used in approximation to neg-entropy when 'fun
-     * == "logcosh"'
+     *
+     * @param alpha this constant.
      */
     public void setAlpha(double alpha) {
         if (!(alpha >= 1 && alpha <= 2)) {
@@ -298,20 +288,17 @@ public class FastIca {
     /**
      * A logical value indicating whether rows of the data matrix 'X' should be
      * standardized beforehand.
+     *
+     * @param rowNorm True if so.
      */
-    public void setRowNorm(boolean colNorm) {
-        this.rowNorm = colNorm;
+    public void setRowNorm(boolean rowNorm) {
+        this.rowNorm = rowNorm;
     }
 
     /**
-     * Maximum number of iterations to perform.
-     */
-    public int getMaxIterations() {
-        return this.maxIterations;
-    }
-
-    /**
-     * Maximum number of iterations to perform.
+     * Sets the maximum number of iterations to allow.
+     *
+     * @param maxIterations This maximum.
      */
     public void setMaxIterations(int maxIterations) {
         if (maxIterations < 1) {
@@ -322,16 +309,10 @@ public class FastIca {
     }
 
     /**
-     * A positive scalar giving the tolerance at which the un-mixing matrix is
+     * Sets a positive scalar giving the tolerance at which the un-mixing matrix is
      * considered to have converged.
-     */
-    public double getTolerance() {
-        return this.tolerance;
-    }
-
-    /**
-     * A positive scalar giving the tolerance at which the un-mixing matrix is
-     * considered to have converged.
+     *
+     * @param tolerance This value.
      */
     public void setTolerance(double tolerance) {
         if (!(tolerance > 0)) {
@@ -342,30 +323,19 @@ public class FastIca {
     }
 
     /**
-     * A logical value indicating the level of output as the algorithm runs.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    /**
-     * A logical value indicating the level of output as the algorithm runs.
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
-     * then a matrix of normal r.v.'s is used.
-     */
-    public Matrix getWInit() {
-        return this.wInit;
-    }
-
-    /**
-     * Initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
-     * then a matrix of normal r.v.'s is used.
+     * Sets the initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default)
+     * then a random matrix of normal r.v.'s is used.
+     *
+     * @param wInit This matrix.
      */
     public void setWInit(Matrix wInit) {
         this.wInit = wInit;
@@ -378,23 +348,23 @@ public class FastIca {
      * @return this list, as an FastIca.IcaResult object.
      */
     public IcaResult findComponents() {
-        int n = this.X.columns();
-        int p = this.X.rows();
+        int n = this.X.getNumColumns();
+        int p = this.X.getNumRows();
 
-        if (this.numComponents > FastMath.min(n, p)) {
+        if (this.numComponents > min(n, p)) {
             TetradLogger.getInstance().log("info", "Requested number of components is too large.");
-            TetradLogger.getInstance().log("info", "Reset to " + FastMath.min(n, p));
-            this.numComponents = FastMath.min(n, p);
+            TetradLogger.getInstance().log("info", "Reset to " + min(n, p));
+            this.numComponents = min(n, p);
         }
 
         if (this.wInit == null) {
             this.wInit = new Matrix(this.numComponents, this.numComponents);
-            for (int i = 0; i < this.wInit.rows(); i++) {
-                for (int j = 0; j < this.wInit.columns(); j++) {
+            for (int i = 0; i < this.wInit.getNumRows(); i++) {
+                for (int j = 0; j < this.wInit.getNumColumns(); j++) {
                     this.wInit.set(i, j, RandomUtil.getInstance().nextNormal(0, 1));
                 }
             }
-        } else if (this.wInit.rows() != this.wInit.columns()) {
+        } else if (this.wInit.getNumRows() != this.wInit.getNumColumns()) {
             throw new IllegalArgumentException("wInit is the wrong size.");
         }
 
@@ -415,11 +385,11 @@ public class FastIca {
         // Whiten.
         Matrix cov = this.X.times(this.X.transpose()).scalarMult(1.0 / n);
 
-        SingularValueDecomposition s = new SingularValueDecomposition(new BlockRealMatrix(cov.toArray()));
+        SingularValueDecomposition s = new SingularValueDecomposition(cov.getApacheData());
         Matrix D = new Matrix(s.getS().getData());
         Matrix U = new Matrix(s.getU().getData());
 
-        for (int i = 0; i < D.rows(); i++) {
+        for (int i = 0; i < D.getNumRows(); i++) {
             D.set(i, i, 1.0 / FastMath.sqrt(D.get(i, i)));
         }
 
@@ -428,6 +398,7 @@ public class FastIca {
         K = K.getPart(0, this.numComponents - 1, 0, p - 1);
 
         Matrix X1 = K.times(this.X);
+
         Matrix b;
 
         if (this.algorithmType == FastIca.DEFLATION) {
@@ -459,9 +430,9 @@ public class FastIca {
             TetradLogger.getInstance().log("info", "Deflation FastIca using exponential approx. to neg-entropy function");
         }
 
-        Matrix W = new Matrix(X.rows(), X.rows());
+        Matrix W = new Matrix(X.getNumRows(), X.getNumRows());
 
-        for (int i = 0; i < X.rows(); i++) {
+        for (int i = 0; i < X.getNumRows(); i++) {
             if (verbose) {
                 TetradLogger.getInstance().log("fastIcaDetails", "Component " + (i + 1));
             }
@@ -483,36 +454,36 @@ public class FastIca {
             while (_tolerance > tolerance && ++it <= maxIterations) {
                 Vector wx = X.transpose().times(w);
 
-                Vector gwx0 = new Vector(X.columns());
+                Vector gwx0 = new Vector(X.getNumColumns());
 
-                for (int j = 0; j < X.columns(); j++) {
+                for (int j = 0; j < X.getNumColumns(); j++) {
                     gwx0.set(j, g(alpha, wx.get(j)));
                 }
 
-                Matrix gwx = new Matrix(X.rows(), X.columns());
+                Matrix gwx = new Matrix(X.getNumRows(), X.getNumColumns());
 
-                for (int _i = 0; _i < X.rows(); _i++) {
+                for (int _i = 0; _i < X.getNumRows(); _i++) {
                     gwx.assignRow(i, gwx0);
                 }
 
                 // A weighting of X by gwx0.
-                Matrix xgwx = new Matrix(X.rows(), X.columns());
+                Matrix xgwx = new Matrix(X.getNumRows(), X.getNumColumns());
 
-                for (int _i = 0; _i < X.rows(); _i++) {
-                    for (int j = 0; j < X.columns(); j++) {
+                for (int _i = 0; _i < X.getNumRows(); _i++) {
+                    for (int j = 0; j < X.getNumColumns(); j++) {
                         xgwx.set(_i, j, X.get(_i, j) * gwx0.get(j));
                     }
                 }
 
-                Vector v1 = new Vector(X.rows());
+                Vector v1 = new Vector(X.getNumRows());
 
-                for (int k = 0; k < X.rows(); k++) {
+                for (int k = 0; k < X.getNumRows(); k++) {
                     v1.set(k, mean(xgwx.getRow(k)));
                 }
 
-                Vector g_wx = new Vector(X.columns());
+                Vector g_wx = new Vector(X.getNumColumns());
 
-                for (int k = 0; k < X.columns(); k++) {
+                for (int k = 0; k < X.getNumColumns(); k++) {
                     double t = g(alpha, wx.get(k));
                     g_wx.set(k, (1.0 - t * t));
                 }
@@ -529,16 +500,16 @@ public class FastIca {
                     for (int u = 0; u < i; u++) {
                         double k = 0.0;
 
-                        for (int j = 0; j < X.rows(); j++) {
+                        for (int j = 0; j < X.getNumRows(); j++) {
                             k += w1.get(j) * W.get(u, j);
                         }
 
-                        for (int j = 0; j < X.rows(); j++) {
+                        for (int j = 0; j < X.getNumRows(); j++) {
                             t.set(j, t.get(j) + k * W.get(u, j));
                         }
                     }
 
-                    for (int j = 0; j < X.rows(); j++) {
+                    for (int j = 0; j < X.getNumRows(); j++) {
                         w1.set(j, w1.get(j) - t.get(j));
                     }
                 }
@@ -547,11 +518,11 @@ public class FastIca {
 
                 _tolerance = 0.0;
 
-                for (int k = 0; k < X.rows(); k++) {
+                for (int k = 0; k < X.getNumRows(); k++) {
                     _tolerance += w1.get(k) * w.get(k);
                 }
 
-                _tolerance = FastMath.abs(FastMath.abs(_tolerance) - 1.0);
+                _tolerance = abs(abs(_tolerance) - 1.0);
 
                 if (verbose) {
                     TetradLogger.getInstance().log("fastIcaDetails", "Iteration " + it + " tol = " + _tolerance);
@@ -604,15 +575,15 @@ public class FastIca {
     private Matrix icaParallel(Matrix X, int numComponents,
                                double tolerance, double alpha,
                                int maxIterations, boolean verbose, Matrix wInit) {
-        int p = X.columns();
+        int p = X.getNumColumns();
         Matrix W = wInit;
 
-        SingularValueDecomposition sW = new SingularValueDecomposition(new BlockRealMatrix(W.toArray()));
+        SingularValueDecomposition sW = new SingularValueDecomposition(W.getApacheData());
         Matrix D = new Matrix(sW.getS().getData());
-        for (int i = 0; i < D.rows(); i++) D.set(i, i, 1.0 / D.get(i, i));
+        for (int i = 0; i < D.getNumRows(); i++) D.set(i, i, 1.0 / D.get(i, i));
 
-        Matrix WTemp = new Matrix(sW.getU().getData()).times(D);
-        WTemp = WTemp.times(new Matrix(sW.getU().getData()).transpose());
+        Matrix WTemp = new Matrix(sW.getU()).times(D);
+        WTemp = WTemp.times(new Matrix(sW.getU()).transpose());
         WTemp = WTemp.times(W);
         W = WTemp;
 
@@ -637,8 +608,8 @@ public class FastIca {
             Matrix v1 = gwx.times(X.transpose().scalarMult(1.0 / p));
             Matrix g_wx = gwx.like();
 
-            for (int i = 0; i < g_wx.rows(); i++) {
-                for (int j = 0; j < g_wx.columns(); j++) {
+            for (int i = 0; i < g_wx.getNumRows(); i++) {
+                for (int j = 0; j < g_wx.getNumColumns(); j++) {
                     double v = g_wx.get(i, j);
                     double w = alpha * (1.0 - v * v);
                     g_wx.set(i, j, w);
@@ -655,10 +626,10 @@ public class FastIca {
             v2 = v2.times(W);
             W1 = v1.minus(v2);
 
-            SingularValueDecomposition sW1 = new SingularValueDecomposition(new BlockRealMatrix(W1.toArray()));
-            Matrix U = new Matrix(sW1.getU().getData());
-            Matrix sD = new Matrix(sW1.getS().getData());
-            for (int i = 0; i < sD.rows(); i++)
+            SingularValueDecomposition sW1 = new SingularValueDecomposition(W1.getApacheData());
+            Matrix U = new Matrix(sW1.getU());
+            Matrix sD = new Matrix(sW1.getS());
+            for (int i = 0; i < sD.getNumRows(); i++)
                 sD.set(i, i, 1.0 / sD.get(i, i));
 
             Matrix W1Temp = U.times(sD);
@@ -671,7 +642,7 @@ public class FastIca {
             _tolerance = Double.NEGATIVE_INFINITY;
 
             for (int i = 0; i < d.size(); i++) {
-                double m = FastMath.abs(FastMath.abs(d.get(i)) - 1);
+                double m = abs(abs(d.get(i)) - 1);
                 if (m > _tolerance) _tolerance = m;
             }
 
@@ -688,19 +659,18 @@ public class FastIca {
     }
 
     private void scale(Matrix x) {
-        for (int i = 0; i < x.rows(); i++) {
+        for (int i = 0; i < x.getNumRows(); i++) {
             Vector u = x.getRow(i).scalarMult(1.0 / rms(x.getRow(i)));
             x.assignRow(i, u);
         }
-
     }
 
     private void center(Matrix x) {
-        for (int i = 0; i < x.rows(); i++) {
+        for (int i = 0; i < x.getNumRows(); i++) {
             Vector u = x.getRow(i);
             double mean = mean(u);
 
-            for (int j = 0; j < x.columns(); j++) {
+            for (int j = 0; j < x.getNumColumns(); j++) {
                 x.set(i, j, x.get(i, j) - mean);
             }
         }

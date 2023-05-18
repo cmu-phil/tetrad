@@ -9,7 +9,7 @@ import edu.cmu.tetrad.graph.Node;
 /**
  * The bidirected edge precision.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumBidirectedBothNonancestorAncestor implements Statistic {
     static final long serialVersionUID = 23L;

@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Wrapper for linear, Gaussian SEM BIC score.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "MAG SEM BIC Score",
@@ -31,12 +31,12 @@ public class MagSemBicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.MagSemBicScore semBicScore;
+        edu.cmu.tetrad.search.work_in_progress.MagSemBicScore semBicScore;
 
         if (dataSet instanceof DataSet) {
-            semBicScore = new edu.cmu.tetrad.search.MagSemBicScore((DataSet) this.dataSet);
+            semBicScore = new edu.cmu.tetrad.search.work_in_progress.MagSemBicScore((DataSet) this.dataSet);
         } else if (dataSet instanceof ICovarianceMatrix) {
-            semBicScore = new edu.cmu.tetrad.search.MagSemBicScore((ICovarianceMatrix) this.dataSet);
+            semBicScore = new edu.cmu.tetrad.search.work_in_progress.MagSemBicScore((ICovarianceMatrix) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }

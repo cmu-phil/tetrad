@@ -36,7 +36,7 @@ import java.text.SimpleDateFormat;
 /**
  * Saves a session from a file.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class SessionVersionAction extends AbstractAction {
 

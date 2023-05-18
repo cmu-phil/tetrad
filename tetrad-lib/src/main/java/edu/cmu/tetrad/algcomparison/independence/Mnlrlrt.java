@@ -5,8 +5,8 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.search.IndTestMNLRLRT;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.work_in_progress.IndTestMnlrLr;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Wrapper for Fisher Z test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Experimental
 @TestOfIndependence(
@@ -29,7 +29,7 @@ public class Mnlrlrt implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        return new IndTestMNLRLRT(SimpleDataLoader.getMixedDataSet(dataSet), parameters.getDouble("alpha"));
+        return new IndTestMnlrLr(SimpleDataLoader.getMixedDataSet(dataSet), parameters.getDouble("alpha"));
     }
 
     @Override

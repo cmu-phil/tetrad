@@ -29,6 +29,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.utils.BpcTestType;
+import edu.cmu.tetrad.search.Bpc;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MimUtils;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -47,7 +51,7 @@ import static org.junit.Assert.assertEquals;
 
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 @Ignore
 public class TestMimbuild {
@@ -74,15 +78,15 @@ public class TestMimbuild {
             List<List<Node>> partition;
 
             if (algorithm.equals("FOFC")) {
-                FindOneFactorClusters fofc = new FindOneFactorClusters(data, TestType.TETRAD_WISHART,
-                        FindOneFactorClusters.Algorithm.GAP, 0.001);
+                Fofc fofc = new Fofc(data, BpcTestType.TETRAD_WISHART,
+                        Fofc.Algorithm.GAP, 0.001);
                 searchGraph = fofc.search();
                 partition = fofc.getClusters();
             } else if (algorithm.equals("BPC")) {
-                final TestType testType = TestType.TETRAD_WISHART;
-                final TestType purifyType = TestType.TETRAD_BASED;
+                final BpcTestType testType = BpcTestType.TETRAD_WISHART;
+                final BpcTestType purifyType = BpcTestType.TETRAD_BASED;
 
-                BuildPureClusters bpc = new BuildPureClusters(
+                Bpc bpc = new Bpc(
                         data, 0.001,
                         testType
                 );
@@ -103,7 +107,7 @@ public class TestMimbuild {
                     mimbuild.setPenaltyDiscount(1);
                     mimbuild.setMinClusterSize(3);
                     mimbuildStructure = mimbuild.search(partition, latentVarList, new CovarianceMatrix(data));
-                    int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
+                    int shd = GraphSearchUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
                     assertEquals(7, shd);
                 } else if (mimbuildMethod == 3) {
 //                    System.out.println("Mimbuild Trek\n");
@@ -111,7 +115,7 @@ public class TestMimbuild {
                     mimbuild.setAlpha(0.1);
                     mimbuild.setMinClusterSize(3);
                     mimbuildStructure = mimbuild.search(partition, latentVarList, new CovarianceMatrix(data));
-                    int shd = SearchGraphUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
+                    int shd = GraphSearchUtils.structuralHammingDistance(mimStructure, mimbuildStructure);
                     assertEquals(3, shd);
                 } else {
                     throw new IllegalStateException();

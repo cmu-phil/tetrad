@@ -100,7 +100,7 @@ public class LayoutUtil {
      * Lays out a graph by placing springs between the nodes and letting the system
      * settle (one node at a time).
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     public static final class KamadaKawaiLayout {
 
@@ -587,7 +587,7 @@ public class LayoutUtil {
      * Lays out a graph by linearly summing repulsive force between all nodes and
      * attractive force between adjacent nodes.
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     public static final class FruchtermanReingoldLayout {
 

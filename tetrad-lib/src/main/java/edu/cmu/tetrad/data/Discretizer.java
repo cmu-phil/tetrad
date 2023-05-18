@@ -34,7 +34,7 @@ import java.util.*;
  * is discretized by specifying a mapping from old value names to new
  * value names, the idea being that old values may be merged.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Tyler Gibson
  */
 public class Discretizer {

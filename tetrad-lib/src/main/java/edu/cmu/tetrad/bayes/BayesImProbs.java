@@ -36,7 +36,7 @@ import java.util.List;
  * fly without constructing the entire table. (To force the entire table to be
  * constructed, use StoredCellProbs.)
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
     static final long serialVersionUID = 23L;

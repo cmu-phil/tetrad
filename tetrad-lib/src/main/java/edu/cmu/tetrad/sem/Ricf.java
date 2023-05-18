@@ -46,7 +46,7 @@ import java.util.*;
  * class. The reason for reimplementing in this case is to take advantage of linear algebra optimizations in the COLT
  * library.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Ricf {
 

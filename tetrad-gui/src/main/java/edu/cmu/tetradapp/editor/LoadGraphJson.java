@@ -50,7 +50,10 @@ public class LoadGraphJson extends AbstractAction {
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
         Graph graph = GraphPersistence.loadGraphJson(file);
-        LayoutUtil.circleLayout(graph, 200, 200, 150);
+
+        // The saved node positions should be used instead of just arranging the
+        // nodes in a circle.
+//        LayoutUtil.circleLayout(graph, 200, 200, 150);
         this.graphEditable.setGraph(graph);
     }
 

@@ -20,10 +20,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -34,68 +36,82 @@ import java.util.List;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016.
+ * <p>Implements a modification of FCI that started by running the FGES algorithm and
+ * then fixes that result to be correct for latent variables models. First, colliders
+ * from the FGES results are copied into the final circle-circle graph, and some
+ * independence reasoning is used to add the remaining colliders into the graph.
+ * Then, the FCI final orentation rules are applied. The reference is here:</p>
+ *
+ * <p>Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal
+ * search algorithm for latent variable models. In Conference on probabilistic graphical
+ * models (pp. 368-379). PMLR.</p>
+ *
+ * <p>Because the method both runs FGES (a score-based algorithm) and does
+ * additional checking of conditional independencies, both as part of its
+ * collider orientation step and also as part of the the definite discriminating
+ * path step in the final FCI orientation rules, both a score and a
+ * test need to be used to construct a GFCI algorihtm.</p>
+ *
+ * <p>Note that various score-based algorithms could be used in place of FGES
+ * for the initial step; in this repository we give three other options,
+ * GRaSP-FCI, BFCI (BOSS FCI), and SP-FCI (see).</p>
+ *
+ * <p>For more information on the algorithm, see the reference above.</p>
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
  *
  * @author Juan Miguel Ogarrio
- * @author ps7z
- * @author jdramsey
+ * @author peterspirtes
+ * @author josephramsey
+ * @see Fci
+ * @see FciOrient
+ * @see GraspFci
+ * @see BFci
+ * @see SpFci
+ * @see Fges
+ * @see Knowledge
  */
-public final class GFci implements GraphSearch {
-
-    // The PAG being constructed.
+public final class GFci implements IGraphSearch {
     private Graph graph;
-
-    // The background knowledge.
     private Knowledge knowledge = new Knowledge();
-
-    // The conditional independence test.
-    private IndependenceTest independenceTest;
-
-    // Flag for complete rule set, true if should use complete rule set, false otherwise.
+    private final IndependenceTest independenceTest;
     private boolean completeRuleSetUsed = true;
-
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
-
-    // The maxDegree for the fast adjacency search.
     private int maxDegree = -1;
-
-    // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    // True iff verbose output should be printed.
     private boolean verbose;
-
-    // The covariance matrix beign searched over. Assumes continuous data.
-    ICovarianceMatrix covarianceMatrix;
-
-    // The sample size.
-    int sampleSize;
-
-    // The print stream that output is directed to.
     private PrintStream out = System.out;
-
-    // True iff one-edge faithfulness is assumed. Speed up the algorith for very large searches. By default false.
     private boolean faithfulnessAssumed = true;
-
-    // The score.
     private final Score score;
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleDsepSearchDone = true;
     private int depth = -1;
 
     //============================CONSTRUCTORS============================//
+
+    /**
+     * Constructs a new GFci algorithm with the given independence test and
+     * score.
+     *
+     * @param test The independence test to use.
+     * @param score The score to use.
+     */
     public GFci(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
         }
-        this.sampleSize = score.getSampleSize();
         this.score = score;
         this.independenceTest = test;
     }
 
     //========================PUBLIC METHODS==========================//
+
+    /**
+     * Runs the graph and returns the search PAG.
+     *
+     * @return This PAG.
+     */
     public Graph search() {
         this.independenceTest.setVerbose(verbose);
         List<Node> nodes = getIndependenceTest().getVariables();
@@ -115,9 +131,6 @@ public final class GFci implements GraphSearch {
 
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-//        knowledge = new Knowledge(knowledge);
-//        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge);
-
         SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
         gfciExtraEdgeRemovalStep(this.graph, fgesGraph, nodes, sepsets);
 
@@ -126,8 +139,6 @@ public final class GFci implements GraphSearch {
         if (this.possibleDsepSearchDone) {
             graph.paths().removeByPossibleDsep(independenceTest, null);
         }
-
-//        retainUnshieldedColliders(this.graph);
 
         FciOrient fciOrient = new FciOrient(sepsets);
 
@@ -146,7 +157,9 @@ public final class GFci implements GraphSearch {
     }
 
     /**
-     * @param maxDegree The maximum indegree of the output graph.
+     * Sets the maximum indegree of the output graph.
+     *
+     * @param maxDegree This maximum.
      */
     public void setMaxDegree(int maxDegree) {
         if (maxDegree < -1) {
@@ -158,14 +171,120 @@ public final class GFci implements GraphSearch {
     }
 
     /**
-     * Returns The maximum indegree of the output graph.
+     * Returns the knowledge used in search.
+     *
+     * @return This knowledge
      */
-    public int getMaxDegree() {
-        return this.maxDegree;
+    public Knowledge getKnowledge() {
+        return this.knowledge;
     }
 
+    /**
+     * Sets the knowledge to use in search.
+     *
+     * @param knowledge This knowledge.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge == null) {
+            throw new NullPointerException();
+        }
+
+        this.knowledge = knowledge;
+    }
+
+    /**
+     * Sets whether Zhang's complete rules are used.
+     *
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set
+     *                            should be used, false if only R1-R4 (the rule set of the original FCI)
+     *                            should be used. True by default.
+     */
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
+    }
+
+    /**
+     * Sets the maximum path lenth for the discriminating path rule.
+     *
+     * @param maxPathLength the maximum length of any discriminating path, or -1
+     *                      if unlimited.
+     */
+    public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
+        this.maxPathLength = maxPathLength;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Returns the independence test used in search.
+     *
+     * @return This test.
+     */
+    public IndependenceTest getIndependenceTest() {
+        return this.independenceTest;
+    }
+
+    /**
+     * Sets the print stream used for output, default Sysem.out.
+     *
+     * @param out This print stream.
+     */
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
+
+    /**
+     * Sets whether one-edge faithfulness is assumed. For FGES
+     *
+     * @param faithfulnessAssumed True if so.
+     * @see Fges#setFaithfulnessAssumed(boolean)
+     */
+    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
+        this.faithfulnessAssumed = faithfulnessAssumed;
+    }
+
+    /**
+     * Sets whether the discriminating path rule should be used.
+     *
+     * @param doDiscriminatingPathRule True if so.
+     */
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    /**
+     * Sets whether the possible d-sep search should be done.
+     *
+     * @param possibleDsepSearchDone True if so.
+     */
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+        this.possibleDsepSearchDone = possibleDsepSearchDone;
+    }
+
+    /**
+     * Sets the depth of the search for the possible d-sep search.
+     *
+     * @param depth This depth.
+     */
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    //===========================================PRIVATE METHODS=======================================//
+
     // Due to Spirtes.
-    public void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
+    private void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
         this.graph = new EdgeListGraph(graph);
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
@@ -201,104 +320,6 @@ public final class GFci implements GraphSearch {
         }
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-
-        this.knowledge = knowledge;
-    }
-
-    /**
-     * @return true if Zhang's complete rule set should be used, false if only
-     * R1-R4 (the rule set of the original FCI) should be used. False by
-     * default.
-     */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
-    }
-
-    /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set
-     *                            should be used, false if only R1-R4 (the rule set of the original FCI)
-     *                            should be used. False by default.
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * @return the maximum length of any discriminating path, or -1 of
-     * unlimited.
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength;
-    }
-
-    /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1
-     *                      if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * The independence test.
-     */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
-    }
-
-    public ICovarianceMatrix getCovMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public ICovarianceMatrix getCovarianceMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
-        this.covarianceMatrix = covarianceMatrix;
-    }
-
-    public PrintStream getOut() {
-        return this.out;
-    }
-
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    public void setIndependenceTest(IndependenceTest independenceTest) {
-        this.independenceTest = independenceTest;
-    }
-
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
-    }
-
-    //===========================================PRIVATE METHODS=======================================//
-
     /**
      * Orients according to background knowledge
      */
@@ -309,8 +330,8 @@ public final class GFci implements GraphSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -322,15 +343,15 @@ public final class GFci implements GraphSearch {
 
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
         for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -342,21 +363,10 @@ public final class GFci implements GraphSearch {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge",
+                    graph.getEdge(from, to)));
         }
 
         this.logger.log("info", "Finishing BK Orientation.");
-    }
-
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
     }
 }

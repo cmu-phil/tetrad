@@ -25,7 +25,7 @@ package edu.cmu.tetrad.session;
 /**
  * Interface indicating that a class can be executed as an algorithm.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface Executable {
     @SuppressWarnings("UnusedDeclaration")

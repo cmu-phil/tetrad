@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Indicates a class that can returns multiple graphs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 interface MultipleGraphSource {
     List<Graph> getGraphs();

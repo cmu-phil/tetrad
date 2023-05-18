@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 /**
  * Converts a continuous data set to a correlation matrix.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class CorrMatrixConverter extends DataWrapper {
     static final long serialVersionUID = 23L;

@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * Tests the BayesIm.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestDiscreteProbs extends TestCase {
 

@@ -124,8 +124,8 @@ public class SemStdErrorEstimator {
         }
 
         ROWS:
-        for (int i = 0; i < hess.rows(); i++) {
-            for (int j = 0; j < hess.columns(); j++) {
+        for (int i = 0; i < hess.getNumRows(); i++) {
+            for (int j = 0; j < hess.getNumColumns(); j++) {
                 if (hess.get(i, j) != 0) {
                     continue ROWS;
                 }
@@ -231,7 +231,7 @@ public class SemStdErrorEstimator {
     /**
      * Evaluates a fitting function for an array of freeParameters.
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     interface FittingFunction {
 
@@ -251,7 +251,7 @@ public class SemStdErrorEstimator {
      * Wraps a Sem for purposes of calculating its fitting function for given
      * parameter values.
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     static class SemFittingFunction implements FittingFunction {
 

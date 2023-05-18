@@ -37,7 +37,7 @@ import java.util.prefs.Preferences;
 /**
  * The main menubar for Tetrad.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @author Chirayu Kong Wongchokprasitti chw20@pitt.edu
  */
 final class TetradMenuBar extends JMenuBar {

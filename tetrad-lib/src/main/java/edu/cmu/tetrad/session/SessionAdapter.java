@@ -25,7 +25,7 @@ package edu.cmu.tetrad.session;
 /**
  * Basic implementation of SessionListener with empty methods.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SessionAdapter implements SessionListener {
 

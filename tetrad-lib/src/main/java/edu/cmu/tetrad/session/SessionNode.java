@@ -59,7 +59,7 @@ import java.util.*;
  * This node keeps track of its parents and its children and keeps these two
  * sets of SessionNodes in sync.&gt; 0
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see Session
  * @see SessionListener
  * @see SessionAdapter

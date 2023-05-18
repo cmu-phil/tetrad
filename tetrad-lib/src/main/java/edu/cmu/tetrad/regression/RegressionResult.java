@@ -33,7 +33,7 @@ import java.text.NumberFormat;
  * Stores the various components of a regression result so they can be passed
  * around together more easily.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class RegressionResult implements TetradSerializable {
     static final long serialVersionUID = 23L;

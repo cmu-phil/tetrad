@@ -46,7 +46,7 @@ import java.util.*;
  * to chart the ScatterPlot.
  *
  * @author Adrian Tang
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ScatterPlotView extends JPanel {
     private final ScatterPlot scatterPlot;

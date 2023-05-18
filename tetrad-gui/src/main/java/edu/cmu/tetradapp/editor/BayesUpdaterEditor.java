@@ -37,7 +37,7 @@ import java.beans.PropertyChangeEvent;
 /**
  * Lets the user calculate updated probabilities for a Bayes net.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
 

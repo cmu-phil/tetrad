@@ -28,7 +28,9 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Grasp;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
+import edu.cmu.tetrad.algcomparison.score.DegenerateGaussianBicScore;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
+import edu.cmu.tetrad.algcomparison.simulation.LeeHastieSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
 import edu.cmu.tetrad.algcomparison.simulation.Simulations;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -43,7 +45,7 @@ import edu.cmu.tetrad.util.Params;
 public class TestBoss {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-        parameters.set(Params.NUM_RUNS, 10);
+        parameters.set(Params.NUM_RUNS, 1);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
         parameters.set(Params.NUM_MEASURES, 60);
         parameters.set(Params.AVG_DEGREE, 6);
@@ -67,13 +69,15 @@ public class TestBoss {
         statistics.add(new ElapsedCpuTime());
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new Fges(new SemBicScore()));
-        algorithms.add(new Boss(new SemBicScore()));
-        algorithms.add(new Grasp(new FisherZ(), new SemBicScore()));
+//        algorithms.add(new Fges(new SemBicScore()));
+        algorithms.add(new Fges(new DegenerateGaussianBicScore()));
+//        algorithms.add(new Boss(new SemBicScore()));
+//        algorithms.add(new Grasp(new FisherZ(), new SemBicScore()));
 //        algorithms.add(new SP(new SemBicScore()));
 
         Simulations simulations = new Simulations();
-        simulations.add(new SemSimulation(new RandomForward()));
+//        simulations.add(new SemSimulation(new RandomForward()));
+        simulations.add(new LeeHastieSimulation(new RandomForward()));
 
         Comparison comparison = new Comparison();
 

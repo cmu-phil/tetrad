@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * Tetrad-style graphs: null (-), arrow (-&gt;), circle (-o), start (-*),
  * and null (no endpoint).
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public enum Endpoint implements TetradSerializable {
     TAIL, ARROW, CIRCLE, STAR, NULL;

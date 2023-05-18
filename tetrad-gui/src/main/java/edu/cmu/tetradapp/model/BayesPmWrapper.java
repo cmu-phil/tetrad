@@ -44,7 +44,7 @@ import java.util.Map;
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class BayesPmWrapper implements SessionModel {
     static final long serialVersionUID = 23L;

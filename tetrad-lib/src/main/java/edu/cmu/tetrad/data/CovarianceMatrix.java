@@ -38,7 +38,7 @@ import java.util.*;
  * positive definiteness is "spot-checked"--that is, checked for various
  * submatrices.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @see edu.cmu.tetrad.data.CorrelationMatrix
  */
 public class CovarianceMatrix implements ICovarianceMatrix {
@@ -345,7 +345,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      * @return the size of the square matrix.
      */
     public final int getSize() {
-        return this._covariancesMatrix.columns();
+        return this._covariancesMatrix.getNumColumns();
     }
 
     /**

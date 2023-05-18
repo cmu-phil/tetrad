@@ -25,8 +25,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.ImpliedOrientation;
-import edu.cmu.tetrad.search.ScoredGraph;
+import edu.cmu.tetrad.search.score.ScoredGraph;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Parameters;
 
 import java.beans.PropertyChangeEvent;
@@ -56,7 +56,7 @@ public interface IGesRunner {
 
     boolean supportsKnowledge();
 
-    ImpliedOrientation getMeekRules();
+    MeekRules getMeekRules();
 
     void propertyChange(PropertyChangeEvent evt);
 

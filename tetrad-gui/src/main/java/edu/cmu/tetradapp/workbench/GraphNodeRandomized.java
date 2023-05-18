@@ -37,7 +37,7 @@ import java.util.List;
  * Represents a randomized policy variable in the workbench. Appears as a
  * die.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Willie Wheeler
  */
 public class GraphNodeRandomized extends DisplayNode {

@@ -39,7 +39,7 @@ import java.util.List;
  * Adds the functionality needed to turn an abstract workbench into a workbench
  * usable for editing sessions.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class SessionEditorWorkbench extends AbstractWorkbench {
 

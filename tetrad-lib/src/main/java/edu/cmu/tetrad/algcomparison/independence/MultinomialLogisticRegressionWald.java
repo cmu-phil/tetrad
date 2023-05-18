@@ -3,6 +3,7 @@ package edu.cmu.tetrad.algcomparison.independence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
 
@@ -12,7 +13,7 @@ import java.util.List;
 /**
  * Wrapper for Fisher Z test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 //@TestOfIndependence(
 //        name = "Multinomial Logistic Retression Wald Test",
@@ -24,7 +25,7 @@ public class MultinomialLogisticRegressionWald implements IndependenceWrapper {
     static final long serialVersionUID = 23L;
 
     @Override
-    public edu.cmu.tetrad.search.IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+    public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         return new IndTestMultinomialLogisticRegressionWald(
                 SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getDouble("alpha"),

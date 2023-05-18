@@ -33,7 +33,7 @@ import edu.cmu.tetrad.graph.Node;
  * data sets, covariance and correlation matrices, graphs, and lists of other
  * data models. So this is primarily a taqging interface.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public interface DataModel
         extends KnowledgeTransferable, VariableSource {

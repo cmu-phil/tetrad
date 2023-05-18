@@ -32,7 +32,7 @@ import edu.cmu.tetrad.graph.Node;
  * external data (in String form, say) is to be converted into raw data of the
  * type used in the column in question.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface Variable extends Node {
 

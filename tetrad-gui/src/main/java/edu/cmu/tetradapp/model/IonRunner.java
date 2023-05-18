@@ -26,8 +26,8 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.Ion2;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.work_in_progress.Ion;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -42,7 +42,7 @@ import java.util.List;
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the FCI algorithm.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class IonRunner extends AbstractAlgorithmRunner
         implements IndTestProducer, DoNotAddOldModel, IonInput {
@@ -197,10 +197,10 @@ public class IonRunner extends AbstractAlgorithmRunner
     public void execute() {
         System.out.println("Executing.");
 
-        Ion2 ion = new Ion2(getGraphs());
+        Ion ion = new Ion(getGraphs());
 
-        ion.setAdjacencySearch(getParams().getBoolean("pruneByAdjacencies", true));
-        ion.setPathLengthSearch(getParams().getBoolean("pruneByPathLength", true));
+        ion.setDoAdjacencySearch(getParams().getBoolean("pruneByAdjacencies", true));
+        ion.setDoPathLengthSearch(getParams().getBoolean("pruneByPathLength", true));
         ion.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
 
         List<Graph> graphs = ion.search();

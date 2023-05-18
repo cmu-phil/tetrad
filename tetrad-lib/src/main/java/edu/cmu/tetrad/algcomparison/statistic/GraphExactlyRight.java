@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 /**
  * Return a 1 if the graph is exactly right, 0 otherwise.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class GraphExactlyRight implements Statistic {
     static final long serialVersionUID = 23L;

@@ -32,7 +32,7 @@ import edu.cmu.tetrad.util.NamingProtocol;
  * other purposes.
  *
  * @author Willie Wheeler 7/99
- * @author Joseph Ramsey modifications 12/00
+ * @author josephramsey modifications 12/00
  */
 public abstract class AbstractVariable implements Variable {
 

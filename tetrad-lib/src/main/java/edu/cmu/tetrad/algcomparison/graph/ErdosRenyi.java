@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Creates a random graph by the Erdos-Renyi method (probabiliy of edge fixed, # edges not).
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class ErdosRenyi implements RandomGraph {
     static final long serialVersionUID = 23L;

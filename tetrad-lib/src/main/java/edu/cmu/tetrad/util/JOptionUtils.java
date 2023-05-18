@@ -27,7 +27,7 @@ import java.awt.*;
 /**
  * Stores some utility items for displaying JOptionPane messages.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class JOptionUtils {
     private static JComponent COMPONENT;

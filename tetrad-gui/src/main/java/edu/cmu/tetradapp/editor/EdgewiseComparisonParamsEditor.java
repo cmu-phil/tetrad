@@ -34,7 +34,7 @@ import java.util.prefs.Preferences;
 /**
  * Edits the parameters for generating random graphs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class EdgewiseComparisonParamsEditor extends JPanel implements ParameterEditor {
 

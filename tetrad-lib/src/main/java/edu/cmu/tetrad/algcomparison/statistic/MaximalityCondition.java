@@ -3,12 +3,12 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import java.util.List;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class MaximalityCondition implements Statistic {
     static final long serialVersionUID = 23L;
@@ -27,7 +27,7 @@ public class MaximalityCondition implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         Graph pag = estGraph;
 
-        Graph mag = SearchGraphUtils.pagToMag(estGraph);
+        Graph mag = GraphSearchUtils.pagToMag(estGraph);
 
         List<Node> nodes = pag.getNodes();
 

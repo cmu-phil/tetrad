@@ -25,7 +25,7 @@ package edu.cmu.tetrad.util;
 /**
  * Stores a (x, y) point without having to use awt classes. Immutable.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class PointXy implements TetradSerializable {
     static final long serialVersionUID = 23L;

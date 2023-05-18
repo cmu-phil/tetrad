@@ -40,7 +40,7 @@ import java.text.NumberFormat;
  * probabilities of node values given combinations of parent values.
  *
  * @author Aaron Powers
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM
  * Bayes estimator
  */

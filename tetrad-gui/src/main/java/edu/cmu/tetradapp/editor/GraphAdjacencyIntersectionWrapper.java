@@ -37,7 +37,7 @@ import java.util.List;
  * adjacencies that are shared by all graphs, the the adjacencies that
  * are shared by all but one graph, and so on down to one graph.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAddOldModel {
     static final long serialVersionUID = 23L;

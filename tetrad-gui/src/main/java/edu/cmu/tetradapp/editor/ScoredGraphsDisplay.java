@@ -24,8 +24,8 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.GraphScorer;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.DagScorer;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.ScoredGraphsWrapper;
@@ -49,7 +49,7 @@ import java.util.*;
  * Assumes that the search method of the CPDAG search has been run and shows the
  * various options for DAG's consistent with correlation information over the variables.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
     private GraphWorkbench workbench;
@@ -71,8 +71,8 @@ public class ScoredGraphsDisplay extends JPanel implements GraphEditable {
         setup();
     }
 
-    public ScoredGraphsDisplay(Graph graph, GraphScorer scorer) {
-        List<Graph> _dags = SearchGraphUtils.generateCpdagDags(graph, true);
+    public ScoredGraphsDisplay(Graph graph, DagScorer scorer) {
+        List<Graph> _dags = GraphSearchUtils.generateCpdagDags(graph, true);
 
         for (Graph _graph : _dags) {
             double score = Double.NaN;

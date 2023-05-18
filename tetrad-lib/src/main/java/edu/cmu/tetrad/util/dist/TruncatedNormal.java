@@ -32,7 +32,7 @@ import java.text.NumberFormat;
  * A normal distribution that allows its parameters to be set and allows
  * random sampling. The parameters are 0 = mean, 1 = standard deviation.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class TruncatedNormal implements Distribution {
     static final long serialVersionUID = 23L;

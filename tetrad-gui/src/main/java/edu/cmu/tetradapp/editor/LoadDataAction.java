@@ -36,7 +36,7 @@ import java.util.prefs.Preferences;
 /**
  * New data loading action.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 final class LoadDataAction extends AbstractAction {
 

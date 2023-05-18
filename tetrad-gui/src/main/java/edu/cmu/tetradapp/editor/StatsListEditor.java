@@ -158,6 +158,7 @@ public class StatsListEditor extends JPanel {
         statistics.add(new AverageDegreeTrue());
         statistics.add(new DensityEst());
         statistics.add(new DensityTrue());
+        statistics.add(new Shd());
 
 
         // Joe table.

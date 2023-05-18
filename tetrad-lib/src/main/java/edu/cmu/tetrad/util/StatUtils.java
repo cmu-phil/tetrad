@@ -49,7 +49,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * to the the expiration date. Commercial (for profit) use requires written
  * permission."
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class StatUtils {
     private static final double logCoshExp = StatUtils.logCoshExp();
@@ -1691,8 +1691,8 @@ public final class StatUtils {
         // cov(X, Y | Z) = cov(X, Y) - cov(X, Z) inverse(cov(Z, Z)) cov(Z, Y)
         double covXy = submatrix.get(0, 1);
 
-        int[] _z = new int[submatrix.rows() - 2];
-        for (int i = 0; i < submatrix.rows() - 2; i++) _z[i] = i + 2;
+        int[] _z = new int[submatrix.getNumRows() - 2];
+        for (int i = 0; i < submatrix.getNumRows() - 2; i++) _z[i] = i + 2;
 
         Matrix covXz = submatrix.getSelection(new int[]{0}, _z);
         Matrix covZy = submatrix.getSelection(_z, new int[]{1});
@@ -1715,9 +1715,9 @@ public final class StatUtils {
 //        submatrix = TetradAlgebra.in                                                                                                                                 verse(submatrix);
 //        return -1.0 * submatrix.get(0, 1);
 
-        if (x > covariance.rows()) throw new IllegalArgumentException();
-        if (y > covariance.rows()) throw new IllegalArgumentException();
-        for (int aZ : z) if (aZ > covariance.rows()) throw new IllegalArgumentException();
+        if (x > covariance.getNumRows()) throw new IllegalArgumentException();
+        if (y > covariance.getNumRows()) throw new IllegalArgumentException();
+        for (int aZ : z) if (aZ > covariance.getNumRows()) throw new IllegalArgumentException();
 
         int[] selection = new int[z.length + 2];
 
@@ -1763,9 +1763,9 @@ public final class StatUtils {
      * of the desired variables in <code>covariance</code>
      */
     public static double partialCorrelation(Matrix covariance, int x, int y, int... z) {
-        if (x > covariance.rows()) throw new IllegalArgumentException();
-        if (y > covariance.rows()) throw new IllegalArgumentException();
-        for (int aZ : z) if (aZ > covariance.rows()) throw new IllegalArgumentException();
+        if (x > covariance.getNumRows()) throw new IllegalArgumentException();
+        if (y > covariance.getNumRows()) throw new IllegalArgumentException();
+        for (int aZ : z) if (aZ > covariance.getNumRows()) throw new IllegalArgumentException();
 
         int[] selection = new int[z.length + 2];
 

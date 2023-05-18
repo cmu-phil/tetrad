@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests some extra mathematical functions not contained in org.apache.commons.math3.util.FastMath.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestMathUtils {
 

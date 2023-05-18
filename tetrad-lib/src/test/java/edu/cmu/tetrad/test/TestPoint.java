@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests basic functionality of the tetrad.util.Point class.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestPoint {
 

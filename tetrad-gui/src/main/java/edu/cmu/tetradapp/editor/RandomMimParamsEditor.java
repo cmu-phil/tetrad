@@ -31,7 +31,7 @@ import java.util.Objects;
 /**
  * Edits the parameters for generating random graphs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class RandomMimParamsEditor extends JPanel {
 

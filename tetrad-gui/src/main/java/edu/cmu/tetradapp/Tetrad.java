@@ -50,7 +50,7 @@ import java.util.prefs.Preferences;
  * enough to create a copy of this class with a different name and modify
  * it.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class Tetrad implements PropertyChangeListener {
 

@@ -42,7 +42,7 @@ import java.util.List;
  * model as well as a correlation linear regression model. (Space for more
  * in the future.)
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestRegression {
     DataSet data;

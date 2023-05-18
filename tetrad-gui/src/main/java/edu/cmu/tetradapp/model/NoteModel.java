@@ -35,7 +35,7 @@ import javax.swing.text.StyledDocument;
  * stored on the theory that maybe someday the name of the node can be
  * displayed in the interface. That day is not this day.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class NoteModel implements SessionModel {
     static final long serialVersionUID = 23L;

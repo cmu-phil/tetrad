@@ -26,7 +26,7 @@ package edu.cmu.tetrad.util;
  * Provides a static method for finding the cutoff value for a symmetric
  * probability distribution function about the origin.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class CutoffFinder {
 

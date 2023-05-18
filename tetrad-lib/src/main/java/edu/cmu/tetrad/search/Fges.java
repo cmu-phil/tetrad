@@ -23,6 +23,13 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.GraphScore;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.ScoredGraph;
+import edu.cmu.tetrad.search.utils.Bes;
+import edu.cmu.tetrad.search.utils.DagScorer;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -39,31 +46,54 @@ import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * GesSearch is an implementation of the GES algorithm, as specified in
- * Chickering (2002) "Optimal structure identification with greedy search"
- * Journal of Machine Learning Research. It works for both BayesNets and SEMs.
- * <p>
- * Some code optimization could be done for the scoring part of the graph for
- * discrete models (method scoreGraphChange). Some of Andrew Moore's approaches
- * for caching sufficient statistics, for instance.
- * <p>
- * To speed things up, it has been assumed that variables X and Y with zero
- * correlation do not correspond to edges in the graph. This is a restricted
- * form of the heuristicSpeedup assumption, something GES does not assume. This
- * the graph. This is a restricted form of the heuristicSpeedup assumption,
- * something GES does not assume. This heuristicSpeedup assumption needs to be
- * explicitly turned on using setHeuristicSpeedup(true).
- * <p>
- * A number of other optimizations were added 5/2015. See code for details.
+ * <p>Imlements the Fast Greedy Equivalence Search (GGES) algorithm. This is
+ * an implementation of the Greedy Equivalence Search algroithm, originally
+ * due to Chris Meek but developed significantly by Max Chickering. FGES uses
+ * with some optimizations that allow it to scale accurately to thousands
+ * of variables accurately for the sparse case. The reference for FGES is this:</p>
  *
- * @author Ricardo Silva, Summer 2003
- * @author Joseph Ramsey, Revisions 5/2015
+ * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017).
+ * A million variables and more: the fast greedy equivalence search algorithm
+ * for learning high-dimensional graphical causal models, with an application
+ * to functional magnetic resonance images. International journal of data science
+ * and analytics, 3, 121-129.</p>
+ *
+ * <p>The reference for Chickering's GES is this:</p>
+ *
+ * <p>Chickering (2002) "Optimal structure identification with greedy search"
+ * Journal of Machine Learning Research.</p>
+ *
+ * <p>FGES works for the continuous case, the discrete case, and the mixed
+ * continuous/discrete case, so long as a BIC score is available for the type
+ * of data in question.</p>
+ *
+ * <p>To speed things up, it has been assumed that variables X and Y with zero
+ * correlation do not correspond to edges in the graph. This is a restricted
+ * form of the heuristic speedup assumption, something GES does not assume.
+ * This heuristic speedup assumption needs to be explicitly turned on using
+ * setHeuristicSpeedup(true).</p>
+ *
+ * <p>Also, edges to be added or remove from the graph in the forward or
+ * backward phase, respectively are cached, together with the ancillary information
+ * needed to do the additions or removals, to reduce rescoring.</p>
+ *
+ * <p>A number of other optimizations were also. See code for details.</p>
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
+ * @author Ricardo Silva
+ * @author josephramsey
+ * @see Grasp
+ * @see Boss
+ * @see Sp
+ * @see Knowledge
  */
-public final class Fges implements GraphSearch, GraphScorer {
-
-    final Set<Node> emptySet = new HashSet<>();
-    final int[] count = new int[1];
+public final class Fges implements IGraphSearch, DagScorer {
+    private final Set<Node> emptySet = new HashSet<>();
+    private final int[] count = new int[1];
     private final int depth = 10000;
+
     /**
      * The logger for this class. The config needs to be set.
      */
@@ -139,11 +169,16 @@ public final class Fges implements GraphSearch, GraphScorer {
     private boolean parallelized = false;
 
     /**
-     * Construct a Score and pass it in here. The totalScore should return a
+     * Constroctor. Construct a Score and pass it in here. The totalScore should return a
      * positive value in case of conditional dependence and a negative values in
      * case of conditional independence. See Chickering (2002), locally
      * consistent scoring criterion. This by default uses all the processors on
      * the machine.
+     *
+     * @param score The score to use. The score should yield better scores for
+     *              more correct local models. The algorithm as given by
+     *              Chickering assumes the score will be a BIC score of some
+     *              sort.
      */
     public Fges(Score score) {
         if (score == null) {
@@ -154,26 +189,7 @@ public final class Fges implements GraphSearch, GraphScorer {
         this.graph = new EdgeListGraph(getVariables());
     }
 
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-
-        return null;
-    }
-
     //==========================PUBLIC METHODS==========================//
-
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
-    }
 
     /**
      * Greedy equivalence search: Start from the empty graph, add edges till
@@ -222,13 +238,27 @@ public final class Fges implements GraphSearch, GraphScorer {
             this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-        this.modelScore = scoreDag(SearchGraphUtils.dagFromCPDAG(graph), true);
+        this.modelScore = scoreDag(GraphSearchUtils.dagFromCPDAG(graph), true);
 
         return graph;
     }
 
     /**
-     * @return the background knowledge.
+     * Sets whether one-edge faithfulness should be assumed. This assumption is that if X and Y
+     * are unconditionally depedendent, then there is an edge between X and Y in the graph.
+     * This could in principle be false, as for a path cancelation wheter one path is A->B->C->D
+     * and the other path is A->D.
+     *
+     * @param faithfulnessAssumed True if so.
+     */
+    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
+        this.faithfulnessAssumed = faithfulnessAssumed;
+    }
+
+    /**
+     * Returns the background knowledge.
+     *
+     * @return This knowledge
      */
     public Knowledge getKnowledge() {
         return knowledge;
@@ -247,6 +277,11 @@ public final class Fges implements GraphSearch, GraphScorer {
         this.knowledge = knowledge;
     }
 
+    /**
+     * Returns the elapsed time of the search.
+     *
+     * @return This elapsed time.
+     */
     public long getElapsedTime() {
         return elapsedTime;
     }
@@ -259,18 +294,13 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * @return the list of top scoring graphs.
-     */
-    public LinkedList<ScoredGraph> getTopGraphs() {
-        return topGraphs;
-    }
-
-    /**
      * Sets the initial graph.
+     *
+     * @param initialGraph This graph.
      */
     public void setInitialGraph(Graph initialGraph) {
         if (initialGraph == null) {
-            this.initialGraph = initialGraph;
+            this.initialGraph = null;
             return;
         }
 
@@ -289,14 +319,20 @@ public final class Fges implements GraphSearch, GraphScorer {
     }
 
     /**
-     * Sets whether verbose output should be produced.
+     * Sets whether verbose output should be produced. Verbose output generated
+     * by the Meek rules is treated separately.
+     *
+     * @param verbose True iff the case.
+     * @see #setMeekVerbose(boolean)
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Sets whether verbose output should be produced.
+     * Sets whether verbose output should be produced for the Meek rules.
+     *
+     * @param meekVerbose True iff the case.
      */
     public void setMeekVerbose(boolean meekVerbose) {
         this.meekVerbose = meekVerbose;
@@ -313,6 +349,8 @@ public final class Fges implements GraphSearch, GraphScorer {
     /**
      * Sets the output stream that output (except for log output) should be sent
      * to. By detault System.out.
+     *
+     * @param out This print stream.
      */
     public void setOut(PrintStream out) {
         this.out = out;
@@ -320,6 +358,8 @@ public final class Fges implements GraphSearch, GraphScorer {
 
     /**
      * If non-null, edges not adjacent in this graph will not be added.
+     *
+     * @param boundGraph This bound graph.
      */
     public void setBoundGraph(Graph boundGraph) {
         if (boundGraph == null) {
@@ -350,19 +390,52 @@ public final class Fges implements GraphSearch, GraphScorer {
         this.maxDegree = maxDegree;
     }
 
+    /**
+     * Sets whether the first step of the procedure will score both X->Y and Y->X and prefer the
+     * higher score (for adding X--Y to the graph).
+     *
+     * @param symmetricFirstStep True iff the case.
+     */
     public void setSymmetricFirstStep(boolean symmetricFirstStep) {
         this.symmetricFirstStep = symmetricFirstStep;
     }
 
+    /**
+     * Makes a string for the edge Bayes factors to log.
+     *
+     * @param dag The DAG to logs the factors for.
+     * @return The string to log.
+     */
     public String logEdgeBayesFactorsString(Graph dag) {
         Map<Edge, Double> factors = logEdgeBayesFactors(dag);
         return logBayesPosteriorFactorsString(factors);
     }
 
+    /**
+     * Returns the score of the final search model.
+     *
+     * @return This score.
+     */
+    public double getModelScore() {
+        return modelScore;
+    }
+
     //===========================PRIVATE METHODS========================//
 
-    double getModelScore() {
-        return modelScore;
+
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+
+        return null;
     }
 
     //Sets the discrete scoring function to use.

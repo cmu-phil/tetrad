@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * Wraps a SemEstimator for use in the Tetrad application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
 

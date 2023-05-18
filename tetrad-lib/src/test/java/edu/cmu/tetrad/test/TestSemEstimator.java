@@ -35,7 +35,7 @@ import java.util.List;
  * Tests the MeasurementSimulator class using diagnostics devised by Richard
  * Scheines. The diagnostics are described in the Javadocs, below.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestSemEstimator {
 

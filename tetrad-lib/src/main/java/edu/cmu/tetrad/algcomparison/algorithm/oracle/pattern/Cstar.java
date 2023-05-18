@@ -10,7 +10,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Cstar.PatternAlgorithm;
+import edu.cmu.tetrad.search.Cstar.CpdagAlgorithm;
 import edu.cmu.tetrad.search.Cstar.SampleStyle;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -46,7 +46,7 @@ public class Cstar implements Algorithm, TakesIndependenceWrapper {
         cStaR.setqTo(parameters.getInt(Params.CSTAR_Q));
         cStaR.setSelectionAlpha(parameters.getDouble(Params.SELECTION_MIN_EFFECT));
         cStaR.setqIncrement(1);
-        cStaR.setPatternAlgorithm(PatternAlgorithm.PC_STABLE);
+        cStaR.setCpdagAlgorithm(CpdagAlgorithm.PC_STABLE);
         cStaR.setSampleStyle(SampleStyle.SPLIT);
         cStaR.setVerbose(parameters.getBoolean(Params.VERBOSE));
 

@@ -71,14 +71,14 @@ public class CovMatrixSumWrapper extends DataWrapper {
     }
 
     private Matrix calcSum(Matrix corr1, Matrix corr2) {
-        if (corr1.rows() != corr2.rows()) {
+        if (corr1.getNumRows() != corr2.getNumRows()) {
             throw new IllegalArgumentException("Covariance matrices must be the same size.");
         }
 
-        Matrix corr3 = new Matrix(corr2.rows(), corr2.rows());
+        Matrix corr3 = new Matrix(corr2.getNumRows(), corr2.getNumRows());
 
-        for (int i = 0; i < corr3.rows(); i++) {
-            for (int j = 0; j < corr3.rows(); j++) {
+        for (int i = 0; i < corr3.getNumRows(); i++) {
+            for (int j = 0; j < corr3.getNumRows(); j++) {
                 double v = corr1.get(i, j) + corr2.get(i, j);
                 corr3.set(i, j, v);
                 corr3.set(j, i, v);

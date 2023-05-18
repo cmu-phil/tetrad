@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * Stores a reference to a file to which records can be appended.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GraphComparisonParams extends SessionAdapter
         implements ExecutionRestarter {

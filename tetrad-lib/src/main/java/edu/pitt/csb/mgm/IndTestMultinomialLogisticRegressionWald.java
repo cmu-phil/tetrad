@@ -29,9 +29,9 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.IndependenceResult;
-import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.SearchLogUtils;
+import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
@@ -47,7 +47,7 @@ import java.util.*;
  * This logisticRegression makes multiple assumptions: 1. IIA 2. Large sample size (multiple regressions needed on subsets of
  * sample)
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Augustus Mayo.
  */
 public class IndTestMultinomialLogisticRegressionWald implements IndependenceTest {
@@ -228,9 +228,9 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
                     this.lastP = p;
 
                     if (independent) {
-                        TetradLogger.getInstance().log("independencies", SearchLogUtils.independenceFactMsg(x, y, z, p));
+                        TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(x, y, z, p));
                     } else {
-                        TetradLogger.getInstance().log("dependencies", SearchLogUtils.dependenceFactMsg(x, y, z, p));
+                        TetradLogger.getInstance().log("dependencies", LogUtilsSearch.dependenceFactMsg(x, y, z, p));
                     }
 
                     return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
@@ -249,7 +249,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, p));
+                        LogUtilsSearch.independenceFactMsg(x, y, z, p));
             }
         }
 
@@ -339,7 +339,7 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        SearchLogUtils.independenceFactMsg(x, y, z, p));
+                        LogUtilsSearch.independenceFactMsg(x, y, z, p));
             }
         }
 

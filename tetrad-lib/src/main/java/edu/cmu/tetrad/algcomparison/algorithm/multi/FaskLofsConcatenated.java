@@ -7,8 +7,8 @@ import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.FasLofs;
-import edu.cmu.tetrad.search.Lofs2;
+import edu.cmu.tetrad.search.work_in_progress.FasLofs;
+import edu.cmu.tetrad.search.Lofs;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -24,15 +24,15 @@ import java.util.List;
  * datasets should be taken at a time (randomly). This cannot given multiple
  * values.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     static final long serialVersionUID = 23L;
-    private final Lofs2.Rule rule;
+    private final Lofs.Rule rule;
     private Knowledge knowledge = new Knowledge();
 
-    public FaskLofsConcatenated(Lofs2.Rule rule) {
+    public FaskLofsConcatenated(Lofs.Rule rule) {
         this.rule = rule;
     }
 
@@ -47,7 +47,7 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
 
             DataSet dataSet = DataUtils.concatenate(dataSets);
 
-            edu.cmu.tetrad.search.FasLofs search = new FasLofs(dataSet, this.rule);
+            FasLofs search = new FasLofs(dataSet, this.rule);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
             search.setKnowledge(this.knowledge);

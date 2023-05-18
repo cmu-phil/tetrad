@@ -36,7 +36,7 @@ import java.util.List;
  * Copies a selection of session nodes in the frontmost session editor to the
  * clipboard and deletes them from the session editor.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class CutSubsessionAction extends AbstractAction
         implements ClipboardOwner {

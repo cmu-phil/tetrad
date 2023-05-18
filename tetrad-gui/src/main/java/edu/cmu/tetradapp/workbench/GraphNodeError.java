@@ -38,7 +38,7 @@ import java.util.List;
  * border, with the variable name in it. Clicking on the oval pops up a dialog
  * that lets the user modify the name of the variable.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Willie Wheeler
  */
 public class GraphNodeError extends DisplayNode {

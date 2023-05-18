@@ -22,9 +22,9 @@ package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Edge.Property;
-import edu.cmu.tetrad.search.FciOrient;
-import edu.cmu.tetrad.search.SearchGraphUtils;
-import edu.cmu.tetrad.search.SepsetProducer;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.ForkJoinPoolInstance;
 import edu.cmu.tetrad.util.Parameters;
@@ -35,12 +35,12 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * Basic graph utilities.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class GraphUtils {
 
@@ -425,16 +425,16 @@ public final class GraphUtils {
             convertedGraph.addEdge(newEdge);
         }
 
-        for (Triple triple : originalGraph.underlines().getUnderLines()) {
-            convertedGraph.underlines().addUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
+        for (Triple triple : originalGraph.getUnderLines()) {
+            convertedGraph.addUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
 
-        for (Triple triple : originalGraph.underlines().getDottedUnderlines()) {
-            convertedGraph.underlines().addDottedUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
+        for (Triple triple : originalGraph.getDottedUnderlines()) {
+            convertedGraph.addDottedUnderlineTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
 
-        for (Triple triple : originalGraph.underlines().getAmbiguousTriples()) {
-            convertedGraph.underlines().addAmbiguousTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
+        for (Triple triple : originalGraph.getAmbiguousTriples()) {
+            convertedGraph.addAmbiguousTriple(convertedGraph.getNode(triple.getX().getName()), convertedGraph.getNode(triple.getY().getName()), convertedGraph.getNode(triple.getZ().getName()));
         }
 
         return convertedGraph;
@@ -515,7 +515,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Counts the arrowpoints that are in graph1 but not in graph2.
+     * Counts the arrowheads that are in graph1 but not in graph2.
      */
     public static int countArrowptErrors(Graph graph1, Graph graph2) {
         if (graph1 == null) {
@@ -696,7 +696,7 @@ public final class GraphUtils {
             Node x = adj.get(choice[0]);
             Node z = adj.get(choice[1]);
 
-            if (graph.underlines().isAmbiguousTriple(x, node, z)) {
+            if (graph.isAmbiguousTriple(x, node, z)) {
                 ambiguousTriples.add(new Triple(x, node, z));
             }
         }
@@ -710,7 +710,7 @@ public final class GraphUtils {
      */
     public static List<Triple> getUnderlinedTriplesFromGraph(Node node, Graph graph) {
         List<Triple> underlinedTriples = new ArrayList<>();
-        Set<Triple> allUnderlinedTriples = graph.underlines().getUnderLines();
+        Set<Triple> allUnderlinedTriples = graph.getUnderLines();
 
         List<Node> adj = graph.getAdjacentNodes(node);
         if (adj.size() < 2) {
@@ -738,7 +738,7 @@ public final class GraphUtils {
      */
     public static List<Triple> getDottedUnderlinedTriplesFromGraph(Node node, Graph graph) {
         List<Triple> dottedUnderlinedTriples = new ArrayList<>();
-        Set<Triple> allDottedUnderlinedTriples = graph.underlines().getDottedUnderlines();
+        Set<Triple> allDottedUnderlinedTriples = graph.getDottedUnderlines();
 
         List<Node> adj = graph.getAdjacentNodes(node);
         if (adj.size() < 2) {
@@ -1479,17 +1479,17 @@ public final class GraphUtils {
             fmt.format("%s%n", graphNodeAttributes);
         }
 
-        Set<Triple> ambiguousTriples = graph.underlines().getAmbiguousTriples();
+        Set<Triple> ambiguousTriples = graph.getAmbiguousTriples();
         if (!ambiguousTriples.isEmpty()) {
             fmt.format("%n%n%s", GraphUtils.triplesToText(ambiguousTriples, "Ambiguous triples (i.e. list of triples for which there is ambiguous data about whether they are colliders or not):"));
         }
 
-        Set<Triple> underLineTriples = graph.underlines().getUnderLines();
+        Set<Triple> underLineTriples = graph.getUnderLines();
         if (!underLineTriples.isEmpty()) {
             fmt.format("%n%n%s", GraphUtils.triplesToText(underLineTriples, "Underline triples:"));
         }
 
-        Set<Triple> dottedUnderLineTriples = graph.underlines().getDottedUnderlines();
+        Set<Triple> dottedUnderLineTriples = graph.getDottedUnderlines();
         if (!dottedUnderLineTriples.isEmpty()) {
             fmt.format("%n%n%s", GraphUtils.triplesToText(dottedUnderLineTriples, "Dotted underline triples:"));
         }
@@ -1766,7 +1766,7 @@ public final class GraphUtils {
             return new EdgeListGraph(graph);
         } else if ("CPDAG".equals(type)) {
             params.set("graphComparisonType", "CPDAG");
-            return SearchGraphUtils.cpdagForDag(graph);
+            return GraphSearchUtils.cpdagForDag(graph);
         } else if ("PAG".equals(type)) {
             params.set("graphComparisonType", "PAG");
             return dagToPag(graph);
@@ -1844,8 +1844,8 @@ public final class GraphUtils {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
-                    if (FciOrient.isArrowpointAllowed(a, b, graph, knowledge)
-                            && FciOrient.isArrowpointAllowed(c, b, graph, knowledge)) {
+                    if (FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                            && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                         graph.setEndpoint(a, b, Endpoint.ARROW);
                         graph.setEndpoint(c, b, Endpoint.ARROW);
                     }

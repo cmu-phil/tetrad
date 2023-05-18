@@ -31,7 +31,7 @@ import java.awt.geom.RoundRectangle2D;
 /**
  * Appearance of session nodes for standard nodes.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 

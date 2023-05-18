@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
  * add and remove listeners, construct SessionEvents, and fire the SessionEvents
  * correctly.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestSessionSupport {
 

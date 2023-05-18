@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -79,14 +79,14 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
             ICovarianceMatrix covMatrix = (ICovarianceMatrix) source;
             CorrelationMatrix corrMatrix = new CorrelationMatrix(covMatrix);
             double alpha = getParams().getDouble("alpha", 0.001);
-            TestType sigTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
-            test = new ContinuousTetradTest(covMatrix, sigTestType, alpha);
+            BpcTestType sigTestType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
+            test = new TetradTestContinuous(covMatrix, sigTestType, alpha);
 //            sextadTest = new DeltaSextadTest(covMatrix);
         } else if (source instanceof DataSet) {
             DataSet data = (DataSet) source;
             double alpha = getParams().getDouble("alpha", 0.001);
-            TestType sigTestType = (TestType) getParams().get("tetradTestType", TestType.TETRAD_WISHART);
-            test = new ContinuousTetradTest(data, sigTestType, alpha);
+            BpcTestType sigTestType = (BpcTestType) getParams().get("tetradTestType", BpcTestType.TETRAD_WISHART);
+            test = new TetradTestContinuous(data, sigTestType, alpha);
 //            sextadTest = new DeltaSextadTest(data);
         } else {
             throw new RuntimeException(
@@ -95,7 +95,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
 
         List<List<Node>> inputPartition = ClusterUtils.clustersToPartition((Clusters) getParams().get("clusters", null), test.getVariables());
 
-        IPurify purify = new PurifyTetradBased2(test);
+        IPurify purify = new PurifyTetradBased(test);
 
 
         List<List<Node>> partition = purify.purify(inputPartition);

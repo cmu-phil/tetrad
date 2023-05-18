@@ -9,6 +9,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.utils.BpcTestType;
+import edu.cmu.tetrad.search.utils.ClusterSignificance;
+import edu.cmu.tetrad.search.utils.ClusterUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -20,7 +24,7 @@ import java.util.List;
 /**
  * Find One Factor Clusters.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FOFC",
@@ -43,25 +47,25 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
             double alpha = parameters.getDouble(Params.ALPHA);
 
             boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
-            TestType testType;
+            BpcTestType testType;
 
             if (wishart) {
-                testType = TestType.TETRAD_WISHART;
+                testType = BpcTestType.TETRAD_WISHART;
             } else {
-                testType = TestType.TETRAD_DELTA;
+                testType = BpcTestType.TETRAD_DELTA;
             }
 
             boolean gap = parameters.getBoolean(Params.USE_GAP, true);
-            FindOneFactorClusters.Algorithm algorithm;
+            edu.cmu.tetrad.search.Fofc.Algorithm algorithm;
 
             if (gap) {
-                algorithm = FindOneFactorClusters.Algorithm.GAP;
+                algorithm = edu.cmu.tetrad.search.Fofc.Algorithm.GAP;
             } else {
-                algorithm = FindOneFactorClusters.Algorithm.SAG;
+                algorithm = edu.cmu.tetrad.search.Fofc.Algorithm.SAG;
             }
 
-            edu.cmu.tetrad.search.FindOneFactorClusters search
-                    = new edu.cmu.tetrad.search.FindOneFactorClusters(cov, testType, algorithm, alpha);
+            edu.cmu.tetrad.search.Fofc search
+                    = new edu.cmu.tetrad.search.Fofc(cov, testType, algorithm, alpha);
             search.setSignificanceChecked(parameters.getBoolean(Params.SIGNIFICANCE_CHECKED));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -131,7 +135,7 @@ public class Fofc implements Algorithm, HasKnowledge, ClusterAlgorithm {
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.cpdagForDag(graph);
+        return GraphSearchUtils.cpdagForDag(graph);
     }
 
     @Override

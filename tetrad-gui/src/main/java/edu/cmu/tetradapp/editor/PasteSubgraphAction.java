@@ -37,7 +37,7 @@ import java.util.List;
  * Copies a parentally closed selection of session nodes in the frontmost
  * session editor to the clipboard.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 class PasteSubgraphAction extends AbstractAction implements ClipboardOwner {
     /**

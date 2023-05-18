@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndTestTrekSep;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.analysis.MultivariateFunction;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -41,9 +42,14 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * An implemetation of Mimbuild based on the treks and ranks.
+ * Implements Mimbuild using the theory of treks and ranks.
  *
- * @author Adam
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
+ * @author adambrodie
+ * @see Knowledge
+ * @see Mimbuild
  */
 public class MimbuildTrek {
 
@@ -81,7 +87,6 @@ public class MimbuildTrek {
      * The p value of the optimization.
      */
     private double pValue;
-    private int numParams;
     private List<Node> latents;
     private double epsilon = 1e-4;
     private int minClusterSize = 3;
@@ -91,6 +96,14 @@ public class MimbuildTrek {
 
     //=================================== PUBLIC METHODS =========================================//
 
+    /**
+     * Does the search and returns the graph.
+     *
+     * @param clustering  A clustering of the variables, each of which is explained by a single latent.
+     * @param latentNames The names of the latents, which cannot be known by the clustering algorithm.
+     * @param measuresCov The covariance matrix over the measured variables, from the data.
+     * @return A graph over the latents.
+     */
     public Graph search(List<List<Node>> clustering, List<String> latentNames, ICovarianceMatrix measuresCov) {
         List<String> _latentNames = new ArrayList<>(latentNames);
 
@@ -145,49 +158,53 @@ public class MimbuildTrek {
         return this.structureGraph;
     }
 
+    /**
+     * The clustering used.
+     *
+     * @return This clusterng.
+     */
     public List<List<Node>> getClustering() {
         return this.clustering;
     }
 
-    public double getAlpha() {
-        return this.alpha;
-    }
-
+    /**
+     * The alpha to use.
+     *
+     * @param alpha This alpha.
+     */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
+    /**
+     * The knowledge to use in the search.
+     *
+     * @param knowledge This knowledge.
+     */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
+    /**
+     * The covaraince matrix over the latents that is implied by the clustering.
+     *
+     * @return This covarianc matrix.
+     */
     public ICovarianceMatrix getLatentsCov() {
         return this.latentsCov;
     }
 
-    public List<String> getLatentNames(List<Node> latents) {
-        List<String> latentNames = new ArrayList<>();
-
-        for (Node node : latents) {
-            latentNames.add(node.getName());
-        }
-
-        return latentNames;
-    }
-
-    public double getMinimum() {
-        return this.minimum;
-    }
-
+    /**
+     * The p-value of the model.
+     * @return This p-value.
+     */
     public double getpValue() {
         return this.pValue;
     }
 
     /**
+     * The full graph discovered.
+     *
      * @return the allowUnfaithfulness discovered graph, with latents and indicators.
      */
     public Graph getFullGraph() {
@@ -209,12 +226,10 @@ public class MimbuildTrek {
         return graph;
     }
 
-    public double getEpsilon() {
-        return this.epsilon;
-    }
-
     /**
-     * Parameter convergence threshold. Default = 1e-4.
+     * Sets the parameter convergence threshold. Default = 1e-4.
+     *
+     * @param epsilon This threshold.
      */
     public void setEpsilon(double epsilon) {
         if (epsilon < 0) throw new IllegalArgumentException("Epsilon mut be >= 0: " + epsilon);
@@ -252,8 +267,8 @@ public class MimbuildTrek {
         Matrix measurescov = _measurescov.getMatrix();
         Matrix latentscov = new Matrix(latents.size(), latents.size());
 
-        for (int i = 0; i < latentscov.rows(); i++) {
-            for (int j = i; j < latentscov.columns(); j++) {
+        for (int i = 0; i < latentscov.getNumRows(); i++) {
+            for (int j = i; j < latentscov.getNumColumns(); j++) {
                 if (i == j) latentscov.set(i, j, 1.0);
                 else {
                     final double v = .5;
@@ -289,7 +304,7 @@ public class MimbuildTrek {
         }
 
         // Variances of the measures.
-        double[] delta = new double[measurescov.rows()];
+        double[] delta = new double[measurescov.getNumRows()];
 
         Arrays.fill(delta, 1);
 
@@ -297,14 +312,14 @@ public class MimbuildTrek {
 
         optimizeNonMeasureVariancesQuick(indicators, measurescov, latentscov, loadings, indicatorIndices);
 
-        this.numParams = allParams1.length;
+        int numParams = allParams1.length;
 
         optimizeAllParamsSimultaneously(indicators, measurescov, latentscov, loadings, indicatorIndices, delta);
 
         double N = _measurescov.getSampleSize();
         int p = _measurescov.getDimension();
 
-        int df = (p) * (p + 1) / 2 - (this.numParams);
+        int df = (p) * (p + 1) / 2 - (numParams);
         double x = (N - 1) * this.minimum;
         this.pValue = 1.0 - new ChiSquaredDistribution(df).cumulativeProbability(x);
 
@@ -352,10 +367,6 @@ public class MimbuildTrek {
                 new MaxEval(100000));
 
         this.minimum = pair.getValue();
-    }
-
-    public int getNumParams() {
-        return this.numParams;
     }
 
     private void optimizeAllParamsSimultaneously(Node[][] indicators, Matrix measurescov,
@@ -514,7 +525,7 @@ public class MimbuildTrek {
 
             Matrix implied = impliedCovariance(this.indicatorIndices, this.loadings, this.measurescov, this.latentscov, this.delta);
 
-            Matrix I = Matrix.identity(implied.rows());
+            Matrix I = Matrix.identity(implied.getNumRows());
             Matrix diff = I.minus((implied.times(this.measuresCovInverse)));  // time hog. times().
 
             return 0.5 * (diff.times(diff)).trace();
@@ -524,7 +535,7 @@ public class MimbuildTrek {
 
     private Matrix impliedCovariance(int[][] indicatorIndices, double[][] loadings, Matrix cov, Matrix loadingscov,
                                      double[] delta) {
-        Matrix implied = new Matrix(cov.rows(), cov.columns());
+        Matrix implied = new Matrix(cov.getNumRows(), cov.getNumColumns());
 
         for (int i = 0; i < loadings.length; i++) {
             for (int j = 0; j < loadings.length; j++) {
@@ -537,7 +548,7 @@ public class MimbuildTrek {
             }
         }
 
-        for (int i = 0; i < implied.rows(); i++) {
+        for (int i = 0; i < implied.getNumRows(); i++) {
             implied.set(i, i, implied.get(i, i) + delta[i]);
         }
 
@@ -573,7 +584,6 @@ public class MimbuildTrek {
 
         return sum;
     }
-
 }
 
 

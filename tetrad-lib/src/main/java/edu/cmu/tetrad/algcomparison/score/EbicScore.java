@@ -6,7 +6,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Score;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Wrapper for linear, Gaussian Extended BIC score (Chen and Chen).
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Score(
         name = "EBIC Score",
@@ -33,12 +33,12 @@ public class EbicScore implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        edu.cmu.tetrad.search.EbicScore score;
+        edu.cmu.tetrad.search.score.EbicScore score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.EbicScore((DataSet) this.dataSet, parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
+            score = new edu.cmu.tetrad.search.score.EbicScore((DataSet) this.dataSet, parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES));
         } else if (dataSet instanceof ICovarianceMatrix) {
-            score = new edu.cmu.tetrad.search.EbicScore((ICovarianceMatrix) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.EbicScore((ICovarianceMatrix) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.data.DataGraphUtils;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -38,7 +39,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 @Ignore
 public class TestPurify {
@@ -151,8 +152,8 @@ public class TestPurify {
         partition.add(cluster2);
         partition.add(cluster3);
 
-        TetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.05);
-        IPurify purify = new PurifyTetradBased2(test);
+        TetradTest test = new TetradTestContinuous(data, BpcTestType.TETRAD_WISHART, 0.05);
+        IPurify purify = new PurifyTetradBased(test);
         purify.setTrueGraph(graph);
 
         List<List<Node>> partition2 = purify.purify(partition);
@@ -248,8 +249,8 @@ public class TestPurify {
         partition.add(cluster1);
         partition.add(cluster2);
 
-        TetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.0001);
-        IPurify purify = new PurifyTetradBased2(test);
+        TetradTest test = new TetradTestContinuous(data, BpcTestType.TETRAD_WISHART, 0.0001);
+        IPurify purify = new PurifyTetradBased(test);
         purify.setTrueGraph(graph);
 
         List<List<Node>> clustering = purify.purify(partition);
@@ -286,9 +287,9 @@ public class TestPurify {
             clustering.add(adj);
         }
 
-        ContinuousTetradTest test = new ContinuousTetradTest(data, TestType.TETRAD_WISHART, 0.001);
+        TetradTestContinuous test = new TetradTestContinuous(data, BpcTestType.TETRAD_WISHART, 0.001);
 
-        IPurify purify = new PurifyTetradBased2(test);
+        IPurify purify = new PurifyTetradBased(test);
 
         List<List<Node>> purifiedClustering = purify.purify(clustering);
         List<String> latentsNames = new ArrayList<>();

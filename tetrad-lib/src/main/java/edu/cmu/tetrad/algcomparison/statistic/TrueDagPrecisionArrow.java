@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class TrueDagPrecisionArrow implements Statistic {
     static final long serialVersionUID = 23L;

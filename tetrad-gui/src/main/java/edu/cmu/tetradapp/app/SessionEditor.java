@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * Displays a toolbar and workbench for editing Session's.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see SessionEditorWorkbench
  * @see SessionEditorToolbar
  */

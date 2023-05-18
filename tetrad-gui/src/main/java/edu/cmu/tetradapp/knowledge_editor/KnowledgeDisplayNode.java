@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * This class represents a knowledge variable on screen.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class KnowledgeDisplayNode extends DisplayNode {
 

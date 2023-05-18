@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Indicates a class that can returns multiple models.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 interface MultipleDataSource {
     List<DataModel> getDataModels();

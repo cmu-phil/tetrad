@@ -33,7 +33,7 @@ import java.io.ObjectInputStream;
  * Wraps a data model so that a random sample will automatically be drawn on
  * construction from a BayesIm.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @author Frank Wimberly based on similar class by Ramsey
  */
 public class ReplaceMissingWithRandomWrapper extends DataWrapper {

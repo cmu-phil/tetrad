@@ -25,6 +25,10 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -34,91 +38,61 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
- * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
- * Insufficient Systems").
- * <p>
- * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
- * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * <p>Implements the Fast Causal Inference (FCI) algorithm due to Peter Spirtes, which addressed
+ * the case where latent common causes cannot be assumed not to exist with respect to the data set
+ * being analyzed. That is, it is assumed that there may be variables that are not included in the
+ * data that nonetheless may be causes of two or more variables that are included in data.</p>
  *
- * @author Erin Korber, June 2004
- * @author Alex Smith, December 2008
- * @author Joseph Ramsey
- * @author Choh-Man Teng
+ * <p>Two alternatives are provided for doing the final orientation step, one due to Peter Spirtes,
+ * which is arrow complete, and another due to Jiji Zhang, which is arrow and tail complete.</p>
+ *
+ * <p>This algorithm, with the Spirtes final orientation rules, was given in an earlier version of
+ * this book:</p>
+ *
+ * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
+ * prediction, and search. MIT press.</p>
+ *
+ * <p>The algorithm with the Zhang final orientation rules was given in this reference:</p>
+ *
+ * <p>Zhang, J. (2008). On the completeness of orientation rules for causal discovery in the presence
+ * of latent confounders and selection bias. Artificial Intelligence, 172(16-17), 1873-1896.</p>
+ *
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
+ * @author peterspirtes
+ * @author clarkglymour
+ * @author jijizhang
+ * @author josephramsey
+ * @see FciOrient
+ * @see Pc
+ * @see Fas
+ * @see FciOrient
+ * @see Knowledge
  */
-public final class Fci implements GraphSearch {
-
-    /**
-     * The SepsetMap being constructed.
-     */
+public final class Fci implements IGraphSearch {
     private SepsetMap sepsets;
-
-    /**
-     * The background knowledge.
-     */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The variables to search over (optional)
-     */
     private final List<Node> variables = new ArrayList<>();
-
-    /**
-     * The test to use for the search.
-     */
     private final IndependenceTest independenceTest;
-
-    /**
-     * flag for complete rule set, true if should use complete rule set, false otherwise.
-     */
     private boolean completeRuleSetUsed = true;
-
-    /**
-     * True iff the possible dsep search is done.
-     */
     private boolean possibleDsepSearchDone = true;
-
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
     private int maxPathLength = -1;
-
-    /**
-     * The depth for the fast adjacency search.
-     */
     private int depth = -1;
-
-    /**
-     * Elapsed time of last search.
-     */
     private long elapsedTime;
-
-    /**
-     * The logger to use.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * True iff verbose output should be printed.
-     */
     private boolean verbose;
-
-    /**
-     * FAS heuristic
-     */
     private int heuristic;
-
-    /**
-     * FAS stable option.
-     */
     private boolean stable;
     private boolean doDiscriminatingPathRule = true;
 
     //============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a new FCI search for the given independence test and background knowledge.
+     * Constructor.
+     *
+     * @param independenceTest The test to use for oracle conditional independence information.
      */
     public Fci(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -130,8 +104,10 @@ public final class Fci implements GraphSearch {
     }
 
     /**
-     * Constructs a new FCI search for the given independence test and background knowledge and a list of variables to
-     * search over.
+     * Constructor.
+     *
+     * @param independenceTest The test to use for oracle conditional independence information.
+     * @param searchVars       A specific list of variables to search over.
      */
     public Fci(IndependenceTest independenceTest, List<Node> searchVars) {
         if (independenceTest == null) {
@@ -163,23 +139,6 @@ public final class Fci implements GraphSearch {
 
     //========================PUBLIC METHODS==========================//
 
-    public int getDepth() {
-        return this.depth;
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + depth);
-        }
-
-        this.depth = depth;
-    }
-
-    public long getElapsedTime() {
-        return this.elapsedTime;
-    }
-
     public Graph search() {
         long start = MillisecondTimes.timeMillis();
 
@@ -204,7 +163,7 @@ public final class Fci implements GraphSearch {
         // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
         SepsetsSet sepsets1 = new SepsetsSet(this.sepsets, this.independenceTest);
 
-        if (isPossibleDsepSearchDone()) {
+        if (this.possibleDsepSearchDone) {
             new FciOrient(sepsets1).ruleR0(graph);
             graph.paths().removeByPossibleDsep(independenceTest, sepsets);
 
@@ -234,16 +193,44 @@ public final class Fci implements GraphSearch {
         return graph;
     }
 
+    /**
+     * Sets the depth of search, which is the maximum number of variables conditioned on
+     * in any test.
+     *
+     * @param depth This maximum.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException(
+                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+        }
+
+        this.depth = depth;
+    }
 
     /**
-     * Retrieves the sepset map from FAS.
+     * Returns the elapsed time of search.
+     *
+     * @return This time.
+     */
+    public long getElapsedTime() {
+        return this.elapsedTime;
+    }
+
+    /**
+     * Returns the sepset map from FAS.
+     *
+     * @return This map.
+     * @see SepsetMap
      */
     public SepsetMap getSepsets() {
         return this.sepsets;
     }
 
     /**
-     * Retrieves the background knowledge that was set.
+     * Returns the background knowledge that was set.
+     *
+     * @return This knowledge.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -251,6 +238,8 @@ public final class Fci implements GraphSearch {
 
     /**
      * Sets background knowledge for the search.
+     *
+     * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -261,44 +250,28 @@ public final class Fci implements GraphSearch {
     }
 
     /**
-     * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
-     * should be used. False by default.
-     */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
-    }
-
-    /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
-     *                            set of the original FCI) should be used. False by default.
+     * Sets whether the Zhang complete rule set should be used; if false if only R1-R4 (the rule
+     * set of the original FCI) should be used. False by default.
+     *
+     * @param completeRuleSetUsed True for the complete Zhang ruleset.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
-     * True iff the (time-consuming) possible dsep step should be done.
-     */
-    public boolean isPossibleDsepSearchDone() {
-        return this.possibleDsepSearchDone;
-    }
-
-    /**
-     * True iff the (time-consuming) possible dsep step should be done.
+     * Sets whether the (time-consuming) possible dsep step should be done.
+     *
+     * @param possibleDsepSearchDone True if so.
      */
     public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
         this.possibleDsepSearchDone = possibleDsepSearchDone;
     }
 
     /**
-     * @return the maximum length of any discriminating path, or -1 of unlimited.
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength == Integer.MAX_VALUE ? -1 : this.maxPathLength;
-    }
-
-    /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
+     * Sets the maximum length of any discriminating path, or -1 if unlimited.
+     *
+     * @param maxPathLength This maximum.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {
@@ -309,40 +282,48 @@ public final class Fci implements GraphSearch {
     }
 
     /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    /**
-     * True iff verbose output should be printed.
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * The independence test.
+     * Returns the independence test used in search.
+     *
+     * @return This test.
      */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
     }
 
     /**
-     * The FAS heuristic.
+     * Sets which PC heuristic should be used in the intitial adjacency search.
+     *
+     * @param heuristic The neuristic option.
+     * @see Pc
      */
     public void setHeuristic(int heuristic) {
         this.heuristic = heuristic;
     }
 
     /**
-     * The FAS stable option.
+     * Sets whether the stable options hould be used in the initial adjacency search.
+     *
+     * @param stable True if so.
+     * @see Pc
      */
     public void setStable(boolean stable) {
         this.stable = stable;
     }
 
+    /**
+     * Sets whether the discriminating path rule should be used.
+     *
+     * @param doDiscriminatingPathRule True if so.
+     */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }

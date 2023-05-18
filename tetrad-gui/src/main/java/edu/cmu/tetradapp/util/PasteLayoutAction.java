@@ -34,7 +34,7 @@ import java.awt.event.ActionEvent;
  * Pastes a layout into a LayoutEditable gadget, which lays out the graph in
  * that gadget according to the stored graph.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class PasteLayoutAction extends AbstractAction
         implements ClipboardOwner {

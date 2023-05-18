@@ -29,7 +29,7 @@ import java.util.List;
  * Interface containing methods to calculate probabilities for systems of
  * discrete variables. See instantiations for more details.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 interface DiscreteProbs {
 

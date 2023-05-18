@@ -7,9 +7,9 @@ import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.BdeuScore;
+import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 
 import java.util.ArrayList;
@@ -70,7 +70,7 @@ public class HsimRobustCompare {
         //create various simulated data sets
 
         ////let's do the full simulated data set first: a dag in the FGES CPDAG fit to the data set.
-        Graph fgesDag = SearchGraphUtils.dagFromCPDAG(oGraphOut);
+        Graph fgesDag = GraphSearchUtils.dagFromCPDAG(oGraphOut);
 
         Dag fgesdag2 = new Dag(fgesDag);
         BayesPm simBayesPm = new BayesPm(fgesdag2, bayesPm);

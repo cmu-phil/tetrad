@@ -41,7 +41,7 @@ import java.util.*;
  * serialization--e.g. java.rmu.MarshalledObject.
  *
  * @author Donald Crimbchin
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class SemPm implements Pm, TetradSerializable {
     static final long serialVersionUID = 23L;

@@ -36,7 +36,7 @@ import java.util.Map;
  * This class represents a node in a workbench; it is an abstract class, but
  * extensions of it represent measured and latent variables.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class DisplayNode extends JComponent implements Node, TetradSerializableExcluded {
 

@@ -29,7 +29,7 @@ import java.awt.event.ActionEvent;
 /**
  * Exits the Tetrad application.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class ExitAction extends AbstractAction {
 

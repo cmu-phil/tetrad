@@ -34,7 +34,7 @@ import java.util.List;
  * Note that in the calculation, points x such that log(1 - distributions.get(x)))
  * is infinite are ignored.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class MultiGeneralAndersonDarlingTest {
 

@@ -3,12 +3,11 @@ package edu.pitt.dbmi.algo.bayesian.constraint.search;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.GraphSearch;
-import edu.cmu.tetrad.search.IndTestProbabilistic;
+import edu.cmu.tetrad.search.IGraphSearch;
+import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.Rfci;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.GraphSampling;
-import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,7 +18,7 @@ import java.util.concurrent.*;
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
  */
-public class PagSamplingRfci implements GraphSearch {
+public class PagSamplingRfci implements IGraphSearch {
 
     private final int NUM_THREADS = 10;
 
@@ -75,7 +74,7 @@ public class PagSamplingRfci implements GraphSearch {
                 for (Future<Graph> completedTask : completedTasks) {
                     try {
                         Graph graph = completedTask.get();
-                        if (graph != null && SearchGraphUtils.isLegalPag(graph).isLegalPag()) {
+                        if (graph != null && GraphSearchUtils.isLegalPag(graph).isLegalPag()) {
                             graphs.add(graph);
                         }
                     } catch (ExecutionException exception) {

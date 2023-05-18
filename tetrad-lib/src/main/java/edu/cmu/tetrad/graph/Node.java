@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * Represents an object with a name, node type, and position that can serve as a
  * node in a graph.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see NodeType
  */
 public interface Node extends TetradSerializable, Comparable<Node> {

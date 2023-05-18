@@ -31,7 +31,7 @@ import java.util.stream.IntStream;
 /**
  * Stores clusters of variables for MimBuild, Purify, etc.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Ricardo Silva
  */
 public final class Clusters implements TetradSerializable {

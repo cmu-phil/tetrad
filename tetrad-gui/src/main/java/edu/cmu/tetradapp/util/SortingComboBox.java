@@ -27,7 +27,7 @@ import javax.swing.*;
  * Extends JComboBox so that the items it contains are automatically sorted as
  * they are added.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SortingComboBox extends JComboBox {
 

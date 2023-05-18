@@ -36,7 +36,7 @@ import javax.swing.border.MatteBorder;
  * Bayes updating results.
  *
  * @author William Taysom -- Jun 14, 2003
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class EvidenceWizardSingle extends JPanel {
     private final UpdaterWrapper updaterWrapper;

@@ -32,7 +32,7 @@ import java.util.*;
  * Calculates marginals of the form P(V=v') for an updated Bayes net for
  * purposes of the CPT Invariant Updater.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class CptInvariantMarginalCalculator
         implements TetradSerializable {

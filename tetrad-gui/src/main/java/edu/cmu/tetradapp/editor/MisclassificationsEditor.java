@@ -34,7 +34,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.getComparisonGraph;
  * Provides a little display/editor for notes in the session workbench. This may
  * be elaborated in the future to allow marked up text.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class MisclassificationsEditor extends JPanel {
 

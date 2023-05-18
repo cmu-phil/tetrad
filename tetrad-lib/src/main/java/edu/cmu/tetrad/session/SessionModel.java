@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
  * test (C.equals(save(load(C))), and (2) that sample models from every
  * published version of Tetrad in which C has changed will load correctly.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface SessionModel extends TetradSerializable {
     long serialVersionUID = 23L;

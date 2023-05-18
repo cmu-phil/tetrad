@@ -28,7 +28,7 @@ import javax.swing.*;
 /**
  * Edits the parameters for generating random graphs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SimulationParamsEditor extends JPanel implements ParameterEditor {
     private Parameters params = new Parameters();

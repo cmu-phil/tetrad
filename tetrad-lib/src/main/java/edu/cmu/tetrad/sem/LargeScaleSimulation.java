@@ -47,7 +47,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * Stores a SEM model, pared down, for purposes of simulating data sets with
  * large numbers of variables and sample sizes.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class LargeScaleSimulation {
 
@@ -219,12 +219,12 @@ public final class LargeScaleSimulation {
         NormalDistribution normal = new NormalDistribution(new Well1024a(++this.seed), 0, 1);
 
         Matrix B = new Matrix(getCoefficientMatrix());
-        Matrix iMinusBInv = Matrix.identity(B.rows()).minus(B).inverse();
+        Matrix iMinusBInv = Matrix.identity(B.getNumRows()).minus(B).inverse();
 
         double[][] all = new double[this.variableNodes.size()][sampleSize];
 
         for (int row = 0; row < sampleSize; row++) {
-            Vector e = new Vector(B.rows());
+            Vector e = new Vector(B.getNumRows());
 
             for (int j = 0; j < e.size(); j++) {
                 e.set(j, normal.sample() * sqrt(this.errorVars[j]));

@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.SemBicScore;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.pitt.dbmi.data.reader.Delimiter;
@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class ExploreAutisticsNeurotypicals {
 
@@ -469,7 +469,7 @@ public final class ExploreAutisticsNeurotypicals {
 
         List<Node> tvars = new ArrayList<>();
 
-        for (int i = 0; i < mt.columns(); i++) tvars.add(new ContinuousVariable("S" + (i + 1)));
+        for (int i = 0; i < mt.getNumColumns(); i++) tvars.add(new ContinuousVariable("S" + (i + 1)));
 
         dataSet = new BoxDataSet(new DoubleDataBox(mt.toArray()), tvars);
 

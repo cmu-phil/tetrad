@@ -22,12 +22,12 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.search.IndTestType;
+import edu.cmu.tetradapp.util.IndTestType;
 
 /**
  * Helps to set independence test types.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 interface IndTestTypeSetter {
     void setTestType(IndTestType testType);

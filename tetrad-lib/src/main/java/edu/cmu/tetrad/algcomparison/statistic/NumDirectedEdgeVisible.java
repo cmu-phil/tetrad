@@ -3,10 +3,10 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 /**
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumDirectedEdgeVisible implements Statistic {
     static final long serialVersionUID = 23L;
@@ -25,7 +25,7 @@ public class NumDirectedEdgeVisible implements Statistic {
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         int tp = 0;
 
-        Graph pag = SearchGraphUtils.dagToPag(trueGraph);
+        Graph pag = GraphSearchUtils.dagToPag(trueGraph);
 
         for (Edge edge : pag.getEdges()) {
             if (pag.paths().defVisible(edge)) {

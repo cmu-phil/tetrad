@@ -31,7 +31,7 @@ import java.util.List;
  * Calculates a ROC curve and AUC (area under curve) for a list of scored cases
  * whose inclusion in category C is known.
  *
- * @author Joseph Ramsey and Frank Wimberly
+ * @author josephramsey and Frank Wimberly
  */
 public class RocCalculator {
     public static final int ASCENDING = 0;

@@ -40,7 +40,7 @@ import java.util.List;
 // Wraps a Bayes Im (observed variables only) for use
 // in the Tetrad application.
 //
-// @author Joseph Ramsey
+// @author josephramsey
 ///////////////////////////////////////////////////////////
 public class BayesImWrapperObs implements SessionModel, Memorable {
 

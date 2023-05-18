@@ -39,7 +39,7 @@ import java.util.List;
 import static junit.framework.TestCase.assertEquals;
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestCellProbabilities {
 

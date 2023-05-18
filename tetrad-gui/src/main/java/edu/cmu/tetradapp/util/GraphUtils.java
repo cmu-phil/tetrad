@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Created by jdramsey on 12/8/15.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GraphUtils {
     public static Graph makeRandomGraph(Graph graph, Parameters parameters) {

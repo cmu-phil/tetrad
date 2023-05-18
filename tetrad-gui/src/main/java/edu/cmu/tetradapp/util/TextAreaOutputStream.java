@@ -29,7 +29,7 @@ import java.io.OutputStream;
 /**
  * An output stream to pipe stuff written to it directly to a JTextArea.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TextAreaOutputStream extends OutputStream implements TetradLogger.LogDisplayOutputStream {
 

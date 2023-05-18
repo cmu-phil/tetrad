@@ -17,7 +17,7 @@ import org.apache.commons.math3.util.FastMath;
  * X to Y or else does not contain an arrowhead at X for an edge from X to Y, one false
  * positive is counted. Similarly, for false negatives
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class MathewsCorrArrow implements Statistic {
     static final long serialVersionUID = 23L;

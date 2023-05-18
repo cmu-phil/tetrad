@@ -28,7 +28,7 @@ import edu.cmu.tetrad.session.Session;
  * the desktop without a package cycle. See TetradDesktop for meaning of
  * methods.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see edu.cmu.tetradapp.app.TetradDesktop
  */
 public interface DesktopControllable {

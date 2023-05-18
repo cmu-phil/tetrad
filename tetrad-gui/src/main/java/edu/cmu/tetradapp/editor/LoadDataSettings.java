@@ -63,7 +63,7 @@ import java.util.prefs.Preferences;
  * Panel (to be put in a dialog) for letting the user choose how a data file
  * should be loaded.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class LoadDataSettings extends JPanel {
 

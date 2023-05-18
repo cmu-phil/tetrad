@@ -26,7 +26,7 @@ import edu.cmu.tetradapp.workbench.DisplayComp;
 /**
  * The appearance of a session node.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface SessionDisplayComp extends DisplayComp {
 

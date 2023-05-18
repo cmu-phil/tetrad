@@ -25,7 +25,7 @@ package edu.cmu.tetrad.sem;
  * A typesafe enum of the types of the various comparisons parameter may have
  * with respect to one another for SEM estimation.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ParamComparison {
 

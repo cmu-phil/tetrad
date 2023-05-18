@@ -32,7 +32,7 @@ import java.util.prefs.Preferences;
  * session graph in depth-first order and executes each node encountered a
  * specified number of times.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class SimulationStudy {
 

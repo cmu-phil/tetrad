@@ -31,7 +31,7 @@ import java.util.Arrays;
  * A value of n is returned if a number drawn uniformly from [0, 1] is less
  * than the n + 1th p value.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Discrete implements Distribution {
     static final long serialVersionUID = 23L;

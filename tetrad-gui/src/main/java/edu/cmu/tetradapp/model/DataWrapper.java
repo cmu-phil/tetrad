@@ -38,7 +38,7 @@ import java.util.*;
  * Wraps a DataModel as a model class for a Session, providing constructors for
  * the parents of Tetrad that are specified by Tetrad.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         DoNotAddOldModel, SimulationParamsSource, MultipleDataSource {

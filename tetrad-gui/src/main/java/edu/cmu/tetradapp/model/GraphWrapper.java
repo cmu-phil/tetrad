@@ -25,8 +25,8 @@ import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.expression.VariableExpression;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.IndTestDSep;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SimulationParamsSource;
@@ -46,7 +46,7 @@ import java.util.Map;
  * Holds a tetrad-style graph with all of the constructors necessary for it to
  * serve as a model for the tetrad application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProducer,
         SimulationParamsSource, GraphSettable, MultipleGraphSource {

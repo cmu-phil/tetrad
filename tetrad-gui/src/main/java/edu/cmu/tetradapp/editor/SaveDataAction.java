@@ -37,7 +37,7 @@ import java.text.NumberFormat;
 /**
  * Saves data to disk.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class SaveDataAction extends AbstractAction {
 

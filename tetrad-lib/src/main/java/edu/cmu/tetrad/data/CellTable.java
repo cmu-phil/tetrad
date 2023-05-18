@@ -30,7 +30,7 @@ import java.util.Arrays;
  * Stores a cell count table of arbitrary dimension. Provides methods for
  * incrementing particular cells and for calculating marginals.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see edu.cmu.tetrad.util.MultiDimIntTable
  */
 public final class CellTable {

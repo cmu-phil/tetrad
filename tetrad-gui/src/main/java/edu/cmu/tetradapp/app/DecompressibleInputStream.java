@@ -32,7 +32,7 @@ import java.io.ObjectStreamClass;
  * <p>
  * Dec 6, 2017 11:10:24 AM
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
  */
 public class DecompressibleInputStream extends ObjectInputStream {

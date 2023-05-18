@@ -37,7 +37,7 @@ import java.io.ObjectInputStream;
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Frank Wimberly adapted for EM Bayes estimator and structural EM Bayes
  * search
  */

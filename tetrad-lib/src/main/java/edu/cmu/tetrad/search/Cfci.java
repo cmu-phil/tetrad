@@ -21,10 +21,11 @@
 
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -34,18 +35,20 @@ import java.util.*;
 
 
 /**
- * Extends Erin Korber's implementation of the Fast Causal Inference algorithm (found in FCI.java) with Jiji Zhang's
- * Augmented FCI rules (found in sec. 4.1 of Zhang's 2006 PhD dissertation, "Causal Inference and Reasoning in Causally
- * Insufficient Systems").
- * <p>
- * This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension is
- * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)
+ * <p>Adjusts FCI (see) to use conservative orientation as in CPC (see). Because the
+ * collider orientatation is conservative, there may be ambiguous triples; these
+ * may be retrieved using that accessor method.</p>
  *
- * @author Erin Korber, June 2004
- * @author Alex Smith, December 2008
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
+ * @author josephramsey
+ * @see Fci
+ * @see Cpc
+ * @see #getAmbiguousTriples()
+ * @see Knowledge
  */
-public final class Cfci implements GraphSearch {
+public final class Cfci implements IGraphSearch {
 
     /**
      * The PAG being constructed.
@@ -73,7 +76,7 @@ public final class Cfci implements GraphSearch {
     private final IndependenceTest independenceTest;
 
     /**
-     * flag for complete rule set, true if should use complete rule set, false otherwise.
+     * Flag for complete rule set, true if you should use complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed = true;
 
@@ -86,16 +89,6 @@ public final class Cfci implements GraphSearch {
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
      */
     private int maxReachablePathLength = -1;
-
-    /**
-     * Set of unshielded colliders from the triple orientation step.
-     */
-    private Set<Triple> colliderTriples;
-
-    /**
-     * Set of unshielded noncolliders from the triple orientation step.
-     */
-    private Set<Triple> noncolliderTriples;
 
     /**
      * Set of ambiguous unshielded triples.
@@ -124,6 +117,8 @@ public final class Cfci implements GraphSearch {
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
+     *
+     * @param independenceTest The independence to use as an oracle.
      */
     public Cfci(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -132,29 +127,15 @@ public final class Cfci implements GraphSearch {
 
         this.independenceTest = independenceTest;
         this.variables.addAll(independenceTest.getVariables());
-
-        CorrelationMatrix corr = new CorrelationMatrix(independenceTest.getCov());
     }
 
     //========================PUBLIC METHODS==========================//
 
-    public int getDepth() {
-        return this.depth;
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException(
-                    "Depth must be -1 (unlimited) or >= 0: " + depth);
-        }
-
-        this.depth = depth;
-    }
-
-    public long getElapsedTime() {
-        return this.elapsedTime;
-    }
-
+    /**
+     * Performs the search and returns the PAG.
+     *
+     * @return The search PAG.
+     */
     public Graph search() {
         long beginTime = MillisecondTimes.timeMillis();
         if (this.verbose) {
@@ -173,7 +154,7 @@ public final class Cfci implements GraphSearch {
 
 //        // Step FCI B.  (Zhang's step F2.)
         Fas adj = new Fas(this.independenceTest);
-        adj.setKnowledge(getKnowledge());
+        adj.setKnowledge(this.knowledge);
         adj.setDepth(this.depth);
         adj.setVerbose(this.verbose);
         this.graph = adj.search();
@@ -196,8 +177,8 @@ public final class Cfci implements GraphSearch {
             long time3 = MillisecondTimes.timeMillis();
 
             PossibleDsepFci possibleDSep = new PossibleDsepFci(this.graph, this.independenceTest);
-            possibleDSep.setDepth(getDepth());
-            possibleDSep.setKnowledge(getKnowledge());
+            possibleDSep.setDepth(this.depth);
+            possibleDSep.setKnowledge(this.knowledge);
             possibleDSep.setMaxPathLength(getMaxReachablePathLength());
 
             // We use these sepsets though.
@@ -214,7 +195,7 @@ public final class Cfci implements GraphSearch {
 
         // Step CI C (Zhang's step F3.)
         long time5 = MillisecondTimes.timeMillis();
-        fciOrientbk(getKnowledge(), this.graph, this.variables);
+        fciOrientbk(this.knowledge, this.graph, this.variables);
         ruleR0(this.independenceTest, this.depth, this.sepsets);
 
         long time6 = MillisecondTimes.timeMillis();
@@ -246,27 +227,62 @@ public final class Cfci implements GraphSearch {
         return this.graph;
     }
 
+    /**
+     * Sets the depth--i.e., the maximum number of variables conditioned on in any test.
+     *
+     * @param depth This maximum.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException(
+                    "Depth must be -1 (unlimited) or >= 0: " + depth);
+        }
+
+        this.depth = depth;
+    }
+
+    /**
+     * Returns the elapsed time ot the search.
+     *
+     * @return This time.
+     */
+    public long getElapsedTime() {
+        return this.elapsedTime;
+    }
+
+    /**
+     * Returns the map from nodes to their sepsets. For x _||_ y | z1,...,zn, this
+     * would map {x, y} to {z1,..,zn}.
+     *
+     * @return This map.
+     */
     public SepsetMap getSepsets() {
         return this.sepsets;
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
+    /**
+     * Set the knowledge used in the search.
+     *
+     * @param knowledge This knowledge.
+     * @see Knowledge
+     */
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     /**
-     * @return true if Zhang's complete rule set should be used, false if only R1-T1 (the rule set of the original FCI)
+     * Returns true if Zhang's complete rule set should be used, false if only R1-T1 (the rule set of the original FCI)
      * should be used. False by default.
+     *
+     * @return True for the complete ruleset.
      */
     public boolean isCompleteRuleSetUsed() {
         return this.completeRuleSetUsed;
     }
 
     /**
+     * Sets whether the complete ruleset should be used.
+     *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-T1 (the rule
      *                            set of the original FCI) should be used. False by default.
      */
@@ -274,14 +290,12 @@ public final class Cfci implements GraphSearch {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
-    public Set<Triple> getColliderTriples() {
-        return new HashSet<>(this.colliderTriples);
-    }
-
-    public Set<Triple> getNoncolliderTriples() {
-        return new HashSet<>(this.noncolliderTriples);
-    }
-
+    /**
+     * Returns the ambiguous triples found in the search.
+     *
+     * @return This set.
+     * @see Cpc
+     */
     public Set<Triple> getAmbiguousTriples() {
         return new HashSet<>(this.ambiguousTriples);
     }
@@ -297,8 +311,6 @@ public final class Cfci implements GraphSearch {
             TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
         }
 
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
         this.ambiguousTriples = new HashSet<>();
 
         for (Node y : getGraph().getNodes()) {
@@ -323,8 +335,8 @@ public final class Cfci implements GraphSearch {
                 List<Node> sepset = sepsets.get(x, z);
 
                 if (type == TripleType.COLLIDER || (sepset != null && !sepset.contains(y))) {
-                    if (isArrowpointAllowed(x, y) &&
-                            isArrowpointAllowed(z, y)) {
+                    if (isArrowheadAllowed(x, y) &&
+                            isArrowheadAllowed(z, y)) {
                         getGraph().setEndpoint(x, y, Endpoint.ARROW);
                         getGraph().setEndpoint(z, y, Endpoint.ARROW);
 
@@ -333,16 +345,10 @@ public final class Cfci implements GraphSearch {
                         }
                     }
 
-                    this.colliderTriples.add(new Triple(x, y, z));
-                } else if (type == TripleType.NONCOLLIDER || (sepset != null && sepset.contains(y))) {
-                    this.noncolliderTriples.add(new Triple(x, y, z));
-                    if (this.verbose) {
-                        TetradLogger.getInstance().log("tripleClassifications", "Noncollider: " + Triple.pathString(this.graph, x, y, z));
-                    }
                 } else {
                     Triple triple = new Triple(x, y, z);
                     this.ambiguousTriples.add(triple);
-                    getGraph().underlines().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
+                    getGraph().addAmbiguousTriple(triple.getX(), triple.getY(), triple.getZ());
                     if (this.verbose) {
                         TetradLogger.getInstance().log("tripleClassifications", "AmbiguousTriples: " + Triple.pathString(this.graph, x, y, z));
                     }
@@ -356,13 +362,13 @@ public final class Cfci implements GraphSearch {
     }
 
     /**
-     * Helper method. Appears to check if an arrowpoint is permitted by background knowledge.
+     * Helper method. Appears to check if an arrowhead is permitted by background knowledge.
      *
      * @param x The possible other node.
      * @param y The possible point node.
-     * @return Whether the arrowpoint is allowed.
+     * @return Whether the arrowhead is allowed.
      */
-    private boolean isArrowpointAllowed(Node x, Node y) {
+    private boolean isArrowheadAllowed(Node x, Node y) {
         if (this.graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
         }
@@ -405,7 +411,7 @@ public final class Cfci implements GraphSearch {
             while ((choice = cg.next()) != null) {
                 List<Node> condSet = Cfci.asList(choice, _nodes);
 
-                if (test.checkIndependence(x, z, condSet).independent()) {
+                if (test.checkIndependence(x, z, condSet).isIndependent()) {
                     if (condSet.contains(y)) {
                         existsSepsetContainingY = true;
                     } else {
@@ -433,7 +439,7 @@ public final class Cfci implements GraphSearch {
             while ((choice = cg.next()) != null) {
                 List<Node> condSet = Cfci.asList(choice, _nodes);
 
-                if (test.checkIndependence(x, z, condSet).independent()) {
+                if (test.checkIndependence(x, z, condSet).isIndependent()) {
                     if (condSet.contains(y)) {
                         existsSepsetContainingY = true;
                     } else {
@@ -524,8 +530,8 @@ public final class Cfci implements GraphSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -539,7 +545,7 @@ public final class Cfci implements GraphSearch {
             graph.setEndpoint(to, from, Endpoint.ARROW);
 
             if (this.verbose) {
-                this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+                this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
             }
         }
 
@@ -548,8 +554,8 @@ public final class Cfci implements GraphSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -570,7 +576,7 @@ public final class Cfci implements GraphSearch {
             graph.setEndpoint(from, to, Endpoint.ARROW);
 
             if (this.verbose) {
-                this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+                this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
             }
         }
 

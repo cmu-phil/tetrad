@@ -43,7 +43,7 @@ import java.text.NumberFormat;
 /**
  * Presents a covariance matrix as a JTable.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class CovMatrixJTable extends JTable implements DataModelContainer,
         PropertyChangeListener {

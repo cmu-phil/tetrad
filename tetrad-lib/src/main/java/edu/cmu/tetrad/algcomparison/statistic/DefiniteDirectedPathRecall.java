@@ -3,14 +3,14 @@ package edu.cmu.tetrad.algcomparison.statistic;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import java.util.List;
 
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class DefiniteDirectedPathRecall implements Statistic {
     static final long serialVersionUID = 23L;
@@ -30,7 +30,7 @@ public class DefiniteDirectedPathRecall implements Statistic {
         int tp = 0, fn = 0;
 
         List<Node> nodes = trueGraph.getNodes();
-        Graph cpdag = SearchGraphUtils.cpdagForDag(trueGraph);
+        Graph cpdag = GraphSearchUtils.cpdagForDag(trueGraph);
 
         for (Node x : nodes) {
             for (Node y : nodes) {

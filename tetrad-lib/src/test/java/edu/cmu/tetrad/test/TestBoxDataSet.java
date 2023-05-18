@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  * to be made from Column-based DataSets to COLT-matrix-based datasets. All
  * tests should work for both.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestBoxDataSet {
 

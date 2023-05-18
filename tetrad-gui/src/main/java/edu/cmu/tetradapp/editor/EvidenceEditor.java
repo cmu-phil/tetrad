@@ -39,7 +39,7 @@ import java.util.HashMap;
  * disjunctive) are known for which variables, and which variables are
  * manipulated.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class EvidenceEditor extends JPanel {
     private final Evidence evidence;

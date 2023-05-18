@@ -62,12 +62,12 @@ public class EdgeWeightComparison implements SessionModel {
         Matrix referenceMatrix = ref.getEdgeCoef();
         Matrix targetMatrix = this.target.getEdgeCoef();
 
-        if (targetMatrix.columns() != referenceMatrix.columns() || targetMatrix.rows() != referenceMatrix.rows())
+        if (targetMatrix.getNumColumns() != referenceMatrix.getNumColumns() || targetMatrix.getNumRows() != referenceMatrix.getNumRows())
             return "The SEM IM's you selected don't have the same number of variables!  No comparison is possible here.";
 
         double score = 0;
-        for (int i = 0; i < ref.getEdgeCoef().rows(); i++) {
-            for (int j = 0; j < ref.getEdgeCoef().columns(); j++) {
+        for (int i = 0; i < ref.getEdgeCoef().getNumRows(); i++) {
+            for (int j = 0; j < ref.getEdgeCoef().getNumColumns(); j++) {
                 score += (targetMatrix.get(i, j) - referenceMatrix.get(i, j))
                         * (targetMatrix.get(i, j) - referenceMatrix.get(i, j));
             }

@@ -41,7 +41,7 @@ import java.util.*;
  * <p>
  * To see what distributions are currently supported, look at the methods of the class. These many change over time.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class RandomUtil {
 

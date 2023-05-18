@@ -5,12 +5,12 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 
-import static edu.cmu.tetrad.search.SearchGraphUtils.dagToPag;
+import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
  * The bidirected edge precision.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class BidirectedPrecision implements Statistic {
     static final long serialVersionUID = 23L;

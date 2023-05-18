@@ -9,6 +9,9 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.BdeuScore;
+import edu.cmu.tetrad.search.test.IndTestProbabilistic;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
@@ -27,7 +30,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  *
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  */
-public class RfciBsc implements GraphSearch {
+public class RfciBsc implements IGraphSearch {
 
     private final Rfci rfci;
 
@@ -204,7 +207,7 @@ public class RfciBsc implements GraphSearch {
             @Override
             public Boolean call() throws Exception {
                 for (IndependenceFact f : hCopy.keySet()) {
-                    boolean ind = this.bsTest.checkIndependence(f.getX(), f.getY(), f.getZ()).independent();
+                    boolean ind = this.bsTest.checkIndependence(f.getX(), f.getY(), f.getZ()).isIndependent();
                     int value = ind ? 1 : 0;
 
                     String indFact = f.toString();
@@ -251,7 +254,7 @@ public class RfciBsc implements GraphSearch {
 
         Graph depPattern = fges.search();
         depPattern = GraphUtils.replaceNodes(depPattern, depData.getVariables());
-        Graph estDepBN = SearchGraphUtils.dagFromCPDAG(depPattern);
+        Graph estDepBN = GraphSearchUtils.dagFromCPDAG(depPattern);
 
         if (this.verbose) {
             this.out.println("estDepBN:");

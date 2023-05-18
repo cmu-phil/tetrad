@@ -8,9 +8,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.IndTestDSep;
-import edu.cmu.tetrad.search.IndTestFisherZ;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
@@ -84,9 +84,9 @@ public class TestFisherZCalibration {
                 z.add(variables.get(j + 2));
             }
 
-            boolean fzInd = test1.checkIndependence(x, y, z).independent();
-            boolean sembInd = test2.checkIndependence(x, y, z).independent();
-            boolean _dsep = dsep.checkIndependence(x, y, z).independent();
+            boolean fzInd = test1.checkIndependence(x, y, z).isIndependent();
+            boolean sembInd = test2.checkIndependence(x, y, z).isIndependent();
+            boolean _dsep = dsep.checkIndependence(x, y, z).isIndependent();
 
             if (fzInd == sembInd) countSame++;
 

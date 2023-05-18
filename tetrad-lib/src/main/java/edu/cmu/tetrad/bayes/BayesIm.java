@@ -52,7 +52,7 @@ import java.util.List;
  * conditional probability tables of the Bayes net. See implementations for
  * details.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see edu.cmu.tetrad.graph.Dag
  * @see BayesPm
  */

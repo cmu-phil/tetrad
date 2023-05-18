@@ -7,14 +7,15 @@ import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
-import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.PermutationSearch;
+import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -34,7 +35,6 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-@Experimental
 public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         ReturnsBootstrapGraphs {
     static final long serialVersionUID = 23L;
@@ -57,7 +57,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             if (parameters.getInt(Params.TIME_LAG) > 0) {
                 DataSet dataSet = (DataSet) dataModel;
-                DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
                 if (dataSet.getName() != null) {
                     timeSeries.setName(dataSet.getName());
                 }
@@ -68,7 +68,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             Score score = this.score.getScore(dataModel, parameters);
 
             edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
-            boss.setDepth(parameters.getInt(Params.DEPTH));
+//            boss.setDepth(parameters.getInt(Params.DEPTH));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(this.knowledge);
@@ -115,7 +115,9 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
         // Parameters
         params.add(Params.NUM_STARTS);
-        params.add(Params.DEPTH);
+//        params.add(Params.DEPTH);
+        params.add(Params.TIME_LAG);
+
 
         return params;
     }

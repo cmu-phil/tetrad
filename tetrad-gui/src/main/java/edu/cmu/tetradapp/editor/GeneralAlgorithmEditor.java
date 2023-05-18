@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * Edits some algorithm to search for Markov blanket CPDAGs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @author Chirayu Kong Wongchokprasitti, PhD (chw20@pitt.edu)
  * @author Zhou Yuan (zhy19@pitt.edu)
  * @author Kevin V. Bui (kvb2@pitt.edu)

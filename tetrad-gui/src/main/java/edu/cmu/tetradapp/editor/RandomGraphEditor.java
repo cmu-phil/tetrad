@@ -36,7 +36,7 @@ import java.awt.*;
 /**
  * Edits the parameters for generating random graphs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class RandomGraphEditor extends JPanel {
     private final Parameters parameters;

@@ -32,7 +32,7 @@ import java.rmi.MarshalledObject;
 /**
  * Holds a graph for purposes of layout out another graph later on.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class LayoutSelection implements Transferable {
 

@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * A list of statistics and their utility weights.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class Statistics {
     private final List<Statistic> statistics = new ArrayList<>();

@@ -33,12 +33,18 @@ import java.util.LinkedList;
 import static org.apache.commons.math3.util.FastMath.abs;
 
 /**
- * Useful references: "Factor Analysis of Data Matrices" - Paul Horst (1965) This work has good specifications and
- * explanations of factor analysis algorithm and methods of communality estimation.
- * <p>
- * "Applied Factor Analysis" - R.J. Rummel (1970) This book is a good companion to the book listed above.  While it
- * doesn't specify any actual algorithm, it has a great introduction to the subject that gives the reader a good
- * appreciation of the philosophy and the mathematics behind factor analysis.
+ * <p>Implements the classical Factor Analysis algorithm. Some references include:</p>
+ * <p>Horst, P. (1965). Factor analysis of data matrices. Holt, Rinehart and Winston.
+ * This work has good specifications and explanations of factor analysis algorithm and
+ * methods of communality estimation.</p>
+ *
+ * <p>Rummel, R. J. (1988). Applied factor analysis. Northwestern University Press. This
+ * book is a good companion to the book listed above.  While it doesn't specify any actual
+ * algorithm, it has a great introduction to the subject that gives the reader a good
+ * appreciation of the philosophy and the mathematics behind factor analysis.</p>
+ *
+ * <p>This class is not configured to respect knowledge of forbidden and required
+ * edges.</p>
  *
  * @author Mike Freenor
  */
@@ -51,10 +57,20 @@ public class FactorAnalysis {
     private int numFactors = 2;
     private Matrix residual;
 
+    /**
+     * Consructor.
+     *
+     * @param covarianceMatrix The covariance matrix being analyzed.
+     */
     public FactorAnalysis(ICovarianceMatrix covarianceMatrix) {
         this.covariance = new CovarianceMatrix(covarianceMatrix);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param dataSet The continuous dataset being analyzed.
+     */
     public FactorAnalysis(DataSet dataSet) {
         this.covariance = new CovarianceMatrix(dataSet);
     }
@@ -97,18 +113,20 @@ public class FactorAnalysis {
      * END PSEUDO-CODE
      * <p>
      * At the end of the method, the list of column vectors is actually assembled into a TetradMatrix.
+     *
+     * @return The matrix of residuals.
      */
     public Matrix successiveResidual() {
         this.factorLoadingVectors = new LinkedList<>();
 
         Matrix residual = this.covariance.getMatrix().copy();
-        Matrix unitVector = new Matrix(residual.rows(), 1);
+        Matrix unitVector = new Matrix(residual.getNumRows(), 1);
 
-        for (int i = 0; i < unitVector.rows(); i++) {
+        for (int i = 0; i < unitVector.getNumRows(); i++) {
             unitVector.set(i, 0, 1);
         }
 
-        for (int i = 0; i < getNumFactors(); i++) {
+        for (int i = 0; i < this.numFactors; i++) {
             boolean found = successiveResidualHelper(residual, unitVector);
 
             if (!found) break;
@@ -119,10 +137,10 @@ public class FactorAnalysis {
 
         this.factorLoadingVectors.removeFirst();
 
-        Matrix result = new Matrix(residual.rows(), this.factorLoadingVectors.size());
+        Matrix result = new Matrix(residual.getNumRows(), this.factorLoadingVectors.size());
 
-        for (int i = 0; i < result.rows(); i++) {
-            for (int j = 0; j < result.columns(); j++) {
+        for (int i = 0; i < result.getNumRows(); i++) {
+            for (int j = 0; j < result.getNumColumns(); j++) {
                 result.set(i, j, this.factorLoadingVectors.get(j).get(i, 0));
             }
         }
@@ -132,8 +150,14 @@ public class FactorAnalysis {
         return result;
     }
 
+    /**
+     * Returns the matrix result for the varimax algorithm.
+     *
+     * @param factorLoadingMatrix The matrix of factor loadings.
+     * @return The result matrix.
+     */
     public Matrix successiveFactorVarimax(Matrix factorLoadingMatrix) {
-        if (factorLoadingMatrix.columns() == 1)
+        if (factorLoadingMatrix.getNumColumns() == 1)
             return factorLoadingMatrix;
 
         LinkedList<Matrix> residuals = new LinkedList<>();
@@ -142,9 +166,9 @@ public class FactorAnalysis {
         Matrix normalizedFactorLoadings = FactorAnalysis.normalizeRows(factorLoadingMatrix);
         residuals.add(normalizedFactorLoadings);
 
-        Matrix unitColumn = new Matrix(factorLoadingMatrix.rows(), 1);
+        Matrix unitColumn = new Matrix(factorLoadingMatrix.getNumRows(), 1);
 
-        for (int i = 0; i < factorLoadingMatrix.rows(); i++) {
+        for (int i = 0; i < factorLoadingMatrix.getNumRows(); i++) {
             unitColumn.set(i, 0, 1);
         }
 
@@ -154,13 +178,13 @@ public class FactorAnalysis {
         Matrix wVector = sumCols.scalarMult(1.0 / FastMath.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
         Matrix vVector = r.times(wVector);
 
-        for (int k = 0; k < normalizedFactorLoadings.columns(); k++) {
+        for (int k = 0; k < normalizedFactorLoadings.getNumColumns(); k++) {
 
             //time to find the minimum value in the v vector
             int lIndex = 0;
             double minValue = Double.POSITIVE_INFINITY;
 
-            for (int i = 0; i < vVector.rows(); i++) {
+            for (int i = 0; i < vVector.getNumRows(); i++) {
                 if (vVector.get(i, 0) < minValue) {
                     minValue = vVector.get(i, 0);
                     lIndex = i;
@@ -173,17 +197,17 @@ public class FactorAnalysis {
 
             r = residuals.getLast();
 
-            hVectors.add(new Matrix(r.columns(), 1));
+            hVectors.add(new Matrix(r.getNumColumns(), 1));
             Vector rowFromFactorLoading = r.getRow(lIndex);
 
-            for (int j = 0; j < hVectors.getLast().rows(); j++) {
+            for (int j = 0; j < hVectors.getLast().getNumRows(); j++) {
                 hVectors.getLast().set(j, 0, rowFromFactorLoading.get(j));
             }
 
             for (int i = 0; i < 200; i++) {
                 Matrix bVector = r.times(hVectors.get(i));
                 double averageSumSquaresBVector = unitColumn.transpose().times(FactorAnalysis.matrixExp(bVector, 2))
-                        .scalarMult(1.0 / (double) bVector.rows()).get(0, 0);
+                        .scalarMult(1.0 / (double) bVector.getNumRows()).get(0, 0);
 
                 Matrix betaVector = FactorAnalysis.matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
                 Matrix uVector = r.transpose().times(betaVector);
@@ -193,8 +217,10 @@ public class FactorAnalysis {
 
                 hVectors.add(uVector.scalarMult(1.0 / alpha2));
 
-                if (!Double.isNaN(alpha1) && abs((alpha2 - alpha1)) < getThreshold()) {
-                    break;
+                if (!Double.isNaN(alpha1)) {
+                    if (abs((alpha2 - alpha1)) < this.threshold) {
+                        break;
+                    }
                 }
 
                 alpha1 = alpha2;
@@ -209,7 +235,7 @@ public class FactorAnalysis {
         Matrix result = factorLoadingMatrix.like();
 
         if (!rotatedFactorVectors.isEmpty()) {
-            for (int i = 0; i < rotatedFactorVectors.get(0).rows(); i++) {
+            for (int i = 0; i < rotatedFactorVectors.get(0).getNumRows(); i++) {
                 for (int j = 0; j < rotatedFactorVectors.size(); j++) {
                     result.set(i, j, rotatedFactorVectors.get(j).get(i, 0));
                 }
@@ -219,8 +245,31 @@ public class FactorAnalysis {
         return result;
     }
 
+    /**
+     * Sets the threshold.
+     *
+     * @param threshold This threshold.
+     */
     public void setThreshold(double threshold) {
         this.threshold = threshold;
+    }
+
+    /**
+     * Sets the nubmer of factors to find.
+     *
+     * @param numFactors This number.
+     */
+    public void setNumFactors(int numFactors) {
+        this.numFactors = numFactors;
+    }
+
+    /**
+     * Returns the matrix of residuals.
+     *
+     * @return This matrix.
+     */
+    public Matrix getResidual() {
+        return this.residual;
     }
 
     // ------------------Private methods-------------------//
@@ -275,7 +324,7 @@ public class FactorAnalysis {
             Matrix li = f.transpose().times(ui);
             double di = FastMath.sqrt(li.get(0, 0));
 
-            if (abs((d - di)) <= getThreshold()) {
+            if (abs((d - di)) <= this.threshold) {
                 break;
             }
 
@@ -292,19 +341,19 @@ public class FactorAnalysis {
     //as usual, vectors are treated as matrices to simplify operations elsewhere
     private static Matrix normalizeRows(Matrix matrix) {
         LinkedList<Matrix> normalizedRows = new LinkedList<>();
-        for (int i = 0; i < matrix.rows(); i++) {
+        for (int i = 0; i < matrix.getNumRows(); i++) {
             Vector vector = matrix.getRow(i);
-            Matrix colVector = new Matrix(matrix.columns(), 1);
-            for (int j = 0; j < matrix.columns(); j++)
+            Matrix colVector = new Matrix(matrix.getNumColumns(), 1);
+            for (int j = 0; j < matrix.getNumColumns(); j++)
                 colVector.set(j, 0, vector.get(j));
 
             normalizedRows.add(FactorAnalysis.normalizeVector(colVector));
         }
 
-        Matrix result = new Matrix(matrix.rows(), matrix.columns());
-        for (int i = 0; i < matrix.rows(); i++) {
+        Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
+        for (int i = 0; i < matrix.getNumRows(); i++) {
             Matrix normalizedRow = normalizedRows.get(i);
-            for (int j = 0; j < matrix.columns(); j++) {
+            for (int j = 0; j < matrix.getNumColumns(); j++) {
                 result.set(i, j, normalizedRow.get(j, 0));
             }
         }
@@ -318,186 +367,14 @@ public class FactorAnalysis {
     }
 
     private static Matrix matrixExp(Matrix matrix, double exponent) {
-        Matrix result = new Matrix(matrix.rows(), matrix.columns());
-        for (int i = 0; i < matrix.rows(); i++) {
-            for (int j = 0; j < matrix.columns(); j++) {
+        Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
+        for (int i = 0; i < matrix.getNumRows(); i++) {
+            for (int j = 0; j < matrix.getNumColumns(); j++) {
                 result.set(i, j, FastMath.pow(matrix.get(i, j), exponent));
             }
         }
         return result;
     }
-
-    public double getThreshold() {
-        return this.threshold;
-    }
-
-    public int getNumFactors() {
-        return this.numFactors;
-    }
-
-    public void setNumFactors(int numFactors) {
-        this.numFactors = numFactors;
-    }
-
-    public Matrix getResidual() {
-        return this.residual;
-    }
-
-    // factanal in R:
-
-//    function (x, factors, data = NULL, covmat = NULL, n.obs = NA,
-//              subset, na.action, start = NULL, scores = c("none", "regression",
-//                      "Bartlett"), rotation = "varimax", control = NULL, ...)
-//    {
-//        sortLoadings &lt;- function(Lambda) {
-//        cn &lt;- colnames(Lambda)
-//        Phi &lt;- attr(Lambda, "covariance")
-//        ssq &lt;- apply(Lambda, 2L, function(x) -sum(x^2))
-//        Lambda &lt;- Lambda[, order(ssq), drop = FALSE]
-//        colnames(Lambda) &lt;- cn
-//        neg &lt;- colSums(Lambda) < 0
-//        Lambda[, neg] &lt;- -Lambda[, neg]
-//        if (!is.null(Phi)) {
-//            unit &lt;- ifelse(neg, -1, 1)
-//            attr(Lambda, "covariance") &lt;- unit %*% Phi[order(ssq),
-//                    order(ssq)] %*% unit
-//        }
-//        Lambda
-//    }
-//        cl &lt;- match.call()
-//        na.act &lt;- NULL
-//        if (is.list(covmat)) {
-//            if (any(is.na(match(c("cov", "n.obs"), names(covmat)))))
-//                stop("'covmat' is not a valid covariance list")
-//            cv &lt;- covmat$cov
-//            n.obs &lt;- covmat$n.obs
-//            have.x &lt;- FALSE
-//        }
-//        else if (is.matrix(covmat)) {
-//            cv &lt;- covmat
-//            have.x &lt;- FALSE
-//        }
-//        else if (is.null(covmat)) {
-//        if (missing(x))
-//            stop("neither 'x' nor 'covmat' supplied")
-//        have.x &lt;- TRUE
-//        if (inherits(x, "formula")) {
-//            mt &lt;- terms(x, data = data)
-//            if (attr(mt, "response") > 0)
-//                stop("response not allowed in formula")
-//            attr(mt, "intercept") &lt;- 0
-//            mf &lt;- match.call(expand.dots = FALSE)
-//            names(mf)[names(mf) == "x"] &lt;- "formula"
-//            mf$factors &lt;- mf$covmat &lt;- mf$scores <- mf$start <- mf$rotation <- mf$control <- mf$... <- NULL
-//            mf[[1L]] <- quote(stats::model.frame)
-//            mf <- eval.parent(mf)
-//            na.act <- attr(mf, "na.action")
-//            if (.check_vars_numeric(mf))
-//            stop("factor analysis applies only to numerical variables")
-//            z <- model.matrix(mt, mf)
-//        }
-//        else {
-//            z <- as.matrix(x)
-//            if (!is.numeric(z))
-//                stop("factor analysis applies only to numerical variables")
-//            if (!missing(subset))
-//                z <- z[subset, , drop = FALSE]
-//        }
-//        covmat <- cov.wt(z)
-//        cv <- covmat$cov
-//        n.obs <- covmat$n.obs
-//    }
-//    else stop("'covmat' is of unknown type")
-//        scores <- match.arg(scores)
-//        if (scores != "none" && !have.x)
-//            stop("requested scores without an 'x' matrix")
-//        p <- ncol(cv)
-//        if (p < 3)
-//            stop("factor analysis requires at least three variables")
-//        dof <- 0.5 * ((p - factors)^2 - p - factors)
-//        if (dof < 0)
-//            stop(sprintf(ngettext(factors, "%d factor is too many for %d variables",
-//                    "%d factors are too many for %d variables"), factors,
-//                    p), domain = NA)
-//        sds <- sqrt(diag(cv))
-//        cv <- cv/(sds %o% sds)
-//        cn <- list(nstart = 1, trace = FALSE, lower = 0.005)
-//        cn[names(control)] <- control
-//        more <- list(...)[c("nstart", "trace", "lower", "opt", "rotate")]
-//        if (length(more))
-//            cn[names(more)] <- more
-//        if (is.null(start)) {
-//        start <- (1 - 0.5 * factors/p)/diag(solve(cv))
-//        if ((ns <- cn$nstart) > 1)
-//            start <- cbind(start, matrix(runif(ns - 1), p, ns -
-//                1, byrow = TRUE))
-//    }
-//        start <- as.matrix(start)
-//        if (nrow(start) != p)
-//            stop(sprintf(ngettext(p, "'start' must have %d row",
-//                    "'start' must have %d rows"), p), domain = NA)
-//        nc <- ncol(start)
-//        if (nc < 1)
-//            stop("no starting values supplied")
-//        best <- Inf
-//        for (i in 1L:nc) {
-//        nfit <- factanal.fit.mle(cv, factors, start[, i], max(cn$lower,
-//                0), cn$opt)
-//        if (cn$trace)
-//            cat("start", i, "value:", format(nfit$criteria[1L]),
-//                    "uniqs:", format(as.vector(round(nfit$uniquenesses,
-//                            4))), "\n")
-//        if (nfit$converged && nfit$criteria[1L] < best) {
-//            fit <- nfit
-//            best <- fit$criteria[1L]
-//        }
-//    }
-//        if (best == Inf)
-//            stop(ngettext(nc, "unable to optimize from this starting value",
-//                    "unable to optimize from these starting values"),
-//                    domain = NA)
-//        load <- fit$loadings
-//        if (rotation != "none") {
-//            rot <- do.call(rotation, c(list(load), cn$rotate))
-//            load <- if (is.list(rot)) {
-//                load <- rot$loadings
-//                fit$rotmat <- if (inherits(rot, "GPArotation"))
-//                    t(solve(rot$Th))
-//                else rot$rotmat
-//                            rot$loadings
-//            }
-//            else rot
-//        }
-//        fit$loadings <- sortLoadings(load)
-//        class(fit$loadings) <- "loadings"
-//        fit$na.action <- na.act
-//        if (have.x && scores != "none") {
-//            Lambda <- fit$loadings
-//            zz <- scale(z, TRUE, TRUE)
-//            switch(scores, regression = {
-//                    sc <- zz %*% solve(cv, Lambda)
-//            if (!is.null(Phi <- attr(Lambda, "covariance"))) sc <- sc %*%
-//            Phi
-//        }, Bartlett = {
-//                    d <- 1/fit$uniquenesses
-//                    tmp <- t(Lambda * d)
-//                    sc <- t(solve(tmp %*% Lambda, tmp %*% t(zz)))
-//        })
-//            rownames(sc) <- rownames(z)
-//            colnames(sc) <- colnames(Lambda)
-//            if (!is.null(na.act))
-//            sc <- napredict(na.act, sc)
-//            fit$scores <- sc
-//        }
-//        if (!is.na(n.obs) && dof > 0) {
-//            fit$STATISTIC <- (n.obs - 1 - (2 * p + 5)/6 - (2 * factors)/3) *
-//                    fit$criteria["objective"]
-//            fit$PVAL <- pchisq(fit$STATISTIC, dof, lower.tail = FALSE)
-//        }
-//        fit$n.obs <- n.obs
-//        fit$call <- cl
-//        fit
-//    }
 }
 
 

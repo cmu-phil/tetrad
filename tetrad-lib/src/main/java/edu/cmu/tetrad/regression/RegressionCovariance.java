@@ -36,7 +36,7 @@ import java.util.List;
  * Implements a regression model from correlations--that is, from a correlation
  * matrix, a list of standard deviations, and a list of means.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class RegressionCovariance implements Regression {
 
@@ -173,7 +173,7 @@ public class RegressionCovariance implements Regression {
 
         Matrix bStar = rX.inverse().times(rY);
 
-        Vector b = new Vector(bStar.rows() + 1);
+        Vector b = new Vector(bStar.getNumRows() + 1);
 
         for (int k = 1; k < b.size(); k++) {
             double sdY = this.sd.get(yIndex);

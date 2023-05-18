@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Methods common to regression models.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public interface RegressionModel {
     List<String> getVariableNames();

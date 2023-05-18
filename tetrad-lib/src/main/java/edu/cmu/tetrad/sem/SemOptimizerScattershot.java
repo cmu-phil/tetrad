@@ -34,7 +34,7 @@ import java.util.List;
  * Optimizes a SEM by randomly selecting points in cubes of decreasing size about
  * a given point.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SemOptimizerScattershot implements SemOptimizer {
     static final long serialVersionUID = 23L;
@@ -266,7 +266,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
     /**
      * Evaluates a fitting function for an array of freeParameters.
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     interface FittingFunction {
 
@@ -283,7 +283,7 @@ public class SemOptimizerScattershot implements SemOptimizer {
      * Wraps a Sem for purposes of calculating its fitting function for given
      * parameter values.
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     static class SemFittingFunction implements FittingFunction {
 

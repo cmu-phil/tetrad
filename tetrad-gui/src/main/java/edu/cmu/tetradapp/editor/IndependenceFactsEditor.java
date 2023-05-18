@@ -22,9 +22,9 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.IndTestDSep;
-import edu.cmu.tetrad.search.IndependenceResult;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetradapp.model.IndTestModel;
@@ -52,7 +52,7 @@ import java.util.prefs.Preferences;
 /**
  * Lists independence facts specified by user and allows the list to be sorted by independence fact or by p value.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class IndependenceFactsEditor extends JPanel {
     private IndTestModel model;
@@ -638,7 +638,7 @@ public class IndependenceFactsEditor extends JPanel {
 
                         try {
                             IndependenceResult result = independenceTest.checkIndependence(x, y, z);
-                            indep = result.independent()
+                            indep = result.isIndependent()
                                     ? IndependenceResultIndFacts.Type.INDEPENDENT
                                     : IndependenceResultIndFacts.Type.DEPENDENT;
                             pValue = result.getPValue();

@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Marks a search algorithm as a triad classifier and returns the triad classifications if makes.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface TripleClassifier {
 

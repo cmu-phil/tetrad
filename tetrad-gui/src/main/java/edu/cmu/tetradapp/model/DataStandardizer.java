@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * Standardizes all columns in a continuous data set.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class DataStandardizer extends DataWrapper {
     static final long serialVersionUID = 23L;

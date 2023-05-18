@@ -38,7 +38,7 @@ import java.beans.PropertyChangeEvent;
 /**
  * Lets the user calculate updated probabilities for a Bayes net.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
     private static final int SINGLE_VALUE = 0;

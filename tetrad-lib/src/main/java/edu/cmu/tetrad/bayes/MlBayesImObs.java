@@ -68,7 +68,7 @@ import java.util.List;
  * Thanks to Pucktada Treeratpituk, Frank Wimberly, and Willie Wheeler for
  * advise and earlier versions.&gt; 0
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class MlBayesImObs implements BayesIm {
 

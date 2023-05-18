@@ -27,6 +27,11 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -45,7 +50,7 @@ import static org.junit.Assert.assertTrue;
 
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestFci {
 
@@ -195,7 +200,7 @@ public class TestFci {
 //        DagToPag dagToPag = new DagToPag(trueGraph);
 //        Graph truePag = dagToPag.convert();
 
-        Graph truePag = SearchGraphUtils.dagToPag(trueGraph);
+        Graph truePag = GraphSearchUtils.dagToPag(trueGraph);
 
         assertEquals(graph, truePag);
     }
@@ -401,7 +406,7 @@ public class TestFci {
         SemBicScore score = new SemBicScore(new CovarianceMatrix(data));
         score.setPenaltyDiscount(4.0);
 
-        GraphSearch search = new Pc(test);
+        IGraphSearch search = new Pc(test);
 
         return search.search();
     }

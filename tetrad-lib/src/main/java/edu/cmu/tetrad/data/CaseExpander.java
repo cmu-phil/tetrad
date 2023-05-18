@@ -27,7 +27,7 @@ package edu.cmu.tetrad.data;
  * assigned multiplicies other than n = 1 are copied out n times. This increases
  * the number of rows in the data set.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class CaseExpander implements DataFilter {
 

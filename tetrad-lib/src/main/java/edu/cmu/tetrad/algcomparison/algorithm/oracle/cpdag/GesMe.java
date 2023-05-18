@@ -10,8 +10,8 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.Score;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 import org.apache.commons.math3.util.FastMath;
@@ -27,7 +27,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 /**
  * FGES (the heuristic version).
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 @Experimental
@@ -68,7 +68,7 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
 
                 output += tableString(unrotated, nf, Double.POSITIVE_INFINITY);
 
-                if (unrotated.columns() != 1) {
+                if (unrotated.getNumColumns() != 1) {
                     output += "\n\nRotated Matrix (using sequential varimax):\n";
                     output += tableString(rotated, nf, parameters.getDouble("fa_threshold"));
                 }
@@ -160,7 +160,7 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
 
                 output += tableString(L, nf, Double.POSITIVE_INFINITY);
 
-                if (L.columns() != 1) {
+                if (L.getNumColumns() != 1) {
                     output += "\n\nL:\n";
                     output += tableString(L, nf, threshold);
                 }
@@ -191,7 +191,7 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
         if (this.compareToTrue) {
             return new EdgeListGraph(graph);
         } else {
-            return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
+            return GraphSearchUtils.cpdagForDag(new EdgeListGraph(graph));
         }
     }
 
@@ -228,10 +228,10 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
     }
 
     private String tableString(Matrix matrix, NumberFormat nf, double threshold) {
-        TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
+        TextTable table = new TextTable(matrix.getNumRows() + 1, matrix.getNumColumns() + 1);
 
-        for (int i = 0; i < matrix.rows() + 1; i++) {
-            for (int j = 0; j < matrix.columns() + 1; j++) {
+        for (int i = 0; i < matrix.getNumRows() + 1; i++) {
+            for (int j = 0; j < matrix.getNumColumns() + 1; j++) {
                 if (i > 0 && j == 0) {
                     table.setToken(i, 0, "X" + i);
                 } else if (i == 0 && j > 0) {

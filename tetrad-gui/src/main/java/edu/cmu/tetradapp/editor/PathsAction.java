@@ -44,7 +44,7 @@ import java.util.prefs.Preferences;
 /**
  * Puts up a panel letting the user show undirectedPaths about some node in the graph.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class PathsAction extends AbstractAction implements ClipboardOwner {
     private final GraphWorkbench workbench;

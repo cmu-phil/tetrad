@@ -3,185 +3,264 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.BesPermutation;
+import edu.cmu.tetrad.search.utils.GrowShrinkTree;
 
 import java.util.*;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
- * <p>Implements the BOSS (Best Order Permutation Search) algorithm. This procedure uses
- * an optimization of the BOSS algorithm (reference to be included in a future version),
- * looking for a permutation such that when a DAG is built it has the fewest number of
- * edges (i.e., is a most 'frugal' or a 'sparsest' DAG). Returns the CPDAG of this discovered
- * frugal DAG.</p>
+ * <p>Implements Best Order Score Search (BOSS). The following references
+ * are relevant:</p>
  *
- * <p>Knowledge can be used with this search. If tiered knowledge is used, then the procedure
- * is carried out for each tier separately, given the variable preceding that tier, which
- * allows the SP algorithm to address tiered (e.g., time series) problems with larger numbers of
- * variables.</p>
+ * <p>Lam, W. Y., Andrews, B., & Ramsey, J. (2022, August). Greedy relaxations
+ * of the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence
+ * (pp. 1052-1062). PMLR.</p>
  *
- * <p>This class is meant to be used in the context of the PermutationSearch class (see).
- * the proper use is PermutationSearch search = new PermutationSearch(new Sp(score));</p>
+ * <p>Teyssier, M., & Koller, D. (2012). Ordering-based search: A simple and effective
+ * algorithm for learning Bayesian networks. arXiv preprint arXiv:1207.1429.</p>
+ *
+ * <p>Solus, L., Wang, Y., & Uhler, C. (2021). Consistency guarantees for greedy
+ * permutation-based causal inference algorithms. Biometrika, 108(4), 795-814.</p>
+ *
+ * <p>The BOSS algorithm is based on the idea that implied DAGs for permutations
+ * are most optimal in their BIC scores when the variables in the permutations
+ * are ordered causally--that is, so that that causes in the models come
+ * before effects in a topological order.</p>
+ *
+ * <p>This algorithm is implemented as a "plugin-in" algorithm to a
+ * PermutationSearch object (see), which deals with certain details of knowledge
+ * handling that are common to different permutation searches.</p>
+ *
+ * <p>BOSS, like GRaSP (see), is characterized by high adjacency and
+ * oreintation precision (especially) and recall for moderate sample
+ * sizes. BOSS scales up currently further than GRaSP to larger variable
+ * sets and denser graphs and so is currently preferable from a practical
+ * standpoint, though performance is essentially identical.</p>
+ *
+ * <p>The algorithm works as follows:</p>
+ *
+ * <ol>
+ *     <li>Start with an arbitrary ordering.</li>
+ *     <li>Run the permutation search to find a better ordering.</li>
+ *     <li>Project this ordering to a CPDAG.</li>
+ *     <li>Optionally, Run BES this CPDAG.
+ *     <li>Return this CPDAG.</li>
+ * </ol>
+ *
+ * <o>The optional BES step is needed for correctness, though with large
+ * models is has very little effect on the output, since nearly all edges
+ * are already oriented, so a parameter is included to turn that step off.</o>
+ *
+ * <p>Knowledge can be used with this search. If tiered knowledge is used,
+ * then the procedure is carried out for each tier separately, given the v
+ * ariables preceding that tier, which allows the Boss algorithm to address
+ * tiered (e.g., time series) problems with larger numbers of variables.
+ * However, knowledge of required and forbidden edges is correctly implemented
+ * for arbitrary such knowledge.</p>
+ *
+ * <p>A paremeter is included to restart the search a certain number of time.
+ * The idea is that the goal is to optimize a BIC score, so if several runs
+ * are done of the algorithm for the same data, the model with the highest
+ * BIC score should be returned and the others ignored.</p>
+ *
+ * <p>This class is meant to be used in the context of the PermutationSearch
+ * class (see).
  *
  * @author bryanandrews
  * @author josephramsey
  * @see PermutationSearch
+ * @see Grasp
+ * @see Knowledge
  */
 public class Boss implements SuborderSearch {
-    private final PermutationBes bes;
     private final Score score;
     private final List<Node> variables;
     private final Map<Node, Set<Node>> parents;
-    private final Map<Node, Double> scores;
     private Map<Node, GrowShrinkTree> gsts;
-    private int numStarts;
     private Knowledge knowledge = new Knowledge();
-
+    private BesPermutation bes = null;
+    private int numStarts = 1;
 
     /**
-     * This algorithm will work with an arbitrary score.
+     * This algorithm will work with an arbitrary BIC score.
+     *
      * @param score The Score to use.
      */
     public Boss(Score score) {
         this.score = score;
         this.variables = score.getVariables();
         this.parents = new HashMap<>();
-        this.scores = new HashMap<>();
-
         for (Node x : this.variables) {
             this.parents.put(x, new HashSet<>());
         }
-
-        this.bes = new PermutationBes(score);
-        this.bes.setVerbose(false);
-        this.numStarts = 1;
     }
 
     @Override
     public void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts) {
+        assert this.numStarts > 0;
         this.gsts = gsts;
-        makeValidKnowledgeOrder(suborder);
-        List<Node> bestSuborder = new ArrayList<>(suborder);
-        double bestScore = update(prefix, suborder);
 
-        Map<Node, Set<Node>> required = new HashMap<>();
-        for (Node y : suborder) {
-            for (Node z : suborder) {
-                if (this.knowledge.isRequired(y.getName(), z.getName())) {
-                    if (!required.containsKey(y)) required.put(y, new HashSet<>());
-                    required.get(y).add(z);
-                }
-            }
-        }
+        List<Node> bestSuborder = null;
+        double score, bestScore = Double.NEGATIVE_INFINITY;
+        boolean improved;
 
         for (int i = 0; i < this.numStarts; i++) {
             shuffle(suborder);
             makeValidKnowledgeOrder(suborder);
-            double s1, s2, s3;
-            s1 = update(prefix, suborder);
-            do {
-                s2 = s1;
-                do {
-                    s3 = s1;
-                    for (Node x : new ArrayList<>(suborder)) {
-                        if (betterMutation(prefix, suborder, required, x)) {
-                            s1 = update(prefix, suborder);
-                        }
-                    }
-                } while (s1 > s3);
-                do {
-                    s3 = s1;
-                    List<Node> Z = new ArrayList<>(prefix);
-                    Z.addAll(suborder);
-                    Graph graph = PermutationSearch.getGraph(Z, parents, this.knowledge, true);
-                    this.bes.bes(graph, Z, suborder);
-                    graph.paths().makeValidOrder(suborder);
-                    s1 = update(prefix, suborder);
-                } while (s1 > s3);
-            } while (s1 > s2);
 
-            if (s1 > bestScore) {
+            do {
+                improved = false;
+                for (Node x : new ArrayList<>(suborder)) {
+                    if (betterMutation(prefix, suborder, x)) improved = true;
+                }
+            } while (improved);
+
+            if (this.bes != null) bes(prefix, suborder);
+
+            score = update(prefix, suborder);
+            if (score > bestScore) {
                 bestSuborder = new ArrayList<>(suborder);
-                bestScore = s1;
+                bestScore = score;
             }
         }
 
-        for (int i = 0; i < suborder.size(); i++) {
-            suborder.set(i, bestSuborder.get(i));
+        suborder.clear();
+
+        if (bestSuborder != null) {
+            suborder.addAll(bestSuborder);
         }
+
         update(prefix, suborder);
     }
 
-    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Map<Node, Set<Node>> required, Node x) {
+    /**
+     * Sets up BOSS to use the BES algorithm to render BOSS correct under the
+     * faithfulness assumption.
+     * @param use True if BES should be used.
+     */
+    public void setUseBes(boolean use) {
+        this.bes = null;
+        if (use) {
+            this.bes = new BesPermutation(this.score);
+            this.bes.setVerbose(false);
+            this.bes.setKnowledge(knowledge);
+        }
+    }
+
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+
+        if (this.bes != null) {
+            this.bes.setKnowledge(knowledge);
+        }
+    }
+
+    /**
+     * Sets the number of random starts to use. The model with the best score
+     * from these restartes will be reported.
+     * @param numStarts The number of random starts to use.
+     */
+    public void setNumStarts(int numStarts) {
+        this.numStarts = numStarts;
+    }
+
+    @Override
+    public List<Node> getVariables() {
+        return this.variables;
+    }
+
+    @Override
+    public Map<Node, Set<Node>> getParents() {
+        return this.parents;
+    }
+
+    @Override
+    public Score getScore() {
+        return this.score;
+    }
+
+    private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
+        Set<Node> all = new HashSet<>(suborder);
+        all.addAll(prefix);
+
         ListIterator<Node> itr = suborder.listIterator();
         double[] scores = new double[suborder.size() + 1];
-        int i = 0;
-
         Set<Node> Z = new HashSet<>(prefix);
+
+        int i = 0;
         double score = 0;
         int curr = 0;
 
         while (itr.hasNext()) {
             Node z = itr.next();
-            scores[i++] = gsts.get(x).trace(new HashSet<>(Z), new HashSet<>()) + score;
+
+            // THE CORRECTNESS OF THIS NEEDS TO BE VERIFIED
+            if (this.knowledge.isRequired(x.getName(), z.getName())) break;
+
+            scores[i++] = this.gsts.get(x).trace(Z, all) + score;
             if (z != x) {
-                score += gsts.get(z).trace(new HashSet<>(Z), new HashSet<>());
+                score += this.gsts.get(z).trace(Z, all);
                 Z.add(z);
             } else curr = i - 1;
         }
-        scores[i] = gsts.get(x).trace(new HashSet<>(Z), new HashSet<>()) + score;
+
+        scores[i] = this.gsts.get(x).trace(Z, all) + score;
+        int best = i;
 
         Z.add(x);
         score = 0;
-        int best = i;
 
         while (itr.hasPrevious()) {
             Node z = itr.previous();
+
+            // THE CORRECTNESS OF THIS NEEDS TO BE VERIFIED
+            if(this.knowledge.isRequired(z.getName(), x.getName())) break;
+
             if (z != x) {
                 Z.remove(z);
-                score += gsts.get(z).trace(new HashSet<>(Z), new HashSet<>());
+                score += gsts.get(z).trace(Z, all);
             }
+
             scores[--i] += score;
-            if (scores[i] > scores[best] && !violatesKnowledge(suborder, required)) best = i;
+            if (scores[i] + 1e-6 > scores[best]) best = i;
         }
 
-        if (best == curr) return false;
-        else if (best > curr) best--;
-
-        suborder.remove(curr);
+        if (scores[curr] + 1e-6 > scores[best]) return false;
+        if (best > curr) best--;
+        suborder.remove(x);
         suborder.add(best, x);
 
         return true;
     }
 
+    private void bes(List<Node> prefix, List<Node> suborder) {
+        List<Node> all = new ArrayList<>(prefix);
+        all.addAll(suborder);
+
+        Graph graph = PermutationSearch.getGraph(all, this.parents, this.knowledge, true);
+        this.bes.bes(graph, all, suborder);
+        graph.paths().makeValidOrder(suborder);
+    }
+
     private double update(List<Node> prefix, List<Node> suborder) {
         double score = 0;
+        Set<Node> all = new HashSet<>(suborder);
+        all.addAll(prefix);
 
-        Iterator<Node> itr = suborder.iterator();
         Set<Node> Z = new HashSet<>(prefix);
-        while (itr.hasNext()) {
-            Node x = itr.next();
-            parents.get(x).clear();
-            scores.put(x, gsts.get(x).trace(new HashSet<>(Z), parents.get(x)));
-            score += scores.get(x);
+
+        for (Node x : suborder) {
+            Set<Node> parents = this.parents.get(x);
+            parents.clear();
+            score += this.gsts.get(x).trace(Z, all, parents);
             Z.add(x);
         }
 
         return score;
-    }
-
-    private boolean violatesKnowledge(List<Node> suborder, Map<Node, Set<Node>> required) {
-        for (int i = 0; i < suborder.size(); i++) {
-            Node y = suborder.get(i);
-            if (required.containsKey(y)) {
-                for (Node z : required.get(y)) {
-                    if (suborder.subList(0, i).contains(z)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     private void makeValidKnowledgeOrder(List<Node> order) {
@@ -195,36 +274,4 @@ public class Boss implements SuborderSearch {
         }
     }
 
-    public void setDepth(int depth) {
-        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-        this.bes.setDepth(depth);
-    }
-
-    @Override
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
-        this.bes.setKnowledge(knowledge);
-    }
-
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return variables;
-    }
-
-    @Override
-    public Map<Node, Set<Node>> getParents() {
-        return parents;
-    }
-
-    @Override
-    public Score getScore() {
-        return score;
-    }
 }
-
-
-

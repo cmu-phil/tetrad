@@ -9,7 +9,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Lofs2;
+import edu.cmu.tetrad.search.Lofs;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Tanh.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 public class Tanh implements Algorithm, TakesExternalGraph {
@@ -50,8 +50,8 @@ public class Tanh implements Algorithm, TakesExternalGraph {
             List<DataSet> dataSets = new ArrayList<>();
             dataSets.add(SimpleDataLoader.getContinuousDataSet(dataSet));
 
-            Lofs2 lofs = new Lofs2(this.externalGraph, dataSets);
-            lofs.setRule(Lofs2.Rule.Tanh);
+            Lofs lofs = new Lofs(this.externalGraph, dataSets);
+            lofs.setRule(Lofs.Rule.Tanh);
 
             return lofs.orient();
         } else {

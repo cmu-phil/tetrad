@@ -31,7 +31,7 @@ import java.awt.*;
 /**
  * Edits the parameters for simulating new datasets from a Bayes net.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class BayesDataParamsEditor extends JPanel implements ParameterEditor {
 

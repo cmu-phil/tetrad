@@ -36,7 +36,7 @@ import java.util.List;
  * probabilities of variables with respect to their parents that change from
  * non-updated to updated values.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class CptInvariantUpdater implements ManipulatingBayesUpdater {
     static final long serialVersionUID = 23L;

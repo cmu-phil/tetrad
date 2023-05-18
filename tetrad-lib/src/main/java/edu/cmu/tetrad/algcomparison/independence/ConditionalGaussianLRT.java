@@ -5,8 +5,8 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
-import edu.cmu.tetrad.search.IndTestConditionalGaussianLRT;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestConditionalGaussianLrt;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Wrapper for Fisher Z test.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @TestOfIndependence(
         name = "CG-LRT (Conditional Gaussian Likelihood Ratio Test)",
@@ -30,8 +30,8 @@ public class ConditionalGaussianLRT implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        IndTestConditionalGaussianLRT test
-                = new IndTestConditionalGaussianLRT(SimpleDataLoader.getMixedDataSet(dataSet),
+        IndTestConditionalGaussianLrt test
+                = new IndTestConditionalGaussianLrt(SimpleDataLoader.getMixedDataSet(dataSet),
                 parameters.getDouble(Params.ALPHA),
                 parameters.getBoolean(Params.DISCRETIZE));
         test.setNumCategoriesToDiscretize(parameters.getInt(Params.NUM_CATEGORIES_TO_DISCRETIZE));

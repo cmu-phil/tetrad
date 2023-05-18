@@ -44,7 +44,7 @@ import java.text.NumberFormat;
  * to show the graph of the target with significant regressors from the
  * regression as parents.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM
  * Bayes estimator
  */

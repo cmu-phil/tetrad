@@ -38,7 +38,7 @@ import java.util.prefs.Preferences;
 /**
  * Saves out a PNG image for a component.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class SaveGraph extends AbstractAction {
 
@@ -82,16 +82,34 @@ public class SaveGraph extends AbstractAction {
 
         if (this.type == Type.xml) {
             File file = EditorUtils.getSaveFile("graph", "xml", parent, false, this.title);
+
+            if (file == null) {
+                System.out.println("File was null.");
+                return;
+            }
+
             PrintWriter out = GraphPersistence.saveGraph(graph, file, true);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
             out.close();
         } else if (this.type == Type.text) {
             File file = EditorUtils.getSaveFile("graph", "txt", parent, false, this.title);
+
+            if (file == null) {
+                System.out.println("File was null.");
+                return;
+            }
+
             PrintWriter out = GraphPersistence.saveGraph(graph, file, false);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
             out.close();
         } else if (this.type == Type.r) {
             File file = EditorUtils.getSaveFile("graph", "r.txt", parent, false, this.title);
+
+            if (file == null) {
+                System.out.println("File was null.");
+                return;
+            }
+
             try {
                 String text = GraphPersistence.graphRMatrixTxt(graph);
 
@@ -109,6 +127,12 @@ public class SaveGraph extends AbstractAction {
             }
         } else if (this.type == Type.json) {
             File file = EditorUtils.getSaveFile("graph", "json", parent, false, this.title);
+
+            if (file == null) {
+                System.out.println("File was null.");
+                return;
+            }
+
             try {
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String text = gson.toJson(graph);
@@ -127,6 +151,12 @@ public class SaveGraph extends AbstractAction {
             }
         } else if (this.type == Type.dot) {
             File file = EditorUtils.getSaveFile("graph", "dot", parent, false, this.title);
+
+            if (file == null) {
+                System.out.println("File was null.");
+                return;
+            }
+
             try {
                 String text = GraphPersistence.graphToDot(graph);
 
@@ -144,6 +174,12 @@ public class SaveGraph extends AbstractAction {
             }
         } else if (this.type == Type.pcalg) {
             File file = EditorUtils.getSaveFile("graph", "pcalg.csv", parent, false, this.title);
+
+            if (file == null) {
+                System.out.println("File was null.");
+                return;
+            }
+
             try {
                 String text = GraphPersistence.graphToPcalg(graph);
 
@@ -161,6 +197,12 @@ public class SaveGraph extends AbstractAction {
             }
         } else if (this.type == Type.lavaan) {
             File file = EditorUtils.getSaveFile("graph", "lavaan.txt", parent, false, this.title);
+
+            if (file == null) {
+                System.out.println("File was null.");
+                return;
+            }
+
             try {
                 String text = GraphPersistence.graphToLavaan(graph);
 

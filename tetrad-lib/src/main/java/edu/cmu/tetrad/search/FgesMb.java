@@ -22,6 +22,11 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.DiscreteScore;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.ScoredGraph;
+import edu.cmu.tetrad.search.utils.HasPenaltyDiscount;
+import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TaskManager;
@@ -34,25 +39,24 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * GesSearch is an implementation of the GES algorithm, as specified in
- * Chickering (2002) "Optimal structure identification with greedy search"
- * Journal of Machine Learning Research. It works for both BayesNets and SEMs.
- * <p>
- * Some code optimization could be done for the scoring part of the graph for
- * discrete models (method scoreGraphChange). Some of Andrew Moore's approaches
- * for caching sufficient statistics, for instance.
- * <p>
- * To speed things up, it has been assumed that variables X and Y with zero
- * correlation do not correspond to edges in the graph. This is a restricted
- * form of the heuristicSpeedup assumption, something GES does not assume. This
- * the graph. This is a restricted form of the heuristicSpeedup assumption,
- * something GES does not assume. This heuristicSpeedup assumption needs to be
- * explicitly turned on using setHeuristicSpeedup(true).
- * <p>
- * A number of other optimizations were added 5/2015. See code for details.
+ * <p>Restricts the FGES algorithm (see) to the operations needed just
+ * to find the graph over the Markov blanket of a variable X (or a graph
+ * over the Markov blankets of a list of variables X1,..,Xn), together
+ * with the target X (or, respectively, the targets X1,...,Xn). The
+ * reference is this:</p>
  *
- * @author Ricardo Silva, Summer 2003
- * @author Joseph Ramsey, Revisions 5/2015
+ * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017).
+ * A million variables and more: the fast greedy equivalence search algorithm
+ * for learning high-dimensional graphical causal models, with an application
+ * to functional magnetic resonance images. International journal of data science
+ * and analytics, 3, 121-129.</p>
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
+ * @author josephramsey
+ * @see Fges
+ * @see Knowledge
  */
 public final class FgesMb {
 
@@ -105,7 +109,7 @@ public final class FgesMb {
     /**
      * The number of top CPDAGs to store.
      */
-    private int numCPDAGsToStore;
+    private int numCpdagsToStore;
     /**
      * True if verbose output should be printed.
      */
@@ -143,7 +147,7 @@ public final class FgesMb {
     //==========================PUBLIC METHODS==========================//
 
     /**
-     * Construct a Score and pass it in here. The totalScore should return a
+     * Constructor. Construct a Score and pass it in here. The totalScore should return a
      * positive value in case of conditional dependence and a negative values in
      * case of conditional independence. See Chickering (2002), locally
      * consistent scoring criterion.
@@ -156,31 +160,12 @@ public final class FgesMb {
         this.graph = new EdgeListGraph(getVariables());
     }
 
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * @return true if it is assumed that all path pairs with one length 1 path
-     * do not cancel.
-     */
-    public boolean isFaithfulnessAssumed() {
-        return this.faithfulnessAssumed;
-    }
-
     /**
      * Set to true if it is assumed that all path pairs with one length 1 path
      * do not cancel.
+     *
+     * @param faithfulnessAssumed True if so.
+     * @see Fges#setFaithfulnessAssumed(boolean)
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
@@ -197,6 +182,12 @@ public final class FgesMb {
         return search(Collections.singletonList(target));
     }
 
+    /**
+     * Searches over a specific list of target variables.
+     *
+     * @param targets The targets.
+     * @return The union of the edges for the Markov blanekt graph for each target.
+     */
     public Graph search(List<Node> targets) {
 
         // Assumes one-edge faithfulness.
@@ -261,6 +252,198 @@ public final class FgesMb {
 
         return mbgraph;
     }
+
+    /**
+     * Returns the background knowledge.
+     *
+     * @return This knowledge.
+     */
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    /**
+     * Sets the background knowledge.
+     *
+     * @param knowledge the knowledge object, specifying forbidden and required
+     *                  edges.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        if (knowledge == null) {
+            throw new NullPointerException();
+        }
+        this.knowledge = knowledge;
+    }
+
+    /**
+     * Returns the elapsed time of the search.
+     *
+     * @return This time.
+     */
+    public long getElapsedTime() {
+        return this.elapsedTime;
+    }
+
+    /**
+     * If the true graph is set, askterisks will be printed in log output for
+     * the true edges.
+     *
+     * @param trueGraph The true graph.
+     */
+    public void setTrueGraph(Graph trueGraph) {
+        this.trueGraph = trueGraph;
+    }
+
+    /**
+     * Returns the totalScore of the given DAG, up to a constant.
+     *
+     * @param dag The dag to score.
+     * @return The scre of the DAG.
+     */
+    public double getScore(Graph dag) {
+        return scoreDag(dag);
+    }
+
+    /**
+     * Returns the list of top scoring graphs.
+     *
+     * @return The top scoring graphs.
+     */
+    public LinkedList<ScoredGraph> getTopGraphs() {
+        return this.topGraphs;
+    }
+
+    /**
+     * Returns the number of CPDAGs to store.
+     *
+     * @return This number.
+     */
+    public int getnumCPDAGsToStore() {
+        return this.numCpdagsToStore;
+    }
+
+    /**
+     * Sets the number of CPDAGs to store. This should be set to zero for fast
+     * search.
+     *
+     * @param numCpdagsToStore This number.
+     */
+    public void setNumCpdagsToStore(int numCpdagsToStore) {
+        if (numCpdagsToStore < 0) {
+            throw new IllegalArgumentException("# graphs to store must at least 0: " + numCpdagsToStore);
+        }
+
+        this.numCpdagsToStore = numCpdagsToStore;
+    }
+
+    /**
+     * Sets the external graph. The search graph is initialized to this.
+     */
+    public void setExternalGraph(Graph externalGraph) {
+        if (externalGraph != null) {
+            externalGraph = GraphUtils.replaceNodes(externalGraph, this.variables);
+
+            if (this.verbose) {
+                this.out.println("Initial graph variables: " + externalGraph.getNodes());
+                this.out.println("Data set variables: " + this.variables);
+            }
+
+            if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(this.variables))) {
+                throw new IllegalArgumentException("Variables aren't the same.");
+            }
+        }
+
+        this.externalGraph = externalGraph;
+    }
+
+    /**
+     * Sets whether verbose output should be produced.
+     *
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Sets the output stream that output (except for log output) should be sent
+     * to. By detault System.out.
+     *
+     * @param out The output print stream, by default System.out.
+     */
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
+
+    /**
+     * Sets the graph of preset adjacenies for the algorithm; edges not in this
+     * adjacencies graph will not be added.
+     *
+     * @param adjacencies This graph.
+     */
+    public void setAdjacencies(Graph adjacencies) {
+        this.adjacencies = adjacencies;
+    }
+
+    /**
+     * A bound on cycle length.
+     *
+     * @param cycleBound The bound, &ge; 1, or -1 for unlimited.
+     */
+    public void setCycleBound(int cycleBound) {
+        if (!(cycleBound == -1 || cycleBound >= 1)) {
+            throw new IllegalArgumentException("Cycle bound needs to be -1 or >= 1: " + cycleBound);
+        }
+        this.cycleBound = cycleBound;
+    }
+
+    /**
+     * Creates a new processors pool with the specified number of threads.
+     *
+     * @param parallelized True if parallelized,
+     */
+    public void setParallelized(boolean parallelized) {
+        this.parallelized = parallelized;
+    }
+
+    /**
+     * The maximum of parents any nodes can have in output CPDAG.
+     *
+     * @return -1 for unlimited.
+     */
+    public int getMaxDegree() {
+        return this.maxDegree;
+    }
+
+    /**
+     * The maximum of parents any nodes can have in output CPDAG.
+     *
+     * @param maxDegree -1 for unlimited.
+     */
+    public void setMaxDegree(int maxDegree) {
+        if (maxDegree < -1) {
+            throw new IllegalArgumentException();
+        }
+        this.maxDegree = maxDegree;
+    }
+
+    //===========================PRIVATE METHODS========================//
+
+
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+        return null;
+    }
+
 
     private void calcDConnections(List<Node> targets) {
         this.sortedArrows = new ConcurrentSkipListSet<>();
@@ -379,223 +562,6 @@ public final class FgesMb {
         }
     }
 
-    /**
-     * @return the background knowledge.
-     */
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    /**
-     * Sets the background knowledge.
-     *
-     * @param knowledge the knowledge object, specifying forbidden and required
-     *                  edges.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        if (knowledge == null) {
-            throw new NullPointerException();
-        }
-        this.knowledge = knowledge;
-    }
-
-    public long getElapsedTime() {
-        return this.elapsedTime;
-    }
-
-    /**
-     * If the true graph is set, askterisks will be printed in log output for
-     * the true edges.
-     */
-    public void setTrueGraph(Graph trueGraph) {
-        this.trueGraph = trueGraph;
-    }
-
-    /**
-     * @return the totalScore of the given DAG, up to a constant.
-     */
-    public double getScore(Graph dag) {
-        return scoreDag(dag);
-    }
-
-    /**
-     * @return the list of top scoring graphs.
-     */
-    public LinkedList<ScoredGraph> getTopGraphs() {
-        return this.topGraphs;
-    }
-
-    /**
-     * @return the number of CPDAGs to store.
-     */
-    public int getnumCPDAGsToStore() {
-        return this.numCPDAGsToStore;
-    }
-
-    /**
-     * Sets the number of CPDAGs to store. This should be set to zero for fast
-     * search.
-     */
-    public void setNumCPDAGsToStore(int numCPDAGsToStore) {
-        if (numCPDAGsToStore < 0) {
-            throw new IllegalArgumentException("# graphs to store must at least 0: " + numCPDAGsToStore);
-        }
-
-        this.numCPDAGsToStore = numCPDAGsToStore;
-    }
-
-    /**
-     * @return the initial graph for the search. The search is initialized to
-     * this graph and proceeds from there.
-     */
-    public Graph getexternalGraph() {
-        return this.externalGraph;
-    }
-
-    /**
-     * Sets the initial graph.
-     */
-    public void setExternalGraph(Graph externalGraph) {
-        if (externalGraph != null) {
-            externalGraph = GraphUtils.replaceNodes(externalGraph, this.variables);
-
-            if (this.verbose) {
-                this.out.println("Initial graph variables: " + externalGraph.getNodes());
-                this.out.println("Data set variables: " + this.variables);
-            }
-
-            if (!new HashSet<>(externalGraph.getNodes()).equals(new HashSet<>(this.variables))) {
-                throw new IllegalArgumentException("Variables aren't the same.");
-            }
-        }
-
-        this.externalGraph = externalGraph;
-    }
-
-    /**
-     * Sets whether verbose output should be produced.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * @return the output stream that output (except for log output) should be
-     * sent to.
-     */
-    public PrintStream getOut() {
-        return this.out;
-    }
-
-    /**
-     * Sets the output stream that output (except for log output) should be sent
-     * to. By detault System.out.
-     */
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    /**
-     * @return the set of preset adjacenies for the algorithm; edges not in this
-     * adjacencies graph will not be added.
-     */
-    public Graph getAdjacencies() {
-        return this.adjacencies;
-    }
-
-    /**
-     * Sets the set of preset adjacenies for the algorithm; edges not in this
-     * adjacencies graph will not be added.
-     */
-    public void setAdjacencies(Graph adjacencies) {
-        this.adjacencies = adjacencies;
-    }
-
-    /**
-     * A bound on cycle length.
-     *
-     * @param cycleBound The bound, &gt;= 1, or -1 for unlimited.
-     */
-    public void setCycleBound(int cycleBound) {
-        if (!(cycleBound == -1 || cycleBound >= 1)) {
-            throw new IllegalArgumentException("Cycle bound needs to be -1 or >= 1: " + cycleBound);
-        }
-        this.cycleBound = cycleBound;
-    }
-
-    /**
-     * Creates a new processors pool with the specified number of threads.
-     */
-    public void setParallelized(boolean parallelized) {
-        this.parallelized = parallelized;
-    }
-
-    /**
-     * For BIC totalScore, a multiplier on the penalty term. For continuous
-     * searches.
-     *
-     * @deprecated Use the getters on the individual scores instead.
-     */
-    public double getPenaltyDiscount() {
-        if (this.fgesScore instanceof ISemBicScore) {
-            return ((ISemBicScore) this.fgesScore).getPenaltyDiscount();
-        } else {
-            return 2.0;
-        }
-    }
-
-    /**
-     * For BIC totalScore, a multiplier on the penalty term. For continuous
-     * searches.
-     *
-     * @deprecated Use the setters on the individual scores instead.
-     */
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        if (this.fgesScore instanceof ISemBicScore) {
-            ((ISemBicScore) this.fgesScore).setPenaltyDiscount(penaltyDiscount);
-        }
-    }
-
-    /**
-     * @deprecated Use the setters on the individual scores instead.
-     */
-    public void setSamplePrior(double samplePrior) {
-        if (this.fgesScore instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) this.fgesScore).setSamplePrior(samplePrior);
-        }
-    }
-
-    /**
-     * @deprecated Use the setters on the individual scores instead.
-     */
-    public void setStructurePrior(double expectedNumParents) {
-        if (this.fgesScore instanceof LocalDiscreteScore) {
-            ((LocalDiscreteScore) this.fgesScore).setStructurePrior(expectedNumParents);
-        }
-    }
-
-    /**
-     * The maximum of parents any nodes can have in output CPDAG.
-     *
-     * @return -1 for unlimited.
-     */
-    public int getMaxDegree() {
-        return this.maxDegree;
-    }
-
-    /**
-     * The maximum of parents any nodes can have in output CPDAG.
-     *
-     * @param maxDegree -1 for unlimited.
-     */
-    public void setMaxDegree(int maxDegree) {
-        if (maxDegree < -1) {
-            throw new IllegalArgumentException();
-        }
-        this.maxDegree = maxDegree;
-    }
-
-    //===========================PRIVATE METHODS========================//
     //Sets the discrete scoring function to use.
     private void setFgesScore(Score totalScore) {
         this.fgesScore = totalScore;

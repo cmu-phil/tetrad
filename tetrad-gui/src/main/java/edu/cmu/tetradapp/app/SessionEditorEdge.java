@@ -29,7 +29,7 @@ import java.awt.*;
 /**
  * Presents an edge in the Tetrad SessionWorkbench.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 final class SessionEditorEdge extends DisplayEdge {
 

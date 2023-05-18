@@ -25,6 +25,10 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -41,7 +45,7 @@ import static org.junit.Assert.fail;
 
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestSearchGraph {
 
@@ -83,8 +87,8 @@ public final class TestSearchGraph {
                     }
 
                     if (graph.isDSeparatedFrom(x, y, z) != graph.isDSeparatedFrom(y, x, z)) {
-                        fail(SearchLogUtils.independenceFact(x, y, z) + " should have same d-sep result as " +
-                                SearchLogUtils.independenceFact(y, x, z));
+                        fail(LogUtilsSearch.independenceFact(x, y, z) + " should have same d-sep result as " +
+                                LogUtilsSearch.independenceFact(y, x, z));
                     }
                 }
 

@@ -39,7 +39,7 @@ import java.util.Map;
  * Holds a tetrad dag with all of the constructors necessary for it to serve as
  * a model for the tetrad application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SemGraphWrapper implements GraphSource,
         KnowledgeBoxInput, SimulationParamsSource, DoNotAddOldModel, MultipleGraphSource {

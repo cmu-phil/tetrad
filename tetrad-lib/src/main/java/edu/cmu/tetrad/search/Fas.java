@@ -23,27 +23,46 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Implements the "fast adjacency search" used in several causal algorithm in this package. In the fast adjacency
- * search, at a given stage of the search, an edge X*-*Y is removed from the graph if X _||_ Y | S, where S is a subset
- * of size d either of adj(X) or of adj(Y), where d is the depth of the search. The fast adjacency search performs this
- * procedure for each pair of adjacent edges in the graph and for each depth d = 0, 1, 2, ..., d1, where d1 is either
- * the maximum depth or else the first such depth at which no edges can be removed. The interpretation of this adjacency
- * search is different for different algorithm, depending on the assumptions of the algorithm. A mapping from {x, y} to
- * S({x, y}) is returned for edges x *-* y that have been removed.
- * <p>
- * Optionally uses Heuristic 3 from Causation, Prediction and Search, which (like FAS-Stable) renders the output
- * invariant to the order of the input variables (See Tsagris).
+ * <p>Implements the adjacency search of the PC algorithm (see), which is a useful algorithm
+ * in many contexts, including as the first step of FCI (see). Se we call it the "Fast
+ * Adjacency Search" (FAS), to give it a name.</p>
  *
- * @author Joseph Ramsey.
+ * <p>The idea of FAS is that at a given stage of the search, an edge X*-*Y is removed from the
+ * graph if X _||_ Y | S, where S is a subset of size d either of adj(X) or of adj(Y), where d
+ * is the depth of the search. The fast adjacency search performs this procedure for each pair
+ * of adjacent edges in the graph and for each depth d = 0, 1, 2, ..., d1, where d1 is either
+ * the maximum depth or else the first such depth at which no edges can be removed. The
+ * interpretation of this adjacency search is different for different algorithm, depending on
+ * the assumptions of the algorithm. A mapping from {x, y} to S({x, y}) is returned for edges
+ * x *-* y that have been removed.</p>
+ *
+ * <p>Optionally uses Heuristic 3 from Causation, Prediction and Search, which (like FAS-Stable)
+ * renders the output invariant to the order of the input variables (See Tsagris).</p>
+ *
+ * <p>This algorithm was described in the earlier edition of this book:</p>
+ *
+ * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
+ * prediction, and search. MIT press.</p>
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
+ * @author peterspirtes
+ * @author clarkglymour
+ * @author josephramsey.
+ * @see Pc
+ * @see Fci
+ * @see Knowledge
  */
 public class Fas implements IFas {
 
@@ -56,10 +75,7 @@ public class Fas implements IFas {
      * The logger, by default the empty logger.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-    /**
-     * Number formatter.
-     */
-    private final NumberFormat nf = new DecimalFormat("0.00E0");
+
     /**
      * Specification of which edges are forbidden or required.
      */
@@ -69,14 +85,8 @@ public class Fas implements IFas {
      * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
      */
     private int depth = 1000;
-    /**
-     * The number of independence tests.
-     */
     private int numIndependenceTests;
-    /**
-     * The number of dependence judgements. Temporary.
-     */
-    private int numDependenceJudgement;
+
     /**
      * The sepsets found during the search.
      */
@@ -95,17 +105,30 @@ public class Fas implements IFas {
      * FAS-Stable.
      */
     private boolean stable;
+    private long elapsedTime = 0L;
 
     //==========================CONSTRUCTORS=============================//
 
     /**
-     * Constructs a new FastAdjacencySearch.
+     * Constructor.
+     *
+     * @param test The test to use for oracle conditional independence test results.
      */
     public Fas(IndependenceTest test) {
         this.test = test;
     }
 
     //==========================PUBLIC METHODS===========================//
+
+    /**
+     * Runs the search and returns the resulting (undirected) graph.
+     *
+     * @return This graph.
+     */
+    @Override
+    public Graph search() {
+        return search(test.getVariables());
+    }
 
     /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
@@ -115,9 +138,11 @@ public class Fas implements IFas {
      * more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
      * adjacencies in the data.
      *
-     * @return a SepSet, which indicates which variables are independent conditional on which other variables
+     * @param nodes A list of nodes to search over.
+     * @return An undirected graph that summarizes the conditional independendencies that obtain in the data.
      */
     public Graph search(List<Node> nodes) {
+        long startTime = MillisecondTimes.timeMillis();
         nodes = new ArrayList<>(nodes);
 
         if (verbose) {
@@ -135,7 +160,6 @@ public class Fas implements IFas {
         this.sepset = new SepsetMap();
 
         List<Edge> edges = new ArrayList<>();
-//        List<Node> nodes = new ArrayList<>(this.test.getVariables());
         Map<Edge, Double> scores = new HashMap<>();
 
         if (this.heuristic == 1) {
@@ -220,13 +244,17 @@ public class Fas implements IFas {
             this.logger.log("info", "Finishing Fast Adjacency Search.");
         }
 
+        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
+
         return graph;
     }
 
-    public int getDepth() {
-        return this.depth;
-    }
-
+    /**
+     * Sets the depth of the search, which is the maximum number of variables that ben be conditioned
+     * on in any conditional independence test.
+     *
+     * @param depth This maximum.
+     */
     public void setDepth(int depth) {
         if (depth < -1) {
             throw new IllegalArgumentException(
@@ -236,12 +264,100 @@ public class Fas implements IFas {
         this.depth = depth;
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
+    /**
+     * Sets the knowledge to be used int the search.
+     *
+     * @param knowledge This knoweldge.
+     * @see Knowledge
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge(knowledge);
     }
 
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+    /**
+     * Returns the nubmer of independence tests that were done.
+     *
+     * @return This number.
+     */
+    public int getNumIndependenceTests() {
+        return this.numIndependenceTests;
+    }
+
+    /**
+     * Returns the sepsets that were discovered in the search. A 'sepset' for test X _||_ Y | Z1,...,Zm would be
+     * {Z1,...,Zm}
+     *
+     * @return A map of these sepsets indexed by {X, Y}.
+     */
+    public SepsetMap getSepsets() {
+        return this.sepset;
+    }
+
+    /**
+     * Sets whether verbose output should be printed.
+     *
+     * @param verbose True iff the case.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Returns the elapsed time of the search.
+     *
+     * @return This elapsed time.
+     */
+    public long getElapsedTime() {
+        return elapsedTime;
+    }
+
+    /**
+     * Returns the nodes from the test.
+     *
+     * @return These nodes.
+     */
+    @Override
+    public List<Node> getNodes() {
+        return this.test.getVariables();
+    }
+
+    /**
+     * There are no ambiguous triples for this search, for any nodes.
+     *
+     * @param node The nodes in question.
+     * @return An empty list.
+     */
+    @Override
+    public List<Triple> getAmbiguousTriples(Node node) {
+        return new ArrayList<>();
+    }
+
+    /**
+     * This is not used here.
+     *
+     * @param out This print stream.
+     */
+    @Override
+    public void setOut(PrintStream out) {
+        throw new UnsupportedOperationException("Print to out for FAS is not used.");
+    }
+
+    /**
+     * Sets the heuristic to use to fix variable order (1, 2, 3, or 0 = none).
+     *
+     * @param heuristic This heuristic.
+     */
+    public void setHeuristic(int heuristic) {
+        this.heuristic = heuristic;
+    }
+
+    /**
+     * Sets whether the stable algorithm shoudl be used.
+     *
+     * @param stable True iff the case.
+     */
+    public void setStable(boolean stable) {
+        this.stable = stable;
     }
 
     //==============================PRIVATE METHODS======================/
@@ -318,11 +434,7 @@ public class Fas implements IFas {
                 List<Node> Z = GraphUtils.asList(choice, ppx);
 
                 this.numIndependenceTests++;
-                boolean independent = test.checkIndependence(x, y, Z).independent();
-
-                if (!independent) {
-                    this.numDependenceJudgement++;
-                }
+                boolean independent = test.checkIndependence(x, y, Z).isIndependent();
 
                 boolean noEdgeRequired =
                         this.knowledge.noEdgeRequired(x.getName(), y.getName());
@@ -362,68 +474,6 @@ public class Fas implements IFas {
 
     private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
-    }
-
-    public int getNumIndependenceTests() {
-        return this.numIndependenceTests;
-    }
-
-    public int getNumDependenceJudgments() {
-        return this.numDependenceJudgement;
-    }
-
-    public SepsetMap getSepsets() {
-        return this.sepset;
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    @Override
-    public boolean isAggressivelyPreventCycles() {
-        return false;
-    }
-
-    @Override
-    public IndependenceTest getIndependenceTest() {
-        return null;
-    }
-
-    @Override
-    public Graph search() {
-        return search(test.getVariables());
-    }
-
-    @Override
-    public long getElapsedTime() {
-        return 0;
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        return this.test.getVariables();
-    }
-
-    @Override
-    public List<Triple> getAmbiguousTriples(Node node) {
-        return null;
-    }
-
-    @Override
-    public void setOut(PrintStream out) {
-    }
-
-    public void setHeuristic(int heuristic) {
-        this.heuristic = heuristic;
-    }
-
-    public void setStable(boolean stable) {
-        this.stable = stable;
     }
 }
 

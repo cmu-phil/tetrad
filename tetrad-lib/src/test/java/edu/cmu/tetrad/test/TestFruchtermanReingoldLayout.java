@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests to make sure the Fruchterman Reingold layout will run.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class TestFruchtermanReingoldLayout {
 

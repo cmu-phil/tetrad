@@ -5,14 +5,14 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 
 import static edu.cmu.tetrad.graph.GraphUtils.compatible;
 
 /**
  * The bidirected true positives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class NumCompatibleVisibleNonancestors implements Statistic {
     static final long serialVersionUID = 23L;
@@ -29,7 +29,7 @@ public class NumCompatibleVisibleNonancestors implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        Graph pag = SearchGraphUtils.dagToPag(trueGraph);
+        Graph pag = GraphSearchUtils.dagToPag(trueGraph);
 
         int tp = 0;
         int fp = 0;

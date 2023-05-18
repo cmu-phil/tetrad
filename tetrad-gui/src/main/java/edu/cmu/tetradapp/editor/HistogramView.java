@@ -42,7 +42,7 @@ import java.util.*;
 /**
  * View for the Histogram class. Shows a histogram and gives controls for conditioning, etc.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class HistogramView extends JPanel {
     private final HistogramPanel histogramPanel;

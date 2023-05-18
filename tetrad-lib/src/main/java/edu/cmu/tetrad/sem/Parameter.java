@@ -36,7 +36,7 @@ import java.io.ObjectInputStream;
  * (COEF, COVAR), and the node(s) it is associated with.
  *
  * @author Don Crimbchin (djc2@andrew.cmu.edu)
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class Parameter implements TetradSerializable {
     static final long serialVersionUID = 23L;

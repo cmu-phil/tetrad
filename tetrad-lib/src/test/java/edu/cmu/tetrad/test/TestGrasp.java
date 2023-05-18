@@ -25,7 +25,6 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Bridges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Cpc;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Grasp;
@@ -50,7 +49,15 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.IndependenceFacts;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.DegenerateGaussianScore;
+import edu.cmu.tetrad.search.score.GraphScore;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.*;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.GraphoidAxioms;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
+import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
@@ -69,12 +76,11 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
 
-import static edu.cmu.tetrad.search.OtherPermAlgs.Method.SP;
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 
 /**
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 @SuppressWarnings("ALL")
 public final class TestGrasp {
@@ -149,7 +155,7 @@ public final class TestGrasp {
         DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data);
         score.setStructurePrior(structurePrior);
 
-        IndTestDegenerateGaussianLRT test = new IndTestDegenerateGaussianLRT((DataSet) data);
+        IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt((DataSet) data);
         test.setAlpha(0.01);
 
 
@@ -226,68 +232,6 @@ public final class TestGrasp {
     @AfterClass
     public static void afterClass() throws Exception {
 
-    }
-
-    public void testGrasp1() {
-        Parameters params = new Parameters();
-        params.set(Params.NUM_MEASURES, 200);
-        params.set(Params.AVG_DEGREE, 6);
-        params.set(Params.SAMPLE_SIZE, 1000);
-        params.set(Params.NUM_RUNS, 1);
-        params.set(Params.COEF_LOW, 0);
-        params.set(Params.COEF_HIGH, 1);
-        params.set(Params.NUM_STARTS, 1);
-
-        params.set(Params.PENALTY_DISCOUNT, 2);
-        params.set(Params.ZS_RISK_BOUND, 0.001); //, 0.01, 0.1);
-        params.set(Params.EBIC_GAMMA, 0.2, 0.6, 0.8);
-        params.set(Params.ALPHA, 0.001);
-
-        params.set(Params.GRASP_DEPTH, 3);
-        params.set(Params.GRASP_SINGULAR_DEPTH, 1);
-        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
-
-        params.set(Params.GRASP_ORDERED_ALG, false);
-        params.set(Params.GRASP_USE_SCORE, true);
-        params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
-        params.set(Params.GRASP_USE_DATA_ORDER, false);
-        params.set(Params.CACHE_SCORES, false);
-//        params.set(Params.GRASP_ALG, false);
-
-        params.set(Params.PARALLELIZED, true);
-
-        Algorithms algorithms = new Algorithms();
-//        algorithms.add(new GRaSP(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-//        algorithms.add(new BOSS(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-//        algorithms.add(new BOSSTuck(new edu.cmu.tetrad.algcomparison.score.SemBicScore(), new FisherZ()));
-        algorithms.add(new Bridges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-
-        Simulations simulations = new Simulations();
-        simulations.add(new SemSimulation(new RandomForward()));
-
-        Statistics statistics = new Statistics();
-//        statistics.add(new ParameterColumn(Params.GRASP_DEPTH));
-//        statistics.add(new ParameterColumn(Params.GRASP_UNCOVERED_DEPTH));
-//        statistics.add(new ParameterColumn(Params.GRASP_NONSINGULAR_DEPTH));
-//        statistics.add(new ParameterColumn(Params.GRASP_ORDERED_ALG));
-//        statistics.add(new ParameterColumn(Params.EBIC_GAMMA));
-        statistics.add(new ParameterColumn(Params.NUM_MEASURES));
-        statistics.add(new ParameterColumn(Params.AVG_DEGREE));
-        statistics.add(new ParameterColumn(Params.SAMPLE_SIZE));
-        statistics.add(new NumberOfEdgesTrue());
-        statistics.add(new NumberOfEdgesEst());
-        statistics.add(new AdjacencyPrecision());
-        statistics.add(new AdjacencyRecall());
-        statistics.add(new ArrowheadPrecision());
-        statistics.add(new ArrowheadRecall());
-        statistics.add(new ElapsedCpuTime());
-
-        Comparison comparison = new Comparison();
-        comparison.setShowAlgorithmIndices(true);
-        comparison.setComparisonGraph(Comparison.ComparisonGraph.true_DAG);
-
-        comparison.compareFromSimulations("/Users/bryanandrews/Downloads/grasp/testGrasp1",
-                simulations, algorithms, statistics, params);
     }
 
     //    @Test
@@ -1203,87 +1147,6 @@ public final class TestGrasp {
     }
 
     //    @Test
-    public void wayneCheckDensityClaim2() {
-        List<Ret> allFacts = new ArrayList<>();
-
-        // Only oracle unfaithful examples.
-        allFacts.add(getFactsSimpleCanceling());
-        allFacts.add(wayneTriangleFaithfulnessFailExample());
-        allFacts.add(wayneTriMutationFailsForFaithfulGraphExample());
-        allFacts.add(getFigure7());
-        allFacts.add(getFigure8());
-        allFacts.add(getFigure11());
-        allFacts.add(wayneExample2());
-
-        int count = 0;
-
-        boolean verbose = false;
-        int numRounds = 50;
-        int depth = 5;
-        int maxPermSize = 6;
-
-        boolean printCpdag = false;
-
-        for (int i = 0; i < allFacts.size(); i++) {
-            Ret facts = allFacts.get(i);
-            count++;
-
-            System.out.println();
-            System.out.println("Test #" + (i + 1));
-            System.out.println(facts.getLabel());
-            System.out.println(facts.getFacts());
-        }
-
-        for (int i = 0; i < allFacts.size(); i++) {
-            boolean passed = true;
-
-            Ret facts = allFacts.get(i);
-            count++;
-
-            TeyssierScorer scorer = new TeyssierScorer(new IndTestDSep(facts.getFacts()),
-                    new GraphScore(facts.getFacts()));
-
-            OrderedMap<String, Set<Graph>> graphs = new ListOrderedMap<>();
-            OrderedMap<String, Set<String>> labels = new ListOrderedMap<>();
-
-            List<Node> variables = facts.facts.getVariables();
-            Collections.sort(variables);
-
-            System.out.println("Variables = " + variables);
-
-            PermutationGenerator gen = new PermutationGenerator(variables.size());
-            int[] perm;
-            int count1 = 0;
-            int total = 0;
-
-            while ((perm = gen.next()) != null) {
-                List<Node> pi = GraphUtils.asList(perm, variables);
-
-                BossOrig boss = new BossOrig(new GraphScore(facts.getFacts()));
-
-                boss.setUseRaskuttiUhler(true);
-                boss.setDepth(100);
-//                boss.setOrdered(true);
-                boss.setVerbose(false);
-
-                boss.bestOrder(pi);
-                Graph estCpdagGrasp = boss.getGraph(true);
-
-                if (estCpdagGrasp.getNumEdges() == facts.truth) {
-                    count1++;
-                } else {
-//                    System.out.println("Counterexample: Test #" + (i + 1) + " Permutation = " + pi + " #Edges = "
-//                            + estCpdagGrasp.getNumEdges() + " #Frugal = " + facts.truth);
-                }
-
-                total++;
-            }
-
-            System.out.println("Test #" + (i + 1) + " #Frugal = " + count1 + " Total #Permutations = " + total);
-        }
-    }
-
-    //    @Test
     public void bryanCheckDensityClaims() {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
@@ -1489,8 +1352,8 @@ public final class TestGrasp {
                 line = line.trim();
 
                 GraphoidAxioms axioms = getGraphoidAxioms(line, variables);
-                axioms.setTrivialtyAssumed();
-                axioms.setSymmetryAssumed();
+                axioms.ensureTriviality();
+                axioms.ensureSymmetry();
 
                 System.out.println(axioms.getIndependenceFacts().getVariableNames());
 
@@ -1516,7 +1379,7 @@ public final class TestGrasp {
 
                     edu.cmu.tetrad.search.Grasp boss = new edu.cmu.tetrad.search.Grasp(test, new GraphScore(facts));
                     boss.setNonSingularDepth(1);
-                    boss.setSingularDepth(1);
+                    boss.setUncoveredDepth(1);
 
 //                    OtherPermAlgs spAlg = new OtherPermAlgs(test);
 //                    spAlg.setUsePearl(true);
@@ -1540,7 +1403,7 @@ public final class TestGrasp {
                     edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test);
 
                     grasp.setDepth(3);
-                    grasp.setSingularDepth(1);
+                    grasp.setUncoveredDepth(1);
                     grasp.setNonSingularDepth(1);
                     grasp.setUseRaskuttiUhler(usePearl);
                     grasp.setOrdered(true);
@@ -1816,10 +1679,10 @@ public final class TestGrasp {
     }
 
     private static void extractedWayne(Node x1, Node x2, Node x3, Node x4, IndependenceTest chiSq) {
-        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList()) + " " + chiSq.checkIndependence(x1, x2).independent());
-        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).independent());
-        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).independent());
-        System.out.println(SearchLogUtils.independenceFact(x1, x2, nodeList(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).independent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeList()) + " " + chiSq.checkIndependence(x1, x2).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeList(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeList(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeList(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).isIndependent());
     }
 
     @NotNull
@@ -2088,30 +1951,6 @@ public final class TestGrasp {
             prefix.add(order.get(j));
         }
         return prefix;
-    }
-
-    //    @Test
-    public void testRaskutti() {
-        Ret facts = getFactsRaskutti();
-
-        IndTestDSep test = new IndTestDSep(facts.getFacts());
-
-        OtherPermAlgs otherPermAlgs = new OtherPermAlgs(test);
-        otherPermAlgs.setMethod(SP);
-        otherPermAlgs.setNumStarts(1);
-
-        List<Node> variables = test.getVariables();
-        PermutationGenerator gen = new PermutationGenerator(variables.size());
-        int[] perm;
-
-        while ((perm = gen.next()) != null) {
-            List<Node> p = GraphUtils.asList(perm, variables);
-
-            List<Node> p2 = otherPermAlgs.bestOrder(test.getVariables());
-            Graph cpdag = otherPermAlgs.getGraph(true);
-
-            System.out.println(p + " " + cpdag.getNumEdges());
-        }
     }
 
     //    @Test
@@ -2747,7 +2586,7 @@ public final class TestGrasp {
             Graph trueGraph = RandomGraph.randomGraph(20, 8, 40,
                     100, 100, 100, false);
 
-            Graph truePag = SearchGraphUtils.dagToPag(trueGraph);
+            Graph truePag = GraphSearchUtils.dagToPag(trueGraph);
 
             trueGraphMap.put(i, new HashMap<>());
             trueGraphs.add(trueGraph);
@@ -2866,7 +2705,7 @@ public final class TestGrasp {
             for (Node y : graph.getNodes()) {
                 if (!graph.paths().isDescendentOf(y, x) && !parents.contains(y)) {
                     if (!graph.paths().isDSeparatedFrom(x, y, parents)) {
-                        System.out.println("Failure! " + SearchLogUtils.dependenceFactMsg(x, y, parents, 1.0));
+                        System.out.println("Failure! " + LogUtilsSearch.dependenceFactMsg(x, y, parents, 1.0));
                     }
                 }
             }
@@ -3133,7 +2972,7 @@ public final class TestGrasp {
 
                 edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new IndTestDSep(facts.getFacts()));
                 search.setDepth(depth);
-                search.setSingularDepth(depth);
+                search.setUncoveredDepth(depth);
                 search.setNonSingularDepth(depth);
                 search.setUseRaskuttiUhler(false);
                 List<Node> order = search.bestOrder(p);
@@ -3144,73 +2983,6 @@ public final class TestGrasp {
                     passed = false;
 //                        break;
                 }
-            }
-
-            System.out.println((i + 1) + " " + (passed ? "P " : "F"));
-        }
-    }
-
-    //    @Test
-    public void testWorstCaseExamples() {
-        List<Ret> allFacts = new ArrayList<>();
-
-        allFacts.add(getBryanWorseCaseMParentsNChildren(3, 2));
-
-        int count = 0;
-
-        boolean printCpdag = false;
-
-        for (int i = 0; i < allFacts.size(); i++) {
-            Ret facts = allFacts.get(i);
-            count++;
-
-            System.out.println();
-            System.out.println("Test #" + (i + 1));
-            System.out.println(facts.getLabel());
-            System.out.println(facts.getFacts());
-        }
-
-        for (int i = 0; i < allFacts.size(); i++) {
-            boolean passed = true;
-
-            Ret facts = allFacts.get(i);
-            count++;
-
-            TeyssierScorer scorer = new TeyssierScorer(new IndTestDSep(facts.getFacts()),
-                    new GraphScore(facts.getFacts()));
-
-            OrderedMap<String, Set<Graph>> graphs = new ListOrderedMap<>();
-            OrderedMap<String, Set<String>> labels = new ListOrderedMap<>();
-
-            List<Node> variables = facts.facts.getVariables();
-            Collections.sort(variables);
-
-            PermutationGenerator gen = new PermutationGenerator(variables.size());
-            int[] perm;
-
-            while ((perm = gen.next()) != null) {
-                List<Node> p = GraphUtils.asList(perm, variables);
-
-                OtherPermAlgs search = new OtherPermAlgs(new IndTestDSep(facts.getFacts()));
-//                    search.setMaxPermSize(6);
-                search.setDepth(Integer.MAX_VALUE);
-//                    search.setDepth((method == BOSS1 || method == BOSS2 || method == GRASP || method == RCG) ? 20 : 5);
-                search.setNumRounds(20);
-//                    search.setVerbose(true);
-                List<Node> order = search.bestOrder(p);
-                System.out.println(p + " " + order + " " + search.getNumEdges());// + " " + search.getGraph(false));
-
-                if (search.getNumEdges() != facts.getTruth()) {
-                    passed = false;
-//                        break;
-                }
-
-//                Pc search = new Pc(new IndTestDSep(facts.getFacts()));
-//                System.out.println(p + " " + search.search().getNumEdges());
-
-//                Fges search = new Fges(new GraphScore(facts.getFacts()));
-//                System.out.println(p + " " + search.search().getNumEdges());
-
             }
 
             System.out.println((i + 1) + " " + (passed ? "P " : "F"));
@@ -3270,7 +3042,7 @@ public final class TestGrasp {
 
                         IndTestDSep dsep = new IndTestDSep(graph);
 
-                        edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(dataSet);
+                        SemBicScore score = new SemBicScore(dataSet);
                         score.setPenaltyDiscount(1);
 
                         // Random permutation over 1...|V|.
@@ -3307,8 +3079,8 @@ public final class TestGrasp {
                         g2 = GraphUtils.replaceNodes(g2, g1.getNodes());
 
                         if (g1.equals(g2)) gsCount++;
-                        gsShd += SearchGraphUtils.structuralHammingDistance(
-                                SearchGraphUtils.cpdagForDag(g1), SearchGraphUtils.cpdagForDag(g2));
+                        gsShd += GraphSearchUtils.structuralHammingDistance(
+                                GraphSearchUtils.cpdagForDag(g1), GraphSearchUtils.cpdagForDag(g2));
 
                         for (int i = 0; i < alpha.length; i++) {
 //                            test.setAlpha(alpha[i]);
@@ -3322,8 +3094,8 @@ public final class TestGrasp {
                             g3 = GraphUtils.replaceNodes(g3, g1.getNodes());
 
                             if (g1.equals(g3)) pearlCounts[i]++;
-                            pearlShd[i] += SearchGraphUtils.structuralHammingDistance(
-                                    SearchGraphUtils.cpdagForDag(g1), SearchGraphUtils.cpdagForDag(g3));
+                            pearlShd[i] += GraphSearchUtils.structuralHammingDistance(
+                                    GraphSearchUtils.cpdagForDag(g1), GraphSearchUtils.cpdagForDag(g3));
                         }
                     }
 
@@ -3392,7 +3164,7 @@ public final class TestGrasp {
             DataSet d = im.simulateData(1000, false);
 
             IndTestFisherZ test = new IndTestFisherZ(d, 0.001);
-            edu.cmu.tetrad.search.SemBicScore score = new edu.cmu.tetrad.search.SemBicScore(d);
+            SemBicScore score = new SemBicScore(d);
             score.setPenaltyDiscount(2);
 
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
@@ -3478,7 +3250,7 @@ public final class TestGrasp {
                             }
                         }
 
-                        if (dsep.checkIndependence(x, y, new ArrayList<>(pathColliders)).independent()) {
+                        if (dsep.checkIndependence(x, y, new ArrayList<>(pathColliders)).isIndependent()) {
                             IndependenceFact fact = new IndependenceFact(x, y, new ArrayList<>(pathColliders));
                             facts.add(fact);
                             System.out.println("Added " + fact);

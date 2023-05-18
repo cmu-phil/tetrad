@@ -22,17 +22,44 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Implements the Grow-Shrink algorithm of Margaritis and Thrun. Reference: "Bayesian Network Induction via Local
- * Neighborhoods."
+ * <p>Implements the Grow-Shrink algorithm of Margaritis and Thrun, a simple yet
+ * correct and useful Markov blanket search.</p>
  *
- * @author Joseph Ramsey
+ * <p>Margaritis, D., &amp; Thrun, S. (1999). Bayesian network induction via local
+ * neighborhoods. Advances in neural information processing systems, 12.</p>
+ *
+ * <p>Grow-Shrink learns the Markov blanket of a node, given a conditional independence
+ * test over a list of possible nodes. The Markov blanket is a set of nodes (or, in this
+ * case a list of distinct nodes), conditional on which every other node in the set is
+ * independent of X. In this case, a minimal Markov blanket is learned, which is to say,
+ * a Mavkov boundary of X.</p>
+ *
+ * <p>Graphically, in a DAG, the Markov blanket of X is the set of parents, children, and
+ * parents of children of X; GrowShrink will, for a faithful test, learn this set for X.
+ * However, a graph over the nodes together with X is not learned; other algorithms are
+ * available to do that (see, e.g., FgesMb, PcMb).</p>
+ *
+ * <p>We include GrowShrink in our algorithm suite mainly because it is a CMU algorithm
+ * (see the above reference). Markov blanket search has been explored in some detail in
+ * the literature and several algorithms are available. See for instance the BNLEARN
+ * package in R:</p>
+ *
+ * <p>https://www.bnlearn.com/</p>
+ *
+ * <p>This class is not configured to respect knowledge of forbidden and required
+ * edges.</p>
+ *
+ * @author josephramsey
+ * @see FgesMb
+ * @see PcMb
  */
-public class GrowShrink implements MbSearch {
+public class GrowShrink implements IMbSearch {
 
     /**
      * The independence test used to perform the search.
@@ -42,12 +69,12 @@ public class GrowShrink implements MbSearch {
     /**
      * The list of variables being searched over. Must contain the target.
      */
-    private List<Node> variables;
+    private final List<Node> variables;
 
     /**
      * Constructs a new search.
      *
-     * @param test The source of conditional independence information for the search.
+     * @param test The test used for this search.
      */
     public GrowShrink(IndependenceTest test) {
         if (test == null) {
@@ -77,7 +104,7 @@ public class GrowShrink implements MbSearch {
             remaining.remove(target);
 
             for (Node node : remaining) {
-                if (!this.independenceTest.checkIndependence(node, target, blanket).independent()) {
+                if (!this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
                     blanket.add(node);
                     changed = true;
                 }
@@ -92,7 +119,7 @@ public class GrowShrink implements MbSearch {
             for (Node node : new LinkedList<>(blanket)) {
                 blanket.remove(node);
 
-                if (this.independenceTest.checkIndependence(node, target, blanket).independent()) {
+                if (this.independenceTest.checkIndependence(node, target, blanket).isIndependent()) {
                     changed = true;
                     continue;
                 }
@@ -104,34 +131,20 @@ public class GrowShrink implements MbSearch {
         return blanket;
     }
 
+    /**
+     * Returns "Grow Shrink".
+     *
+     * @return This string.
+     */
     public String getAlgorithmName() {
         return "Grow Shrink";
     }
 
+    /**
+     * @throws UnsupportedOperationException Since independence tests are not counted.
+     */
     public int getNumIndependenceTests() {
-        return 0;
-    }
-
-    private Node getVariableForName(String targetName) {
-        Node target = null;
-
-        for (Node V : this.variables) {
-            if (V.getName().equals(targetName)) {
-                target = V;
-                break;
-            }
-        }
-
-        if (target == null) {
-            throw new IllegalArgumentException(
-                    "Target variable not in dataset: " + targetName);
-        }
-
-        return target;
-    }
-
-    public void setVariables(List<Node> variables) {
-        this.variables = variables;
+        throw new UnsupportedOperationException("Independence tests are not counted in the algorithm.");
     }
 }
 

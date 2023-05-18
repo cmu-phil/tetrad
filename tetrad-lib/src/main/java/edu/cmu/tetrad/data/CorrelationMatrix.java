@@ -34,7 +34,7 @@ import java.util.List;
  * Stores a correlation matrix together with variable names and sample size;
  * intended as a representation of a data set.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class CorrelationMatrix extends CovarianceMatrix {
     static final long serialVersionUID = 23L;
@@ -84,7 +84,7 @@ public final class CorrelationMatrix extends CovarianceMatrix {
             throw new IllegalArgumentException("Matrix must be square.");
         }
 
-        for (int i = 0; i < matrix.rows(); i++) {
+        for (int i = 0; i < matrix.getNumRows(); i++) {
             if (FastMath.abs(matrix.get(i, i) - 1.0) > 1.e-5) {
                 throw new IllegalArgumentException(
                         "For a correlation matrix, " +

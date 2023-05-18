@@ -19,11 +19,19 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * Implements the IDA algorithm, Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
- * "Estimating high-dimensional intervention effects from observational data."
- * The Annals of Statistics 37.6A (2009): 3133-3164.
+ * <p>Implements the IDA algorithm. The reference is here:</p>
  *
- * @author jdramsey@andrew.cmu.edu
+ * <p>Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
+ * "Estimating high-dimensional intervention effects from observational data."
+ * The Annals of Statistics 37.6A (2009): 3133-3164.</p>
+ *
+ * <p>The IDA algorithm seeks to give a list of possible parents
+ * of a given variable Y and their corresponding lower-bounded effects on
+ * Y.</p>
+ *
+ * @author josephramsey
+ * @see Cstar
+ * @see NodeEffects
  */
 public class Ida {
     private final DataSet dataSet;
@@ -32,9 +40,17 @@ public class Ida {
     private final Map<String, Integer> nodeIndices;
     private final ICovarianceMatrix allCovariances;
 
-    public Ida(DataSet dataSet, Graph pattern, List<Node> possibleCauses) {
+    /**
+     * Constructor.
+     *
+     * @param dataSet        The dataset being searched over.
+     * @param cpdag          The CPDAG (found, e.g., by running PC, or some other CPDAG-
+     *                       producing algorithm.
+     * @param possibleCauses The possible causes to be considered.
+     */
+    public Ida(DataSet dataSet, Graph cpdag, List<Node> possibleCauses) {
         this.dataSet = DataUtils.convertNumericalDiscreteToContinuous(dataSet);
-        this.pattern = pattern;
+        this.pattern = cpdag;
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
         this.possibleCauses = possibleCauses;
 
@@ -42,8 +58,8 @@ public class Ida {
 
         this.nodeIndices = new HashMap<>();
 
-        for (int i = 0; i < pattern.getNodes().size(); i++) {
-            this.nodeIndices.put(pattern.getNodes().get(i).getName(), i);
+        for (int i = 0; i < cpdag.getNodes().size(); i++) {
+            this.nodeIndices.put(cpdag.getNodes().get(i).getName(), i);
         }
     }
 
@@ -51,8 +67,9 @@ public class Ida {
      * Returns the minimum effects of X on Y for X in V \ {Y}, sorted downward by minimum effect
      *
      * @param y The child variable.
-     * @return Two sorted lists, one of nodes, the other of corresponding minimum effects, sorted downward by
-     * minimum effect size.
+     * @return Two sorted lists, one of possible parents, the other of corresponding minimum effects,
+     * sorted downward by minimum effect size.
+     * @see Ida
      */
     public NodeEffects getSortedMinEffects(Node y) {
         Map<Node, Double> allEffects = calculateMinimumEffectsOnY(y);
@@ -72,9 +89,10 @@ public class Ida {
     }
 
     /**
-     * A list of nodes and corresponding minimum effects.
+     * Gives a list of nodes (parents or children) and corresponding minimum effects
+     * for the IDA algorithm.
      *
-     * @author jdramsey@andrew.cmu.edu
+     * @author josephramsey
      */
     public static class NodeEffects {
         private List<Node> nodes;
@@ -112,16 +130,19 @@ public class Ida {
         }
     }
 
+    /**
+     * Calculates the true effect of (x, y) given the true DAG (which
+     * must be provided).
+     *
+     * @param trueDag The true DAG.
+     * @return The true effect of (x, y).
+     */
     public double trueEffect(Node x, Node y, Graph trueDag) {
         if (x == y) throw new IllegalArgumentException("x == y");
 
         if (!trueDag.paths().isAncestorOf(x, y)) return 0.0;
 
         trueDag = GraphUtils.replaceNodes(trueDag, this.dataSet.getVariables());
-
-        if (trueDag == null) {
-            throw new NullPointerException("True graph is null.");
-        }
 
         List<Node> regressors = new ArrayList<>();
         regressors.add(x);
@@ -130,6 +151,11 @@ public class Ida {
         return abs(getBeta(regressors, y));
     }
 
+    /**
+     * Returns the distance between the effects and the true effect.
+     *
+     * @return This difference.
+     */
     public double distance(LinkedList<Double> effects, double trueEffect) {
         effects = new LinkedList<>(effects);
         if (effects.isEmpty()) return Double.NaN; // counted as not estimated.
@@ -157,7 +183,7 @@ public class Ida {
      * sorted low to high in absolute value.
      * <p>
      * 1. First, estimate a pattern P from the data.
-     * 2. Then, consider all combinations C of siblings Z of X (Z--X) that include all of the parents of X in P.
+     * 2. Then, consider all combinations C of siblings Z of X (Z--X) that include all the parents of X in P.
      * 3. For each such C, regress Y onto {X} U C and record the coefficient beta for X in the regression.
      * 4. Report the list of such betas, sorted low to high.
      *

@@ -30,7 +30,7 @@ import java.awt.*;
 /**
  * Displays a DataSet object as a JTable.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TimeSeriesDataDisplay extends JPanel
         implements DataModelContainer {

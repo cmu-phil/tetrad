@@ -31,7 +31,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
  * edge is always directed, X--&gt;Y, and is either required or forbidden as
  * indicated in the constructor.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class KnowledgeModelEdge extends Edge
         implements TetradSerializableExcluded {

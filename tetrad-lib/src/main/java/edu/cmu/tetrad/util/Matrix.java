@@ -34,7 +34,7 @@ import java.io.ObjectInputStream;
  * this fixes is that a BlockRealMatrix cannot represent a matrix with zero
  * rows; this uses an Array2DRowRealMatrix to represent that case.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class Matrix implements TetradSerializable {
     static final long serialVersionUID = 23L;
@@ -53,6 +53,13 @@ public class Matrix implements TetradSerializable {
         this.n = this.m == 0 ? 0 : data[0].length;
     }
 
+    public Matrix(RealMatrix data) {
+        this.apacheData = data;
+
+        this.m = data.getRowDimension();
+        this.n = data.getColumnDimension();
+    }
+
     public Matrix(int m, int n) {
         if (m == 0 || n == 0) {
             this.apacheData = new Array2DRowRealMatrix();
@@ -65,11 +72,11 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix(Matrix m) {
-        this(m.apacheData.copy().getData());
+        this(m.apacheData.copy());
     }
 
     public void assign(Matrix matrix) {
-        if (this.apacheData.getRowDimension() != matrix.rows() || this.apacheData.getColumnDimension() != matrix.columns()) {
+        if (this.apacheData.getRowDimension() != matrix.getNumRows() || this.apacheData.getColumnDimension() != matrix.getNumColumns()) {
             throw new IllegalArgumentException("Mismatched matrix size.");
         }
 
@@ -80,7 +87,7 @@ public class Matrix implements TetradSerializable {
         }
     }
 
-    public int columns() {
+    public int getNumColumns() {
         return this.n;
     }
 
@@ -114,13 +121,13 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix copy() {
-        if (zeroDimension()) return new Matrix(rows(), columns());
-        return new Matrix(this.apacheData.copy().getData());
+        if (zeroDimension()) return new Matrix(getNumRows(), getNumColumns());
+        return new Matrix(this.apacheData.copy());
     }
 
     public Vector getColumn(int j) {
         if (zeroDimension()) {
-            return new Vector(rows());
+            return new Vector(getNumRows());
         }
 
         return new Vector(this.apacheData.getColumn(j));
@@ -128,9 +135,9 @@ public class Matrix implements TetradSerializable {
 
     public Matrix times(Matrix m) {
         if (this.zeroDimension() || m.zeroDimension())
-            return new Matrix(this.rows(), m.columns());
+            return new Matrix(this.getNumRows(), m.getNumColumns());
         else {
-            return new Matrix(this.apacheData.multiply(m.apacheData).getData());
+            return new Matrix(this.apacheData.multiply(m.apacheData));
         }
     }
 
@@ -158,6 +165,10 @@ public class Matrix implements TetradSerializable {
         return this.apacheData.getData();
     }
 
+    public RealMatrix getApacheData() {
+        return this.apacheData;
+    }
+
     public double get(int i, int j) {
         return this.apacheData.getEntry(i, j);
     }
@@ -172,31 +183,31 @@ public class Matrix implements TetradSerializable {
 
     public Vector getRow(int i) {
         if (zeroDimension()) {
-            return new Vector(columns());
+            return new Vector(getNumColumns());
         }
 
         return new Vector(this.apacheData.getRow(i));
     }
 
     public Matrix getPart(int i, int j, int k, int l) {
-        return new Matrix(this.apacheData.getSubMatrix(i, j, k, l).getData());
+        return new Matrix(this.apacheData.getSubMatrix(i, j, k, l));
     }
 
     public Matrix inverse() throws SingularMatrixException {
         if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
 
-        if (rows() == 0) {
+        if (getNumRows() == 0) {
             return new Matrix(0, 0);
         }
 
-        return new Matrix(new LUDecomposition(this.apacheData, 1e-10).getSolver().getInverse().getData());
+        return new Matrix(new LUDecomposition(this.apacheData, 1e-10).getSolver().getInverse());
     }
 
     public Matrix symmetricInverse() {
         if (!isSquare()) throw new IllegalArgumentException();
-        if (rows() == 0) return new Matrix(0, 0);
+        if (getNumRows() == 0) return new Matrix(0, 0);
 
-        return new Matrix(new CholeskyDecomposition(this.apacheData).getSolver().getInverse().getData());
+        return new Matrix(new CholeskyDecomposition(this.apacheData).getSolver().getInverse());
     }
 
     public Matrix ginverse() {
@@ -232,8 +243,8 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix transpose() {
-        if (zeroDimension()) return new Matrix(columns(), rows());
-        return new Matrix(this.apacheData.transpose().getData());
+        if (zeroDimension()) return new Matrix(getNumColumns(), getNumRows());
+        return new Matrix(this.apacheData.transpose());
     }
 
 
@@ -250,7 +261,7 @@ public class Matrix implements TetradSerializable {
     }
 
     public boolean isSquare() {
-        return rows() == columns();
+        return getNumRows() == getNumColumns();
     }
 
     public boolean isSymmetric(double tolerance) {
@@ -259,8 +270,8 @@ public class Matrix implements TetradSerializable {
 
 
     public Matrix minus(Matrix mb) {
-        if (mb.rows() == 0 || mb.columns() == 0) return this;
-        return new Matrix(this.apacheData.subtract(mb.apacheData).getData());
+        if (mb.getNumRows() == 0 || mb.getNumColumns() == 0) return this;
+        return new Matrix(this.apacheData.subtract(mb.apacheData));
     }
 
     public double norm1() {
@@ -268,8 +279,8 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix plus(Matrix mb) {
-        if (mb.rows() == 0 || mb.columns() == 0) return this;
-        return new Matrix(this.apacheData.add(mb.apacheData).getData());
+        if (mb.getNumRows() == 0 || mb.getNumColumns() == 0) return this;
+        return new Matrix(this.apacheData.add(mb.apacheData));
     }
 
     public int rank() {
@@ -277,14 +288,14 @@ public class Matrix implements TetradSerializable {
         return singularValueDecomposition.getRank();
     }
 
-    public int rows() {
+    public int getNumRows() {
         return this.m;
     }
 
     public Matrix scalarMult(double scalar) {
         Matrix newMatrix = copy();
-        for (int i = 0; i < rows(); i++) {
-            for (int j = 0; j < columns(); j++) {
+        for (int i = 0; i < getNumRows(); i++) {
+            for (int j = 0; j < getNumColumns(); j++) {
                 newMatrix.set(i, j, get(i, j) * scalar);
             }
         }
@@ -301,7 +312,7 @@ public class Matrix implements TetradSerializable {
         RealMatrix S = new BlockRealMatrix(s.length, s.length);
         for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
         RealMatrix sqrt = U.multiply(S).multiply(V);
-        return new Matrix(sqrt.getData());
+        return new Matrix(sqrt);
     }
 
 
@@ -311,12 +322,12 @@ public class Matrix implements TetradSerializable {
 
     public Vector sum(int direction) {
         if (direction == 1) {
-            Vector sums = new Vector(columns());
+            Vector sums = new Vector(getNumColumns());
 
-            for (int j = 0; j < columns(); j++) {
+            for (int j = 0; j < getNumColumns(); j++) {
                 double sum = 0.0;
 
-                for (int i = 0; i < rows(); i++) {
+                for (int i = 0; i < getNumRows(); i++) {
                     sum += this.apacheData.getEntry(i, j);
                 }
 
@@ -325,12 +336,12 @@ public class Matrix implements TetradSerializable {
 
             return sums;
         } else if (direction == 2) {
-            Vector sums = new Vector(rows());
+            Vector sums = new Vector(getNumRows());
 
-            for (int i = 0; i < rows(); i++) {
+            for (int i = 0; i < getNumRows(); i++) {
                 double sum = 0.0;
 
-                for (int j = 0; j < columns(); j++) {
+                for (int j = 0; j < getNumColumns(); j++) {
                     sum += this.apacheData.getEntry(i, j);
                 }
 
@@ -348,11 +359,11 @@ public class Matrix implements TetradSerializable {
     }
 
     private boolean zeroDimension() {
-        return rows() == 0 || columns() == 0;
+        return getNumRows() == 0 || getNumColumns() == 0;
     }
 
     public String toString() {
-        if (rows() == 0) {
+        if (getNumRows() == 0) {
             return "Empty";
         } else {
             return MatrixUtils.toString(toArray());

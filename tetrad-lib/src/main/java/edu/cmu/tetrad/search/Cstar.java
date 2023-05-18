@@ -3,6 +3,13 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.score.ConditionalGaussianScore;
+import edu.cmu.tetrad.search.score.IndTestScore;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.score.SemBicScore;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
@@ -13,18 +20,25 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * An adaptation of the CStaR algorithm (Steckoven et al., 2012).
- * <p>
- * Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., and Bühlmann, P. (2012).
- * Causal stability ranking. Bioinformatics, 28(21), 2819-2823.
- * <p>
- * Meinshausen, N., and Bühlmann, P. (2010). Stability selection. Journal of the Royal Statistical Society:
- * Series B (Statistical Methodology), 72(4), 417-473.
- * <p>
- * Colombo, D., and Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning.
- * The Journal of Machine Learning Research, 15(1), 3741-3782.
+ * <p>Implements the CStaR algorithm (Steckoven et al., 2012), which finds a CPDAG of that
+ * data and then tries all orientations of the undirected edges about a variable in the
+ * CPDAG to estimate a minimum bound on the effect for a given edge. Some references include
+ * the following:</p>
  *
- * @author jdramsey@andrew.cmu.edu
+ * <p>Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., and
+ * Bühlmann, P. (2012). Causal stability ranking. Bioinformatics, 28(21), 2819-2823.</p>
+ *
+ * <p>Meinshausen, N., and Bühlmann, P. (2010). Stability selection. Journal of the Royal
+ * Statistical Society: Series B (Statistical Methodology), 72(4), 417-473.</p>
+ *
+ * <p>Colombo, D., and Maathuis, M. H. (2014). Order-independent constraint-based causal
+ * structure learning. The Journal of Machine Learning Research, 15(1), 3741-3782.</p>
+ *
+ * <p>This class is not configured to respect knowledge of forbidden and required
+ * edges.</p>
+ *
+ * @author josephramsey
+ * @see Ida
  */
 public class Cstar {
     private boolean parallelized = false;
@@ -34,13 +48,22 @@ public class Cstar {
     private int qIncrement = 1;
     private double selectionAlpha = 0.0;
     private IndependenceTest test;
-    private PatternAlgorithm patternAlgorithm = PatternAlgorithm.PC_STABLE;
+    private CpdagAlgorithm cpdagAlgorithm = CpdagAlgorithm.PC_STABLE;
     private SampleStyle sampleStyle = SampleStyle.BOOTSTRAP;
     private boolean verbose;
 
+    /**
+     * Constructor.
+     */
     public Cstar() {
     }
 
+    /**
+     * Returns a list of records for making a CSTaR table.
+     *
+     * @param allRecords the list of all records.
+     * @return The list for the CSTaR table.
+     */
     public static LinkedList<Record> cStar(LinkedList<LinkedList<Record>> allRecords) {
         Map<Edge, List<Record>> map = new HashMap<>();
 
@@ -83,16 +106,12 @@ public class Cstar {
         return cstar;
     }
 
-    // Meinhausen and Buhlmann E(|V|) bound
-    private static double er(double pi, double q, double p) {
-        return p * Cstar.pcer(pi, q, p);
-    }
-
-    // Meinhausen and Buhlmann per comparison error rate (PCER)
-    private static double pcer(double pi, double q, double p) {
-        return (q * q) / (p * p * (2 * pi - 1));
-    }
-
+    /**
+     * Sets whether the algorithm should be parallelized. Different runs of the algorithms
+     * can be run in different threads in parallel.
+     *
+     * @param parallelized True if so.
+     */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
@@ -104,8 +123,10 @@ public class Cstar {
      * @param possibleCauses  A set of variables in the datasets over which to search.
      * @param possibleEffects The effect variables.
      * @param test            This test is only used to make more tests like it for subsamples.
+     * @see Record
      */
-    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects,
+    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses,
+                                                     List<Node> possibleEffects,
                                                      IndependenceTest test) {
         return getRecords(dataSet, possibleCauses, possibleEffects, test, null);
     }
@@ -120,6 +141,7 @@ public class Cstar {
      * @param path            A path where interim results are to be stored. If null, interim results will not be stored.
      *                        If the path is specified, then if the process is stopped and restarted, previously
      *                        computed interim results will be loaded.
+     * @see Record
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, IndependenceTest test, String path) {
         System.out.println("path = " + path);
@@ -172,7 +194,7 @@ public class Cstar {
             }
         }
 
-        if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
+        if (test instanceof ScoreIndTest && ((ScoreIndTest) test).getWrappedScore() instanceof SemBicScore) {
             this.test = test;
         } else if (test instanceof IndTestFisherZ) {
             this.test = test;
@@ -187,7 +209,7 @@ public class Cstar {
         for (int t = 0; t < possibleEffects.size(); t++) {
             minimalEffects.add(new ConcurrentHashMap<>());
 
-            for (int b = 0; b < getNumSubsamples(); b++) {
+            for (int b = 0; b < this.numSubsamples; b++) {
                 Map<Node, Double> map = new ConcurrentHashMap<>();
                 for (Node node : possibleCauses) map.put(node, 0.0);
                 minimalEffects.get(t).put(b, map);
@@ -238,14 +260,14 @@ public class Cstar {
                     }
 
                     if (pattern == null || effects == null) {
-                        if (Cstar.this.patternAlgorithm == PatternAlgorithm.FGES) {
+                        if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.FGES) {
                             pattern = getPatternFges(sample);
-                        } else if (Cstar.this.patternAlgorithm == PatternAlgorithm.PC_STABLE) {
+                        } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.PC_STABLE) {
                             pattern = getPatternPcStable(sample);
-                        } else if (Cstar.this.patternAlgorithm == PatternAlgorithm.GRaSP) {
+                        } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.GRaSP) {
                             pattern = getPatternPcStable(sample);
                         } else {
-                            throw new IllegalArgumentException("That type of of pattern algorithm is not configured: " + Cstar.this.patternAlgorithm);
+                            throw new IllegalArgumentException("That type of of pattern algorithm is not configured: " + Cstar.this.cpdagAlgorithm);
                         }
 
                         edgesTotal[0] += pattern.getNumEdges();
@@ -283,7 +305,7 @@ public class Cstar {
 
         List<Callable<double[][]>> tasks = new ArrayList<>();
 
-        for (int k = 0; k < getNumSubsamples(); k++) {
+        for (int k = 0; k < this.numSubsamples; k++) {
             tasks.add(new Task(k, possibleCauses, possibleEffects, dataSet));
         }
 
@@ -296,9 +318,8 @@ public class Cstar {
 
 
         List<List<Double>> doubles = new ArrayList<>();
-//        List<Double> allDoubles = new ArrayList<>();
 
-        for (int k = 0; k < getNumSubsamples(); k++) {
+        for (int k = 0; k < this.numSubsamples; k++) {
             double[][] effects = allEffects.get(k);
 
             if (effects.length != possibleCauses.size() || effects[0].length != possibleEffects.size()) {
@@ -340,7 +361,7 @@ public class Cstar {
                         for (int c = 0; c < this.possibleCauses.size(); c++) {
                             int count = 0;
 
-                            for (int k = 0; k < getNumSubsamples(); k++) {
+                            for (int k = 0; k < Cstar.this.numSubsamples; k++) {
                                 if (this.q > doubles.get(k).size()) {
                                     continue;
                                 }
@@ -352,13 +373,11 @@ public class Cstar {
                                 }
                             }
 
-//                            if (count > 0) {
-                            double pi = count / ((double) getNumSubsamples());
+                            double pi = count / ((double) Cstar.this.numSubsamples);
                             if (pi < (this.q / (double) p)) continue;
                             Node cause = this.possibleCauses.get(c);
                             Node effect = this.possibleEffects.get(e);
                             tuples.add(new Tuple(cause, effect, pi, avgMinEffect(this.possibleCauses, this.possibleEffects, allEffects, cause, effect)));
-//                            }
                         }
                     }
 
@@ -404,6 +423,156 @@ public class Cstar {
         allRecords.sort(Comparator.comparingDouble(List::size));
 
         return allRecords;
+    }
+
+    /**
+     * Makes a graph of the estimated predictors to the effect.
+     *
+     * @param records The list of records obtained from a method above.
+     */
+    public Graph makeGraph(List<Record> records) {
+        List<Node> outNodes = new ArrayList<>();
+
+        Graph graph = new EdgeListGraph(outNodes);
+
+        for (Record record : records) {
+            graph.addNode(record.getCauseNode());
+            graph.addNode(record.getEffectNode());
+            graph.addDirectedEdge(record.getCauseNode(), record.getEffectNode());
+        }
+
+        return graph;
+    }
+
+    /**
+     * Represents a single record in the returned table for CSTaR.
+     */
+    public static class Record implements TetradSerializable {
+        static final long serialVersionUID = 23L;
+
+        private final Node causeNode;
+        private final Node target;
+        private final double pi;
+        private final double effect;
+        private final int q;
+        private final int p;
+
+        Record(Node predictor, Node target, double pi, double minEffect, int q, int p) {
+            this.causeNode = predictor;
+            this.target = target;
+            this.pi = pi;
+            this.effect = minEffect;
+            this.q = q;
+            this.p = p;
+        }
+
+        public Node getCauseNode() {
+            return this.causeNode;
+        }
+
+        public Node getEffectNode() {
+            return this.target;
+        }
+
+        public double getPi() {
+            return this.pi;
+        }
+
+        double getMinBeta() {
+            return this.effect;
+        }
+
+        public int getQ() {
+            return this.q;
+        }
+
+        public int getP() {
+            return this.p;
+        }
+    }
+
+    /**
+     * Sets qFrom.
+     *
+     * @param qFrom This integer.
+     */
+    public void setqFrom(int qFrom) {
+        this.qFrom = qFrom;
+    }
+
+    /**
+     * Sets qTo.
+     *
+     * @param qTo This integer.
+     */
+    public void setqTo(int qTo) {
+        this.qTo = qTo;
+    }
+
+    /**
+     * Sets q increment.
+     *
+     * @param qIncrement This integer.
+     */
+    public void setqIncrement(int qIncrement) {
+        this.qIncrement = qIncrement;
+    }
+
+    /**
+     * The CSTaR algorithm can use any CPDAG algorithm; here you can set it.
+     *
+     * @param cpdagAlglorithm The CPDAG algorithm.
+     * @see CpdagAlgorithm
+     */
+    public void setCpdagAlgorithm(CpdagAlgorithm cpdagAlglorithm) {
+        this.cpdagAlgorithm = cpdagAlglorithm;
+    }
+
+    /**
+     * Sets whether verbose output will be printed.
+     *
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Sets the selection alpha.
+     *
+     * @param selectionAlpha This alpha.
+     */
+    public void setSelectionAlpha(double selectionAlpha) {
+        this.selectionAlpha = selectionAlpha;
+    }
+
+    /**
+     * Sets the sample style.
+     *
+     * @param sampleStyle This style.
+     * @see SampleStyle
+     */
+    public void setSampleStyle(SampleStyle sampleStyle) {
+        this.sampleStyle = sampleStyle;
+    }
+
+    /**
+     * Sets the number of subsamples.
+     *
+     * @param numSubsamples This number.
+     */
+    public void setNumSubsamples(int numSubsamples) {
+        this.numSubsamples = numSubsamples;
+    }
+
+    // Meinhausen and Buhlmann E(|V|) bound
+    private static double er(double pi, double q, double p) {
+        return p * Cstar.pcer(pi, q, p);
+    }
+
+    // Meinhausen and Buhlmann per comparison error rate (PCER)
+    private static double pcer(double pi, double q, double p) {
+        return (q * q) / (p * p * (2 * pi - 1));
     }
 
     private DataSet readData(File dir) {
@@ -470,7 +639,7 @@ public class Cstar {
             throw new NullPointerException("effects null");
         }
 
-        for (int k = 0; k < getNumSubsamples(); k++) {
+        for (int k = 0; k < this.numSubsamples; k++) {
             int c = possibleCauses.indexOf(causeNode);
             int e = possibleEffects.indexOf(effectNode);
             f.add(allEffects.get(k)[c][e]);
@@ -495,10 +664,8 @@ public class Cstar {
         table.setToken(0, column++, "Index");
         table.setToken(0, column++, "Cause");
         table.setToken(0, column++, "Effect");
-//        table.setToken(0, column++, "Type");
         table.setToken(0, column++, "PI");
         table.setToken(0, column++, "Effect");
-//        table.setToken(0, column++, "SUM(Pi)");
         table.setToken(0, column++, "R-SUM(Pi)");
         table.setToken(0, column++, "E(V)");
         table.setToken(0, column, "PCER");
@@ -524,10 +691,8 @@ public class Cstar {
             table.setToken(i + 1, column++, "" + (i + 1));
             table.setToken(i + 1, column++, cause.getName());
             table.setToken(i + 1, column++, effect.getName());
-//            table.setToken(i + 1, column++, cause instanceof DiscreteVariable ? "D" : "C");
             table.setToken(i + 1, column++, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, column++, nf.format(records.get(i).getMinBeta()));
-//            table.setToken(i + 1, column++, nf.format(sumPi));
             table.setToken(i + 1, column++, nf.format(R - sumPi));
             double er = Cstar.er(records.get(i).getPi(), (i + 1), p);
             table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(er));
@@ -539,101 +704,39 @@ public class Cstar {
         return (printTable ? "\n" + table : "" + "") + "p = " + p + " q = " + q + (printTable ? " Type: C = continuous, D = discrete\n" : "");
     }
 
-    /**
-     * Makes a graph of the estimated predictors to the effect.
-     */
-    public Graph makeGraph(List<Record> records) {
-        List<Node> outNodes = new ArrayList<>();
-
-        Graph graph = new EdgeListGraph(outNodes);
-
-        for (Record record : records) {
-            graph.addNode(record.getCauseNode());
-            graph.addNode(record.getEffectNode());
-            graph.addDirectedEdge(record.getCauseNode(), record.getEffectNode());
-        }
-
-        return graph;
-    }
-
-    public void setqFrom(int qFrom) {
-        this.qFrom = qFrom;
-    }
-
-    public void setqTo(int qTo) {
-        this.qTo = qTo;
-    }
-
-    public void setqIncrement(int qIncrement) {
-        this.qIncrement = qIncrement;
-    }
-
-    public void setPatternAlgorithm(PatternAlgorithm patternAlgorithm) {
-        this.patternAlgorithm = patternAlgorithm;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    public void setSelectionAlpha(double selectionAlpha) {
-        this.selectionAlpha = selectionAlpha;
-    }
-
-    public void setSampleStyle(SampleStyle sampleStyle) {
-        this.sampleStyle = sampleStyle;
-    }
-
-    private int getNumSubsamples() {
-        return this.numSubsamples;
-    }
-
-    public void setNumSubsamples(int numSubsamples) {
-        this.numSubsamples = numSubsamples;
-    }
-
     private Graph getPatternPcStable(DataSet sample) {
         IndependenceTest test = getIndependenceTest(sample, this.test);
         test.setVerbose(false);
-        PcStable pc = new PcStable(test);
+        Pc pc = new Pc(test);
+        pc.setStable(true);
         pc.setVerbose(false);
         return pc.search();
     }
 
-    private Graph getPatternGRaSP(DataSet sample) {
-        test.setVerbose(false);
-        Grasp alg = new Grasp(new SemBicScore(sample));
-        alg.setVerbose(false);
-        alg.bestOrder(sample.getVariables());
-        return alg.getGraph(true);
-    }
-
-    //=============================PRIVATE==============================//
-
     private Graph getPatternFges(DataSet sample) {
-        Score score = new ScoredIndTest(getIndependenceTest(sample, this.test));
+        Score score = new IndTestScore(getIndependenceTest(sample, this.test));
         Fges fges = new Fges(score);
         fges.setVerbose(false);
         return fges.search();
     }
 
     private IndependenceTest getIndependenceTest(DataSet sample, IndependenceTest test) {
-        if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof SemBicScore) {
+        if (test instanceof ScoreIndTest && ((ScoreIndTest) test).getWrappedScore() instanceof SemBicScore) {
             SemBicScore score = new SemBicScore(new CorrelationMatrix(sample));
-            score.setPenaltyDiscount(((SemBicScore) ((IndTestScore) test).getWrappedScore()).getPenaltyDiscount());
-            return new IndTestScore(score);
+            score.setPenaltyDiscount(((SemBicScore) ((ScoreIndTest) test).getWrappedScore()).getPenaltyDiscount());
+            return new ScoreIndTest(score);
         } else if (test instanceof IndTestFisherZ) {
             double alpha = test.getAlpha();
             return new IndTestFisherZ(new CorrelationMatrix(sample), alpha);
         } else if (test instanceof ChiSquare) {
             double alpha = test.getAlpha();
             return new IndTestFisherZ(sample, alpha);
-        } else if (test instanceof IndTestScore && ((IndTestScore) test).getWrappedScore() instanceof ConditionalGaussianScore) {
-            ConditionalGaussianScore score = (ConditionalGaussianScore) ((IndTestScore) test).getWrappedScore();
+        } else if (test instanceof ScoreIndTest && ((ScoreIndTest) test).getWrappedScore() instanceof ConditionalGaussianScore) {
+            ConditionalGaussianScore score = (ConditionalGaussianScore) ((ScoreIndTest) test).getWrappedScore();
             double penaltyDiscount = score.getPenaltyDiscount();
             ConditionalGaussianScore _score = new ConditionalGaussianScore(sample, penaltyDiscount, false);
             _score.setStructurePrior(0);
-            return new IndTestScore(_score);
+            return new ScoreIndTest(_score);
         } else {
             throw new IllegalArgumentException("That test is not configured: " + test);
         }
@@ -695,8 +798,16 @@ public class Cstar {
         return results;
     }
 
-    public enum PatternAlgorithm {FGES, PC_STABLE, GRaSP}
+    /**
+     * An enumeration of the options available for estiting the CPDAG
+     * used for the algorthm.
+     */
+    public enum CpdagAlgorithm {PC_STABLE, FGES, GRaSP}
 
+    /**
+     * An enumeration of the methods for selecting samples from the full
+     * dataset.
+     */
     public enum SampleStyle {BOOTSTRAP, SPLIT}
 
     private static class Tuple {
@@ -729,48 +840,4 @@ public class Cstar {
         }
     }
 
-    // A single record in the returned table.
-    public static class Record implements TetradSerializable {
-        static final long serialVersionUID = 23L;
-
-        private final Node causeNode;
-        private final Node target;
-        private final double pi;
-        private final double effect;
-        private final int q;
-        private final int p;
-
-        Record(Node predictor, Node target, double pi, double minEffect, int q, int p) {
-            this.causeNode = predictor;
-            this.target = target;
-            this.pi = pi;
-            this.effect = minEffect;
-            this.q = q;
-            this.p = p;
-        }
-
-        public Node getCauseNode() {
-            return this.causeNode;
-        }
-
-        public Node getEffectNode() {
-            return this.target;
-        }
-
-        public double getPi() {
-            return this.pi;
-        }
-
-        double getMinBeta() {
-            return this.effect;
-        }
-
-        public int getQ() {
-            return this.q;
-        }
-
-        public int getP() {
-            return this.p;
-        }
-    }
 }

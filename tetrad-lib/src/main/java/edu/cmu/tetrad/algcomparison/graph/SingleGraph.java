@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Stores a single graph for use in simulations, etc.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class SingleGraph implements RandomGraph {
     static final long serialVersionUID = 23L;

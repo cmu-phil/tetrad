@@ -437,7 +437,7 @@ public final class SemEstimatorGibbs {
         // this is only called when flatprior is false, which it will never be with the getModel code
 
         double answer = 0.0;
-        int n = this.dataSet.columns();
+        int n = this.dataSet.getNumColumns();
         int numParameters = parameters.size();
         double[] xvec = new double[numParameters];
         double[] temp = new double[numParameters];

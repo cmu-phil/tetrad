@@ -9,7 +9,7 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * FGES (the heuristic version).
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @Bootstrapping
 public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstrapGraphs {
@@ -85,7 +85,7 @@ public class FgesMeasurement implements Algorithm, HasKnowledge, ReturnsBootstra
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return SearchGraphUtils.cpdagForDag(new EdgeListGraph(graph));
+        return GraphSearchUtils.cpdagForDag(new EdgeListGraph(graph));
     }
 
     @Override

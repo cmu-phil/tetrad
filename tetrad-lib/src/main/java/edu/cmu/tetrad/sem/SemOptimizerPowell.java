@@ -37,7 +37,7 @@ import java.util.List;
  * Optimizes a SEM using Powell's method from the Apache library.
  *
  * @author Ricardo Silva
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SemOptimizerPowell implements SemOptimizer {
     static final long serialVersionUID = 23L;
@@ -130,7 +130,7 @@ public class SemOptimizerPowell implements SemOptimizer {
      * Wraps the SEM maximum likelihood fitting function for purposes of being
      * evaluated using the PAL ConjugateDirection optimizer.
      *
-     * @author Joseph Ramsey
+     * @author josephramsey
      */
     static class FittingFunction implements MultivariateFunction {
 

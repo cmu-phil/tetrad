@@ -34,7 +34,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fask;
-import edu.cmu.tetrad.search.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -45,7 +45,7 @@ import java.text.ParseException;
 /**
  * Pulling this test out for Madelyn.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class TestSimulatedFmri {
 
@@ -364,7 +364,7 @@ public class TestSimulatedFmri {
 
 
                 Fask fask = new Fask(data,
-                        new edu.cmu.tetrad.search.SemBicScore(data),
+                        new edu.cmu.tetrad.search.score.SemBicScore(data),
                         new IndTestFisherZ(data, 0.001));
                 Graph out = fask.search();
 
@@ -404,7 +404,7 @@ public class TestSimulatedFmri {
                 DataSet data = im.simulateData(N, false);
 
                 Fask fask = new Fask(data,
-                        new edu.cmu.tetrad.search.SemBicScore(data),
+                        new edu.cmu.tetrad.search.score.SemBicScore(data),
                         new IndTestFisherZ(data, 0.001));
                 Graph out = fask.search();
 
@@ -450,7 +450,7 @@ public class TestSimulatedFmri {
         DataSet data = im.simulateData(1000, false);
 
         Fask fask = new Fask(data,
-                new edu.cmu.tetrad.search.SemBicScore(data),
+                new edu.cmu.tetrad.search.score.SemBicScore(data),
                 new IndTestFisherZ(data, 0.001));
         Graph out = fask.search();
 

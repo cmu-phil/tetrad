@@ -51,7 +51,7 @@ import java.io.Serializable;
  * <p>
  * <p>See TestSerialization and TestSerializiableUtils.&gt; 0
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface TetradSerializable extends Serializable {
 }

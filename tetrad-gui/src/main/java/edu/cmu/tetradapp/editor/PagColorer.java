@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.SearchGraphUtils;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -30,7 +30,7 @@ import javax.swing.*;
 /**
  * Colors a graph using the PAG coloring. Optionally checks to make sure it's  legal PAG.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public class PagColorer extends JCheckBoxMenuItem {
 
@@ -60,7 +60,7 @@ public class PagColorer extends JCheckBoxMenuItem {
                         breakDown("Would you like to verify that this is a legal PAG?", 60),
                         "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                 if (ret == JOptionPane.YES_NO_OPTION) {
-                    SearchGraphUtils.LegalPagRet legalPag = SearchGraphUtils.isLegalPag(graph);
+                    GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph);
                     String reason = breakDown(legalPag.getReason(), 60);
 
                     if (!legalPag.isLegalPag()) {

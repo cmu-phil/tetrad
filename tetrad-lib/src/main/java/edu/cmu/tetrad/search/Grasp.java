@@ -1,15 +1,17 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.data.KnowledgeEdge;
-import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.util.JOptionUtils;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.score.GraphScore;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.text.NumberFormat;
 import java.util.*;
 
@@ -18,10 +20,48 @@ import static java.util.Collections.shuffle;
 
 
 /**
- * Implements the GRASP algorithms, with various execution flags.
+ * <p>Implements the GRaSP algorithms, which uses a certain procedure to search
+ * in the space of permutations of variables for ones that imply CPDAGs that are
+ * especailly close to the CPDAG of the true model. The reference is here:</p>
+ *
+ * <p>Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations of
+ * the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence
+ * (pp. 1052-1062). PMLR.</p>
+ *
+ * <p>GRaSP can use either a score or an independence test; you can provide
+ * both, though if you do you need to use the paremeters to choose which one will
+ * be used. The score options is more scalable and accurate, though the independence
+ * option is perhaps a little easier ot deal with theoretically and are useful for
+ * generating unit test results.</p>
+ *
+ * <p>As shown the reference above, GRaSP generates results for the linear, Gaussian
+ * case for N = 1000 with precisions for adjacencies and arrowheads near 1 and
+ * recalls of about 0.85, when the linear, Gaussian BIC score is used with a penalty
+ * of 2. For N = 10,000 recalls also rise up to about 1, so it can be an extraordinarily
+ * accurate search for the linear, Gaussian case. But in principle, it can be used
+ * with any sort of data, so long as a BIC score is available for that data. So
+ * it can be used for the discrete case and for the mixed continuous/discrete case
+ * as well.</p>
+ *
+ * <p>The version of GRaSP described in the above reference is limited to about 100
+ * varibles in execution time, after which it become impracticably slow. Recent
+ * optimizations allow it to scale further than that; hopefully these will be
+ * written up soon and made available.</p>
+ *
+ * <p>Knowledge can be used with this search. If tiered knowledge is used, then
+ * the procedure is carried out for each tier separately, given the variable preceding
+ * that tier, which allows the SP algorithm to address tiered (e.g., time series)
+ * problems with larger numbers of variables.</p>
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
  *
  * @author bryanandrews
  * @author josephramsey
+ * @see Fges
+ * @see Boss
+ * @see Sp
+ * @see Knowledge
  */
 public class Grasp {
     private final List<Node> variables;
@@ -30,7 +70,6 @@ public class Grasp {
     private Knowledge knowledge = new Knowledge();
     private TeyssierScorer scorer;
     private long start;
-    // flags
     private boolean useScore = true;
     private boolean useRaskuttiUhler;
     private boolean ordered;
@@ -38,29 +77,52 @@ public class Grasp {
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
     private boolean useDataOrder = true;
-
-    // other params
     private int depth = 3;
     private int numStarts = 1;
 
+    /**
+     * Constructor for a score.
+     *
+     * @param score The score to use.
+     */
     public Grasp(@NotNull Score score) {
         this.score = score;
         this.variables = new ArrayList<>(score.getVariables());
         this.useScore = true;
     }
 
+    /**
+     * Constructor for a test.
+     *
+     * @param test The test to use.
+     */
     public Grasp(@NotNull IndependenceTest test) {
         this.test = test;
         this.variables = new ArrayList<>(test.getVariables());
         this.useScore = false;
     }
 
+    /**
+     * Constructor that takes both a test and a score; only one is used--
+     * the parameter setting will decide which.
+     *
+     * @param test  The test to use.
+     * @param score The score to use.
+     */
     public Grasp(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
         this.variables = new ArrayList<>(test.getVariables());
     }
 
+    /**
+     * Given an initial permutation, 'order', of the variables, searches
+     * for a best permutation of the variables by rearranging the varialbes
+     * in 'order'.
+     *
+     * @param order The initial permutation.
+     * @return The discovered permutation at the end of the procedure.
+     */
     public List<Node> bestOrder(@NotNull List<Node> order) {
         long start = MillisecondTimes.timeMillis();
         order = new ArrayList<>(order);
@@ -118,67 +180,172 @@ public class Grasp {
         return bestPerm;
     }
 
+    /**
+     * Returns the number of edges in the DAG implied by the discovered permuttion.
+     *
+     * @return This number.
+     */
     public int getNumEdges() {
         return this.scorer.getNumEdges();
     }
 
+    /**
+     * Returns the graph implied by the discovered permutation.
+     *
+     * @param cpDag True if a CPDAG should be returned, false if a DAG should be returned.
+     * @return This graph.
+     */
+    @NotNull
+    public Graph getGraph(boolean cpDag) {
+        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
+        Graph graph = this.scorer.getGraph(cpDag);
 
-    private void makeValidKnowledgeOrder(List<Node> order) {
-        if (!this.knowledge.isEmpty()) {
-            order.sort((a, b) -> {
-                if (a.getName().equals(b.getName())) return 0;
-                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
-                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
-                else return 0;
-            });
+        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        graph.addAttribute("score ", nf.format(this.scorer.score()));
+        return graph;
+    }
+
+    /**
+     * Sets the number of times the best order algorithm should be rerun with different
+     * starting permtutions in search of a best BIC scoring permutation.
+     *
+     * @param numStarts This number; if 1, it is run just once with the given
+     *                  starting permutation; if 2 or higher, it is rerun subsequently
+     *                  with random initial permutations and the best scoring
+     *                  discovered final permutation is reported.
+     * @see #setUseDataOrder(boolean)
+     */
+    public void setNumStarts(int numStarts) {
+        this.numStarts = numStarts;
+    }
+
+    /**
+     * True if the order of the variables in the data should be used for an initial
+     * best-order search, false if a random permutation should be used. (Subsequence
+     * automatic best order runs will use random permutations.) This is included
+     * so that the algorithm will be capable of outputting the same results with the
+     * same data without any randomness.
+     *
+     * @param useDataOrder True if so
+     */
+    public void setUseDataOrder(boolean useDataOrder) {
+        this.useDataOrder = useDataOrder;
+    }
+
+    /**
+     * Returns the variables.
+     *
+     * @return This list.
+     */
+    public List<Node> getVariables() {
+        return this.variables;
+    }
+
+    /**
+     * Sets whether verbose output is printed.
+     *
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+        if (test != null) {
+            this.test.setVerbose(verbose);
         }
     }
 
+    /**
+     * Sets the knowledge used in the search. The search is set up to honor all
+     * knowledge of forbidden or required directed edges, and tiered knowledge.
+     *
+     * @param knowledge This knowledge.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+    }
 
-//    private void makeValidKnowledgeOrder(List<Node> order) {
-//        if (!this.knowledge.isEmpty()) {
-//            order.sort((o1, o2) -> {
-//                if (o1.getName().equals(o2.getName())) {
-//                    return 0;
-//                } else if (this.knowledge.isRequired(o1.getName(), o2.getName())) {
-//                    return -1;
-//                } else if (this.knowledge.isRequired(o2.getName(), o1.getName())) {
-//                    return 1;
-//                } else if (this.knowledge.isForbidden(o1.getName(), o2.getName())) {
-//                    return 1;
-//                } else if (this.knowledge.isForbidden(o2.getName(), o1.getName())) {
-//                    return -1;
-//                } else {
-//                    return 0;
-//                }
-//            });
-//        }
-//
-//        System.out.println("Initial knowledge sort order = " + order);
-//
-//        if (violatesKnowledge(order)) {
-//            Edge edge = violatesForbiddenKnowledge(order);
-//
-//            if (edge != null) {
-//                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                        "The initial sorting procedure could not find a permutation consistent with that \n" +
-//                                "knowledge; this edge was in the DAG: " + edge + " in the initial sort,\n" +
-//                                "but this edge was forbidden.");
-//            }
-//
-//            Edge edge2 = violatesRequiredKnowledge(order);
-//
-//            if (edge2 != null) {
-//                JOptionPane.showMessageDialog(JOptionUtils.centeringComp(),
-//                        "The initial sorting procedure could not find a permutation consistent with that \n" +
-//                                "knowledge; this edge was not in the DAG: " + edge2 + " in the initial sorted," +
-//                                "but this edge was required.");
-//            }
-//        }
-//    }
+    /**
+     * Sets the maximum depth of the depth first search that GRaSP perform while
+     * searching for a weakly increasing tuck sequence that improves the score.
+     *
+     * @param depth This depth.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
+        this.depth = depth;
+    }
 
+    /**
+     * Sets the maximum depth at which uncovered tucks can be performed within
+     * the depth first search of GRaSP.
+     *
+     * @param uncoveredDepth This depth.
+     */
+    public void setUncoveredDepth(int uncoveredDepth) {
+        if (uncoveredDepth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
+        this.uncoveredDepth = uncoveredDepth;
+    }
 
-    public List<Node> grasp(@NotNull TeyssierScorer scorer) {
+    /**
+     * Sets the maximum depth at which singular tucks can be performed within
+     * the depth first search of GRaSP.
+     *
+     * @param nonSingularDepth This depth.
+     */
+    public void setNonSingularDepth(int nonSingularDepth) {
+        if (nonSingularDepth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
+        this.nonSingularDepth = nonSingularDepth;
+    }
+
+    /**
+     * True if the score should be used (if both a score and a test are provided),
+     * false if not.
+     *
+     * @param useScore True if so.
+     */
+    public void setUseScore(boolean useScore) {
+        this.useScore = useScore;
+    }
+
+    /**
+     * True if GRasP0 should be performed before GRaSP1 and GRaSP1 before GRaSP2.
+     * False if this ordering should not be imposed.
+     *
+     * @param ordered True if the ordering should be imposed.
+     */
+    public void setOrdered(boolean ordered) {
+        this.ordered = ordered;
+    }
+
+    /**
+     * True if the Raskutti-Uhler method should be used, false if the Verma-Pearl
+     * method should be used.
+     *
+     * @param useRaskuttiUhler True if RU, false if VP.
+     * @see #setNumStarts(int)
+     */
+    public void setUseRaskuttiUhler(boolean useRaskuttiUhler) {
+        this.useRaskuttiUhler = useRaskuttiUhler;
+
+        if (this.useRaskuttiUhler) {
+            this.useScore = false;
+        }
+    }
+
+    private boolean violatesKnowledge(List<Node> order) {
+        if (this.knowledge.isEmpty()) return false;
+
+        for (int i = 0; i < order.size(); i++) {
+            for (int j = 0; j < i; j++) {
+                if (this.knowledge.isRequired(order.get(i).getName(), order.get(j).getName())) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private List<Node> grasp(@NotNull TeyssierScorer scorer) {
         scorer.clearBookmarks();
         List<int[]> depths = new ArrayList<>();
 
@@ -218,6 +385,18 @@ public class Grasp {
 
         return scorer.getPi();
     }
+
+    private void makeValidKnowledgeOrder(List<Node> order) {
+        if (!this.knowledge.isEmpty()) {
+            order.sort((a, b) -> {
+                if (a.getName().equals(b.getName())) return 0;
+                else if (this.knowledge.isRequired(a.getName(), b.getName())) return -1;
+                else if (this.knowledge.isRequired(b.getName(), a.getName())) return 1;
+                else return 0;
+            });
+        }
+    }
+
 
     private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
                           Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
@@ -298,119 +477,4 @@ public class Grasp {
             }
         }
     }
-
-    @NotNull
-    public Graph getGraph(boolean cpDag) {
-        if (this.scorer == null) throw new IllegalArgumentException("Please run algorithm first.");
-        Graph graph = this.scorer.getGraph(cpDag);
-
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        graph.addAttribute("score ", nf.format(this.scorer.score()));
-        return graph;
-    }
-
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
-    public List<Node> getVariables() {
-        return this.variables;
-    }
-
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-        if (test != null) {
-            this.test.setVerbose(verbose);
-        }
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
-    }
-
-    public void setDepth(int depth) {
-        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-        this.depth = depth;
-    }
-
-    public void setSingularDepth(int uncoveredDepth) {
-        if (uncoveredDepth < -1) throw new IllegalArgumentException("Uncovered depth should be >= -1.");
-        this.uncoveredDepth = uncoveredDepth;
-    }
-
-    public void setNonSingularDepth(int nonSingularDepth) {
-        if (nonSingularDepth < -1) throw new IllegalArgumentException("Non-singular depth should be >= -1.");
-        this.nonSingularDepth = nonSingularDepth;
-    }
-
-    public void setUseScore(boolean useScore) {
-        this.useScore = useScore;
-    }
-
-    private boolean violatesKnowledge(List<Node> order) {
-        if (this.knowledge.isEmpty()) return false;
-
-        for (int i = 0; i < order.size(); i++) {
-            for (int j = 0; j < i; j++) {
-                if (this.knowledge.isRequired(order.get(i).getName(), order.get(j).getName())) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-//    private Edge violatesForbiddenKnowledge(List<Node> order) {
-//        if (!this.knowledge.isEmpty()) {
-//            scorer.score(order);
-//
-//            for (int i = 0; i < order.size(); i++) {
-//                for (int j = i + 1; j < order.size(); j++) {
-//                    if (this.knowledge.isForbidden(order.get(i).getName(), order.get(j).getName()) && scorer.parent(order.get(i), order.get(j))) {
-//                        return Edges.directedEdge(order.get(i), order.get(j));
-//                    }
-//                }
-//            }
-//        }
-//
-//        return null;
-//    }
-
-//    private Edge violatesRequiredKnowledge(List<Node> order) {
-//        if (!this.knowledge.isEmpty()) {
-//            scorer.score(order);
-//
-//            for (int i = 0; i < order.size(); i++) {
-//                for (int j = i + 1; j < order.size(); j++) {
-//                    if (this.knowledge.isRequired(order.get(j).getName(), order.get(i).getName()) && !scorer.parent(order.get(i), order.get(j))) {
-//                        return Edges.directedEdge(order.get(j), order.get(i));
-//                    }
-//                }
-//            }
-//        }
-//
-//        return null;
-//    }
-
-    public void setOrdered(boolean ordered) {
-        this.ordered = ordered;
-    }
-
-    public void setUseRaskuttiUhler(boolean usePearl) {
-        this.useRaskuttiUhler = usePearl;
-
-        if (this.useRaskuttiUhler) {
-            this.useScore = false;
-        }
-    }
-
-    public void setUseDataOrder(boolean useDataOrder) {
-        this.useDataOrder = useDataOrder;
-    }
-
 }

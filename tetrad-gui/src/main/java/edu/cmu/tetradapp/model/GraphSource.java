@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 /**
  * Indicates a class that is capable of producing a graph on demand.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public interface GraphSource {
     Graph getGraph();

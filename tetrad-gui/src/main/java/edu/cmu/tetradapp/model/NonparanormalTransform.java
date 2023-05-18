@@ -30,7 +30,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 /**
  * Converts a continuous data set to a correlation matrix.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class NonparanormalTransform extends DataWrapper {
 

@@ -29,6 +29,9 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -37,7 +40,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the PC search.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestPcStableMax {
 
@@ -111,7 +114,9 @@ public class TestPcStableMax {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        PcStableMax pc = new PcStableMax(new IndTestFisherZ(dataSet, 0.11));
+        Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.11));
+        pc.setStable(true);
+        pc.setUseMaxP(true);
         pc.setKnowledge(knowledge);
 
         Graph CPDAG = pc.search();
@@ -170,7 +175,9 @@ public class TestPcStableMax {
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
-        PcStableMax pc = new PcStableMax(independence);
+        Pc pc = new Pc(independence);
+        pc.setStable(true);
+        pc.setUseMaxP(true);
 
         // Set up search.
         pc.setKnowledge(knowledge);

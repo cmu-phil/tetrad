@@ -31,7 +31,7 @@ import java.util.List;
  * Estimates probabilities from data by constructing the entire cell count table
  * for the data.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class CellTableProbs implements DiscreteProbs {
 

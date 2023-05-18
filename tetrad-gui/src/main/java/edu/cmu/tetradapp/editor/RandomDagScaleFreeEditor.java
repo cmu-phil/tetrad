@@ -34,7 +34,7 @@ import java.util.prefs.Preferences;
 /**
  * Edits the parameters for generating random graphs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 class RandomDagScaleFreeEditor extends JPanel {
     private final IntTextField numNodesField;

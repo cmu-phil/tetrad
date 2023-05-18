@@ -31,7 +31,7 @@ import java.io.ObjectInputStream;
 /**
  * Wraps a Bayes Updater for use in the Tetrad application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class SemUpdaterWrapper implements SessionModel {
     static final long serialVersionUID = 23L;

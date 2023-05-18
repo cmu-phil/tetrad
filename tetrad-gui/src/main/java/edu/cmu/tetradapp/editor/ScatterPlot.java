@@ -44,7 +44,7 @@ import static org.apache.commons.math3.util.FastMath.log;
  * create the scatterplot.
  *
  * @author Adrian Tang
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class ScatterPlot {
     private final String x;

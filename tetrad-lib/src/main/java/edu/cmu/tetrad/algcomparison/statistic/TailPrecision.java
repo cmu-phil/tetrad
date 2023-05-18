@@ -11,7 +11,7 @@ import edu.cmu.tetrad.graph.Graph;
  * X to Y or else does not contain an arrowhead at X for an edge from X to Y, one false
  * positive is counted. Similarly for false negatives.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class TailPrecision implements Statistic {
     static final long serialVersionUID = 23L;

@@ -32,7 +32,7 @@ import nu.xom.Text;
 /**
  * Renders Bayes nets and related models in XML.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class BayesXmlRenderer {
 

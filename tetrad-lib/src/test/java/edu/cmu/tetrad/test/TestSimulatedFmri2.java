@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.Params;
 /**
  * My script.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class TestSimulatedFmri2 {
 

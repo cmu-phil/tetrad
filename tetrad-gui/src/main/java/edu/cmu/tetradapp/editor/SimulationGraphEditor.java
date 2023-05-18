@@ -33,7 +33,7 @@ import java.util.List;
  * Displays a list of graphs with tabs to select among them, similar to the Data
  * Editor. For use in displaying simulations.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public final class SimulationGraphEditor extends JPanel {
 

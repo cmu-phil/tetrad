@@ -59,7 +59,7 @@ import java.util.*;
  * the data set, but it may be retrieved by algorithms and used.
  * <p>
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  * @see edu.cmu.tetrad.data.Variable
  * @see Knowledge
  */
@@ -1018,7 +1018,7 @@ public final class BoxDataSet implements DataSet {
             retainedVars.add(this.variables.get(retainedCol));
         }
 
-        this.dataBox = viewSelection(rows, cols);
+        this.dataBox = viewSelection(rows, retainedCols);
         this.variables = retainedVars;
         this.selection = new HashSet<>();
         this.multipliers = new HashMap<>(this.multipliers);

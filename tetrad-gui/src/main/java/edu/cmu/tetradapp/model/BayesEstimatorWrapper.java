@@ -42,7 +42,7 @@ import java.util.List;
 /**
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class BayesEstimatorWrapper implements SessionModel {
 

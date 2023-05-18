@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.Node;
  * Estimates a DirichletBayesIm from a DirichletBayesIm (the prior) and a data
  * set.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class DirichletEstimator {
     public static DirichletBayesIm estimate(DirichletBayesIm prior,

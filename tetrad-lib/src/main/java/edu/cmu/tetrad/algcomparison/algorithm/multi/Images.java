@@ -12,6 +12,10 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.score.ImagesScore;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.PermutationSearch;
+import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -28,7 +32,7 @@ import java.util.List;
  * datasets should be taken at a time (randomly). This cannot given multiple
  * values.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "IMaGES",
@@ -60,7 +64,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 
             if (parameters.getInt(Params.TIME_LAG) > 0) {
                 for (DataModel dataSet : dataSets) {
-                    DataSet timeSeries = TimeSeriesUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                    DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
                     if (dataSet.getName() != null) {
                         timeSeries.setName(dataSet.getName());
                     }
@@ -88,11 +92,6 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                 PermutationSearch search = new PermutationSearch(new Boss(score));
                 search.setKnowledge(this.knowledge);
                 return search.search();
-            } else if (meta == 3) {
-                BridgesOld search = new edu.cmu.tetrad.search.BridgesOld(score);
-                search.setKnowledge(this.knowledge);
-                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-                return search.search();
             } else {
                 throw new IllegalArgumentException("Unrecognized meta option: " + meta);
             }
@@ -109,7 +108,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 
             if (parameters.getInt(Params.TIME_LAG) > 0) {
                 for (DataSet dataSet : dataSets2) {
-                    DataSet timeSeries = TimeSeriesUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
+                    DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
                     if (dataSet.getName() != null) {
                         timeSeries.setName(dataSet.getName());
                     }

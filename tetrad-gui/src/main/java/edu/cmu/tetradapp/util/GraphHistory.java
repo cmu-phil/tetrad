@@ -29,7 +29,7 @@ import java.util.LinkedList;
 /**
  * Stores a history of graph objects.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class GraphHistory {
 

@@ -55,7 +55,7 @@ import java.util.List;
  * to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139,
  * USA."
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class GraphGeneratorRandomNumEdges {
     private static final int ANY_DAG = 0;

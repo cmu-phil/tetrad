@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
  * for known parameters. Returns a list of parameters with their values, for the
  * parameters whose values have been retrieved, using the toString method.
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class Parameters implements TetradSerializable {
 

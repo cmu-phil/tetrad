@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.GraphUtils;
 /**
  * Outputs 1 if the skeleton is correct, 0 if not..
  *
- * @author jdramsey
+ * @author josephramsey
  */
 public class CorrectSkeleton implements Statistic {
     static final long serialVersionUID = 23L;

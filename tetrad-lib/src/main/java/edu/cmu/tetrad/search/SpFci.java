@@ -24,6 +24,10 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
+import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -35,23 +39,38 @@ import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirecte
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
+ * <p>Uses SP in place of FGES for the initial step in the GFCI algorithm.
+ * This tends to produce a accurate PAG than GFCI as a result, for the latent
+ * variables case. This is a simple substitution; the reference for GFCI is here:</p>
+ *
  * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
+ * for Latent Variable Models," JMLR 2016. Here, SP has been substituted for
  * FGES.</p>
  *
- * <p>This uses PermutationSearch (see), calling the Sp algorithm (see).</p>
+ * <p>The reference for the SP algorithm is here:</p>
  *
- * <p>An independence test must be provided for the definite discriminating path step
- * of FCI. Otherwise, the provided score is used throughout.</p>
+ * <p>Raskutti, G., &amp; Uhler, C. (2018). Learning directed acyclic graph models based
+ * on sparsest permutations. Stat, 7(1), e183.</p>
  *
- * @author Juan Miguel Ogarrio
- * @author ps7z
- * @author jdramsey
+ * <p>For SP only a score is needed, but there are steps in GFCI that require
+ * a test, so for this method, both a test and a score need to be given.</p>
+ *
+ * <p>Note that SP considers all permutations of the algorithm, which is
+ * exponential in the number of variables. So SP is limited to about 10
+ * variables.</p>
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required
+ * edges, including knowledge of temporal tiers.</p>
+ *
+ * @author josephramsey
  * @author bryan andrews
- * @see PermutationSearch
+ * @see Grasp
+ * @see GFci
  * @see Sp
+ * @see Knowledge
+ * @see FciOrient
  */
-public final class SpFci implements GraphSearch {
+public final class SpFci implements IGraphSearch {
 
     // The PAG being constructed.
     private Graph graph;
@@ -92,6 +111,13 @@ public final class SpFci implements GraphSearch {
     private boolean doDiscriminatingPathRule = true;
 
     //============================CONSTRUCTORS============================//
+
+    /**
+     * Constructor; requires by ta test and a score, over the same variables.
+     *
+     * @param test  The test.
+     * @param score The score.
+     */
     public SpFci(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
@@ -104,7 +130,9 @@ public final class SpFci implements GraphSearch {
     //========================PUBLIC METHODS==========================//
 
     /**
-     * @return the discovered CPDAG.
+     * Runs the search and returns the discovered PAG.
+     *
+     * @return This PAG.
      */
     public Graph search() {
         List<Node> nodes = getIndependenceTest().getVariables();
@@ -122,12 +150,12 @@ public final class SpFci implements GraphSearch {
 
         this.graph = alg.search();
 
-        if (score instanceof edu.cmu.tetrad.search.MagSemBicScore) {
-            ((edu.cmu.tetrad.search.MagSemBicScore) score).setMag(graph);
+        if (score instanceof MagSemBicScore) {
+            ((MagSemBicScore) score).setMag(graph);
         }
 
         Knowledge knowledge2 = new Knowledge(knowledge);
-        addForbiddenReverseEdgesForDirectedEdges(SearchGraphUtils.cpdagForDag(graph), knowledge2);
+        addForbiddenReverseEdgesForDirectedEdges(GraphSearchUtils.cpdagForDag(graph), knowledge2);
 
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);
@@ -153,6 +181,11 @@ public final class SpFci implements GraphSearch {
         return this.graph;
     }
 
+    /**
+     * Sets the max degree of the search.
+     *
+     * @param maxDegree This maximum.
+     */
     public void setMaxDegree(int maxDegree) {
         if (maxDegree < -1) {
             throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0: " + maxDegree);
@@ -163,13 +196,126 @@ public final class SpFci implements GraphSearch {
 
     /**
      * Returns The maximum indegree of the output graph.
+     *
+     * @return This maximum.
      */
     public int getMaxDegree() {
         return this.maxDegree;
     }
 
+    /**
+     * Returns the knowledge.
+     *
+     * @return This knowedge.
+     */
+    public Knowledge getKnowledge() {
+        return this.knowledge;
+    }
+
+    /**
+     * Sets the knoweldge used in the search.
+     *
+     * @param knowledge This knowledge.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge(knowledge);
+    }
+
+    /**
+     * Returns whether the complete rule set is used.
+     *
+     * @return True if Zhang's complete rule set should be used, Talse if only
+     * R1-R4 (the rule set of the original FCI) should be used. False by
+     * default.
+     */
+    public boolean isCompleteRuleSetUsed() {
+        return this.completeRuleSetUsed;
+    }
+
+    /**
+     * Sets whether Zhang's complete ruleset is used.
+     *
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set
+     *                            should be used, false if only R1-R4 (the rule set of the original FCI)
+     *                            should be used. False by default.
+     */
+    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
+        this.completeRuleSetUsed = completeRuleSetUsed;
+    }
+
+    /**
+     * Returns the maximum length of any discriminating path, or -1 of
+     * unlimited.
+     *
+     * @return This length.
+     */
+    public int getMaxPathLength() {
+        return this.maxPathLength;
+    }
+
+    /**
+     * Sets the max path length for discriminating paths.
+     *
+     * @param maxPathLength the maximum length of any discriminating path, or -1
+     *                      if unlimited.
+     */
+    public void setMaxPathLength(int maxPathLength) {
+        if (maxPathLength < -1) {
+            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
+        }
+
+        this.maxPathLength = maxPathLength;
+    }
+
+    /**
+     * Sets whether verbose output is printed.
+     *
+     * @param verbose True if so.
+     */
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
+    /**
+     * Returns the independence test used in search.
+     *
+     * @return This test.
+     */
+    public IndependenceTest getIndependenceTest() {
+        return this.independenceTest;
+    }
+
+    /**
+     * Sets the output stream used to print.
+     *
+     * @param out This print stream.
+     */
+    public void setOut(PrintStream out) {
+        this.out = out;
+    }
+
+    /**
+     * Sets the maximum number of variables conditioned on.
+     *
+     * @param depth This maximum.
+     */
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
+    /**
+     * Sets whether the discriminating path search is done.
+     *
+     * @param doDiscriminatingPathRule True if so.
+     */
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    //===========================================PRIVATE METHODS=======================================//
+
     // Due to Spirtes.
-    public void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
+    private void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
         this.graph = new EdgeListGraph(graph);
         this.graph.reorientAllWith(Endpoint.CIRCLE);
         fciOrientbk(this.knowledge, this.graph, this.graph.getNodes());
@@ -205,96 +351,6 @@ public final class SpFci implements GraphSearch {
         }
     }
 
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge(knowledge);
-    }
-
-    /**
-     * @return true if Zhang's complete rule set should be used, false if only
-     * R1-R4 (the rule set of the original FCI) should be used. False by
-     * default.
-     */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
-    }
-
-    /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set
-     *                            should be used, false if only R1-R4 (the rule set of the original FCI)
-     *                            should be used. False by default.
-     */
-    public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
-        this.completeRuleSetUsed = completeRuleSetUsed;
-    }
-
-    /**
-     * @return the maximum length of any discriminating path, or -1 of
-     * unlimited.
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength;
-    }
-
-    /**
-     * @param maxPathLength the maximum length of any discriminating path, or -1
-     *                      if unlimited.
-     */
-    public void setMaxPathLength(int maxPathLength) {
-        if (maxPathLength < -1) {
-            throw new IllegalArgumentException("Max path length must be -1 (unlimited) or >= 0: " + maxPathLength);
-        }
-
-        this.maxPathLength = maxPathLength;
-    }
-
-    /**
-     * True iff verbose output should be printed.
-     */
-    public boolean isVerbose() {
-        return this.verbose;
-    }
-
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
-
-    /**
-     * The independence test.
-     */
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
-    }
-
-    public ICovarianceMatrix getCovMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public ICovarianceMatrix getCovarianceMatrix() {
-        return this.covarianceMatrix;
-    }
-
-    public void setCovarianceMatrix(ICovarianceMatrix covarianceMatrix) {
-        this.covarianceMatrix = covarianceMatrix;
-    }
-
-    public PrintStream getOut() {
-        return this.out;
-    }
-
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    public void setIndependenceTest(IndependenceTest independenceTest) {
-        this.independenceTest = independenceTest;
-    }
-
-    //===========================================PRIVATE METHODS=======================================//
-
     /**
      * Orients according to background knowledge
      */
@@ -305,8 +361,8 @@ public final class SpFci implements GraphSearch {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in the graph.
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -318,15 +374,15 @@ public final class SpFci implements GraphSearch {
 
             // Orient to*->from
             graph.setEndpoint(to, from, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
         for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
             KnowledgeEdge edge = it.next();
 
             //match strings to variables in this graph
-            Node from = SearchGraphUtils.translate(edge.getFrom(), variables);
-            Node to = SearchGraphUtils.translate(edge.getTo(), variables);
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
 
             if (from == null || to == null) {
                 continue;
@@ -338,18 +394,10 @@ public final class SpFci implements GraphSearch {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", SearchLogUtils.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
         }
 
         this.logger.log("info", "Finishing BK Orientation.");
     }
 
-    public void setDepth(int depth) {
-        this.depth = depth;
-    }
-
-
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
 }

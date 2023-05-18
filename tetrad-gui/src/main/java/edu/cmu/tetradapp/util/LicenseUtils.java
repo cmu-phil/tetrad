@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.Version;
  * Some utilities for loading license-related files and making sure they get the
  * right versions stamped in them.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class LicenseUtils {
     public static String copyright() {

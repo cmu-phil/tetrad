@@ -32,7 +32,7 @@ import java.util.*;
  * Stores a triple (x, y, z) of nodes. Note that (x, y, z) = (z, y, x). Useful
  * for marking graphs.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class IndependenceFact implements Comparable<IndependenceFact>,
         TetradSerializable {

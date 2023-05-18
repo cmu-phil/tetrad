@@ -28,7 +28,7 @@ import java.net.URL;
 /**
  * Static utility methods of general use in the application.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public final class ImageUtils {
 

@@ -26,6 +26,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import org.junit.Test;
@@ -39,7 +42,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the BooleanFunction class.
  *
- * @author Joseph Ramsey
+ * @author josephramsey
  */
 public class TestCpc {
 
@@ -113,7 +116,7 @@ public class TestCpc {
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
-        GraphSearch search = new Cpc(independence);
+        IGraphSearch search = new Cpc(independence);
 
         // Run search
         Graph resultGraph = search.search();

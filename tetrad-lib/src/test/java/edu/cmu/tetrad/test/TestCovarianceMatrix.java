@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Tests CovarianceMatrix.
  *
- * @author Joseph Ramsey jdramsey@andrew.cmu.edu
+ * @author josephramsey
  */
 public final class TestCovarianceMatrix {
 
