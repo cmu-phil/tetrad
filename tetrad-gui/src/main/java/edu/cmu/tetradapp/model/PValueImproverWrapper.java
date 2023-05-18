@@ -348,7 +348,7 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            double[] exoData = new double[cholesky.rows()];
+            double[] exoData = new double[cholesky.getNumRows()];
 
             for (int i = 0; i < exoData.length; i++) {
                 exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);

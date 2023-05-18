@@ -27,7 +27,6 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.ImagesScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.SublistGenerator;
 import org.apache.commons.math3.util.FastMath;
@@ -204,7 +203,7 @@ public class ShiftSearch {
         for (DataModel _dataSet : dataSets) {
             DataSet dataSet = (DataSet) _dataSet;
             Matrix mat = dataSet.getDoubleData();
-            Matrix mat2 = mat.getPart(0, numRows - 1, 0, mat.columns() - 1);
+            Matrix mat2 = mat.getPart(0, numRows - 1, 0, mat.getNumColumns() - 1);
             truncatedData.add(new BoxDataSet(new DoubleDataBox(mat2.toArray()), dataSet.getVariables()));
         }
 

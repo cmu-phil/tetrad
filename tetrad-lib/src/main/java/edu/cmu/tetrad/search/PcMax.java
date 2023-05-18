@@ -43,13 +43,27 @@ import java.util.Set;
  * <p>Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm
  * by maximizing p-value. arXiv preprint arXiv:1610.00378.</p>
  *
+ * <p>Max-P triple orientation is a method for orienting unshielded triples
+ * X*=-*Y*-*Z as one of the following: (a) Collider, X->Y<-Z, or (b) Noncollider,
+ * X-->Y-->Z, or X<-Y<-Z, or X<-Y->Z. One does this by conditioning on subsets of
+ * adj(X) or adj(Z). One first checks conditional independence of X and Z
+ * conditional on each of these subsets, and lists the p-values for each test.
+ * Then, one chooses the conditioning set out of all of these that maximizes
+ * the p-value. If this conditioning set contains Y, then the triple is judged
+ * to be a noncollider; otherwise, it is judged to be a collider.</p>
+ *
+ * <p>All unshielded triples in the graph supplied by FAS are oriented using
+ * this procedure, and then the Meek orientation rules are applied to generate
+ * the final CPDAG.</p>
+ *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
  *
  * @author josephramsey.
- * @see PcMax
  * @see Pc
- * @see Fasd
+ * @see Fas
+ * @see edu.cmu.tetrad.search.utils.MaxP
+ * @see edu.cmu.tetrad.search.utils.MeekRules
  * @see Knowledge
  */
 public final class PcMax implements IGraphSearch {

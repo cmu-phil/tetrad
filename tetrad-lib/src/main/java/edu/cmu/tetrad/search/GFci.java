@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -43,8 +42,9 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * independence reasoning is used to add the remaining colliders into the graph.
  * Then, the FCI final orentation rules are applied. The reference is here:</p>
  *
- * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016.</p>
+ * <p>Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal
+ * search algorithm for latent variable models. In Conference on probabilistic graphical
+ * models (pp. 368-379). PMLR.</p>
  *
  * <p>Because the method both runs FGES (a score-based algorithm) and does
  * additional checking of conditional independencies, both as part of its
@@ -55,6 +55,8 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * <p>Note that various score-based algorithms could be used in place of FGES
  * for the initial step; in this repository we give three other options,
  * GRaSP-FCI, BFCI (BOSS FCI), and SP-FCI (see).</p>
+ *
+ * <p>For more information on the algorithm, see the reference above.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -73,13 +75,12 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 public final class GFci implements IGraphSearch {
     private Graph graph;
     private Knowledge knowledge = new Knowledge();
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
     private boolean completeRuleSetUsed = true;
     private int maxPathLength = -1;
     private int maxDegree = -1;
     private final TetradLogger logger = TetradLogger.getInstance();
     private boolean verbose;
-    private ICovarianceMatrix covarianceMatrix;
     private PrintStream out = System.out;
     private boolean faithfulnessAssumed = true;
     private final Score score;
@@ -88,6 +89,14 @@ public final class GFci implements IGraphSearch {
     private int depth = -1;
 
     //============================CONSTRUCTORS============================//
+
+    /**
+     * Constructs a new GFci algorithm with the given independence test and
+     * score.
+     *
+     * @param test The independence test to use.
+     * @param score The score to use.
+     */
     public GFci(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
@@ -184,11 +193,11 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether Zhang's complete rules is used.
+     * Sets whether Zhang's complete rules are used.
      *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set
      *                            should be used, false if only R1-R4 (the rule set of the original FCI)
-     *                            should be used. False by default.
+     *                            should be used. True by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
@@ -237,11 +246,39 @@ public final class GFci implements IGraphSearch {
 
     /**
      * Sets whether one-edge faithfulness is assumed. For FGES
+     *
      * @param faithfulnessAssumed True if so.
      * @see Fges#setFaithfulnessAssumed(boolean)
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
+    }
+
+    /**
+     * Sets whether the discriminating path rule should be used.
+     *
+     * @param doDiscriminatingPathRule True if so.
+     */
+    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
+        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    /**
+     * Sets whether the possible d-sep search should be done.
+     *
+     * @param possibleDsepSearchDone True if so.
+     */
+    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
+        this.possibleDsepSearchDone = possibleDsepSearchDone;
+    }
+
+    /**
+     * Sets the depth of the search for the possible d-sep search.
+     *
+     * @param depth This depth.
+     */
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 
     //===========================================PRIVATE METHODS=======================================//
@@ -326,21 +363,10 @@ public final class GFci implements IGraphSearch {
 
             graph.setEndpoint(to, from, Endpoint.TAIL);
             graph.setEndpoint(from, to, Endpoint.ARROW);
-            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge", graph.getEdge(from, to)));
+            this.logger.log("knowledgeOrientation", LogUtilsSearch.edgeOrientedMsg("Knowledge",
+                    graph.getEdge(from, to)));
         }
 
         this.logger.log("info", "Finishing BK Orientation.");
-    }
-
-    public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
-        this.doDiscriminatingPathRule = doDiscriminatingPathRule;
-    }
-
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
     }
 }

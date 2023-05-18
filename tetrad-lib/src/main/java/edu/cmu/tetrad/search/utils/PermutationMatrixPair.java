@@ -21,8 +21,8 @@
 
 package edu.cmu.tetrad.search.utils;
 
-import edu.cmu.tetrad.search.LingD;
-import edu.cmu.tetrad.search.Lingam;
+import edu.cmu.tetrad.search.IcaLingD;
+import edu.cmu.tetrad.search.IcaLingam;
 import edu.cmu.tetrad.util.Matrix;
 
 import java.util.Arrays;
@@ -33,8 +33,8 @@ import java.util.Arrays;
  * Returns the matrix permuted by these row and column permutations.
  *
  * @author josephramsey
- * @see Lingam
- * @see LingD
+ * @see IcaLingam
+ * @see IcaLingD
  */
 public class PermutationMatrixPair {
     private final int[] rowPerm;
@@ -53,13 +53,13 @@ public class PermutationMatrixPair {
      */
     public PermutationMatrixPair(Matrix M, int[] rowPerm, int[] colPerm) {
         if (rowPerm == null) {
-            rowPerm = new int[M.rows()];
-            for (int i = 0; i < M.rows(); i++) rowPerm[i] = i;
+            rowPerm = new int[M.getNumRows()];
+            for (int i = 0; i < M.getNumRows(); i++) rowPerm[i] = i;
         }
 
         if (colPerm == null) {
-            colPerm = new int[M.columns()];
-            for (int i = 0; i < M.columns(); i++) colPerm[i] = i;
+            colPerm = new int[M.getNumColumns()];
+            for (int i = 0; i < M.getNumColumns(); i++) colPerm[i] = i;
         }
 
         this.rowPerm = Arrays.copyOf(rowPerm, rowPerm.length);

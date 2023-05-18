@@ -12,23 +12,45 @@ import java.util.*;
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
- * <p>Implements an algorithm called BOSS (Best Order Score Search), which
- * intercalates calls to a permutation discovery step with calls to BES in order
- * to find an optimal permutation implying a DAG and, therefore, a CPDAG that is
- * highly accurate. This follows up on work by Raskutti and Uhler on the SP
- * (Sparsest Permutation) algorithm and work by Lam, Andrews, and Ramsey on the
- * GRaSP algorithm is currently under development.</p>
+ * <p>Implements an algorithm called BOSS (Best Order Score Search). This
+ * follows up on work by Raskutti and Uhler on the SP (Sparsest Permutation)
+ * algorithm and work by Lam, Andrews, and Ramsey on the GRaSP algorithm is
+ * currently under development.</p>
+ *
+ * <p>This algorithm is based on the intuition that the permutation search is
+ * more effective when the variables are ordered in a way that is close to the
+ * true causal ordering. The permutation search is a greedy algorithm that
+ * starts with an arbitrary ordering and then tries to improve the ordering
+ * by swapping adjacent variables. The permutation search is not guaranteed
+ * to find the optimal ordering, but it is guaranteed to find an ordering that
+ * implies a DAG. The permutation search is also very fast, so it can be
+ * called many times in order to find the best ordering. This algorithm
+ * intercalates calls to the permutation search with calls to BES, which
+ * finds a DAG for a given ordering. The algorithm then keeps track of the
+ * best DAG found so far and the ordering that implies that DAG.</p>
+ *
+ * <p>The algorithm works as follows:</p>
+ *
+ * <ol>
+ *     <li>Start with an arbitrary ordering.</li>
+ *     <li>Run the permutation search to find a better ordering.</li>
+ *     <li>Run BES on the new ordering to find a DAG.</li>
+ *     <li>Repeat steps 2 and 3 until the model score can no longer be improved..</li>
+ *     <li>Return the CPDAG of the best DAG found.</li>
+ * </ol>
+ *
+ * <o>The BES step is needed for correctness, though with large models is has very
+ * little effect on the output, since nearly all edges are alreayy oriented, so
+ * a parameter is included to turn that step off.</o>
+ *
+ * <p>The permutation search step uses an repeated insert operation.</p>
  *
  * <p>Knowledge can be used with this search. If tiered knowledge is used, then the procedure
  * is carried out for each tier separately, given the variable preceding that tier, which
- * allows the SP algorithm to address tiered (e.g., time series) problems with larger numbers of
+ * allows the Boss algorithm to address tiered (e.g., time series) problems with larger numbers of
  * variables.</p>
  *
  * <p>This class is meant to be used in the context of the PermutationSearch class (see).
- * the proper use is PermutationSearch search = new PermutationSearch(new Sp(score));</p>
- *
- * <p>This class is configured to respect the knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
  *
  * @author bryanandrews
  * @author josephramsey
@@ -45,7 +67,6 @@ public class Boss implements SuborderSearch {
     private Knowledge knowledge = new Knowledge();
     private BesPermutation bes = null;
     private int numStarts = 1;
-
 
     /**
      * This algorithm will work with an arbitrary score.
@@ -99,6 +120,52 @@ public class Boss implements SuborderSearch {
         update(prefix, suborder);
     }
 
+    /**
+     * Sets up BOSS to use the BES algorithm to render BOSS correct under the
+     * faithfulness assumption.
+     * @param use True if BES should be used.
+     */
+    public void setUseBes(boolean use) {
+        this.bes = null;
+        if (use) {
+            this.bes = new BesPermutation(this.score);
+            this.bes.setVerbose(false);
+            this.bes.setKnowledge(knowledge);
+        }
+    }
+
+    @Override
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+
+        if (this.bes != null) {
+            this.bes.setKnowledge(knowledge);
+        }
+    }
+
+    /**
+     * Sets the number of random starts to use. The model with the best score
+     * from these restartes will be reported.
+     * @param numStarts The number of random starts to use.
+     */
+    public void setNumStarts(int numStarts) {
+        this.numStarts = numStarts;
+    }
+
+    @Override
+    public List<Node> getVariables() {
+        return this.variables;
+    }
+
+    @Override
+    public Map<Node, Set<Node>> getParents() {
+        return this.parents;
+    }
+
+    @Override
+    public Score getScore() {
+        return this.score;
+    }
 
     private boolean betterMutation(List<Node> prefix, List<Node> suborder, Node x) {
         Set<Node> all = new HashSet<>(suborder);
@@ -154,15 +221,6 @@ public class Boss implements SuborderSearch {
         return true;
     }
 
-    public void useBes(boolean use) {
-        this.bes = null;
-        if (use) {
-            this.bes = new BesPermutation(this.score);
-            this.bes.setVerbose(false);
-            this.bes.setKnowledge(knowledge);
-        }
-    }
-
     private void bes(List<Node> prefix, List<Node> suborder) {
         List<Node> all = new ArrayList<>(prefix);
         all.addAll(suborder);
@@ -200,31 +258,4 @@ public class Boss implements SuborderSearch {
         }
     }
 
-    @Override
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
-
-        if (this.bes != null) {
-            this.bes.setKnowledge(knowledge);
-        }
-    }
-
-    public void setNumStarts(int numStarts) {
-        this.numStarts = numStarts;
-    }
-
-    @Override
-    public List<Node> getVariables() {
-        return this.variables;
-    }
-
-    @Override
-    public Map<Node, Set<Node>> getParents() {
-        return this.parents;
-    }
-
-    @Override
-    public Score getScore() {
-        return this.score;
-    }
 }

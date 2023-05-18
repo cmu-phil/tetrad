@@ -81,6 +81,7 @@ public final class Params {
     public static final String ICA_ALGORITHM = "icaAlgorithm";
     public static final String ICA_FUNCTION = "icaFunction";
     public static final String THRESHOLD_B = "thresholdBHat";
+    public static final String GUARANTEE_ACYCLIC = "guaranteeAcyclic";
     public static final String THRESHOLD_SPINE = "thresholdSpine";
     public static final String ORIENTATION_ALPHA = "orientationAlpha";
     public static final String FISHER_EPSILON = "fisherEpsilon";

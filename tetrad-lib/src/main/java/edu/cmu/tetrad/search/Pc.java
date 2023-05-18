@@ -43,7 +43,7 @@ import java.util.Set;
  * independence testing as an oracle to first of all remove extraneous edges
  * from a complete graph, then to orient the unshielded colliders in the graph,
  * and finally to make any additional orientations that are capable of avoiding
- * additional unshielded colliders in the graph. An earlier version of this
+ * additional unshielded colliders in the graph. An version of this
  * algorithm was proposed earlier than this, but the standard reference for
  * the algorithm is in Chapter 6 of the following book:</p>
  *

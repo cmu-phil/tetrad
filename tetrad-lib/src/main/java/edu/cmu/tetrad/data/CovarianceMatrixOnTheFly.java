@@ -730,7 +730,7 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
                     "Sample size must be at least 1.");
         }
 
-        if (numVars != matrix.rows() || numVars != matrix.columns()) {
+        if (numVars != matrix.getNumRows() || numVars != matrix.getNumColumns()) {
             throw new IllegalArgumentException("Number of variables does not " +
                     "equal the dimension of the matrix.");
         }

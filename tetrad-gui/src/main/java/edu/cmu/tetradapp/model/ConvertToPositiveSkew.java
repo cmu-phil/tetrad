@@ -58,11 +58,11 @@ public class ConvertToPositiveSkew extends DataWrapper {
 
             Matrix matrix2D = dataSet.getDoubleData();
 
-            for (int j = 0; j < matrix2D.columns(); j++) {
+            for (int j = 0; j < matrix2D.getNumColumns(); j++) {
                 double[] c = matrix2D.getColumn(j).toArray();
                 double skew = StatUtils.skewness(c);
 
-                for (int i = 0; i < matrix2D.rows(); i++) {
+                for (int i = 0; i < matrix2D.getNumRows(); i++) {
                     matrix2D.set(i, j, matrix2D.get(i, j) * FastMath.signum(skew));
                 }
             }

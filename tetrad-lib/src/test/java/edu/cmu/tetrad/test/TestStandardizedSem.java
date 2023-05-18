@@ -356,7 +356,7 @@ public class TestStandardizedSem {
 
         System.out.println("cov" + cov);
 
-        for (int i = 0; i < cov.rows(); i++) {
+        for (int i = 0; i < cov.getNumRows(); i++) {
             if (!(FastMath.abs(cov.get(i, i) - 1) < .1)) {
                 return false;
             }

@@ -46,10 +46,11 @@ import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * <p>Imlements the Greedy Equivalence Search (GES) algorithm, originally due to
- * Chris Meek but developed significantly by Max Chickering, with some
- * optimizations that allow it to scale accurately to thousands of variables
- * for the sparse case. The reference is this:</p>
+ * <p>Imlements the Fast Greedy Equivalence Search (GGES) algorithm. This is
+ * an implementation of the Greedy Equivalence Search algroithm, originally
+ * due to Chris Meek but developed significantly by Max Chickering. FGES uses
+ * with some optimizations that allow it to scale accurately to thousands
+ * of variables accurately for the sparse case. The reference for FGES is this:</p>
  *
  * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017).
  * A million variables and more: the fast greedy equivalence search algorithm
@@ -57,19 +58,24 @@ import static org.apache.commons.math3.util.FastMath.min;
  * to functional magnetic resonance images. International journal of data science
  * and analytics, 3, 121-129.</p>
  *
- * <p>Specifically, FGES is an implementation of the GES algorithm as specified
- * in this paper:</p>
+ * <p>The reference for Chickering's GES is this:</p>
  *
  * <p>Chickering (2002) "Optimal structure identification with greedy search"
  * Journal of Machine Learning Research.</p>
  *
- * <p>It works for both BayesNets and SEMs.</p>
+ * <p>FGES works for the continuous case, the discrete case, and the mixed
+ * continuous/discrete case, so long as a BIC score is available for the type
+ * of data in question.</p>
  *
  * <p>To speed things up, it has been assumed that variables X and Y with zero
  * correlation do not correspond to edges in the graph. This is a restricted
  * form of the heuristic speedup assumption, something GES does not assume.
- * This heuristicSpeedup assumption needs to be explicitly turned on using
+ * This heuristic speedup assumption needs to be explicitly turned on using
  * setHeuristicSpeedup(true).</p>
+ *
+ * <p>Also, edges to be added or remove from the graph in the forward or
+ * backward phase, respectively are cached, together with the ancillary information
+ * needed to do the additions or removals, to reduce rescoring.</p>
  *
  * <p>A number of other optimizations were also. See code for details.</p>
  *

@@ -63,10 +63,10 @@ public class CovMatrixAverageWrapper extends DataWrapper {
             cov.add(((ICovarianceMatrix) selectedDataModel).getMatrix());
         }
 
-        Matrix cov3 = new Matrix(cov.get(0).rows(), cov.get(0).rows());
+        Matrix cov3 = new Matrix(cov.get(0).getNumRows(), cov.get(0).getNumRows());
 
-        for (int i = 0; i < cov.get(0).rows(); i++) {
-            for (int j = 0; j < cov.get(0).rows(); j++) {
+        for (int i = 0; i < cov.get(0).getNumRows(); i++) {
+            for (int j = 0; j < cov.get(0).getNumRows(); j++) {
                 double c = 0.0;
 
                 for (Matrix matrix : cov) {

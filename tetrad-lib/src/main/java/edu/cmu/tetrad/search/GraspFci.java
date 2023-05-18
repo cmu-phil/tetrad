@@ -41,6 +41,13 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
  * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
  * FGES.</p>
+ *
+ * <p>For the first step, the GRaSP algorithm is used, with the same
+ * modifications as in the GFCI algorithm.</p>
+ *
+ * <p>For the second step, the FCI final orientation algorithm is used, with the same
+ * modifications as in the GFCI algorithm.</p>
+ *
  * <p>For GRaSP only a score is needed, but there are steps in GFCI that require
  * a test, so for this method, both a test and a score need to be given.</p>
  *
@@ -51,9 +58,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @author bryanandrews
  * @see Grasp
  * @see GFci
- * @see BFci
- * @see SpFci
- * @see Fges
+ * @see FciOrient
  * @see Knowledge
  */
 public final class GraspFci implements IGraphSearch {

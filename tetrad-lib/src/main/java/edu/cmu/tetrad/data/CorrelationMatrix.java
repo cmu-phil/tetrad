@@ -84,7 +84,7 @@ public final class CorrelationMatrix extends CovarianceMatrix {
             throw new IllegalArgumentException("Matrix must be square.");
         }
 
-        for (int i = 0; i < matrix.rows(); i++) {
+        for (int i = 0; i < matrix.getNumRows(); i++) {
             if (FastMath.abs(matrix.get(i, i) - 1.0) > 1.e-5) {
                 throw new IllegalArgumentException(
                         "For a correlation matrix, " +

@@ -329,7 +329,7 @@ public final class SemIm implements Im, ISemIm {
                   Vector means) {
         this(semIm);
 
-        if (covariances.rows() != covariances.columns()) {
+        if (covariances.getNumRows() != covariances.getNumColumns()) {
             throw new IllegalArgumentException(
                     "Expecting covariances to be square.");
         }
@@ -344,7 +344,7 @@ public final class SemIm implements Im, ISemIm {
                     "Number of means does not equal " + "number of variables.");
         }
 
-        if (covariances.rows() != this.semPm.getVariableNodes().size()) {
+        if (covariances.getNumRows() != this.semPm.getVariableNodes().size()) {
             throw new IllegalArgumentException(
                     "Dimension of covariance matrix "
                             + "does not equal number of variables.");
@@ -1056,7 +1056,7 @@ public final class SemIm implements Im, ISemIm {
             this.sampleCovInv = sampleCovar.inverse();
         }
 
-        Matrix I = Matrix.identity(implCovarMeas.rows());
+        Matrix I = Matrix.identity(implCovarMeas.getNumRows());
         Matrix diff = I.minus((implCovarMeas.times(this.sampleCovInv)));
 
         return 0.5 * (diff.times(diff)).trace();
@@ -1279,7 +1279,7 @@ public final class SemIm implements Im, ISemIm {
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            double[] exoData = new double[cholesky.rows()];
+            double[] exoData = new double[cholesky.getNumRows()];
 
             for (int i = 0; i < exoData.length; i++) {
                 exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
@@ -1386,7 +1386,7 @@ public final class SemIm implements Im, ISemIm {
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            double[] exoData = new double[cholesky.rows()];
+            double[] exoData = new double[cholesky.getNumRows()];
 
             for (int i = 0; i < exoData.length; i++) {
                 if (errorType == 1) {
@@ -1505,7 +1505,7 @@ public final class SemIm implements Im, ISemIm {
 
         // Calculate inv(I - edgeCoefC)
         Matrix B = edgeCoef().transpose();
-        Matrix iMinusBInv = Matrix.identity(B.rows()).minus(B).inverse();
+        Matrix iMinusBInv = Matrix.identity(B.getNumRows()).minus(B).inverse();
 
         // Pick error values e, for each calculate inv * e.
         Matrix sim = new Matrix(sampleSize, numVars);
@@ -1514,7 +1514,7 @@ public final class SemIm implements Im, ISemIm {
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            Vector e = new Vector(this.edgeCoef.columns());
+            Vector e = new Vector(this.edgeCoef.getNumColumns());
 
             for (int i = 0; i < e.size(); i++) {
 //                e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar.get(i, i))));
@@ -1569,7 +1569,7 @@ public final class SemIm implements Im, ISemIm {
         // Calculate inv(I - edgeCoefC)
         Matrix edgeCoef = edgeCoef().copy().transpose();
 
-        Matrix iMinusB = Matrix.identity(edgeCoef.rows()).minus(edgeCoef);
+        Matrix iMinusB = Matrix.identity(edgeCoef.getNumRows()).minus(edgeCoef);
 
         Matrix inv = iMinusB.inverse();
 

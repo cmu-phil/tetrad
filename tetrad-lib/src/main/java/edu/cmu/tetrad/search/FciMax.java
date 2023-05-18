@@ -35,19 +35,35 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveTask;
 
 /**
- * <p>Modifies FCI to do orientation of unshielded colliders (X*-*Y*-*Z with X and Z not adjacent)
- * using the max-P rule (see the PC-Max algorithm). This reference is relevant:</p>
+ * <p>Modifies FCI to do orientation of unshielded colliders (X*-*Y*-*Z with X and Z
+ * not adjacent) using the max-P rule (see the PC-Max algorithm). This reference
+ * is relevant:</p>
  *
- * <p>Raghu, V. K., Zhao, W., Pu, J., Leader, J. K., Wang, R., Herman, J., ... &amp; Wilson, D. O.
- * (2019). Feasibility of lung cancer prediction from low-dose CT scan and smoking factors using
- * causal models. Thorax, 74(7), 643-649.</p>
+ * <p>Raghu, V. K., Zhao, W., Pu, J., Leader, J. K., Wang, R., Herman, J., ... &amp;
+ * Wilson, D. O. (2019). Feasibility of lung cancer prediction from low-dose CT scan
+ * and smoking factors using causal models. Thorax, 74(7), 643-649.</p>
+ *
+ * <p>Max-P triple orientation is a method for orienting unshielded triples
+ * X*=-*Y*-*Z as one of the following: (a) Collider, X->Y<-Z, or (b) Noncollider,
+ * X-->Y-->Z, or X<-Y<-Z, or X<-Y->Z. One does this by conditioning on subsets of
+ * adj(X) or adj(Z). One first checks conditional independence of X and Z
+ * conditional on each of these subsets, and lists the p-values for each test.
+ * Then, one chooses the conditioning set out of all of these that maximizes
+ * the p-value. If this conditioning set contains Y, then the triple is judged
+ * to be a noncollider; otherwise, it is judged to be a collider.</p>
+ *
+ * <p>All unshielded triples in the graph given by FAS are judged as colliders
+ * or non-colliders and the colliders oriented. Then the final FCI orientation
+ * rules are applied, as in FCI.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
  *
  * @author josephramsey
  * @see Fci
+ * @see Fas
  * @see PcMax
+ * @see FciOrient
  * @see Knowledge
  */
 public final class FciMax implements IGraphSearch {

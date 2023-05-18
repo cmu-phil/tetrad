@@ -225,7 +225,7 @@ public class PcLingam {
         List<Node> nodes = dag.getNodes();
         double score = 0.0;
         double[] pValues = new double[nodes.size()];
-        Matrix residuals = new Matrix(data.rows(), data.columns());
+        Matrix residuals = new Matrix(data.getNumRows(), data.getNumColumns());
 
         for (int i = 0; i < nodes.size(); i++) {
             Node _target = nodes.get(i);
@@ -258,7 +258,7 @@ public class PcLingam {
             score += diff * diff;
         }
 
-        for (int j = 0; j < residuals.columns(); j++) {
+        for (int j = 0; j < residuals.getNumColumns(); j++) {
             double[] x = residuals.getColumn(j).toArray();
             double p = new AndersonDarlingTest(x).getP();
             pValues[j] = p;

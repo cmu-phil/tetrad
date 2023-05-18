@@ -442,7 +442,7 @@ public final class IndTestHsic implements IndependenceTest {
      */
     public double empiricalHSICincompleteCholesky(Matrix Gy, Matrix Gx, Matrix Gz, int m) {
         // centralize Choleksy
-        int kz = Gz.columns();
+        int kz = Gz.getNumColumns();
 
         Matrix H = KernelUtils.constructH(m);
         Matrix Gcy = H.times(Gy);
@@ -648,7 +648,7 @@ public final class IndTestHsic implements IndependenceTest {
 
     private double matrixProductEntry(Matrix X, Matrix Y, int i, int j) {
         double entry = 0.0;
-        for (int k = 0; k < X.columns(); k++) {
+        for (int k = 0; k < X.getNumColumns(); k++) {
             entry += X.get(i, k) * Y.get(k, j);
         }
         return entry;

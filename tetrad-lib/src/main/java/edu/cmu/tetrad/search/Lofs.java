@@ -46,7 +46,12 @@ import static org.apache.commons.math3.util.FastMath.*;
  * linear, non-Gaussian Orientation with a Fixed graph Structure (LOFS). The options
  * for different types of scores are given in the enum Lofs.Score. The options for rules
  * to use to do the orientations are given in the enum, Lofs.Rule. Most of these are
- * taken from the literature and ca be googled.</p>
+ * taken from the literature and can be googled, though we should certainly give
+ * this reference for several of them, to which we are indebted:</p>
+ *
+ * <p>Hyvärinen, A., & Smith, S. M. (2013). Pairwise likelihood ratios for estimation
+ * of non-Gaussian structural equation models. The Journal of Machine Learning Research,
+ * 14(1), 111-152.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -772,12 +777,12 @@ public class Lofs {
     // rowIndex is for the W matrix, not for the data.
     public double scoreRow(int rowIndex, Matrix data, List<List<Integer>> rows, List<List<Double>> parameters) {
         if (this.col == null) {
-            this.col = new double[data.rows()];
+            this.col = new double[data.getNumRows()];
         }
 
         List<Integer> cols = rows.get(rowIndex);
 
-        for (int i = 0; i < data.rows(); i++) {
+        for (int i = 0; i < data.getNumRows(); i++) {
             if (Thread.currentThread().isInterrupted()) {
                 break;
             }

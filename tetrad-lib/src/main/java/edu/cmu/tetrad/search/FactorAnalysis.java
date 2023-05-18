@@ -120,9 +120,9 @@ public class FactorAnalysis {
         this.factorLoadingVectors = new LinkedList<>();
 
         Matrix residual = this.covariance.getMatrix().copy();
-        Matrix unitVector = new Matrix(residual.rows(), 1);
+        Matrix unitVector = new Matrix(residual.getNumRows(), 1);
 
-        for (int i = 0; i < unitVector.rows(); i++) {
+        for (int i = 0; i < unitVector.getNumRows(); i++) {
             unitVector.set(i, 0, 1);
         }
 
@@ -137,10 +137,10 @@ public class FactorAnalysis {
 
         this.factorLoadingVectors.removeFirst();
 
-        Matrix result = new Matrix(residual.rows(), this.factorLoadingVectors.size());
+        Matrix result = new Matrix(residual.getNumRows(), this.factorLoadingVectors.size());
 
-        for (int i = 0; i < result.rows(); i++) {
-            for (int j = 0; j < result.columns(); j++) {
+        for (int i = 0; i < result.getNumRows(); i++) {
+            for (int j = 0; j < result.getNumColumns(); j++) {
                 result.set(i, j, this.factorLoadingVectors.get(j).get(i, 0));
             }
         }
@@ -157,7 +157,7 @@ public class FactorAnalysis {
      * @return The result matrix.
      */
     public Matrix successiveFactorVarimax(Matrix factorLoadingMatrix) {
-        if (factorLoadingMatrix.columns() == 1)
+        if (factorLoadingMatrix.getNumColumns() == 1)
             return factorLoadingMatrix;
 
         LinkedList<Matrix> residuals = new LinkedList<>();
@@ -166,9 +166,9 @@ public class FactorAnalysis {
         Matrix normalizedFactorLoadings = FactorAnalysis.normalizeRows(factorLoadingMatrix);
         residuals.add(normalizedFactorLoadings);
 
-        Matrix unitColumn = new Matrix(factorLoadingMatrix.rows(), 1);
+        Matrix unitColumn = new Matrix(factorLoadingMatrix.getNumRows(), 1);
 
-        for (int i = 0; i < factorLoadingMatrix.rows(); i++) {
+        for (int i = 0; i < factorLoadingMatrix.getNumRows(); i++) {
             unitColumn.set(i, 0, 1);
         }
 
@@ -178,13 +178,13 @@ public class FactorAnalysis {
         Matrix wVector = sumCols.scalarMult(1.0 / FastMath.sqrt(unitColumn.transpose().times(r).times(sumCols).get(0, 0)));
         Matrix vVector = r.times(wVector);
 
-        for (int k = 0; k < normalizedFactorLoadings.columns(); k++) {
+        for (int k = 0; k < normalizedFactorLoadings.getNumColumns(); k++) {
 
             //time to find the minimum value in the v vector
             int lIndex = 0;
             double minValue = Double.POSITIVE_INFINITY;
 
-            for (int i = 0; i < vVector.rows(); i++) {
+            for (int i = 0; i < vVector.getNumRows(); i++) {
                 if (vVector.get(i, 0) < minValue) {
                     minValue = vVector.get(i, 0);
                     lIndex = i;
@@ -197,17 +197,17 @@ public class FactorAnalysis {
 
             r = residuals.getLast();
 
-            hVectors.add(new Matrix(r.columns(), 1));
+            hVectors.add(new Matrix(r.getNumColumns(), 1));
             Vector rowFromFactorLoading = r.getRow(lIndex);
 
-            for (int j = 0; j < hVectors.getLast().rows(); j++) {
+            for (int j = 0; j < hVectors.getLast().getNumRows(); j++) {
                 hVectors.getLast().set(j, 0, rowFromFactorLoading.get(j));
             }
 
             for (int i = 0; i < 200; i++) {
                 Matrix bVector = r.times(hVectors.get(i));
                 double averageSumSquaresBVector = unitColumn.transpose().times(FactorAnalysis.matrixExp(bVector, 2))
-                        .scalarMult(1.0 / (double) bVector.rows()).get(0, 0);
+                        .scalarMult(1.0 / (double) bVector.getNumRows()).get(0, 0);
 
                 Matrix betaVector = FactorAnalysis.matrixExp(bVector, 3).minus(bVector.scalarMult(averageSumSquaresBVector));
                 Matrix uVector = r.transpose().times(betaVector);
@@ -235,7 +235,7 @@ public class FactorAnalysis {
         Matrix result = factorLoadingMatrix.like();
 
         if (!rotatedFactorVectors.isEmpty()) {
-            for (int i = 0; i < rotatedFactorVectors.get(0).rows(); i++) {
+            for (int i = 0; i < rotatedFactorVectors.get(0).getNumRows(); i++) {
                 for (int j = 0; j < rotatedFactorVectors.size(); j++) {
                     result.set(i, j, rotatedFactorVectors.get(j).get(i, 0));
                 }
@@ -341,19 +341,19 @@ public class FactorAnalysis {
     //as usual, vectors are treated as matrices to simplify operations elsewhere
     private static Matrix normalizeRows(Matrix matrix) {
         LinkedList<Matrix> normalizedRows = new LinkedList<>();
-        for (int i = 0; i < matrix.rows(); i++) {
+        for (int i = 0; i < matrix.getNumRows(); i++) {
             Vector vector = matrix.getRow(i);
-            Matrix colVector = new Matrix(matrix.columns(), 1);
-            for (int j = 0; j < matrix.columns(); j++)
+            Matrix colVector = new Matrix(matrix.getNumColumns(), 1);
+            for (int j = 0; j < matrix.getNumColumns(); j++)
                 colVector.set(j, 0, vector.get(j));
 
             normalizedRows.add(FactorAnalysis.normalizeVector(colVector));
         }
 
-        Matrix result = new Matrix(matrix.rows(), matrix.columns());
-        for (int i = 0; i < matrix.rows(); i++) {
+        Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
+        for (int i = 0; i < matrix.getNumRows(); i++) {
             Matrix normalizedRow = normalizedRows.get(i);
-            for (int j = 0; j < matrix.columns(); j++) {
+            for (int j = 0; j < matrix.getNumColumns(); j++) {
                 result.set(i, j, normalizedRow.get(j, 0));
             }
         }
@@ -367,9 +367,9 @@ public class FactorAnalysis {
     }
 
     private static Matrix matrixExp(Matrix matrix, double exponent) {
-        Matrix result = new Matrix(matrix.rows(), matrix.columns());
-        for (int i = 0; i < matrix.rows(); i++) {
-            for (int j = 0; j < matrix.columns(); j++) {
+        Matrix result = new Matrix(matrix.getNumRows(), matrix.getNumColumns());
+        for (int i = 0; i < matrix.getNumRows(); i++) {
+            for (int j = 0; j < matrix.getNumColumns(); j++) {
                 result.set(i, j, FastMath.pow(matrix.get(i, j), exponent));
             }
         }

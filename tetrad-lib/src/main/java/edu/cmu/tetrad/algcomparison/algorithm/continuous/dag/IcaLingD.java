@@ -10,7 +10,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.LingD;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -21,17 +20,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * LiNGAM.
+ * LiNG-D.
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "LiNGAM",
-        command = "lingam",
+        name = "ICA-LiNG-D",
+        command = "ica-ling-d",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class Lingam implements Algorithm, ReturnsBootstrapGraphs {
+public class IcaLingD implements Algorithm, ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
 
@@ -45,19 +44,32 @@ public class Lingam implements Algorithm, ReturnsBootstrapGraphs {
             double alpha = parameters.getDouble(Params.FAST_ICA_A);
             double tol = parameters.getDouble(Params.FAST_ICA_TOLERANCE);
             double bThreshold = parameters.getDouble(Params.THRESHOLD_B);
+            double spineThreshold = parameters.getDouble(Params.THRESHOLD_SPINE);
 
-            Matrix W = LingD.estimateW(data, maxIter, tol, alpha);
-            edu.cmu.tetrad.search.Lingam lingam = new edu.cmu.tetrad.search.Lingam();
-            lingam.setBThreshold(bThreshold);
+            Matrix W = edu.cmu.tetrad.search.IcaLingD.estimateW(data, maxIter, tol, alpha);
 
-            Matrix bHat = lingam.fitW(W);
-            Graph graph = LingD.makeGraph(bHat, data.getVariables());
-            TetradLogger.getInstance().forceLogMessage(bHat.toString());
-            TetradLogger.getInstance().forceLogMessage(graph.toString());
+            edu.cmu.tetrad.search.IcaLingD icaLingD = new edu.cmu.tetrad.search.IcaLingD();
+            icaLingD.setBThreshold(bThreshold);
+            icaLingD.setSpineThreshold(spineThreshold);
+            List<Matrix> bHats = icaLingD.fitW(W);
 
-            return graph;
+            int count = 0;
+
+            for (Matrix bHat : bHats) {
+                TetradLogger.getInstance().forceLogMessage("LiNG-D Model #" + (++count));
+                Graph graph = edu.cmu.tetrad.search.IcaLingD.makeGraph(bHat, dataSet.getVariables());
+                TetradLogger.getInstance().forceLogMessage(bHat.toString());
+                TetradLogger.getInstance().forceLogMessage(graph.toString());
+                TetradLogger.getInstance().forceLogMessage("Stable = " + edu.cmu.tetrad.search.IcaLingD.isStable(bHat));
+            }
+
+            if (bHats.size() > 0) {
+                return edu.cmu.tetrad.search.IcaLingD.makeGraph(bHats.get(0), dataSet.getVariables());
+            } else {
+                throw new IllegalArgumentException("LiNG-D couldn't find a model.");
+            }
         } else {
-            Lingam algorithm = new Lingam();
+            IcaLingD algorithm = new IcaLingD();
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
@@ -78,7 +90,7 @@ public class Lingam implements Algorithm, ReturnsBootstrapGraphs {
     }
 
     public String getDescription() {
-        return "LiNGAM (Linear Non-Gaussian Acyclic Model";
+        return "LiNG-D (Linear Non-Gaussian Discovery";
     }
 
     @Override
@@ -90,10 +102,11 @@ public class Lingam implements Algorithm, ReturnsBootstrapGraphs {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.VERBOSE);
-        parameters.add(Params.FAST_ICA_MAX_ITER);
         parameters.add(Params.FAST_ICA_A);
+        parameters.add(Params.FAST_ICA_MAX_ITER);
         parameters.add(Params.FAST_ICA_TOLERANCE);
         parameters.add(Params.THRESHOLD_B);
+        parameters.add(Params.THRESHOLD_SPINE);
         return parameters;
     }
 

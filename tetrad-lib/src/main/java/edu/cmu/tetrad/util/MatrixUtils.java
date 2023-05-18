@@ -455,10 +455,10 @@ public final class MatrixUtils {
 
         final int sampleSize = 10000;
 
-        Matrix iMinusBInverse = Matrix.identity(edgeCoef.rows()).minus(edgeCoef).inverse();
+        Matrix iMinusBInverse = Matrix.identity(edgeCoef.getNumRows()).minus(edgeCoef).inverse();
 
-        Matrix sample = new Matrix(sampleSize, edgeCoef.columns());
-        Vector e = new Vector((edgeCoef.columns()));
+        Matrix sample = new Matrix(sampleSize, edgeCoef.getNumColumns());
+        Vector e = new Vector((edgeCoef.getNumColumns()));
 
         for (int i = 0; i < sampleSize; i++) {
             for (int j = 0; j < e.size(); j++) {
@@ -489,7 +489,7 @@ public final class MatrixUtils {
 //        return g.times(errCovar).times(g.transpose());
 //        return g.transpose().times(errCovar).times(g);
         // I - B
-        Matrix m1 = Matrix.identity(edgeCoef.rows()).minus(edgeCoef);
+        Matrix m1 = Matrix.identity(edgeCoef.getNumRows()).minus(edgeCoef);
 //
 //        // (I - B) ^ -1
         Matrix m3 = m1.inverse();
@@ -506,8 +506,8 @@ public final class MatrixUtils {
     }
 
     private static boolean containsNaN(Matrix m) {
-        for (int i = 0; i < m.rows(); i++) {
-            for (int j = 0; j < m.columns(); j++) {
+        for (int i = 0; i < m.getNumRows(); i++) {
+            for (int j = 0; j < m.getNumColumns(); j++) {
                 if (Double.isNaN(m.get(i, j))) {
                     return true;
                 }
@@ -627,7 +627,7 @@ public final class MatrixUtils {
      */
     public static boolean hasDimensions(double[][] m, int i, int j) {
         Matrix _m = new Matrix(m);
-        return _m.rows() == i && _m.columns() == j;
+        return _m.getNumRows() == i && _m.getNumColumns() == j;
     }
 
     public static double[][] zeros(int rows, int cols) {
@@ -671,22 +671,22 @@ public final class MatrixUtils {
      * matrix is returned for convenience, but m is modified in the process.
      */
     public static Matrix convertCovToCorr(Matrix m) {
-        if (m.rows() != m.columns()) throw new IllegalArgumentException("Not a square matrix.");
+        if (m.getNumRows() != m.getNumColumns()) throw new IllegalArgumentException("Not a square matrix.");
         if (!MatrixUtils.isSymmetric(m.toArray(), 0.001)) {
             throw new IllegalArgumentException("Not symmetric with tolerance " + 0.001);
         }
 
         Matrix corr = m.like();
 
-        for (int i = 0; i < m.rows(); i++) {
-            for (int j = i + 1; j < m.columns(); j++) {
+        for (int i = 0; i < m.getNumRows(); i++) {
+            for (int j = i + 1; j < m.getNumColumns(); j++) {
                 double v = m.get(i, j) / sqrt(m.get(i, i) * m.get(j, j));
                 corr.set(i, j, v);
                 corr.set(j, i, v);
             }
         }
 
-        for (int i = 0; i < m.columns(); i++) {
+        for (int i = 0; i < m.getNumColumns(); i++) {
             corr.set(i, i, 1.0);
         }
 

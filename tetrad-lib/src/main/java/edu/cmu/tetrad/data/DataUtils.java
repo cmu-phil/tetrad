@@ -229,8 +229,8 @@ public final class DataUtils {
      * @return true iff the data sets contains a missing value.
      */
     public static boolean containsMissingValue(Matrix data) {
-        for (int i = 0; i < data.rows(); i++) {
-            for (int j = 0; j < data.columns(); j++) {
+        for (int i = 0; i < data.getNumRows(); i++) {
+            for (int j = 0; j < data.getNumColumns(); j++) {
                 if (Double.isNaN(data.get(i, j))) {
                     return true;
                 }
@@ -272,9 +272,9 @@ public final class DataUtils {
         Matrix data = dataSet.getDoubleData();
         Matrix X = data.like();
 
-        for (int j = 0; j < data.columns(); j++) {
-            double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
-            double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
+        for (int j = 0; j < data.getNumColumns(); j++) {
+            double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
+            double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
 
             if (dataSet.getVariable(j) instanceof DiscreteVariable) {
                 X.assignColumn(j, new Vector(x1));
@@ -308,29 +308,29 @@ public final class DataUtils {
     public static Matrix standardizeData(Matrix data) {
         Matrix data2 = data.copy();
 
-        for (int j = 0; j < data2.columns(); j++) {
+        for (int j = 0; j < data2.getNumColumns(); j++) {
             double sum = 0.0;
 
-            for (int i = 0; i < data2.rows(); i++) {
+            for (int i = 0; i < data2.getNumRows(); i++) {
                 sum += data2.get(i, j);
             }
 
-            double mean = sum / data.rows();
+            double mean = sum / data.getNumRows();
 
-            for (int i = 0; i < data.rows(); i++) {
+            for (int i = 0; i < data.getNumRows(); i++) {
                 data2.set(i, j, data.get(i, j) - mean);
             }
 
             double norm = 0.0;
 
-            for (int i = 0; i < data.rows(); i++) {
+            for (int i = 0; i < data.getNumRows(); i++) {
                 double v = data2.get(i, j);
                 norm += v * v;
             }
 
-            norm = FastMath.sqrt(norm / (data.rows() - 1));
+            norm = FastMath.sqrt(norm / (data.getNumRows() - 1));
 
-            for (int i = 0; i < data.rows(); i++) {
+            for (int i = 0; i < data.getNumRows(); i++) {
                 data2.set(i, j, data2.get(i, j) / norm);
             }
         }
@@ -442,16 +442,16 @@ public final class DataUtils {
     public static Matrix centerData(Matrix data) {
         Matrix data2 = data.copy();
 
-        for (int j = 0; j < data2.columns(); j++) {
+        for (int j = 0; j < data2.getNumColumns(); j++) {
             double sum = 0.0;
 
-            for (int i = 0; i < data2.rows(); i++) {
+            for (int i = 0; i < data2.getNumRows(); i++) {
                 sum += data2.get(i, j);
             }
 
-            double mean = sum / data.rows();
+            double mean = sum / data.getNumRows();
 
-            for (int i = 0; i < data.rows(); i++) {
+            for (int i = 0; i < data.getNumRows(); i++) {
                 data2.set(i, j, data.get(i, j) - mean);
             }
         }
@@ -742,16 +742,16 @@ public final class DataUtils {
         int totalSampleSize = 0;
 
         for (Matrix dataSet : dataSets) {
-            totalSampleSize += dataSet.rows();
+            totalSampleSize += dataSet.getNumRows();
         }
 
-        int numColumns = dataSets[0].columns();
+        int numColumns = dataSets[0].getNumColumns();
         Matrix allData = new Matrix(totalSampleSize, numColumns);
         int q = 0;
         int r;
 
         for (Matrix dataSet : dataSets) {
-            r = dataSet.rows();
+            r = dataSet.getNumRows();
 
             for (int i = 0; i < r; i++) {
                 for (int j = 0; j < numColumns; j++) {
@@ -780,7 +780,7 @@ public final class DataUtils {
 
         for (DataSet dataSet : dataSets) {
             Matrix _data = dataSet.getDoubleData();
-            r = _data.rows();
+            r = _data.getNumRows();
 
             for (int i = 0; i < r; i++) {
                 for (int j = 0; j < numColumns; j++) {
@@ -810,13 +810,13 @@ public final class DataUtils {
     }
 
     public static Vector means(Matrix data) {
-        Vector means = new Vector(data.columns());
+        Vector means = new Vector(data.getNumColumns());
 
         for (int j = 0; j < means.size(); j++) {
             double sum = 0.0;
             int count = 0;
 
-            for (int i = 0; i < data.rows(); i++) {
+            for (int i = 0; i < data.getNumRows(); i++) {
                 if (Double.isNaN(data.get(i, j))) {
                     continue;
                 }
@@ -862,16 +862,16 @@ public final class DataUtils {
     }
 
     public static Matrix cov(Matrix data) {
-        for (int j = 0; j < data.columns(); j++) {
+        for (int j = 0; j < data.getNumColumns(); j++) {
             double sum = 0.0;
 
-            for (int i = 0; i < data.rows(); i++) {
+            for (int i = 0; i < data.getNumRows(); i++) {
                 sum += data.get(i, j);
             }
 
-            double mean = sum / data.rows();
+            double mean = sum / data.getNumRows();
 
-            for (int i = 0; i < data.rows(); i++) {
+            for (int i = 0; i < data.getNumRows(); i++) {
                 data.set(i, j, data.get(i, j) - mean);
             }
         }
@@ -882,10 +882,10 @@ public final class DataUtils {
         RealMatrix q2 = DataUtils.times(q1, q);
         Matrix prod = new Matrix(q2.getData());
 
-        double factor = 1.0 / (data.rows() - 1);
+        double factor = 1.0 / (data.getNumRows() - 1);
 
-        for (int i = 0; i < prod.rows(); i++) {
-            for (int j = 0; j < prod.columns(); j++) {
+        for (int i = 0; i < prod.getNumRows(); i++) {
+            for (int j = 0; j < prod.getNumColumns(); j++) {
                 prod.set(i, j, prod.get(i, j) * factor);
             }
         }
@@ -939,9 +939,9 @@ public final class DataUtils {
     }
 
     public static Vector mean(Matrix data) {
-        Vector mean = new Vector(data.columns());
+        Vector mean = new Vector(data.getNumColumns());
 
-        for (int i = 0; i < data.columns(); i++) {
+        for (int i = 0; i < data.getNumColumns(); i++) {
             mean.set(i, StatUtils.mean(data.getColumn(i).toArray()));
         }
 
@@ -970,7 +970,7 @@ public final class DataUtils {
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            double[] exoData = new double[cholesky.rows()];
+            double[] exoData = new double[cholesky.getNumRows()];
 
             for (int i = 0; i < exoData.length; i++) {
                 exoData[i] = RandomUtil.getInstance().nextNormal(0, 1);
@@ -1009,7 +1009,7 @@ public final class DataUtils {
      * given dataset.
      */
     public static Matrix getBootstrapSample(Matrix data, int sampleSize) {
-        int actualSampleSize = data.rows();
+        int actualSampleSize = data.getNumRows();
 
         int[] rows = new int[sampleSize];
 
@@ -1017,7 +1017,7 @@ public final class DataUtils {
             rows[i] = RandomUtil.getInstance().nextInt(actualSampleSize);
         }
 
-        int[] cols = new int[data.columns()];
+        int[] cols = new int[data.getNumColumns()];
         for (int i = 0; i < cols.length; i++) cols[i] = i;
 
         return data.getSelection(rows, cols);
@@ -1394,9 +1394,9 @@ public final class DataUtils {
 
             double std = Double.NaN;
 
-            for (int j = 0; j < data.columns(); j++) {
-                double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
-                double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.rows());
+            for (int j = 0; j < data.getNumColumns(); j++) {
+                double[] x1Orig = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
+                double[] x1 = Arrays.copyOf(data.getColumn(j).toArray(), data.getNumRows());
 
                 double a2Orig = new AndersonDarlingTest(x1).getASquaredStar();
 
@@ -1467,11 +1467,11 @@ public final class DataUtils {
     private static double[] ranks(Matrix data, double[] x) {
         double[] ranks = new double[x.length];
 
-        for (int i = 0; i < data.rows(); i++) {
+        for (int i = 0; i < data.getNumRows(); i++) {
             double d = x[i];
             int count = 0;
 
-            for (int k = 0; k < data.rows(); k++) {
+            for (int k = 0; k < data.getNumRows(); k++) {
                 if (x[k] <= d) {
                     count++;
                 }
@@ -1533,8 +1533,8 @@ public final class DataUtils {
 
         double sum = 0;
 
-        for (int i = 0; i < C.rows(); i++) {
-            for (int j = 0; j < C.columns(); j++) {
+        for (int i = 0; i < C.getNumRows(); i++) {
+            for (int j = 0; j < C.getNumColumns(); j++) {
                 sum += C.get(i, j);
             }
         }

@@ -49,6 +49,7 @@ import java.util.List;
  *
  * @author adambrodie
  * @see Knowledge
+ * @see Mimbuild
  */
 public class MimbuildTrek {
 
@@ -266,8 +267,8 @@ public class MimbuildTrek {
         Matrix measurescov = _measurescov.getMatrix();
         Matrix latentscov = new Matrix(latents.size(), latents.size());
 
-        for (int i = 0; i < latentscov.rows(); i++) {
-            for (int j = i; j < latentscov.columns(); j++) {
+        for (int i = 0; i < latentscov.getNumRows(); i++) {
+            for (int j = i; j < latentscov.getNumColumns(); j++) {
                 if (i == j) latentscov.set(i, j, 1.0);
                 else {
                     final double v = .5;
@@ -303,7 +304,7 @@ public class MimbuildTrek {
         }
 
         // Variances of the measures.
-        double[] delta = new double[measurescov.rows()];
+        double[] delta = new double[measurescov.getNumRows()];
 
         Arrays.fill(delta, 1);
 
@@ -524,7 +525,7 @@ public class MimbuildTrek {
 
             Matrix implied = impliedCovariance(this.indicatorIndices, this.loadings, this.measurescov, this.latentscov, this.delta);
 
-            Matrix I = Matrix.identity(implied.rows());
+            Matrix I = Matrix.identity(implied.getNumRows());
             Matrix diff = I.minus((implied.times(this.measuresCovInverse)));  // time hog. times().
 
             return 0.5 * (diff.times(diff)).trace();
@@ -534,7 +535,7 @@ public class MimbuildTrek {
 
     private Matrix impliedCovariance(int[][] indicatorIndices, double[][] loadings, Matrix cov, Matrix loadingscov,
                                      double[] delta) {
-        Matrix implied = new Matrix(cov.rows(), cov.columns());
+        Matrix implied = new Matrix(cov.getNumRows(), cov.getNumColumns());
 
         for (int i = 0; i < loadings.length; i++) {
             for (int j = 0; j < loadings.length; j++) {
@@ -547,7 +548,7 @@ public class MimbuildTrek {
             }
         }
 
-        for (int i = 0; i < implied.rows(); i++) {
+        for (int i = 0; i < implied.getNumRows(); i++) {
             implied.set(i, i, implied.get(i, i) + delta[i]);
         }
 

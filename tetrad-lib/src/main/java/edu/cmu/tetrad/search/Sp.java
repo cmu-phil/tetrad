@@ -51,6 +51,7 @@ public class Sp implements SuborderSearch {
 
     /**
      * This algorithm will work with an arbitrary score.
+     *
      * @param score The Score to use.
      */
     public Sp(Score score) {
@@ -173,82 +174,84 @@ public class Sp implements SuborderSearch {
         return score;
     }
 
-}
 
-class SwapIterator implements Iterator<int[]> {
-    private int[] next;
-    private final int n;
-    private final int[] perm;
-    private final int[] dirs;
+    static class SwapIterator implements Iterator<int[]> {
+        private int[] next;
+        private final int n;
+        private final int[] perm;
+        private final int[] dirs;
 
-    public SwapIterator(int size) {
-        this.n = size;
-        if (this.n <= 0) {
-            this.perm = null;
-            this.dirs = null;
-        } else {
-            this.perm = new int[n];
-            this.dirs = new int[n];
-            for (int i = 0; i < n; i++) {
-                this.perm[i] = i;
-                this.dirs[i] = -1;
+        public SwapIterator(int size) {
+            this.n = size;
+            if (this.n <= 0) {
+                this.perm = null;
+                this.dirs = null;
+            } else {
+                this.perm = new int[n];
+                this.dirs = new int[n];
+                for (int i = 0; i < n; i++) {
+                    this.perm[i] = i;
+                    this.dirs[i] = -1;
+                }
+                this.dirs[0] = 0;
             }
-            this.dirs[0] = 0;
+        }
+
+        @Override
+        public int[] next() {
+            int[] next = makeNext();
+            this.next = null;
+            return next;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return makeNext() != null;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        private int[] makeNext() {
+            if (this.next != null) return this.next;
+            if ((this.dirs == null) || (this.perm == null)) return null;
+
+            int i = -1;
+            int x = -1;
+            for (int j = 0; j < n; j++)
+                if ((this.dirs[j] != 0) && (this.perm[j] > x)) {
+                    x = this.perm[j];
+                    i = j;
+                }
+
+            if (i == -1) return null;
+
+            int k = i + this.dirs[i];
+            this.next = new int[]{i, k};
+
+            swap(i, k, this.dirs);
+            swap(i, k, this.perm);
+
+            if ((k == 0) || (k == n - 1) || (this.perm[k + this.dirs[k]] > x))
+                this.dirs[k] = 0;
+
+            for (int j = 0; j < n; j++)
+                if (this.perm[j] > x)
+                    this.dirs[j] = (j < k) ? +1 : -1;
+
+            return this.next;
+        }
+
+        private static void swap(int i, int j, int[] arr) {
+            int x = arr[i];
+            arr[i] = arr[j];
+            arr[j] = x;
         }
     }
-
-    @Override
-    public int[] next() {
-        int[] next = makeNext();
-        this.next = null;
-        return next;
-    }
-
-    @Override
-    public boolean hasNext() {
-        return makeNext() != null;
-    }
-
-    @Override
-    public void remove() {
-        throw new UnsupportedOperationException();
-    }
-
-    private int[] makeNext() {
-        if (this.next != null) return this.next;
-        if ((this.dirs == null) || (this.perm == null)) return null;
-
-        int i = -1;
-        int x = -1;
-        for (int j = 0; j < n; j++)
-            if ((this.dirs[j] != 0) && (this.perm[j] > x)) {
-                x = this.perm[j];
-                i = j;
-            }
-
-        if (i == -1) return null;
-
-        int k = i + this.dirs[i];
-        this.next = new int[] {i, k};
-
-        swap(i, k, this.dirs);
-        swap(i, k, this.perm);
-
-        if ((k == 0) || (k == n - 1) || (this.perm[k + this.dirs[k]] > x))
-            this.dirs[k] = 0;
-
-        for (int j = 0; j < n; j++)
-            if (this.perm[j] > x)
-                this.dirs[j] = (j < k) ? +1 : -1;
-
-        return this.next;
-    }
-
-    private static void swap(int i, int j, int[] arr) {
-        int x = arr[i];
-        arr[i] = arr[j];
-        arr[j] = x;
-    }
 }
+
+
 
 

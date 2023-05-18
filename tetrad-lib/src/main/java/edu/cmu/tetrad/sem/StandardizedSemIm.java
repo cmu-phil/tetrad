@@ -574,7 +574,7 @@ public class StandardizedSemIm implements Simulator {
 
         // Calculate inv(I - edgeCoefC)
         Matrix B = edgeCoef().transpose();
-        Matrix iMinusBInv = Matrix.identity(B.rows()).minus(B).inverse();
+        Matrix iMinusBInv = Matrix.identity(B.getNumRows()).minus(B).inverse();
 
         // Pick error values e, for each calculate inv * e.
         Matrix sim = new Matrix(sampleSize, numVars);
@@ -582,7 +582,7 @@ public class StandardizedSemIm implements Simulator {
         for (int row = 0; row < sampleSize; row++) {
 
             // Step 1. Generate normal samples.
-            Vector e = new Vector(edgeCoef().columns());
+            Vector e = new Vector(edgeCoef().getNumColumns());
 
             for (int i = 0; i < e.size(); i++) {
                 e.set(i, RandomUtil.getInstance().nextNormal(0, sqrt(errCovar(errorVariances(), false).get(i, i))));

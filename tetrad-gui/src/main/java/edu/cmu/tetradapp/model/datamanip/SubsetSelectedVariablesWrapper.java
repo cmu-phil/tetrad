@@ -110,7 +110,7 @@ public class SubsetSelectedVariablesWrapper extends DataWrapper {
                 selectedIndices, selectedIndices).copy();
 
 
-        return new CovarianceMatrix(DataUtils.createContinuousVariables(nodeNames), newMatrix, matrix.rows());
+        return new CovarianceMatrix(DataUtils.createContinuousVariables(nodeNames), newMatrix, matrix.getNumRows());
     }
 
 

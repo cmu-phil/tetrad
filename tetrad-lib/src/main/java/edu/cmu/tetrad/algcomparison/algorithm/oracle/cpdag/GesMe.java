@@ -68,7 +68,7 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
 
                 output += tableString(unrotated, nf, Double.POSITIVE_INFINITY);
 
-                if (unrotated.columns() != 1) {
+                if (unrotated.getNumColumns() != 1) {
                     output += "\n\nRotated Matrix (using sequential varimax):\n";
                     output += tableString(rotated, nf, parameters.getDouble("fa_threshold"));
                 }
@@ -160,7 +160,7 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
 
                 output += tableString(L, nf, Double.POSITIVE_INFINITY);
 
-                if (L.columns() != 1) {
+                if (L.getNumColumns() != 1) {
                     output += "\n\nL:\n";
                     output += tableString(L, nf, threshold);
                 }
@@ -228,10 +228,10 @@ public class GesMe implements Algorithm, ReturnsBootstrapGraphs {
     }
 
     private String tableString(Matrix matrix, NumberFormat nf, double threshold) {
-        TextTable table = new TextTable(matrix.rows() + 1, matrix.columns() + 1);
+        TextTable table = new TextTable(matrix.getNumRows() + 1, matrix.getNumColumns() + 1);
 
-        for (int i = 0; i < matrix.rows() + 1; i++) {
-            for (int j = 0; j < matrix.columns() + 1; j++) {
+        for (int i = 0; i < matrix.getNumRows() + 1; i++) {
+            for (int j = 0; j < matrix.getNumColumns() + 1; j++) {
                 if (i > 0 && j == 0) {
                     table.setToken(i, 0, "X" + i);
                 } else if (i == 0 && j > 0) {
