@@ -69,7 +69,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * X is the data matrix, e is a matrix of noise, and W is a matrix of coefficients.
  * The matrix W is then used to estimate a matrix B Hat, where B Hat is the matrix
  * of coefficients in the linear model that generated the data. The graph is then
- * estimated by finding edges in B Hat.</p> *
+ * estimated by finding edges in B Hat.</p>
  *
  * <p>We use the N Rooks algorithm to find alternative diagonals for
  * permutations of the W matrix. The parameter that N Rooks requires is a
