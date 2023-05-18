@@ -12,51 +12,67 @@ import java.util.*;
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
 
 /**
- * <p>Implements an algorithm called BOSS (Best Order Score Search). This
- * follows up on work by Raskutti and Uhler on the SP (Sparsest Permutation)
- * algorithm and work by Lam, Andrews, and Ramsey on the GRaSP algorithm is
- * currently under development.</p>
+ * <p>Implements Best Order Score Search (BOSS). The following references
+ * are relevant:</p>
  *
- * <p>This algorithm is based on the intuition that the permutation search is
- * more effective when the variables are ordered in a way that is close to the
- * true causal ordering. The permutation search is a greedy algorithm that
- * starts with an arbitrary ordering and then tries to improve the ordering
- * by swapping adjacent variables. The permutation search is not guaranteed
- * to find the optimal ordering, but it is guaranteed to find an ordering that
- * implies a DAG. The permutation search is also very fast, so it can be
- * called many times in order to find the best ordering. This algorithm
- * intercalates calls to the permutation search with calls to BES, which
- * finds a DAG for a given ordering. The algorithm then keeps track of the
- * best DAG found so far and the ordering that implies that DAG.</p>
+ * <p>Lam, W. Y., Andrews, B., & Ramsey, J. (2022, August). Greedy relaxations
+ * of the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence
+ * (pp. 1052-1062). PMLR.</p>
+ *
+ * <p>Teyssier, M., & Koller, D. (2012). Ordering-based search: A simple and effective
+ * algorithm for learning Bayesian networks. arXiv preprint arXiv:1207.1429.</p>
+ *
+ * <p>Solus, L., Wang, Y., & Uhler, C. (2021). Consistency guarantees for greedy
+ * permutation-based causal inference algorithms. Biometrika, 108(4), 795-814.</p>
+ *
+ * <p>The BOSS algorithm is based on the idea that implied DAGs for permutations
+ * are most optimal in their BIC scores when the variables in the permutations
+ * are ordered causally--that is, so that that causes in the models come
+ * before effects in a topological order.</p>
+ *
+ * <p>This algorithm is implemented as a "plugin-in" algorithm to a
+ * PermutationSearch object (see), which deals with certain details of knowledge
+ * handling that are common to different permutation searches.</p>
+ *
+ * <p>BOSS, like GRaSP (see), is characterized by high adjacency and
+ * oreintation precision (especially) and recall for moderate sample
+ * sizes. BOSS scales up currently further than GRaSP to larger variable
+ * sets and denser graphs and so is currently preferable from a practical
+ * standpoint, though performance is essentially identical.</p>
  *
  * <p>The algorithm works as follows:</p>
  *
  * <ol>
  *     <li>Start with an arbitrary ordering.</li>
  *     <li>Run the permutation search to find a better ordering.</li>
- *     <li>Run BES on the new ordering to find a DAG.</li>
- *     <li>Repeat steps 2 and 3 until the model score can no longer be improved..</li>
- *     <li>Return the CPDAG of the best DAG found.</li>
+ *     <li>Project this ordering to a CPDAG.</li>
+ *     <li>Optionally, Run BES this CPDAG.
+ *     <li>Return this CPDAG.</li>
  * </ol>
  *
- * <o>The BES step is needed for correctness, though with large models is has very
- * little effect on the output, since nearly all edges are alreayy oriented, so
- * a parameter is included to turn that step off.</o>
+ * <o>The optional BES step is needed for correctness, though with large
+ * models is has very little effect on the output, since nearly all edges
+ * are already oriented, so a parameter is included to turn that step off.</o>
  *
- * <p>The permutation search step uses an repeated insert operation.</p>
+ * <p>Knowledge can be used with this search. If tiered knowledge is used,
+ * then the procedure is carried out for each tier separately, given the v
+ * ariables preceding that tier, which allows the Boss algorithm to address
+ * tiered (e.g., time series) problems with larger numbers of variables.
+ * However, knowledge of required and forbidden edges is correctly implemented
+ * for arbitrary such knowledge.</p>
  *
- * <p>Knowledge can be used with this search. If tiered knowledge is used, then the procedure
- * is carried out for each tier separately, given the variable preceding that tier, which
- * allows the Boss algorithm to address tiered (e.g., time series) problems with larger numbers of
- * variables.</p>
+ * <p>A paremeter is included to restart the search a certain number of time.
+ * The idea is that the goal is to optimize a BIC score, so if several runs
+ * are done of the algorithm for the same data, the model with the highest
+ * BIC score should be returned and the others ignored.</p>
  *
- * <p>This class is meant to be used in the context of the PermutationSearch class (see).
+ * <p>This class is meant to be used in the context of the PermutationSearch
+ * class (see).
  *
  * @author bryanandrews
  * @author josephramsey
- * @see Sp
- * @see Grasp
  * @see PermutationSearch
+ * @see Grasp
  * @see Knowledge
  */
 public class Boss implements SuborderSearch {
@@ -69,7 +85,7 @@ public class Boss implements SuborderSearch {
     private int numStarts = 1;
 
     /**
-     * This algorithm will work with an arbitrary score.
+     * This algorithm will work with an arbitrary BIC score.
      *
      * @param score The Score to use.
      */
