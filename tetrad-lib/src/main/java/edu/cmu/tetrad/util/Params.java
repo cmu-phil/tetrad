@@ -200,6 +200,7 @@ public final class Params {
     public static final String SEM_GIC_RULE = "semGicRule";
     public static final String SEM_BIC_STRUCTURE_PRIOR = "semBicStructurePrior";
     public static final String POISSON_LAMBDA = "poissonLambda";
+    public static final String USE_BES = "useBes";
     public static final String NUM_STARTS = "numStarts";
     public static final String CACHE_SCORES = "cacheScores";
     public static final String OTHER_PERM_METHOD = "otherPermMethod";

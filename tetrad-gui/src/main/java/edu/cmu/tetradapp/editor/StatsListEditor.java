@@ -138,6 +138,7 @@ public class StatsListEditor extends JPanel {
         statistics.add(new AdjacencyFn());
         statistics.add(new ArrowheadTn());
         statistics.add(new ArrowheadTp());
+        statistics.add(new MaxUnfaithfulnessIndex());
         statistics.add(new F1Adj());
         statistics.add(new F1All());
         statistics.add(new F1Arrow());
@@ -171,7 +172,6 @@ public class StatsListEditor extends JPanel {
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new BidirectedLatentPrecision());
 
-        statistics.add(new MaxUnfaithfulnessRatio());
 
 
         // Greg table
