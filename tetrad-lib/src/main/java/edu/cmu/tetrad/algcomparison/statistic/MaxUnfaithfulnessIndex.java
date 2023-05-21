@@ -15,8 +15,8 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  *
  * <p>This statistic calculates the number of edges there would be in the graph for a permutation algorithm if all
  * maximal cliques were subject to maximum unfaithfulness for a linear, Gaussian model and the maximal cliques had no
- * common edges. This is given as a ratio to the number of edges in the estimated graph. The lower this number, the more
- * likely the estimated graph is a good fit for the data.</p>
+ * common edges. This is given as a ratio to the number of edges in the estimated graph. The closer this number is to 1,
+ * the more likely the estimated graph is a good fit for the data.</p>
  *
  * @author josephramsey
  */
