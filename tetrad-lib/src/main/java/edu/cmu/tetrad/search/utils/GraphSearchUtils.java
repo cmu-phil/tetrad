@@ -1095,7 +1095,6 @@ public final class GraphSearchUtils {
         if (!(e1 == null && e2 == null)) {
             if (e1 != null && e2 != null) {
                 if (!e1.equals(e2)) {
-                    System.out.println("Difference " + e1 + " " + e2);
                     error++;
                 }
             } else if (e2 == null) {

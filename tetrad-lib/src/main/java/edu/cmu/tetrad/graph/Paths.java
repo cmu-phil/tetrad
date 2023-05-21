@@ -91,6 +91,125 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
+    public Set<Set<Node>> maxCliques() {
+        int[][] graph = new int[this.graph.getNumNodes()][this.graph.getNumNodes()];
+        List<Node> nodes = this.graph.getNodes();
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = 0; j < nodes.size(); j++) {
+                if (this.graph.isAdjacentTo(nodes.get(i), nodes.get(j))) {
+                    graph[i][j] = 1;
+                    graph[j][i] = 1;
+                }
+            }
+        }
+
+        List<List<Integer>> _cliques = AllCliquesAlgorithm.findCliques(graph, graph.length);
+
+        Set<Set<Node>> cliques = new HashSet<>();
+        for (List<Integer> _clique : _cliques) {
+            if (_clique.size() < 2) continue;
+            Set<Node> clique = new HashSet<>();
+            for (Integer i : _clique) {
+                clique.add(nodes.get(i));
+            }
+            cliques.add(clique);
+        }
+
+        Set<Set<Node>> copy = new HashSet<>(cliques);
+        boolean changed = true;
+
+        while (changed) {
+            changed = false;
+
+            for (Set<Node> clique : new HashSet<>(copy)) {
+                for (Set<Node> other : new HashSet<>(copy)) {
+                    if (clique == other) continue;
+                    if (clique.containsAll(other)) {
+                        copy.remove(other);
+                        changed = true;
+                    }
+                }
+            }
+        }
+
+        return copy;
+    }
+
+    public static class AllCliquesAlgorithm {
+
+        public static void main(String[] args) {
+            int[][] graph = {
+                    {0, 1, 1, 0, 0},
+                    {1, 0, 1, 1, 0},
+                    {1, 1, 0, 1, 1},
+                    {0, 1, 1, 0, 1},
+                    {0, 0, 1, 1, 0}
+            };
+            int n = graph.length;
+
+            List<List<Integer>> cliques = findCliques(graph, n);
+            System.out.println("All Cliques:");
+            for (List<Integer> clique : cliques) {
+                System.out.println(clique);
+            }
+        }
+
+        public static List<List<Integer>> findCliques(int[][] graph, int n) {
+            List<List<Integer>> cliques = new ArrayList<>();
+            Set<Integer> candidates = new HashSet<>();
+            Set<Integer> excluded = new HashSet<>();
+            Set<Integer> included = new HashSet<>();
+
+            for (int i = 0; i < n; i++) {
+                candidates.add(i);
+            }
+
+            bronKerbosch(graph, candidates, excluded, included, cliques);
+
+            return cliques;
+        }
+
+        private static void bronKerbosch(int[][] graph, Set<Integer> candidates,
+                                         Set<Integer> excluded, Set<Integer> included,
+                                         List<List<Integer>> cliques) {
+            if (candidates.isEmpty() && excluded.isEmpty()) {
+                cliques.add(new ArrayList<>(included));
+                return;
+            }
+
+            Set<Integer> candidatesCopy = new HashSet<>(candidates);
+            for (int vertex : candidatesCopy) {
+                Set<Integer> neighbors = new HashSet<>();
+                for (int i = 0; i < graph.length; i++) {
+                    if (graph[vertex][i] == 1 && candidates.contains(i)) {
+                        neighbors.add(i);
+                    }
+                }
+
+                bronKerbosch(graph, intersect(candidates, neighbors),
+                        intersect(excluded, neighbors),
+                        union(included, vertex),
+                        cliques);
+
+                candidates.remove(vertex);
+                excluded.add(vertex);
+            }
+        }
+
+        private static Set<Integer> intersect(Set<Integer> set1, Set<Integer> set2) {
+            Set<Integer> result = new HashSet<>(set1);
+            result.retainAll(set2);
+            return result;
+        }
+
+        private static Set<Integer> union(Set<Integer> set, int element) {
+            Set<Integer> result = new HashSet<>(set);
+            result.add(element);
+            return result;
+        }
+    }
+
+
     /**
      * @return the connected components of the given graph, as a list of lists
      * of nodes.

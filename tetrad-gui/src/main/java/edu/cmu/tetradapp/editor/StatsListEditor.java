@@ -171,6 +171,8 @@ public class StatsListEditor extends JPanel {
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new BidirectedLatentPrecision());
 
+        statistics.add(new MaxUnfaithfulnessRatio());
+
 
         // Greg table
 //        statistics.add(new AncestorPrecision());
