@@ -83,7 +83,7 @@ public final class Cpc implements IGraphSearch {
     private SepsetMap sepsets;
     private boolean verbose;
     private boolean stable;
-    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
 
     //=============================CONSTRUCTORS==========================//
 

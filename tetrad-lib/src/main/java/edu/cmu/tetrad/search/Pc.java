@@ -78,7 +78,7 @@ public class Pc implements IGraphSearch {
     private int numIndependenceTests;
     private boolean verbose = false;
     private boolean stable = false;
-    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
 
     //=============================CONSTRUCTORS==========================//
 

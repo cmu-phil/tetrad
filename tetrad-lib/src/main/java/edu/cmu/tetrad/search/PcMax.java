@@ -78,7 +78,7 @@ public final class PcMax implements IGraphSearch {
     private boolean stable = false;
     private boolean useHeuristic = false;
     private int maxPPathLength = -1;
-    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
     private boolean aggressivelyPreventCycles = false;
 
     //=============================CONSTRUCTORS==========================//
