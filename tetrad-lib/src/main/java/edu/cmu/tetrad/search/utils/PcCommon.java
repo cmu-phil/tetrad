@@ -64,7 +64,7 @@ public final class PcCommon implements IGraphSearch {
 
     /**
      * Gives the type of conflict to be used, priority (when there is a conflict, keep the
-     * orientation that has already been made, bidirected (when there is a conflict, orient
+     * orientation that has already been made), bidirected (when there is a conflict, orient
      * a bidirected edge), or overwrite (when there is a conflict, use the new orientation).
      *
      * @see Pc
@@ -305,18 +305,18 @@ public final class PcCommon implements IGraphSearch {
         return new HashSet<>(this.graph.getEdges());
     }
 
-    /**
-     * Returns the non-adjacenices in the search graph.
-     *
-     * @return These non-adjacencies.
-     */
-    public Set<Edge> getNonadjacencies() {
-        Graph complete = GraphUtils.completeGraph(this.graph);
-        Set<Edge> nonAdjacencies = complete.getEdges();
-        Graph undirected = GraphUtils.undirectedGraph(this.graph);
-        nonAdjacencies.removeAll(undirected.getEdges());
-        return new HashSet<>(nonAdjacencies);
-    }
+//    /**
+//     * Returns the non-adjacenices in the search graph.
+//     *
+//     * @return These non-adjacencies.
+//     */
+//    public Set<Edge> getNonadjacencies() {
+//        Graph complete = GraphUtils.completeGraph(this.graph);
+//        Set<Edge> nonAdjacencies = complete.getEdges();
+//        Graph undirected = GraphUtils.undirectedGraph(this.graph);
+//        nonAdjacencies.removeAll(undirected.getEdges());
+//        return new HashSet<>(nonAdjacencies);
+//    }
 
     /**
      * Runs the search and returns the search graph.

@@ -106,6 +106,7 @@ public class Fas implements IFas {
      */
     private boolean stable;
     private long elapsedTime = 0L;
+    private PrintStream out = System.out;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -144,6 +145,8 @@ public class Fas implements IFas {
     public Graph search(List<Node> nodes) {
         long startTime = MillisecondTimes.timeMillis();
         nodes = new ArrayList<>(nodes);
+
+        this.logger.addOutputStream(out);
 
         if (verbose) {
             this.logger.log("info", "Starting Fast Adjacency Search.");
@@ -339,7 +342,7 @@ public class Fas implements IFas {
      */
     @Override
     public void setOut(PrintStream out) {
-        throw new UnsupportedOperationException("Print to out for FAS is not used.");
+        this.out = out;
     }
 
     /**

@@ -72,7 +72,7 @@ public class Grasp {
     private long start;
     private boolean useScore = true;
     private boolean useRaskuttiUhler;
-    private boolean ordered;
+    private boolean ordered = false;
     private boolean verbose;
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;

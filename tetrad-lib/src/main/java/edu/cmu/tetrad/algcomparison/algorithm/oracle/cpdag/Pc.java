@@ -69,9 +69,7 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             search.setAggressivelyPreventCycles(true);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(this.knowledge);
-//            search.setConcurrent(parameters.getBoolean(Params.CONCURRENT_FAS));
-            search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
-            search.setMaxPPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
+            search.setStable(parameters.getBoolean(Params.STABLE_FAS));
             return search.search();
         } else {
             Pc pcAll = new Pc(this.test);

@@ -67,57 +67,17 @@ import java.util.Set;
  * @see Knowledge
  */
 public class Pc implements IGraphSearch {
-
-    /**
-     * The independence test used for the PC search.g
-     */
     private final IndependenceTest independenceTest;
-
-    /**
-     * Forbidden and required edges for the search.
-     */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * Sepset information accumulated in the search.
-     */
     private SepsetMap sepsets;
-
-    /**
-     * The maximum number of nodes conditioned on in the search. The default it 1000.
-     */
     private int depth = 1000;
-
-    /**
-     * The graph that's constructed during the search.
-     */
     private Graph graph;
-
-    /**
-     * Elapsed time of the most recent search.
-     */
     private long elapsedTime;
-
-    /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
     private boolean aggressivelyPreventCycles;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * The number of indepdendence tests in the last search.
-     */
     private int numIndependenceTests;
-
-    private boolean verbose;
-    private boolean stable;
-    private boolean useMaxP = false;
-    private int maxPPathLength = -1;
+    private boolean verbose = false;
+    private boolean stable = false;
     private final PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
 
     //=============================CONSTRUCTORS==========================//
@@ -199,7 +159,7 @@ public class Pc implements IGraphSearch {
 
     /**
      * Returns the current depth of search--that is, the maximum number of conditioning nodes
-     * for any conditional independence checked.
+     * for any conditional independence checked. Default is 1000.
      *
      * @return This depth.
      */
@@ -308,8 +268,6 @@ public class Pc implements IGraphSearch {
 
         search.setColliderDiscovery(PcCommon.ColliderDiscovery.FAS_SEPSETS);
         search.setConflictRule(conflictRule);
-        search.setUseHeuristic(useMaxP);
-        search.setMaxPathLength(maxPPathLength);
         search.setVerbose(verbose);
 
         this.graph = search.search();
@@ -381,7 +339,7 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Sets whether verbose output should be given.
+     * Sets whether verbose output should be given. Default is false.
      *
      * @param verbose True iff the case.
      */
@@ -390,30 +348,12 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Sets whether the stable adjacency search should be used.
+     * Sets whether the stable adjacency search should be used. Default is false.
      *
      * @param stable True iff the case.
      */
     public void setStable(boolean stable) {
         this.stable = stable;
-    }
-
-    /**
-     * Sets whether the max p method should be used in the adjacency searc h.
-     *
-     * @param useMaxP iff the case.
-     */
-    public void setUseMaxP(boolean useMaxP) {
-        this.useMaxP = useMaxP;
-    }
-
-    /**
-     * Sets the maximum path length for the PC heuristic.
-     *
-     * @param maxPPathLength this length.
-     */
-    public void setMaxPPathLength(int maxPPathLength) {
-        this.maxPPathLength = maxPPathLength;
     }
 }
 
