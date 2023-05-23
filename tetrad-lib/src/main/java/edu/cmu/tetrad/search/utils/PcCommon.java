@@ -75,7 +75,7 @@ public final class PcCommon implements IGraphSearch {
 
     private final IndependenceTest independenceTest;
     private final TetradLogger logger = TetradLogger.getInstance();
-    private int heuristic;
+    private int heuristic = 0;
     private Knowledge knowledge = new Knowledge();
     private int depth = 1000;
     private Graph graph;
