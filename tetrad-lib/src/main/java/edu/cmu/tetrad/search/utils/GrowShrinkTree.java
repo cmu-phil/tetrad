@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public class GrowShrinkTree {
-    private final   Score score;
+    private final Score score;
     private final Map<Node, Integer> index;
     private final Node node;
     private final int nodeIndex;
@@ -15,7 +15,7 @@ public class GrowShrinkTree {
     private List<Node> forbidden;
     private GSTNode root;
 
-    public GrowShrinkTree(Score score,  Map<Node, Integer> index, Node node) {
+    public GrowShrinkTree(Score score, Map<Node, Integer> index, Node node) {
         this.score = score;
         this.index = index;
         this.node = node;
@@ -67,9 +67,13 @@ public class GrowShrinkTree {
         return this.score.getVariables();
     }
 
-    public List<Node> getRequired() { return this.required; }
+    public List<Node> getRequired() {
+        return this.required;
+    }
 
-    public List<Node> getForbidden() { return this.forbidden; }
+    public List<Node> getForbidden() {
+        return this.forbidden;
+    }
 
     public void setKnowledge(List<Node> required, List<Node> forbidden) {
         this.root = new GSTNode(this);
@@ -166,7 +170,7 @@ public class GrowShrinkTree {
                         parents.remove(best);
                         this.remove.add(best);
                     }
-                } while(best != null);
+                } while (best != null);
 
             }
             parents.removeAll(this.remove);

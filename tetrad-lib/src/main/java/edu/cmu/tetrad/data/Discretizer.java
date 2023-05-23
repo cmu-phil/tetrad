@@ -28,11 +28,10 @@ import java.util.*;
 
 
 /**
- * Discretizes individual columns of discrete or continuous data. Continuous
- * data is discretized by specifying a list of n - 1 cutoffs for n values in the
- * discretized data, with optional string labels for these values. Discrete data
- * is discretized by specifying a mapping from old value names to new
- * value names, the idea being that old values may be merged.
+ * Discretizes individual columns of discrete or continuous data. Continuous data is discretized by specifying a list of
+ * n - 1 cutoffs for n values in the discretized data, with optional string labels for these values. Discrete data is
+ * discretized by specifying a mapping from old value names to new value names, the idea being that old values may be
+ * merged.
  *
  * @author josephramsey
  * @author Tyler Gibson
@@ -43,8 +42,7 @@ public class Discretizer {
     private boolean variablesCopied = true;
 
     /**
-     * Constructs a new discretizer that discretizes every variable as binary,
-     * using evenly distributed values.
+     * Constructs a new discretizer that discretizes every variable as binary, using evenly distributed values.
      */
     public Discretizer(DataSet dataSet) {
         this.sourceDataSet = dataSet;
@@ -58,8 +56,7 @@ public class Discretizer {
     }
 
     /**
-     * Sets the given node to discretized using evenly distributed values using the
-     * given number of categories.
+     * Sets the given node to discretized using evenly distributed values using the given number of categories.
      */
     public void equalCounts(Node node, int numCategories) {
         if (node instanceof DiscreteVariable) return;
@@ -78,8 +75,7 @@ public class Discretizer {
     }
 
     /**
-     * Sets the given node to discretized using evenly spaced intervals using the
-     * given number of categories.
+     * Sets the given node to discretized using evenly spaced intervals using the given number of categories.
      */
     public void equalIntervals(Node node, int numCategories) {
         if (node instanceof DiscreteVariable) return;
@@ -249,23 +245,18 @@ public class Discretizer {
 
 
     /**
-     * Discretizes the continuous data in the given column using the specified
-     * cutoffs and category names. The following scheme is used. If cutoffs[i -
-     * 1] &lt; v &lt;= cutoffs[i] (where cutoffs[-1] = negative infinity), then v is
-     * mapped to category i. If category names are supplied, the discrete column
-     * returned will use these category names.
+     * Discretizes the continuous data in the given column using the specified cutoffs and category names. The following
+     * scheme is used. If cutoffs[i - 1] &lt; v &lt;= cutoffs[i] (where cutoffs[-1] = negative infinity), then v is
+     * mapped to category i. If category names are supplied, the discrete column returned will use these category
+     * names.
      *
-     * @param cutoffs      The cutoffs used to discretize the data. Should have
-     *                     length c - 1, where c is the number of categories in
-     *                     the discretized data.
+     * @param cutoffs      The cutoffs used to discretize the data. Should have length c - 1, where c is the number of
+     *                     categories in the discretized data.
      * @param variableName the name of the returned variable.
-     * @param categories   An optional list of category names; may be null. If
-     *                     this is supplied, the discrete column returned will
-     *                     use these category names. If this is non-null, it
-     *                     must have length c, where c is the number of
-     *                     categories for the discretized data. If any category
-     *                     names are null, default category names will be used
-     *                     for those.
+     * @param categories   An optional list of category names; may be null. If this is supplied, the discrete column
+     *                     returned will use these category names. If this is non-null, it must have length c, where c
+     *                     is the number of categories for the discretized data. If any category names are null, default
+     *                     category names will be used for those.
      * @return The discretized column.
      */
     public static Discretization discretize(double[] _data, double[] cutoffs,

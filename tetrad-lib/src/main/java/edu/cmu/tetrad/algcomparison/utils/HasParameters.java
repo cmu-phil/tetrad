@@ -8,8 +8,8 @@ import java.util.List;
 public interface HasParameters {
 
     /**
-     * @return Returns the list of parameter names that are used. These are looked up
-     * in ParamMap, so if they're not already defined they'll need to be defined there.
+     * @return Returns the list of parameter names that are used. These are looked up in ParamMap, so if they're not
+     * already defined they'll need to be defined there.
      */
     List<String> getParameters();
 }

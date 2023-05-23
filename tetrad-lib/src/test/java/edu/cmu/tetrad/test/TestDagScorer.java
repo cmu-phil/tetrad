@@ -35,8 +35,8 @@ import static org.junit.Assert.assertEquals;
 
 
 /**
- * Tests the MeasurementSimulator class using diagnostics devised by Richard
- * Scheines. The diagnostics are described in the Javadocs, below.
+ * Tests the MeasurementSimulator class using diagnostics devised by Richard Scheines. The diagnostics are described in
+ * the Javadocs, below.
  *
  * @author josephramsey
  */

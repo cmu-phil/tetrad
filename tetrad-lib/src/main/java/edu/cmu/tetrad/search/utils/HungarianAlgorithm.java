@@ -83,8 +83,7 @@ public class HungarianAlgorithm {
     }
 
     /**
-     * Check if all columns are covered. If that's the case then the
-     * optimal solution is found
+     * Check if all columns are covered. If that's the case then the optimal solution is found
      *
      * @return true or false
      */
@@ -98,10 +97,8 @@ public class HungarianAlgorithm {
     }
 
     /**
-     * Step 1:
-     * Reduce the matrix so that in each row and column at least one zero exists:
-     * 1. subtract each row minima from each element of the row
-     * 2. subtract each column minima from each element of the column
+     * Step 1: Reduce the matrix so that in each row and column at least one zero exists: 1. subtract each row minima
+     * from each element of the row 2. subtract each column minima from each element of the column
      */
     private void step1() {
         // rows
@@ -136,8 +133,7 @@ public class HungarianAlgorithm {
     }
 
     /**
-     * Step 2:
-     * mark each 0 with a "square", if there are no other marked zeroes in the same row or column
+     * Step 2: mark each 0 with a "square", if there are no other marked zeroes in the same row or column
      */
     private void step2() {
         int[] rowHasSquare = new int[costMatrix.length];
@@ -158,8 +154,7 @@ public class HungarianAlgorithm {
     }
 
     /**
-     * Step 3:
-     * Cover all columns which are marked with a "square"
+     * Step 3: Cover all columns which are marked with a "square"
      */
     private void step3() {
         for (int i = 0; i < squareInCol.length; i++) {
@@ -168,10 +163,8 @@ public class HungarianAlgorithm {
     }
 
     /**
-     * Step 7:
-     * 1. Find the smallest uncovered value in the matrix.
-     * 2. Subtract it from all uncovered values
-     * 3. Add it to all twice-covered values
+     * Step 7: 1. Find the smallest uncovered value in the matrix. 2. Subtract it from all uncovered values 3. Add it to
+     * all twice-covered values
      */
     private void step7() {
         // Find the smallest uncovered value in the matrix
@@ -203,8 +196,7 @@ public class HungarianAlgorithm {
     }
 
     /**
-     * Step 4:
-     * Find zero value Z_0 and mark it as "0*".
+     * Step 4: Find zero value Z_0 and mark it as "0*".
      *
      * @return position of Z_0 in the matrix
      */
@@ -223,8 +215,7 @@ public class HungarianAlgorithm {
     }
 
     /**
-     * Step 6:
-     * Create a chain K of alternating "squares" and "0*"
+     * Step 6: Create a chain K of alternating "squares" and "0*"
      *
      * @param mainZero => Z_0 of Step 4
      */

@@ -34,10 +34,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable,
- * and X and Y are discrete variable not in S, by applying a conditional Chi Square test.
- * A description of such a test is given in Fienberg, "The Analysis of Cross-Classified
- * Categorical Data," 2nd edition. The formula for degrees of freedom used in this test are
+ * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
+ * variable not in S, by applying a conditional Chi Square test. A description of such a test is given in Fienberg, "The
+ * Analysis of Cross-Classified Categorical Data," 2nd edition. The formula for degrees of freedom used in this test are
  * equivalent to the formulation on page 142 of Fienberg.
  *
  * @author josephramsey
@@ -216,7 +215,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     /**
      * Returns True if the variables z determing the variable z.
      *
-     * @param z  The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
+     * @param z The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
      * @param x The one variable whose determination by z we want to know.
      * @return true if it is estimated that z determines x or z determines y.
      */
@@ -294,8 +293,8 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variables over which this independence checker is capable of determinine
-     * independence relations-- that is, all the variables in the given graph or the given data set.
+     * Returns the list of variables over which this independence checker is capable of determinine independence
+     * relations-- that is, all the variables in the given graph or the given data set.
      *
      * @return This list.
      */

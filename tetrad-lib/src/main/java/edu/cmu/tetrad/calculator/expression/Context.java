@@ -30,8 +30,7 @@ public interface Context {
 
 
     /**
-     * @return the double value for the given var, or null if the variable has not been
-     * assigned a value.
+     * @return the double value for the given var, or null if the variable has not been assigned a value.
      */
     Double getValue(String var);
 

@@ -24,8 +24,8 @@ package edu.cmu.tetrad.session;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * Interface indicating that a parameter object can and should be reinitialized
- * at each new execution in a simulation edu.cmu.tetrad.study.
+ * Interface indicating that a parameter object can and should be reinitialized at each new execution in a simulation
+ * edu.cmu.tetrad.study.
  *
  * @author josephramsey
  * @see SimulationStudy
@@ -34,8 +34,7 @@ public interface ExecutionRestarter extends TetradSerializable {
     long serialVersionUID = 23L;
 
     /**
-     * Specifies a procedure that should be followed when a new execution has
-     * been initiated.
+     * Specifies a procedure that should be followed when a new execution has been initiated.
      */
     void newExecution();
 }

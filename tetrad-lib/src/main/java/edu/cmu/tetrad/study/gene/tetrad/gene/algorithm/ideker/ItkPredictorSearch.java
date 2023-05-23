@@ -27,8 +27,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * This class contains methods which implement the algorithm described in the
- * paper "  " by Ideker, Thorsen and Karp.
+ * This class contains methods which implement the algorithm described in the paper "  " by Ideker, Thorsen and Karp.
  *
  * @author Frank Wimberly
  */
@@ -329,9 +328,8 @@ public class ItkPredictorSearch {
     }
 
     /**
-     * This method determines whether the levels for a given gene differ between
-     * two perturbations p0 and p1 (rows of the perturbation matrix).  It
-     * returns true if they do differ and false otherwise.
+     * This method determines whether the levels for a given gene differ between two perturbations p0 and p1 (rows of
+     * the perturbation matrix).  It returns true if they do differ and false otherwise.
      */
     public boolean differByPerturbation(int gene, int p0, int p1) {
         return !(this.expression[p0][gene] == this.expression[p1][gene] ||
@@ -345,8 +343,8 @@ public class ItkPredictorSearch {
     }
 
     /**
-     * Computes a byte vector which corresponds to the argument ind.  rep[0] is
-     * the high order bit. E.g.  if n=3 and ind=6 the vector will be (1, 1, 0).
+     * Computes a byte vector which corresponds to the argument ind.  rep[0] is the high order bit. E.g.  if n=3 and
+     * ind=6 the vector will be (1, 1, 0).
      */
     public byte[] booleanRepresentation(int ind, int n) {
         byte[] rep = new byte[n];

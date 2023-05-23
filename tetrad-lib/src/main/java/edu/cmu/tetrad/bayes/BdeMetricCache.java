@@ -33,25 +33,19 @@ import java.util.Set;
 
 /**
  * <p>Provides a method for computing the score of a model, called the BDe
- * metric (Bayesian Dirchlet likelihood equivalence), given a dataset (assumes
- * no missing values) and a Bayes parameterized network (assumes no latent
- * variables).&gt; 0 <p>This version has a method that computes the score for a
- * given factor of a model, where a factor is determined by a node and its
- * parents.  It stores scores in a map whose argument is an ordered pair
- * consisting of 1) a node and 2) set of parents.  The score for the entire
- * model is the product of the scores of its factors.  Since the log of the
- * gamma function is used here the sum of the logs is computed as the score.
- * Compare this with the score method in the BdeMetric class which computes the
- * score for the entire model in one pass.  The advantage of the approach in
- * this class is that it is more efficient in the context of a search algorithm
- * where different models are scored but where many of them will have the same
- * factors. This class stores the score (relative to the dataset) for any [node,
- * set of parents] pair and thus avoids the expensive log gamma function calls.
- * Instead it looks in the map scores to see if it has already computed the
- * score and, if so, returns the previously computed value.&gt; 0 <p>See
- * "Learning Bayesian Networks:  The Combination of Knowledge and Statistical
- * Data" by David Heckerman, Dan Geiger, and David M. Chickering. Microsoft
- * Technical Report MSR-TR-94-09.&gt; 0
+ * metric (Bayesian Dirchlet likelihood equivalence), given a dataset (assumes no missing values) and a Bayes
+ * parameterized network (assumes no latent variables).&gt; 0 <p>This version has a method that computes the score for a
+ * given factor of a model, where a factor is determined by a node and its parents.  It stores scores in a map whose
+ * argument is an ordered pair consisting of 1) a node and 2) set of parents.  The score for the entire model is the
+ * product of the scores of its factors.  Since the log of the gamma function is used here the sum of the logs is
+ * computed as the score. Compare this with the score method in the BdeMetric class which computes the score for the
+ * entire model in one pass.  The advantage of the approach in this class is that it is more efficient in the context of
+ * a search algorithm where different models are scored but where many of them will have the same factors. This class
+ * stores the score (relative to the dataset) for any [node, set of parents] pair and thus avoids the expensive log
+ * gamma function calls. Instead it looks in the map scores to see if it has already computed the score and, if so,
+ * returns the previously computed value.&gt; 0 <p>See "Learning Bayesian Networks:  The Combination of Knowledge and
+ * Statistical Data" by David Heckerman, Dan Geiger, and David M. Chickering. Microsoft Technical Report
+ * MSR-TR-94-09.&gt; 0
  *
  * @author Frank Wimberly
  */
@@ -75,9 +69,8 @@ public final class BdeMetricCache {
     }
 
     /**
-     * Computes the BDe score, using the logarithm of the gamma function,
-     * relative to the data, of the factor determined by a node and its
-     * parents.
+     * Computes the BDe score, using the logarithm of the gamma function, relative to the data, of the factor determined
+     * by a node and its parents.
      */
     public double scoreLnGam(Node node, Set<Node> parents, BayesPm bayesPmMod,
                              BayesIm bayesIm) {
@@ -439,17 +432,15 @@ public final class BdeMetricCache {
     }
 
     /**
-     * @return the index of that variable (column) in the dataset associated
-     * with the String in the argument.  Usually in the above code the name
-     * comes from a node in the graph of the BayesPm.
+     * @return the index of that variable (column) in the dataset associated with the String in the argument.  Usually
+     * in the above code the name comes from a node in the graph of the BayesPm.
      */
     private int getVarIndex(String name) {
         return this.dataSet.getColumn(this.dataSet.getVariable(name));
     }
 
     /**
-     * This method is used in testing and debugging and not in the BDe metric
-     * calculations.
+     * This method is used in testing and debugging and not in the BDe metric calculations.
      */
     public double[][] getObservedCounts(Node node, BayesPm bayesPm,
                                         BayesIm bayesIm) {
@@ -469,8 +460,7 @@ public final class BdeMetricCache {
     }
 
     /**
-     * This is just for testing the operation of the inner class and the map
-     * from nodes and parent sets to scores.
+     * This is just for testing the operation of the inner class and the map from nodes and parent sets to scores.
      */
     public int getScoreCount(Node node, Set<Node> parents) {
         NodeParentsPair nodeParents = new NodeParentsPair(node, parents);
@@ -489,10 +479,9 @@ public final class BdeMetricCache {
     }
 
     /**
-     * An inner class for storing and processing ordered pairs whose first
-     * element is a node and whose second element is a set of parents of that
-     * node. Instances of this class are used as arguments of the Maps scores
-     * and scoreCounts in BdeMetricCache.
+     * An inner class for storing and processing ordered pairs whose first element is a node and whose second element is
+     * a set of parents of that node. Instances of this class are used as arguments of the Maps scores and scoreCounts
+     * in BdeMetricCache.
      */
     private static final class NodeParentsPair {
 

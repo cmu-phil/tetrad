@@ -38,8 +38,7 @@ public class RandomActiveLagGraph extends ActiveLagGraph
     //===========================CONSTRUCTORS===========================//
 
     /**
-     * Using the given parameters, constructs an BasicLagGraph that is
-     * randomized upon construction.
+     * Using the given parameters, constructs an BasicLagGraph that is randomized upon construction.
      *
      * @param params an LagGraphParams object.
      */

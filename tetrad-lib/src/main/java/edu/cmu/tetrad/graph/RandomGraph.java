@@ -392,8 +392,8 @@ public class RandomGraph {
     }
 
     /**
-     * Makes a cyclic graph by repeatedly adding cycles of length of 3, 4, or 5
-     * to the graph, then finally adding two cycles.
+     * Makes a cyclic graph by repeatedly adding cycles of length of 3, 4, or 5 to the graph, then finally adding two
+     * cycles.
      */
     public static Graph randomCyclicGraph2(int numNodes, int numEdges, int maxDegree) {
 
@@ -480,8 +480,8 @@ public class RandomGraph {
     }
 
     /**
-     * Makes a cyclic graph by repeatedly adding cycles of length of 3, 4, or 5
-     * to the graph, then finally adding two cycles.
+     * Makes a cyclic graph by repeatedly adding cycles of length of 3, 4, or 5 to the graph, then finally adding two
+     * cycles.
      */
     public static Graph randomCyclicGraph3(int numNodes, int numEdges, int maxDegree, double probCycle, double probTwoCycle) {
 
@@ -601,26 +601,19 @@ public class RandomGraph {
     }
 
     /**
-     * Generates random DAGs uniformly with certain classes of DAGs using variants
-     * of Markov chain algorithm by Malancon, Dutour, and Philippe. Pieces of the
-     * infrastructure of the algorithm are adapted from the the BNGenerator class by
-     * Jaime Shinsuke Ide jaime.ide@poli.usp.br, released under the GNU General
-     * Public License, for which the following statement is being included as part
-     * of the license agreement:
+     * Generates random DAGs uniformly with certain classes of DAGs using variants of Markov chain algorithm by
+     * Malancon, Dutour, and Philippe. Pieces of the infrastructure of the algorithm are adapted from the the
+     * BNGenerator class by Jaime Shinsuke Ide jaime.ide@poli.usp.br, released under the GNU General Public License, for
+     * which the following statement is being included as part of the license agreement:
      * <p>
-     * "The BNGenerator distribution is free software; you can redistribute it
-     * and/or modify it under the terms of the GNU General Public License as
-     * published by the Free Software Foundation (either version 2 of the License
-     * or, at your option, any later version), provided that this notice and the
-     * name of the author appear in all copies. "If you're using the software,
-     * please notify jaime.ide@poli.usp.br so that you can receive updates and
-     * patches. BNGenerator is distributed "as is", in the hope that it will be
-     * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-     * Public License for more details. You should have received a copy of the GNU
-     * General Public License along with the BNGenerator distribution. If not, write
-     * to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139,
-     * USA."
+     * "The BNGenerator distribution is free software; you can redistribute it and/or modify it under the terms of the
+     * GNU General Public License as published by the Free Software Foundation (either version 2 of the License or, at
+     * your option, any later version), provided that this notice and the name of the author appear in all copies. "If
+     * you're using the software, please notify jaime.ide@poli.usp.br so that you can receive updates and patches.
+     * BNGenerator is distributed "as is", in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+     * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+     * for more details. You should have received a copy of the GNU General Public License along with the BNGenerator
+     * distribution. If not, write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."
      *
      * @author josephramsey
      */
@@ -649,14 +642,13 @@ public class RandomGraph {
         private int maxOutDegree;
 
         /**
-         * The maximum degree of a node in a graph. The default is the maximum
-         * number possible (the value -1 is used for this).
+         * The maximum degree of a node in a graph. The default is the maximum number possible (the value -1 is used for
+         * this).
          */
         private int maxDegree;
 
         /**
-         * The maximum number of edges in the graph. The default is the number of
-         * nodes minus 1.
+         * The maximum number of edges in the graph. The default is the number of nodes minus 1.
          */
         private int maxEdges;
 
@@ -666,16 +658,14 @@ public class RandomGraph {
         private int numIterations;
 
         /**
-         * Matrix of parents for each node. parentMatrix[i][0] indicates the number
-         * of parents; parentMatrix[i][k] represents the (k-1)'th parent, k =
-         * 1...max.
+         * Matrix of parents for each node. parentMatrix[i][0] indicates the number of parents; parentMatrix[i][k]
+         * represents the (k-1)'th parent, k = 1...max.
          */
         private int[][] parentMatrix;
 
         /**
-         * Matrix of parents for each node. childMatrix[i][0] indicates the number
-         * of parents; childMatrix[i][k] represents the (k-1)'th child, k =
-         * 1...max.
+         * Matrix of parents for each node. childMatrix[i][0] indicates the number of parents; childMatrix[i][k]
+         * represents the (k-1)'th child, k = 1...max.
          */
         private int[][] childMatrix;
 
@@ -731,8 +721,7 @@ public class RandomGraph {
         }
 
         /**
-         * Sets the number of nodes and resets all of the other parameters to
-         * default values accordingly.
+         * Sets the number of nodes and resets all of the other parameters to default values accordingly.
          *
          * @param numNodes Must be an integer &gt;= 4.
          */
@@ -935,9 +924,8 @@ public class RandomGraph {
         }
 
         /**
-         * This is the algorithm in Melancon and Philippe, "Generating connected
-         * acyclic digraphs uniformly at random" (draft of March 25, 2004). In
-         * addition to acyclicity, some other conditions have been added in.
+         * This is the algorithm in Melancon and Philippe, "Generating connected acyclic digraphs uniformly at random"
+         * (draft of March 25, 2004). In addition to acyclicity, some other conditions have been added in.
          */
         private void generateConnectedDag() {
             initializeGraphAsChain();
@@ -1005,8 +993,7 @@ public class RandomGraph {
         }
 
         /**
-         * @return true if the degree of the getModel nodes randomParent and
-         * randomChild do not exceed maxDegree.
+         * @return true if the degree of the getModel nodes randomParent and randomChild do not exceed maxDegree.
          */
         private boolean maxDegreeNotExceeded() {
             int parentDegree = this.parentMatrix[this.randomParent][0] + this.childMatrix[this.randomParent][0] - 1;
@@ -1015,24 +1002,21 @@ public class RandomGraph {
         }
 
         /**
-         * @return true if the degrees of the getModel nodes randomParent and
-         * randomChild do not exceed maxIndegree.
+         * @return true if the degrees of the getModel nodes randomParent and randomChild do not exceed maxIndegree.
          */
         private boolean maxIndegreeNotExceeded() {
             return this.parentMatrix[this.randomChild][0] <= getMaxInDegree();
         }
 
         /**
-         * @return true if the degrees of the getModel nodes randomParent and
-         * randomChild do not exceed maxOutdegree.
+         * @return true if the degrees of the getModel nodes randomParent and randomChild do not exceed maxOutdegree.
          */
         private boolean maxOutdegreeNotExceeded() {
             return this.childMatrix[this.randomParent][0] <= getMaxOutDegree();
         }
 
         /**
-         * @return true iff the random edge randomParent-->randomChild would be
-         * disconnecting were it to be removed.
+         * @return true iff the random edge randomParent-->randomChild would be disconnecting were it to be removed.
          */
         private boolean isDisconnecting() {
             boolean[] visited = new boolean[getNumNodes()];
@@ -1085,9 +1069,8 @@ public class RandomGraph {
 
 
         /**
-         * @return true if the graph is still acyclic after the last edge was added.
-         * This method only works before adding the random edge, not after removing
-         * an edge.
+         * @return true if the graph is still acyclic after the last edge was added. This method only works before
+         * adding the random edge, not after removing an edge.
          */
         private boolean isAcyclic() {
             boolean[] visited = new boolean[getNumNodes()];

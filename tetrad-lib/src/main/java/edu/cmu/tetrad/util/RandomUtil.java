@@ -73,9 +73,8 @@ public class RandomUtil {
     }
 
     /**
-     * This is just the RandomUtil.shuffle method (thanks!) but using the Tetrad
-     * RandomUtil to get random numbers. The purpose of this copying is to allow
-     * shuffles to happen deterministically given the Randomutils seed.
+     * This is just the RandomUtil.shuffle method (thanks!) but using the Tetrad RandomUtil to get random numbers. The
+     * purpose of this copying is to allow shuffles to happen deterministically given the Randomutils seed.
      *
      * @param list The list to be shuffled.
      */

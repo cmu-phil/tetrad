@@ -38,16 +38,13 @@ import java.util.concurrent.*;
 
 /**
  * <p>Restricts the FGES algorithm (see) to the operations needed just
- * to find the graph over the Markov blanket of a variable X (or a graph
- * over the Markov blankets of a list of variables X1,..,Xn), together
- * with the target X (or, respectively, the targets X1,...,Xn). The
- * reference is this:</p>
+ * to find the graph over the Markov blanket of a variable X (or a graph over the Markov blankets of a list of variables
+ * X1,..,Xn), together with the target X (or, respectively, the targets X1,...,Xn). The reference is this:</p>
  *
  * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017).
- * A million variables and more: the fast greedy equivalence search algorithm
- * for learning high-dimensional graphical causal models, with an application
- * to functional magnetic resonance images. International journal of data science
- * and analytics, 3, 121-129.</p>
+ * A million variables and more: the fast greedy equivalence search algorithm for learning high-dimensional graphical
+ * causal models, with an application to functional magnetic resonance images. International journal of data science and
+ * analytics, 3, 121-129.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -83,9 +80,8 @@ public final class FgesMb {
      */
     private List<Node> variables;
     /**
-     * The true graph, if known. If this is provided, asterisks will be printed
-     * out next to false positive added edges (that is, edges added that aren't
-     * adjacencies in the true graph).
+     * The true graph, if known. If this is provided, asterisks will be printed out next to false positive added edges
+     * (that is, edges added that aren't adjacencies in the true graph).
      */
     private Graph trueGraph;
     /**
@@ -145,9 +141,8 @@ public final class FgesMb {
     //==========================PUBLIC METHODS==========================//
 
     /**
-     * Constructor. Construct a Score and pass it in here. The totalScore should return a
-     * positive value in case of conditional dependence and a negative values in
-     * case of conditional independence. See Chickering (2002), locally
+     * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
+     * conditional dependence and a negative values in case of conditional independence. See Chickering (2002), locally
      * consistent scoring criterion.
      */
     public FgesMb(Score score) {
@@ -159,8 +154,7 @@ public final class FgesMb {
     }
 
     /**
-     * Set to true if it is assumed that all path pairs with one length 1 path
-     * do not cancel.
+     * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
      *
      * @param faithfulnessAssumed True if so.
      * @see Fges#setFaithfulnessAssumed(boolean)
@@ -170,9 +164,8 @@ public final class FgesMb {
     }
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges till
-     * model is significant. Then start deleting edges till a minimum is
-     * achieved.
+     * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
+     * edges till a minimum is achieved.
      *
      * @return the resulting CPDAG.
      */
@@ -263,8 +256,7 @@ public final class FgesMb {
     /**
      * Sets the background knowledge.
      *
-     * @param knowledge the knowledge object, specifying forbidden and required
-     *                  edges.
+     * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -283,8 +275,7 @@ public final class FgesMb {
     }
 
     /**
-     * If the true graph is set, askterisks will be printed in log output for
-     * the true edges.
+     * If the true graph is set, askterisks will be printed in log output for the true edges.
      *
      * @param trueGraph The true graph.
      */
@@ -321,8 +312,7 @@ public final class FgesMb {
     }
 
     /**
-     * Sets the number of CPDAGs to store. This should be set to zero for fast
-     * search.
+     * Sets the number of CPDAGs to store. This should be set to zero for fast search.
      *
      * @param numCpdagsToStore This number.
      */
@@ -364,8 +354,7 @@ public final class FgesMb {
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent
-     * to. By detault System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
      *
      * @param out The output print stream, by default System.out.
      */
@@ -374,8 +363,7 @@ public final class FgesMb {
     }
 
     /**
-     * Sets the graph of preset adjacenies for the algorithm; edges not in this
-     * adjacencies graph will not be added.
+     * Sets the graph of preset adjacenies for the algorithm; edges not in this adjacencies graph will not be added.
      *
      * @param adjacencies This graph.
      */

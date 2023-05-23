@@ -16,11 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * generate data from random graph, generated from parameters.
- * calculate errors from FGES output for the data and graph
- * create resimulated data and hybrid resimulated data with various parameters
- * calculate errors of FGES on the resimulated and hsim data
- * compare errors across all data sets. which simulated data errors are closest to original?
+ * generate data from random graph, generated from parameters. calculate errors from FGES output for the data and graph
+ * create resimulated data and hybrid resimulated data with various parameters calculate errors of FGES on the
+ * resimulated and hsim data compare errors across all data sets. which simulated data errors are closest to original?
  * <p>
  * Created by Erich on 6/19/2016.
  */

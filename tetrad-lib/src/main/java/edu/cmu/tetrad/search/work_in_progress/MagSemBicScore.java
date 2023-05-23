@@ -35,8 +35,8 @@ import javax.help.UnsupportedOperationException;
 import java.util.*;
 
 /**
- * Gives a BIC score for a linear, Gaussian MAG (Mixed Ancestral Graph). It
- * will perform the same as SemBicScore for DAGs.
+ * Gives a BIC score for a linear, Gaussian MAG (Mixed Ancestral Graph). It will perform the same as SemBicScore for
+ * DAGs.
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>
@@ -241,8 +241,7 @@ public class MagSemBicScore implements Score {
     }
 
     /**
-     * Returns a judgment for FGES as to whether an edges with this bump
-     * (for this score) counts as an effect edge.
+     * Returns a judgment for FGES as to whether an edges with this bump (for this score) counts as an effect edge.
      *
      * @param bump Ths bump.
      * @return The judgment.

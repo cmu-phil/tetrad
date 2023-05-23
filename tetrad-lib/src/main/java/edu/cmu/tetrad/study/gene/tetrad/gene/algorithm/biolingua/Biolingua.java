@@ -25,12 +25,10 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util.SymMatrixF;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Implements an algorithm for revising regulatory models with expression data.
- * This implementation is based on the description of the "BioLingua" tools
- * in:<p> <a href="http://www.smi.stanford.edu/projects/helix/psb02/shrager.pdf"
- * target="_TOP"> <i>"Guiding Revision of Regulatory Models with Expression
- * Data"</i></a><br> by J.Shrager, P.Langley, A. Pohorille, published in
- * PSB-2002
+ * Implements an algorithm for revising regulatory models with expression data. This implementation is based on the
+ * description of the "BioLingua" tools in:<p> <a href="http://www.smi.stanford.edu/projects/helix/psb02/shrager.pdf"
+ * target="_TOP"> <i>"Guiding Revision of Regulatory Models with Expression Data"</i></a><br> by J.Shrager, P.Langley,
+ * A. Pohorille, published in PSB-2002
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul
  * Saavedra</a> (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
@@ -78,12 +76,10 @@ public class Biolingua {
     }
 
     /**
-     * Runs the biolingua algorithm using the given correlation matrix (all
-     * values are assumed significant) and the initial graph, and uses some
-     * default values for the coefficients in the evaluation metric for
-     * annotations, errors, links, and predictions. Returns the graph found
-     * after the search stopped improving the evaluation metric. TODO: include
-     * Javadoc explanations of k*
+     * Runs the biolingua algorithm using the given correlation matrix (all values are assumed significant) and the
+     * initial graph, and uses some default values for the coefficients in the evaluation metric for annotations,
+     * errors, links, and predictions. Returns the graph found after the search stopped improving the evaluation metric.
+     * TODO: include Javadoc explanations of k*
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
             SymMatrixF correlMatrix, BiolinguaDigraph initGraph) {
@@ -98,11 +94,9 @@ public class Biolingua {
     }
 
     /**
-     * Runs the biolingua algorithm using the given correlation matrix (all
-     * values are assumed significant), an initial graph, and the coefficients
-     * in the evaluation metric for annotations, errors, links, and predictions.
-     * Returns the graph found after the search stopped improving the evaluation
-     * metric.
+     * Runs the biolingua algorithm using the given correlation matrix (all values are assumed significant), an initial
+     * graph, and the coefficients in the evaluation metric for annotations, errors, links, and predictions. Returns the
+     * graph found after the search stopped improving the evaluation metric.
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
             SymMatrixF correlMatrix, BiolinguaDigraph initGraph,
@@ -113,11 +107,9 @@ public class Biolingua {
     }
 
     /**
-     * Runs the biolingua algorithm using the given correlation matrix,
-     * significance matrix, the initial graph, and the coefficients in the
-     * evaluation metric for annotations, errors, links, and predictions.
-     * Returns the graph found after the search stopped improving the evaluation
-     * metric.
+     * Runs the biolingua algorithm using the given correlation matrix, significance matrix, the initial graph, and the
+     * coefficients in the evaluation metric for annotations, errors, links, and predictions. Returns the graph found
+     * after the search stopped improving the evaluation metric.
      */
     public static synchronized BiolinguaDigraph BiolinguaAlgorithm(
             SymMatrixF correlMatrix, SymMatrixF signifMatrix,
@@ -245,17 +237,14 @@ public class Biolingua {
     }
 
     /**
-     * For each pair of variables (nodes) in the model check all undirectedPaths that
-     * connect them and predict the sign of the correlation.  Each path is just
-     * transformed into a sign by multiplying the signs on its links.  When the
-     * predictions of all undirectedPaths between two nodes agree (sign-wise) then choose
-     * that sign as the predicted correlation.<p> When the signs predicted
-     * by two or more undirectedPaths disagree, then find out which sign is "dominant"
-     * (checking whether there are more + than - undirectedPaths, or the other way
-     * around), and predict accordingly.<p> Count the # of predictions that
-     * agree with the input correlation matrix given to Biolingua, as well as
-     * the # of errors (erroneous predictions) After checking all undirectedPaths,
-     * compute the evaluation metric
+     * For each pair of variables (nodes) in the model check all undirectedPaths that connect them and predict the sign
+     * of the correlation.  Each path is just transformed into a sign by multiplying the signs on its links.  When the
+     * predictions of all undirectedPaths between two nodes agree (sign-wise) then choose that sign as the predicted
+     * correlation.<p> When the signs predicted by two or more undirectedPaths disagree, then find out which sign is
+     * "dominant" (checking whether there are more + than - undirectedPaths, or the other way around), and predict
+     * accordingly.<p> Count the # of predictions that agree with the input correlation matrix given to Biolingua, as
+     * well as the # of errors (erroneous predictions) After checking all undirectedPaths, compute the evaluation
+     * metric
      */
     private static float evalCurrentModel() {
         int annotations = 0;

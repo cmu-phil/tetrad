@@ -5,8 +5,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * The adjacency true positive rate. The true positives are the number of adjacencies in both
- * the true and estimated graphs.
+ * The adjacency true positive rate. The true positives are the number of adjacencies in both the true and estimated
+ * graphs.
  *
  * @author josephramsey
  */

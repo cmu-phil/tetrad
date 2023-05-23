@@ -92,8 +92,8 @@ public class PagSamplingRfci implements IGraphSearch {
     }
 
     /**
-     * Call shutdown to reject incoming tasks, and then calling shutdownNow, if
-     * necessary, to cancel any lingering tasks.
+     * Call shutdown to reject incoming tasks, and then calling shutdownNow, if necessary, to cancel any lingering
+     * tasks.
      */
     private void shutdownAndAwaitTermination(ExecutorService pool) {
         pool.shutdown();

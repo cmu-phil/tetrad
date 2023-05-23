@@ -42,16 +42,14 @@ import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * <p>Implements a number of methods which take a fixed graph as input and use linear,
- * non-Gaussian methods to orient the edges in the graph. where the acronym stands for
- * linear, non-Gaussian Orientation with a Fixed graph Structure (LOFS). The options
- * for different types of scores are given in the enum Lofs.Score. The options for rules
- * to use to do the orientations are given in the enum, Lofs.Rule. Most of these are
- * taken from the literature and can be googled, though we should certainly give
- * this reference for several of them, to which we are indebted:</p>
+ * non-Gaussian methods to orient the edges in the graph. where the acronym stands for linear, non-Gaussian Orientation
+ * with a Fixed graph Structure (LOFS). The options for different types of scores are given in the enum Lofs.Score. The
+ * options for rules to use to do the orientations are given in the enum, Lofs.Rule. Most of these are taken from the
+ * literature and can be googled, though we should certainly give this reference for several of them, to which we are
+ * indebted:</p>
  *
  * <p>Hyvärinen, A., & Smith, S. M. (2013). Pairwise likelihood ratios for estimation
- * of non-Gaussian structural equation models. The Journal of Machine Learning Research,
- * 14(1), 111-152.</p>
+ * of non-Gaussian structural equation models. The Journal of Machine Learning Research, 14(1), 111-152.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -64,8 +62,7 @@ import static org.apache.commons.math3.util.FastMath.*;
 public class Lofs {
 
     /**
-     * Gives a list of options for non-Gaussian transformations that can be used
-     * for some scores.
+     * Gives a list of options for non-Gaussian transformations that can be used for some scores.
      */
     public enum Score {
         andersonDarling, skew, kurtosis, fifthMoment, absoluteValue,
@@ -98,9 +95,8 @@ public class Lofs {
      * Constructor.
      *
      * @param graph    The graph to be oriented. Orientations for the graph will be overwritten.
-     * @param dataSets A list of datasets to use to do the orientation. This may be just one
-     *                 dataset. If more than one dataset are given, the data will be concatenated
-     *                 (pooled).
+     * @param dataSets A list of datasets to use to do the orientation. This may be just one dataset. If more than one
+     *                 dataset are given, the data will be concatenated (pooled).
      */
     public Lofs(Graph graph, List<DataSet> dataSets)
             throws IllegalArgumentException {
@@ -210,6 +206,7 @@ public class Lofs {
 
     /**
      * Sets the (LoFS) score to use.
+     *
      * @param score This score.
      * @see Score
      */
@@ -244,8 +241,7 @@ public class Lofs {
     }
 
     /**
-     * Sets whether orientation should be done in the stronger direction, where
-     * applicable.
+     * Sets whether orientation should be done in the stronger direction, where applicable.
      *
      * @param orientStrongerDirection True if so.
      */

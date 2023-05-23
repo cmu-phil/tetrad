@@ -8,9 +8,8 @@ import org.apache.commons.collections4.map.HashedMap;
 import java.util.*;
 
 /**
- * Constructs and AD leaf tree on the fly. Probably doesn't speed up the first
- * algorithm it's used for much, but it should speed up subsequent algorithm
- * on the same data.
+ * Constructs and AD leaf tree on the fly. Probably doesn't speed up the first algorithm it's used for much, but it
+ * should speed up subsequent algorithm on the same data.
  * <p>
  * Continuous variables in the data set are ignored.
  *
@@ -69,12 +68,12 @@ public class AdLeafTree {
     }
 
     /**
-     * Finds the set of indices into the leaves of the tree for the given variables.
-     * Counts are the sizes of the index sets.
+     * Finds the set of indices into the leaves of the tree for the given variables. Counts are the sizes of the index
+     * sets.
      *
      * @param A A list of discrete variables.
-     * @return The list of index sets of the first variable varied by the second variable,
-     * and so on, to the last variable.
+     * @return The list of index sets of the first variable varied by the second variable, and so on, to the last
+     * variable.
      */
     public List<List<Integer>> getCellLeaves(List<DiscreteVariable> A) {
         A.sort(Comparator.comparingInt(this.nodesHash::get));
@@ -101,12 +100,12 @@ public class AdLeafTree {
     }
 
     /**
-     * Finds the set of indices into the leaves of the tree for the given variables.
-     * Counts are the sizes of the index sets.
+     * Finds the set of indices into the leaves of the tree for the given variables. Counts are the sizes of the index
+     * sets.
      *
      * @param A A list of discrete variables.
-     * @return The list of index sets of the first variable varied by the second variable,
-     * and so on, to the last variable.
+     * @return The list of index sets of the first variable varied by the second variable, and so on, to the last
+     * variable.
      */
     public List<List<List<Integer>>> getCellLeaves(List<DiscreteVariable> A, DiscreteVariable B) {
         A.sort(Comparator.comparingInt(AdLeafTree.this.nodesHash::get));

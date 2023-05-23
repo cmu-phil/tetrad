@@ -185,9 +185,8 @@ public final class TsDagToPag {
     }
 
     /**
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used,
-     *                           false if only R1-R4 (the rule set of the original FCI) should
-     *                            be used. False by default.
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
+     *                            set of the original FCI) should be used. False by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;

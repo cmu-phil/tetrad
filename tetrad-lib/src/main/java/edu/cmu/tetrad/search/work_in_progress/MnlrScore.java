@@ -51,9 +51,10 @@ public class MnlrScore implements Score {
 
     /**
      * Constructor.
-     * @param dataSet The mixed dataset being analyzed.
+     *
+     * @param dataSet        The mixed dataset being analyzed.
      * @param structurePrior The structure prior
-     * @param fDegree The f degree.
+     * @param fDegree        The f degree.
      */
     public MnlrScore(DataSet dataSet, double structurePrior, int fDegree) {
 
@@ -94,6 +95,7 @@ public class MnlrScore implements Score {
 
     /**
      * Returns the sample size.
+     *
      * @return This size.
      */
     public int getSampleSize() {
@@ -101,8 +103,8 @@ public class MnlrScore implements Score {
     }
 
     /**
-     * A method for FGES returning a judgment of whether an edge with a given
-     * bump counts as a effect edge.
+     * A method for FGES returning a judgment of whether an edge with a given bump counts as a effect edge.
+     *
      * @param bump The bump.
      * @return True if so.
      * @see edu.cmu.tetrad.search.Fges
@@ -114,6 +116,7 @@ public class MnlrScore implements Score {
 
     /**
      * Returns the variables.
+     *
      * @return This lsit.
      */
     @Override
@@ -123,6 +126,7 @@ public class MnlrScore implements Score {
 
     /**
      * Returns a maximum degree used by some algorithms.
+     *
      * @return This maximum.
      */
     @Override

@@ -34,8 +34,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the
- * Graph interface.
+ * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the Graph interface.
  *
  * @author josephramsey
  */

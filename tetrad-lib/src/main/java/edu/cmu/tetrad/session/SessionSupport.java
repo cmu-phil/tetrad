@@ -37,14 +37,13 @@ public class SessionSupport {
     private final Object source;
 
     /**
-     * The list of session listener--for instance, GUI editors displaying this
-     * session and allowing it to be edited.
+     * The list of session listener--for instance, GUI editors displaying this session and allowing it to be edited.
      */
     private final List sessionListeners = new ArrayList();
 
     /**
-     * Constructs a new session support object for the given source object. The
-     * source object will be stamped on all fired events.
+     * Constructs a new session support object for the given source object. The source object will be stamped on all
+     * fired events.
      */
     public SessionSupport(Object source) {
         if (source == null) {
@@ -71,8 +70,7 @@ public class SessionSupport {
     }
 
     /**
-     * Fires an event indicating that a session node has been added to the
-     * session.
+     * Fires an event indicating that a session node has been added to the session.
      */
     public void fireNodeAdded(SessionNode node) {
         SessionEvent event =
@@ -82,8 +80,7 @@ public class SessionSupport {
     }
 
     /**
-     * Fires an event indicating that a sesison node has been removed from the
-     * session.
+     * Fires an event indicating that a sesison node has been removed from the session.
      */
     public void fireNodeRemoved(SessionNode node) {
         SessionEvent event =
@@ -93,8 +90,8 @@ public class SessionSupport {
     }
 
     /**
-     * Fires an event indicating that a parent has been added from the given
-     * parent to the given child session node in the session.
+     * Fires an event indicating that a parent has been added from the given parent to the given child session node in
+     * the session.
      */
     public void fireParentAdded(SessionNode parent, SessionNode child) {
         SessionEvent event = new SessionEvent(this.source, parent, child,
@@ -104,8 +101,8 @@ public class SessionSupport {
     }
 
     /**
-     * Fires an event indicating that a parent has been removed from the given
-     * parent to the given child session node in the session.
+     * Fires an event indicating that a parent has been removed from the given parent to the given child session node in
+     * the session.
      */
     public void fireParentRemoved(SessionNode parent, SessionNode child) {
         SessionEvent event = new SessionEvent(this.source, parent, child,
@@ -115,8 +112,7 @@ public class SessionSupport {
     }
 
     /**
-     * Fires an event indicating that a new model has been created for the given
-     * session node in the session.
+     * Fires an event indicating that a new model has been created for the given session node in the session.
      */
     public void fireModelCreated(SessionNode node) {
         SessionEvent event =
@@ -126,8 +122,7 @@ public class SessionSupport {
     }
 
     /**
-     * Fires an event indicating that the model for the given session node in
-     * the session has been destroyed.
+     * Fires an event indicating that the model for the given session node in the session has been destroyed.
      */
     public void fireModelDestroyed(SessionNode node) {
         SessionEvent event = new SessionEvent(this.source, node,
@@ -137,8 +132,7 @@ public class SessionSupport {
     }
 
     /**
-     * Fires an event indicating that the model for the given session node in
-     * the session has been destroyed.
+     * Fires an event indicating that the model for the given session node in the session has been destroyed.
      */
     public void fireModelUnclear(SessionNode node) {
         SessionEvent event =
@@ -148,8 +142,7 @@ public class SessionSupport {
     }
 
     /**
-     * Fires an event indicating that the model for the given session node in
-     * the session has been destroyed.
+     * Fires an event indicating that the model for the given session node in the session has been destroyed.
      */
     public void fireRepetitionChanged(SessionNode node) {
         SessionEvent event = new SessionEvent(this.source, node,
@@ -179,22 +172,19 @@ public class SessionSupport {
     }
 
     /**
-     * Fires a session event. Calls the correct method on the listener for the
-     * type of session event it is. All event fired with this session support
-     * are stamped with the source object of this session support.
+     * Fires a session event. Calls the correct method on the listener for the type of session event it is. All event
+     * fired with this session support are stamped with the source object of this session support.
      */
     public void fireSessionEvent(SessionEvent event) {
         fireSessionEvent(event, true);
     }
 
     /**
-     * Fires a session event. Calls the correct method on the listener for the
-     * type of session event it is. Events are restamped with the source object
-     * of this session support if <code>restamp</code> is true.
+     * Fires a session event. Calls the correct method on the listener for the type of session event it is. Events are
+     * restamped with the source object of this session support if <code>restamp</code> is true.
      *
      * @param event   the session event to fire.
-     * @param restamp true iff the source of this event should be set to the
-     *                source of this SessionSupport object.
+     * @param restamp true iff the source of this event should be set to the source of this SessionSupport object.
      */
     public void fireSessionEvent(SessionEvent event, boolean restamp) {
         if (restamp && event.getSource() != this.source) {

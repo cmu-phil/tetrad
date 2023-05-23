@@ -27,8 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Stores a 2D array of double continuousData. Note that the missing value
- * marker for this box is -99.
+ * Stores a 2D array of double continuousData. Note that the missing value marker for this box is -99.
  */
 public class MixedDataBox implements DataBox {
 
@@ -40,8 +39,8 @@ public class MixedDataBox implements DataBox {
     private int[][] discreteData;
 
     /**
-     * The variables here are used only to determine which columns are discrete
-     * and which are continuous; bounds checking is not done.
+     * The variables here are used only to determine which columns are discrete and which are continuous; bounds
+     * checking is not done.
      */
     public MixedDataBox(List<Node> variables, int numRows) {
         this.variables = variables;
@@ -64,8 +63,7 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     * This constructor allows other data readers to populate the fields
-     * directly.
+     * This constructor allows other data readers to populate the fields directly.
      *
      * @param variables      list of discrete and continuous variables
      * @param numRows        number of cases in the dataset
@@ -145,8 +143,7 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     * Sets the value at the given row/column to the given Number value. The
-     * value used is number.doubleValue().
+     * Sets the value at the given row/column to the given Number value. The value used is number.doubleValue().
      */
     @Override
     public void set(int row, int col, Number value) {
@@ -170,8 +167,7 @@ public class MixedDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value is
-     * missing (-99), null, is returned.
+     * @return the Number value at the given row and column. If the value is missing (-99), null, is returned.
      */
     @Override
     public Number get(int row, int col) {

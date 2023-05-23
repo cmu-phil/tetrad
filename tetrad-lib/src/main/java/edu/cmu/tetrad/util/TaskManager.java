@@ -1,8 +1,7 @@
 package edu.cmu.tetrad.util;
 
 /**
- * This cancels all processes that check the TaskManager.getInstance().isCanceled()
- * method.
+ * This cancels all processes that check the TaskManager.getInstance().isCanceled() method.
  *
  * @author josephramsey
  */

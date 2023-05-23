@@ -22,8 +22,7 @@
 package edu.cmu.tetrad.util;
 
 /**
- * Tags a session node as "memorable", so that it won't be forgotten when a model
- * is destroyed.
+ * Tags a session node as "memorable", so that it won't be forgotten when a model is destroyed.
  */
 public interface Memorable {
 }

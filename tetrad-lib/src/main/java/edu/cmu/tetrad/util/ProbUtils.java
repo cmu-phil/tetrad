@@ -26,8 +26,8 @@ import org.apache.commons.math3.util.FastMath;
 
 /**
  * <p>Implements a number of important functions from probability and
- * statistics.&gt; 0 <p>We don't know who wrote this class; we didn't.  All we
- * added was the documentation. -Joe Ramsey, jdramsey@andrew.cmu.edu&gt; 0
+ * statistics.&gt; 0 <p>We don't know who wrote this class; we didn't.  All we added was the documentation. -Joe Ramsey,
+ * jdramsey@andrew.cmu.edu&gt; 0
  *
  * @author Unknown, but thanks
  */
@@ -157,9 +157,8 @@ public class ProbUtils {
             .06637423582325018469784634};
 
     /**
-     * Normal cumulative distribution function (the value which results by
-     * integrating the normal distribution function from negative infinity up to
-     * y).
+     * Normal cumulative distribution function (the value which results by integrating the normal distribution function
+     * from negative infinity up to y).
      *
      * @param y the upper limit of integration.
      * @return the area accumulated in the integration.
@@ -232,11 +231,9 @@ public class ProbUtils {
             -0.5395239384953e-5};
 
     /**
-     * This is a more literal (that is, exact) copy of the log gamma method from
-     * Numerical Recipes than the following one.  It was created by cutting and
-     * pasting from the PDF version of the book and then converting C syntax to
-     * Java. The static double array above goes with this. Converted
-     * to Java by Frank Wimberly
+     * This is a more literal (that is, exact) copy of the log gamma method from Numerical Recipes than the following
+     * one.  It was created by cutting and pasting from the PDF version of the book and then converting C syntax to
+     * Java. The static double array above goes with this. Converted to Java by Frank Wimberly
      *
      * @return the value ln[?(xx)] for xx &gt; 0
      */
@@ -271,9 +268,8 @@ public class ProbUtils {
     }
 
     /**
-     * Incomplete Beta function. Translated from FORTRAN july 1977 edition.
-     * w. fullerton, c3, los alamos scientific lab. based on bosten and
-     * battiste, remark on algorithm 179, comm. acm, v 17, p 153, (1974).
+     * Incomplete Beta function. Translated from FORTRAN july 1977 edition. w. fullerton, c3, los alamos scientific lab.
+     * based on bosten and battiste, remark on algorithm 179, comm. acm, v 17, p 153, (1974).
      *
      * @param x   upper limit of integration.  x must be in (0,1) inclusive.
      * @param pin first beta distribution parameter.  p must be gt 0.0.
@@ -1703,9 +1699,8 @@ public class ProbUtils {
     }
 
     /**
-     * Bivariate normal CDF. Adapted from statlib, file general/gaut.c, by Ajay
-     * Shah. Adaptation for Java found in http://www.geocities.com/optionpage/utility.html
-     * --November 1st 2003, Ricardo Silva
+     * Bivariate normal CDF. Adapted from statlib, file general/gaut.c, by Ajay Shah. Adaptation for Java found in
+     * http://www.geocities.com/optionpage/utility.html --November 1st 2003, Ricardo Silva
      *
      * @param ah upper bound 1
      * @param ak upper bound 1
@@ -1872,13 +1867,10 @@ public class ProbUtils {
 
 
     /**
-     * Compute the probability over a rectangular region with correlation matrix
-     * c. Algorithm extracted from Alan Genz: Numerical Computation of
-     * Multivariate Normal Probabilities; revised version published in J. Comp.
-     * Graph Stat. 1 (1992), pp. 141-149. http://www.math.wsu.edu/faculty/genz/homepage
-     * Warning: this method has the side effect of changing the order of
-     * the elements in the arrays given as input. --November 3st 2003,
-     * Ricardo Silva
+     * Compute the probability over a rectangular region with correlation matrix c. Algorithm extracted from Alan Genz:
+     * Numerical Computation of Multivariate Normal Probabilities; revised version published in J. Comp. Graph Stat. 1
+     * (1992), pp. 141-149. http://www.math.wsu.edu/faculty/genz/homepage Warning: this method has the side effect of
+     * changing the order of the elements in the arrays given as input. --November 3st 2003, Ricardo Silva
      *
      * @param a lower bounds (use Double.NEGATIVE_INFINITY if necessary)
      * @param b upper bounds (use Double.POSITIVE_INFINITY if necessary)

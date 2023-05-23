@@ -39,9 +39,9 @@ import java.util.Set;
 
 /**
  * <p>Implements the Fast Causal Inference (FCI) algorithm due to Peter Spirtes, which addressed
- * the case where latent common causes cannot be assumed not to exist with respect to the data set
- * being analyzed. That is, it is assumed that there may be variables that are not included in the
- * data that nonetheless may be causes of two or more variables that are included in data.</p>
+ * the case where latent common causes cannot be assumed not to exist with respect to the data set being analyzed. That
+ * is, it is assumed that there may be variables that are not included in the data that nonetheless may be causes of two
+ * or more variables that are included in data.</p>
  *
  * <p>Two alternatives are provided for doing the final orientation step, one due to Peter Spirtes,
  * which is arrow complete, and another due to Jiji Zhang, which is arrow and tail complete.</p>
@@ -194,8 +194,7 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets the depth of search, which is the maximum number of variables conditioned on
-     * in any test.
+     * Sets the depth of search, which is the maximum number of variables conditioned on in any test.
      *
      * @param depth This maximum.
      */
@@ -250,8 +249,8 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the Zhang complete rule set should be used; if false if only R1-R4 (the rule
-     * set of the original FCI) should be used. False by default.
+     * Sets whether the Zhang complete rule set should be used; if false if only R1-R4 (the rule set of the original
+     * FCI) should be used. False by default.
      *
      * @param completeRuleSetUsed True for the complete Zhang ruleset.
      */

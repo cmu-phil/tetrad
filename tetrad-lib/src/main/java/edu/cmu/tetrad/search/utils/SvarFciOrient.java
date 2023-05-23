@@ -37,9 +37,8 @@ import java.util.*;
 
 /**
  * <p>Adapts FciOrient for the SvarFCI algorithm. The main difference is that if an edge is orient,
- * it will also orient all homologous edges to preserve the time-repeating structure assumed by
- * SvarFCI. Based on (but not identicial to) code by Entner and Hoyer for their 2010 paper. Modified
- * by DMalinsky 4/20/2016.</p>
+ * it will also orient all homologous edges to preserve the time-repeating structure assumed by SvarFCI. Based on (but
+ * not identicial to) code by Entner and Hoyer for their 2010 paper. Modified by DMalinsky 4/20/2016.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -439,9 +438,8 @@ public final class SvarFciOrient {
 
 
     /**
-     * The triangles that must be oriented this way (won't be done by another rule) all look like
-     * the ones below, where the dots are a collider path from L to A with each node on the path
-     * (except L) a parent of C.
+     * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
+     * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
      * <pre>
      *          B
      *         xo           x is either an arrowhead or a circle
@@ -480,8 +478,8 @@ public final class SvarFciOrient {
 
     /**
      * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of
-     * a DDP consists of colliders that are parents of c.
+     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
+     * consists of colliders that are parents of c.
      */
     public void ddpOrient(Node a, Node b, Node c, Graph graph) {
         Queue<Node> Q = new ArrayDeque<>();
@@ -620,8 +618,8 @@ public final class SvarFciOrient {
     }
 
     /**
-     * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle path u =
-     * [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
+     * Implements Zhang's rule R5, orient circle undirectedPaths: for any Ao-oB, if there is an uncovered circle path u
+     * = [A,C,...,D,B] such that A,D nonadjacent and B,C nonadjacent, then A---B and orient every edge on u undirected.
      */
     public void ruleR5(Graph graph) {
         List<Node> nodes = graph.getNodes();

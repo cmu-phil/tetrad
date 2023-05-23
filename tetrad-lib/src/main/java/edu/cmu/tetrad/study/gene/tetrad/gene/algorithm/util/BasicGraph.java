@@ -73,26 +73,19 @@ public abstract class BasicGraph {
     }
 
     /**
-     * Creates a Graph reading it from file <code>fname</code>. The file has to
-     * be an ascii one and follow a particular format:<p> *GRAPH*
-     * [Name_of_graph]<br> [n]<br> [node name 0]<br> [node name 1]<br> [node
-     * name 2]<br> :  <br> [node name n-1]<br> <br> [parent node #]  [child node
-     * #]  [edgeValue]  <br> [parent node #]  [child node #]  [edgeValue]  <br>
-     * :<br> [parent node #]  [child node #]  [edgeValue]  <br> <br> First token
-     * should be a word with "graph" as a substring (case insens.), followed by
-     * the name of the graph (one word). [n] is the number of nodes in the
-     * graph, which should be followed by the list of all node names (one word
-     * each) in order from node 0 to node n-1.<br> The node names are
-     * followed by the list of edges.  Each edge consists of three elements: the
-     * # of the parent node, the # of the child node, and the value of the
-     * edge. Non specified edges will have a value of zero which is
-     * equivalent to "no edge".<p> GRAPH sample<br> <br> 4 // # nodes<br>
+     * Creates a Graph reading it from file <code>fname</code>. The file has to be an ascii one and follow a particular
+     * format:<p> *GRAPH* [Name_of_graph]<br> [n]<br> [node name 0]<br> [node name 1]<br> [node name 2]<br> :  <br>
+     * [node name n-1]<br> <br> [parent node #]  [child node #]  [edgeValue]  <br> [parent node #]  [child node #]
+     * [edgeValue]  <br> :<br> [parent node #]  [child node #]  [edgeValue]  <br> <br> First token should be a word with
+     * "graph" as a substring (case insens.), followed by the name of the graph (one word). [n] is the number of nodes
+     * in the graph, which should be followed by the list of all node names (one word each) in order from node 0 to node
+     * n-1.<br> The node names are followed by the list of edges.  Each edge consists of three elements: the # of the
+     * parent node, the # of the child node, and the value of the edge. Non specified edges will have a value of zero
+     * which is equivalent to "no edge".<p> GRAPH sample<br> <br> 4 // # nodes<br>
      * <br> // Node Names Node0<br> Node1<br> Node2<br> Node3<br> <br> //
-     * edges<br> 0 1  1 <br> 0 2 1 <br> 0 3  1 <br> 1 2 -1 <br> 1 3 -1 <br> 2 3
-     * 2 <br> Notice there can be slash-slash (and also
-     * slash-star) style comments anywhere in the file.  Tokens can be separated
-     * by any number of blank delimiters: tabs, spaces, carriage returns.
-     * Support of int, long, floating point, or doubles as edge values will
+     * edges<br> 0 1  1 <br> 0 2 1 <br> 0 3  1 <br> 1 2 -1 <br> 1 3 -1 <br> 2 3 2 <br> Notice there can be slash-slash
+     * (and also slash-star) style comments anywhere in the file.  Tokens can be separated by any number of blank
+     * delimiters: tabs, spaces, carriage returns. Support of int, long, floating point, or doubles as edge values will
      * depend on how a subclass of Graph implement the set of edges.
      */
     public BasicGraph(String fname) throws IOException {
@@ -202,9 +195,8 @@ public abstract class BasicGraph {
     }
 
     /**
-     * Returns a specially formatted string with all the contents of this Graph.
-     * Actually this string is exactly the same format expected when reading the
-     * graph from a file.
+     * Returns a specially formatted string with all the contents of this Graph. Actually this string is exactly the
+     * same format expected when reading the graph from a file.
      */
     public String toString() {
         StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.graphName + "\n" +

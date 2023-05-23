@@ -36,14 +36,14 @@ import java.util.Map;
 
 /**
  * <p>This implements the degenerate Gaussian BIC score for FGES. The degenerate Gaussian score
- * replaces each discrete variable in the data with a list of 0/1 continuous indicator columns for
- * each of the categories but one (the last one implied). This data, now all continuous, is given
- * to the SEM BIC score and methods used to help determine conditional independence for the
- * mixed continuous/discrete case from this information. The references is as follows:</p>
+ * replaces each discrete variable in the data with a list of 0/1 continuous indicator columns for each of the
+ * categories but one (the last one implied). This data, now all continuous, is given to the SEM BIC score and methods
+ * used to help determine conditional independence for the mixed continuous/discrete case from this information. The
+ * references is as follows:</p>
  *
  * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2019, July). Learning high-dimensional
- * directed acyclic graphs with mixed data-types. In The 2019 ACM SIGKDD Workshop on
- * Causal Discovery (pp. 4-21). PMLR.</p>
+ * directed acyclic graphs with mixed data-types. In The 2019 ACM SIGKDD Workshop on Causal Discovery (pp. 4-21).
+ * PMLR.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>
@@ -139,8 +139,8 @@ public class DegenerateGaussianScore implements Score {
     }
 
     /**
-     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model.
-     *s
+     * Calculates the sample likelihood and BIC score for i given its parents in a simple SEM model. s
+     *
      * @param i       The child indes.
      * @param parents The indices of the parents.
      */

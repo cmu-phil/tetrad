@@ -37,8 +37,8 @@ import java.util.List;
 
 /**
  * <p>Provides some utilities for resolving inconsistencies that arise
- * between sepsets learned for overlapping datasets. This occurs frequently when
- * using the DCI and ION algorithm. A reference is here:</p>
+ * between sepsets learned for overlapping datasets. This occurs frequently when using the DCI and ION algorithm. A
+ * reference is here:</p>
  *
  * <p>Tillman, R. E., & Eberhardt, F. (2014). Learning causal structure from
  * multiple datasets with similar variable sets. Behaviormetrika, 41(1), 41-64.</p>
@@ -185,8 +185,7 @@ public final class ResolveSepsets {
     /**
      * Checks independence from pooled samples using Worsley and Friston's method
      * <p>
-     * See K. J. Worsely and K. J. Friston. A test for conjunction. Statistics and Probability Letters
-     * 2000.
+     * See K. J. Worsely and K. J. Friston. A test for conjunction. Statistics and Probability Letters 2000.
      */
     public static boolean isIndependentPooledWorsleyFriston(List<IndependenceTest> independenceTests, Node x, Node y,
                                                             List<Node> condSet) {

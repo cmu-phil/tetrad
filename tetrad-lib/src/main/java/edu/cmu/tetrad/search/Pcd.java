@@ -38,8 +38,7 @@ import java.util.Set;
 
 /**
  * <p>Modifies the PC algorithm to handle the deterministic case. Edges removals
- * or orientations based on conditional independence test involving deterministic
- * relationships are not done.</p>
+ * or orientations based on conditional independence test involving deterministic relationships are not done.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -217,8 +216,8 @@ public class Pcd implements IGraphSearch {
 
     /**
      * Runs PC starting with a commplete graph over the given list of nodes, using the given independence test and
-     * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information
-     * is consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
+     * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information is
+     * consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
      * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
      * or due to statistical errors in conditional independence judgments.
      * <p>

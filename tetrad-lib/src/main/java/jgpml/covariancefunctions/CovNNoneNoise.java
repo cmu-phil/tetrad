@@ -31,18 +31,15 @@ import Jama.Matrix;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Neural network covariance function with a single parameter for the distance
- * measure and white noise. The covariance function is parameterized as:
+ * Neural network covariance function with a single parameter for the distance measure and white noise. The covariance
+ * function is parameterized as:
  * <p>
  * k(x^p,x^q) = sf2 * asin(x^p'*P*x^q / sqrt[(1+x^p'*P*x^p)*(1+x^q'*P*x^q)]) + s2 * \delta(p,q)
  * <p>
- * where the x^p and x^q vectors on the right hand side have an added extra bias
- * entry with unit value. P is ell^-2 times the unit matrix and sf2 controls the
- * signal variance. The hyperparameters are:
+ * where the x^p and x^q vectors on the right hand side have an added extra bias entry with unit value. P is ell^-2
+ * times the unit matrix and sf2 controls the signal variance. The hyperparameters are:
  * <p>
- * [ log(ell)
- * log(sqrt(sf2)
- * log(s2)]
+ * [ log(ell) log(sqrt(sf2) log(s2)]
  *
  * <p>
  * For reson of speed consider to use this covariance function instead of <code>CovSum(CovNNone,CovNoise)</code>
@@ -203,8 +200,8 @@ public class CovNNoneNoise implements CovarianceFunction {
     }
 
     /**
-     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
-     * to the hyperparameter with index <code>idx</code>
+     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
+     * <code>idx</code>
      *
      * @param loghyper hyperparameters
      * @param X        input dataset

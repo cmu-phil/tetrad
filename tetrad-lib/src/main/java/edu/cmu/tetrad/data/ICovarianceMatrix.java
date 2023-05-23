@@ -27,8 +27,7 @@ import edu.cmu.tetrad.util.Matrix;
 import java.util.List;
 
 /**
- * Interface for covariance matrices. Implemented in different ways.
- * See implementations.
+ * Interface for covariance matrices. Implemented in different ways. See implementations.
  */
 public interface ICovarianceMatrix extends DataModel {
     List<Node> getVariables();

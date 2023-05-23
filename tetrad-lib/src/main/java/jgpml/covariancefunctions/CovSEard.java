@@ -36,20 +36,15 @@ import static jgpml.covariancefunctions.MatrixOperations.exp;
 
 
 /**
- * Squared Exponential covariance function with Automatic Relevance Detemination
- * (ARD) distance measure. The covariance function is parameterized as:
+ * Squared Exponential covariance function with Automatic Relevance Detemination (ARD) distance measure. The covariance
+ * function is parameterized as:
  * <p>
  * k(x^p,x^q) = sf2 * exp(-(x^p - x^q)'*inv(P)*(x^p - x^q)/2)
  * <p>
- * where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where
- * D is the dimension of the input space and sf2 is the signal variance. The
- * hyperparameters are:
+ * where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where D is the dimension of the input space
+ * and sf2 is the signal variance. The hyperparameters are:
  * <p>
- * [ log(ell_1)
- * log(ell_2)
- * .
- * log(ell_D)
- * log(sqrt(sf2))]
+ * [ log(ell_1) log(ell_2) . log(ell_D) log(sqrt(sf2))]
  */
 public class CovSEard implements CovarianceFunction {
 
@@ -135,8 +130,8 @@ public class CovSEard implements CovarianceFunction {
 
 
     /**
-     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
-     * to the hyperparameter with index <code>idx</code>
+     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
+     * <code>idx</code>
      *
      * @param loghyper hyperparameters
      * @param X        input dataset

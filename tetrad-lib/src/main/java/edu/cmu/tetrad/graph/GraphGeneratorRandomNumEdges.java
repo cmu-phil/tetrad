@@ -30,30 +30,22 @@ import java.util.List;
 
 
 /**
- * Modifies the UniformGraphGenerator to generate random DAGs (not assuming
- * connectivity) with number of edges in given range, min to max. Constraints on
- * connectivity are removed. Original docs follow.
+ * Modifies the UniformGraphGenerator to generate random DAGs (not assuming connectivity) with number of edges in given
+ * range, min to max. Constraints on connectivity are removed. Original docs follow.
  * <p>
- * Generates random DAGs uniformly with certain classes of DAGs using variants
- * of Markov chain algorithm by Malancon, Dutour, and Philippe. Pieces of the
- * infrastructure of the algorithm are adapted from the the BNGenerator class by
- * Jaime Shinsuke Ide jaime.ide@poli.usp.br, released under the GNU General
- * Public License, for which the following statement is being included as part
- * of the license agreement:
+ * Generates random DAGs uniformly with certain classes of DAGs using variants of Markov chain algorithm by Malancon,
+ * Dutour, and Philippe. Pieces of the infrastructure of the algorithm are adapted from the the BNGenerator class by
+ * Jaime Shinsuke Ide jaime.ide@poli.usp.br, released under the GNU General Public License, for which the following
+ * statement is being included as part of the license agreement:
  * <p>
- * "The BNGenerator distribution is free software; you can redistribute it
- * and/or modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation (either version 2 of the License
- * or, at your option, any later version), provided that this notice and the
- * name of the author appear in all copies. "If you're using the software,
- * please notify jaime.ide@poli.usp.br so that you can receive updates and
- * patches. BNGenerator is distributed "as is", in the hope that it will be
- * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details. You should have received a copy of the GNU
- * General Public License along with the BNGenerator distribution. If not, write
- * to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139,
- * USA."
+ * "The BNGenerator distribution is free software; you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation (either version 2 of the License or, at your
+ * option, any later version), provided that this notice and the name of the author appear in all copies. "If you're
+ * using the software, please notify jaime.ide@poli.usp.br so that you can receive updates and patches. BNGenerator is
+ * distributed "as is", in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details. You
+ * should have received a copy of the GNU General Public License along with the BNGenerator distribution. If not, write
+ * to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA."
  *
  * @author josephramsey
  */
@@ -71,8 +63,7 @@ public final class GraphGeneratorRandomNumEdges {
     private int numNodes;
 
     /**
-     * The maximum number of edges in the graph. The default is the number of
-     * nodes minus 1.
+     * The maximum number of edges in the graph. The default is the number of nodes minus 1.
      */
     private int maxEdges;
 
@@ -87,16 +78,14 @@ public final class GraphGeneratorRandomNumEdges {
     private int numIterations;
 
     /**
-     * Matrix of parents for each node. parentMatrix[i][0] indicates the number
-     * of parents; parentMatrix[i][k] represents the (k-1)'th parent, k =
-     * 1...max.
+     * Matrix of parents for each node. parentMatrix[i][0] indicates the number of parents; parentMatrix[i][k]
+     * represents the (k-1)'th parent, k = 1...max.
      */
     private int[][] parentMatrix;
 
     /**
-     * Matrix of parents for each node. childMatrix[i][0] indicates the number
-     * of parents; childMatrix[i][k] represents the (k-1)'th child, k =
-     * 1...max.
+     * Matrix of parents for each node. childMatrix[i][0] indicates the number of parents; childMatrix[i][k] represents
+     * the (k-1)'th child, k = 1...max.
      */
     private int[][] childMatrix;
 
@@ -140,8 +129,7 @@ public final class GraphGeneratorRandomNumEdges {
     }
 
     /**
-     * Sets the number of nodes and resets all of the other parameters to
-     * default values accordingly.
+     * Sets the number of nodes and resets all of the other parameters to default values accordingly.
      *
      * @param numNodes Must be an integer greater than or equal to 4.
      */
@@ -290,8 +278,8 @@ public final class GraphGeneratorRandomNumEdges {
     }
 
     /**
-     * @return true if the graph is still acyclic after the last edge was added.
-     * This method only works after adding an edge, not after removing an edge.
+     * @return true if the graph is still acyclic after the last edge was added. This method only works after adding an
+     * edge, not after removing an edge.
      */
     private boolean isAcyclic() {
         boolean[] visited = new boolean[getNumNodes()];

@@ -68,8 +68,7 @@ public class PartialCorrelation {
     }
 
     /**
-     * Calculates the partial correlation of x and y conditional on the nodes in z
-     * recursively.
+     * Calculates the partial correlation of x and y conditional on the nodes in z recursively.
      *
      * @return this partial correlation.
      */

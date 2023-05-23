@@ -30,10 +30,8 @@ import java.io.ObjectInputStream;
 //import edu.cmu.tetrad.gene.history.function.BooleanGlassFunction;
 
 /**
- * Initializes a history array by setting the value of each variable to basal
- * if it is unregulated (has no parents other than itself one time step back)
- * and to a random value chosen from a N(basal, initStDev) distribution
- * otherwise.
+ * Initializes a history array by setting the value of each variable to basal if it is unregulated (has no parents other
+ * than itself one time step back) and to a random value chosen from a N(basal, initStDev) distribution otherwise.
  *
  * @author josephramsey
  */
@@ -48,16 +46,15 @@ public class BasalInitializer implements Initializer {
     private final UpdateFunction updateFunction;
 
     /**
-     * The average expression level that all unregulated genes are initialized
-     * to.
+     * The average expression level that all unregulated genes are initialized to.
      *
      * @serial
      */
     private final double basalExpression;
 
     /**
-     * The standard deviation of a normal distribution N(basalExpression,
-     * sem.D.) that random initial values for unregulated genes are set to.
+     * The standard deviation of a normal distribution N(basalExpression, sem.D.) that random initial values for
+     * unregulated genes are set to.
      *
      * @serial
      */
@@ -66,8 +63,8 @@ public class BasalInitializer implements Initializer {
     //============================CONSTRUCTORS===========================//
 
     /**
-     * Constructs a new history that will initialize genes using the given basal
-     * expression and initial standard deviation.
+     * Constructs a new history that will initialize genes using the given basal expression and initial standard
+     * deviation.
      */
     public BasalInitializer(UpdateFunction updateFunction,
                             double basalExpression, double initStDev) {
@@ -97,11 +94,9 @@ public class BasalInitializer implements Initializer {
     //============================PUBLIC METHODS==========================//
 
     /**
-     * Sets the expression of each unregulated gene in the given history at time
-     * step 0 to a random value drawn from N(basalExpression, initStDev),
-     * sets the expression level at time step 0 of each regulated gene to zero,
-     * and then copies the values at history[0][j] to history[i][j] for all i &gt;
-     * 0 less than the maximum time lag.
+     * Sets the expression of each unregulated gene in the given history at time step 0 to a random value drawn from
+     * N(basalExpression, initStDev), sets the expression level at time step 0 of each regulated gene to zero, and then
+     * copies the values at history[0][j] to history[i][j] for all i &gt; 0 less than the maximum time lag.
      *
      * @param history the 2D double array to randomize.
      */
@@ -137,14 +132,12 @@ public class BasalInitializer implements Initializer {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

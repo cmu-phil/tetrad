@@ -23,14 +23,11 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.urchin;
 
 
 /**
- * This class contains as a member variable (cases) the time series data stored
- * in an int array of microarray measurements.  The values are assumed to have
- * been binarized.  The columns of the array correspond to genes and the rows
- * correspond to times.  The class contains methods for conducting searches for
- * causal links where a genes expression is regulated by a set of parent genes.
- * The search method calls the methods for computing entropies and measures of
- * mutual information implemented in the RevealEvaluator class.  This approach
- * is described by Liang et al.
+ * This class contains as a member variable (cases) the time series data stored in an int array of microarray
+ * measurements.  The values are assumed to have been binarized.  The columns of the array correspond to genes and the
+ * rows correspond to times.  The class contains methods for conducting searches for causal links where a genes
+ * expression is regulated by a set of parent genes. The search method calls the methods for computing entropies and
+ * measures of mutual information implemented in the RevealEvaluator class.  This approach is described by Liang et al.
  *
  * @author Frank Wimberly
  */
@@ -47,10 +44,9 @@ public class RevealSearch {
     }
 
     /**
-     * This method computes m/e values for all single regulators, pairs and
-     * triples at a given time lag.  The m/e value is the ratio of the mutual
-     * information between the regulated gene and the regulator set divided by
-     * the entropy of the regulated gene.
+     * This method computes m/e values for all single regulators, pairs and triples at a given time lag.  The m/e value
+     * is the ratio of the mutual information between the regulated gene and the regulator set divided by the entropy of
+     * the regulated gene.
      */
     public RevealOutputGraph exhaustiveSearch(int lag) {
 
@@ -180,10 +176,9 @@ public class RevealSearch {
     }
 
     /**
-     * This method computes m/e values for all single regulators, pairs and
-     * triples between two time lags (inclusively).  The resulting output graph
-     * will specify the parents of each gene as well as the time lag associated
-     * with each causal link.
+     * This method computes m/e values for all single regulators, pairs and triples between two time lags (inclusively).
+     *  The resulting output graph will specify the parents of each gene as well as the time lag associated with each
+     * causal link.
      */
     public RevealOutputGraph exhaustiveSearch(int lag1, int lag2) {
 

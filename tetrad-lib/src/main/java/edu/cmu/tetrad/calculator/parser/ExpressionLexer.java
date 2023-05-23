@@ -96,9 +96,8 @@ public class ExpressionLexer {
     //=================================== Public Methods =====================================//
 
     /**
-     * @return the type of the next token. For words and quoted charSequence
-     * tokens, the charSequence that the token represents can be fetched by
-     * calling the getString method.
+     * @return the type of the next token. For words and quoted charSequence tokens, the charSequence that the token
+     * represents can be fetched by calling the getString method.
      */
     public final Token nextToken() {
         readToken(Token.WHITESPACE);
@@ -183,8 +182,8 @@ public class ExpressionLexer {
 
 
     /**
-     * Creates a map from tokens to regex Matchers for the given CharSequence,
-     * given a map from tokens to regex Patterns (and the CharSequence).
+     * Creates a map from tokens to regex Matchers for the given CharSequence, given a map from tokens to regex Patterns
+     * (and the CharSequence).
      */
     private static Map<Token, Matcher> createMatchers(Map<Token, Pattern> patterns, CharSequence charSequence) {
         Map<Token, Matcher> matchers = new HashMap<>();

@@ -25,9 +25,8 @@ import java.beans.PropertyChangeListener;
 import java.util.*;
 
 /**
- * Implements a graph allowing nodes in the getModel time lag to have parents
- * taken from previous time lags. This is intended to be interpreted as a
- * repeating time series graph for purposes of simulation.
+ * Implements a graph allowing nodes in the getModel time lag to have parents taken from previous time lags. This is
+ * intended to be interpreted as a repeating time series graph for purposes of simulation.
  *
  * @author josephramsey
  */

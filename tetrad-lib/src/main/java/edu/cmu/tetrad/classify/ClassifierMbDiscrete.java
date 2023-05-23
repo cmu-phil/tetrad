@@ -118,12 +118,11 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
 
     /**
      * Classifies the test data by Bayesian updating. The procedure is as follows. First, PC-MB is run on the training
-     * data to estimate an MB CPDAG. Bidirected edges are removed; an MB DAG G is selected from the CPDAG that
-     * remains. Second, a Bayes model B is estimated using this G and the training data. Third, for each case in the
-     * test data, the marginal for the target variable in B is calculated conditioning on values of the other varialbes
-     * in B in the test data; these are reported as classifications. Estimation of B is done using a Dirichlet
-     * estimator, with a symmetric prior, with the given alpha value. Updating is done using a row-summing exact
-     * updater.
+     * data to estimate an MB CPDAG. Bidirected edges are removed; an MB DAG G is selected from the CPDAG that remains.
+     * Second, a Bayes model B is estimated using this G and the training data. Third, for each case in the test data,
+     * the marginal for the target variable in B is calculated conditioning on values of the other varialbes in B in the
+     * test data; these are reported as classifications. Estimation of B is done using a Dirichlet estimator, with a
+     * symmetric prior, with the given alpha value. Updating is done using a row-summing exact updater.
      * <p>
      * One consequence of using the row-summing exact updater is that classification will be fast except for cases in
      * which there are lots of missing values. The reason for this is that for such cases the number of rows that need

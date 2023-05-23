@@ -22,8 +22,7 @@
 package edu.cmu.tetrad.session;
 
 /**
- * Tags session nodes that should not be passed on as old models to
- * new models.
+ * Tags session nodes that should not be passed on as old models to new models.
  */
 public interface DoNotAddOldModel {
 }

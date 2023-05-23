@@ -52,8 +52,7 @@ import static org.junit.Assert.assertFalse;
 public class TestStatUtils {
 
     /**
-     * Tests that the unconditional correlations and covariances are correct,
-     * at least for the unconditional tests.
+     * Tests that the unconditional correlations and covariances are correct, at least for the unconditional tests.
      */
     @Test
     public void testConditionalCorrelation() {

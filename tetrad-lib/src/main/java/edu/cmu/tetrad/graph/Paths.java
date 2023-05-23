@@ -22,11 +22,9 @@ public class Paths implements TetradSerializable {
     /**
      * Returns a valid causal order for either a DAG or a CPDAG. (bryanandrews)
      *
-     * @param initialOrder Variables in the order will be kept as close to this
-     *                     initial order as possible, either the forward order
-     *                     or the reverse order, depending on the next parameter.
-     * @param forward      Whether the variable will be iterated over in forward or
-     *                     reverse direction.
+     * @param initialOrder Variables in the order will be kept as close to this initial order as possible, either the
+     *                     forward order or the reverse order, depending on the next parameter.
+     * @param forward      Whether the variable will be iterated over in forward or reverse direction.
      * @return The valid causal order found.
      */
     public List<Node> getValidOrder(List<Node> initialOrder, boolean forward) {
@@ -211,8 +209,7 @@ public class Paths implements TetradSerializable {
 
 
     /**
-     * @return the connected components of the given graph, as a list of lists
-     * of nodes.
+     * @return the connected components of the given graph, as a list of lists of nodes.
      */
     public List<List<Node>> connectedComponents() {
         List<List<Node>> components = new LinkedList<>();
@@ -831,8 +828,8 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Determines whether an inducing path exists between node1 and node2, given
-     * a set O of observed nodes and a set sem of conditioned nodes.
+     * Determines whether an inducing path exists between node1 and node2, given a set O of observed nodes and a set sem
+     * of conditioned nodes.
      *
      * @param x the first node.
      * @param y the second node.
@@ -1007,8 +1004,8 @@ public class Paths implements TetradSerializable {
      * Remove edges by the possible d-separation rule.
      *
      * @param test    The independence test to use to remove edges.
-     * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets
-     *                will not be recorded.
+     * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets will not be
+     *                recorded.
      */
     public void removeByPossibleDsep(IndependenceTest test, SepsetMap sepsets) {
         for (Edge edge : graph.getEdges()) {
@@ -1138,8 +1135,7 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Check to see if a set of variables Z satisfies the back-door criterion
-     * relative to node x and node y.
+     * Check to see if a set of variables Z satisfies the back-door criterion relative to node x and node y.
      *
      * @author Kevin V. Bui (March 2020)
      */
@@ -1364,8 +1360,7 @@ public class Paths implements TetradSerializable {
      * added by ekorber, 2004/06/11
      *
      * @return true if the given edge is definitely visible (Jiji, pg 25)
-     * @throws IllegalArgumentException if the given edge is not a directed edge
-     *                                  in the graph
+     * @throws IllegalArgumentException if the given edge is not a directed edge in the graph
      */
     public boolean defVisible(Edge edge) {
         if (!edge.isDirected()) return false;
@@ -1496,9 +1491,8 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Determines whether a trek exists between two nodes in the graph. A trek
-     * exists if there is a directed path between the two nodes or else, for
-     * some third node in the graph, there is a path to each of the two nodes in
+     * Determines whether a trek exists between two nodes in the graph. A trek exists if there is a directed path
+     * between the two nodes or else, for some third node in the graph, there is a path to each of the two nodes in
      * question.
      */
     public boolean existsTrek(Node node1, Node node2) {
@@ -1564,20 +1558,16 @@ public class Paths implements TetradSerializable {
     }
 
     /**
-     * Determines whether one n ode is d-separated from another. According to
-     * Spirtes, Richardson and Meek, two nodes are d- connected given some
-     * conditioning set Z if there is an acyclic undirected path U between them,
-     * such that every collider on U is an ancestor of some element in Z and
-     * every non-collider on U is not in Z. Two elements are d-separated just in
-     * case they are not d-connected. A collider is a node which two edges hold
-     * in common for which the endpoints leading into the node are both arrow
-     * endpoints.
+     * Determines whether one n ode is d-separated from another. According to Spirtes, Richardson and Meek, two nodes
+     * are d- connected given some conditioning set Z if there is an acyclic undirected path U between them, such that
+     * every collider on U is an ancestor of some element in Z and every non-collider on U is not in Z. Two elements are
+     * d-separated just in case they are not d-connected. A collider is a node which two edges hold in common for which
+     * the endpoints leading into the node are both arrow endpoints.
      *
      * @param node1 the first node.
      * @param node2 the second node.
      * @param z     the conditioning set.
-     * @return true if node1 is d-separated from node2 given set t, false if
-     * not.
+     * @return true if node1 is d-separated from node2 given set t, false if not.
      * @see #isDConnectedTo
      */
     public boolean isDSeparatedFrom(Node node1, Node node2, List<Node> z) {

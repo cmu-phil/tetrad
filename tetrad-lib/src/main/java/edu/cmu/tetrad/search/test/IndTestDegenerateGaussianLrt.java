@@ -46,8 +46,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>Implements a degenerate Gaussian score as a LRT. The reference is here:</p>
  *
  * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2019, July). Learning high-dimensional
- * directed acyclic graphs with mixed data-types. In The 2019 ACM SIGKDD Workshop
- * on Causal Discovery (pp. 4-21). PMLR.</p>
+ * directed acyclic graphs with mixed data-types. In The 2019 ACM SIGKDD Workshop on Causal Discovery (pp. 4-21).
+ * PMLR.</p>
  *
  * @author Bryan Andrews
  */
@@ -71,8 +71,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     private final Map<Integer, List<Integer>> embedding;
 
     /**
-     * Stores a return value for a likelihood--i.e., a likelihood value and the degrees of freedom
-     * for it.
+     * Stores a return value for a likelihood--i.e., a likelihood value and the degrees of freedom for it.
      */
     public static class Ret {
         private final double lik;
@@ -331,8 +330,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
 
     /**
-     * Returns a value that more positive for stronger dependence and positive
-     * only if dependence holds.
+     * Returns a value that more positive for stronger dependence and positive only if dependence holds.
      *
      * @return This value.
      * @see Fges

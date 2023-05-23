@@ -48,9 +48,8 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Implementation of Lee and Hastie's (2012) pseudolikelihood method for learning
- * Mixed Gaussian-Categorical Graphical Models
- * Created by ajsedgewick on 7/15/15.
+ * Implementation of Lee and Hastie's (2012) pseudolikelihood method for learning Mixed Gaussian-Categorical Graphical
+ * Models Created by ajsedgewick on 7/15/15.
  */
 public class Mgm extends ConvexProximal implements IGraphSearch {
     private final DoubleFactory2D factory2D = DoubleFactory2D.dense;
@@ -486,9 +485,9 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * non-penalized -log(pseudolikelihood) this is the smooth function g(x) in prox gradient
-     * this overloaded version calculates both nll and the smooth gradient at the same time
-     * any value in gradOut will be replaced by the new calculations
+     * non-penalized -log(pseudolikelihood) this is the smooth function g(x) in prox gradient this overloaded version
+     * calculates both nll and the smooth gradient at the same time any value in gradOut will be replaced by the new
+     * calculations
      *
      * @param parIn
      * @param gradOutVec
@@ -1150,8 +1149,8 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * Learn MGM using edge convergence using default 3 iterations of no edge changes. Recommended when we only care about
-     * edge existence.
+     * Learn MGM using edge convergence using default 3 iterations of no edge changes. Recommended when we only care
+     * about edge existence.
      *
      * @param iterLimit
      */
@@ -1161,8 +1160,8 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
     }
 
     /**
-     * Learn MGM using edge convergence using edgeChangeTol (see ProximalGradient for documentation). Recommended when we only care about
-     * edge existence.
+     * Learn MGM using edge convergence using edgeChangeTol (see ProximalGradient for documentation). Recommended when
+     * we only care about edge existence.
      *
      * @param iterLimit
      * @param edgeChangeTol

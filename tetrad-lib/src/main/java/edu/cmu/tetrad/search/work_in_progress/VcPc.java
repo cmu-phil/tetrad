@@ -689,7 +689,7 @@ public final class VcPc implements IGraphSearch {
     }
 
     public static boolean isArrowheadAllowed1(Node from, Node to,
-                                               Knowledge knowledge) {
+                                              Knowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
     }

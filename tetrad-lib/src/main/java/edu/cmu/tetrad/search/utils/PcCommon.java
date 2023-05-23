@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Prodies some common implementation pieces of variaous PC-like algorithms, with options for
- * collider discovery type, FAS type, and conflict rule.
+ * Prodies some common implementation pieces of variaous PC-like algorithms, with options for collider discovery type,
+ * FAS type, and conflict rule.
  *
  * @author josephramsey
  */
@@ -53,8 +53,8 @@ public final class PcCommon implements IGraphSearch {
     public enum FasType {REGULAR, STABLE}
 
     /**
-     * Give the options for the collider discovery algroithm to use--FAS with sepsets reasoning,
-     * FAS with conservative reasoning, or FAS with Max P reasoning.
+     * Give the options for the collider discovery algroithm to use--FAS with sepsets reasoning, FAS with conservative
+     * reasoning, or FAS with Max P reasoning.
      *
      * @see Fas
      * @see Cpc
@@ -63,9 +63,9 @@ public final class PcCommon implements IGraphSearch {
     public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
 
     /**
-     * Gives the type of conflict to be used, priority (when there is a conflict, keep the
-     * orientation that has already been made), bidirected (when there is a conflict, orient
-     * a bidirected edge), or overwrite (when there is a conflict, use the new orientation).
+     * Gives the type of conflict to be used, priority (when there is a conflict, keep the orientation that has already
+     * been made), bidirected (when there is a conflict, orient a bidirected edge), or overwrite (when there is a
+     * conflict, use the new orientation).
      *
      * @see Pc
      * @see Cpc
@@ -105,8 +105,7 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * @param useHeuristic Whether the heuristic should be used for max P collider
-     *                     orientation.
+     * @param useHeuristic Whether the heuristic should be used for max P collider orientation.
      */
     public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;
@@ -199,7 +198,8 @@ public final class PcCommon implements IGraphSearch {
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
 
-        if (this.graph.paths().existsDirectedCycle()) throw new IllegalArgumentException("Graph is cyclic after sepsets!");
+        if (this.graph.paths().existsDirectedCycle())
+            throw new IllegalArgumentException("Graph is cyclic after sepsets!");
 
         GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
 
@@ -210,7 +210,8 @@ public final class PcCommon implements IGraphSearch {
                 System.out.println("MaxP orientation...");
             }
 
-            if (this.graph.paths().existsDirectedCycle()) throw new IllegalArgumentException("Graph is cyclic before maxp!");
+            if (this.graph.paths().existsDirectedCycle())
+                throw new IllegalArgumentException("Graph is cyclic before maxp!");
 
             MaxP orientCollidersMaxP = new MaxP(this.independenceTest);
             orientCollidersMaxP.setConflictRule(this.conflictRule);
@@ -220,7 +221,8 @@ public final class PcCommon implements IGraphSearch {
             orientCollidersMaxP.setKnowledge(this.knowledge);
             orientCollidersMaxP.orient(this.graph);
 
-            if (this.graph.paths().existsDirectedCycle()) throw new IllegalArgumentException("Graph is cyclic after maxp!");
+            if (this.graph.paths().existsDirectedCycle())
+                throw new IllegalArgumentException("Graph is cyclic after maxp!");
 
         } else if (this.colliderDiscovery == ColliderDiscovery.CONSERVATIVE) {
             if (this.verbose) {
@@ -232,7 +234,8 @@ public final class PcCommon implements IGraphSearch {
 
         this.graph = GraphUtils.replaceNodes(this.graph, nodes);
 
-        if (this.graph.paths().existsDirectedCycle()) throw new IllegalArgumentException("Graph is cyclic before orientation!");
+        if (this.graph.paths().existsDirectedCycle())
+            throw new IllegalArgumentException("Graph is cyclic before orientation!");
 
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(this.knowledge);
@@ -555,8 +558,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-&gt; y &lt;-* z just in
-     * case y is in Sepset({x, z}).
+     * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-&gt; y &lt;-* z
+     * just in case y is in Sepset({x, z}).
      */
     private void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose,
                                              ConflictRule conflictRule) {

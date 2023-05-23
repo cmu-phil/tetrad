@@ -22,8 +22,8 @@
 package edu.cmu.tetrad.sem;
 
 /**
- * A typesafe enum of the types of the various comparisons parameter may have
- * with respect to one another for SEM estimation.
+ * A typesafe enum of the types of the various comparisons parameter may have with respect to one another for SEM
+ * estimation.
  *
  * @author josephramsey
  */
@@ -55,8 +55,7 @@ public class ParamComparison {
     private final transient String name;
 
     /**
-     * Protected constructor for the types; this allows for extension in case
-     * anyone wants to add formula types.
+     * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
     private ParamComparison(String name) {
         this.name = name;

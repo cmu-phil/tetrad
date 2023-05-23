@@ -45,8 +45,7 @@ public class TestRevealEvaluator extends TestCase {
     }
 
     /**
-     * Tests whether the calculations in Liang, Figure 6 come out to the correct
-     * values.
+     * Tests whether the calculations in Liang, Figure 6 come out to the correct values.
      */
     public void testLiangFigure6() {
         int[] a = {0, 0, 0, 0, 1, 1, 1, 1};
@@ -169,8 +168,8 @@ public class TestRevealEvaluator extends TestCase {
     }
 
     /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
      */
     public static Test suite() {
 

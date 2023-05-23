@@ -24,8 +24,7 @@ package edu.cmu.tetrad.cluster.metrics;
 import edu.cmu.tetrad.util.Vector;
 
 /**
- * Euclidean dissimilarity metric--i.e., the sum of the differences in
- * corresponding variable values.
+ * Euclidean dissimilarity metric--i.e., the sum of the differences in corresponding variable values.
  *
  * @author josephramsey
  */

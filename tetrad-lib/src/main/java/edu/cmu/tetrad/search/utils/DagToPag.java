@@ -32,8 +32,8 @@ import java.util.WeakHashMap;
 
 
 /**
- * Converts a DAG (Directed acyclic graph) into the PAG (partial ancestral graph)
- * which it is in the equivalence class of.
+ * Converts a DAG (Directed acyclic graph) into the PAG (partial ancestral graph) which it is in the equivalence class
+ * of.
  *
  * @author josephramsey
  * @author peterspirtes

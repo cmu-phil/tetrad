@@ -27,8 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stores a triple (x, y, z) of nodes. Note that (x, y, z) = (z, y, x). Useful
- * for marking graphs.
+ * Stores a triple (x, y, z) of nodes. Note that (x, y, z) = (z, y, x). Useful for marking graphs.
  *
  * @author josephramsey, after Frank Wimberly.
  */

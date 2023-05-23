@@ -76,8 +76,8 @@ public final class TestBayesXml {
     }
 
     /**
-     * Tests to make sure that a particular file produced by the renderer on
-     * 6/26/04 remains parsable. VERY IMPORTANT THIS DOES NOT BREAK!!!
+     * Tests to make sure that a particular file produced by the renderer on 6/26/04 remains parsable. VERY IMPORTANT
+     * THIS DOES NOT BREAK!!!
      */
     @Test
     public void testLoadFromFile() {

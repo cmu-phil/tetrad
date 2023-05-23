@@ -36,8 +36,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or discrete.
- * This test is valid for both ordinal and non-ordinal discrete searchVariables.
+ * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or
+ * discrete. This test is valid for both ordinal and non-ordinal discrete searchVariables.
  *
  * @author bryanandrews
  */
@@ -182,6 +182,7 @@ public class IndTestMnlrLr implements IndependenceTest {
 
     /**
      * Returns the data.
+     *
      * @return This.
      */
     public DataSet getData() {
@@ -195,6 +196,7 @@ public class IndTestMnlrLr implements IndependenceTest {
 
     /**
      * Returns whether verbose output should be printed.
+     *
      * @return True is so.
      */
     @Override

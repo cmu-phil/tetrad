@@ -24,12 +24,10 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * A class for implementing constraints on the values of the freeParameters of of
- * instances of the SemIm class.  The constraint can either be on the value of a
- * single parameter in relation to a given value (double) or it can constrain
- * the relative values of two freeParameters.  There is a companion class
- * ParamConstraintType that specifies whether the constraint implements an
- * equality, less than or greater than relation.
+ * A class for implementing constraints on the values of the freeParameters of of instances of the SemIm class.  The
+ * constraint can either be on the value of a single parameter in relation to a given value (double) or it can constrain
+ * the relative values of two freeParameters.  There is a companion class ParamConstraintType that specifies whether the
+ * constraint implements an equality, less than or greater than relation.
  *
  * @author Frank Wimberly
  */
@@ -43,9 +41,8 @@ public class ParamConstraint implements TetradSerializable {
     private final SemIm semIm;
 
     /**
-     * The first constructor specifies the parameter and a number and the type
-     * of relation imposed by the constraint. The SemIm is required because the
-     * freeParameters' values are determined by it.
+     * The first constructor specifies the parameter and a number and the type of relation imposed by the constraint.
+     * The SemIm is required because the freeParameters' values are determined by it.
      */
     public ParamConstraint(SemIm semIm, Parameter param1,
                            ParamConstraintType type, double number) {
@@ -80,11 +77,9 @@ public class ParamConstraint implements TetradSerializable {
     }
 
     /**
-     * This method is for testing whether a value that might be assigned to a
-     * parameter would satisfy it.  This is useful during a procedure which
-     * searches possible values of freeParameters to find that value which is
-     * optimal with respect to some measure of fit of the parameterized SEM to
-     * some dataset.
+     * This method is for testing whether a value that might be assigned to a parameter would satisfy it.  This is
+     * useful during a procedure which searches possible values of freeParameters to find that value which is optimal
+     * with respect to some measure of fit of the parameterized SEM to some dataset.
      *
      * @return true if the value would satisfy the constraint.
      */

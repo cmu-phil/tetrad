@@ -26,8 +26,7 @@ import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Soces the Gaussian kernel for a given bandwidth. Default bandwidth is set using the
- * median distance heuristic.
+ * Soces the Gaussian kernel for a given bandwidth. Default bandwidth is set using the median distance heuristic.
  *
  * @author Robert Tillman
  */

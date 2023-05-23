@@ -36,8 +36,8 @@ import java.util.*;
 
 /**
  * <p>Adjusts FCI (see) to use conservative orientation as in CPC (see). Because the
- * collider orientatation is conservative, there may be ambiguous triples; these
- * may be retrieved using that accessor method.</p>
+ * collider orientatation is conservative, there may be ambiguous triples; these may be retrieved using that accessor
+ * method.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -251,8 +251,7 @@ public final class Cfci implements IGraphSearch {
     }
 
     /**
-     * Returns the map from nodes to their sepsets. For x _||_ y | z1,...,zn, this
-     * would map {x, y} to {z1,..,zn}.
+     * Returns the map from nodes to their sepsets. For x _||_ y | z1,...,zn, this would map {x, y} to {z1,..,zn}.
      *
      * @return This map.
      */

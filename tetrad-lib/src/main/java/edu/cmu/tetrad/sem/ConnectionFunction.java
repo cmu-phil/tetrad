@@ -24,8 +24,8 @@ package edu.cmu.tetrad.sem;
 import edu.cmu.tetrad.graph.Node;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Oct 25, 2008 Time: 11:49:32 AM
- * To change this template use File | Settings | File Templates.
+ * Created by IntelliJ IDEA. User: jdramsey Date: Oct 25, 2008 Time: 11:49:32 AM To change this template use File |
+ * Settings | File Templates.
  */
 public interface ConnectionFunction {
     Node[] getInputNodes();

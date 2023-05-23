@@ -35,16 +35,14 @@ import java.util.Arrays;
 import static jgpml.covariancefunctions.MatrixOperations.exp;
 
 /**
- * Squared Exponential covariance function with isotropic distance measure. The
- * covariance function is parameterized as:
+ * Squared Exponential covariance function with isotropic distance measure. The covariance function is parameterized
+ * as:
  * <p>
  * k(x^p,x^q) = sf2 * exp(-(x^p - x^q)'*inv(P)*(x^p - x^q)/2)
  * <p>
- * where the P matrix is ell^2 times the unit matrix and sf2 is the signal
- * variance. The hyperparameters are:
+ * where the P matrix is ell^2 times the unit matrix and sf2 is the signal variance. The hyperparameters are:
  * <p>
- * [ log(ell)
- * log(sqrt(sf2)) ]
+ * [ log(ell) log(sqrt(sf2)) ]
  */
 
 public class CovSEiso implements CovarianceFunction {
@@ -106,8 +104,8 @@ public class CovSEiso implements CovarianceFunction {
     }
 
     /**
-     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
-     * to the hyperparameter with index <code>idx</code>
+     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
+     * <code>idx</code>
      *
      * @param loghyper hyperparameters
      * @param X        input dataset

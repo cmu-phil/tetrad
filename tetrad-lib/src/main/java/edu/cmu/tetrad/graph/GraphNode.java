@@ -28,8 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Implements a basic node in a graph--that is, a node that is not itself a
- * variable.
+ * Implements a basic node in a graph--that is, a node that is not itself a variable.
  *
  * @author josephramsey
  * @author Willie Wheeler
@@ -54,8 +53,7 @@ public class GraphNode implements Node {
     private NodeType nodeType = NodeType.MEASURED;
 
     /**
-     * Node variable type (domain, interventional status, interventional
-     * value..) of this node variable
+     * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
@@ -185,8 +183,8 @@ public class GraphNode implements Node {
     }
 
     /**
-     * @return the existing property change support object for this class, if
-     * there is one, or else creates a new one and returns that.
+     * @return the existing property change support object for this class, if there is one, or else creates a new one
+     * and returns that.
      */
     private PropertyChangeSupport getPcs() {
         if (this.pcs == null) {
@@ -220,8 +218,7 @@ public class GraphNode implements Node {
     }
 
     /**
-     * Two continuous variables are equal if they have the same name and the
-     * same missing value marker.
+     * Two continuous variables are equal if they have the same name and the same missing value marker.
      */
     public boolean equals(Object o) {
         if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
@@ -240,14 +237,12 @@ public class GraphNode implements Node {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

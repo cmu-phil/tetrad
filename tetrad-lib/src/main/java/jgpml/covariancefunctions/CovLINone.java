@@ -34,13 +34,11 @@ import static jgpml.covariancefunctions.MatrixOperations.addValue;
 import static jgpml.covariancefunctions.MatrixOperations.sumRows;
 
 /**
- * Linear covariance function with a single hyperparameter. The covariance
- * function is parameterized as:
+ * Linear covariance function with a single hyperparameter. The covariance function is parameterized as:
  * <p>
  * k(x^p,x^q) = x^p'*inv(P)*x^q + 1./t2;
  * <p>
- * where the P matrix is t2 times the unit matrix. The second term plays the
- * role of the bias. The hyperparameter is:
+ * where the P matrix is t2 times the unit matrix. The second term plays the role of the bias. The hyperparameter is:
  * <p>
  * [ log(sqrt(t2)) ]
  */
@@ -101,8 +99,8 @@ public class CovLINone implements CovarianceFunction {
     }
 
     /**
-     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
-     * to the hyperparameter with index <code>idx</code>
+     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
+     * <code>idx</code>
      *
      * @param loghyper hyperparameters
      * @param X        input dataset

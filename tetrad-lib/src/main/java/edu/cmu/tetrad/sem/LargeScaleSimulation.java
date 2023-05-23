@@ -44,8 +44,8 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * Stores a SEM model, pared down, for purposes of simulating data sets with
- * large numbers of variables and sample sizes.
+ * Stores a SEM model, pared down, for purposes of simulating data sets with large numbers of variables and sample
+ * sizes.
  *
  * @author josephramsey
  */
@@ -109,12 +109,10 @@ public final class LargeScaleSimulation {
     }
 
     /**
-     * This simulates data by picking random values for the exogenous terms and
-     * percolating this information down through the SEM, assuming it is
-     * acyclic. Works, but will hang for cyclic models, and is very slow for
-     * large numbers of variables (probably due to the heavyweight lookups of
-     * various values--could be improved). The model must be acyclic, or else
-     * this will spin.
+     * This simulates data by picking random values for the exogenous terms and percolating this information down
+     * through the SEM, assuming it is acyclic. Works, but will hang for cyclic models, and is very slow for large
+     * numbers of variables (probably due to the heavyweight lookups of various values--could be improved). The model
+     * must be acyclic, or else this will spin.
      */
     public DataSet simulateDataRecursive(int sampleSize) {
         if (this.tierIndices == null) {
@@ -202,8 +200,7 @@ public final class LargeScaleSimulation {
     }
 
     /**
-     * Simulates data using the model X = (I - B)Y^-1 * e. Errors are
-     * uncorrelated.
+     * Simulates data using the model X = (I - B)Y^-1 * e. Errors are uncorrelated.
      *
      * @param sampleSize The nubmer of samples to draw.
      */
@@ -250,35 +247,27 @@ public final class LargeScaleSimulation {
     }
 
     /**
-     * Simulates data using the model of R. A. Fisher, for a linear model.
-     * Shocks are applied every so many steps. A data point is recorded before
-     * each shock is administered. If convergence happens before that number of
-     * steps has been reached, a data point is recorded and a new shock
-     * immediately applied. The model may be cyclic. If cyclic, all eigenvalues
-     * for the coefficient matrix must be less than 1, though this is not
-     * checked. Uses an interval between shocks of 50 and a convergence
-     * threshold of 1e-5. Uncorrelated Gaussian shocks are used.
+     * Simulates data using the model of R. A. Fisher, for a linear model. Shocks are applied every so many steps. A
+     * data point is recorded before each shock is administered. If convergence happens before that number of steps has
+     * been reached, a data point is recorded and a new shock immediately applied. The model may be cyclic. If cyclic,
+     * all eigenvalues for the coefficient matrix must be less than 1, though this is not checked. Uses an interval
+     * between shocks of 50 and a convergence threshold of 1e-5. Uncorrelated Gaussian shocks are used.
      *
-     * @param sampleSize The number of samples to be drawn. Must be a positive
-     *                   integer.
+     * @param sampleSize The number of samples to be drawn. Must be a positive integer.
      */
     public DataSet simulateDataFisher(int sampleSize) {
         return simulateDataFisher(getSoCalledPoissonShocks(sampleSize), 50, 1e-5);
     }
 
     /**
-     * Simulates data using the model of R. A. Fisher, for a linear model.
-     * Shocks are applied every so many steps. A data point is recorded before
-     * each shock is administered. If convergence happens before that number of
-     * steps has been reached, a data point is recorded and a new shock
-     * immediately applied. The model may be cyclic. If cyclic, all eigenvalues
-     * for the coefficient matrix must be less than 1, though this is not
-     * checked.
+     * Simulates data using the model of R. A. Fisher, for a linear model. Shocks are applied every so many steps. A
+     * data point is recorded before each shock is administered. If convergence happens before that number of steps has
+     * been reached, a data point is recorded and a new shock immediately applied. The model may be cyclic. If cyclic,
+     * all eigenvalues for the coefficient matrix must be less than 1, though this is not checked.
      *
-     * @param shocks                A matrix of shocks. The value at shocks[i][j] is the shock
-     *                              for the i'th time step, for the j'th variables.
-     * @param intervalBetweenShocks External shock is applied every this many
-     *                              steps. Must be positive integer.
+     * @param shocks                A matrix of shocks. The value at shocks[i][j] is the shock for the i'th time step,
+     *                              for the j'th variables.
+     * @param intervalBetweenShocks External shock is applied every this many steps. Must be positive integer.
      * @param epsilon               The convergence criterion; |xi.t - xi.t-1| &lt; epsilon.fff
      */
     public DataSet simulateDataFisher(double[][] shocks, int intervalBetweenShocks, double epsilon) {

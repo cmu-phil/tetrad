@@ -11,15 +11,14 @@ import java.util.Arrays;
 /**
  * Class transforming a symmetrical matrix to tridiagonal shape.
  * <p>A symmetrical m &times; m matrix A can be written as the product of three matrices:
- * A = Q &times; T &times; Q<sup>T</sup> with Q an orthogonal matrix and T a symmetrical
- * tridiagonal matrix. Both Q and T are m &times; m matrices.&gt; 0
+ * A = Q &times; T &times; Q<sup>T</sup> with Q an orthogonal matrix and T a symmetrical tridiagonal matrix. Both Q and
+ * T are m &times; m matrices.&gt; 0
  * <p>This implementation only uses the upper part of the matrix, the part below the
  * diagonal is not accessed at all.&gt; 0
  * <p>Transformation to tridiagonal shape is often not a goal by itself, but it is
- * an intermediate step in more general decomposition algorithms like {@link
- * EigenDecomposition eigen decomposition}. This class is therefore intended for internal
- * use by the library and is not public. As a consequence of this explicitly limited scope,
- * many methods directly returns references to internal arrays, not copies.&gt; 0
+ * an intermediate step in more general decomposition algorithms like {@link EigenDecomposition eigen decomposition}.
+ * This class is therefore intended for internal use by the library and is not public. As a consequence of this
+ * explicitly limited scope, many methods directly returns references to internal arrays, not copies.&gt; 0
  *
  * @since 2.0
  */

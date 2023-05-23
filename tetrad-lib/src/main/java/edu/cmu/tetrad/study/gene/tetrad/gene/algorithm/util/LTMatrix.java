@@ -24,8 +24,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util;
 import java.io.IOException;
 
 /**
- * Implements a space-efficient Lower Triangular Matrix of
- * elements of type <code>short</code>
+ * Implements a space-efficient Lower Triangular Matrix of elements of type <code>short</code>
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
@@ -56,8 +55,8 @@ public class LTMatrix extends BasicLTMatrix {
     }
 
     /**
-     * Casts double x to short and assigns it to element (r,c) This method
-     * checks that x can be converted to a short without causing overflow.
+     * Casts double x to short and assigns it to element (r,c) This method checks that x can be converted to a short
+     * without causing overflow.
      */
     public void setDoubleValue(int r, int c, double x) {
         if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
@@ -68,8 +67,8 @@ public class LTMatrix extends BasicLTMatrix {
     }
 
     /**
-     * Assigns integer x to matrix element (r, c).  This method checks that x
-     * can be converted to a short without causing overflow.
+     * Assigns integer x to matrix element (r, c).  This method checks that x can be converted to a short without
+     * causing overflow.
      */
     public void setValue(int r, int c, int x) {
         if ((x < MIN_SHORT) || (x > MAX_SHORT)) {
@@ -122,8 +121,7 @@ public class LTMatrix extends BasicLTMatrix {
     }
 
     /**
-     * Returns a specially formatted string with all the contents of this
-     * matrix
+     * Returns a specially formatted string with all the contents of this matrix
      */
     public String toString() {
         String s = this.getClass().getName() + " " + this.name + "\n" + this.n +

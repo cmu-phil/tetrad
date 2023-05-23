@@ -30,12 +30,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Implements a graph capable of storing edges of type N1 *-# N2 where * and
- * # are endpoints of type Endpoint.<p>We stipulate by extending
- * TetradSerializable that all graphs implementing this interface are
- * serializable. This is because for Tetrad they must be serializable. (For
- * randomUtil, in order to be able to cancelAll operations, they must be
- * serializable.)
+ * Implements a graph capable of storing edges of type N1 *-# N2 where * and # are endpoints of type Endpoint.<p>We
+ * stipulate by extending TetradSerializable that all graphs implementing this interface are serializable. This is
+ * because for Tetrad they must be serializable. (For randomUtil, in order to be able to cancelAll operations, they must
+ * be serializable.)
  *
  * @author josephramsey
  * @see Endpoint
@@ -69,16 +67,15 @@ public interface Graph extends TetradSerializable {
     boolean addPartiallyOrientedEdge(Node node1, Node node2);
 
     /**
-     * Adds the specified edge to the graph, provided it is not already in the
-     * graph.
+     * Adds the specified edge to the graph, provided it is not already in the graph.
      *
      * @return true if the edge was added, false if not.
      */
     boolean addEdge(Edge edge);
 
     /**
-     * Adds a node to the graph. Precondition: The proposed name of the node
-     * cannot already be used by any other node in the same graph.
+     * Adds a node to the graph. Precondition: The proposed name of the node cannot already be used by any other node in
+     * the same graph.
      *
      * @return true if nodes were added, false if not.
      */
@@ -109,19 +106,16 @@ public interface Graph extends TetradSerializable {
     boolean containsNode(Node node);
 
     /**
-     * Determines whether this graph is equal to some other graph, in the sense
-     * that they contain the same nodes and the sets of edges defined over these
-     * nodes in the two graphs are isomorphic typewise. That is, if node A and B
-     * exist in both graphs, and if there are, e.g., three edges between A and B
-     * in the first graph, two of which are directed edges and one of which is
-     * an undirected edge, then in the second graph there must also be two
-     * directed edges and one undirected edge between nodes A and B.
+     * Determines whether this graph is equal to some other graph, in the sense that they contain the same nodes and the
+     * sets of edges defined over these nodes in the two graphs are isomorphic typewise. That is, if node A and B exist
+     * in both graphs, and if there are, e.g., three edges between A and B in the first graph, two of which are directed
+     * edges and one of which is an undirected edge, then in the second graph there must also be two directed edges and
+     * one undirected edge between nodes A and B.
      */
     boolean equals(Object o);
 
     /**
-     * Removes all edges from the graph and fully connects it using #-# edges,
-     * where # is the given endpoint.
+     * Removes all edges from the graph and fully connects it using #-# edges, where # is the given endpoint.
      */
     void fullyConnect(Endpoint endpoint);
 
@@ -146,23 +140,20 @@ public interface Graph extends TetradSerializable {
     int getDegree();
 
     /**
-     * @return the edge connecting node1 and node2, provided a unique such edge
-     * exists.
-     * @throws UnsupportedOperationException if the graph allows multiple edges
-     *                                       between node pairs.
+     * @return the edge connecting node1 and node2, provided a unique such edge exists.
+     * @throws UnsupportedOperationException if the graph allows multiple edges between node pairs.
      */
     Edge getEdge(Node node1, Node node2);
 
     /**
      * @return the directed edge from node1 to node2, if there is one.
-     * @throws UnsupportedOperationException if the graph allows multiple edges
-     *                                       between node pairs.
+     * @throws UnsupportedOperationException if the graph allows multiple edges between node pairs.
      */
     Edge getDirectedEdge(Node node1, Node node2);
 
     /**
-     * @return the list of edges connected to a particular node. No particular
-     * ordering of the edges in the list is guaranteed.
+     * @return the list of edges connected to a particular node. No particular ordering of the edges in the list is
+     * guaranteed.
      */
     List<Edge> getEdges(Node node);
 
@@ -172,8 +163,7 @@ public interface Graph extends TetradSerializable {
     List<Edge> getEdges(Node node1, Node node2);
 
     /**
-     * @return the set of edges in the graph.  No particular ordering of the
-     * edges in the list is guaranteed.
+     * @return the set of edges in the graph.  No particular ordering of the edges in the list is guaranteed.
      */
     Set<Edge> getEdges();
 
@@ -193,9 +183,8 @@ public interface Graph extends TetradSerializable {
     int getDegree(Node node);
 
     /**
-     * @return the node with the given string name.  In case of accidental
-     * duplicates, the first node encountered with the given name is returned.
-     * In case no node exists with the given name, null is returned.
+     * @return the node with the given string name.  In case of accidental duplicates, the first node encountered with
+     * the given name is returned. In case no node exists with the given name, null is returned.
      */
     Node getNode(String name);
 
@@ -215,8 +204,7 @@ public interface Graph extends TetradSerializable {
     int getNumEdges();
 
     /**
-     * @return the number of edges in the graph which are connected to a
-     * particular node.
+     * @return the number of edges in the graph which are connected to a particular node.
      */
     int getNumEdges(Node node);
 
@@ -287,28 +275,23 @@ public interface Graph extends TetradSerializable {
     boolean removeEdge(Edge edge);
 
     /**
-     * Removes the edge connecting the two given nodes, provided there is
-     * exactly one such edge.
+     * Removes the edge connecting the two given nodes, provided there is exactly one such edge.
      *
-     * @throws UnsupportedOperationException if multiple edges between node
-     *                                       pairs are not supported.
+     * @throws UnsupportedOperationException if multiple edges between node pairs are not supported.
      */
     boolean removeEdge(Node node1, Node node2);
 
     /**
-     * Removes all edges connecting node A to node B.  In most cases, this will
-     * remove at most one edge, but since multiple edges are permitted in some
-     * graph implementations, the number will in some cases be greater than
-     * one.
+     * Removes all edges connecting node A to node B.  In most cases, this will remove at most one edge, but since
+     * multiple edges are permitted in some graph implementations, the number will in some cases be greater than one.
      *
      * @return true if edges were removed, false if not.
      */
     boolean removeEdges(Node node1, Node node2);
 
     /**
-     * Iterates through the list and removes any permissible edges found.  The
-     * order in which edges are added is the order in which they are presented
-     * in the iterator.
+     * Iterates through the list and removes any permissible edges found.  The order in which edges are added is the
+     * order in which they are presented in the iterator.
      *
      * @return true if edges were added, false if not.
      */
@@ -322,23 +305,22 @@ public interface Graph extends TetradSerializable {
     boolean removeNode(Node node);
 
     /**
-     * Iterates through the list and removes any permissible nodes found.  The
-     * order in which nodes are removed is the order in which they are presented
-     * in the iterator.
+     * Iterates through the list and removes any permissible nodes found.  The order in which nodes are removed is the
+     * order in which they are presented in the iterator.
      *
      * @return true if nodes were added, false if not.
      */
     boolean removeNodes(List<Node> nodes);
 
     /**
-     * Sets the endpoint type at the 'to' end of the edge from 'from' to 'to' to
-     * the given endpoint.  Note: NOT CONSTRAINT SAFE
+     * Sets the endpoint type at the 'to' end of the edge from 'from' to 'to' to the given endpoint.  Note: NOT
+     * CONSTRAINT SAFE
      */
     boolean setEndpoint(Node from, Node to, Endpoint endPoint);
 
     /**
-     * Constructs and returns a subgraph consisting of a given subset of the
-     * nodes of this graph together with the edges between them.
+     * Constructs and returns a subgraph consisting of a given subset of the nodes of this graph together with the edges
+     * between them.
      */
     Graph subgraph(List<Node> nodes);
 
@@ -348,10 +330,9 @@ public interface Graph extends TetradSerializable {
     String toString();
 
     /**
-     * Transfers nodes and edges from one graph to another.  One way this is
-     * used is to change graph types.  One constructs a new graph based on the
-     * old graph, and this method is called to transfer the nodes and edges of
-     * the old graph to the new graph.
+     * Transfers nodes and edges from one graph to another.  One way this is used is to change graph types.  One
+     * constructs a new graph based on the old graph, and this method is called to transfer the nodes and edges of the
+     * old graph to the new graph.
      *
      * @param graph the graph from which nodes and edges are to be pilfered.
      * @throws java.lang.IllegalArgumentException This exception is thrown if adding some node.

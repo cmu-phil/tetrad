@@ -44,8 +44,8 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 
 /**
- * Runs a search algorithm over a N subsamples of size b to asses stability
- * as in "Stability Selection" and "Stability Approach to Regularization Selection"
+ * Runs a search algorithm over a N subsamples of size b to asses stability as in "Stability Selection" and "Stability
+ * Approach to Regularization Selection"
  * <p>
  * This is under construction...likely to be buggy
  * <p>

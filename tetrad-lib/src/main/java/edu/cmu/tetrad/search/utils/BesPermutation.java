@@ -21,17 +21,14 @@ import static org.apache.commons.math3.util.FastMath.min;
 
 /**
  * <p>Implements a version of the BES (Best Equivalent Search) algorithm
- * that takes a permutation as input and yields a permtuation as output,
- * where the related DAG or CPDAG models are implied by the ordering or
- * variables in these permutations. BES is the second step of the GES
- * algorithm (e.g., FGES). The first step in GES starts with an
- * empty graph and adds edges (with corresponding reorientations of
- * edges), yielding a Markov model. The second step, this one, BES,
- * starts with this Markov model and then tries to remove edges from
- * it (with corresponding reorientation) to improve the BES scores.</p>
+ * that takes a permutation as input and yields a permtuation as output, where the related DAG or CPDAG models are
+ * implied by the ordering or variables in these permutations. BES is the second step of the GES algorithm (e.g., FGES).
+ * The first step in GES starts with an empty graph and adds edges (with corresponding reorientations of edges),
+ * yielding a Markov model. The second step, this one, BES, starts with this Markov model and then tries to remove edges
+ * from it (with corresponding reorientation) to improve the BES scores.</p>
  * <p>The advantage of doing this is that BES can then be used as
- * a step in certain permutation-based algorithms like BOSS to allow
- * correct models to be inferred under the assumption of faithfulness.</p>
+ * a step in certain permutation-based algorithms like BOSS to allow correct models to be inferred under the assumption
+ * of faithfulness.</p>
  *
  * @author bryanandrews
  * @author josephramsey

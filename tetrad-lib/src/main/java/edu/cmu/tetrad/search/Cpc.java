@@ -43,21 +43,18 @@ import java.util.Set;
  * conservative causal inference. arXiv preprint arXiv:1206.6843.</p>
  *
  * <p>Conservative triple orientation is a method for orienting unshielded triples
- * X*=-*Y*-*Z as one of the following: (a) Collider, X->Y<-Z, (b) Noncollider,
- * X-->Y-->Z, or X<-Y<-Z, or X<-Y->Z, (c) ambiguous between (a) or (b). One does \
- * this by conditioning on subsets of adj(X) or adj(Z). One first checks conditional
- * independence of X and Z conditional on each of these subsets, then lists
- * all of these subsets conditional on which X and Z are *independent*, then looks
- * thoough this list to see if Y is in them. If Y is in all of these subset, the
- * triple is judged to be a noncollider; if it is in none of these subsets, the
- * triple is judged to be a collider, and if it is in some of these subsets and
- * not in others of the subsets, then it is judged to be ambiguous.</p>
+ * X*=-*Y*-*Z as one of the following: (a) Collider, X->Y<-Z, (b) Noncollider, X-->Y-->Z, or X<-Y<-Z, or X<-Y->Z, (c)
+ * ambiguous between (a) or (b). One does \ this by conditioning on subsets of adj(X) or adj(Z). One first checks
+ * conditional independence of X and Z conditional on each of these subsets, then lists all of these subsets conditional
+ * on which X and Z are *independent*, then looks thoough this list to see if Y is in them. If Y is in all of these
+ * subset, the triple is judged to be a noncollider; if it is in none of these subsets, the triple is judged to be a
+ * collider, and if it is in some of these subsets and not in others of the subsets, then it is judged to be
+ * ambiguous.</p>
  *
  * <p>Ambiguous triple are marked in the final graph using an underline, and the
- * final graph is called an "e-patterh", and represents a collection of CPDAGs.
- * To find an element of this collection, one first needs to choose for each
- * ambiguous triple whether it should be a collider or a noncollider and then
- * run the Meek rules given the result of these decisions.</p>
+ * final graph is called an "e-patterh", and represents a collection of CPDAGs. To find an element of this collection,
+ * one first needs to choose for each ambiguous triple whether it should be a collider or a noncollider and then run the
+ * Meek rules given the result of these decisions.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -87,8 +84,8 @@ public final class Cpc implements IGraphSearch {
     //=============================CONSTRUCTORS==========================//
 
     /**
-     * Constructs a CPC algorithm that uses the given independence test as oracle. This does
-     * not make a copy of the independence test, for fear of duplicating the data set!
+     * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
+     * independence test, for fear of duplicating the data set!
      *
      * @param independenceTest The test to user for oracle conditional independence information.
      */
@@ -103,12 +100,10 @@ public final class Cpc implements IGraphSearch {
     //==============================PUBLIC METHODS========================//
 
     /**
-     * Runs CPC starting with a fully connected graph over all the variables in the domain
-     * of the independence test. See PC for caveats. The number of possible cycles and
-     * bidirected edges is far less with CPC than with PC.
+     * Runs CPC starting with a fully connected graph over all the variables in the domain of the independence test. See
+     * PC for caveats. The number of possible cycles and bidirected edges is far less with CPC than with PC.
      *
-     * @return The e-pattern for the search, which is a graphical representation of a set
-     * of possible CPDAGs.
+     * @return The e-pattern for the search, which is a graphical representation of a set of possible CPDAGs.
      */
     public Graph search() {
         this.logger.log("info", "Starting CPC algorithm");
@@ -233,8 +228,8 @@ public final class Cpc implements IGraphSearch {
     }
 
     /**
-     * Returns the depth of the search--that is, the maximum number of variables
-     * conditioned on in any conditional independence test.
+     * Returns the depth of the search--that is, the maximum number of variables conditioned on in any conditional
+     * independence test.
      *
      * @return This.
      */
@@ -243,8 +238,8 @@ public final class Cpc implements IGraphSearch {
     }
 
     /**
-     * Returns the set of ambiguous triples found during the most recent run of the algorithm.
-     * Non-null after a call to <code>search()</code>.
+     * Returns the set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
+     * <code>search()</code>.
      *
      * @return This set.
      */

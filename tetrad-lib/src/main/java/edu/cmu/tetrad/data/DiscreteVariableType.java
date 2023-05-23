@@ -26,11 +26,9 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.io.ObjectStreamException;
 
 /**
- * Type-safe enum of discrete variable types. A nominal discrete variable is one
- * in which the categories are in no particular order. An ordinal discrete
- * variable is one in which the categories in a particular order. An indexical
- * discrete variable is an ordinal discrete variable for which relative
- * distances between categories can be specified.
+ * Type-safe enum of discrete variable types. A nominal discrete variable is one in which the categories are in no
+ * particular order. An ordinal discrete variable is one in which the categories in a particular order. An indexical
+ * discrete variable is an ordinal discrete variable for which relative distances between categories can be specified.
  *
  * @author josephramsey
  */
@@ -48,8 +46,7 @@ public final class DiscreteVariableType implements TetradSerializable {
     private final transient String name;
 
     /**
-     * Protected constructor for the types; this allows for extension in case
-     * anyone wants to add formula types.
+     * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
     private DiscreteVariableType(String name) {
         this.name = name;

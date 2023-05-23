@@ -26,8 +26,8 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Interface for a score. Most methods are given defaults so that such a score will be
- * easy to implement in Python usign JPype.
+ * Interface for a score. Most methods are given defaults so that such a score will be easy to implement in Python usign
+ * JPype.
  *
  * @author josephramsey
  */

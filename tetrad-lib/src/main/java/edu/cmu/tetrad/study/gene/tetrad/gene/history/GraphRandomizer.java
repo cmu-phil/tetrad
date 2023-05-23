@@ -24,8 +24,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.history;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * Instantiations of this interface know how to randomize update graphs in
- * particular ways.
+ * Instantiations of this interface know how to randomize update graphs in particular ways.
  *
  * @author josephramsey
  */
@@ -33,10 +32,9 @@ public interface GraphRandomizer extends TetradSerializable {
     long serialVersionUID = 23L;
 
     /**
-     * Randomizes the given lag graph--in other words, chooses random edges for
-     * the graph according to a particlar scheme (see instantiations). May or
-     * may not modify the factors in the graph, depending on the particular
-     * scheme. (Whether the factors are modified should be clearly documented.)
+     * Randomizes the given lag graph--in other words, chooses random edges for the graph according to a particlar
+     * scheme (see instantiations). May or may not modify the factors in the graph, depending on the particular scheme.
+     * (Whether the factors are modified should be clearly documented.)
      *
      * @param graph an lag graph.
      */

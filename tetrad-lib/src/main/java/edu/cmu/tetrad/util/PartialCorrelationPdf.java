@@ -26,9 +26,8 @@ import org.apache.commons.math3.special.Gamma;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Frequency function of partial correlation r(12|34...k), assuming that the
- * true partial correlation is equal to zero.  Uses the equation (29.13.4) from
- * Cramer's _Mathematical Methods of Statistics_.
+ * Frequency function of partial correlation r(12|34...k), assuming that the true partial correlation is equal to zero.
+ * Uses the equation (29.13.4) from Cramer's _Mathematical Methods of Statistics_.
  *
  * @author josephramsey
  */
@@ -50,16 +49,14 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
     private final int k;
 
     /**
-     * The aggregate value of the constant expression in the distribution
-     * function for zero partial correlation.
+     * The aggregate value of the constant expression in the distribution function for zero partial correlation.
      *
      * @serial
      */
     private double constant = Double.NaN;
 
     /**
-     * The power to which the variable expression is raised in the distribution
-     * function for zero partial correlation.
+     * The power to which the variable expression is raised in the distribution function for zero partial correlation.
      *
      * @serial
      */
@@ -68,8 +65,7 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
     //===========================CONSTRUCTORS========================//
 
     /**
-     * Constructs a new zero partial correlation distribution function with the
-     * given values for n and k.
+     * Constructs a new zero partial correlation distribution function with the given values for n and k.
      *
      * @param n sample size
      * @param k the number of variables being compared.

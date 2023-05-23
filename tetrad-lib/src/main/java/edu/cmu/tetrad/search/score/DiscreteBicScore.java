@@ -33,12 +33,10 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.log;
 
 /**
- * Calculates the discrete BIC score. The likelihood for this score is calculated
- * as SUM(ln(P(X | Z) P(Z)) across all cells in all conditional probability tables
- * for the discrete model. The parameters are counted as SUM(rows * (cols - 1))
- * for all conditional probability tables in the model. Then the BIC score is
- * calculated as 2L - ck ln N, where c is a multiplier on the penalty ("penalty
- * discount").
+ * Calculates the discrete BIC score. The likelihood for this score is calculated as SUM(ln(P(X | Z) P(Z)) across all
+ * cells in all conditional probability tables for the discrete model. The parameters are counted as SUM(rows * (cols -
+ * 1)) for all conditional probability tables in the model. Then the BIC score is calculated as 2L - ck ln N, where c is
+ * a multiplier on the penalty ("penalty discount").
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative
  * scores indicate independence.</p>
@@ -296,8 +294,8 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * This method is not used; a method for calculating whether nodes Z determind node y has not
-     * been implemented here.
+     * This method is not used; a method for calculating whether nodes Z determind node y has not been implemented
+     * here.
      *
      * @throws UnsupportedOperationException Since this method is not used.
      */

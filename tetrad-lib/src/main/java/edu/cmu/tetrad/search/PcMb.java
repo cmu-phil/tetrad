@@ -34,9 +34,9 @@ import java.util.*;
 
 /**
  * <p>Searches for a CPDAG representing all the Markov blankets for a given target T consistent
- * with the given independence information. This CPDAG may be used to generate the actual list
- * of DAG's that might be Markov blankets. Note that this code has been converted to be consistent
- * with the CPC algorithm. The reference is here:</p>
+ * with the given independence information. This CPDAG may be used to generate the actual list of DAG's that might be
+ * Markov blankets. Note that this code has been converted to be consistent with the CPC algorithm. The reference is
+ * here:</p>
  *
  * <p>Bai, X., Padman, R., Ramsey, J., & Spirtes, P. (2008). Tabu search-enhanced graphical models
  * for classification in high dimensions. INFORMS Journal on Computing, 20(3), 423-437.</p>
@@ -410,8 +410,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * Returns the set of triples identified as ambiguous by the CPC algorithm during the
-     * most recent search.
+     * Returns the set of triples identified as ambiguous by the CPC algorithm during the most recent search.
      *
      * @return This set.
      */
@@ -456,8 +455,8 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * Returns the depth of the search--that is, the maximum number of variables
-     * conditioned on in any conditional independence test.
+     * Returns the depth of the search--that is, the maximum number of variables conditioned on in any conditional
+     * independence test.
      *
      * @return This depth.
      */

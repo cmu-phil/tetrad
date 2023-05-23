@@ -25,13 +25,14 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.*;
 
 /**
- * A utility class containing graph function from graph theory. These
- * implementations derived from Weka's implementation.
+ * A utility class containing graph function from graph theory. These implementations derived from Weka's
+ * implementation.
  * <p>
  * Oct 7, 2019 2:56:07 PM
  *
  * @author Kevin V. Bui (kvb2@pitt.edu)
- * @see <a href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
+ * @see <a
+ * href="https://raw.githubusercontent.com/Waikato/weka-3.8/master/weka/src/main/java/weka/classifiers/bayes/net/MarginCalculator.java">MarginCalculator.java</a>
  */
 public final class GraphTools {
 
@@ -62,8 +63,7 @@ public final class GraphTools {
     }
 
     /**
-     * Calculate separator sets in clique tree. A separator (set) is the
-     * intersection of two adjacent nodes.
+     * Calculate separator sets in clique tree. A separator (set) is the intersection of two adjacent nodes.
      *
      * @param ordering maximum cardinality ordering of the graph
      * @param cliques  set of cliques
@@ -89,8 +89,7 @@ public final class GraphTools {
     }
 
     /**
-     * Get cliques in a decomposable graph. A clique is a fully-connected
-     * subgraph.
+     * Get cliques in a decomposable graph. A clique is a fully-connected subgraph.
      *
      * @param graph    decomposable graph
      * @param ordering maximum cardinality ordering
@@ -130,9 +129,8 @@ public final class GraphTools {
     }
 
     /**
-     * Apply Tarjan and Yannakakis (1984) fill in algorithm for graph
-     * triangulation. An undirected graph is triangulated if every cycle of
-     * length greater than 4 has a chord.
+     * Apply Tarjan and Yannakakis (1984) fill in algorithm for graph triangulation. An undirected graph is triangulated
+     * if every cycle of length greater than 4 has a chord.
      *
      * @param graph    moral graph
      * @param ordering maximum cardinality ordering
@@ -160,8 +158,7 @@ public final class GraphTools {
     }
 
     /**
-     * Perform Tarjan and Yannakakis (1984) maximum cardinality search (MCS) to
-     * get the maximum cardinality ordering.
+     * Perform Tarjan and Yannakakis (1984) maximum cardinality search (MCS) to get the maximum cardinality ordering.
      *
      * @param graph moral graph
      * @return maximum cardinality ordering of the graph
@@ -202,9 +199,8 @@ public final class GraphTools {
     }
 
     /**
-     * Create a moral graph. A graph is moralized if an edge is added between
-     * two parents with common a child and the edge orientation is removed,
-     * making an undirected graph.
+     * Create a moral graph. A graph is moralized if an edge is added between two parents with common a child and the
+     * edge orientation is removed, making an undirected graph.
      *
      * @param graph to moralized
      * @return a moral graph

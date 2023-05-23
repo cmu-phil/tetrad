@@ -56,8 +56,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
 /**
- * Script to do a comparison of a list of algorithms using a list of statistics
- * and a list of parameters and their values.
+ * Script to do a comparison of a list of algorithms using a list of statistics and a list of parameters and their
+ * values.
  *
  * @author josephramsey
  * @author danielmalinsky
@@ -96,8 +96,7 @@ public class Comparison {
     /**
      * Compares algorithms.
      *
-     * @param dataPath    Path to the directory where data and graph files have
-     *                    been saved.
+     * @param dataPath    Path to the directory where data and graph files have been saved.
      * @param resultsPath Path to the file where the results should be stored.
      * @param algorithms  The list of algorithms to be compared.
      */
@@ -193,11 +192,9 @@ public class Comparison {
      * Compares algorithms.
      *
      * @param resultsPath Path to the file where the output should be printed.
-     * @param simulations The list of simulationWrapper that is used to generate
-     *                    graphs and data for the comparison.
+     * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
      * @param algorithms  The list of algorithms to be compared.
-     * @param statistics  The list of statistics on which to compare the
-     *                    algorithm, and their utility weights.
+     * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters) {
@@ -491,8 +488,7 @@ public class Comparison {
     /**
      * Saves simulationWrapper data.
      *
-     * @param dataPath   The path to the directory where the simulationWrapper
-     *                   data should be saved.
+     * @param dataPath   The path to the directory where the simulationWrapper data should be saved.
      * @param simulation The simulate used to generate the graphs and data.
      * @param parameters The parameters to be used in the simulationWrapper.
      */
@@ -586,8 +582,7 @@ public class Comparison {
     /**
      * Saves simulationWrapper data.
      *
-     * @param dataPath   The path to the directory where the simulationWrapper
-     *                   data should be saved.
+     * @param dataPath   The path to the directory where the simulationWrapper data should be saved.
      * @param simulation The simulate used to generate the graphs and data.
      * @param parameters The parameters to be used in the simulationWrapper.
      */
@@ -952,16 +947,14 @@ public class Comparison {
     }
 
     /**
-     * @return True iff a column of utilities marked "W" should be shown in the
-     * output.
+     * @return True iff a column of utilities marked "W" should be shown in the output.
      */
     public boolean isShowUtilities() {
         return this.showUtilities;
     }
 
     /**
-     * @param showUtilities True iff a column of utilities marked "W" should be
-     *                      shown in the output.
+     * @param showUtilities True iff a column of utilities marked "W" should be shown in the output.
      */
     public void setShowUtilities(boolean showUtilities) {
         this.showUtilities = showUtilities;
@@ -1018,16 +1011,14 @@ public class Comparison {
     }
 
     /**
-     * @return True iff tables should be tab delimited (e.g. for easy pasting
-     * into Excel).
+     * @return True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public boolean isTabDelimitedTables() {
         return this.tabDelimitedTables;
     }
 
     /**
-     * @param tabDelimitedTables True iff tables should be tab delimited (e.g.
-     *                           for easy pasting into Excel).
+     * @param tabDelimitedTables True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public void setTabDelimitedTables(boolean tabDelimitedTables) {
         this.tabDelimitedTables = tabDelimitedTables;

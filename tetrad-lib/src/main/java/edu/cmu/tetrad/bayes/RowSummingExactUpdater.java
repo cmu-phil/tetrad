@@ -30,9 +30,8 @@ import java.io.ObjectInputStream;
 import java.util.List;
 
 /**
- * Performs updating operations on a BayesIm by summing over cells in the joint
- * probability table for the BayesIm. Quite flexible and fast if almost all of
- * the variables in the Bayes net are in evidence. Can be excruciatingly slow if
+ * Performs updating operations on a BayesIm by summing over cells in the joint probability table for the BayesIm. Quite
+ * flexible and fast if almost all of the variables in the Bayes net are in evidence. Can be excruciatingly slow if
  * numVars - numVarsInEvidence is more than 15.
  *
  * @author josephramsey
@@ -111,8 +110,8 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     //============================PUBLIC METHODS==========================//
 
     /**
-     * The BayesIm that this updater bases its update on. This BayesIm is not
-     * modified; rather, a new BayesIm is created and updated.
+     * The BayesIm that this updater bases its update on. This BayesIm is not modified; rather, a new BayesIm is created
+     * and updated.
      */
     public BayesIm getBayesIm() {
         return this.bayesIm;
@@ -338,14 +337,12 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

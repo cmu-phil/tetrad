@@ -29,13 +29,10 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Estimates probabilities directly from data on the fly using maximum
- * likelihood method, with the exception that if rows do not exist in the data
- * satisfying a required condition because certain values are unattested, an
- * attempt is made to remove each relevant column in turn, record the estimated
- * probability with column removed from the condition (if it is defined), and
- * then return the average over the estimated probabilities calculated this
- * way.
+ * Estimates probabilities directly from data on the fly using maximum likelihood method, with the exception that if
+ * rows do not exist in the data satisfying a required condition because certain values are unattested, an attempt is
+ * made to remove each relevant column in turn, record the estimated probability with column removed from the condition
+ * (if it is defined), and then return the average over the estimated probabilities calculated this way.
  *
  * @author josephramsey
  */
@@ -47,10 +44,8 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     private final DataSet dataSet;
 
     /**
-     * An array whose length is the number of dimensions of the cell and whose
-     * contents, for each value dims[i], are the numbers of values for each
-     * i'th dimension. Each of these dimensions must be an integer greater than
-     * zero.
+     * An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
+     * numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
      */
     private final int[] dims;
 
@@ -85,8 +80,8 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     //===========================PUBLIC METHODS=========================//
 
     /**
-     * @return the estimated probability for the given cell. The order of the
-     * variable values is the order of the variables in getVariable().
+     * @return the estimated probability for the given cell. The order of the variable values is the order of the
+     * variables in getVariable().
      */
     public double getCellProb(int[] variableValues) {
         int[] point = new int[this.dims.length];
@@ -136,8 +131,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated conditional probability for the given assertion
-     * conditional on the given condition.
+     * @return the estimated conditional probability for the given assertion conditional on the given condition.
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
@@ -239,8 +233,7 @@ public final class IntAveDataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the list of variables for the dataset that this is estimating
-     * probabilities for.
+     * @return the list of variables for the dataset that this is estimating probabilities for.
      */
     public List<Node> getVariables() {
         return null;

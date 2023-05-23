@@ -49,60 +49,53 @@ public class GeneHistory implements TetradSerializable {
     private final UpdateFunction updateFunction;
 
     /**
-     * To simulate asynchronous updating, update periods for each factor are
-     * allowed to be different. (Note: this was a brilliant idea somebody had a
-     * long time ago that has never yet been used. jdramsey 2/22/02)
+     * To simulate asynchronous updating, update periods for each factor are allowed to be different. (Note: this was a
+     * brilliant idea somebody had a long time ago that has never yet been used. jdramsey 2/22/02)
      *
      * @serial
      */
     private final int[] updatePeriods;
 
     /**
-     * The getModel time step, which is the number of steps <i>after</i> the
-     * initialization period. In other words, time step 0 is the first update
-     * step after the initialization, or the first step at which the Glass
-     * updating function has been applied. (Markov process.)
+     * The getModel time step, which is the number of steps <i>after</i> the initialization period. In other words, time
+     * step 0 is the first update step after the initialization, or the first step at which the Glass updating function
+     * has been applied. (Markov process.)
      *
      * @serial
      */
     private int step;
 
     /**
-     * A history of time slices of values for each factor, extending back as far
-     * as is necessary for the update function to be applied properly (that is,
-     * from maxlag up to 0, the getModel time step). Note that the firs subscript
-     * is the time slice, whereas the second subscript is the expression level
-     * for each gene.
+     * A history of time slices of values for each factor, extending back as far as is necessary for the update function
+     * to be applied properly (that is, from maxlag up to 0, the getModel time step). Note that the firs subscript is
+     * the time slice, whereas the second subscript is the expression level for each gene.
      *
      * @serial
      */
     private double[][] historyArray;
 
     /**
-     * Indicates whether initialization should be synchronized or not. If it's
-     * synchronized, then the same (or almost the same) set of initial random
-     * values are used each time the initialize() method is called. Otherwise, a
-     * new set of random values is chosen each time. Note that this is a "first
-     * pass" attempt at "shocking" the simulated cells.
+     * Indicates whether initialization should be synchronized or not. If it's synchronized, then the same (or almost
+     * the same) set of initial random values are used each time the initialize() method is called. Otherwise, a new set
+     * of random values is chosen each time. Note that this is a "first pass" attempt at "shocking" the simulated
+     * cells.
      *
      * @serial
      */
     private boolean initSync = true;
 
     /**
-     * A stored copy of the initial values for the history array, to be used if
-     * synchronized initialization is desired. If synchonized initialization is
-     * selected, then on the first pass through the initialization method, this
-     * array is calculated, and for each individual simulated, the history array
-     * for that individual is initialized using values from this array.
+     * A stored copy of the initial values for the history array, to be used if synchronized initialization is desired.
+     * If synchonized initialization is selected, then on the first pass through the initialization method, this array
+     * is calculated, and for each individual simulated, the history array for that individual is initialized using
+     * values from this array.
      *
      * @serial
      */
     private double[][] syncInitialization;
 
     /**
-     * A model of the differences in expression levels due to the particular
-     * dish a sample is taken from.
+     * A model of the differences in expression levels due to the particular dish a sample is taken from.
      *
      * @serial
      */
@@ -111,8 +104,7 @@ public class GeneHistory implements TetradSerializable {
     //==============================CONSTRUCTORS==========================//
 
     /**
-     * Constructs a new history with the given initializer and the given update
-     * function.
+     * Constructs a new history with the given initializer and the given update function.
      */
     public GeneHistory(Initializer initializer, UpdateFunction updateFunction) {
         if (initializer == null) {
@@ -164,10 +156,9 @@ public class GeneHistory implements TetradSerializable {
     }
 
     /**
-     * Returns the getModel history array.  In the array, historyArray[0]
-     * represents the getModel time step, historyArray[1] the time step one lag
-     * back, historyArray[2] the time step two lags back, etc., up to the
-     * maximum time lag.
+     * Returns the getModel history array.  In the array, historyArray[0] represents the getModel time step,
+     * historyArray[1] the time step one lag back, historyArray[2] the time step two lags back, etc., up to the maximum
+     * time lag.
      *
      * @return this array.
      */
@@ -192,8 +183,7 @@ public class GeneHistory implements TetradSerializable {
     }
 
     /**
-     * Resets the history initialization array to that a new data set can be
-     * generated.
+     * Resets the history initialization array to that a new data set can be generated.
      */
     public void reset() {
         this.syncInitialization = null;
@@ -235,9 +225,8 @@ public class GeneHistory implements TetradSerializable {
     }
 
     /**
-     * Initializes the history array. If <code>syncInit</code> is true, stored
-     * initialization values are used. Otherwise, the history array is randomly
-     * initialized.
+     * Initializes the history array. If <code>syncInit</code> is true, stored initialization values are used.
+     * Otherwise, the history array is randomly initialized.
      */
     public void initialize() {
 
@@ -291,14 +280,12 @@ public class GeneHistory implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

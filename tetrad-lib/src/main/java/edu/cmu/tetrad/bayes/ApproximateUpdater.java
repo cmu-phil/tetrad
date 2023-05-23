@@ -33,11 +33,9 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Calculates updated marginals for a Bayes net by simulating data and
- * calculating likelihood ratios. The method is as follows. For P(A | B), enough
- * sample points are simulated from the underlying BayesIm so that 1000 satisfy
- * the condition B. Then the maximum likelihood estimate of condition A is
- * calculated.
+ * Calculates updated marginals for a Bayes net by simulating data and calculating likelihood ratios. The method is as
+ * follows. For P(A | B), enough sample points are simulated from the underlying BayesIm so that 1000 satisfy the
+ * condition B. Then the maximum likelihood estimate of condition A is calculated.
  *
  * @author josephramsey
  */
@@ -66,8 +64,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     private int[][] counts;
 
     /**
-     * This is the source BayesIm after manipulation; all data simulations
-     * should be taken from this.
+     * This is the source BayesIm after manipulation; all data simulations should be taken from this.
      *
      * @serial
      */
@@ -113,8 +110,7 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * @return the Bayes instantiated model after manipulations have been
-     * applied.
+     * @return the Bayes instantiated model after manipulations have been applied.
      */
     public BayesIm getManipulatedBayesIm() {
         return this.manipulatedBayesIm;
@@ -330,14 +326,12 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

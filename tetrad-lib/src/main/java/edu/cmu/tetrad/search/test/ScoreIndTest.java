@@ -38,8 +38,8 @@ import java.util.List;
 
 /**
  * <p>Gives a way of interpreting a score as an independence test. The contract is that
- * the score returned will be negative for independence and positive for dependence;
- * this simply reports these differences.</p>
+ * the score returned will be negative for independence and positive for dependence; this simply reports these
+ * differences.</p>
  *
  * @author josephramsey
  */

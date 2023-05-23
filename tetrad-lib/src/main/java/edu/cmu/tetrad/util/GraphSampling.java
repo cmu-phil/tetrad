@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 /**
  * A utility for computing frequency probabilities.
- *
+ * <p>
  * Jan 29, 2023 3:28:26 PM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)
@@ -77,8 +77,8 @@ public final class GraphSampling {
     }
 
     /**
-     * Combine all the edges from the list of graphs onto one graph with the
-     * edge type that has the highest frequency probability.
+     * Combine all the edges from the list of graphs onto one graph with the edge type that has the highest frequency
+     * probability.
      *
      * @param graphs list of graphs
      * @return graph containing edges with edge type of the highest probability

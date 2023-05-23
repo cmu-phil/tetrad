@@ -29,8 +29,8 @@ import edu.cmu.tetrad.graph.Graph;
 import java.util.LinkedList;
 
 /**
- * Given a graph, lists all DAGs that result from directing the undirected edges in
- * that graph every possible way. Uses a Meek-algorithm-type method.
+ * Given a graph, lists all DAGs that result from directing the undirected edges in that graph every possible way. Uses
+ * a Meek-algorithm-type method.
  *
  * @author josephramsey
  */
@@ -44,8 +44,8 @@ public class DagIterator {
     private Graph storedDag;
 
     /**
-     * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it
-     * is not acyclic, it is rejected.
+     * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it is
+     * not acyclic, it is rejected.
      *
      * @throws IllegalArgumentException if the CPDAG is not a CPDAG.
      */

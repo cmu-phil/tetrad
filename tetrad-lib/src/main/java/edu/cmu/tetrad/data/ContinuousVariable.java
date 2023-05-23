@@ -33,8 +33,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Represents a real-valued variable. The values are doubles, and the default
- * missing value marker for is Double.NaN.
+ * Represents a real-valued variable. The values are doubles, and the default missing value marker for is Double.NaN.
  *
  * @author Willie Wheeler 07/99
  * @author josephramsey modifications 12/00
@@ -44,8 +43,7 @@ public final class ContinuousVariable extends AbstractVariable {
     static final long serialVersionUID = 23L;
 
     /**
-     * This is the value which represents missing data in data columns for this
-     * variable.
+     * This is the value which represents missing data in data columns for this variable.
      */
     private static final double MISSING_VALUE = Double.NaN;
 
@@ -57,8 +55,7 @@ public final class ContinuousVariable extends AbstractVariable {
     private NodeType nodeType = NodeType.MEASURED;
 
     /**
-     * Node variable type (domain, interventional status, interventional
-     * value..) of this node variable
+     * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
@@ -158,10 +155,8 @@ public final class ContinuousVariable extends AbstractVariable {
     /**
      * Determines whether the argument is equal to the missing value marker.
      *
-     * @param value the Object to test--should be a wrapped version of the
-     *              missing value marker.
-     * @return true iff it really is a wrapped version of the missing value
-     * marker.
+     * @param value the Object to test--should be a wrapped version of the missing value marker.
+     * @return true iff it really is a wrapped version of the missing value marker.
      */
     public static boolean isDoubleMissingValue(double value) {
         return Double.isNaN(value);
@@ -170,10 +165,8 @@ public final class ContinuousVariable extends AbstractVariable {
     /**
      * Determines whether the argument is equal to the missing value marker.
      *
-     * @param value the Object to test--should be a wrapped version of the
-     *              missing value marker.
-     * @return true iff it really is a wrapped version of the missing value
-     * marker.
+     * @param value the Object to test--should be a wrapped version of the missing value marker.
+     * @return true iff it really is a wrapped version of the missing value marker.
      */
     public boolean isMissingValue(Object value) {
         if (value instanceof Double) {
@@ -195,8 +188,7 @@ public final class ContinuousVariable extends AbstractVariable {
     }
 
     /**
-     * Two continuous variables are equal if they have the same name and the
-     * same missing value marker.
+     * Two continuous variables are equal if they have the same name and the same missing value marker.
      */
     // The identity of a node can't be changed by changing its name.
     public boolean equals(Object o) {
@@ -277,14 +269,12 @@ public final class ContinuousVariable extends AbstractVariable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -34,17 +34,16 @@ import java.util.*;
 
 /**
  * <p>Implements the adjacency search of the PC algorithm (see), which is a useful algorithm
- * in many contexts, including as the first step of FCI (see). Se we call it the "Fast
- * Adjacency Search" (FAS), to give it a name.</p>
+ * in many contexts, including as the first step of FCI (see). Se we call it the "Fast Adjacency Search" (FAS), to give
+ * it a name.</p>
  *
  * <p>The idea of FAS is that at a given stage of the search, an edge X*-*Y is removed from the
- * graph if X _||_ Y | S, where S is a subset of size d either of adj(X) or of adj(Y), where d
- * is the depth of the search. The fast adjacency search performs this procedure for each pair
- * of adjacent edges in the graph and for each depth d = 0, 1, 2, ..., d1, where d1 is either
- * the maximum depth or else the first such depth at which no edges can be removed. The
- * interpretation of this adjacency search is different for different algorithm, depending on
- * the assumptions of the algorithm. A mapping from {x, y} to S({x, y}) is returned for edges
- * x *-* y that have been removed.</p>
+ * graph if X _||_ Y | S, where S is a subset of size d either of adj(X) or of adj(Y), where d is the depth of the
+ * search. The fast adjacency search performs this procedure for each pair of adjacent edges in the graph and for each
+ * depth d = 0, 1, 2, ..., d1, where d1 is either the maximum depth or else the first such depth at which no edges can
+ * be removed. The interpretation of this adjacency search is different for different algorithm, depending on the
+ * assumptions of the algorithm. A mapping from {x, y} to S({x, y}) is returned for edges x *-* y that have been
+ * removed.</p>
  *
  * <p>Optionally uses Heuristic 3 from Causation, Prediction and Search, which (like FAS-Stable)
  * renders the output invariant to the order of the input variables (See Tsagris).</p>
@@ -253,8 +252,8 @@ public class Fas implements IFas {
     }
 
     /**
-     * Sets the depth of the search, which is the maximum number of variables that ben be conditioned
-     * on in any conditional independence test.
+     * Sets the depth of the search, which is the maximum number of variables that ben be conditioned on in any
+     * conditional independence test.
      *
      * @param depth This maximum.
      */

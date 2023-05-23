@@ -592,8 +592,8 @@ public final class HbsmsGes implements Hbsms {
     /**
      * Fully direct a graph with background knowledge. I am not sure how to adapt Chickering's suggested algorithm above
      * (dagToPdag) to incorporate background knowledge, so I am also implementing this algorithm based on Meek's 1995
-     * UAI paper. Notice it is the same implemented in PcSearch. *IMPORTANT!* *It assumes all colliders are
-     * oriented, as well as arrows dictated by time order.*
+     * UAI paper. Notice it is the same implemented in PcSearch. *IMPORTANT!* *It assumes all colliders are oriented, as
+     * well as arrows dictated by time order.*
      */
     private void pdagWithBk(Graph graph, Knowledge knowledge) {
         MeekRules rules = new MeekRules();

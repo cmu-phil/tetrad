@@ -30,9 +30,8 @@ package jgpml.covariancefunctions;
 import Jama.Matrix;
 
 /**
- * Composes a covariance function as the sum of other covariance
- * functions. This function doesn't actually compute very much on its own, it
- * merely calls other covariance functions with the right parameters.
+ * Composes a covariance function as the sum of other covariance functions. This function doesn't actually compute very
+ * much on its own, it merely calls other covariance functions with the right parameters.
  */
 
 public class CovSum implements CovarianceFunction {
@@ -106,8 +105,8 @@ public class CovSum implements CovarianceFunction {
     }
 
     /**
-     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
-     * to the hyperparameter with index <code>idx</code>
+     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
+     * <code>idx</code>
      *
      * @param loghyper hyperparameters
      * @param X        input dataset

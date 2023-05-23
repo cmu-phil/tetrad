@@ -22,12 +22,11 @@ import static org.apache.commons.math3.util.FastMath.min;
  * <p>Implements the IDA algorithm. The reference is here:</p>
  *
  * <p>Maathuis, Marloes H., Markus Kalisch, and Peter Bühlmann.
- * "Estimating high-dimensional intervention effects from observational data."
- * The Annals of Statistics 37.6A (2009): 3133-3164.</p>
+ * "Estimating high-dimensional intervention effects from observational data." The Annals of Statistics 37.6A (2009):
+ * 3133-3164.</p>
  *
  * <p>The IDA algorithm seeks to give a list of possible parents
- * of a given variable Y and their corresponding lower-bounded effects on
- * Y.</p>
+ * of a given variable Y and their corresponding lower-bounded effects on Y.</p>
  *
  * @author josephramsey
  * @see Cstar
@@ -44,8 +43,7 @@ public class Ida {
      * Constructor.
      *
      * @param dataSet        The dataset being searched over.
-     * @param cpdag          The CPDAG (found, e.g., by running PC, or some other CPDAG-
-     *                       producing algorithm.
+     * @param cpdag          The CPDAG (found, e.g., by running PC, or some other CPDAG- producing algorithm.
      * @param possibleCauses The possible causes to be considered.
      */
     public Ida(DataSet dataSet, Graph cpdag, List<Node> possibleCauses) {
@@ -67,8 +65,8 @@ public class Ida {
      * Returns the minimum effects of X on Y for X in V \ {Y}, sorted downward by minimum effect
      *
      * @param y The child variable.
-     * @return Two sorted lists, one of possible parents, the other of corresponding minimum effects,
-     * sorted downward by minimum effect size.
+     * @return Two sorted lists, one of possible parents, the other of corresponding minimum effects, sorted downward by
+     * minimum effect size.
      * @see Ida
      */
     public NodeEffects getSortedMinEffects(Node y) {
@@ -89,8 +87,7 @@ public class Ida {
     }
 
     /**
-     * Gives a list of nodes (parents or children) and corresponding minimum effects
-     * for the IDA algorithm.
+     * Gives a list of nodes (parents or children) and corresponding minimum effects for the IDA algorithm.
      *
      * @author josephramsey
      */
@@ -131,8 +128,7 @@ public class Ida {
     }
 
     /**
-     * Calculates the true effect of (x, y) given the true DAG (which
-     * must be provided).
+     * Calculates the true effect of (x, y) given the true DAG (which must be provided).
      *
      * @param trueDag The true DAG.
      * @return The true effect of (x, y).
@@ -179,13 +175,12 @@ public class Ida {
     }
 
     /**
-     * Returns a list of the possible effects of X on Y (with different possible parents from the pattern),
-     * sorted low to high in absolute value.
+     * Returns a list of the possible effects of X on Y (with different possible parents from the pattern), sorted low
+     * to high in absolute value.
      * <p>
-     * 1. First, estimate a pattern P from the data.
-     * 2. Then, consider all combinations C of siblings Z of X (Z--X) that include all the parents of X in P.
-     * 3. For each such C, regress Y onto {X} U C and record the coefficient beta for X in the regression.
-     * 4. Report the list of such betas, sorted low to high.
+     * 1. First, estimate a pattern P from the data. 2. Then, consider all combinations C of siblings Z of X (Z--X) that
+     * include all the parents of X in P. 3. For each such C, regress Y onto {X} U C and record the coefficient beta for
+     * X in the regression. 4. Report the list of such betas, sorted low to high.
      *
      * @param x The first variable.
      * @param y The second variable

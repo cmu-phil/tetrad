@@ -19,8 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * A version of the Lee and Hastic simulation which is guaranteed ot generate a
- * discrete data set.
+ * A version of the Lee and Hastic simulation which is guaranteed ot generate a discrete data set.
  *
  * @author josephramsey
  */

@@ -45,8 +45,7 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 public final class GraphUtils {
 
     /**
-     * @return the node associated with a given error node. This should be the
-     * only child of the error node, E --&gt; N.
+     * @return the node associated with a given error node. This should be the only child of the error node, E --&gt; N.
      */
     public static Node getAssociatedNode(Node errorNode, Graph graph) {
         if (errorNode.getNodeType() != NodeType.ERROR) {
@@ -66,8 +65,7 @@ public final class GraphUtils {
     }
 
     /**
-     * @return true if <code>set</code> is a clique in <code>graph</code>.
-     * R. Silva, June 2004
+     * @return true if <code>set</code> is a clique in <code>graph</code>. R. Silva, June 2004
      */
     public static boolean isClique(Collection<Node> set, Graph graph) {
         List<Node> setv = new LinkedList<>(set);
@@ -83,19 +81,15 @@ public final class GraphUtils {
 
 
     /**
-     * Calculates the Markov blanket of a target in a DAG. This includes the
-     * target, the parents of the target, the children of the target, the
-     * parents of the children of the target, edges from parents to target,
-     * target to children, parents of children to children, and parent to
-     * parents of children. (Edges among children are implied by the inclusion
-     * of edges from parents of children to children.) Edges among parents and
-     * among parents of children not explicitly included above are not included.
-     * (Joseph Ramsey 8/6/04)
+     * Calculates the Markov blanket of a target in a DAG. This includes the target, the parents of the target, the
+     * children of the target, the parents of the children of the target, edges from parents to target, target to
+     * children, parents of children to children, and parent to parents of children. (Edges among children are implied
+     * by the inclusion of edges from parents of children to children.) Edges among parents and among parents of
+     * children not explicitly included above are not included. (Joseph Ramsey 8/6/04)
      *
      * @param target a node in the given DAG.
-     * @param dag    the DAG with respect to which a Markov blanket DAG is to be
-     *               calculated. All the nodes and edges of the Markov Blanket DAG are in
-     *               this DAG.
+     * @param dag    the DAG with respect to which a Markov blanket DAG is to be calculated. All the nodes and edges of
+     *               the Markov Blanket DAG are in this DAG.
      */
     public static Graph markovBlanketDag(Node target, Graph dag) {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
@@ -264,8 +258,7 @@ public final class GraphUtils {
     }
 
     /**
-     * @return a new graph in which the bidirectred edges of the given graph
-     * have been changed to undirected edges.
+     * @return a new graph in which the bidirectred edges of the given graph have been changed to undirected edges.
      */
     public static Graph bidirectedToUndirected(Graph graph) {
         Graph newGraph = new EdgeListGraph(graph);
@@ -281,8 +274,7 @@ public final class GraphUtils {
     }
 
     /**
-     * @return a new graph in which the undirectred edges of the given graph
-     * have been changed to bidirected edges.
+     * @return a new graph in which the undirectred edges of the given graph have been changed to bidirected edges.
      */
     public static Graph undirectedToBidirected(Graph graph) {
         Graph newGraph = new EdgeListGraph(graph);
@@ -370,12 +362,10 @@ public final class GraphUtils {
     }
 
     /**
-     * Converts the given graph, <code>originalGraph</code>, to use the new
-     * variables (with the same names as the old).
+     * Converts the given graph, <code>originalGraph</code>, to use the new variables (with the same names as the old).
      *
      * @param originalGraph The graph to be converted.
-     * @param newVariables  The new variables to use, with the same names as the
-     *                      old ones.
+     * @param newVariables  The new variables to use, with the same names as the old ones.
      * @return A new, converted, graph.
      */
     public static Graph replaceNodes(Graph originalGraph, List<Node> newVariables) {
@@ -453,12 +443,12 @@ public final class GraphUtils {
     }
 
     /**
-     * Converts the given list of nodes, <code>originalNodes</code>, to use the
-     * new variables (with the same names as the old).
+     * Converts the given list of nodes, <code>originalNodes</code>, to use the new variables (with the same names as
+     * the old).
      *
      * @param originalNodes The list of nodes to be converted.
-     * @param newNodes      A list of new nodes, containing as a subset nodes with
-     *                      the same names as those in <code>originalNodes</code>. the old ones.
+     * @param newNodes      A list of new nodes, containing as a subset nodes with the same names as those in
+     *                      <code>originalNodes</code>. the old ones.
      * @return The converted list of nodes.
      */
     public static List<Node> replaceNodes(List<Node> originalNodes, List<Node> newNodes) {
@@ -487,8 +477,7 @@ public final class GraphUtils {
     /**
      * Counts the adjacencies that are in graph1 but not in graph2.
      *
-     * @throws IllegalArgumentException if graph1 and graph2 are not namewise
-     *                                  isomorphic.
+     * @throws IllegalArgumentException if graph1 and graph2 are not namewise isomorphic.
      */
     public static int countAdjErrors(Graph graph1, Graph graph2) {
         if (graph1 == null) {
@@ -604,8 +593,8 @@ public final class GraphUtils {
     }
 
     /**
-     * Converts the given list of nodes, <code>originalNodes</code>, to use the
-     * replacement nodes for them by the same name in the given
+     * Converts the given list of nodes, <code>originalNodes</code>, to use the replacement nodes for them by the same
+     * name in the given
      * <code>graph</code>.
      *
      * @param originalNodes The list of nodes to be converted.
@@ -648,8 +637,7 @@ public final class GraphUtils {
 
 
     /**
-     * @return A list of triples of the form X, Y, Z, where X, Y, Z is a
-     * definite noncollider in the given graph.
+     * @return A list of triples of the form X, Y, Z, where X, Y, Z is a definite noncollider in the given graph.
      */
     public static List<Triple> getNoncollidersFromGraph(Node node, Graph graph) {
         List<Triple> noncolliders = new ArrayList<>();
@@ -678,8 +666,8 @@ public final class GraphUtils {
     }
 
     /**
-     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a
-     * definite noncollider in the given graph.
+     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
+     * given graph.
      */
     public static List<Triple> getAmbiguousTriplesFromGraph(Node node, Graph graph) {
         List<Triple> ambiguousTriples = new ArrayList<>();
@@ -705,8 +693,8 @@ public final class GraphUtils {
     }
 
     /**
-     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a
-     * definite noncollider in the given graph.
+     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
+     * given graph.
      */
     public static List<Triple> getUnderlinedTriplesFromGraph(Node node, Graph graph) {
         List<Triple> underlinedTriples = new ArrayList<>();
@@ -733,8 +721,8 @@ public final class GraphUtils {
     }
 
     /**
-     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a
-     * definite noncollider in the given graph.
+     * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
+     * given graph.
      */
     public static List<Triple> getDottedUnderlinedTriplesFromGraph(Node node, Graph graph) {
         List<Triple> dottedUnderlinedTriples = new ArrayList<>();
@@ -798,8 +786,7 @@ public final class GraphUtils {
     }
 
     /**
-     * Constructs a list of nodes from the given <code>nodes</code> list at the
-     * given indices in that list.
+     * Constructs a list of nodes from the given <code>nodes</code> list at the given indices in that list.
      *
      * @param indices The indices of the desired nodes in <code>nodes</code>.
      * @param nodes   The list of nodes from which we select a sublist.
@@ -1777,8 +1764,8 @@ public final class GraphUtils {
     }
 
     /**
-     * The extra edge removal step for GFCI. This removed edges in triangles in the reference graph by looking
-     * for sepsets for edge a--b among the adjacents of a or the adjacents of b.
+     * The extra edge removal step for GFCI. This removed edges in triangles in the reference graph by looking for
+     * sepsets for edge a--b among the adjacents of a or the adjacents of b.
      *
      * @param graph          The graph being operated on and changed.
      * @param referenceCpdag The reference graph, a CPDAG or a DAG obtained using such an algorithm.
@@ -1996,11 +1983,10 @@ public final class GraphUtils {
     }
 
     /**
-     * Converts a string spec of a graph--for example, "X1--&gt;X2, X1---X3,
-     * X2o-&gt;X4, X3&lt;-&gt;X4" to a Graph. The spec consists of a comma separated list
-     * of edge specs of the forms just used in the previous sentence.
-     * Unconnected nodes may be listed separately--example: "X,Y-&gt;Z". To specify
-     * a node as latent, use "Latent()." Example: "Latent(L1),Y-&gt;L1".
+     * Converts a string spec of a graph--for example, "X1--&gt;X2, X1---X3, X2o-&gt;X4, X3&lt;-&gt;X4" to a Graph. The
+     * spec consists of a comma separated list of edge specs of the forms just used in the previous sentence.
+     * Unconnected nodes may be listed separately--example: "X,Y-&gt;Z". To specify a node as latent, use "Latent()."
+     * Example: "Latent(L1),Y-&gt;L1".
      */
     public static Graph convert(String spec) {
         Graph graph = new EdgeListGraph();

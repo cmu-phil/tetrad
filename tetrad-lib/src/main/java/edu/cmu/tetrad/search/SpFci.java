@@ -40,12 +40,11 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
  * <p>Uses SP in place of FGES for the initial step in the GFCI algorithm.
- * This tends to produce a accurate PAG than GFCI as a result, for the latent
- * variables case. This is a simple substitution; the reference for GFCI is here:</p>
+ * This tends to produce a accurate PAG than GFCI as a result, for the latent variables case. This is a simple
+ * substitution; the reference for GFCI is here:</p>
  *
  * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016. Here, SP has been substituted for
- * FGES.</p>
+ * for Latent Variable Models," JMLR 2016. Here, SP has been substituted for FGES.</p>
  *
  * <p>The reference for the SP algorithm is here:</p>
  *
@@ -56,8 +55,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * a test, so for this method, both a test and a score need to be given.</p>
  *
  * <p>Note that SP considers all permutations of the algorithm, which is
- * exponential in the number of variables. So SP is limited to about 10
- * variables.</p>
+ * exponential in the number of variables. So SP is limited to about 10 variables.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -224,9 +222,8 @@ public final class SpFci implements IGraphSearch {
     /**
      * Returns whether the complete rule set is used.
      *
-     * @return True if Zhang's complete rule set should be used, Talse if only
-     * R1-R4 (the rule set of the original FCI) should be used. False by
-     * default.
+     * @return True if Zhang's complete rule set should be used, Talse if only R1-R4 (the rule set of the original FCI)
+     * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
         return this.completeRuleSetUsed;
@@ -235,17 +232,15 @@ public final class SpFci implements IGraphSearch {
     /**
      * Sets whether Zhang's complete ruleset is used.
      *
-     * @param completeRuleSetUsed set to true if Zhang's complete rule set
-     *                            should be used, false if only R1-R4 (the rule set of the original FCI)
-     *                            should be used. False by default.
+     * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
+     *                            set of the original FCI) should be used. False by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
-     * Returns the maximum length of any discriminating path, or -1 of
-     * unlimited.
+     * Returns the maximum length of any discriminating path, or -1 of unlimited.
      *
      * @return This length.
      */
@@ -256,8 +251,7 @@ public final class SpFci implements IGraphSearch {
     /**
      * Sets the max path length for discriminating paths.
      *
-     * @param maxPathLength the maximum length of any discriminating path, or -1
-     *                      if unlimited.
+     * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
     public void setMaxPathLength(int maxPathLength) {
         if (maxPathLength < -1) {

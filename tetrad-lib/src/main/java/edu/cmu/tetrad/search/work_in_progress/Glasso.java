@@ -43,8 +43,7 @@ public class Glasso {
     private final Matrix ss;
 
     /**
-     * Regularization strength parameters for each element (must be symmetric, rho(i, j) = rho(j, i).
-     * False by default.
+     * Regularization strength parameters for each element (must be symmetric, rho(i, j) = rho(j, i). False by default.
      */
     private Rho rho = (i, j) -> 0;
 
@@ -56,32 +55,29 @@ public class Glasso {
 
 
     /**
-     * Approximation flag. False if exact solution, true if Meinhausen-Buhlman approximation.
-     * False by default.
+     * Approximation flag. False if exact solution, true if Meinhausen-Buhlman approximation. False by default.
      */
     private boolean ia;
 
     /**
-     * Initialization flag. false if cold start, initialize using ss. True if warm start, initialize with
-     * previous solution stored in ww and wwi. False by default.
+     * Initialization flag. false if cold start, initialize using ss. True if warm start, initialize with previous
+     * solution stored in ww and wwi. False by default.
      */
     private boolean is;
 
     /**
-     * Trace flag. True if trace information printed. False if trace information not printed.
-     * False by default.
+     * Trace flag. True if trace information printed. False if trace information not printed. False by default.
      */
     private boolean itr;
 
     /**
-     * Diagonal penalty flag. True if diagonal is penalized. False if diagonal is not penalized.
-     * False by default.
+     * Diagonal penalty flag. True if diagonal is penalized. False if diagonal is not penalized. False by default.
      */
     private boolean ipen;
 
     /**
-     * Convergence threshold: Iterations stop when absolute average parameter change is less than
-     * thr * avg(abs(offdiagonal(ss)). (Suggested default 1.0e-4.)
+     * Convergence threshold: Iterations stop when absolute average parameter change is less than thr *
+     * avg(abs(offdiagonal(ss)). (Suggested default 1.0e-4.)
      */
     private double thr = 1.0e-4;
 
@@ -91,8 +87,7 @@ public class Glasso {
     public static class Result {
 
         /**
-         * solution inverse covariance matrix estimate (ia = 0)
-         * = off-diagonal lasso coefficients (ia != 0)
+         * solution inverse covariance matrix estimate (ia = 0) = off-diagonal lasso coefficients (ia != 0)
          */
         private final Matrix wwi;
 

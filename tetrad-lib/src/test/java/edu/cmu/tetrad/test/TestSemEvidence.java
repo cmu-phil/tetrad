@@ -33,8 +33,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the MeasurementSimulator class using diagnostics devised by Richard
- * Scheines. The diagnostics are described in the Javadocs, below.
+ * Tests the MeasurementSimulator class using diagnostics devised by Richard Scheines. The diagnostics are described in
+ * the Javadocs, below.
  *
  * @author josephramsey
  */

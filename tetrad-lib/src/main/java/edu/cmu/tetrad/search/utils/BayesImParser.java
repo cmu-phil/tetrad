@@ -37,8 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Takes an xml element representing a bayes im and converts it to
- * a BayesIM
+ * Takes an xml element representing a bayes im and converts it to a BayesIM
  *
  * @author mattheweasterday
  */
@@ -51,6 +50,7 @@ public class BayesImParser {
 
     /**
      * Sets whether to use display names.
+     *
      * @param useDisplayNames True if so.
      */
     public void setUseDisplayNames(boolean useDisplayNames) {

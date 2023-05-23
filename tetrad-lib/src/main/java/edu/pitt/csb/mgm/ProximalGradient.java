@@ -28,8 +28,8 @@ import cern.jet.math.Functions;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Implementation of Nesterov's 83 method as described in Beck and Teboulle, 2009
- * aka Fast Iterative Shrinkage Thresholding Algorithm
+ * Implementation of Nesterov's 83 method as described in Beck and Teboulle, 2009 aka Fast Iterative Shrinkage
+ * Thresholding Algorithm
  * <p>
  * with step size scaling from Becker et all 2011
  * <p>
@@ -76,9 +76,9 @@ public class ProximalGradient {
     }
 
     /**
-     * Positive edge change tolerance is the number of iterations with 0 edge changes needed to converge.
-     * Negative edge change tolerance means convergence happens when number of difference edges &lt;= |edge change tol|.
-     * Default is 3.
+     * Positive edge change tolerance is the number of iterations with 0 edge changes needed to converge. Negative edge
+     * change tolerance means convergence happens when number of difference edges &lt;= |edge change tol|. Default is
+     * 3.
      */
     public void setEdgeChangeTol(int t) {
         this.noEdgeChangeTol = t;

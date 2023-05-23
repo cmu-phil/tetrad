@@ -47,8 +47,8 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * search is different for different algorithm, depending on the assumptions of the algorithm. A mapping from {x, y} to
  * S({x, y}) is returned for edges x *-* y that have been removed.
  * <p>
- * This variant does each depth twice, gathering up the p values in the first round, using FDR to estimate a cutoff
- * for acceptance, and rerunning using the specified cutoff.
+ * This variant does each depth twice, gathering up the p values in the first round, using FDR to estimate a cutoff for
+ * acceptance, and rerunning using the specified cutoff.
  *
  * @author josephramsey.
  */
@@ -202,8 +202,8 @@ public class FasFdr implements IFas {
     }
 
     /**
-     * Sets the depth of the search--i.e., the maximum number of variables conditioned on for any
-     * conditional independence test.
+     * Sets the depth of the search--i.e., the maximum number of variables conditioned on for any conditional
+     * independence test.
      *
      * @param depth This maximum.
      */

@@ -19,9 +19,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Requires that the parameter 'randomSelectionSize' be set to indicate how many
- * datasets should be taken at a time (randomly). This cannot given multiple
- * values.
+ * Requires that the parameter 'randomSelectionSize' be set to indicate how many datasets should be taken at a time
+ * (randomly). This cannot given multiple values.
  *
  * @author josephramsey
  */
@@ -174,8 +173,8 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     /**
-     * @param compareToTrue true if the result should be compared to the true graph, false
-     *                      if to the CPDAG of the true graph.
+     * @param compareToTrue true if the result should be compared to the true graph, false if to the CPDAG of the true
+     *                      graph.
      */
     public void setCompareToTrue(boolean compareToTrue) {
         this.compareToTrue = compareToTrue;

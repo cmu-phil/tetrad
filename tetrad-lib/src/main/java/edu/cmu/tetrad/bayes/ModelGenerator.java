@@ -28,18 +28,17 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Provides static methods for generating variants of an input graph. For
- * example, the first method generates all 1 step modifications of the graph.
+ * Provides static methods for generating variants of an input graph. For example, the first method generates all 1 step
+ * modifications of the graph.
  *
  * @author Frank Wimberly
  */
 public final class ModelGenerator {
 
     /**
-     * This method takes an acyclic graph as input and returns a list of graphs
-     * each of which is a modification of the original graph with either an edge
-     * deleted, added or reversed.  Edges are not added or reversed if a cycle
-     * would result.
+     * This method takes an acyclic graph as input and returns a list of graphs each of which is a modification of the
+     * original graph with either an edge deleted, added or reversed.  Edges are not added or reversed if a cycle would
+     * result.
      */
     public static List<Graph> generate(Graph graph) {
 

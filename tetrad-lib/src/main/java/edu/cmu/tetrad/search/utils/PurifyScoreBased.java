@@ -1499,7 +1499,7 @@ public class PurifyScoreBased implements IPurify {
     }
 
     private List<int[]> buildSolution2(int[][] elements, boolean[] eliminated,
-                                List<int[]> partition) {
+                                       List<int[]> partition) {
         List<int[]> solution = new ArrayList<>();
         for (Object o : partition) {
             int[] next = (int[]) o;

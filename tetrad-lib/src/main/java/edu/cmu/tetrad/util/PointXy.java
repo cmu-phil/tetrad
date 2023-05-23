@@ -94,8 +94,7 @@ public class PointXy implements TetradSerializable {
     }
 
     /**
-     * @return true just in case o is a Point with the same x and y
-     * coordinates.
+     * @return true just in case o is a Point with the same x and y coordinates.
      */
     public boolean equals(Object o) {
         if (!(o instanceof PointXy)) {

@@ -97,16 +97,14 @@ public class GeneralResamplingSearchRunnable implements Callable<Graph> {
     }
 
     /**
-     * @return the output stream that output (except for log output) should be
-     * sent to.
+     * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
         return this.out;
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent
-     * to. By detault System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
      */
     public void setOut(PrintStream out) {
         this.out = out;

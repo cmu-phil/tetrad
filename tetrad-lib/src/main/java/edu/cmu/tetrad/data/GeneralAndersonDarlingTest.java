@@ -28,11 +28,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Implements the Anderson-Darling test against the given CDF, with P values calculated
- * as in R's ad.test method (in package nortest).
+ * Implements the Anderson-Darling test against the given CDF, with P values calculated as in R's ad.test method (in
+ * package nortest).
  * <p>
- * Note that in the calculation, points x such that log(1 - dist.get(x)))
- * is infinite are ignored.
+ * Note that in the calculation, points x such that log(1 - dist.get(x))) is infinite are ignored.
  *
  * @author josephramsey
  */
@@ -92,16 +91,14 @@ public class GeneralAndersonDarlingTest {
     }
 
     /**
-     * @return the A^2* statistic, which is the A^2 statistic adjusted
-     * heuristically for sample size.
+     * @return the A^2* statistic, which is the A^2 statistic adjusted heuristically for sample size.
      */
     public double getASquaredStar() {
         return this.aSquaredStar;
     }
 
     /**
-     * @return the p value of the A^2* statistic, which is interpolated using
-     * exponential functions.
+     * @return the p value of the A^2* statistic, which is interpolated using exponential functions.
      */
     public double getP() {
         return this.p;

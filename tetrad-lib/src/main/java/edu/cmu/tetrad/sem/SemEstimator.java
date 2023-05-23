@@ -34,8 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Estimates a SemIm given a CovarianceMatrix and a SemPm. (A DataSet may be
- * substituted for the CovarianceMatrix.)
+ * Estimates a SemIm given a CovarianceMatrix and a SemPm. (A DataSet may be substituted for the CovarianceMatrix.)
  *
  * @author Frank Wimberly
  * @author Ricardo Silva
@@ -53,9 +52,8 @@ public final class SemEstimator implements TetradSerializable {
     private SemPm semPm;
 
     /**
-     * The covariance matrix used to estimate the SemIm. Note that the variables
-     * names in the covariance matrix must be in the same order as the variable
-     * names in the semPm.
+     * The covariance matrix used to estimate the SemIm. Note that the variables names in the covariance matrix must be
+     * in the same order as the variable names in the semPm.
      *
      * @serial Cannot be null.
      */
@@ -69,16 +67,15 @@ public final class SemEstimator implements TetradSerializable {
     private SemOptimizer semOptimizer;
 
     /**
-     * The most recently estimated model, or null if no model has been estimated
-     * yet.
+     * The most recently estimated model, or null if no model has been estimated yet.
      *
      * @serial Can be null.
      */
     private SemIm estimatedSem;
 
     /**
-     * The data set being estimated from (needed to calculate means of
-     * variables).  May be null in which case means are set to zero.
+     * The data set being estimated from (needed to calculate means of variables).  May be null in which case means are
+     * set to zero.
      *
      * @serial Can be null.
      */
@@ -92,10 +89,9 @@ public final class SemEstimator implements TetradSerializable {
     /**
      * Constructs a Sem Estimator that does default estimation.
      *
-     * @param semPm   a SemPm specifying the graph and parameterization for the
-     *                model.
-     * @param dataSet a DataSet, all of whose variables are contained in the
-     *                given SemPm. (They are identified by name.)
+     * @param semPm   a SemPm specifying the graph and parameterization for the model.
+     * @param dataSet a DataSet, all of whose variables are contained in the given SemPm. (They are identified by
+     *                name.)
      */
     public SemEstimator(DataSet dataSet, SemPm semPm) {
         this(dataSet, semPm, null);
@@ -104,10 +100,9 @@ public final class SemEstimator implements TetradSerializable {
     /**
      * Constructs a SEM estimator that does default estimation.
      *
-     * @param semPm     a SemPm specifying the graph and parameterization for
-     *                  the model.
-     * @param covMatrix a CovarianceMatrix, all of whose variables are contained
-     *                  in the given SemPm. (They are identified by name.)
+     * @param semPm     a SemPm specifying the graph and parameterization for the model.
+     * @param covMatrix a CovarianceMatrix, all of whose variables are contained in the given SemPm. (They are
+     *                  identified by name.)
      */
     public SemEstimator(ICovarianceMatrix covMatrix, SemPm semPm) {
         this(covMatrix, semPm, null);
@@ -116,10 +111,9 @@ public final class SemEstimator implements TetradSerializable {
     /**
      * Constructs a new SemEstimator that uses the specified optimizer.
      *
-     * @param semPm        a SemPm specifying the graph and parameterization for
-     *                     the model.
-     * @param dataSet      a DataSet, all of whose variables are contained in
-     *                     the given SemPm. (They are identified by name.)
+     * @param semPm        a SemPm specifying the graph and parameterization for the model.
+     * @param dataSet      a DataSet, all of whose variables are contained in the given SemPm. (They are identified by
+     *                     name.)
      * @param semOptimizer the optimizer that optimizes the Sem.
      */
     public SemEstimator(DataSet dataSet, SemPm semPm,
@@ -134,11 +128,9 @@ public final class SemEstimator implements TetradSerializable {
     /**
      * Constructs a new SemEstimator that uses the specified optimizer.
      *
-     * @param semPm        a SemPm specifying the graph and parameterization for
-     *                     the model.
-     * @param covMatrix    a covariance matrix, all of whose variables are
-     *                     contained in the given SemPm. (They are identified by
-     *                     name.)
+     * @param semPm        a SemPm specifying the graph and parameterization for the model.
+     * @param covMatrix    a covariance matrix, all of whose variables are contained in the given SemPm. (They are
+     *                     identified by name.)
      * @param semOptimizer the optimizer that optimizes the Sem.
      */
     public SemEstimator(ICovarianceMatrix covMatrix, SemPm semPm,
@@ -174,8 +166,7 @@ public final class SemEstimator implements TetradSerializable {
     //==============================PUBLIC METHODS=========================//
 
     /**
-     * Runs the estimator on the data and SemPm passed in through the
-     * constructor.
+     * Runs the estimator on the data and SemPm passed in through the constructor.
      */
     public SemIm estimate() {
         if (getSemOptimizer() != null) {
@@ -237,8 +228,8 @@ public final class SemEstimator implements TetradSerializable {
     }
 
     /**
-     * @return the estimated SemIm. If the <code>estimate</code> method has not
-     * yet been called, <code>null</code> is returned.
+     * @return the estimated SemIm. If the <code>estimate</code> method has not yet been called, <code>null</code> is
+     * returned.
      */
     public SemIm getEstimatedSem() {
         return this.estimatedSem;
@@ -322,8 +313,7 @@ public final class SemEstimator implements TetradSerializable {
     }
 
     /**
-     * @return A submatrix of <code>covMatrix</code> with the order of its
-     * variables the same as in <code>semPm</code>.
+     * @return A submatrix of <code>covMatrix</code> with the order of its variables the same as in <code>semPm</code>.
      * @throws IllegalArgumentException if not all of the variables of
      *                                  <code>semPm</code> are in <code>covMatrix</code>.
      */
@@ -425,15 +415,12 @@ public final class SemEstimator implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This
-     * method must have the standard signature for a readObject method, and
-     * the body of the method must begin with "s.defaultReadObject();".
-     * Other than that, any semantic checks can be specified and do not need
-     * to stay the same from version to version. A readObject method of this
-     * form may be added to any class, even if Tetrad sessions were
-     * previously saved out using a version of the class that didn't include
-     * it. (That's what the "s.defaultReadObject();" is for. See J. Bloch,
-     * Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream
                                     s)

@@ -29,8 +29,7 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.*;
 
 /**
- * Manager for expressions, this includes all implementations of expression
- * descriptors for the calculator.
+ * Manager for expressions, this includes all implementations of expression descriptors for the calculator.
  *
  * @author Tyler Gibson
  */
@@ -1933,8 +1932,7 @@ public class ExpressionManager {
     //==========================================BOOLEAN FUNCTIONS===========================================//
 
     /**
-     * For boolean "and". Will return true if all sub-expressions evaluate to a non-zero value and
-     * false otherwise.
+     * For boolean "and". Will return true if all sub-expressions evaluate to a non-zero value and false otherwise.
      */
     private static class AndExpressionDescriptor extends AbstractExpressionDescriptor {
         static final long serialVersionUID = 23L;

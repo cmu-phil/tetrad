@@ -276,8 +276,8 @@ public final class GSquareTest {
     /**
      * Returns the dimensions of the variables, in order.
      *
-     * @return These dimensions, as an int[] array. For instance, if the array is [2 3],
-     * then the first variable has 2 categories and second variable has 3 categories.
+     * @return These dimensions, as an int[] array. For instance, if the array is [2 3], then the first variable has 2
+     * categories and second variable has 3 categories.
      */
     public int[] getDims() {
         return this.dims;
@@ -324,8 +324,7 @@ public final class GSquareTest {
     }
 
     /**
-     * Returns a judgement of whether the variables index by 'testIndices'
-     * determine the variable index by 'p'.
+     * Returns a judgement of whether the variables index by 'testIndices' determine the variable index by 'p'.
      *
      * @param testIndices The indices of the conditioning variables.
      * @param p           The index of the child variable.

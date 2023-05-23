@@ -23,8 +23,7 @@ package edu.cmu.tetrad.session;
 
 
 /**
- * Indicates that a model could not be created. As to which model it was, call
- * the getModelClass() method.
+ * Indicates that a model could not be created. As to which model it was, call the getModelClass() method.
  *
  * @author josephramsey
  */

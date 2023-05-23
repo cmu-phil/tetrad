@@ -26,9 +26,8 @@ import edu.cmu.tetrad.study.gene.tetrad.gene.graph.ManualActiveLagGraph;
 import edu.cmu.tetrad.study.gene.tetrad.gene.graph.RandomActiveLagGraph;
 
 /**
- * Implements a parametric model for Boolean Glass gene PM's, which in this case
- * just presents the underlying workbench. There are no additional parameters to
- * the PM.
+ * Implements a parametric model for Boolean Glass gene PM's, which in this case just presents the underlying workbench.
+ * There are no additional parameters to the PM.
  *
  * @author josephramsey
  */

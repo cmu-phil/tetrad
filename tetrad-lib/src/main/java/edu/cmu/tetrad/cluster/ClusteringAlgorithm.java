@@ -26,11 +26,9 @@ import edu.cmu.tetrad.util.Matrix;
 import java.util.List;
 
 /**
- * Represents a clustering algorithm to cluster some data. The data is a
- * TetradMatrix matrix with rows as cases and columns as variables. The
- * purpose of this interface is to allow a clustering algorithm to have
- * parameters set so that it can be passed to another class to do clustering on
- * data.
+ * Represents a clustering algorithm to cluster some data. The data is a TetradMatrix matrix with rows as cases and
+ * columns as variables. The purpose of this interface is to allow a clustering algorithm to have parameters set so that
+ * it can be passed to another class to do clustering on data.
  *
  * @author josephramsey
  */
@@ -39,19 +37,15 @@ public interface ClusteringAlgorithm {
     /**
      * Clusters the given data set.
      *
-     * @param data An n x m double matrix with n cases (rows) and m variables
-     *             (columns).
-     *             Makes an int array c such that c[i] is the cluster that case i is
-     *             placed into, or -1 if case i is not placed into a cluster (as a
-     *             result of its being eliminated from consideration, for
-     *             instance).
+     * @param data An n x m double matrix with n cases (rows) and m variables (columns). Makes an int array c such that
+     *             c[i] is the cluster that case i is placed into, or -1 if case i is not placed into a cluster (as a
+     *             result of its being eliminated from consideration, for instance).
      */
     void cluster(Matrix data);
 
     /**
-     * @return a list of clusters, each consisting of a list of indices in the
-     * dataset provided as an argument to <code>cluster</code>, or null if the
-     * data has not yet been clustered.
+     * @return a list of clusters, each consisting of a list of indices in the dataset provided as an argument to
+     * <code>cluster</code>, or null if the data has not yet been clustered.
      */
     List<List<Integer>> getClusters();
 

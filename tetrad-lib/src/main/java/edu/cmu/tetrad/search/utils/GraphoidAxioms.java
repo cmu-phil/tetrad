@@ -63,9 +63,8 @@ public class GraphoidAxioms {
      *
      * @param facts     A list of GraphoidIndFacts.
      * @param nodes     The list of nodes.
-     * @param textSpecs A map from GraphoidIndFacts to String text specs. The
-     *                  text specs are used for printing information to the user
-     *                  about which facts are found or are missing.
+     * @param textSpecs A map from GraphoidIndFacts to String text specs. The text specs are used for printing
+     *                  information to the user about which facts are found or are missing.
      * @see GraphoidIndFact
      */
     public GraphoidAxioms(Set<GraphoidIndFact> facts,
@@ -79,11 +78,11 @@ public class GraphoidAxioms {
     /**
      * The main methods.
      *
-     * @param args E.g., "java -cp tetrad-gui-7.1.3-SNAPSHOT-launch.jar edu.cmu.tetrad.search.utils.GraphoidAxioms  udags5.txt 5"
-     *             Here, udgas5.txt is a file containing independence models, one per line, where each independence
-     *             fast is specified by, e.g., "1:23|56", indicating that 1 is independence of 2 and 3 conditional
-     *             on 5 and 6. No more than 9 variables can be handled this way. If you need more, let us know and
-     *             we'll change the format.
+     * @param args E.g., "java -cp tetrad-gui-7.1.3-SNAPSHOT-launch.jar edu.cmu.tetrad.search.utils.GraphoidAxioms
+     *             udags5.txt 5" Here, udgas5.txt is a file containing independence models, one per line, where each
+     *             independence fast is specified by, e.g., "1:23|56", indicating that 1 is independence of 2 and 3
+     *             conditional on 5 and 6. No more than 9 variables can be handled this way. If you need more, let us
+     *             know and we'll change the format.
      */
     public static void main(String... args) {
         try {
@@ -190,8 +189,8 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Returns the independence facts in the form 1:2|3 for use in various Tetrad algorithms. Assumes
-     * decomposition and compositios, so that there are no complex independence facts.
+     * Returns the independence facts in the form 1:2|3 for use in various Tetrad algorithms. Assumes decomposition and
+     * compositios, so that there are no complex independence facts.
      */
     public IndependenceFacts getIndependenceFacts() {
         IndependenceFacts ifFacts = new IndependenceFacts();
@@ -564,8 +563,7 @@ public class GraphoidAxioms {
     }
 
     /**
-     * Represents a graphoid independence fact--i.e., a fact in a general independence model (IM)
-     * X _||_Y | Z.
+     * Represents a graphoid independence fact--i.e., a fact in a general independence model (IM) X _||_Y | Z.
      */
     public static class GraphoidIndFact {
         private final Set<Node> X;

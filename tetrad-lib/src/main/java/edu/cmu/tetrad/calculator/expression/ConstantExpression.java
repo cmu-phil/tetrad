@@ -54,8 +54,7 @@ public class ConstantExpression implements Expression {
 
 
     /**
-     * The name of the constant or null if there isn't one. Constants with names are things
-     * like PI or E.
+     * The name of the constant or null if there isn't one. Constants with names are things like PI or E.
      */
     private String name;
 

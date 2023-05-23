@@ -38,17 +38,16 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * <p>Implements the Find One Factor Clusters (FOFC) algorithm by Erich Kummerfeld, which
- * uses reasoning about vanishing tetrads of algorithms to infer clusters of the
- * measured variables in a dataset that each be explained by a single latent variable.
- * A reference is the following</p>
+ * uses reasoning about vanishing tetrads of algorithms to infer clusters of the measured variables in a dataset that
+ * each be explained by a single latent variable. A reference is the following</p>
  *
  * <p>Kummerfeld, E., &amp; Ramsey, J. (2016, August). Causal clustering for 1-factor measurement
- * models. In Proceedings of the 22nd ACM SIGKDD international conference on knowledge
- * discovery and data mining (pp. 1655-1664).</p>
+ * models. In Proceedings of the 22nd ACM SIGKDD international conference on knowledge discovery and data mining (pp.
+ * 1655-1664).</p>
  *
  * <p>The algorithm employs tests of vanishing tetrads (list of 4 variables that follow
- * a certain pattern in the exchangeability of latent paths with respect to the data).
- * The notion of vanishng tetrads is old one but is explained in this book:</p>
+ * a certain pattern in the exchangeability of latent paths with respect to the data). The notion of vanishng tetrads is
+ * old one but is explained in this book:</p>
  *
  * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
  * prediction, and search. MIT press.</p>
@@ -62,12 +61,10 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 public class Fofc {
 
     /**
-     * Gives the options to be used in FOFC to sort through the various possibilities
-     * for forming clusters to find the best options. SAG (Seed and Grow) looks
-     * for good seed clusters and then grows them by adding one variable at a time.
-     * GAP (Grow and Pick) grows out all the cluster initially and then just
-     * picks from among these. SAG is generally faster; GAP is generally slower but
-     * more accurate.
+     * Gives the options to be used in FOFC to sort through the various possibilities for forming clusters to find the
+     * best options. SAG (Seed and Grow) looks for good seed clusters and then grows them by adding one variable at a
+     * time. GAP (Grow and Pick) grows out all the cluster initially and then just picks from among these. SAG is
+     * generally faster; GAP is generally slower but more accurate.
      */
     public enum Algorithm {SAG, GAP}
 
@@ -139,8 +136,7 @@ public class Fofc {
     }
 
     /**
-     * Runs the search and returns a graph of clusters with the ir respective
-     * latent parents.
+     * Runs the search and returns a graph of clusters with the ir respective latent parents.
      *
      * @return This graph.
      */
