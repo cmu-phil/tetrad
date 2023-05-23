@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.util.HashSet;
+import java.util.IllformedLocaleException;
 import java.util.Set;
 
 /**
@@ -150,9 +151,6 @@ public final class Cpc implements IGraphSearch {
 
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
-
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, independenceTest.getVariables());
-        GraphSearchUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
 
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 

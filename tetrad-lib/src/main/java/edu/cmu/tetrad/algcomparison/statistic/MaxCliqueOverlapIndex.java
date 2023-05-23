@@ -43,12 +43,13 @@ public class MaxCliqueOverlapIndex implements Statistic {
             edgesIfMaxCliquesNonoverlapping += (clique.size() * (clique.size() - 1) / 2);
         }
 
-        double avgDegree = 2 * estGraph.getNumEdges() / (double) estGraph.getNumNodes();
-        double density = avgDegree / (estGraph.getNumNodes() - 1);
+        int possibleEdges = estGraph.getNumNodes() * (estGraph.getNumNodes() - 1) / 2;
 
-        int overlappingEges = edgesIfMaxCliquesNonoverlapping;
-        double v = overlappingEges / (double) (estGraph.getNumEdges());
-        return overlappingEges / avgDegree;
+        if (edgesIfMaxCliquesNonoverlapping > possibleEdges) {
+            edgesIfMaxCliquesNonoverlapping = possibleEdges;
+        }
+
+        return estGraph.getNumEdges() / (double) (edgesIfMaxCliquesNonoverlapping);
     }
 
     @Override

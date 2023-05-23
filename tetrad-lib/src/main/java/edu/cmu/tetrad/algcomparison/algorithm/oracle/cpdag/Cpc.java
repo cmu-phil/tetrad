@@ -84,7 +84,7 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
             edu.cmu.tetrad.search.Cpc search = new edu.cmu.tetrad.search.Cpc(getIndependenceWrapper().getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setAggressivelyPreventCycles(true);
+            search.setAggressivelyPreventCycles(parameters.getBoolean(Params.AGGRESSIVELY_PREVENT_CYCLES));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(knowledge);
             search.setConflictRule(conflictRule);
@@ -124,6 +124,7 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.CONFLICT_RULE);
+        parameters.add(Params.AGGRESSIVELY_PREVENT_CYCLES);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);
 

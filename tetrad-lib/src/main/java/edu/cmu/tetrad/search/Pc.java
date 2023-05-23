@@ -187,9 +187,6 @@ public class Pc implements IGraphSearch {
 
         this.numIndependenceTests = fas.getNumIndependenceTests();
 
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
-        GraphSearchUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
-
         this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;

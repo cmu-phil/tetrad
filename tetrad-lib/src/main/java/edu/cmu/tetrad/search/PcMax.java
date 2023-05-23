@@ -147,9 +147,6 @@ public final class PcMax implements IGraphSearch {
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
 
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, independenceTest.getVariables());
-        GraphSearchUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
-
         TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
 
         long endTime = MillisecondTimes.timeMillis();

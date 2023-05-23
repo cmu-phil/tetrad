@@ -199,6 +199,8 @@ public final class PcCommon implements IGraphSearch {
         this.graph = fas.search();
         this.sepsets = fas.getSepsets();
 
+        if (this.graph.paths().existsDirectedCycle()) throw new IllegalArgumentException("Graph is cyclic after sepsets!");
+
         GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
 
         if (this.colliderDiscovery == ColliderDiscovery.FAS_SEPSETS) {
@@ -208,6 +210,8 @@ public final class PcCommon implements IGraphSearch {
                 System.out.println("MaxP orientation...");
             }
 
+            if (this.graph.paths().existsDirectedCycle()) throw new IllegalArgumentException("Graph is cyclic before maxp!");
+
             MaxP orientCollidersMaxP = new MaxP(this.independenceTest);
             orientCollidersMaxP.setConflictRule(this.conflictRule);
             orientCollidersMaxP.setUseHeuristic(this.useHeuristic);
@@ -215,6 +219,9 @@ public final class PcCommon implements IGraphSearch {
             orientCollidersMaxP.setDepth(this.depth);
             orientCollidersMaxP.setKnowledge(this.knowledge);
             orientCollidersMaxP.orient(this.graph);
+
+            if (this.graph.paths().existsDirectedCycle()) throw new IllegalArgumentException("Graph is cyclic after maxp!");
+
         } else if (this.colliderDiscovery == ColliderDiscovery.CONSERVATIVE) {
             if (this.verbose) {
                 System.out.println("CPC orientation...");
@@ -225,9 +232,12 @@ public final class PcCommon implements IGraphSearch {
 
         this.graph = GraphUtils.replaceNodes(this.graph, nodes);
 
+        if (this.graph.paths().existsDirectedCycle()) throw new IllegalArgumentException("Graph is cyclic before orientation!");
+
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(this.knowledge);
         meekRules.setVerbose(verbose);
+        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
         meekRules.orientImplied(this.graph);
 
         long endTime = MillisecondTimes.timeMillis();
@@ -370,6 +380,10 @@ public final class PcCommon implements IGraphSearch {
     private static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph) {
         if (conflictRule == ConflictRule.PRIORITIZE_EXISTING) {
             if (!(graph.getEndpoint(y, x) == Endpoint.ARROW || graph.getEndpoint(y, z) == Endpoint.ARROW)) {
+                if (graph.paths().existsDirectedPathFromTo(y, x) || graph.paths().existsDirectedPathFromTo(y, z)) {
+                    return;
+                }
+
                 graph.removeEdge(x, y);
                 graph.removeEdge(z, y);
                 graph.addDirectedEdge(x, y);
@@ -383,6 +397,10 @@ public final class PcCommon implements IGraphSearch {
 
             System.out.println("graph = " + graph);
         } else if (conflictRule == ConflictRule.OVERWRITE_EXISTING) {
+            if (graph.paths().existsDirectedPathFromTo(y, x) || graph.paths().existsDirectedPathFromTo(y, z)) {
+                return;
+            }
+
             graph.removeEdge(x, y);
             graph.removeEdge(z, y);
             graph.addDirectedEdge(x, y);

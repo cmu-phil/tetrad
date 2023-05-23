@@ -64,7 +64,7 @@ public final class MaxP {
      * Adds colliders to the given graph using the max P rule.
      *
      * @param graph The graph to orient.
-     * @see PcMax
+     * @see edu.cmu.tetrad.search.PcMax
      */
     public synchronized void orient(Graph graph) {
         addColliders(graph);
@@ -80,6 +80,10 @@ public final class MaxP {
     public static void orientCollider(Node x, Node y, Node z, PcCommon.ConflictRule conflictRule, Graph graph) {
         if (conflictRule == PcCommon.ConflictRule.PRIORITIZE_EXISTING) {
             if (!(graph.getEndpoint(y, x) == Endpoint.ARROW || graph.getEndpoint(y, z) == Endpoint.ARROW)) {
+                if (graph.paths().existsDirectedPathFromTo(y, x) || graph.paths().existsDirectedPathFromTo(y, z)) {
+                    return;
+                }
+
                 graph.removeEdge(x, y);
                 graph.removeEdge(z, y);
                 graph.addDirectedEdge(x, y);
@@ -89,6 +93,10 @@ public final class MaxP {
             graph.setEndpoint(x, y, Endpoint.ARROW);
             graph.setEndpoint(z, y, Endpoint.ARROW);
         } else if (conflictRule == PcCommon.ConflictRule.OVERWRITE_EXISTING) {
+            if (graph.paths().existsDirectedPathFromTo(y, x) || graph.paths().existsDirectedPathFromTo(y, z)) {
+                return;
+            }
+
             graph.removeEdge(x, y);
             graph.removeEdge(z, y);
             graph.addDirectedEdge(x, y);

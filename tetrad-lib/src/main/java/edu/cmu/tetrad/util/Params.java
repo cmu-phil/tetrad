@@ -52,6 +52,7 @@ public final class Params {
     public static final String DO_DISCRIMINATING_PATH_TAIL_RULE = "doDiscriminatingPathTailRule";
     public static final String CONCURRENT_FAS = "concurrentFAS";
     public static final String CONFLICT_RULE = "conflictRule";
+    public static final String AGGRESSIVELY_PREVENT_CYCLES = "aggressivelyPreventCycles";
     public static final String CONNECTED = "connected";
     public static final String COV_HIGH = "covHigh";
     public static final String COV_LOW = "covLow";
