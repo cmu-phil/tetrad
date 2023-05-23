@@ -30,8 +30,8 @@ import edu.cmu.tetrad.search.Fask;
 import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Lofs;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.util.MillisecondTimes;
 
 import java.util.Collections;

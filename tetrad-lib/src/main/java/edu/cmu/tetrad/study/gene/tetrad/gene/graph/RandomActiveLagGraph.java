@@ -21,8 +21,8 @@
 
 package edu.cmu.tetrad.study.gene.tetrad.gene.graph;
 
-import edu.cmu.tetrad.study.gene.tetrad.gene.history.SimpleRandomizer;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.study.gene.tetrad.gene.history.SimpleRandomizer;
 
 /**
  * Constructs as a randomized update workbench.

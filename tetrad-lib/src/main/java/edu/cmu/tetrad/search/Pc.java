@@ -27,7 +27,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -40,12 +39,10 @@ import java.util.Set;
 
 /**
  * <p>Implements the PC (Peter and Clark) algorithm, which uses conditional
- * independence testing as an oracle to first of all remove extraneous edges
- * from a complete graph, then to orient the unshielded colliders in the graph,
- * and finally to make any additional orientations that are capable of avoiding
- * additional unshielded colliders in the graph. An version of this
- * algorithm was proposed earlier than this, but the standard reference for
- * the algorithm is in Chapter 6 of the following book:</p>
+ * independence testing as an oracle to first of all remove extraneous edges from a complete graph, then to orient the
+ * unshielded colliders in the graph, and finally to make any additional orientations that are capable of avoiding
+ * additional unshielded colliders in the graph. An version of this algorithm was proposed earlier than this, but the
+ * standard reference for the algorithm is in Chapter 6 of the following book:</p>
  *
  * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
  * prediction, and search. MIT press.</p>
@@ -99,18 +96,15 @@ public class Pc implements IGraphSearch {
     //==============================PUBLIC METHODS========================//
 
     /**
-     * Runs PC starting with a complete graph over all nodes of the given conditional
-     * independence test, using the given independence test and knowledge and returns the
-     * resultant graph. The returned graph will be a CPDAG if the independence information is
-     * consistent with the hypothesis that there are no latent common causes. It may, however,
-     * contain cycles or bidirected edges if this assumption is not born out, either due to
-     * the actual presence of latent common causes, or due to statistical errors in conditional
-     * independence judgments.
+     * Runs PC starting with a complete graph over all nodes of the given conditional independence test, using the given
+     * independence test and knowledge and returns the resultant graph. The returned graph will be a CPDAG if the
+     * independence information is consistent with the hypothesis that there are no latent common causes. It may,
+     * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
+     * of latent common causes, or due to statistical errors in conditional independence judgments.
      *
-     * @return The found CPDAG. In some cases there may be some errant bidirected edges or
-     * cycles, depending on the settings and whether the faithfulness assumption holds. If
-     * the faithfulness assumption holds, bidirected edges will indicate the existence of
-     * latent variables, so a latent variable search like FCI should be run.
+     * @return The found CPDAG. In some cases there may be some errant bidirected edges or cycles, depending on the
+     * settings and whether the faithfulness assumption holds. If the faithfulness assumption holds, bidirected edges
+     * will indicate the existence of latent variables, so a latent variable search like FCI should be run.
      * @see Fci
      */
     @Override
@@ -119,12 +113,11 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Runs PC starting with a commplete graph over the given list of nodes, using the given
-     * independence test and knowledge and returns the resultant graph. The returned graph
-     * will be a CPDAG if the independence information is consistent with the hypothesis that
-     * there are no latent common causes. It may, however, contain cycles or bidirected edges
-     * if this assumption is not born out, either due to the actual presence of latent common
-     * causes, or due to statistical errors in conditional independence judgments.
+     * Runs PC starting with a commplete graph over the given list of nodes, using the given independence test and
+     * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information is
+     * consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
+     * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
+     * or due to statistical errors in conditional independence judgments.
      * <p>
      * All the given nodes must be in the domatein of the given conditional independence test.
      *
@@ -141,8 +134,8 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Runs the search using a particular implementation of the fast adjacency search
-     * (FAS), over the given sublist of nodes.
+     * Runs the search using a particular implementation of the fast adjacency search (FAS), over the given sublist of
+     * nodes.
      *
      * @param fas   The fast adjacency search to use.
      * @param nodes The sublist of nodes.
@@ -239,8 +232,7 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Returns the sepset map from the most recent search. Non-null after the first call
-     * to <code>search()</code>.
+     * Returns the sepset map from the most recent search. Non-null after the first call to <code>search()</code>.
      *
      * @return This map.
      */
@@ -249,8 +241,8 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Returns the current depth of search--that is, the maximum number of conditioning nodes
-     * for any conditional independence checked. Default is 1000.
+     * Returns the current depth of search--that is, the maximum number of conditioning nodes for any conditional
+     * independence checked. Default is 1000.
      *
      * @return This depth.
      */

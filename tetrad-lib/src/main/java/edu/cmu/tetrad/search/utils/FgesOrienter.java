@@ -23,7 +23,8 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;

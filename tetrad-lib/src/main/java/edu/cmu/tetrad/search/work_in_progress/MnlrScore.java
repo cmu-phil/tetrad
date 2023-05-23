@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.work_in_progress.MnlrLikelihood;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;

@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.score.Score;
 
 import javax.help.UnsupportedOperationException;
 import java.util.ArrayList;

@@ -1,10 +1,9 @@
 package edu.cmu.tetrad.algcomparison.statistic.utils;
 
-import edu.cmu.tetrad.graph.*;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Endpoint;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 
 /**
  * A confusion matrix for orientations:
