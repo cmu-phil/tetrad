@@ -138,7 +138,7 @@ public class StatsListEditor extends JPanel {
         statistics.add(new AdjacencyFn());
         statistics.add(new ArrowheadTn());
         statistics.add(new ArrowheadTp());
-        statistics.add(new PercentMaxCliqueEdgesNonoverlapping());
+//        statistics.add(new MaxCliqueOverlapIndex());
         statistics.add(new F1Adj());
         statistics.add(new F1All());
         statistics.add(new F1Arrow());

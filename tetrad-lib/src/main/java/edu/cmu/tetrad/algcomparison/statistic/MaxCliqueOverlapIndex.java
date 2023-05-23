@@ -21,17 +21,17 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  *
  * @author josephramsey
  */
-public class PercentMaxCliqueEdgesNonoverlapping implements Statistic {
+public class MaxCliqueOverlapIndex implements Statistic {
     static final long serialVersionUID = 23L;
 
     @Override
     public String getAbbreviation() {
-        return "POE";
+        return "MCOI";
     }
 
     @Override
     public String getDescription() {
-        return "Percent Overlapping Edges in Maximal Cliques";
+        return "Max Clique Overlap Index";
     }
 
     @Override
@@ -43,8 +43,12 @@ public class PercentMaxCliqueEdgesNonoverlapping implements Statistic {
             edgesIfMaxCliquesNonoverlapping += (clique.size() * (clique.size() - 1) / 2);
         }
 
+        double avgDegree = 2 * estGraph.getNumEdges() / (double) estGraph.getNumNodes();
+        double density = avgDegree / (estGraph.getNumNodes() - 1);
+
         int overlappingEges = edgesIfMaxCliquesNonoverlapping;
-        return overlappingEges / (double) (estGraph.getNumEdges());
+        double v = overlappingEges / (double) (estGraph.getNumEdges());
+        return overlappingEges / avgDegree;
     }
 
     @Override
