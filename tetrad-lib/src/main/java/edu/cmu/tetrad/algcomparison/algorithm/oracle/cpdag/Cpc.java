@@ -14,6 +14,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -62,11 +63,31 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
                 knowledge = timeSeries.getKnowledge();
             }
 
+            PcCommon.ConflictRule conflictRule;
+
+            // >Collider conflicts: 1 = Overwrite, 2 =
+            //        Orient bidirected, 3 = Prioritize existing colliders
+            switch (parameters.getInt(Params.CONFLICT_RULE)) {
+                case 1:
+                    conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
+                    break;
+                case 2:
+                    conflictRule = PcCommon.ConflictRule.ORIENT_BIDIRECTED;
+                    break;
+                case 3:
+                    conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+
+            }
+
             edu.cmu.tetrad.search.Cpc search = new edu.cmu.tetrad.search.Cpc(getIndependenceWrapper().getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setAggressivelyPreventCycles(true);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(knowledge);
+            search.setConflictRule(conflictRule);
             return search.search();
         } else {
             Cpc pcAll = new Cpc(this.test);

@@ -70,69 +70,20 @@ import java.util.Set;
  * @see edu.cmu.tetrad.search.utils.MeekRules
  */
 public final class Cpc implements IGraphSearch {
-
-    /**
-     * The independence test used for the PC search.
-     */
     private final IndependenceTest independenceTest;
-
-    /**
-     * Forbidden and required edges for the search.
-     */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The maximum number of nodes conditioned on in the search.
-     */
     private int depth = 1000;
-
     private Graph graph;
-
-    /**
-     * Elapsed time of last search.
-     */
     private long elapsedTime;
-
-    /**
-     * Set of unshielded colliders from the triple orientation step.
-     */
     private Set<Triple> colliderTriples;
-
-    /**
-     * Set of unshielded noncolliders from the triple orientation step.
-     */
     private Set<Triple> noncolliderTriples;
-
-    /**
-     * Set of ambiguous unshielded triples.
-     */
     private Set<Triple> ambiguousTriples;
-
-    /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
     private boolean aggressivelyPreventCycles;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * The sepsets.
-     */
     private SepsetMap sepsets;
-
-    /**
-     * Whether verbose output about independencies is output.
-     */
     private boolean verbose;
-
     private boolean stable;
-    private boolean useHeuristic = false;
-    private int maxPPathLength = -1;
-    private final PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -153,12 +104,72 @@ public final class Cpc implements IGraphSearch {
     //==============================PUBLIC METHODS========================//
 
     /**
-     * Returns true just in case edges will not be added if they would create cycles.
+     * Runs CPC starting with a fully connected graph over all the variables in the domain
+     * of the independence test. See PC for caveats. The number of possible cycles and
+     * bidirected edges is far less with CPC than with PC.
      *
-     * @return True if so.
+     * @return The e-pattern for the search, which is a graphical representation of a set
+     * of possible CPDAGs.
      */
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+    public Graph search() {
+        this.logger.log("info", "Starting CPC algorithm");
+        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
+
+        Fas fas = new Fas(getIndependenceTest());
+
+        long startTime = MillisecondTimes.timeMillis();
+
+        fas.setKnowledge(getKnowledge());
+        fas.setDepth(getDepth());
+        fas.setVerbose(this.verbose);
+
+        // Note that we are ignoring the sepset map returned by this method
+        // on purpose; it is not used in this search.
+        this.graph = fas.search();
+        this.sepsets = fas.getSepsets();
+
+        PcCommon search = new PcCommon(independenceTest);
+        search.setDepth(depth);
+        search.setHeuristic(1);
+        search.setConflictRule(conflictRule);
+        search.setAggressivelyPreventCycles(aggressivelyPreventCycles);
+        search.setKnowledge(this.knowledge);
+
+        if (stable) {
+            search.setFasType(PcCommon.FasType.STABLE);
+        } else {
+            search.setFasType(PcCommon.FasType.REGULAR);
+        }
+
+        search.setColliderDiscovery(PcCommon.ColliderDiscovery.CONSERVATIVE);
+        search.setConflictRule(conflictRule);
+        search.setVerbose(verbose);
+
+        this.graph = search.search();
+        this.sepsets = fas.getSepsets();
+
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, independenceTest.getVariables());
+        GraphSearchUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
+
+        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
+
+        long endTime = MillisecondTimes.timeMillis();
+        this.elapsedTime = endTime - startTime;
+
+        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+        TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
+
+        this.colliderTriples = search.getColliderTriples();
+        this.noncolliderTriples = search.getNoncolliderTriples();
+        this.ambiguousTriples = search.getAmbiguousTriples();
+
+        logTriples();
+
+        TetradLogger.getInstance().flush();
+        return this.graph;
     }
 
     /**
@@ -255,75 +266,6 @@ public final class Cpc implements IGraphSearch {
     }
 
     /**
-     * Runs CPC starting with a fully connected graph over all the variables in the domain
-     * of the independence test. See PC for caveats. The number of possible cycles and
-     * bidirected edges is far less with CPC than with PC.
-     *
-     * @return The e-pattern for the search, which is a graphical representation of a set
-     * of possible CPDAGs.
-     */
-    public Graph search() {
-        this.logger.log("info", "Starting CPC algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
-        this.ambiguousTriples = new HashSet<>();
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
-
-        Fas fas = new Fas(getIndependenceTest());
-
-        long startTime = MillisecondTimes.timeMillis();
-
-        fas.setKnowledge(getKnowledge());
-        fas.setDepth(getDepth());
-        fas.setVerbose(this.verbose);
-
-        // Note that we are ignoring the sepset map returned by this method
-        // on purpose; it is not used in this search.
-        this.graph = fas.search();
-        this.sepsets = fas.getSepsets();
-
-        PcCommon search = new PcCommon(independenceTest);
-        search.setDepth(depth);
-        search.setHeuristic(1);
-        search.setKnowledge(this.knowledge);
-
-        if (stable) {
-            search.setFasType(PcCommon.FasType.STABLE);
-        } else {
-            search.setFasType(PcCommon.FasType.REGULAR);
-        }
-
-        search.setColliderDiscovery(PcCommon.ColliderDiscovery.CONSERVATIVE);
-        search.setConflictRule(conflictRule);
-        search.setUseHeuristic(useHeuristic);
-        search.setMaxPathLength(maxPPathLength);
-        search.setVerbose(verbose);
-
-        this.graph = search.search();
-        this.sepsets = fas.getSepsets();
-
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, independenceTest.getVariables());
-        GraphSearchUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
-
-        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
-
-        long endTime = MillisecondTimes.timeMillis();
-        this.elapsedTime = endTime - startTime;
-
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
-
-        this.colliderTriples = search.getColliderTriples();
-        this.noncolliderTriples = search.getNoncolliderTriples();
-        this.ambiguousTriples = search.getAmbiguousTriples();
-
-        logTriples();
-
-        TetradLogger.getInstance().flush();
-        return this.graph;
-    }
-
-    /**
      * Returns a map for x _||_ y | z1,..,zn from {x, y} to {z1,...,zn}.
      *
      * @return This map.
@@ -360,21 +302,13 @@ public final class Cpc implements IGraphSearch {
     }
 
     /**
-     * Sets whether the heuristic should be used for max p.
+     * Sets which conflict rule to use for resolving collider orientation conflicts.
      *
-     * @param useHeuristic True if so.
+     * @param conflictRule The rule.
+     * @see edu.cmu.tetrad.search.utils.PcCommon.ConflictRule
      */
-    public void setUseHeuristic(boolean useHeuristic) {
-        this.useHeuristic = useHeuristic;
-    }
-
-    /**
-     * Sets the max path length for the max p heuristic.
-     *
-     * @param maxPPathLength This length.
-     */
-    public void setMaxPPathLength(int maxPPathLength) {
-        this.maxPPathLength = maxPPathLength;
+    public void setConflictRule(PcCommon.ConflictRule conflictRule) {
+        this.conflictRule = conflictRule;
     }
 
     //==========================PRIVATE METHODS===========================//
@@ -399,7 +333,6 @@ public final class Cpc implements IGraphSearch {
             TetradLogger.getInstance().log("info", "Ambiguous: " + triple);
         }
     }
-
 }
 
 

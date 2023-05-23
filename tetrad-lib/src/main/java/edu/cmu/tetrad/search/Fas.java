@@ -99,7 +99,7 @@ public class Fas implements IFas {
     /**
      * Which heuristic to use to fix variable order (1, 2, 3, or 0 = none).
      */
-    private int heuristic;
+    private int heuristic = 1;
 
     /**
      * FAS-Stable.

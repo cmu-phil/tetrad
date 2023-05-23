@@ -71,62 +71,26 @@ public final class PcCommon implements IGraphSearch {
      * @see Cpc
      * @see PcMax
      */
-    public enum ConflictRule {PRIORITY, BIDIRECTED, OVERWRITE}
+    public enum ConflictRule {PRIORITIZE_EXISTING, ORIENT_BIDIRECTED, OVERWRITE_EXISTING}
 
-    /**
-     * The independence test used for the PC search.
-     */
     private final IndependenceTest independenceTest;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
     private int heuristic;
-    /**
-     * Forbidden and required edges for the search.
-     */
     private Knowledge knowledge = new Knowledge();
-    /**
-     * The maximum number of nodes conditioned on in the search.
-     */
     private int depth = 1000;
     private Graph graph;
-    /**
-     * Elapsed time of last search.
-     */
     private long elapsedTime;
-    /**
-     * Set of unshielded colliderDiscovery from the triple orientation step.
-     */
     private Set<Triple> colliderTriples;
-    /**
-     * Set of unshielded noncolliders from the triple orientation step.
-     */
     private Set<Triple> noncolliderTriples;
-    /**
-     * Set of ambiguous unshielded triples.
-     */
     private Set<Triple> ambiguousTriples;
-    /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
     private boolean aggressivelyPreventCycles;
-    /**
-     * The sepsets.
-     */
     private SepsetMap sepsets;
-
-    /**
-     * Whether verbose output about independencies is output.
-     */
-    private boolean verbose;
-    private boolean useHeuristic;
-    private int maxPathLength;
+    private boolean verbose = false;
+    private boolean useHeuristic = false;
+    private int maxPathLength = 3;
     private FasType fasType = FasType.REGULAR;
     private ColliderDiscovery colliderDiscovery = ColliderDiscovery.FAS_SEPSETS;
-    private ConflictRule conflictRule = ConflictRule.OVERWRITE;
+    private ConflictRule conflictRule = ConflictRule.OVERWRITE_EXISTING;
 
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
@@ -181,6 +145,104 @@ public final class PcCommon implements IGraphSearch {
     //==============================PUBLIC METHODS========================//
 
     /**
+     * Runs the search and returns the search graph.
+     *
+     * @return This result graph.
+     */
+    public Graph search() {
+        return search(getIndependenceTest().getVariables());
+    }
+
+    /**
+     * Runs the search over the given list of nodes only, returning the serach graph.
+     *
+     * @param nodes The nodes to search over.
+     * @return The result graph.
+     */
+    public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
+        this.logger.log("info", "Starting algorithm");
+        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+        this.ambiguousTriples = new HashSet<>();
+        this.colliderTriples = new HashSet<>();
+        this.noncolliderTriples = new HashSet<>();
+
+        this.independenceTest.setVerbose(this.verbose);
+
+        long startTime = MillisecondTimes.timeMillis();
+
+        List<Node> allNodes = getIndependenceTest().getVariables();
+
+        if (!new HashSet<>(allNodes).containsAll(nodes)) {
+            throw new IllegalArgumentException("All of the given nodes must " +
+                    "be in the domain of the independence test provided.");
+        }
+
+        Fas fas;
+
+        if (this.fasType == FasType.REGULAR) {
+            fas = new Fas(getIndependenceTest());
+            fas.setHeuristic(this.heuristic);
+        } else {
+            fas = new Fas(getIndependenceTest());
+            fas.setHeuristic(this.heuristic);
+            fas.setStable(true);
+        }
+
+        fas.setKnowledge(getKnowledge());
+        fas.setDepth(getDepth());
+        fas.setVerbose(this.verbose);
+
+        // Note that we are ignoring the sepset map returned by this method
+        // on purpose; it is not used in this search.
+        this.graph = fas.search();
+        this.sepsets = fas.getSepsets();
+
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+
+        if (this.colliderDiscovery == ColliderDiscovery.FAS_SEPSETS) {
+            orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, this.conflictRule);
+        } else if (this.colliderDiscovery == ColliderDiscovery.MAX_P) {
+            if (this.verbose) {
+                System.out.println("MaxP orientation...");
+            }
+
+            MaxP orientCollidersMaxP = new MaxP(this.independenceTest);
+            orientCollidersMaxP.setConflictRule(this.conflictRule);
+            orientCollidersMaxP.setUseHeuristic(this.useHeuristic);
+            orientCollidersMaxP.setMaxPathLength(this.maxPathLength);
+            orientCollidersMaxP.setDepth(this.depth);
+            orientCollidersMaxP.setKnowledge(this.knowledge);
+            orientCollidersMaxP.orient(this.graph);
+        } else if (this.colliderDiscovery == ColliderDiscovery.CONSERVATIVE) {
+            if (this.verbose) {
+                System.out.println("CPC orientation...");
+            }
+
+            orientUnshieldedTriplesConservative(this.knowledge);
+        }
+
+        this.graph = GraphUtils.replaceNodes(this.graph, nodes);
+
+        MeekRules meekRules = new MeekRules();
+        meekRules.setKnowledge(this.knowledge);
+        meekRules.setVerbose(verbose);
+        meekRules.orientImplied(this.graph);
+
+        long endTime = MillisecondTimes.timeMillis();
+        this.elapsedTime = endTime - startTime;
+
+        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+
+        logTriples();
+
+        TetradLogger.getInstance().flush();
+
+        return this.graph;
+    }
+
+    /**
      * Sets to true just in case edges will not be added if they would create cycles.
      */
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
@@ -200,6 +262,7 @@ public final class PcCommon implements IGraphSearch {
      * Sets the conflict rule to use.
      *
      * @param conflictRule This rule.
+     * @see ConflictRule
      */
     public void setConflictRule(ConflictRule conflictRule) {
         this.conflictRule = conflictRule;
@@ -259,10 +322,6 @@ public final class PcCommon implements IGraphSearch {
         this.depth = depth;
     }
 
-    public SepsetMap getSepsets() {
-        return this.sepsets;
-    }
-
     /**
      * Sets whether verbose output should be printed.
      *
@@ -305,135 +364,25 @@ public final class PcCommon implements IGraphSearch {
         return new HashSet<>(this.graph.getEdges());
     }
 
-//    /**
-//     * Returns the non-adjacenices in the search graph.
-//     *
-//     * @return These non-adjacencies.
-//     */
-//    public Set<Edge> getNonadjacencies() {
-//        Graph complete = GraphUtils.completeGraph(this.graph);
-//        Set<Edge> nonAdjacencies = complete.getEdges();
-//        Graph undirected = GraphUtils.undirectedGraph(this.graph);
-//        nonAdjacencies.removeAll(undirected.getEdges());
-//        return new HashSet<>(nonAdjacencies);
-//    }
-
-    /**
-     * Runs the search and returns the search graph.
-     *
-     * @return This result graph.
-     */
-    public Graph search() {
-        return search(getIndependenceTest().getVariables());
-    }
-
-    /**
-     * Runs the search over the given list of nodes only, returning the serach graph.
-     *
-     * @param nodes The nodes to search over.
-     * @return The result graph.
-     */
-    public Graph search(List<Node> nodes) {
-        nodes = new ArrayList<>(nodes);
-
-        this.logger.log("info", "Starting algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
-        this.ambiguousTriples = new HashSet<>();
-        this.colliderTriples = new HashSet<>();
-        this.noncolliderTriples = new HashSet<>();
-
-        this.independenceTest.setVerbose(this.verbose);
-
-        long startTime = MillisecondTimes.timeMillis();
-
-        List<Node> allNodes = getIndependenceTest().getVariables();
-
-        if (!new HashSet<>(allNodes).containsAll(nodes)) {
-            throw new IllegalArgumentException("All of the given nodes must " +
-                    "be in the domain of the independence test provided.");
-        }
-
-        Fas fas;
-
-        if (this.fasType == FasType.REGULAR) {
-            fas = new Fas(getIndependenceTest());
-            fas.setHeuristic(this.heuristic);
-        } else {
-            fas = new Fas(getIndependenceTest());
-            fas.setStable(true);
-        }
-
-        fas.setKnowledge(getKnowledge());
-        fas.setDepth(getDepth());
-        fas.setVerbose(this.verbose);
-
-        // Note that we are ignoring the sepset map returned by this method
-        // on purpose; it is not used in this search.
-        this.graph = fas.search();
-        this.sepsets = fas.getSepsets();
-
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
-
-        if (this.colliderDiscovery == ColliderDiscovery.FAS_SEPSETS) {
-            orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, this.conflictRule);
-        } else if (this.colliderDiscovery == ColliderDiscovery.MAX_P) {
-            if (this.verbose) {
-                System.out.println("MaxP orientation...");
-            }
-
-            MaxP orientCollidersMaxP = new MaxP(this.independenceTest);
-            orientCollidersMaxP.setConflictRule(this.conflictRule);
-            orientCollidersMaxP.setUseHeuristic(this.useHeuristic);
-            orientCollidersMaxP.setMaxPathLength(this.maxPathLength);
-            orientCollidersMaxP.setDepth(this.depth);
-            orientCollidersMaxP.setKnowledge(this.knowledge);
-            orientCollidersMaxP.orient(this.graph);
-        } else if (this.colliderDiscovery == ColliderDiscovery.CONSERVATIVE) {
-            if (this.verbose) {
-                System.out.println("CPC orientation...");
-            }
-
-            orientUnshieldedTriplesConservative(this.knowledge);
-        }
-
-        this.graph = GraphUtils.replaceNodes(this.graph, nodes);
-
-        MeekRules meekRules = new MeekRules();
-        meekRules.setKnowledge(this.knowledge);
-        meekRules.setVerbose(verbose);
-        meekRules.orientImplied(this.graph);
-
-        long endTime = MillisecondTimes.timeMillis();
-        this.elapsedTime = endTime - startTime;
-
-        TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-
-        logTriples();
-
-        TetradLogger.getInstance().flush();
-
-        return this.graph;
-    }
-
 
     //==========================PRIVATE METHODS===========================//
 
     private static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph) {
-        if (conflictRule == ConflictRule.PRIORITY) {
+        if (conflictRule == ConflictRule.PRIORITIZE_EXISTING) {
             if (!(graph.getEndpoint(y, x) == Endpoint.ARROW || graph.getEndpoint(y, z) == Endpoint.ARROW)) {
                 graph.removeEdge(x, y);
                 graph.removeEdge(z, y);
                 graph.addDirectedEdge(x, y);
                 graph.addDirectedEdge(z, y);
             }
-        } else if (conflictRule == ConflictRule.BIDIRECTED) {
+        } else if (conflictRule == ConflictRule.ORIENT_BIDIRECTED) {
             graph.setEndpoint(x, y, Endpoint.ARROW);
             graph.setEndpoint(z, y, Endpoint.ARROW);
 
             System.out.println("Orienting " + graph.getEdge(x, y) + " " + graph.getEdge(z, y));
 
             System.out.println("graph = " + graph);
-        } else if (conflictRule == ConflictRule.OVERWRITE) {
+        } else if (conflictRule == ConflictRule.OVERWRITE_EXISTING) {
             graph.removeEdge(x, y);
             graph.removeEdge(z, y);
             graph.addDirectedEdge(x, y);

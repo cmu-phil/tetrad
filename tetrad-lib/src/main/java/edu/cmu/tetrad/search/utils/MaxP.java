@@ -46,7 +46,7 @@ public final class MaxP {
     private Knowledge knowledge = new Knowledge();
     private boolean useHeuristic;
     private int maxPathLength = 3;
-    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
 
     /**
      * Constructor.
@@ -78,17 +78,17 @@ public final class MaxP {
      * @see PcCommon.ConflictRule
      */
     public static void orientCollider(Node x, Node y, Node z, PcCommon.ConflictRule conflictRule, Graph graph) {
-        if (conflictRule == PcCommon.ConflictRule.PRIORITY) {
+        if (conflictRule == PcCommon.ConflictRule.PRIORITIZE_EXISTING) {
             if (!(graph.getEndpoint(y, x) == Endpoint.ARROW || graph.getEndpoint(y, z) == Endpoint.ARROW)) {
                 graph.removeEdge(x, y);
                 graph.removeEdge(z, y);
                 graph.addDirectedEdge(x, y);
                 graph.addDirectedEdge(z, y);
             }
-        } else if (conflictRule == PcCommon.ConflictRule.BIDIRECTED) {
+        } else if (conflictRule == PcCommon.ConflictRule.ORIENT_BIDIRECTED) {
             graph.setEndpoint(x, y, Endpoint.ARROW);
             graph.setEndpoint(z, y, Endpoint.ARROW);
-        } else if (conflictRule == PcCommon.ConflictRule.OVERWRITE) {
+        } else if (conflictRule == PcCommon.ConflictRule.OVERWRITE_EXISTING) {
             graph.removeEdge(x, y);
             graph.removeEdge(z, y);
             graph.addDirectedEdge(x, y);

@@ -78,7 +78,7 @@ public class Pc implements IGraphSearch {
     private int numIndependenceTests;
     private boolean verbose = false;
     private boolean stable = false;
-    private final PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -99,18 +99,112 @@ public class Pc implements IGraphSearch {
     //==============================PUBLIC METHODS========================//
 
     /**
-     * Returns true iff edges will not be added if they would create cycles.
+     * Runs PC starting with a complete graph over all nodes of the given conditional
+     * independence test, using the given independence test and knowledge and returns the
+     * resultant graph. The returned graph will be a CPDAG if the independence information is
+     * consistent with the hypothesis that there are no latent common causes. It may, however,
+     * contain cycles or bidirected edges if this assumption is not born out, either due to
+     * the actual presence of latent common causes, or due to statistical errors in conditional
+     * independence judgments.
      *
-     * @return True if so.
+     * @return The found CPDAG. In some cases there may be some errant bidirected edges or
+     * cycles, depending on the settings and whether the faithfulness assumption holds. If
+     * the faithfulness assumption holds, bidirected edges will indicate the existence of
+     * latent variables, so a latent variable search like FCI should be run.
+     * @see Fci
      */
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+    @Override
+    public Graph search() {
+        return search(this.independenceTest.getVariables());
+    }
+
+    /**
+     * Runs PC starting with a commplete graph over the given list of nodes, using the given
+     * independence test and knowledge and returns the resultant graph. The returned graph
+     * will be a CPDAG if the independence information is consistent with the hypothesis that
+     * there are no latent common causes. It may, however, contain cycles or bidirected edges
+     * if this assumption is not born out, either due to the actual presence of latent common
+     * causes, or due to statistical errors in conditional independence judgments.
+     * <p>
+     * All the given nodes must be in the domatein of the given conditional independence test.
+     *
+     * @param nodes The sublist of nodes to search over.
+     * @return The search graph.
+     * @see #search()
+     */
+    public Graph search(List<Node> nodes) {
+        nodes = new ArrayList<>(nodes);
+
+        IFas fas = new Fas(getIndependenceTest());
+        fas.setVerbose(this.verbose);
+        return search(fas, nodes);
+    }
+
+    /**
+     * Runs the search using a particular implementation of the fast adjacency search
+     * (FAS), over the given sublist of nodes.
+     *
+     * @param fas   The fast adjacency search to use.
+     * @param nodes The sublist of nodes.
+     * @return The result graph
+     * @see #search()
+     * @see IFas
+     */
+    public Graph search(IFas fas, List<Node> nodes) {
+        this.logger.log("info", "Starting PC algorithm");
+        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+
+        long startTime = MillisecondTimes.timeMillis();
+
+        if (getIndependenceTest() == null) {
+            throw new NullPointerException("Null independence test.");
+        }
+
+        List<Node> allNodes = getIndependenceTest().getVariables();
+        if (!new HashSet<>(allNodes).containsAll(nodes)) {
+            throw new IllegalArgumentException("All of the given nodes must " +
+                    "be in the domain of the independence test provided.");
+        }
+
+        PcCommon search = new PcCommon(independenceTest);
+        search.setDepth(depth);
+        search.setHeuristic(1);
+        search.setAggressivelyPreventCycles(aggressivelyPreventCycles);
+        search.setKnowledge(this.knowledge);
+
+        if (stable) {
+            search.setFasType(PcCommon.FasType.STABLE);
+        } else {
+            search.setFasType(PcCommon.FasType.REGULAR);
+        }
+
+        search.setColliderDiscovery(PcCommon.ColliderDiscovery.FAS_SEPSETS);
+        search.setConflictRule(conflictRule);
+        search.setVerbose(verbose);
+
+        this.graph = search.search();
+        this.sepsets = fas.getSepsets();
+
+        this.numIndependenceTests = fas.getNumIndependenceTests();
+
+        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
+        GraphSearchUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
+
+        this.logger.log("graph", "\nReturning this graph: " + this.graph);
+
+        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
+
+        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+        this.logger.log("info", "Finishing PC Algorithm.");
+        this.logger.flush();
+
+        return this.graph;
     }
 
     /**
      * Sets whether cycles should be aggressively checked.
      *
-     * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
+     * @param aggressivelyPreventCycles Set to true just in case edges will not be added if they would create cycles.
      */
     public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
         this.aggressivelyPreventCycles = aggressivelyPreventCycles;
@@ -188,108 +282,6 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Runs PC starting with a complete graph over all nodes of the given conditional
-     * independence test, using the given independence test and knowledge and returns the
-     * resultant graph. The returned graph will be a CPDAG if the independence information is
-     * consistent with the hypothesis that there are no latent common causes. It may, however,
-     * contain cycles or bidirected edges if this assumption is not born out, either due to
-     * the actual presence of latent common causes, or due to statistical errors in conditional
-     * independence judgments.
-     *
-     * @return The found CPDAG. In some cases there may be some errant bidirected edges or
-     * cycles, depending on the settings and whether the faithfulness assumption holds. If
-     * the faithfulness assumption holds, bidirected edges will indicate the existence of
-     * latent variables, so a latent variable search like FCI should be run.
-     * @see Fci
-     */
-    @Override
-    public Graph search() {
-        return search(this.independenceTest.getVariables());
-    }
-
-    /**
-     * Runs PC starting with a commplete graph over the given list of nodes, using the given
-     * independence test and knowledge and returns the resultant graph. The returned graph
-     * will be a CPDAG if the independence information is consistent with the hypothesis that
-     * there are no latent common causes. It may, however, contain cycles or bidirected edges
-     * if this assumption is not born out, either due to the actual presence of latent common
-     * causes, or due to statistical errors in conditional independence judgments.
-     * <p>
-     * All the given nodes must be in the domatein of the given conditional independence test.
-     *
-     * @param nodes The sublist of nodes to search over.
-     * @return The search graph.
-     * @see #search()
-     */
-    public Graph search(List<Node> nodes) {
-        nodes = new ArrayList<>(nodes);
-
-        IFas fas = new Fas(getIndependenceTest());
-        fas.setVerbose(this.verbose);
-        return search(fas, nodes);
-    }
-
-    /**
-     * Runs the search using a particular implementation of the fast adjacency search
-     * (FAS), over the given sublist of nodes.
-     *
-     * @param fas   The fast adjacency search to use.
-     * @param nodes The sublist of nodes.
-     * @return The result graph
-     * @see #search()
-     * @see IFas
-     */
-    public Graph search(IFas fas, List<Node> nodes) {
-        this.logger.log("info", "Starting PC algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
-
-        long startTime = MillisecondTimes.timeMillis();
-
-        if (getIndependenceTest() == null) {
-            throw new NullPointerException("Null independence test.");
-        }
-
-        List<Node> allNodes = getIndependenceTest().getVariables();
-        if (!new HashSet<>(allNodes).containsAll(nodes)) {
-            throw new IllegalArgumentException("All of the given nodes must " +
-                    "be in the domain of the independence test provided.");
-        }
-
-        PcCommon search = new PcCommon(independenceTest);
-        search.setDepth(depth);
-        search.setHeuristic(1);
-        search.setKnowledge(this.knowledge);
-
-        if (stable) {
-            search.setFasType(PcCommon.FasType.STABLE);
-        } else {
-            search.setFasType(PcCommon.FasType.REGULAR);
-        }
-
-        search.setColliderDiscovery(PcCommon.ColliderDiscovery.FAS_SEPSETS);
-        search.setConflictRule(conflictRule);
-        search.setVerbose(verbose);
-
-        this.graph = search.search();
-        this.sepsets = fas.getSepsets();
-
-        this.numIndependenceTests = fas.getNumIndependenceTests();
-
-        GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
-        GraphSearchUtils.orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, false);
-
-        this.logger.log("graph", "\nReturning this graph: " + this.graph);
-
-        this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
-
-        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.log("info", "Finishing PC Algorithm.");
-        this.logger.flush();
-
-        return this.graph;
-    }
-
-    /**
      * Returns the elapsed time of the search, in milliseconds.
      *
      * @return this time.
@@ -330,15 +322,6 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Returns the nodes of the search graph.
-     *
-     * @return This list.
-     */
-    public List<Node> getNodes() {
-        return this.graph.getNodes();
-    }
-
-    /**
      * Sets whether verbose output should be given. Default is false.
      *
      * @param verbose True iff the case.
@@ -354,6 +337,16 @@ public class Pc implements IGraphSearch {
      */
     public void setStable(boolean stable) {
         this.stable = stable;
+    }
+
+    /**
+     * Sets which conflict rule to use for resolving collider orientation conflicts.
+     *
+     * @param conflictRule The rule.
+     * @see edu.cmu.tetrad.search.utils.PcCommon.ConflictRule
+     */
+    public void setConflictRule(PcCommon.ConflictRule conflictRule) {
+        this.conflictRule = conflictRule;
     }
 }
 

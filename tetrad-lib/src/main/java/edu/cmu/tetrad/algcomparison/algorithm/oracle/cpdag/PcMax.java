@@ -14,6 +14,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -62,9 +63,29 @@ public class PcMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
                 knowledge = timeSeries.getKnowledge();
             }
 
+            PcCommon.ConflictRule conflictRule;
+
+            // >Collider conflicts: 1 = Overwrite, 2 =
+            //        Orient bidirected, 3 = Prioritize existing colliders
+            switch (parameters.getInt(Params.CONFLICT_RULE)) {
+                case 1:
+                    conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
+                    break;
+                case 2:
+                    conflictRule = PcCommon.ConflictRule.ORIENT_BIDIRECTED;
+                    break;
+                case 3:
+                    conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+
+            }
+
             edu.cmu.tetrad.search.PcMax search = new edu.cmu.tetrad.search.PcMax(getIndependenceWrapper().getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setAggressivelyPreventCycles(true);
+            search.setConflictRule(conflictRule);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(knowledge);
             search.setUseHeuristic(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
