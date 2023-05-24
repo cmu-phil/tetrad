@@ -43,12 +43,13 @@ import java.util.Set;
  */
 public final class PcCommon implements IGraphSearch {
 
+    public static enum PcHeuristicType{NONE, HEURISTIC_1, HEURISTIC_2, HEURISTIC_3}
+
     /**
      * Gives the type of FAS used, regular or stable.
      *
      * @see Pc
      * @see Cpc
-     * @see PcMax
      */
     public enum FasType {REGULAR, STABLE}
 
@@ -58,7 +59,6 @@ public final class PcCommon implements IGraphSearch {
      *
      * @see Fas
      * @see Cpc
-     * @see PcMax
      */
     public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
 
@@ -69,7 +69,6 @@ public final class PcCommon implements IGraphSearch {
      *
      * @see Pc
      * @see Cpc
-     * @see PcMax
      */
     public enum ConflictRule {PRIORITIZE_EXISTING, ORIENT_BIDIRECTED, OVERWRITE_EXISTING}
 
@@ -90,6 +89,7 @@ public final class PcCommon implements IGraphSearch {
     private FasType fasType = FasType.REGULAR;
     private ColliderDiscovery colliderDiscovery = ColliderDiscovery.FAS_SEPSETS;
     private ConflictRule conflictRule = ConflictRule.PRIORITIZE_EXISTING;
+    private PcHeuristicType pcHeuristicType = PcHeuristicType.NONE;
 
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
@@ -125,11 +125,15 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * @param pcHeuristic Whether to use the PC heuristic (see Causation, Prediction and Search
+     * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search).
+     *                    Default is PcHeuristicType.NONE.
+     * @see PcHeuristicType
      */
-    public void setPcHeuristic(int pcHeuristic) {
-        this.pcHeuristic = pcHeuristic;
+    public void setPcHeuristicType(PcHeuristicType pcHeuristic) {
+        this.pcHeuristicType = pcHeuristic;
     }
+
+
 
     //=============================CONSTRUCTORS==========================//
 

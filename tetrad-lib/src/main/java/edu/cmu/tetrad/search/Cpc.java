@@ -61,25 +61,25 @@ import java.util.Set;
  *
  * @author josephramsey (this version).
  * @see Pc
- * @see PcMax
  * @see Knowledge
  * @see edu.cmu.tetrad.search.utils.MeekRules
  */
 public final class Cpc implements IGraphSearch {
     private final IndependenceTest independenceTest;
     private Knowledge knowledge = new Knowledge();
-    private int depth = 1000;
     private Graph graph;
     private long elapsedTime;
     private Set<Triple> colliderTriples;
     private Set<Triple> noncolliderTriples;
     private Set<Triple> ambiguousTriples;
-    private boolean meekPreventCycles;
     private final TetradLogger logger = TetradLogger.getInstance();
     private SepsetMap sepsets;
-    private boolean verbose;
-    private boolean stable;
+    private int depth = 1000;
+    private boolean stable = false;
+    private boolean meekPreventCycles = false;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+    private boolean verbose = false;
+    private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -127,8 +127,8 @@ public final class Cpc implements IGraphSearch {
 
         PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
-        search.setPcHeuristic(1);
         search.setConflictRule(conflictRule);
+        search.setPcHeuristicType(pcHeuristicType);
         search.setMeekPreventCycles(meekPreventCycles);
         search.setKnowledge(this.knowledge);
 
@@ -302,6 +302,16 @@ public final class Cpc implements IGraphSearch {
         this.conflictRule = conflictRule;
     }
 
+    /**
+     * Sets the PC heuristic type. Default = NONE.
+     *
+     * @param pcHeuristicType The type.
+     * @see edu.cmu.tetrad.search.utils.PcCommon.PcHeuristicType
+     */
+    public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristicType) {
+        this.pcHeuristicType = pcHeuristicType;
+    }
+
     //==========================PRIVATE METHODS===========================//
 
     private void logTriples() {
@@ -324,6 +334,8 @@ public final class Cpc implements IGraphSearch {
             TetradLogger.getInstance().log("info", "Ambiguous: " + triple);
         }
     }
+
+
 }
 
 

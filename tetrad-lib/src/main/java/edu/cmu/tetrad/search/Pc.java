@@ -77,6 +77,7 @@ public class Pc implements IGraphSearch {
     private boolean stable = false;
     private boolean meekPreventCycles = false;
     private boolean useMaxPHeuristic = false;
+    private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -162,8 +163,8 @@ public class Pc implements IGraphSearch {
 
         PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
-        search.setPcHeuristic(1);
         search.setMeekPreventCycles(meekPreventCycles);
+        search.setPcHeuristicType(pcHeuristicType);
         search.setKnowledge(this.knowledge);
 
         if (stable) {
@@ -177,7 +178,9 @@ public class Pc implements IGraphSearch {
         } else {
             search.setColliderDiscovery(PcCommon.ColliderDiscovery.FAS_SEPSETS);
         }
+
         search.setConflictRule(conflictRule);
+        search.setPcHeuristicType(pcHeuristicType);
         search.setVerbose(verbose);
 
         this.graph = search.search();
@@ -351,6 +354,16 @@ public class Pc implements IGraphSearch {
      */
     public void setUseMaxPHeuristic(boolean useMaxPHeuristic) {
         this.useMaxPHeuristic = useMaxPHeuristic;
+    }
+
+    /**
+     * Sets the PC heuristic type. Default = NONE.
+     *
+     * @param pcHeuristicType The type.
+     * @see edu.cmu.tetrad.search.utils.PcCommon.PcHeuristicType
+     */
+    public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristicType) {
+        this.pcHeuristicType = pcHeuristicType;
     }
 }
 

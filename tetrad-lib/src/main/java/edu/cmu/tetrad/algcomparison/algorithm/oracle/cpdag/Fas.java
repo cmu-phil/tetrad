@@ -54,7 +54,7 @@ public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             edu.cmu.tetrad.search.Fas search = new edu.cmu.tetrad.search.Fas(this.test.getTest(dataSet, parameters));
             search.setStable(parameters.getBoolean(Params.STABLE_FAS));
-            search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
+            search.setHeuristic(parameters.getInt(Params.PC_HEURISTIC));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
@@ -99,7 +99,7 @@ public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
-        parameters.add(Params.FAS_HEURISTIC);
+        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.VERBOSE);
         return parameters;

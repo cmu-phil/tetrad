@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.PcMax;
 import edu.cmu.tetrad.search.test.IndTestDSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -115,8 +114,9 @@ public class TestPcStableMax {
         knowledge.addToTier(5, "PUBS");
         knowledge.addToTier(6, "CITES");
 
-        PcMax pc = new PcMax(new IndTestFisherZ(dataSet, 0.11));
+        Pc pc = new Pc(new IndTestFisherZ(dataSet, 0.11));
         pc.setStable(true);
+        pc.setUseMaxPHeuristic(true);
         pc.setKnowledge(knowledge);
 
         Graph CPDAG = pc.search();
@@ -175,8 +175,9 @@ public class TestPcStableMax {
 
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
-        PcMax pc = new PcMax(independence);
+        Pc pc = new Pc(independence);
         pc.setStable(true);
+        pc.setUseMaxPHeuristic(true);
 
         // Set up search.
         pc.setKnowledge(knowledge);

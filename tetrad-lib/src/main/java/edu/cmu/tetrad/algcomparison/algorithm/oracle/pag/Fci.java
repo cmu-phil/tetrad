@@ -71,7 +71,7 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
+            search.setHeuristic(parameters.getInt(Params.PC_HEURISTIC));
             search.setStable(parameters.getBoolean(Params.STABLE_FAS));
 
             return search.search();
@@ -108,7 +108,7 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
-        parameters.add(Params.FAS_HEURISTIC);
+        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.POSSIBLE_DSEP_DONE);
