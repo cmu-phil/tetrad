@@ -70,13 +70,13 @@ public class Pc implements IGraphSearch {
     private int depth = 1000;
     private Graph graph;
     private long elapsedTime;
-    private boolean meekPreventCycles;
     private final TetradLogger logger = TetradLogger.getInstance();
     private int numIndependenceTests;
     private boolean verbose = false;
-    private boolean stable = true;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
-    private boolean useMaxPHeuristic = true;
+    private boolean stable = false;
+    private boolean meekPreventCycles;
+    private boolean useMaxPHeuristic = false;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -162,7 +162,7 @@ public class Pc implements IGraphSearch {
 
         PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
-        search.setHeuristic(1);
+        search.setPcHeuristic(1);
         search.setMeekPreventCycles(meekPreventCycles);
         search.setKnowledge(this.knowledge);
 

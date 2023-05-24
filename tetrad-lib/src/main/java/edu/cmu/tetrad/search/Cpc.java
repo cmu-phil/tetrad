@@ -79,7 +79,7 @@ public final class Cpc implements IGraphSearch {
     private SepsetMap sepsets;
     private boolean verbose;
     private boolean stable;
-    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -127,7 +127,7 @@ public final class Cpc implements IGraphSearch {
 
         PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
-        search.setHeuristic(1);
+        search.setPcHeuristic(1);
         search.setConflictRule(conflictRule);
         search.setMeekPreventCycles(meekPreventCycles);
         search.setKnowledge(this.knowledge);

@@ -75,7 +75,7 @@ public final class PcCommon implements IGraphSearch {
 
     private final IndependenceTest independenceTest;
     private final TetradLogger logger = TetradLogger.getInstance();
-    private int heuristic = 0;
+    private int pcHeuristic = 0;
     private Knowledge knowledge = new Knowledge();
     private int depth = 1000;
     private Graph graph;
@@ -84,13 +84,12 @@ public final class PcCommon implements IGraphSearch {
     private Set<Triple> noncolliderTriples;
     private Set<Triple> ambiguousTriples;
     private boolean meekPreventCycles;
-    private SepsetMap sepsets;
     private boolean verbose = false;
     private boolean useHeuristic = false;
     private int maxPathLength = 3;
     private FasType fasType = FasType.REGULAR;
     private ColliderDiscovery colliderDiscovery = ColliderDiscovery.FAS_SEPSETS;
-    private ConflictRule conflictRule = ConflictRule.OVERWRITE_EXISTING;
+    private ConflictRule conflictRule = ConflictRule.PRIORITIZE_EXISTING;
 
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
@@ -126,10 +125,10 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * @param heuristic Whether to use the max p orientation heuristic.
+     * @param pcHeuristic Whether to use the PC heuristic (see Causation, Prediction and Search
      */
-    public void setHeuristic(int heuristic) {
-        this.heuristic = heuristic;
+    public void setPcHeuristic(int pcHeuristic) {
+        this.pcHeuristic = pcHeuristic;
     }
 
     //=============================CONSTRUCTORS==========================//
@@ -182,10 +181,10 @@ public final class PcCommon implements IGraphSearch {
 
         if (this.fasType == FasType.REGULAR) {
             fas = new Fas(getIndependenceTest());
-            fas.setHeuristic(this.heuristic);
+            fas.setHeuristic(this.pcHeuristic);
         } else {
             fas = new Fas(getIndependenceTest());
-            fas.setHeuristic(this.heuristic);
+            fas.setHeuristic(this.pcHeuristic);
             fas.setStable(true);
         }
 
@@ -196,7 +195,7 @@ public final class PcCommon implements IGraphSearch {
         // Note that we are ignoring the sepset map returned by this method
         // on purpose; it is not used in this search.
         this.graph = fas.search();
-        this.sepsets = fas.getSepsets();
+        SepsetMap sepsets = fas.getSepsets();
 
         if (this.graph.paths().existsDirectedCycle())
             throw new IllegalArgumentException("Graph is cyclic after sepsets!");
@@ -204,7 +203,7 @@ public final class PcCommon implements IGraphSearch {
         GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
 
         if (this.colliderDiscovery == ColliderDiscovery.FAS_SEPSETS) {
-            orientCollidersUsingSepsets(this.sepsets, this.knowledge, this.graph, this.verbose, this.conflictRule);
+            orientCollidersUsingSepsets(sepsets, this.knowledge, this.graph, this.verbose, this.conflictRule);
         } else if (this.colliderDiscovery == ColliderDiscovery.MAX_P) {
             if (this.verbose) {
                 System.out.println("MaxP orientation...");
@@ -377,16 +376,16 @@ public final class PcCommon implements IGraphSearch {
         return new HashSet<>(this.graph.getEdges());
     }
 
-
-    //==========================PRIVATE METHODS===========================//
-
-    private static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph) {
+    /**
+     * Orient a single unshielded triple, x*-*y*-*z, in a graph.
+     *
+     * @param conflictRule The conflict rule to use.
+     * @param graph        The graph to orient.
+     * @see PcCommon.ConflictRule
+     */
+    public static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph) {
         if (conflictRule == ConflictRule.PRIORITIZE_EXISTING) {
-            if (!(graph.getEndpoint(y, x) == Endpoint.ARROW || graph.getEndpoint(y, z) == Endpoint.ARROW)) {
-                if (graph.paths().existsDirectedPathFromTo(y, x) || graph.paths().existsDirectedPathFromTo(y, z)) {
-                    return;
-                }
-
+            if (!(graph.getEndpoint(x, y) == Endpoint.ARROW && graph.getEndpoint(z, y) == Endpoint.ARROW)) {
                 graph.removeEdge(x, y);
                 graph.removeEdge(z, y);
                 graph.addDirectedEdge(x, y);
@@ -397,13 +396,7 @@ public final class PcCommon implements IGraphSearch {
             graph.setEndpoint(z, y, Endpoint.ARROW);
 
             System.out.println("Orienting " + graph.getEdge(x, y) + " " + graph.getEdge(z, y));
-
-            System.out.println("graph = " + graph);
         } else if (conflictRule == ConflictRule.OVERWRITE_EXISTING) {
-            if (graph.paths().existsDirectedPathFromTo(y, x) || graph.paths().existsDirectedPathFromTo(y, z)) {
-                return;
-            }
-
             graph.removeEdge(x, y);
             graph.removeEdge(z, y);
             graph.addDirectedEdge(x, y);

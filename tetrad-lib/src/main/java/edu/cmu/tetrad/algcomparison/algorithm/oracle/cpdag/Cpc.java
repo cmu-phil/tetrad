@@ -69,13 +69,13 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             //        Orient bidirected, 3 = Prioritize existing colliders
             switch (parameters.getInt(Params.CONFLICT_RULE)) {
                 case 1:
-                    conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
+                    conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
                     break;
                 case 2:
                     conflictRule = PcCommon.ConflictRule.ORIENT_BIDIRECTED;
                     break;
                 case 3:
-                    conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+                    conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
