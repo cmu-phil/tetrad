@@ -62,24 +62,16 @@ public final class FciMax implements IGraphSearch {
     private SepsetMap sepsets;
     private Knowledge knowledge = new Knowledge();
     private final IndependenceTest independenceTest;
+    private long elapsedTime;
+    private final TetradLogger logger = TetradLogger.getInstance();
+    private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+    private boolean stable = false;
     private boolean completeRuleSetUsed = true;
+    private boolean doDiscriminatingPathRule = false;
     private boolean possibleDsepSearchDone = true;
     private int maxPathLength = -1;
     private int depth = -1;
-    private long elapsedTime;
-    private final TetradLogger logger = TetradLogger.getInstance();
-    private boolean verbose;
-
-    /**
-     * FAS heuristic
-     */
-    private PcCommon.PcHeuristicType pcHeuristicType;
-
-    /**
-     * FAS stable option.
-     */
-    private boolean stable;
-    private boolean doDiscriminatingPathRule = false;
+    private boolean verbose = false;
 
     //============================CONSTRUCTORS============================//
 
