@@ -59,55 +59,15 @@ import java.util.concurrent.RecursiveTask;
  * @see Knowledge
  */
 public final class FciMax implements IGraphSearch {
-
-    /**
-     * The SepsetMap being constructed.
-     */
     private SepsetMap sepsets;
-
-    /**
-     * The background knowledge.
-     */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The test to use for the search.
-     */
     private final IndependenceTest independenceTest;
-
-    /**
-     * Glag for complete rule set, true if it should use complete rule set, false otherwise.
-     */
     private boolean completeRuleSetUsed = true;
-
-    /**
-     * True iff the possible dsep search is done.
-     */
     private boolean possibleDsepSearchDone = true;
-
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
     private int maxPathLength = -1;
-
-    /**
-     * The depth for the fast adjacency search.
-     */
     private int depth = -1;
-
-    /**
-     * Elapsed time of last search.
-     */
     private long elapsedTime;
-
-    /**
-     * The logger to use.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * True iff verbose output should be printed.
-     */
     private boolean verbose;
 
     /**
