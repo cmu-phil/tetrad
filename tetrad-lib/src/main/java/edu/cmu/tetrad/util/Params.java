@@ -52,7 +52,7 @@ public final class Params {
     public static final String DO_DISCRIMINATING_PATH_TAIL_RULE = "doDiscriminatingPathTailRule";
     public static final String CONCURRENT_FAS = "concurrentFAS";
     public static final String CONFLICT_RULE = "conflictRule";
-    public static final String AGGRESSIVELY_PREVENT_CYCLES = "aggressivelyPreventCycles";
+    public static final String MEEK_PREVENT_CYCLES = "meekPreventCycles";
     public static final String CONNECTED = "connected";
     public static final String COV_HIGH = "covHigh";
     public static final String COV_LOW = "covLow";
@@ -186,6 +186,7 @@ public final class Params {
     public static final String USE_CORR_DIFF_ADJACENCIES = "useCorrDiffAdjacencies";
     public static final String USE_FAS_ADJACENCIES = "useFasAdjacencies";
     public static final String USE_GAP = "useGap";
+    public static final String USE_MAX_P_HEURISTIC = "useMaxPHeuristic";
     public static final String USE_MAX_P_ORIENTATION_HEURISTIC = "useMaxPOrientationHeuristic";
     public static final String USE_SKEW_ADJACENCIES = "useSkewAdjacencies";
     public static final String USE_WISHART = "useWishart";

@@ -113,10 +113,10 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     private Graph graph;
 
     /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
+     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large
      * graphs).
      */
-    private boolean aggressivelyPreventCycles;
+    private boolean meekPreventCycles;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -155,12 +155,12 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     //===============================PUBLIC METHODS=======================//
 
     /**
-     * Sets whether cycles should be aggressively prevented, using a cycle checker.
+     * Sets whether cycles should be prevented, using a cycle checker.
      *
-     * @param aggressivelyPreventCycles True if so.
+     * @param meekPreventCycles True if so.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
@@ -300,7 +300,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         orientUnshieldedTriples(this.knowledge, graph, getDepth(), _visited);
 
         MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+        meekRules.setMeekPreventCycles(this.meekPreventCycles);
         meekRules.setKnowledge(this.knowledge);
         meekRules.orientImplied(graph);
 
@@ -400,7 +400,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         orientUnshieldedTriples(this.knowledge, graph, getDepth(), graph.getNodes());
 
         MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+        meekRules.setMeekPreventCycles(this.meekPreventCycles);
         meekRules.setKnowledge(this.knowledge);
         meekRules.orientImplied(graph);
 

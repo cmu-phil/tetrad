@@ -43,9 +43,9 @@ public class MeekRules {
 
     private Knowledge knowledge = new Knowledge();
 
-    //True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
+    //True if cycles are to be prevented. May be expensive for large graphs (but also useful for large
     //graphs).
-    private boolean aggressivelyPreventCycles;
+    private boolean meekPreventCycles;
 
     // If knowledge is available.
     boolean useRule4;
@@ -124,12 +124,12 @@ public class MeekRules {
     }
 
     /**
-     * Sets whether cycles should be aggressively prevented by cycle checking.
+     * Sets whether cycles should be prevented by cycle checking.
      *
-     * @param aggressivelyPreventCycles True if so.
+     * @param meekPreventCycles True if so.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
@@ -307,7 +307,7 @@ public class MeekRules {
         Edge before = graph.getEdge(a, c);
         graph.removeEdge(before);
 
-        if (aggressivelyPreventCycles && graph.paths().existsDirectedPathFromTo(c, a)) {
+        if (meekPreventCycles && graph.paths().existsDirectedPathFromTo(c, a)) {
             graph.addEdge(before);
             return false;
         }

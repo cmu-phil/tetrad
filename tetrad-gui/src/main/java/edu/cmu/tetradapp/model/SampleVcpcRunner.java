@@ -178,7 +178,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
         SampleVcpc svcpc = new SampleVcpc(getIndependenceTest());
 
         svcpc.setKnowledge(knowledge);
-        svcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        svcpc.setMeekPreventCycles(this.isMeekPreventCycles());
         svcpc.setDepth(getParams().getInt("depth", -1));
         if (this.independenceFactsModel != null) {
             svcpc.setFacts();
@@ -258,7 +258,7 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
 
     public MeekRules getMeekRules() {
         MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        meekRules.setMeekPreventCycles(this.isMeekPreventCycles());
         meekRules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
         return meekRules;
     }
@@ -277,10 +277,10 @@ public class SampleVcpcRunner extends AbstractAlgorithmRunner
     }
     //========================== Private Methods ===============================//
 
-    private boolean isAggressivelyPreventCycles() {
+    private boolean isMeekPreventCycles() {
         Parameters params = getParams();
         if (params instanceof Parameters) {
-            return params.getBoolean("aggressivelyPreventCycles", false);
+            return params.getBoolean("MeekPreventCycles", false);
         }
         return false;
     }

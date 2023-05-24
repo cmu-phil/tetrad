@@ -74,7 +74,7 @@ public final class Cpc implements IGraphSearch {
     private Set<Triple> colliderTriples;
     private Set<Triple> noncolliderTriples;
     private Set<Triple> ambiguousTriples;
-    private boolean aggressivelyPreventCycles;
+    private boolean meekPreventCycles;
     private final TetradLogger logger = TetradLogger.getInstance();
     private SepsetMap sepsets;
     private boolean verbose;
@@ -129,7 +129,7 @@ public final class Cpc implements IGraphSearch {
         search.setDepth(depth);
         search.setHeuristic(1);
         search.setConflictRule(conflictRule);
-        search.setAggressivelyPreventCycles(aggressivelyPreventCycles);
+        search.setMeekPreventCycles(meekPreventCycles);
         search.setKnowledge(this.knowledge);
 
         if (stable) {
@@ -166,10 +166,10 @@ public final class Cpc implements IGraphSearch {
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
      *
-     * @param aggressivelyPreventCycles True if so.
+     * @param meekPreventCycles True if so.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    public void meekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**

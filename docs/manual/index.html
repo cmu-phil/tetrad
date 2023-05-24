@@ -4803,24 +4803,24 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="aggressivelyPreventCycles">aggressivelyPreventCycles</h3>
+            id="meekPreventCycles">meekPreventCycles</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="aggressivelyPreventCycles_short_desc">
+                    id="meekPreventCycles_short_desc">
                     Prevent cycles in the application of the Meek rules</span></li>
-            <li>Long Description: <span id="aggressivelyPreventCycles_long_desc">
+            <li>Long Description: <span id="meekPreventCycles_long_desc">
             	It is possible due to unfaithfulness for the Meek rules to orient
             	cycles; this does a cycle check before each rule application to
             	prevent this.</span></li>
             <li>Default Value: <span
-                    id="aggressivelyPreventCycles_default_value">false</span></li>
+                    id="meekPreventCycles_default_value">true</span></li>
             <li>Lower Bound: <span
-                    id="aggressivelyPreventCycles_lower_bound"></span></li>
+                    id="meekPreventCycles_lower_bound"></span></li>
             <li>Upper Bound: <span
-                    id="aggressivelyPreventCycles_upper_bound"></span></li>
+                    id="meekPreventCycles_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="aggressivelyPreventCycles_value_type">Boolean</span></li>
+                    id="meekPreventCycles_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="connected">connected</h3>
@@ -8094,7 +8094,7 @@ tabs will not appear.</p> -->
         adjacency search is used, which for k > 0 fixes the graph for depth k
         + 1 to that of the previous depth k. </span></li>
             <li>Default Value:
-                <span id="stableFAS_default_value">false</span></li>
+                <span id="stableFAS_default_value">true</span></li>
             <li>Lower Bound:
                 <span id="stableFAS_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -8525,6 +8525,29 @@ tabs will not appear.</p> -->
             <li>Value Type: <span
                     id="useGap_value_type">Boolean</span></li>
         </ul>
+
+        <h3 class="parameter_description"
+            id="useMaxPHeuristic">useMaxPHeuristic</h3>
+        <ul class="parameter_description_list">
+            <li>Short Description: <span
+                    id="useMaxPHeuristic_short_desc">Yes if the max P
+                    heuristic should be used</span></li>
+            <li>Long Description: <span
+                    id="useMaxPHeuristic_long_desc">The max P heuristic orients
+                    X*-*Y*-*Z by considering whether Y is in the subset S of variables
+                    adjacent to X or Z that maximizes the p-value of X _||_ Y | S.</span></li>
+            <li>Default Value: <span
+                    id="useMaxPHeuristic_default_value">true</span></li>
+            <li>Lower Bound: <span
+                    id="useMaxPHeuristic_lower_bound"></span></li>
+            <li>Upper
+                Bound: <span
+                        id="useMaxPHeuristic_upper_bound"></span></li>
+            <li>Value
+                Type: <span
+                        id="useMaxPHeuristic_value_type">Boolean</span></li>
+        </ul>
+
 
         <h3 class="parameter_description"
             id="useMaxPOrientationHeuristic">useMaxPOrientationHeuristic</h3>

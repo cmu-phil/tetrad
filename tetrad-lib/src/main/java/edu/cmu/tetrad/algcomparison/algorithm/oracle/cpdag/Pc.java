@@ -85,13 +85,15 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             }
 
             edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
+            search.setUseMaxPHeuristic(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setAggressivelyPreventCycles(parameters.getBoolean(Params.AGGRESSIVELY_PREVENT_CYCLES));
+            search.setMeekPreventCycles(parameters.getBoolean(Params.MEEK_PREVENT_CYCLES));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(this.knowledge);
             search.setStable(parameters.getBoolean(Params.STABLE_FAS));
             search.setConflictRule(conflictRule);
             return search.search();
+//            }
         } else {
             Pc pcAll = new Pc(this.test);
 
@@ -126,8 +128,9 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
+        parameters.add(Params.USE_MAX_P_HEURISTIC);
         parameters.add(Params.CONFLICT_RULE);
-        parameters.add(Params.AGGRESSIVELY_PREVENT_CYCLES);
+        parameters.add(Params.MEEK_PREVENT_CYCLES);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.VERBOSE);

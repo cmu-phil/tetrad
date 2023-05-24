@@ -78,7 +78,7 @@ public final class PcMax implements IGraphSearch {
     private boolean useHeuristic = false;
     private int maxPPathLength = -1;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
-    private boolean aggressivelyPreventCycles = false;
+    private boolean meekPreventCycles = false;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -129,7 +129,7 @@ public final class PcMax implements IGraphSearch {
         search.setHeuristic(1);
         search.setConflictRule(conflictRule);
         search.setKnowledge(this.knowledge);
-        search.setAggressivelyPreventCycles(aggressivelyPreventCycles);
+        search.setMeekPreventCycles(meekPreventCycles);
 
         if (stable) {
             search.setFasType(PcCommon.FasType.STABLE);
@@ -167,10 +167,10 @@ public final class PcMax implements IGraphSearch {
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
      *
-     * @param aggressivelyPreventCycles True if so.
+     * @param meekPreventCycles True if so.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**

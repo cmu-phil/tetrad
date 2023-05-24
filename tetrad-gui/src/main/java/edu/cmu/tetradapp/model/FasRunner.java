@@ -118,7 +118,7 @@ public class FasRunner extends AbstractAlgorithmRunner
 
     public MeekRules getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        rules.setMeekPreventCycles(this.isMeekPreventCycles());
         rules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
         return rules;
     }
@@ -193,10 +193,10 @@ public class FasRunner extends AbstractAlgorithmRunner
 
     //========================== Private Methods ===============================//
 
-    private boolean isAggressivelyPreventCycles() {
+    private boolean isMeekPreventCycles() {
         Parameters params = getParams();
         if (params != null) {
-            return params.getBoolean("aggressivelyPreventCycles", true);
+            return params.getBoolean("MeekPreventCycles", true);
         }
         return false;
     }

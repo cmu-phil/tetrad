@@ -83,7 +83,7 @@ public final class VcPcAlt implements IGraphSearch {
 
     private Set<Edge> definitelyNonadjacencies;
 
-    private boolean aggressivelyPreventCycles;
+    private boolean meekPreventCycles;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -114,15 +114,15 @@ public final class VcPcAlt implements IGraphSearch {
     /**
      * @return true just in case edges will not be added if they would create cycles.
      */
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+    public boolean isMeekPreventCycles() {
+        return this.meekPreventCycles;
     }
 
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
@@ -236,7 +236,7 @@ public final class VcPcAlt implements IGraphSearch {
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
             MeekRules meekRules = new MeekRules();
 
-            meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+            meekRules.setMeekPreventCycles(this.meekPreventCycles);
             meekRules.setKnowledge(this.knowledge);
 
             meekRules.orientImplied(this.graph);

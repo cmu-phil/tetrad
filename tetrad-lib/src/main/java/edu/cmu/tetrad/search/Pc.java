@@ -70,12 +70,13 @@ public class Pc implements IGraphSearch {
     private int depth = 1000;
     private Graph graph;
     private long elapsedTime;
-    private boolean aggressivelyPreventCycles;
+    private boolean meekPreventCycles;
     private final TetradLogger logger = TetradLogger.getInstance();
     private int numIndependenceTests;
     private boolean verbose = false;
-    private boolean stable = false;
-    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
+    private boolean stable = true;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+    private boolean useMaxPHeuristic = true;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -162,7 +163,7 @@ public class Pc implements IGraphSearch {
         PcCommon search = new PcCommon(independenceTest);
         search.setDepth(depth);
         search.setHeuristic(1);
-        search.setAggressivelyPreventCycles(aggressivelyPreventCycles);
+        search.setMeekPreventCycles(meekPreventCycles);
         search.setKnowledge(this.knowledge);
 
         if (stable) {
@@ -171,7 +172,11 @@ public class Pc implements IGraphSearch {
             search.setFasType(PcCommon.FasType.REGULAR);
         }
 
-        search.setColliderDiscovery(PcCommon.ColliderDiscovery.FAS_SEPSETS);
+        if (useMaxPHeuristic) {
+            search.setColliderDiscovery(PcCommon.ColliderDiscovery.MAX_P);
+        } else {
+            search.setColliderDiscovery(PcCommon.ColliderDiscovery.FAS_SEPSETS);
+        }
         search.setConflictRule(conflictRule);
         search.setVerbose(verbose);
 
@@ -192,12 +197,12 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Sets whether cycles should be aggressively checked.
+     * Sets whether cycles should be checked.
      *
-     * @param aggressivelyPreventCycles Set to true just in case edges will not be added if they would create cycles.
+     * @param meekPreventCycles Set to true just in case edges will not be added if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
@@ -320,7 +325,7 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Sets whether the stable adjacency search should be used. Default is false.
+     * Sets whether the stable adjacency search should be used. Default is false. Default is false.
      *
      * @param stable True iff the case.
      */
@@ -329,13 +334,23 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Sets which conflict rule to use for resolving collider orientation conflicts.
+     * Sets which conflict rule to use for resolving collider orientation conflicts. Default is
+     * ConflictRule.PRIORITIZE_EXISTING.
      *
      * @param conflictRule The rule.
      * @see edu.cmu.tetrad.search.utils.PcCommon.ConflictRule
      */
     public void setConflictRule(PcCommon.ConflictRule conflictRule) {
         this.conflictRule = conflictRule;
+    }
+
+    /**
+     * Sets whether the max-p heuristic should be used for collider discovery. Default is true.
+     *
+     * @param useMaxPHeuristic True if so.
+     */
+    public void setUseMaxPHeuristic(boolean useMaxPHeuristic) {
+        this.useMaxPHeuristic = useMaxPHeuristic;
     }
 }
 

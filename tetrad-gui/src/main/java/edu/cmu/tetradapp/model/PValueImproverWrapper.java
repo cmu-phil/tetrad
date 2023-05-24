@@ -285,8 +285,8 @@ public class PValueImproverWrapper extends AbstractAlgorithmRunner {
         this.algorithmType = algorithmType;
     }
 
-    private boolean isAggressivelyPreventCycles() {
-        return this.params.getBoolean("aggressivelyPreventCycles", false);
+    private boolean isMeekPreventCycles() {
+        return this.params.getBoolean("MeekPreventCycles", false);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {

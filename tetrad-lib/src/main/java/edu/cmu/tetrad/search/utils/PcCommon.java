@@ -83,7 +83,7 @@ public final class PcCommon implements IGraphSearch {
     private Set<Triple> colliderTriples;
     private Set<Triple> noncolliderTriples;
     private Set<Triple> ambiguousTriples;
-    private boolean aggressivelyPreventCycles;
+    private boolean meekPreventCycles;
     private SepsetMap sepsets;
     private boolean verbose = false;
     private boolean useHeuristic = false;
@@ -137,8 +137,8 @@ public final class PcCommon implements IGraphSearch {
     /**
      * @return true just in case edges will not be added if they would create cycles.
      */
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+    public boolean isMeekPreventCycles() {
+        return this.meekPreventCycles;
     }
 
     //==============================PUBLIC METHODS========================//
@@ -240,7 +240,7 @@ public final class PcCommon implements IGraphSearch {
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(this.knowledge);
         meekRules.setVerbose(verbose);
-        meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+        meekRules.setMeekPreventCycles(this.meekPreventCycles);
         meekRules.orientImplied(this.graph);
 
         long endTime = MillisecondTimes.timeMillis();
@@ -258,8 +258,8 @@ public final class PcCommon implements IGraphSearch {
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**

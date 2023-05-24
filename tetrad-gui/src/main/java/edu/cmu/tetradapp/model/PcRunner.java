@@ -119,7 +119,7 @@ public class PcRunner extends AbstractAlgorithmRunner
 
     public MeekRules getMeekRules() {
         MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        rules.setMeekPreventCycles(this.isMeekPreventCycles());
         rules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
         return rules;
     }
@@ -137,7 +137,7 @@ public class PcRunner extends AbstractAlgorithmRunner
         Graph graph;
         Pc pc = new Pc(getIndependenceTest());
         pc.setKnowledge(knowledge);
-        pc.setAggressivelyPreventCycles(isAggressivelyPreventCycles());
+        pc.setMeekPreventCycles(isMeekPreventCycles());
         pc.setDepth(depth);
         graph = pc.search();
 
@@ -206,8 +206,8 @@ public class PcRunner extends AbstractAlgorithmRunner
 
     //========================== Private Methods ===============================//
 
-    private boolean isAggressivelyPreventCycles() {
-        return getParams().getBoolean("aggressivelyPreventCycles", false);
+    private boolean isMeekPreventCycles() {
+        return getParams().getBoolean("MeekPreventCycles", false);
     }
 
     private void setPcFields(Pc pc) {

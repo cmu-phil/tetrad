@@ -175,7 +175,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
         VcPcFast fvcpc = new VcPcFast(getIndependenceTest());
         fvcpc.setKnowledge(knowledge);
-        fvcpc.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        fvcpc.setMeekPreventCycles(this.isMeekPreventCycles());
         fvcpc.setDepth(getParams().getInt("depth", -1));
         if (this.independenceFactsModel != null) {
             fvcpc.setFacts(this.independenceFactsModel.getFacts());
@@ -254,7 +254,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
     public MeekRules getMeekRules() {
         MeekRules meekRules = new MeekRules();
-        meekRules.setAggressivelyPreventCycles(this.isAggressivelyPreventCycles());
+        meekRules.setMeekPreventCycles(this.isMeekPreventCycles());
         meekRules.setKnowledge((Knowledge) getParams().get("knowledge", new Knowledge()));
         return meekRules;
     }
@@ -266,9 +266,9 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
     //========================== Private Methods ===============================//
 
-    private boolean isAggressivelyPreventCycles() {
+    private boolean isMeekPreventCycles() {
         Parameters params = getParams();
-        return params instanceof Parameters && params.getBoolean("aggressivelyPreventCycles", false);
+        return params instanceof Parameters && params.getBoolean("MeekPreventCycles", false);
     }
 
     private void setVcpcFastFields(VcPcFast fvcpc) {

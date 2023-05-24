@@ -84,10 +84,10 @@ public class Kpc implements IGraphSearch {
     private long elapsedTime;
 
     /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
+     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large
      * graphs).
      */
-    private boolean aggressivelyPreventCycles;
+    private boolean meekPreventCycles;
 
     /**
      * The logger to use.
@@ -137,15 +137,15 @@ public class Kpc implements IGraphSearch {
     /**
      * @return true iff edges will not be added if they would create cycles.
      */
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+    public boolean isMeekPreventCycles() {
+        return this.meekPreventCycles;
     }
 
     /**
-     * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
+     * @param meekPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
@@ -262,7 +262,7 @@ public class Kpc implements IGraphSearch {
         GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
         GraphSearchUtils.orientCollidersUsingSepsets(this.sepset, this.knowledge, this.graph, this.verbose, true);
         MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+        rules.setMeekPreventCycles(this.meekPreventCycles);
         rules.setKnowledge(this.knowledge);
         rules.orientImplied(this.graph);
 
