@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -83,7 +84,7 @@ public final class Fci implements IGraphSearch {
     private long elapsedTime;
     private final TetradLogger logger = TetradLogger.getInstance();
     private boolean verbose;
-    private int heuristic;
+    private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
     private boolean stable;
     private boolean doDiscriminatingPathRule = true;
 
@@ -148,10 +149,10 @@ public final class Fci implements IGraphSearch {
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
-        fas.setHeuristic(this.heuristic);
+        fas.setPcHeuristicType(this.heuristic);
         fas.setVerbose(this.verbose);
         fas.setStable(this.stable);
-        fas.setHeuristic(this.heuristic);
+        fas.setPcHeuristicType(this.heuristic);
 
         //The PAG being constructed.
         Graph graph = fas.search();
@@ -299,12 +300,12 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets which PC heuristic should be used in the intitial adjacency search.
+     * Sets which PC heuristic type should be used in the intitial adjacency search.
      *
-     * @param heuristic The neuristic option.
-     * @see Pc
+     * @param heuristic The heuristic type.
+     * @see edu.cmu.tetrad.search.utils.PcCommon.PcHeuristicType
      */
-    public void setHeuristic(int heuristic) {
+    public void setPcHeuristicType(PcCommon.PcHeuristicType heuristic) {
         this.heuristic = heuristic;
     }
 

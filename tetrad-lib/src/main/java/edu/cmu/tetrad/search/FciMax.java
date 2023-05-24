@@ -24,10 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.search.utils.SepsetsPossibleDsep;
-import edu.cmu.tetrad.search.utils.SepsetsSet;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.*;
 
 import java.util.*;
@@ -58,7 +55,6 @@ import java.util.concurrent.RecursiveTask;
  * @author josephramsey
  * @see Fci
  * @see Fas
- * @see PcMax
  * @see FciOrient
  * @see Knowledge
  */
@@ -75,17 +71,12 @@ public final class FciMax implements IGraphSearch {
     private Knowledge knowledge = new Knowledge();
 
     /**
-     * The variables to search over (optional)
-     */
-    private final List<Node> variables = new ArrayList<>();
-
-    /**
      * The test to use for the search.
      */
     private final IndependenceTest independenceTest;
 
     /**
-     * flag for complete rule set, true if should use complete rule set, false otherwise.
+     * Glag for complete rule set, true if it should use complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed = true;
 
@@ -122,7 +113,7 @@ public final class FciMax implements IGraphSearch {
     /**
      * FAS heuristic
      */
-    private int heuristic;
+    private PcCommon.PcHeuristicType pcHeuristicType;
 
     /**
      * FAS stable option.
@@ -141,41 +132,6 @@ public final class FciMax implements IGraphSearch {
         }
 
         this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param independenceTest The test to use for oracle conditional independence information.
-     * @param searchVars       A specific list of variables to search over.
-     */
-    public FciMax(IndependenceTest independenceTest, List<Node> searchVars) {
-        if (independenceTest == null) {
-            throw new NullPointerException();
-        }
-
-        this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
-
-        Set<Node> remVars = new HashSet<>();
-        for (Node node1 : this.variables) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            boolean search = false;
-            for (Node node2 : searchVars) {
-                if (node1.getName().equals(node2.getName())) {
-                    search = true;
-                }
-            }
-            if (!search) {
-                remVars.add(node1);
-            }
-        }
-
-        this.variables.removeAll(remVars);
     }
 
     //========================PUBLIC METHODS==========================//
@@ -194,19 +150,16 @@ public final class FciMax implements IGraphSearch {
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
-        fas.setHeuristic(this.heuristic);
+        fas.setPcHeuristicType(this.pcHeuristicType);
         fas.setVerbose(this.verbose);
         fas.setStable(this.stable);
-        fas.setHeuristic(this.heuristic);
+        fas.setPcHeuristicType(this.pcHeuristicType);
 
         //The PAG being constructed.
         Graph graph = fas.search();
         this.sepsets = fas.getSepsets();
 
         graph.reorientAllWith(Endpoint.CIRCLE);
-
-        SepsetsPossibleDsep sp = new SepsetsPossibleDsep(graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
-        sp.setVerbose(this.verbose);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
@@ -347,11 +300,11 @@ public final class FciMax implements IGraphSearch {
     /**
      * Sets the FAS heuristic from PC used in search.
      *
-     * @param heuristic This heuristic.
+     * @param pcHeuristicType This heuristic.
      * @see Pc
      */
-    public void setHeuristic(int heuristic) {
-        this.heuristic = heuristic;
+    public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristicType) {
+        this.pcHeuristicType = pcHeuristicType;
     }
 
     /**

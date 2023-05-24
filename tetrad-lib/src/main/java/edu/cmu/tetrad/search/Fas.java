@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -98,7 +99,7 @@ public class Fas implements IFas {
     /**
      * Which heuristic to use to fix variable order (1, 2, 3, or 0 = none).
      */
-    private int heuristic = 1;
+    private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
 
     /**
      * FAS-Stable.
@@ -164,7 +165,7 @@ public class Fas implements IFas {
         List<Edge> edges = new ArrayList<>();
         Map<Edge, Double> scores = new HashMap<>();
 
-        if (this.heuristic == 1) {
+        if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_1) {
             Collections.sort(nodes);
         }
 
@@ -179,7 +180,7 @@ public class Fas implements IFas {
             scores.put(edge, this.test.getScore());
         }
 
-        if (this.heuristic == 2 || this.heuristic == 3) {
+        if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_2 || this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {
             edges.sort(Comparator.comparing(scores::get));
         }
 
@@ -227,7 +228,7 @@ public class Fas implements IFas {
             }
         }
 
-        // The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
+        // The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node
         // x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
         Graph graph = new EdgeListGraph(nodes);
 
@@ -277,7 +278,7 @@ public class Fas implements IFas {
     }
 
     /**
-     * Returns the nubmer of independence tests that were done.
+     * Returns the number of independence tests that were done.
      *
      * @return This number.
      */
@@ -345,16 +346,16 @@ public class Fas implements IFas {
     }
 
     /**
-     * Sets the heuristic to use to fix variable order (1, 2, 3, or 0 = none).
-     *
-     * @param heuristic This heuristic.
+     * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search).
+     *                    Default is PcHeuristicType.NONE.
+     * @see PcCommon.PcHeuristicType
      */
-    public void setHeuristic(int heuristic) {
-        this.heuristic = heuristic;
+    public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristic) {
+        this.heuristic = pcHeuristic;
     }
 
     /**
-     * Sets whether the stable algorithm shoudl be used.
+     * Sets whether the stable algorithm should be used.
      *
      * @param stable True iff the case.
      */
@@ -406,7 +407,7 @@ public class Fas implements IFas {
         List<Node> _adjx = new ArrayList<>(adjacencies.get(x));
         _adjx.remove(y);
 
-        if (this.heuristic == 1 || this.heuristic == 2) {
+        if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_1 || this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_2) {
             Collections.sort(_adjx);
         }
 
@@ -419,7 +420,7 @@ public class Fas implements IFas {
             scores2.put(node, _score);
         }
 
-        if (this.heuristic == 3) {
+        if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {
             ppx.sort(Comparator.comparing(scores2::get));
             Collections.reverse(ppx);
         }

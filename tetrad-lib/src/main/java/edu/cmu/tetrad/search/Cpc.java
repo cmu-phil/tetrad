@@ -55,8 +55,10 @@ import java.util.Set;
  * ambiguous triple whether it should be a collider or a noncollider and then run the Meek rules given the result of
  * these decisions.</p>
  *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * <p>See setter methods for "knobs" you can turn to control the output of PC and their defaults.</p> *
+ *
+ * <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.</p>
  *
  * @author josephramsey (this version).
  * @see Pc
@@ -283,8 +285,8 @@ public final class Cpc implements IGraphSearch {
     }
 
     /**
-     * <p>Sets whether the stable adjacency search should be used. Default is false. Default is false. See the following
-     * reference for this:</p>
+     * <p>Sets whether the stable adjacency search should be used. Default is false. Default is false. See the
+     * following reference for this:</p>
      *
      * <p>Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J. Mach.
      * Learn. Res., 15(1), 3741-3782.</p>

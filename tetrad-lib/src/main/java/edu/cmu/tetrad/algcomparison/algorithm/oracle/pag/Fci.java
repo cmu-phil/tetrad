@@ -13,6 +13,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -63,6 +64,25 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
                 knowledge = timeSeries.getKnowledge();
             }
 
+            PcCommon.PcHeuristicType pcHeuristicType;
+
+            switch (parameters.getInt(Params.PC_HEURISTIC)) {
+                case 0:
+                    pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+                    break;
+                case 1:
+                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
+                    break;
+                case 2:
+                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_2;
+                    break;
+                case 3:
+                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_3;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+            }
+
             edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(this.test.getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(this.knowledge);
@@ -71,7 +91,7 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setHeuristic(parameters.getInt(Params.PC_HEURISTIC));
+            search.setPcHeuristicType(pcHeuristicType);
             search.setStable(parameters.getBoolean(Params.STABLE_FAS));
 
             return search.search();
@@ -128,7 +148,7 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     @Override

@@ -95,7 +95,6 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-
             }
 
             edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));

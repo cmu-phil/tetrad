@@ -43,7 +43,7 @@ import java.util.Set;
  */
 public final class PcCommon implements IGraphSearch {
 
-    public static enum PcHeuristicType{NONE, HEURISTIC_1, HEURISTIC_2, HEURISTIC_3}
+    public enum PcHeuristicType{NONE, HEURISTIC_1, HEURISTIC_2, HEURISTIC_3}
 
     /**
      * Gives the type of FAS used, regular or stable.
@@ -74,7 +74,6 @@ public final class PcCommon implements IGraphSearch {
 
     private final IndependenceTest independenceTest;
     private final TetradLogger logger = TetradLogger.getInstance();
-    private int pcHeuristic = 0;
     private Knowledge knowledge = new Knowledge();
     private int depth = 1000;
     private Graph graph;
@@ -185,10 +184,10 @@ public final class PcCommon implements IGraphSearch {
 
         if (this.fasType == FasType.REGULAR) {
             fas = new Fas(getIndependenceTest());
-            fas.setHeuristic(this.pcHeuristic);
+            fas.setPcHeuristicType(this.pcHeuristicType);
         } else {
             fas = new Fas(getIndependenceTest());
-            fas.setHeuristic(this.pcHeuristic);
+            fas.setPcHeuristicType(this.pcHeuristicType);
             fas.setStable(true);
         }
 
