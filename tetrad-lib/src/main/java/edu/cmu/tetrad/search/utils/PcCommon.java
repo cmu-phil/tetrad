@@ -226,10 +226,6 @@ public final class PcCommon implements IGraphSearch {
             orientCollidersMaxP.setDepth(this.depth);
             orientCollidersMaxP.setKnowledge(this.knowledge);
             orientCollidersMaxP.orient(this.graph);
-
-            if (this.graph.paths().existsDirectedCycle())
-                throw new IllegalArgumentException("Graph is cyclic after maxp!");
-
         } else if (this.colliderDiscovery == ColliderDiscovery.CONSERVATIVE) {
             if (this.verbose) {
                 System.out.println("CPC orientation...");
@@ -239,9 +235,6 @@ public final class PcCommon implements IGraphSearch {
         }
 
         this.graph = GraphUtils.replaceNodes(this.graph, nodes);
-
-        if (this.graph.paths().existsDirectedCycle())
-            throw new IllegalArgumentException("Graph is cyclic before orientation!");
 
         MeekRules meekRules = new MeekRules();
         meekRules.setKnowledge(this.knowledge);

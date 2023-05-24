@@ -43,7 +43,6 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-
     public FciMax() {
     }
 
