@@ -43,6 +43,12 @@ import java.util.Set;
  */
 public final class PcCommon implements IGraphSearch {
 
+    /**
+     * <p>NONE = no heuristic, PC-1 = sort nodes alphabetically; PC-1 = sort edges by p-value; PC-3 = additionally sort
+     * edges in reverse order using p-values of associated independence facts. See this reference:</p>
+     *
+     * <p>Spirtes, P., Glymour, C. N., & Scheines, R. (2000). Causation, prediction, and search. MIT press.</p>
+     */
     public enum PcHeuristicType {NONE, HEURISTIC_1, HEURISTIC_2, HEURISTIC_3}
 
     /**
@@ -55,8 +61,16 @@ public final class PcCommon implements IGraphSearch {
     public enum FasType {REGULAR, STABLE}
 
     /**
-     * Give the options for the collider discovery algroithm to use--FAS with sepsets reasoning, FAS with conservative
-     * reasoning, or FAS with Max P reasoning.
+     * <p>Give the options for the collider discovery algroithm to use--FAS with sepsets reasoning, FAS with conservative
+     * reasoning, or FAS with Max P reasoning. See these respective references:</p>
+     *
+     * <p>Spirtes, P., Glymour, C. N., & Scheines, R. (2000). Causation, prediction, and search. MIT press.</p>
+
+     * <p>Ramsey, J., Zhang, J., &amp; Spirtes, P. L. (2012). Adjacency-faithfulness and conservative causal inference.
+     * arXiv preprint arXiv:1206.6843.</p>
+     *
+     * <p>Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm by maximizing p-value. arXiv
+     * preprint arXiv:1610.00378.</p>
      *
      * @see Fas
      * @see Cpc
