@@ -46,7 +46,7 @@ public final class MaxP {
     private Knowledge knowledge = new Knowledge();
     private boolean useHeuristic;
     private int maxPathLength = 3;
-    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
+    private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
 
     /**
      * Constructor.

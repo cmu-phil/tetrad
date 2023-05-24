@@ -119,7 +119,6 @@ public final class Params {
     public static final String MAX_INDEGREE = "maxIndegree";
     public static final String MAX_ITERATIONS = "maxIterations";
     public static final String MAX_OUTDEGREE = "maxOutdegree";
-    public static final String MAX_P_ORIENTATION_MAX_PATH_LENGTH = "maxPOrientationMaxPathLength";
     public static final String MAX_PATH_LENGTH = "maxPathLength";
     public static final String MAXIT = "maxit";
     public static final String MEAN_HIGH = "meanHigh";
@@ -262,7 +261,6 @@ public final class Params {
             Params.KERNEL_MULTIPLIER, Params.KERNEL_REGRESSION_SAMPLE_SIZE, Params.KERNEL_TYPE, Params.KERNEL_WIDTH,
             Params.LATENT_MEASURED_IMPURE_PARENTS, Params.LOWER_BOUND, Params.MAX_CATEGORIES, Params.MAX_DEGREE,
             Params.MAX_DISTINCT_VALUES_DISCRETE, Params.MAX_INDEGREE, Params.MAX_ITERATIONS, Params.MAX_OUTDEGREE,
-            Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH, Params.MAX_PATH_LENGTH, Params.MAXIT, Params.MEAN_HIGH,
             Params.MEAN_LOW, Params.MEASURED_MEASURED_IMPURE_ASSOCIATIONS, Params.MEASURED_MEASURED_IMPURE_PARENTS,
             Params.MEASUREMENT_MODEL_DEGREE, Params.MEASUREMENT_VARIANCE, Params.MGM_PARAM1, Params.MGM_PARAM2, Params.MGM_PARAM3,
             Params.MIN_CATEGORIES, Params.NO_RANDOMLY_DETERMINED_INDEPENDENCE, Params.NUM_BASIS_FUNCTIONS,

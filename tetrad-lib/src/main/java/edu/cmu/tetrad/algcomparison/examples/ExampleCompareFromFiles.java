@@ -25,10 +25,10 @@ import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Cpc;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Pc;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.PcMax;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 
 /**
  * An example script to load in data sets and graphs from files and analyze them. The files loaded must be in the same
@@ -48,6 +48,7 @@ public class ExampleCompareFromFiles {
         // we're loading from file here.
         parameters.set("alpha", 1e-4);
         parameters.set("numRuns", 10);
+        parameters.set(Params.USE_MAX_P_HEURISTIC, true);
 
         Statistics statistics = new Statistics();
 
@@ -73,7 +74,7 @@ public class ExampleCompareFromFiles {
 
         algorithms.add(new Pc(new FisherZ()));
         algorithms.add(new Cpc(new FisherZ()));
-        algorithms.add(new PcMax(new FisherZ()));
+        algorithms.add(new Pc(new FisherZ()));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(false);
