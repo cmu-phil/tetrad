@@ -4782,8 +4782,7 @@ tabs will not appear.</p> -->
 
         <h3 class="parameter_description"
             id="conflictRule">conflictRule</h3>
-        <ul
-                class="parameter_description_list">
+        <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="conflictRule_short_desc">Collider conflicts: 1 = Prioritize existing
                 colliders, 2 =
@@ -4794,7 +4793,7 @@ tabs will not appear.</p> -->
         should be prioritized, ignoring subsequent conflicting
         information.</span></li>
             <li>Default Value: <span
-                    id="conflictRule_default_value">3</span></li>
+                    id="conflictRule_default_value">1</span></li>
             <li>Lower Bound: <span
                     id="conflictRule_lower_bound">1</span></li>
             <li>Upper Bound: <span
@@ -4805,8 +4804,7 @@ tabs will not appear.</p> -->
 
         <h3 class="parameter_description"
             id="meekPreventCycles">meekPreventCycles</h3>
-        <ul
-                class="parameter_description_list">
+        <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="meekPreventCycles_short_desc">
                     Prevent cycles in the application of the Meek rules</span></li>
@@ -4815,7 +4813,7 @@ tabs will not appear.</p> -->
             	cycles; this does a cycle check before each orientation to
             	prevent this.</span></li>
             <li>Default Value: <span
-                    id="meekPreventCycles_default_value">true</span></li>
+                    id="meekPreventCycles_default_value">false</span></li>
             <li>Lower Bound: <span
                     id="meekPreventCycles_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -8095,7 +8093,7 @@ tabs will not appear.</p> -->
         adjacency search is used, which for k > 0 fixes the graph for depth k
         + 1 to that of the previous depth k. </span></li>
             <li>Default Value:
-                <span id="stableFAS_default_value">true</span></li>
+                <span id="stableFAS_default_value">false</span></li>
             <li>Lower Bound:
                 <span id="stableFAS_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -8538,7 +8536,7 @@ tabs will not appear.</p> -->
                     X*-*Y*-*Z by considering whether Y is in the subset S of variables
                     adjacent to X or Z that maximizes the p-value of X _||_ Y | S.</span></li>
             <li>Default Value: <span
-                    id="useMaxPHeuristic_default_value">true</span></li>
+                    id="useMaxPHeuristic_default_value">false</span></li>
             <li>Lower Bound: <span
                     id="useMaxPHeuristic_lower_bound"></span></li>
             <li>Upper
@@ -9164,6 +9162,7 @@ ga.q = [];
 ga.l = +new Date;
 ga('create', 'UA-XXXXX-Y', 'auto');
 ga('send', 'pageview')
+
 
 
 

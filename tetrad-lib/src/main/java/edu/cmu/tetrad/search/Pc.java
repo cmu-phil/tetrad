@@ -75,7 +75,7 @@ public class Pc implements IGraphSearch {
     private boolean verbose = false;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
     private boolean stable = false;
-    private boolean meekPreventCycles;
+    private boolean meekPreventCycles = false;
     private boolean useMaxPHeuristic = false;
 
     //=============================CONSTRUCTORS==========================//
