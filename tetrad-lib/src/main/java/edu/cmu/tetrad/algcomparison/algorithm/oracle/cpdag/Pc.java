@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PC.
+ * Peter/Clark algorithm (PC).
  *
  * @author josephramsey
  */
@@ -36,14 +36,10 @@ import java.util.List;
 @Bootstrapping
 public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs {
-
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
-
-    private Graph externalGraph = null;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
-
 
     public Pc() {
     }
@@ -67,8 +63,6 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
             PcCommon.ConflictRule conflictRule;
 
-            // >Collider conflicts: 1 = Overwrite, 2 =
-            //        Orient bidirected, 3 = Prioritize existing colliders
             switch (parameters.getInt(Params.CONFLICT_RULE)) {
                 case 1:
                     conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
@@ -114,7 +108,6 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             search.setStable(parameters.getBoolean(Params.STABLE_FAS));
             search.setConflictRule(conflictRule);
             return search.search();
-//            }
         } else {
             Pc pcAll = new Pc(this.test);
 
@@ -177,10 +170,6 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
     }
 
     @Override

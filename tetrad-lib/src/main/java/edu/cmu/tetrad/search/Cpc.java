@@ -283,9 +283,13 @@ public final class Cpc implements IGraphSearch {
     }
 
     /**
-     * Sets whether the stable FAS search should be used.
+     * <p>Sets whether the stable adjacency search should be used. Default is false. Default is false. See the following
+     * reference for this:</p>
      *
-     * @param stable True if so.
+     * <p>Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J. Mach.
+     * Learn. Res., 15(1), 3741-3782.</p>
+     *
+     * @param stable True iff the case.
      */
     public void setStable(boolean stable) {
         this.stable = stable;

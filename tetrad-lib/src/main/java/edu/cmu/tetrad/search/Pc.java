@@ -38,11 +38,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * <p>Implements the PC (Peter and Clark) algorithm, which uses conditional
- * independence testing as an oracle to first of all remove extraneous edges from a complete graph, then to orient the
- * unshielded colliders in the graph, and finally to make any additional orientations that are capable of avoiding
- * additional unshielded colliders in the graph. An version of this algorithm was proposed earlier than this, but the
- * standard reference for the algorithm is in Chapter 6 of the following book:</p>
+ * <p>Implements the Peter/Clark (PC) algorithm, which uses conditional independence testing as an oracle to first of
+ * all remove extraneous edges from a complete graph, then to orient the unshielded colliders in the graph, and finally
+ * to make any additional orientations that are capable of avoiding additional unshielded colliders in the graph. An
+ * version of this algorithm was proposed earlier than this, but the standard reference for the algorithm is in Chapter
+ * 6 of the following book:</p>
  *
  * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
  * prediction, and search. MIT press.</p>
@@ -52,6 +52,9 @@ import java.util.Set;
  *
  * <p>Meek, C. (1995), "Causal inference and causal explanation with background
  * knowledge."</p>
+ *
+ * <p>See setter methods for "knobs" you can turn to control the output of PC and
+ * their defaults.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -328,7 +331,11 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Sets whether the stable adjacency search should be used. Default is false. Default is false.
+     * <p>Sets whether the stable adjacency search should be used. Default is false. Default is false. See the
+     * following reference for this:</p>
+     *
+     * <p>Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J. Mach.
+     * Learn. Res., 15(1), 3741-3782.</p>
      *
      * @param stable True iff the case.
      */
@@ -348,7 +355,11 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Sets whether the max-p heuristic should be used for collider discovery. Default is true.
+     * <p>Sets whether the max-p heuristic should be used for collider discovery. Default is true. See the following
+     * reference for this:</p>
+     *
+     * <p>Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm by maximizing p-value. arXiv
+     * preprint arXiv:1610.00378.</p>
      *
      * @param useMaxPHeuristic True if so.
      */
@@ -357,7 +368,7 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Sets the PC heuristic type. Default = NONE.
+     * Sets the PC heuristic type. Default = PcHeuristicType.NONE.
      *
      * @param pcHeuristicType The type.
      * @see edu.cmu.tetrad.search.utils.PcCommon.PcHeuristicType

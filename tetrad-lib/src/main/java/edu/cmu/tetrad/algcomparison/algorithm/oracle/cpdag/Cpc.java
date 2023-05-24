@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * CPC.
+ * Conservative PC (CPC).
  *
  * @author josephramsey
  */
