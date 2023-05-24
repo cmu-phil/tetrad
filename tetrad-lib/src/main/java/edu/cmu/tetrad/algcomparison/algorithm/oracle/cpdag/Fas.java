@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FAS.
+ * Fast Adjacency Search (FAS)--i.e., the PC adjacency step, which is used in many algorithms.
  *
  * @author josephramsey
  */
@@ -62,10 +62,10 @@ public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
                     pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
                     break;
                 case 2:
-                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_2;
+                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_2;
                     break;
                 case 3:
-                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_3;
+                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_3;
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
