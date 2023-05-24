@@ -43,13 +43,14 @@ import java.util.Set;
  */
 public final class PcCommon implements IGraphSearch {
 
-    public enum PcHeuristicType{NONE, HEURISTIC_1, HEURISTIC_2, HEURISTIC_3}
+    public enum PcHeuristicType {NONE, HEURISTIC_1, HEURISTIC_2, HEURISTIC_3}
 
     /**
      * Gives the type of FAS used, regular or stable.
      *
      * @see Pc
      * @see Cpc
+     * @see FasType
      */
     public enum FasType {REGULAR, STABLE}
 
@@ -59,6 +60,7 @@ public final class PcCommon implements IGraphSearch {
      *
      * @see Fas
      * @see Cpc
+     * @see ColliderDiscovery
      */
     public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
 
@@ -69,6 +71,7 @@ public final class PcCommon implements IGraphSearch {
      *
      * @see Pc
      * @see Cpc
+     * @see ConflictRule
      */
     public enum ConflictRule {PRIORITIZE_EXISTING, ORIENT_BIDIRECTED, OVERWRITE_EXISTING}
 
@@ -83,7 +86,6 @@ public final class PcCommon implements IGraphSearch {
     private Set<Triple> ambiguousTriples;
     private boolean meekPreventCycles;
     private boolean verbose = false;
-    private boolean useHeuristic = false;
     private int maxPathLength = 3;
     private FasType fasType = FasType.REGULAR;
     private ColliderDiscovery colliderDiscovery = ColliderDiscovery.FAS_SEPSETS;
@@ -93,6 +95,8 @@ public final class PcCommon implements IGraphSearch {
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
+     *
+     * @param independenceTest The independence test to use.
      */
     public PcCommon(IndependenceTest independenceTest) {
         if (independenceTest == null) {
@@ -100,13 +104,6 @@ public final class PcCommon implements IGraphSearch {
         }
 
         this.independenceTest = independenceTest;
-    }
-
-    /**
-     * @param useHeuristic Whether the heuristic should be used for max P collider orientation.
-     */
-    public void setUseHeuristic(boolean useHeuristic) {
-        this.useHeuristic = useHeuristic;
     }
 
     /**
@@ -124,17 +121,13 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search).
-     *                    Default is PcHeuristicType.NONE.
+     * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search). Default is
+     *                    PcHeuristicType.NONE.
      * @see PcHeuristicType
      */
     public void setPcHeuristicType(PcHeuristicType pcHeuristic) {
         this.pcHeuristicType = pcHeuristic;
     }
-
-
-
-    //=============================CONSTRUCTORS==========================//
 
     /**
      * @return true just in case edges will not be added if they would create cycles.
@@ -142,8 +135,6 @@ public final class PcCommon implements IGraphSearch {
     public boolean isMeekPreventCycles() {
         return this.meekPreventCycles;
     }
-
-    //==============================PUBLIC METHODS========================//
 
     /**
      * Runs the search and returns the search graph.
@@ -217,7 +208,6 @@ public final class PcCommon implements IGraphSearch {
 
             MaxP orientCollidersMaxP = new MaxP(this.independenceTest);
             orientCollidersMaxP.setConflictRule(this.conflictRule);
-            orientCollidersMaxP.setUseHeuristic(this.useHeuristic);
             orientCollidersMaxP.setMaxPathLength(this.maxPathLength);
             orientCollidersMaxP.setDepth(this.depth);
             orientCollidersMaxP.setKnowledge(this.knowledge);
@@ -259,6 +249,8 @@ public final class PcCommon implements IGraphSearch {
 
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
+     *
+     * @param meekPreventCycles True just in case edges will not be added if they would create cycles.
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;
@@ -284,14 +276,14 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * @return the elapsed time of search in milliseconds, after <code>search()</code> has been run.
+     * @return The elapsed time of search in milliseconds, after <code>search()</code> has been run.
      */
     public long getElapsedTime() {
         return this.elapsedTime;
     }
 
     /**
-     * @return the knowledge specification used in the search. Non-null.
+     * @return The knowledge specification used in the search. Non-null.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -313,7 +305,7 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * @return the depth of the search--that is, the maximum number of variables conditioned on in any conditional
+     * @return The depth of the search--that is, the maximum number of variables conditioned on in any conditional
      * independence test.
      */
     public int getDepth() {
@@ -323,6 +315,8 @@ public final class PcCommon implements IGraphSearch {
     /**
      * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
      * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
+     *
+     * @param depth The depth.
      */
     public void setDepth(int depth) {
         if (depth < -1) {
@@ -347,7 +341,7 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * @return the set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
+     * @return The set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
     public Set<Triple> getAmbiguousTriples() {
@@ -355,7 +349,7 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * @return the set of collider triples found during the most recent run of the algorithm. Non-null after a call to
+     * @return The set of collider triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
     public Set<Triple> getColliderTriples() {
@@ -363,7 +357,7 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * @return the set of noncollider triples found during the most recent run of the algorithm. Non-null after a call
+     * @return The set of noncollider triples found during the most recent run of the algorithm. Non-null after a call
      * to <code>search()</code>.
      */
     public Set<Triple> getNoncolliderTriples() {
@@ -371,7 +365,7 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
-     * Returns the edges in the search graph.
+     * Returns The edges in the search graph.
      *
      * @return These edges.
      */
