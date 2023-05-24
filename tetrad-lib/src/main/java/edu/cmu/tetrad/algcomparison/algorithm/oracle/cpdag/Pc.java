@@ -78,30 +78,30 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
             }
 
-            PcCommon.PcHeuristicType pcHeuristicType;
-
-            switch (parameters.getInt(Params.PC_HEURISTIC)) {
-                case 0:
-                    pcHeuristicType = PcCommon.PcHeuristicType.NONE;
-                    break;
-                case 1:
-                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
-                    break;
-                case 2:
-                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_2;
-                    break;
-                case 3:
-                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_3;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-            }
+//            PcCommon.PcHeuristicType pcHeuristicType;
+//
+//            switch (parameters.getInt(Params.PC_HEURISTIC)) {
+//                case 0:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+//                    break;
+//                case 1:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
+//                    break;
+//                case 2:
+//                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_2;
+//                    break;
+//                case 3:
+//                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_3;
+//                    break;
+//                default:
+//                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+//            }
 
             edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
             search.setUseMaxPHeuristic(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setMeekPreventCycles(parameters.getBoolean(Params.MEEK_PREVENT_CYCLES));
-            search.setPcHeuristicType(pcHeuristicType);
+//            search.setPcHeuristicType(pcHeuristicType);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(this.knowledge);
             search.setStable(parameters.getBoolean(Params.STABLE_FAS));
@@ -144,7 +144,7 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         parameters.add(Params.USE_MAX_P_HEURISTIC);
         parameters.add(Params.CONFLICT_RULE);
         parameters.add(Params.MEEK_PREVENT_CYCLES);
-        parameters.add(Params.PC_HEURISTIC);
+//        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);
         parameters.add(Params.VERBOSE);

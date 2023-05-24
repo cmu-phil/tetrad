@@ -76,8 +76,8 @@ public final class Cpc implements IGraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
     private SepsetMap sepsets;
     private int depth = 1000;
-    private boolean stable = false;
-    private boolean meekPreventCycles = false;
+    private boolean stable = true;
+    private boolean meekPreventCycles = true;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
     private boolean verbose = false;
     private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;

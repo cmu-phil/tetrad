@@ -71,7 +71,7 @@ public class Fas implements IFas {
     private SepsetMap sepset = new SepsetMap();
     private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
     private int depth = 1000;
-    private boolean stable = false;
+    private boolean stable = true;
     private long elapsedTime = 0L;
     private PrintStream out = System.out;
     private boolean verbose = false;

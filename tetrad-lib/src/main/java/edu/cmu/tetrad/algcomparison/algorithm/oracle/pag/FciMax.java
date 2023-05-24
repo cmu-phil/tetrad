@@ -63,24 +63,24 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
                 knowledge = timeSeries.getKnowledge();
             }
 
-            PcCommon.PcHeuristicType pcHeuristicType;
-
-            switch (parameters.getInt(Params.PC_HEURISTIC)) {
-                case 0:
-                    pcHeuristicType = PcCommon.PcHeuristicType.NONE;
-                    break;
-                case 1:
-                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
-                    break;
-                case 2:
-                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_2;
-                    break;
-                case 3:
-                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_3;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-            }
+//            PcCommon.PcHeuristicType pcHeuristicType;
+//
+//            switch (parameters.getInt(Params.PC_HEURISTIC)) {
+//                case 0:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+//                    break;
+//                case 1:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
+//                    break;
+//                case 2:
+//                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_2;
+//                    break;
+//                case 3:
+//                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_3;
+//                    break;
+//                default:
+//                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+//            }
 
             edu.cmu.tetrad.search.FciMax search = new edu.cmu.tetrad.search.FciMax(this.test.getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
@@ -89,7 +89,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
-            search.setPcHeuristicType(pcHeuristicType);
+//            search.setPcHeuristicType(pcHeuristicType);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return search.search();
@@ -131,7 +131,7 @@ public class FciMax implements Algorithm, HasKnowledge, TakesIndependenceWrapper
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
         parameters.add(Params.POSSIBLE_DSEP_DONE);
-        parameters.add(Params.PC_HEURISTIC);
+//        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.TIME_LAG);
 
         parameters.add(Params.VERBOSE);

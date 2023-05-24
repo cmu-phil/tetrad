@@ -2547,6 +2547,11 @@ tabs will not appear.</p> -->
         (optionally select a test/score), confirm/change search parameters and
         finally run the search.</p>
 
+    <p>For more information that in included about the search algorithms than
+    is included in the text below, please see our
+        <a href="https://www.phil.cmu.edu/tetrad-javadocs/7.4.0/edu/cmu/tetrad/search/package-summary.html">
+        Javadocs for the Search package</a>.</p>
+
     <img alt="" src="images/search_box_1.png" width="650">
 
     <p>The search box first asks what algorithm, statistical tests and/or
@@ -4807,13 +4812,13 @@ tabs will not appear.</p> -->
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="meekPreventCycles_short_desc">
-                    Prevent cycles in the application of the Meek rules</span></li>
+                    Yes if cycles should be prevented in the application of the Meek rules</span></li>
             <li>Long Description: <span id="meekPreventCycles_long_desc">
             	It is possible due to unfaithfulness for the Meek rules to orient
             	cycles; this does a cycle check before each orientation to
             	prevent this.</span></li>
             <li>Default Value: <span
-                    id="meekPreventCycles_default_value">false</span></li>
+                    id="meekPreventCycles_default_value">true</span></li>
             <li>Lower Bound: <span
                     id="meekPreventCycles_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -5052,8 +5057,8 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="depth_short_desc">Maximum size of conditioning set (unlimited =
-        -1)</span></li>
+                    id="depth_short_desc">Maximum size of conditioning set ('depth', unlimited =-1)
+            </span></li>
             <li>Long Description: <span id="depth_long_desc">
         The depth of search for algorithms like the PC adjacency search,
         which is the maximum size of any conditioning set considered. In
@@ -5465,7 +5470,7 @@ tabs will not appear.</p> -->
             id="pcHeuristic">pcHeuristic</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="pcHeuristic_short_desc">
-                PC Heuristic: 0 = None, 1 = Heuristic 1, 2 = Heuristic 2, 3 = Heuristic 3
+                Heuristics in CPC to stabilize skeleton: 0 = None, 1 = Heuristic 1, 2 = Heuristic 2, 3 = Heuristic 3
             </span></li>
             <li>Long Description: <span
                     id="pcHeuristic_long_desc">
@@ -8080,14 +8085,16 @@ tabs will not appear.</p> -->
         <h3 class="parameter_description" id="stableFAS">stableFAS</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="stableFAS_short_desc">Yes if the 'stable' FAS should be
-        done</span></li>
+                    id="stableFAS_short_desc">
+                Yes if the Colombo et al. 'stable' FAS should be done, to
+                avoid skeleton order dependency
+            </span></li>
             <li>Long Description: <span
                     id="stableFAS_long_desc"> If Yes, the "stable" version of the PC
         adjacency search is used, which for k > 0 fixes the graph for depth k
         + 1 to that of the previous depth k. </span></li>
             <li>Default Value:
-                <span id="stableFAS_default_value">false</span></li>
+                <span id="stableFAS_default_value">true</span></li>
             <li>Lower Bound:
                 <span id="stableFAS_lower_bound"></span></li>
             <li>Upper Bound: <span
@@ -8524,7 +8531,7 @@ tabs will not appear.</p> -->
         <ul class="parameter_description_list">
             <li>Short Description: <span
                     id="useMaxPHeuristic_short_desc">Yes if the max P
-                    heuristic should be used</span></li>
+                    heuristic should be used to orient unshielded colliders</span></li>
             <li>Long Description: <span
                     id="useMaxPHeuristic_long_desc">The max P heuristic orients
                     X*-*Y*-*Z by considering whether Y is in the subset S of variables

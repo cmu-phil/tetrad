@@ -80,30 +80,30 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
             }
 
-            PcCommon.PcHeuristicType pcHeuristicType;
-
-            switch (parameters.getInt(Params.PC_HEURISTIC)) {
-                case 0:
-                    pcHeuristicType = PcCommon.PcHeuristicType.NONE;
-                    break;
-                case 1:
-                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
-                    break;
-                case 2:
-                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_2;
-                    break;
-                case 3:
-                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_3;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
-
-            }
+//            PcCommon.PcHeuristicType pcHeuristicType;
+//
+//            switch (parameters.getInt(Params.PC_HEURISTIC)) {
+//                case 0:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+//                    break;
+//                case 1:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
+//                    break;
+//                case 2:
+//                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_2;
+//                    break;
+//                case 3:
+//                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_3;
+//                    break;
+//                default:
+//                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+//
+//            }
 
             edu.cmu.tetrad.search.Cpc search = new edu.cmu.tetrad.search.Cpc(getIndependenceWrapper().getTest(dataModel, parameters));
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.meekPreventCycles(parameters.getBoolean(Params.MEEK_PREVENT_CYCLES));
-            search.setPcHeuristicType(pcHeuristicType);
+//            search.setPcHeuristicType(pcHeuristicType);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(knowledge);
             search.setConflictRule(conflictRule);
@@ -144,7 +144,7 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.CONFLICT_RULE);
         parameters.add(Params.MEEK_PREVENT_CYCLES);
-        parameters.add(Params.PC_HEURISTIC);
+//        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.DEPTH);
         parameters.add(Params.TIME_LAG);
 
