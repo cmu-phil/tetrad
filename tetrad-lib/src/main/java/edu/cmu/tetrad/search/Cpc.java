@@ -36,25 +36,24 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * <p>Implements a convervative version of PC, in which the Markov condition is assumed
- * but faithfulness is tested locally. The reference is here:</p>
+ * <p>Implements a convervative version of PC, in which the Markov condition is assumed but faithfulness is tested
+ * locally. The reference is here:</p>
  *
- * <p>Ramsey, J., Zhang, J., &amp; Spirtes, P. L. (2012). Adjacency-faithfulness and
- * conservative causal inference. arXiv preprint arXiv:1206.6843.</p>
+ * <p>Ramsey, J., Zhang, J., &amp; Spirtes, P. L. (2012). Adjacency-faithfulness and conservative causal inference.
+ * arXiv preprint arXiv:1206.6843.</p>
  *
- * <p>Conservative triple orientation is a method for orienting unshielded triples
- * X*=-*Y*-*Z as one of the following: (a) Collider, X->Y<-Z, (b) Noncollider, X-->Y-->Z, or X<-Y<-Z, or X<-Y->Z, (c)
- * ambiguous between (a) or (b). One does \ this by conditioning on subsets of adj(X) or adj(Z). One first checks
- * conditional independence of X and Z conditional on each of these subsets, then lists all of these subsets conditional
- * on which X and Z are *independent*, then looks thoough this list to see if Y is in them. If Y is in all of these
- * subset, the triple is judged to be a noncollider; if it is in none of these subsets, the triple is judged to be a
- * collider, and if it is in some of these subsets and not in others of the subsets, then it is judged to be
- * ambiguous.</p>
+ * <p>Conservative triple orientation is a method for orienting unshielded triples X*=-*Y*-*Z as one of the following:
+ * (a) Collider, X->Y<-Z, (b) Noncollider, X-->Y-->Z, or X<-Y<-Z, or X<-Y->Z, (c) ambiguous between (a) or (b). One does
+ * this by conditioning on subsets of adj(X) or adj(Z). One first checks conditional independence of X and Z conditional
+ * on each of these subsets, then lists all of these subsets conditional on which X and Z are *independent*, then looks
+ * thoough this list to see if Y is in them. If Y is in all of these subset, the triple is judged to be a noncollider;
+ * if it is in none of these subsets, the triple is judged to be a collider, and if it is in some of these subsets and
+ * not in others of the subsets, then it is judged to be ambiguous.</p>
  *
- * <p>Ambiguous triple are marked in the final graph using an underline, and the
- * final graph is called an "e-patterh", and represents a collection of CPDAGs. To find an element of this collection,
- * one first needs to choose for each ambiguous triple whether it should be a collider or a noncollider and then run the
- * Meek rules given the result of these decisions.</p>
+ * <p>Ambiguous triple are marked in the final graph using an underline, and the final graph is called an "e-pattern",
+ * and represents a collection of CPDAGs. To find an element of this collection, one first needs to choose for each
+ * ambiguous triple whether it should be a collider or a noncollider and then run the Meek rules given the result of
+ * these decisions.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -334,8 +333,6 @@ public final class Cpc implements IGraphSearch {
             TetradLogger.getInstance().log("info", "Ambiguous: " + triple);
         }
     }
-
-
 }
 
 
