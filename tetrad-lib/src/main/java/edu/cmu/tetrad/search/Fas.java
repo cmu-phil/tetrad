@@ -34,9 +34,8 @@ import java.io.PrintStream;
 import java.util.*;
 
 /**
- * <p>Implements the adjacency search of the PC algorithm (see), which is a useful algorithm
- * in many contexts, including as the first step of FCI (see). Se we call it the "Fast Adjacency Search" (FAS), to give
- * it a name.</p>
+ * <p>Implements the Fast Adjacency Search (FAS), which is the adjacency search of the PC algorithm (see). This is a
+ * useful algorithm in many contexts, including as the first step of FCI (see).</p>
  *
  * <p>The idea of FAS is that at a given stage of the search, an edge X*-*Y is removed from the
  * graph if X _||_ Y | S, where S is a subset of size d either of adj(X) or of adj(Y), where d is the depth of the
@@ -46,16 +45,16 @@ import java.util.*;
  * assumptions of the algorithm. A mapping from {x, y} to S({x, y}) is returned for edges x *-* y that have been
  * removed.</p>
  *
- * <p>Optionally uses Heuristic 3 from Causation, Prediction and Search, which (like FAS-Stable)
- * renders the output invariant to the order of the input variables (See Tsagris).</p>
+ * <p>FAS may optionally use a heuristic from Causation, Prediction and Search, which (like PC-Stable)
+ * renders the output invariant to the order of the input variables.</p>
  *
  * <p>This algorithm was described in the earlier edition of this book:</p>
  *
- * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
- * prediction, and search. MIT press.</p>
+ * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation, prediction, and search. MIT
+ * press.</p>
  *
- * <p>This class is configured to respect knowledge of forbidden and required
- * edges, including knowledge of temporal tiers.</p>
+ * <p>This class is configured to respect knowledge of forbidden and required edges, including knowledge of temporal
+ * tiers.</p>
  *
  * @author peterspirtes
  * @author clarkglymour
@@ -65,48 +64,17 @@ import java.util.*;
  * @see Knowledge
  */
 public class Fas implements IFas {
-
-    /**
-     * The independence test. This should be appropriate to the types
-     */
     private final IndependenceTest test;
-
-    /**
-     * The logger, by default the empty logger.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * Specification of which edges are forbidden or required.
-     */
     private Knowledge knowledge = new Knowledge();
-    /**
-     * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
-     * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
-     */
-    private int depth = 1000;
     private int numIndependenceTests;
-
-    /**
-     * The sepsets found during the search.
-     */
     private SepsetMap sepset = new SepsetMap();
-    /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose;
-
-    /**
-     * Which heuristic to use to fix variable order (1, 2, 3, or 0 = none).
-     */
     private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
-
-    /**
-     * FAS-Stable.
-     */
-    private boolean stable;
+    private int depth = 1000;
+    private boolean stable = false;
     private long elapsedTime = 0L;
     private PrintStream out = System.out;
+    private boolean verbose = false;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -336,8 +304,6 @@ public class Fas implements IFas {
     }
 
     /**
-     * This is not used here.
-     *
      * @param out This print stream.
      */
     @Override
@@ -346,8 +312,8 @@ public class Fas implements IFas {
     }
 
     /**
-     * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search).
-     *                    Default is PcHeuristicType.NONE.
+     * @param pcHeuristic Which PC heuristic to use (see Causation, Prediction and Search). Default is
+     *                    PcHeuristicType.NONE.
      * @see PcCommon.PcHeuristicType
      */
     public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristic) {
@@ -355,7 +321,11 @@ public class Fas implements IFas {
     }
 
     /**
-     * Sets whether the stable algorithm should be used.
+     * <p>Sets whether the stable adjacency search should be used. Default is false. Default is false. See the
+     * following reference for this:</p>
+     *
+     * <p>Colombo, D., & Maathuis, M. H. (2014). Order-independent constraint-based causal structure learning. J. Mach.
+     * Learn. Res., 15(1), 3741-3782.</p>
      *
      * @param stable True iff the case.
      */
