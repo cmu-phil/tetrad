@@ -85,7 +85,7 @@ public final class Fci implements IGraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
     private boolean verbose;
     private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
-    private boolean stable;
+    private boolean stable = true;
     private boolean doDiscriminatingPathRule = true;
 
     //============================CONSTRUCTORS============================//
@@ -152,7 +152,6 @@ public final class Fci implements IGraphSearch {
         fas.setPcHeuristicType(this.heuristic);
         fas.setVerbose(this.verbose);
         fas.setStable(this.stable);
-        fas.setPcHeuristicType(this.heuristic);
 
         //The PAG being constructed.
         Graph graph = fas.search();
