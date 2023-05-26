@@ -119,7 +119,6 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-//            search.setScoreWrapper(score);
             return search.search();
         }
     }
