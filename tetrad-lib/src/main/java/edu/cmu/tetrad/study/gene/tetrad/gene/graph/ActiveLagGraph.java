@@ -38,12 +38,10 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 
 /**
- * Adds Javabean property change events so that it can be used in a MVC type
- * architecture. Does not throw any exceptions, but it will only fire
- * PropertyChange events if the function successfully completed This
- * version of a lag graph also differs from a standard BasicLagGraph in that it
- * allows edges with lags &gt; maxLagAllowable to be added. In such a case,
- * maxLagAllowable will be increased
+ * Adds Javabean property change events so that it can be used in a MVC type architecture. Does not throw any
+ * exceptions, but it will only fire PropertyChange events if the function successfully completed This version of a lag
+ * graph also differs from a standard BasicLagGraph in that it allows edges with lags &gt; maxLagAllowable to be added.
+ * In such a case, maxLagAllowable will be increased
  *
  * @author Gregory Li
  */
@@ -94,11 +92,9 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
-     * Attemps to set the maximum allowable lag of an edge in the graph. This
-     * really is not necessary to use publicly anymore since the addEdge
-     * function will now automatically increase the MaxAllowableLag of the graph
-     * if an edge's lag is greater than MaxAllowableLag. Will throw a
-     * propertyChange event of (null, (Integer) newMaxLagAllowable).
+     * Attemps to set the maximum allowable lag of an edge in the graph. This really is not necessary to use publicly
+     * anymore since the addEdge function will now automatically increase the MaxAllowableLag of the graph if an edge's
+     * lag is greater than MaxAllowableLag. Will throw a propertyChange event of (null, (Integer) newMaxLagAllowable).
      */
     public void setMaxLagAllowable(int maxLagAllowable) {
         if (maxLagAllowable >= getMaxLag()) {
@@ -110,10 +106,9 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
-     * Attempts to add an edge to the graph. If the lag of the edge is greater
-     * than maxLagAllowable, maxLagAllowable will automatically be increased so
-     * that the edge can be added. Will throw a propertyChange event of
-     * (null, (LaggedEdge) newEdge)
+     * Attempts to add an edge to the graph. If the lag of the edge is greater than maxLagAllowable, maxLagAllowable
+     * will automatically be increased so that the edge can be added. Will throw a propertyChange event of (null,
+     * (LaggedEdge) newEdge)
      */
     public void addEdge(String factor, LaggedFactor laggedFactor) {
         // super class does not care if edge is already in the graph, therefore
@@ -133,8 +128,7 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
-     * Attempts to add a factor to the graph. Will throw a propertyChange event
-     * of (null, (String) factor).
+     * Attempts to add a factor to the graph. Will throw a propertyChange event of (null, (String) factor).
      */
     public void addFactor(String factor) {
         if (!NamingProtocol.isLegalName(factor)) {
@@ -154,8 +148,8 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
-     * Attempts to remove an edge from the graph. Will throw a
-     * propertyChange event of ((LaggedEdge) edge_removed, null).
+     * Attempts to remove an edge from the graph. Will throw a propertyChange event of ((LaggedEdge) edge_removed,
+     * null).
      */
     public void removeEdge(String factor, LaggedFactor laggedFactor) {
         if (existsEdge(factor, laggedFactor)) {
@@ -170,9 +164,8 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
-     * Attempts to remove a factor from the graph. Will also search through and
-     * remove any edges that involve this edge. Will throw a propertyChange
-     * event of ((String) factor_removed, null).
+     * Attempts to remove a factor from the graph. Will also search through and remove any edges that involve this edge.
+     * Will throw a propertyChange event of ((String) factor_removed, null).
      */
     public void removeFactor(String factor) {
         try {
@@ -207,8 +200,7 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
-     * Attempts to rename a factor. Will throw a propertyChange event of
-     * ((String) oldName, (String) newName).
+     * Attempts to rename a factor. Will throw a propertyChange event of ((String) oldName, (String) newName).
      */
     public void renameFactor(String oldName, String newName) {
         try {
@@ -280,14 +272,12 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

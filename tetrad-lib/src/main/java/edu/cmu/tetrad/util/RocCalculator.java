@@ -28,8 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Calculates a ROC curve and AUC (area under curve) for a list of scored cases
- * whose inclusion in category C is known.
+ * Calculates a ROC curve and AUC (area under curve) for a list of scored cases whose inclusion in category C is known.
  *
  * @author josephramsey and Frank Wimberly
  */
@@ -46,8 +45,8 @@ public class RocCalculator {
      * Constructs a calculator using the parameter information below.
      *
      * @param scores     The scores to be plotted.
-     * @param inCategory Whether each score is in the category in question or
-     *                   not. Must be an array of the same length as scores.
+     * @param inCategory Whether each score is in the category in question or not. Must be an array of the same length
+     *                   as scores.
      * @param direction  Either RocCalculator.ASCENDING or RocCalculator.DESCENDING.
      */
     public RocCalculator(double[] scores, boolean[] inCategory, int direction) {
@@ -108,10 +107,8 @@ public class RocCalculator {
     }
 
     /**
-     * Produces a doubly subscripted array of ints representing the points in
-     * the unscaled ROC Curve plot.  The first subscript of the array is the
-     * index of the point and the second subscript is 0 for x values and 1 for y
-     * values.
+     * Produces a doubly subscripted array of ints representing the points in the unscaled ROC Curve plot.  The first
+     * subscript of the array is the index of the point and the second subscript is 0 for x values and 1 for y values.
      */
     private void getUnscaledRocPlot() {
         sortCases();

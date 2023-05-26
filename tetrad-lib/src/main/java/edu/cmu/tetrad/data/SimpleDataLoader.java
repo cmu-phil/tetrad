@@ -88,8 +88,8 @@ public class SimpleDataLoader {
      * @param missingValueMarker The missing value marker as a string--e.g., "NA".
      * @param hasHeader          True if the first row of the data contains variable names.
      * @param delimiter          One of the options in the Delimiter enum--e.g., Delimiter.TAB.
-     * @param maxNumCategories   The maximum number of distinct entries in a columns alloed
-     *                           in order for the column to be parsed as discrete.
+     * @param maxNumCategories   The maximum number of distinct entries in a columns alloed in order for the column to
+     *                           be parsed as discrete.
      * @return The loaded DataSet.
      * @throws IOException If an error occurred in reading the file.
      */
@@ -151,8 +151,7 @@ public class SimpleDataLoader {
     }
 
     /**
-     * Parses the given files for a tabular data set, returning a
-     * RectangularDataSet if successful.
+     * Parses the given files for a tabular data set, returning a RectangularDataSet if successful.
      *
      * @param file               The text file to load the data from.
      * @param commentMarker      The comment marker as a string--e.g., "//".
@@ -333,8 +332,8 @@ public class SimpleDataLoader {
 
 
     /**
-     * Returns the model cast to ICovarianceMatrix if already a covariance matric,
-     * or else returns the covariance matrix for a dataset.
+     * Returns the model cast to ICovarianceMatrix if already a covariance matric, or else returns the covariance matrix
+     * for a dataset.
      */
     public static ICovarianceMatrix getCovarianceMatrix(DataModel dataModel) {
         if (dataModel == null) {
@@ -361,8 +360,7 @@ public class SimpleDataLoader {
     }
 
     /**
-     * Loads knowledge from a file. Assumes knowledge is the only thing in the
-     * file. No jokes please. :)
+     * Loads knowledge from a file. Assumes knowledge is the only thing in the file. No jokes please. :)
      *
      * @param file          The text file to load the data from.
      * @param delimiter     One of the options in the Delimiter enum--e.g., Delimiter.TAB.
@@ -377,8 +375,7 @@ public class SimpleDataLoader {
     }
 
     /**
-     * Reads a knowledge file in tetrad2 format (almost--only does temporal
-     * tiers currently). Format is:
+     * Reads a knowledge file in tetrad2 format (almost--only does temporal tiers currently). Format is:
      * <pre>
      * /knowledge
      * addtemporal

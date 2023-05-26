@@ -29,8 +29,8 @@ import java.io.ObjectInputStream;
 import java.text.NumberFormat;
 
 /**
- * A normal distribution that allows its parameters to be set and allows
- * random sampling. The parameters are 0 = mean, 1 = standard deviation.
+ * A normal distribution that allows its parameters to be set and allows random sampling. The parameters are 0 = mean, 1
+ * = standard deviation.
  *
  * @author josephramsey
  */
@@ -150,19 +150,16 @@ public class TruncatedNormal implements Distribution {
     //========================PRIVATE METHODS===========================//
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      *
      * @param s What it says.
      * @throws java.io.IOException    If the stream cannot be read.
-     * @throws ClassNotFoundException if a the class of an object in the input cannot
-     *                                be found.
+     * @throws ClassNotFoundException if a the class of an object in the input cannot be found.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

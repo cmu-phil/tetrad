@@ -27,8 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stores a 2D array of int data. Note that the missing value marker for this
- * box is -99.
+ * Stores a 2D array of int data. Note that the missing value marker for this box is -99.
  */
 public class VerticalIntDataBox implements DataBox {
     static final long serialVersionUID = 23L;
@@ -50,8 +49,7 @@ public class VerticalIntDataBox implements DataBox {
     private final int numCols;
 
     /**
-     * Constructs an 2D int array consisting entirely of missing values
-     * (int.NaN).
+     * Constructs an 2D int array consisting entirely of missing values (int.NaN).
      */
     public VerticalIntDataBox(int rows, int cols) {
         this.data = new int[cols][rows];
@@ -121,8 +119,7 @@ public class VerticalIntDataBox implements DataBox {
     }
 
     /**
-     * Sets the value at the given row/column to the given Number value.
-     * The value used is number.intValue().
+     * Sets the value at the given row/column to the given Number value. The value used is number.intValue().
      */
     public void set(int row, int col, Number value) {
         int[] ints = this.data[col];
@@ -135,8 +132,7 @@ public class VerticalIntDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value
-     * is missing (-99), null, is returned.
+     * @return the Number value at the given row and column. If the value is missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
         int datum = this.data[col][row];

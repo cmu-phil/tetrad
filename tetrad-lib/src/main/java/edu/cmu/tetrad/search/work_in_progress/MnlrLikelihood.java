@@ -82,9 +82,10 @@ public class MnlrLikelihood {
 
     /**
      * Constructor.
-     * @param dataSet The dataset to analyze.
+     *
+     * @param dataSet        The dataset to analyze.
      * @param structurePrior The structure prior.
-     * @param fDegree The f degree.
+     * @param fDegree        The f degree.
      */
     public MnlrLikelihood(DataSet dataSet, double structurePrior, int fDegree) {
 
@@ -128,8 +129,9 @@ public class MnlrLikelihood {
 
     /**
      * Returns the likelihood of a child given its parents.
+     *
      * @param child_index The index the child.
-     * @param parents The indices of the parents.
+     * @param parents     The indices of the parents.
      * @return The likelihood.
      */
     public double getLik(int child_index, int[] parents) {
@@ -214,8 +216,9 @@ public class MnlrLikelihood {
 
     /**
      * Returns the degrees of freedom of a child given its parents.
+     *
      * @param child_index The index of the child.
-     * @param parents The indices of the parents.
+     * @param parents     The indices of the parents.
      * @return The degrees of freedom.
      */
     public double getDoF(int child_index, int[] parents) {

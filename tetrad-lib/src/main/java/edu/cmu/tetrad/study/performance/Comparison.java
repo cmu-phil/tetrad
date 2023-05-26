@@ -32,8 +32,8 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 public class Comparison {
 
     /**
-     * Simulates data from model paramerizing the given DAG, and runs the algorithm on that data,
-     * printing out error statistics.
+     * Simulates data from model paramerizing the given DAG, and runs the algorithm on that data, printing out error
+     * statistics.
      */
     public static ComparisonResult compare(ComparisonParameters params) {
         DataSet dataSet;

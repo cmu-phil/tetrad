@@ -37,9 +37,8 @@ import java.util.*;
 
 /**
  * <p>Adjusts FAS (see) for the deterministic case by refusing to removed edges
- * based on conditional independence tests that are judged to be deterministic.
- * That is, if X _||_ Y | Z, but Z determines X or Y, then the edge X---Y is
- * not removed.</p>
+ * based on conditional independence tests that are judged to be deterministic. That is, if X _||_ Y | Z, but Z
+ * determines X or Y, then the edge X---Y is not removed.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -238,8 +237,8 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Sets the external graph. Adjacencies not in this external graph will not be judged
-     * adjacent in the search result.
+     * Sets the external graph. Adjacencies not in this external graph will not be judged adjacent in the search
+     * result.
      *
      * @param externalGraph This graph.
      */

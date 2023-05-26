@@ -34,8 +34,8 @@ import java.util.*;
 public class ExpressionParser {
 
     /**
-     * The type of restriction on parameters. It's either the case that the expression may only contain parameters
-     * in the given list, or may not contain parameters in the given list, or that there is no restribution--whatever
+     * The type of restriction on parameters. It's either the case that the expression may only contain parameters in
+     * the given list, or may not contain parameters in the given list, or that there is no restribution--whatever
      * parameters occur in the expression are OK.
      */
     public enum RestrictionType {

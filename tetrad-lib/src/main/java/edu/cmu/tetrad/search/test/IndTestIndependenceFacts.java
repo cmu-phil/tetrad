@@ -59,8 +59,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
     }
 
     /**
-     * Checks independence by looking up facts in the list of facts supplied in the
-     * constructor.
+     * Checks independence by looking up facts in the list of facts supplied in the constructor.
      *
      * @return the independence result.
      * @see IndependenceResult

@@ -32,15 +32,13 @@ public class Type4 implements SessionModel, TetradSerializableExcluded {
     static final long serialVersionUID = 23L;
 
     /**
-     * It should be possible to construct a Type4-model with a Type1-node as
-     * parent.
+     * It should be possible to construct a Type4-model with a Type1-node as parent.
      */
     public Type4(Type1 model1, Parameters parameters) {
     }
 
     /**
-     * It should be possible to construct a Type4-model with both Type2 and
-     * Type2-nodes as parents.
+     * It should be possible to construct a Type4-model with both Type2 and Type2-nodes as parents.
      */
     public Type4(Type2 model1, Type3 model2) {
     }

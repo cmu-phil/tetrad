@@ -317,8 +317,7 @@ public final class MultidataUtils {
     }
 
     /**
-     * Combine the list of variables from each of data model in the list into
-     * one variable list.
+     * Combine the list of variables from each of data model in the list into one variable list.
      *
      * @param dataModels list of data models that has the same list of variables
      * @param variables  list where all the combined variables are stored

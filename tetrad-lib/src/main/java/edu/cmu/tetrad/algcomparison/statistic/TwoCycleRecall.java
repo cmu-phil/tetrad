@@ -5,10 +5,9 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * The 2-cycle recall. This counts 2-cycles manually, wherever they occur in the graphs.
- * The true positives are the number of 2-cycles in both the true and estimated graphs.
- * Thus, if the true contains X-&gt;Y,Y-&gt;X and estimated graph does not contain it, one false negative
- * is counted.
+ * The 2-cycle recall. This counts 2-cycles manually, wherever they occur in the graphs. The true positives are the
+ * number of 2-cycles in both the true and estimated graphs. Thus, if the true contains X-&gt;Y,Y-&gt;X and estimated
+ * graph does not contain it, one false negative is counted.
  *
  * @author josephramsey, rubens (November 2016)
  */

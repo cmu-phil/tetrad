@@ -8,7 +8,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.IGraphSearch;
+import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -725,16 +727,14 @@ public class RfciBsc implements IGraphSearch {
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent
-     * to. By detault System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
      */
     public void setOut(PrintStream out) {
         this.out = out;
     }
 
     /**
-     * @return the output stream that output (except for log output) should be
-     * sent to.
+     * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
         return this.out;

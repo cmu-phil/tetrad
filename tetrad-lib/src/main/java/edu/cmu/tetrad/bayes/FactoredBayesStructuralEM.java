@@ -36,10 +36,9 @@ import java.util.Set;
 
 /**
  * <p>Implements the procedure Factored-Bayesian-SEM found on page 6 of "The
- * Bayesian Structural EM Algorithm" by Nir Friedman.&gt; 0 <p>The initial
- * implementation simplifies the algorithm somewhat by computing the score of
- * each model by using the BdeMetric score, which is implemented in the bayes
- * package of Tetrad-4.2.&gt; 0
+ * Bayesian Structural EM Algorithm" by Nir Friedman.&gt; 0 <p>The initial implementation simplifies the algorithm
+ * somewhat by computing the score of each model by using the BdeMetric score, which is implemented in the bayes package
+ * of Tetrad-4.2.&gt; 0
  *
  * @author Frank Wimberly
  * @author Robert Tillman (changes since 5-12-2008)
@@ -87,8 +86,7 @@ public final class FactoredBayesStructuralEM {
     }
 
     /**
-     * This method allows specification of the tolerance parameter used in Bayes
-     * EM estimation.
+     * This method allows specification of the tolerance parameter used in Bayes EM estimation.
      */
     public BayesIm maximization(double tolerance) {
         TetradLogger.getInstance().log("details", "FactoredBayesStructuralEM.maximization()");
@@ -97,11 +95,9 @@ public final class FactoredBayesStructuralEM {
     }
 
     /**
-     * This iterate2 method also uses BdeMetricCache but it uses the
-     * factorScoreMD method which can handle missing data and latent variables.
-     * Ths method iteratively score models and finds that which contains the
-     * graph of the highest scoring model (via its BaysPm) as well as parameters
-     * which yield the best score given the dataset by using the
+     * This iterate2 method also uses BdeMetricCache but it uses the factorScoreMD method which can handle missing data
+     * and latent variables. Ths method iteratively score models and finds that which contains the graph of the highest
+     * scoring model (via its BaysPm) as well as parameters which yield the best score given the dataset by using the
      * EmBayesEstimator class.
      *
      * @return the instantiated Bayes net (BayesIm)

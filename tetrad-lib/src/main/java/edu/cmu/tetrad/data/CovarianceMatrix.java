@@ -30,13 +30,10 @@ import java.text.NumberFormat;
 import java.util.*;
 
 /**
- * Stores a covariance matrix together with variable names and sample size,
- * intended as a representation of a data set. When constructed from a
- * continuous data set, the matrix is not checked for positive definiteness;
- * however, when a covariance matrix is supplied, its positive definiteness is
- * always checked. If the sample size is less than the number of variables, the
- * positive definiteness is "spot-checked"--that is, checked for various
- * submatrices.
+ * Stores a covariance matrix together with variable names and sample size, intended as a representation of a data set.
+ * When constructed from a continuous data set, the matrix is not checked for positive definiteness; however, when a
+ * covariance matrix is supplied, its positive definiteness is always checked. If the sample size is less than the
+ * number of variables, the positive definiteness is "spot-checked"--that is, checked for various submatrices.
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.data.CorrelationMatrix
@@ -107,18 +104,16 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
-     * Protected constructor to construct a new covariance matrix using the
-     * supplied continuous variables and the the given symmetric, positive
-     * definite matrix and sample size. The number of variables must equal the
-     * dimension of the array.
+     * Protected constructor to construct a new covariance matrix using the supplied continuous variables and the the
+     * given symmetric, positive definite matrix and sample size. The number of variables must equal the dimension of
+     * the array.
      *
-     * @param variables  the list of variables (in order) for the covariance
-     *                   matrix.
+     * @param variables  the list of variables (in order) for the covariance matrix.
      * @param matrix     an square array of containing covariances.
      * @param sampleSize the sample size of the data for these covariances.
-     * @throws IllegalArgumentException if the given matrix is not symmetric (to
-     *                                  a tolerance of 1.e-5) and positive definite, if the number of variables
-     *                                  does not equal the dimension of m, or if the sample size is not positive.
+     * @throws IllegalArgumentException if the given matrix is not symmetric (to a tolerance of 1.e-5) and positive
+     *                                  definite, if the number of variables does not equal the dimension of m, or if
+     *                                  the sample size is not positive.
      */
     public CovarianceMatrix(List<Node> variables, Matrix matrix, int sampleSize) {
         this(variables, matrix.toArray(), sampleSize);
@@ -249,8 +244,7 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
-     * @return a submatrix of the covariance matrix with variables in the given
-     * order.
+     * @return a submatrix of the covariance matrix with variables in the given order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {
         List<Node> submatrixVars = new LinkedList<>();
@@ -481,14 +475,12 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

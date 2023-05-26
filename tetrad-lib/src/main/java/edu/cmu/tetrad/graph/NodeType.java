@@ -26,8 +26,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.io.ObjectStreamException;
 
 /**
- * A typesafe enum of the types of the types of nodes in a graph (MEASURED,
- * LATENT, ERROR).
+ * A typesafe enum of the types of the types of nodes in a graph (MEASURED, LATENT, ERROR).
  *
  * @author josephramsey
  */
@@ -48,8 +47,7 @@ public final class NodeType implements TetradSerializable {
     private final transient String name;
 
     /**
-     * Protected constructor for the types; this allows for extension in case
-     * anyone wants to add formula types.
+     * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
     private NodeType(String name) {
         this.name = name;

@@ -30,7 +30,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * <p>Stores a map from pairs of nodes to separating sets--that is, for each unordered pair of nodes {node1, node2} in a
+ * <p>Stores a map from pairs of nodes to separating sets--that is, for each unordered pair of nodes {node1, node2} in
+ * a
  * graph, stores a set of nodes conditional on which node1 and node2 are independent (where the nodes are considered as
  * variables) or stores null if the pair was not judged to be independent. (Note that if a sepset is non-null and empty,
  * that should mean that the compared nodes were found to be independent conditional on the empty set, whereas if a

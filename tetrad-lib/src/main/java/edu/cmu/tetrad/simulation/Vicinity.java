@@ -9,11 +9,11 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.*;
 
 /**
- * This version of Vicinity finds nearby nodes by searching with an expanding cube
- * Prior to Vicinity4, versions of Vicinity looked at the 3 axis independently instead of collectively.
+ * This version of Vicinity finds nearby nodes by searching with an expanding cube Prior to Vicinity4, versions of
+ * Vicinity looked at the 3 axis independently instead of collectively.
  * <p>
- * Vicinity5 improves on Vicinity4 by allowing for the nodes to not be distributed evenly throughout
- * the location space. This is needed for fMRI data when the voxels are not perfect cubes.
+ * Vicinity5 improves on Vicinity4 by allowing for the nodes to not be distributed evenly throughout the location space.
+ * This is needed for fMRI data when the voxels are not perfect cubes.
  *
  * @author josephramsey
  * @author Erich Kummerfeld

@@ -27,8 +27,6 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 
 import java.util.ArrayList;
@@ -41,26 +39,19 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Zhang and Shen. It adapts Theorem 1 in the following reference:</p>
  *
  * <p>Zhang, Y., &amp; Shen, X. (2010). Model selection procedure for
- * high‐dimensional data. Statistical Analysis and Data Mining: The
- * ASA Data Science Journal, 3(5), 350-358</p>
+ * high‐dimensional data. Statistical Analysis and Data Mining: The ASA Data Science Journal, 3(5), 350-358</p>
  *
  * <p>The score uses Theorem 1 in the above to numerically search
- * for a lambda value that is bounded by a given probability risk,
- * between 0 and 1, if outputting a local false positive parent for
- * a variable. There is a parameter m0, which is a maximum number
- * of parents for a particular variable, which is free. The solution
- * of this score is to increase m0 from 0 upward, re-evaluating
- * with each scoring that is done using that variable as a target
- * node. Thus, over time, a lower bound on m0 is estimated with
- * more and more precision. So as the score is used in the context
- * of FGES or GRaSP, for instance, so long as the score for a given
- * node is visited more than once, the scores output by the procedure
- * can be expected to improve, though setting m0 to 0 for all variables
- * does not give bad results even by itself.</p>
+ * for a lambda value that is bounded by a given probability risk, between 0 and 1, if outputting a local false positive
+ * parent for a variable. There is a parameter m0, which is a maximum number of parents for a particular variable, which
+ * is free. The solution of this score is to increase m0 from 0 upward, re-evaluating with each scoring that is done
+ * using that variable as a target node. Thus, over time, a lower bound on m0 is estimated with more and more precision.
+ * So as the score is used in the context of FGES or GRaSP, for instance, so long as the score for a given node is
+ * visited more than once, the scores output by the procedure can be expected to improve, though setting m0 to 0 for all
+ * variables does not give bad results even by itself.</p>
  *
  * <p>This score is conservative for large, dense models and faster
- * than other available scores in this package. The risk bound is
- * easily interpreted.</p>
+ * than other available scores in this package. The risk bound is easily interpreted.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence,
  * and negative scores indicate independence.</p>
@@ -201,6 +192,7 @@ public class ZsbScore implements Score {
 
     /**
      * Returns the sample size.
+     *
      * @return This size.
      */
     public int getSampleSize() {
@@ -208,8 +200,8 @@ public class ZsbScore implements Score {
     }
 
     /**
-     * Returns a judgement for FGES for whether a certain bump in score gives
-     * efidence of an effect edges.
+     * Returns a judgement for FGES for whether a certain bump in score gives efidence of an effect edges.
+     *
      * @param bump The bump.
      * @return True if so.
      * @see Fges
@@ -221,6 +213,7 @@ public class ZsbScore implements Score {
 
     /**
      * Returns the variables.
+     *
      * @return This list.
      */
     @Override
@@ -230,6 +223,7 @@ public class ZsbScore implements Score {
 
     /**
      * Returns a judgment of max degree for some algorithms.
+     *
      * @return This maximum.
      * @see Fges
      */
@@ -240,6 +234,7 @@ public class ZsbScore implements Score {
 
     /**
      * Returns true if the variable in Z determine y.
+     *
      * @return True if so.
      */
     @Override
@@ -255,6 +250,7 @@ public class ZsbScore implements Score {
 
     /**
      * Sets the risk bound for the Zhang Shen Bound score.
+     *
      * @param riskBound The risk bound.
      */
     public void setRiskBound(double riskBound) {

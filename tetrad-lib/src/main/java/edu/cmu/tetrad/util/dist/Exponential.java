@@ -24,8 +24,8 @@ package edu.cmu.tetrad.util.dist;
 import edu.cmu.tetrad.util.RandomUtil;
 
 /**
- * Wraps a chi square distribution for purposes of drawing random samples.
- * Methods are provided to allow parameters to be manipulated in an interface.
+ * Wraps a chi square distribution for purposes of drawing random samples. Methods are provided to allow parameters to
+ * be manipulated in an interface.
  *
  * @author josephramsey
  */

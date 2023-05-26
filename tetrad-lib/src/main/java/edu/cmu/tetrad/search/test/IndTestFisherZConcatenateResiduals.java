@@ -112,8 +112,8 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      * Determines whether x _||_ y | z.
      *
      * @return an independence result
-     * @see IndependenceResult
      * @throws org.apache.commons.math3.linear.SingularMatrixException if a matrix singularity is encountered.
+     * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
 
@@ -247,8 +247,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     }
 
     /**
-     * Returns a number that is positive when dependence holds and more positive
-     * for greater dependence.
+     * Returns a number that is positive when dependence holds and more positive for greater dependence.
      *
      * @return This number
      * @see Fges

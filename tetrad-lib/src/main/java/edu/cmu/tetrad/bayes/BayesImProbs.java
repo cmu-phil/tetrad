@@ -32,9 +32,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Calculates cell probabilities from conditional BayesIm probabilities on the
- * fly without constructing the entire table. (To force the entire table to be
- * constructed, use StoredCellProbs.)
+ * Calculates cell probabilities from conditional BayesIm probabilities on the fly without constructing the entire
+ * table. (To force the entire table to be constructed, use StoredCellProbs.)
  *
  * @author josephramsey
  */
@@ -89,12 +88,10 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
     //==========================PUBLIC METHODS==========================//
 
     /**
-     * Calculates the probability in the given cell from the conditional
-     * probabilities in the BayesIm. It's the product of the probabilities
-     * that each variable takes on the value it does given that the other
-     * variables take on the values they do in that cell. The returned value
-     * will be undefined (Double.NaN) if any of the conditional probabilities
-     * being multiplied together is undefined.
+     * Calculates the probability in the given cell from the conditional probabilities in the BayesIm. It's the product
+     * of the probabilities that each variable takes on the value it does given that the other variables take on the
+     * values they do in that cell. The returned value will be undefined (Double.NaN) if any of the conditional
+     * probabilities being multiplied together is undefined.
      *
      * @return the cell probability, or NaN if this probability is undefined.
      */
@@ -257,14 +254,12 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

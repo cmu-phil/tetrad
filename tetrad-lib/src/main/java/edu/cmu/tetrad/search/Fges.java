@@ -47,16 +47,14 @@ import static org.apache.commons.math3.util.FastMath.min;
 
 /**
  * <p>Imlements the Fast Greedy Equivalence Search (GGES) algorithm. This is
- * an implementation of the Greedy Equivalence Search algroithm, originally
- * due to Chris Meek but developed significantly by Max Chickering. FGES uses
- * with some optimizations that allow it to scale accurately to thousands
- * of variables accurately for the sparse case. The reference for FGES is this:</p>
+ * an implementation of the Greedy Equivalence Search algroithm, originally due to Chris Meek but developed
+ * significantly by Max Chickering. FGES uses with some optimizations that allow it to scale accurately to thousands of
+ * variables accurately for the sparse case. The reference for FGES is this:</p>
  *
  * <p>Ramsey, J., Glymour, M., Sanchez-Romero, R., &amp; Glymour, C. (2017).
- * A million variables and more: the fast greedy equivalence search algorithm
- * for learning high-dimensional graphical causal models, with an application
- * to functional magnetic resonance images. International journal of data science
- * and analytics, 3, 121-129.</p>
+ * A million variables and more: the fast greedy equivalence search algorithm for learning high-dimensional graphical
+ * causal models, with an application to functional magnetic resonance images. International journal of data science and
+ * analytics, 3, 121-129.</p>
  *
  * <p>The reference for Chickering's GES is this:</p>
  *
@@ -64,18 +62,16 @@ import static org.apache.commons.math3.util.FastMath.min;
  * Journal of Machine Learning Research.</p>
  *
  * <p>FGES works for the continuous case, the discrete case, and the mixed
- * continuous/discrete case, so long as a BIC score is available for the type
- * of data in question.</p>
+ * continuous/discrete case, so long as a BIC score is available for the type of data in question.</p>
  *
  * <p>To speed things up, it has been assumed that variables X and Y with zero
- * correlation do not correspond to edges in the graph. This is a restricted
- * form of the heuristic speedup assumption, something GES does not assume.
- * This heuristic speedup assumption needs to be explicitly turned on using
+ * correlation do not correspond to edges in the graph. This is a restricted form of the heuristic speedup assumption,
+ * something GES does not assume. This heuristic speedup assumption needs to be explicitly turned on using
  * setHeuristicSpeedup(true).</p>
  *
  * <p>Also, edges to be added or remove from the graph in the forward or
- * backward phase, respectively are cached, together with the ancillary information
- * needed to do the additions or removals, to reduce rescoring.</p>
+ * backward phase, respectively are cached, together with the ancillary information needed to do the additions or
+ * removals, to reduce rescoring.</p>
  *
  * <p>A number of other optimizations were also. See code for details.</p>
  *
@@ -169,16 +165,12 @@ public final class Fges implements IGraphSearch, DagScorer {
     private boolean parallelized = false;
 
     /**
-     * Constroctor. Construct a Score and pass it in here. The totalScore should return a
-     * positive value in case of conditional dependence and a negative values in
-     * case of conditional independence. See Chickering (2002), locally
-     * consistent scoring criterion. This by default uses all the processors on
-     * the machine.
+     * Constroctor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
+     * conditional dependence and a negative values in case of conditional independence. See Chickering (2002), locally
+     * consistent scoring criterion. This by default uses all the processors on the machine.
      *
-     * @param score The score to use. The score should yield better scores for
-     *              more correct local models. The algorithm as given by
-     *              Chickering assumes the score will be a BIC score of some
-     *              sort.
+     * @param score The score to use. The score should yield better scores for more correct local models. The algorithm
+     *              as given by Chickering assumes the score will be a BIC score of some sort.
      */
     public Fges(Score score) {
         if (score == null) {
@@ -192,9 +184,8 @@ public final class Fges implements IGraphSearch, DagScorer {
     //==========================PUBLIC METHODS==========================//
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges till
-     * model is significant. Then start deleting edges till a minimum is
-     * achieved.
+     * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
+     * edges till a minimum is achieved.
      *
      * @return the resulting Pattern.
      */
@@ -244,10 +235,9 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Sets whether one-edge faithfulness should be assumed. This assumption is that if X and Y
-     * are unconditionally depedendent, then there is an edge between X and Y in the graph.
-     * This could in principle be false, as for a path cancelation wheter one path is A->B->C->D
-     * and the other path is A->D.
+     * Sets whether one-edge faithfulness should be assumed. This assumption is that if X and Y are unconditionally
+     * depedendent, then there is an edge between X and Y in the graph. This could in principle be false, as for a path
+     * cancelation wheter one path is A->B->C->D and the other path is A->D.
      *
      * @param faithfulnessAssumed True if so.
      */
@@ -267,8 +257,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     /**
      * Sets the background knowledge.
      *
-     * @param knowledge the knowledge object, specifying forbidden and required
-     *                  edges.
+     * @param knowledge the knowledge object, specifying forbidden and required edges.
      */
     public void setKnowledge(Knowledge knowledge) {
         if (knowledge == null) {
@@ -319,8 +308,8 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Sets whether verbose output should be produced. Verbose output generated
-     * by the Meek rules is treated separately.
+     * Sets whether verbose output should be produced. Verbose output generated by the Meek rules is treated
+     * separately.
      *
      * @param verbose True iff the case.
      * @see #setMeekVerbose(boolean)
@@ -339,16 +328,14 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * @return the output stream that output (except for log output) should be
-     * sent to.
+     * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
         return out;
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent
-     * to. By detault System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
      *
      * @param out This print stream.
      */
@@ -391,8 +378,8 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Sets whether the first step of the procedure will score both X->Y and Y->X and prefer the
-     * higher score (for adding X--Y to the graph).
+     * Sets whether the first step of the procedure will score both X->Y and Y->X and prefer the higher score (for
+     * adding X--Y to the graph).
      *
      * @param symmetricFirstStep True iff the case.
      */
@@ -1025,7 +1012,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     private Set<Node> revertToCPDAG() {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
-        rules.setAggressivelyPreventCycles(true);
+        rules.setMeekPreventCycles(true);
         rules.setVerbose(meekVerbose);
         return rules.orientImplied(graph);
     }

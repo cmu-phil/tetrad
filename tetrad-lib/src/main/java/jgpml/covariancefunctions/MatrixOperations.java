@@ -115,10 +115,9 @@ public class MatrixOperations {
     }
 
     /**
-     * If the argument is a row or column <code>Matrix</code> it returns a new diagonal <code>Matrix</code>
-     * with the input as diagonal elements.
-     * If the argument is a <code>Matrix</code> it returns the diagonal elements as a single column <code>Matrix</code>
-     * Is a clone of the Matlab's function diag(A)
+     * If the argument is a row or column <code>Matrix</code> it returns a new diagonal <code>Matrix</code> with the
+     * input as diagonal elements. If the argument is a <code>Matrix</code> it returns the diagonal elements as a single
+     * column <code>Matrix</code> Is a clone of the Matlab's function diag(A)
      *
      * @param A input <code>Matrix</code>
      * @return diag(A) result

@@ -23,8 +23,6 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.special.Gamma;
@@ -35,9 +33,8 @@ import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * <p>Implements Poisson prior score, a novel (unpubished) score that replaces the
- * penalty term in BIC by the log of the Poisson distribution. The Poisson distribution
- * has a lambda parameter, which is made a parameter of this score and acts like
- * a structure prior for the score.</p>
+ * penalty term in BIC by the log of the Poisson distribution. The Poisson distribution has a lambda parameter, which is
+ * made a parameter of this score and acts like a structure prior for the score.</p>
  *
  * <p>Here is the Wikipedia page for the Poisson distribution, for reference:</p>
  *

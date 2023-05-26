@@ -312,8 +312,7 @@ public class BdeuScore implements DiscreteScore {
     }
 
     /**
-     * This score does not implement a method to decide whehter a node is determined
-     * by its parents.
+     * This score does not implement a method to decide whehter a node is determined by its parents.
      *
      * @param z The parents.
      * @param y The node.

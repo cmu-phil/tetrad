@@ -132,9 +132,8 @@ public class TestBooleanFunction extends TestCase {
     }
 
     /**
-     * Tests to see whether some known effective functions pass the
-     * isEffective() test. Also tests to see whether some known non-effective
-     * functions fail.
+     * Tests to see whether some known effective functions pass the isEffective() test. Also tests to see whether some
+     * known non-effective functions fail.
      */
     public void testIsEffective() {
         IndexedParent x = new IndexedParent(0, 2);
@@ -171,9 +170,8 @@ public class TestBooleanFunction extends TestCase {
     }
 
     /**
-     * Tests to see whether some known canalyzing functions (AND, OR, ...) pass
-     * the isCanalyzing() test. Also tests to see whether some known
-     * non-canalyzing functions (exclusive-OR, ...) fail.
+     * Tests to see whether some known canalyzing functions (AND, OR, ...) pass the isCanalyzing() test. Also tests to
+     * see whether some known non-canalyzing functions (exclusive-OR, ...) fail.
      */
     public void testIsCanalyzing() {
         IndexedParent x = new IndexedParent(0, 1);
@@ -240,8 +238,8 @@ public class TestBooleanFunction extends TestCase {
     }
 
     /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
      */
     public static Test suite() {
 

@@ -38,11 +38,10 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Tests the use of variable means in the SEM classes.  Instantiates a SemPm and
- * SemIm from it. Values of the means of the variables are set in the IM. Then
- * the simulateData is used to create a continuous dataset.  The dataset is used
- * to SemEstimator and, from that, a new SemIm.  The means of the two SemIm's
- * are compared to see if they fall within a tolerance.
+ * Tests the use of variable means in the SEM classes.  Instantiates a SemPm and SemIm from it. Values of the means of
+ * the variables are set in the IM. Then the simulateData is used to create a continuous dataset.  The dataset is used
+ * to SemEstimator and, from that, a new SemIm.  The means of the two SemIm's are compared to see if they fall within a
+ * tolerance.
  *
  * @author Frank Wimberly
  */

@@ -26,8 +26,8 @@ import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.work_in_progress.IndTestMixedMultipleTTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.work_in_progress.IndTestMixedMultipleTTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.sem.TemplateExpander;
@@ -430,13 +430,13 @@ public class MixedUtils {
     }
 
     /**
-     * This method is needed to normalize edge parameters for an Instantiated Mixed Model
-     * Generates edge parameters for c-d and d-d edges from a single weight, abs(w), drawn by the normal IM constructor.
-     * Abs(w) is used for d-d edges.
+     * This method is needed to normalize edge parameters for an Instantiated Mixed Model Generates edge parameters for
+     * c-d and d-d edges from a single weight, abs(w), drawn by the normal IM constructor. Abs(w) is used for d-d
+     * edges.
      * <p>
      * For deterministic, c-d are evenly spaced between -w and w, and d-d are a matrix with w on the diagonal and
-     * -w/(categories-1) in the rest.
-     * For random, c-d params are uniformly drawn from 0 to 1 then transformed to have w as max value and sum to 0.
+     * -w/(categories-1) in the rest. For random, c-d params are uniformly drawn from 0 to 1 then transformed to have w
+     * as max value and sum to 0.
      *
      * @param pm
      * @param discParamRand true for random edge generation behavior, false for deterministic
@@ -913,8 +913,8 @@ public class MixedUtils {
     }
 
     /**
-     * Returns independence tests by name located in edu.cmu.tetrad.search and edu.pitt.csb.mgm
-     * also supports shorthand for LRT ("lrt) and t-tests ("tlin" for prefer linear (fastest) or "tlog" for prefer logistic)
+     * Returns independence tests by name located in edu.cmu.tetrad.search and edu.pitt.csb.mgm also supports shorthand
+     * for LRT ("lrt) and t-tests ("tlin" for prefer linear (fastest) or "tlog" for prefer logistic)
      *
      * @param name
      * @return

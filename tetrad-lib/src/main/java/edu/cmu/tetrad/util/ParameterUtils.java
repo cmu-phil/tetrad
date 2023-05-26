@@ -36,8 +36,7 @@ public final class ParameterUtils {
      * Create parameters with their default values.
      *
      * @param names list of parameter names
-     * @return Parameters object containing parameters from the given parameter
-     * name list
+     * @return Parameters object containing parameters from the given parameter name list
      */
     public static Parameters create(List<String> names) {
         Parameters parameters = new Parameters();

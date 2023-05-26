@@ -31,7 +31,7 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
         algoType = AlgType.allow_latent_common_causes
 )
 //@Experimental
-public class PagSampleRfci implements Algorithm, HasKnowledge{
+public class PagSampleRfci implements Algorithm, HasKnowledge {
 
     public static final List<String> PAG_SAMPLING_RFCI_PARAMETERS = new LinkedList<>();
     public static final List<String> RFCI_PARAMETERS = new LinkedList<>();

@@ -19,17 +19,16 @@ import java.util.Set;
 
 /**
  * <p>Provides some methods to check significance of clusters for clustering algroithms.
- * It is assumed that for each cluster there is a single latent that is a parent of all
- * the nodes in the cluster. Significance of these models is returned.</p>
+ * It is assumed that for each cluster there is a single latent that is a parent of all the nodes in the cluster.
+ * Significance of these models is returned.</p>
  *
  * @author josephramsey
  */
 public class ClusterSignificance {
 
     /**
-     * Gives the options for checking significance of clusters--could check the
-     * significance using a regression model, or could check to see if the cluster
-     * is a clique, or could not do the check.
+     * Gives the options for checking significance of clusters--could check the significance using a regression model,
+     * or could check to see if the cluster is a clique, or could not do the check.
      */
     public enum CheckType {Significance, Clique, None}
 

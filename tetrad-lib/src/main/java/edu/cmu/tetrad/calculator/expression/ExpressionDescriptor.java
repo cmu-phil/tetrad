@@ -67,8 +67,7 @@ public interface ExpressionDescriptor extends TetradSerializable {
 
 
     /**
-     * Creates the actual expression that can be used to evaluate matters from the given
-     * expressions.
+     * Creates the actual expression that can be used to evaluate matters from the given expressions.
      */
     Expression createExpression(Expression... expressions) throws ExpressionInitializationException;
 

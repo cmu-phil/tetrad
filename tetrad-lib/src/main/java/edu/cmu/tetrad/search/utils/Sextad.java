@@ -72,6 +72,7 @@ public class Sextad implements TetradSerializable {
 
     /**
      * Returns a judgment of equality with another Sextad instance.
+     *
      * @param o The other Sextad instance.
      * @return True if equal.
      */
@@ -102,6 +103,7 @@ public class Sextad implements TetradSerializable {
 
     /**
      * Returns the list of nodes.
+     *
      * @return This list.
      */
     public List<Integer> getNodes() {

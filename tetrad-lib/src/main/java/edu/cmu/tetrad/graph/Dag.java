@@ -27,9 +27,8 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Represents a directed acyclic graph--that is, a graph containing only
- * directed edges, with no cycles. Variables are permitted to be either measured
- * or latent, with at most one edge per node pair, and no edges to self.
+ * Represents a directed acyclic graph--that is, a graph containing only directed edges, with no cycles. Variables are
+ * permitted to be either measured or latent, with at most one edge per node pair, and no edges to self.
  *
  * @author josephramsey
  */
@@ -62,8 +61,7 @@ public final class Dag implements Graph {
      * Constructs a new directed acyclic graph from the given graph object.
      *
      * @param graph the graph to base the new DAG on.
-     * @throws IllegalArgumentException if the given graph cannot for some
-     *                                  reason be converted into a DAG.
+     * @throws IllegalArgumentException if the given graph cannot for some reason be converted into a DAG.
      */
     public Dag(Graph graph) throws IllegalArgumentException {
         if (graph.paths().existsDirectedCycle()) {
@@ -92,14 +90,12 @@ public final class Dag implements Graph {
     //===============================PUBLIC METHODS======================//
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.)
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.)
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

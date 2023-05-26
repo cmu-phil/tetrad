@@ -52,8 +52,8 @@ public class GeneralizedSemEstimator {
     private double aSquaredStar = Double.NaN;
 
     /**
-     * Maximizes likelihood equation by equation. Assumes the equations are recursive and that
-     * each has exactly one error term.
+     * Maximizes likelihood equation by equation. Assumes the equations are recursive and that each has exactly one
+     * error term.
      */
     public GeneralizedSemIm estimate(GeneralizedSemPm pm, DataSet data) {
         StringBuilder builder = new StringBuilder();
@@ -267,8 +267,7 @@ public class GeneralizedSemEstimator {
         private final double[][] dataValues;
 
         /**
-         * f
-         * Constructs a new CoefFittingFunction for the given Sem.
+         * f Constructs a new CoefFittingFunction for the given Sem.
          */
         public LikelihoodFittingFunction(GeneralizedSemPm pm, List<String> parameters,
                                          List<Node> tierOrdering, DataSet data, MyContext context) {

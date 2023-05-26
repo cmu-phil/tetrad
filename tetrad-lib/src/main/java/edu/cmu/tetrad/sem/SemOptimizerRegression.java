@@ -31,11 +31,9 @@ import edu.cmu.tetrad.util.Vector;
 import java.util.List;
 
 /**
- * Optimizes a DAG SEM with no hidden variables using closed formula
- * regressions. IT SHOULD NOT BE USED WITH SEMs THAT ARE NOT DAGS OR CONTAIN
- * HIDDEN NODES. IT ALSO ASSUMES THAT ALL OBSERVED NODES APPEAR FIRST IN
- * semIm.getSemPm().getDag().getNodes(), I.E., ERROR NODES ARE INSERTED ONLY
- * AFTER MEASURED NODES IN THIS LIST.
+ * Optimizes a DAG SEM with no hidden variables using closed formula regressions. IT SHOULD NOT BE USED WITH SEMs THAT
+ * ARE NOT DAGS OR CONTAIN HIDDEN NODES. IT ALSO ASSUMES THAT ALL OBSERVED NODES APPEAR FIRST IN
+ * semIm.getSemPm().getDag().getNodes(), I.E., ERROR NODES ARE INSERTED ONLY AFTER MEASURED NODES IN THIS LIST.
  *
  * @author Ricardo Silva
  */

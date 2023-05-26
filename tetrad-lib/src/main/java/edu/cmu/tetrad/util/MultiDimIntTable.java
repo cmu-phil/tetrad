@@ -26,55 +26,47 @@ import java.util.Map;
 
 /**
  * <p>Stores a table of cells with int values of arbitrary dimension. The
- * dimensionality of the table is set in the reset() method; if a dimensionality
- * is set in the constructor, it will be passed to the reset() method. Every
- * time the dimensionality is changed, the table is reset to zero throughout. If
- * the dimensionality is set to null, the table cannot be used until a non-null
- * dimensionality is set.&gt; 0
+ * dimensionality of the table is set in the reset() method; if a dimensionality is set in the constructor, it will be
+ * passed to the reset() method. Every time the dimensionality is changed, the table is reset to zero throughout. If the
+ * dimensionality is set to null, the table cannot be used until a non-null dimensionality is set.&gt; 0
  *
  * @author josephramsey
  */
 public class MultiDimIntTable {
 
     /**
-     * A single-dimension array containing all of the cells of the table. Must
-     * be at least long enough to contain data for each cell allowed for by the
-     * given dimension array--in other words, the length must be greater than or
-     * equal to dims[0] & dims[1] ... * dims[dims.length - 1].
+     * A single-dimension array containing all of the cells of the table. Must be at least long enough to contain data
+     * for each cell allowed for by the given dimension array--in other words, the length must be greater than or equal
+     * to dims[0] & dims[1] ... * dims[dims.length - 1].
      */
     private Map<Integer, Long> cells;
 
     /**
-     * The number of cells in the table. (May be different from the length of
-     * cells[].
+     * The number of cells in the table. (May be different from the length of cells[].
      */
     private int numCells;
 
     /**
-     * An array whose length is the number of dimensions of the cell and whose
-     * contents, for each value dims[i], are the numbers of values for each
-     * i'th dimension. Each of these dimensions must be an integer greater than
-     * zero.
+     * An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
+     * numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
      */
     private int[] dims;
 
     /**
-     * Constructs a new multidimensional table of integer cells, with the given
-     * (fixed) dimensions. Each dimension must be an integer greater than zero.
+     * Constructs a new multidimensional table of integer cells, with the given (fixed) dimensions. Each dimension must
+     * be an integer greater than zero.
      *
-     * @param dims An int[] array of length &gt; 0, each element of which specifies
-     *             the number of values of that dimension (&gt; 0).
+     * @param dims An int[] array of length &gt; 0, each element of which specifies the number of values of that
+     *             dimension (&gt; 0).
      */
     public MultiDimIntTable(int[] dims) {
         reset(dims);
     }
 
     /**
-     * @param coords The coordinates of the cell. Each value must be less
-     *               than the number of possible value for the corresponding
-     *               dimension in the table. (Enforced.)
-     * @return the row in the table for the given node and combination of parent
-     * values.
+     * @param coords The coordinates of the cell. Each value must be less than the number of possible value for the
+     *               corresponding dimension in the table. (Enforced.)
+     * @return the row in the table for the given node and combination of parent values.
      */
     public int getCellIndex(int[] coords) {
         int cellIndex = 0;
@@ -89,8 +81,7 @@ public class MultiDimIntTable {
 
     /**
      * @param cellIndex an <code>int</code> value
-     * @return the array representing the combination of parent values for this
-     * row.
+     * @return the array representing the combination of parent values for this row.
      */
     @SuppressWarnings("SameParameterValue")
     public int[] getCoordinates(int cellIndex) {
@@ -105,12 +96,10 @@ public class MultiDimIntTable {
     }
 
     /**
-     * Increments the value at the given coordinates by the specified amount,
-     * returning the new value.
+     * Increments the value at the given coordinates by the specified amount, returning the new value.
      *
      * @param coords The coordinates of the table cell to update.
-     * @param value  The amount by which the table cell at these coordinates
-     *               should be incremented (an integer).
+     * @param value  The amount by which the table cell at these coordinates should be incremented (an integer).
      * @return the new value at that table cell.
      */
     public long increment(int[] coords, int value) {
@@ -125,12 +114,10 @@ public class MultiDimIntTable {
     }
 
     /**
-     * Sets the value at the given coordinates to the given value,
-     * returning the new value.
+     * Sets the value at the given coordinates to the given value, returning the new value.
      *
      * @param coords The coordinates of the table cell to update.
-     * @param value  The amount by which the table cell at these coordinates
-     *               should be incremented (an integer).
+     * @param value  The amount by which the table cell at these coordinates should be incremented (an integer).
      * @return the new value at that table cell.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -187,8 +174,8 @@ public class MultiDimIntTable {
     }
 
     /**
-     * Resets the table, allowing a different dimensionality. All cells are
-     * reset to zero. The underlying data array is reused if possible.
+     * Resets the table, allowing a different dimensionality. All cells are reset to zero. The underlying data array is
+     * reused if possible.
      *
      * @param dims an <code>int[]</code> value
      */

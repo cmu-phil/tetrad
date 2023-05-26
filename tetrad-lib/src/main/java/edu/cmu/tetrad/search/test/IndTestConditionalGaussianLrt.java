@@ -39,9 +39,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
- * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables
- * are either continuous or discrete. This test is valid for both ordinal and non-ordinal
- * discrete searchVariables.
+ * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or
+ * discrete. This test is valid for both ordinal and non-ordinal discrete searchVariables.
  * <p>
  * Assumes a conditional Gaussain model and uses a likelihood ratio test.
  *
@@ -89,8 +88,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Returns and independence result that states whetehr x _||_y | z and what the
-     * p-value of the test is.
+     * Returns and independence result that states whetehr x _||_y | z and what the p-value of the test is.
      *
      * @return an independence result (see)
      * @see IndependenceResult
@@ -153,8 +151,8 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Returns the probability associated with the most recently executed independence test,
-     * or Double.NaN if p value is not meaningful for this test.
+     * Returns the probability associated with the most recently executed independence test, or Double.NaN if p value is
+     * not meaningful for this test.
      */
     public double getPValue() {
         return this.pValue;
@@ -207,8 +205,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Returns a number that is higher for stronger judgments of dependence
-     * and negative for judgments of independence.
+     * Returns a number that is higher for stronger judgments of dependence and negative for judgments of independence.
      *
      * @return This number.
      */

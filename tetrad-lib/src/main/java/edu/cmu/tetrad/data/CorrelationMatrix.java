@@ -31,8 +31,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Stores a correlation matrix together with variable names and sample size;
- * intended as a representation of a data set.
+ * Stores a correlation matrix together with variable names and sample size; intended as a representation of a data
+ * set.
  *
  * @author josephramsey
  */
@@ -42,8 +42,7 @@ public final class CorrelationMatrix extends CovarianceMatrix {
     //=============================CONSTRUCTORS=========================//
 
     /**
-     * Constructs a new correlation matrix using the covariances in the given
-     * covariance matrix.
+     * Constructs a new correlation matrix using the covariances in the given covariance matrix.
      */
     public CorrelationMatrix(ICovarianceMatrix matrix) {
         this(matrix.getVariables(), MatrixUtils.convertCovToCorr(matrix.getMatrix()), matrix.getSampleSize());
@@ -61,8 +60,8 @@ public final class CorrelationMatrix extends CovarianceMatrix {
     }
 
     /**
-     * Constructs a correlation matrix data set using the given information. The
-     * matrix matrix is internally converted to a correlation matrix.
+     * Constructs a correlation matrix data set using the given information. The matrix matrix is internally converted
+     * to a correlation matrix.
      */
     public CorrelationMatrix(List<Node> variables, Matrix matrix,
                              int sampleSize) {
@@ -101,8 +100,7 @@ public final class CorrelationMatrix extends CovarianceMatrix {
     }
 
     /**
-     * @return a submatrix, returning as a correlation matrix, with variables
-     * in the given order.
+     * @return a submatrix, returning as a correlation matrix, with variables in the given order.
      */
     public CorrelationMatrix getSubCorrMatrix(String[] submatrixVarNames) {
         ICovarianceMatrix covarianceMatrix = getSubmatrix(submatrixVarNames);

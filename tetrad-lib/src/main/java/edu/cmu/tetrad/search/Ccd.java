@@ -44,8 +44,7 @@ import java.util.*;
  * discovery. Aaai Press.</p>
  *
  * <p>The graph takes continuous data from a cyclic model as input and returns a cyclic
- * PAG graphs, with various types of underlining, that represents a Markov equivalence of
- * the true DAG.</p>
+ * PAG graphs, with various types of underlining, that represents a Markov equivalence of the true DAG.</p>
  *
  * <p>This class is not configured to respect knowledge of forbidden and required
  * edges.</p>
@@ -73,13 +72,12 @@ public final class Ccd implements IGraphSearch {
     //======================================== PUBLIC METHODS ====================================//
 
     /**
-     * The search method assumes that the IndependenceTest provided to the constructor is a
-     * conditional independence oracle for the SEM (or Bayes network) which describes the
-     * causal structure of the population. The method returns a PAG instantiated as a Tetrad
-     * GaSearchGraph which represents the equivalence class of digraphs which are d-separation
-     * equivalent to the digraph of the underlying model (SEM or BN). Although they are not
-     * returned by the search method it also computes two lists of triples which, respectively
-     * store the underlines and dotted underlines of the PAG.
+     * The search method assumes that the IndependenceTest provided to the constructor is a conditional independence
+     * oracle for the SEM (or Bayes network) which describes the causal structure of the population. The method returns
+     * a PAG instantiated as a Tetrad GaSearchGraph which represents the equivalence class of digraphs which are
+     * d-separation equivalent to the digraph of the underlying model (SEM or BN). Although they are not returned by the
+     * search method it also computes two lists of triples which, respectively store the underlines and dotted
+     * underlines of the PAG.
      *
      * @return The CCD cyclic PAG for the data.
      */

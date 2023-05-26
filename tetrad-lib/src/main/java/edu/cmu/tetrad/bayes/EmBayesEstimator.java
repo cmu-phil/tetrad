@@ -36,11 +36,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Estimates parameters of the given Bayes net from the given data using maximum
- * likelihood method.
+ * Estimates parameters of the given Bayes net from the given data using maximum likelihood method.
  *
- * @author Frank Wimberly based on related classes by Shane Harwood, Joseph
- * Ramsey
+ * @author Frank Wimberly based on related classes by Shane Harwood, Joseph Ramsey
  */
 public final class EmBayesEstimator {
     private final BayesPm bayesPm;
@@ -59,44 +57,36 @@ public final class EmBayesEstimator {
     private BayesIm estimatedIm;
 
     /**
-     * The main data structure of this class is the double[][][] array
-     * estimatedCounts; it stores the values of all the estimated counts for
-     * the Bayes net.  The first dimension is the node index, in the order of
-     * 'nodes'.  The second dimension is the row index for the table of
-     * parameters associated with node; the third dimension is the column index.
-     * The row index is calculated by the function getRowIndex(int[] values)
-     * where 'values' is an array of numerical indices for each of the parent
-     * values; the order of the values in this array is the same as the order of
-     * nodes in 'parents'; the value indices are obtained from the Bayes PM
-     * for each node.  The column is the index of the value of N, where this
-     * index is obtained from the Bayes PM.
+     * The main data structure of this class is the double[][][] array estimatedCounts; it stores the values of all the
+     * estimated counts for the Bayes net.  The first dimension is the node index, in the order of 'nodes'.  The second
+     * dimension is the row index for the table of parameters associated with node; the third dimension is the column
+     * index. The row index is calculated by the function getRowIndex(int[] values) where 'values' is an array of
+     * numerical indices for each of the parent values; the order of the values in this array is the same as the order
+     * of nodes in 'parents'; the value indices are obtained from the Bayes PM for each node.  The column is the index
+     * of the value of N, where this index is obtained from the Bayes PM.
      */
     private double[][][] estimatedCounts;
 
     /**
-     * For each row of the conditional probability table for each node, this is
-     * the estimated count of the number of occurrences of the corresponding set
-     * of values of parents in the dataset.  The first dimension is the node
-     * index and the second is the row number. Hence, the conditional
-     * probabilities are computed by dividing estimatedCounts[node][row][column]
-     * by estimateCountsDenom[node][row].
+     * For each row of the conditional probability table for each node, this is the estimated count of the number of
+     * occurrences of the corresponding set of values of parents in the dataset.  The first dimension is the node index
+     * and the second is the row number. Hence, the conditional probabilities are computed by dividing
+     * estimatedCounts[node][row][column] by estimateCountsDenom[node][row].
      */
     private double[][] estimatedCountsDenom;
 
     /**
-     * The conditional proabilities are stored in this array.  As above, the
-     * dimensions are node, row and column respectively.
+     * The conditional proabilities are stored in this array.  As above, the dimensions are node, row and column
+     * respectively.
      */
     private double[][][] condProbs;
 
     /**
-     * Provides methods for estimating a Bayes IM from an existing BayesIM and a
-     * discrete dataset using EM (Expectation Maximization).  The data columns
-     * in the given data must be equal to a variable in the given Bayes IM but
-     * the latter may contain variables which don't occur in the dataset (latent
-     * variables). The first argument of the constructoris the BayesPm
-     * whose graph contains latent and observed variables.  The second is the
-     * dataset of observed variables; missing value codes may be present.
+     * Provides methods for estimating a Bayes IM from an existing BayesIM and a discrete dataset using EM (Expectation
+     * Maximization).  The data columns in the given data must be equal to a variable in the given Bayes IM but the
+     * latter may contain variables which don't occur in the dataset (latent variables). The first argument of the
+     * constructoris the BayesPm whose graph contains latent and observed variables.  The second is the dataset of
+     * observed variables; missing value codes may be present.
      */
     public EmBayesEstimator(BayesPm bayesPm, DataSet dataSet) {
 
@@ -223,29 +213,21 @@ public final class EmBayesEstimator {
     }
 
     /**
-     * This method takes an instantiated Bayes net (BayesIm) whose graph include
-     * all the variables (observed and latent) and computes estimated counts
-     * using the data in the DataSet mixedData. The counts that are
-     * estimated correspond to cells in the conditional probability tables of
-     * the Bayes net.  The outermost loop (indexed by j) is over the set of
-     * variables.  If the variable has no parents, each case in the dataset is
-     * examined and the count for the observed value of the variables is
-     * increased by 1.0; if the value of the variable is missing the marginal
-     * probabilities its values given the values of the variables that are
-     * available for that case are used to increment the corresponding estimated
-     * counts. If a variable has parents then there is a loop which steps
-     * through all possible sets of values of its parents.  This loop is indexed
-     * by the variable "row".  Each case in the dataset is examined.  It the
-     * variable and all its parents have values in the case the corresponding
-     * estimated counts are incremented by 1.0.  If the variable or any of its
-     * parents have missing values, the joint marginal is computed for the
-     * variable and the set of values of its parents corresponding to "row" and
-     * the corresponding estimated counts are incremented by the appropriate
-     * probability. The estimated counts are stored in the double[][][]
-     * array estimatedCounts.  The count (possibly fractional) of the number of
-     * times each combination of parent values occurs is stored in the
-     * double[][] array estimatedCountsDenom.  These two arrays are used to
-     * compute the estimated conditional probabilities of the output Bayes net.
+     * This method takes an instantiated Bayes net (BayesIm) whose graph include all the variables (observed and latent)
+     * and computes estimated counts using the data in the DataSet mixedData. The counts that are estimated correspond
+     * to cells in the conditional probability tables of the Bayes net.  The outermost loop (indexed by j) is over the
+     * set of variables.  If the variable has no parents, each case in the dataset is examined and the count for the
+     * observed value of the variables is increased by 1.0; if the value of the variable is missing the marginal
+     * probabilities its values given the values of the variables that are available for that case are used to increment
+     * the corresponding estimated counts. If a variable has parents then there is a loop which steps through all
+     * possible sets of values of its parents.  This loop is indexed by the variable "row".  Each case in the dataset is
+     * examined.  It the variable and all its parents have values in the case the corresponding estimated counts are
+     * incremented by 1.0.  If the variable or any of its parents have missing values, the joint marginal is computed
+     * for the variable and the set of values of its parents corresponding to "row" and the corresponding estimated
+     * counts are incremented by the appropriate probability. The estimated counts are stored in the double[][][] array
+     * estimatedCounts.  The count (possibly fractional) of the number of times each combination of parent values occurs
+     * is stored in the double[][] array estimatedCountsDenom.  These two arrays are used to compute the estimated
+     * conditional probabilities of the output Bayes net.
      */
     private void expectation(BayesIm inputBayesIm) {
         int numCases = this.mixedData.getNumRows();
@@ -412,15 +394,12 @@ public final class EmBayesEstimator {
     }
 
     /**
-     * This method iteratively estimates the parameters of the Bayes net using
-     * the dataset until the parameters don't change.  That is, the newly
-     * estimated parameters are used in the estimate method to produce even more
-     * accurate parameters (with respect to the dataset) etc.  The threshhold is
-     * compared to the distance between successive parameter sets and when the
-     * change is less than the threshhold, the process is considered to have
-     * converged.  The distance between successive Bayes nets is the Euclidean
-     * distance between vectors of sequences of their parameters.  See the
-     * BayesImDistanceFunction class for details.
+     * This method iteratively estimates the parameters of the Bayes net using the dataset until the parameters don't
+     * change.  That is, the newly estimated parameters are used in the estimate method to produce even more accurate
+     * parameters (with respect to the dataset) etc.  The threshhold is compared to the distance between successive
+     * parameter sets and when the change is less than the threshhold, the process is considered to have converged.  The
+     * distance between successive Bayes nets is the Euclidean distance between vectors of sequences of their
+     * parameters.  See the BayesImDistanceFunction class for details.
      */
     public BayesIm maximization(double threshhold) {
         double distance = Double.MAX_VALUE;
@@ -451,11 +430,9 @@ public final class EmBayesEstimator {
     }
 
     /**
-     * Estimates a Bayes IM using the variables, graph, and parameters in the
-     * given Bayes PM and the data columns in the given data set. Each variable
-     * in the given Bayes PM must be equal to a variable in the given data set.
-     * The Bayes IM so estimated is used as the initial Bayes net in the
-     * iterative procedure implemented in the maximize method.
+     * Estimates a Bayes IM using the variables, graph, and parameters in the given Bayes PM and the data columns in the
+     * given data set. Each variable in the given Bayes PM must be equal to a variable in the given data set. The Bayes
+     * IM so estimated is used as the initial Bayes net in the iterative procedure implemented in the maximize method.
      */
     private void estimateIM(BayesPm bayesPm, DataSet dataSet) {
         if (bayesPm == null) {

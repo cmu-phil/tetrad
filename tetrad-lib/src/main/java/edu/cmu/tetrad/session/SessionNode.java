@@ -37,27 +37,22 @@ import java.util.*;
 
 /**
  * <p>
- * Represents a node in a session for a model in a particular class. The sets of
- * possible model classes for this node are given in the constructors of the
- * model classes for the node. Parents (also SessionNodes) may be added to this
- * node provided some combination of the parents' model classes serves a partial
- * argument set to some constructor of the one of this node's model classes. To
- * put it slightly differently, parents can be added to this node one at a time,
- * though at any step along the way it ought to be possible (perhaps by adding
- * more parent nodes) to use the parent models to construct a model of one of
- * the legal types for this node.&gt; 0
+ * Represents a node in a session for a model in a particular class. The sets of possible model classes for this node
+ * are given in the constructors of the model classes for the node. Parents (also SessionNodes) may be added to this
+ * node provided some combination of the parents' model classes serves a partial argument set to some constructor of the
+ * one of this node's model classes. To put it slightly differently, parents can be added to this node one at a time,
+ * though at any step along the way it ought to be possible (perhaps by adding more parent nodes) to use the parent
+ * models to construct a model of one of the legal types for this node.&gt; 0
  * <p>
  * To retrieve the list of classes for which models may be created, call the <code>getConsistentModelClasses
  * </code>. To construct a model for a particular model choice, call
  * <code>createModel</code> method for the desired class. If the model has a
  * parameterizing object, this object may be passed in using the
  * <code>createParameterizedModel</code> method. For parameterized models, the
- * model object is treated simply as an additional parent to the model and
- * therefore must appear as an argument to one of the constructors of the
- * model.&gt; 0
+ * model object is treated simply as an additional parent to the model and therefore must appear as an argument to one
+ * of the constructors of the model.&gt; 0
  * <p>
- * This node keeps track of its parents and its children and keeps these two
- * sets of SessionNodes in sync.&gt; 0
+ * This node keeps track of its parents and its children and keeps these two sets of SessionNodes in sync.&gt; 0
  *
  * @author josephramsey
  * @see Session
@@ -98,33 +93,29 @@ public class SessionNode implements Node {
     private Class lastModelClass;
 
     /**
-     * When a model is created, we keep a reference to its param types in order
-     * to determine, should the need arise, whether one of the objects used to
-     * create the model has been destroyed.
+     * When a model is created, we keep a reference to its param types in order to determine, should the need arise,
+     * whether one of the objects used to create the model has been destroyed.
      *
      * @serial Can be null.
      */
     private Class[] modelParamTypes;
 
     /**
-     * The model itself. Once this is created, another model cannot be created
-     * until this one is explicitly destroyed.
+     * The model itself. Once this is created, another model cannot be created until this one is explicitly destroyed.
      *
      * @serial Can be null.
      */
     private SessionModel model;
 
     /**
-     * Stores a reference to the previous model so that information from it can
-     * be used to initialize a new model.
+     * Stores a reference to the previous model so that information from it can be used to initialize a new model.
      *
      * @serial Can be null.
      */
     private SessionModel oldModel;
 
     /**
-     * Stores a clone of the model being edited, in case the user wants to
-     * cancel.
+     * Stores a clone of the model being edited, in case the user wants to cancel.
      */
     private transient SessionModel savedModel;
 
@@ -136,33 +127,32 @@ public class SessionNode implements Node {
     private final Map<Class, Parameters> paramMap = new HashMap<>();
 
     /**
-     * The set of parents of this node--a Set of SessionNodes. Must be kept in
-     * sync with sets of children in the parent nodes.
+     * The set of parents of this node--a Set of SessionNodes. Must be kept in sync with sets of children in the parent
+     * nodes.
      *
      * @serial Cannot be null.
      */
     private Set<SessionNode> parents = new HashSet<>();
 
     /**
-     * The set of children of this node--a Set of SessionNodes. Must be kept in
-     * sync with sets of parents in the child nodes.
+     * The set of children of this node--a Set of SessionNodes. Must be kept in sync with sets of parents in the child
+     * nodes.
      *
      * @serial Cannot be null.
      */
     private Set<SessionNode> children = new HashSet<>();
 
     /**
-     * True iff the next edge should not be added. (Included for GUI user
-     * control.) Reset to true every time an edge is added; edge adds must be
-     * disallowed individually. To disallow the next edge add, set to false.
+     * True iff the next edge should not be added. (Included for GUI user control.) Reset to true every time an edge is
+     * added; edge adds must be disallowed individually. To disallow the next edge add, set to false.
      *
      * @serial Any value.
      */
     private boolean nextEdgeAddAllowed = true;
 
     /**
-     * The number of times this session node should be executed (in depth first
-     * order) in a simulation edu.cmu.tetrad.study.
+     * The number of times this session node should be executed (in depth first order) in a simulation
+     * edu.cmu.tetrad.study.
      *
      * @serial Range &gt; 0.
      */
@@ -174,16 +164,14 @@ public class SessionNode implements Node {
     private transient SessionSupport sessionSupport;
 
     /**
-     * Handles incoming session events, basically by redirecting to any
-     * listeners of this session.
+     * Handles incoming session events, basically by redirecting to any listeners of this session.
      */
     private transient SessionHandler sessionHandler;
     private TetradLoggerConfig loggerConfig;
     private final Parameters parameters = new Parameters();
 
     /**
-     * Node variable type (domain, interventional status, interventional
-     * value..) of this node variable
+     * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
 
@@ -199,12 +187,10 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Creates a new session node with the given name, capable of implementing
-     * the given model class.
+     * Creates a new session node with the given name, capable of implementing the given model class.
      *
      * @param boxType     The name of the box type--for instance, "Graph."
-     * @param displayName The name of this particular session node. Any non-null
-     *                    string.
+     * @param displayName The name of this particular session node. Any non-null string.
      * @param modelClass  A single model class associated with this session node.
      */
     public SessionNode(String boxType, String displayName, Class modelClass) {
@@ -212,26 +198,21 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Creates a new session node with the given name capable of implementing
-     * the given model classes.
+     * Creates a new session node with the given name capable of implementing the given model classes.
      */
     public SessionNode(Class[] modelClasses) {
         this("???", "???", modelClasses);
     }
 
     /**
-     * Creates a new session node with the given name capable of implementing
-     * the given model classes. When models are created, they will be of one of
-     * these classes. Reflection will be used to create the models by matching
-     * the models of the parent Session Nodes to constructor arguments of the
-     * class given as argument to the <code>createModel</code> method, which
-     * must itself be one of these model classes.
+     * Creates a new session node with the given name capable of implementing the given model classes. When models are
+     * created, they will be of one of these classes. Reflection will be used to create the models by matching the
+     * models of the parent Session Nodes to constructor arguments of the class given as argument to the
+     * <code>createModel</code> method, which must itself be one of these model classes.
      *
      * @param boxType      The name of the box type--for instance, "Graph."
-     * @param displayName  The name of this particular session node. Any non-null
-     *                     string.
-     * @param modelClasses An array of model classes associated with this
-     *                     session node.
+     * @param displayName  The name of this particular session node. Any non-null string.
+     * @param modelClasses An array of model classes associated with this session node.
      */
     public SessionNode(String boxType, String displayName,
                        Class[] modelClasses) {
@@ -271,9 +252,8 @@ public class SessionNode implements Node {
     //==========================PUBLIC METHODS============================//
 
     /**
-     * Adds a parent to this node provided the resulting set of parents taken
-     * together provides some combination of possible model classes that can be
-     * used as a constructor to some one of the model classes for this node.
+     * Adds a parent to this node provided the resulting set of parents taken together provides some combination of
+     * possible model classes that can be used as a constructor to some one of the model classes for this node.
      */
     public boolean addParent(SessionNode parent) {
         if (this.parents.contains(parent)) {
@@ -364,9 +344,8 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Same as addParent except tests if this has already been created. If so
-     * the user is asked whether to add parent and update parent's desendents or
-     * to cancel the operation.
+     * Same as addParent except tests if this has already been created. If so the user is asked whether to add parent
+     * and update parent's desendents or to cancel the operation.
      */
     public boolean addParent2(SessionNode parent) {
         if (this.parents.contains(parent)) {
@@ -464,8 +443,7 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Adds a child to the node, provided this node can be added as a parent to
-     * the child node.
+     * Adds a child to the node, provided this node can be added as a parent to the child node.
      */
     public boolean addChild(SessionNode child) {
         if (!this.children.contains(child)) {
@@ -519,10 +497,9 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Creates a model, provided the class of the model can be uniquely
-     * determined without any further hints. If a model was created previously,
-     * the previous model class is used. If there is only one consistent model
-     * class, than that model class is used. Otherwise, an exception is thrown.
+     * Creates a model, provided the class of the model can be uniquely determined without any further hints. If a model
+     * was created previously, the previous model class is used. If there is only one consistent model class, than that
+     * model class is used. Otherwise, an exception is thrown.
      *
      * @return true iff this node contains a model when this method completes.
      * @throws RuntimeException if the model could not be created.
@@ -547,16 +524,14 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Creates a model of the given class using models of the parent
-     * SessionNodes as constructor arguments. If no appropriate constructor is
-     * available, no model is created, and the method returns false. If the
-     * attempt to construct a model using reflection fails, the stack trace is
-     * printed to System.err and an IllegalArgumentException is thrown. t
+     * Creates a model of the given class using models of the parent SessionNodes as constructor arguments. If no
+     * appropriate constructor is available, no model is created, and the method returns false. If the attempt to
+     * construct a model using reflection fails, the stack trace is printed to System.err and an
+     * IllegalArgumentException is thrown. t
      *
-     * @throws RuntimeException if the attempt to construct the model throws
-     *                          either an IllegalAccessException, an InstantiationException, or an
-     *                          InvocationTargetException. In this case, a stack trace is printed to
-     *                          System.err.
+     * @throws RuntimeException if the attempt to construct the model throws either an IllegalAccessException, an
+     *                          InstantiationException, or an InvocationTargetException. In this case, a stack trace is
+     *                          printed to System.err.
      */
     public void createModel(Class modelClass, boolean simulation)
             throws Exception {
@@ -654,8 +629,7 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Sets the model to null. This step must be performed before a new model
-     * can be created.
+     * Sets the model to null. This step must be performed before a new model can be created.
      */
     public void destroyModel() {
         if (this.model != null) {
@@ -668,8 +642,7 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Forgets the old model so that it can't be used to recapture parameter
-     * values.
+     * Forgets the old model so that it can't be used to recapture parameter values.
      */
     public void forgetOldModel() {
         this.oldModel = null;
@@ -698,12 +671,10 @@ public class SessionNode implements Node {
 
     /**
      * @param exact
-     * @return those model classes among the possible model classes that are at
-     * least consistent with the model class of the parent session nodes, in the
-     * sense that possibly with the addition of more parent session nodes, and
-     * assuming that the models of the parent session nodes are non-null, it is
-     * possible to construct a model in one of the legal classes for this node
-     * using the parent models as arguments to some constructor in that class.
+     * @return those model classes among the possible model classes that are at least consistent with the model class of
+     * the parent session nodes, in the sense that possibly with the addition of more parent session nodes, and assuming
+     * that the models of the parent session nodes are non-null, it is possible to construct a model in one of the legal
+     * classes for this node using the parent models as arguments to some constructor in that class.
      */
     public Class[] getConsistentModelClasses(boolean exact) {
         List<Class> classes = new ArrayList<>();
@@ -746,8 +717,7 @@ public class SessionNode implements Node {
     }
 
     /**
-     * @return the class of the last model that was created, or null if no model
-     * has been created yet.
+     * @return the class of the last model that was created, or null if no model has been created yet.
      */
     public Class getLastModelClass() {
         return this.lastModelClass;
@@ -768,10 +738,9 @@ public class SessionNode implements Node {
     }
 
     /**
-     * @return true iff this node is in a freshly created state. A node that is
-     * in a freshly created state has no model, no parents, no children, and no
-     * listeners. It does, however, have the array of possible model classes
-     * that it was constructed with, and it may or may not have a name.
+     * @return true iff this node is in a freshly created state. A node that is in a freshly created state has no model,
+     * no parents, no children, and no listeners. It does, however, have the array of possible model classes that it was
+     * constructed with, and it may or may not have a name.
      */
     public boolean isFreshlyCreated() {
         return (this.model == null) && (this.modelParamTypes == null)
@@ -780,9 +749,8 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Resets this sesion node to the state it was in when first constructed.
-     * Removes any parents or children, destroys the model if there is one, and
-     * resets all listeners. Fires an event for each action taken.
+     * Resets this sesion node to the state it was in when first constructed. Removes any parents or children, destroys
+     * the model if there is one, and resets all listeners. Fires an event for each action taken.
      */
     public void resetToFreshlyCreated() {
         if (!isFreshlyCreated()) {
@@ -808,8 +776,7 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Removes any parents or children of the node that are not in the given
-     * list.
+     * Removes any parents or children of the node that are not in the given list.
      */
     public void restrictConnectionsToList(List sessionNodes) {
 
@@ -838,19 +805,16 @@ public class SessionNode implements Node {
 
     /**
      * <p>
-     * Tests whether two session nodes that are not necessarily object identical
-     * are nevertheless identical in structure. This method should not be made
-     * to override <code>equals</code> since <code>equals</code> is used in the
-     * Collections API to determine, for example, containment in an ArrayList,
-     * and the sense of equality needed for that is object identity.
-     * Nevertheless, for certain other purposes, such as checking serialization,
-     * a looser sense of structural identity is helpful.&gt; 0
+     * Tests whether two session nodes that are not necessarily object identical are nevertheless identical in
+     * structure. This method should not be made to override <code>equals</code> since <code>equals</code> is used in
+     * the Collections API to determine, for example, containment in an ArrayList, and the sense of equality needed for
+     * that is object identity. Nevertheless, for certain other purposes, such as checking serialization, a looser sense
+     * of structural identity is helpful.&gt; 0
      * <p>
-     * Two SessionNodes are structurally identical just in case their possible
-     * model classes are equal, the parameter type arrays used to construct
-     * their models are equal, their models themselves are equal, and the model
-     * classes of the parent and child SessionNodes are equal. We dare not check
-     * equality of parents and children outright for fear of circularity.&gt; 0
+     * Two SessionNodes are structurally identical just in case their possible model classes are equal, the parameter
+     * type arrays used to construct their models are equal, their models themselves are equal, and the model classes of
+     * the parent and child SessionNodes are equal. We dare not check equality of parents and children outright for fear
+     * of circularity.&gt; 0
      */
     public boolean isStructurallyIdentical(SessionNode node) {
         if (node == null) {
@@ -1084,9 +1048,8 @@ public class SessionNode implements Node {
     }
 
     /**
-     * True iff the next edge should not be added. (Included for GUI user
-     * control.) Reset to true every time an edge is added; edge adds must be
-     * disallowed individually. To disallow the next edge add, set to false.
+     * True iff the next edge should not be added. (Included for GUI user control.) Reset to true every time an edge is
+     * added; edge adds must be disallowed individually. To disallow the next edge add, set to false.
      */
     public void setNextEdgeAddAllowed(boolean nextEdgeAddAllowed) {
         this.nextEdgeAddAllowed = nextEdgeAddAllowed;
@@ -1130,9 +1093,8 @@ public class SessionNode implements Node {
     }
 
     /**
-     * @return true if the cloning operation was successful, false if not. If
-     * the cloning operation was not successful, the model will not have been
-     * altered.
+     * @return true if the cloning operation was successful, false if not. If the cloning operation was not successful,
+     * the model will not have been altered.
      */
     public boolean useClonedModel() {
 
@@ -1181,9 +1143,8 @@ public class SessionNode implements Node {
     //===================================================================//
 
     /**
-     * Determines whether a given model class is consistent with the models
-     * contained in the given List of nodes, in the sense that the model class
-     * has a constructor that can take the models of the nodes as arguments.
+     * Determines whether a given model class is consistent with the models contained in the given List of nodes, in the
+     * sense that the model class has a constructor that can take the models of the nodes as arguments.
      */
     public boolean isConsistentModelClass(Class<Type1> modelClass, List nodes, boolean exact) {
 
@@ -1204,10 +1165,9 @@ public class SessionNode implements Node {
 
     /**
      * <p>
-     * Tests whether the model class has an argument that takes all of the given
-     * argument classes (or more) as arguments. The purpose of this is to allow
-     * parent nodes to be added one at a time to this node, whether or not any
-     * of the nodes in question have non-null models.&gt; 0
+     * Tests whether the model class has an argument that takes all of the given argument classes (or more) as
+     * arguments. The purpose of this is to allow parent nodes to be added one at a time to this node, whether or not
+     * any of the nodes in question have non-null models.&gt; 0
      */
     public boolean existsConstructor(Class modelClass, Class[] argumentTypes) {
         for (Class argumentType1 : argumentTypes) {
@@ -1244,8 +1204,7 @@ public class SessionNode implements Node {
 
     /**
      * <p>
-     * Returns the first class c in <code>classes</code> that <code>clazz</code>
-     * is assignable to.&gt; 0
+     * Returns the first class c in <code>classes</code> that <code>clazz</code> is assignable to.&gt; 0
      */
     public Class getAssignableClass(List classes, Class clazz) {
         for (Object aClass : classes) {
@@ -1260,14 +1219,11 @@ public class SessionNode implements Node {
 
     /**
      * <p>
-     * Returns the objects in the List as an array in the same order as the
-     * parameter types. If an exact match cannot be found, throws a
-     * RuntimeException with an appropriate message.
+     * Returns the objects in the List as an array in the same order as the parameter types. If an exact match cannot be
+     * found, throws a RuntimeException with an appropriate message.
      *
-     * @param parameterTypes a list of classes; if any of them is null, a
-     *                       NullPointerException will be thrown.
-     * @param objects        a List of objects. (The nulls will be automatically thrown
-     *                       out for this one.)
+     * @param parameterTypes a list of classes; if any of them is null, a NullPointerException will be thrown.
+     * @param objects        a List of objects. (The nulls will be automatically thrown out for this one.)
      */
     public Object[] assignParameters(Class[] parameterTypes, List objects)
             throws RuntimeException {
@@ -1418,8 +1374,8 @@ public class SessionNode implements Node {
     }
 
     /**
-     * @return an array with a combination of particular values for variables
-     * given an array indicating the number of values for each variable.
+     * @return an array with a combination of particular values for variables given an array indicating the number of
+     * values for each variable.
      */
     public int[] getValueCombination(int index, int[] numValues) {
 
@@ -1447,8 +1403,7 @@ public class SessionNode implements Node {
     }
 
     /**
-     * @return the saved session handler if such exists; otherwise, creates one
-     * and returns it.
+     * @return the saved session handler if such exists; otherwise, creates one and returns it.
      */
     SessionHandler getSessionHandler() {
         if (this.sessionHandler == null) {
@@ -1475,9 +1430,8 @@ public class SessionNode implements Node {
     }
 
     /**
-     * True iff the next edge should not be added. (Included for GUI user
-     * control.) Reset to true every time an edge is added; edge adds must be
-     * disallowed individually. To disallow the next edge add, set to false.
+     * True iff the next edge should not be added. (Included for GUI user control.) Reset to true every time an edge is
+     * added; edge adds must be disallowed individually. To disallow the next edge add, set to false.
      */
     private boolean isNextEdgeAddAllowed() {
         return this.nextEdgeAddAllowed;
@@ -1514,8 +1468,7 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Creates model using the given arguments, if possible. If not possible,
-     * the field this.model is unchanged.
+     * Creates model using the given arguments, if possible. If not possible, the field this.model is unchanged.
      */
     private void createModelUsingArguments(Class modelClass, List<Object> models)
             throws Exception {
@@ -1760,8 +1713,7 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Reassesses whether the getModel model is permitted in light of the
-     * destruction of one of the parent models.
+     * Reassesses whether the getModel model is permitted in light of the destruction of one of the parent models.
      */
     private void reassessModel() {
         if (this.modelParamTypes == null) {
@@ -1795,9 +1747,8 @@ public class SessionNode implements Node {
     }
 
     /**
-     * @return the saved session support if such exists; otherwise, creates a
-     * new session support adding all of the child session nodes of this node as
-     * listeners.
+     * @return the saved session support if such exists; otherwise, creates a new session support adding all of the
+     * child session nodes of this node as listeners.
      */
     private SessionSupport getSessionSupport() {
         if (this.sessionSupport == null) {
@@ -1844,24 +1795,21 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Handles <code>SessionEvent</code>s. Hides the handling of these from the
-     * API.
+     * Handles <code>SessionEvent</code>s. Hides the handling of these from the API.
      */
     private class SessionHandler extends SessionAdapter {
 
         /**
-         * When a model is destroyed from a node this is listening to and this
-         * destroys one of the arguments used to create the model, then the
-         * model of this node has to be destroyed.
+         * When a model is destroyed from a node this is listening to and this destroys one of the arguments used to
+         * create the model, then the model of this node has to be destroyed.
          */
         public void modelDestroyed(SessionEvent event) {
             reassessModel();
         }
 
         /**
-         * When a new execution is begun of a simulation edu.cmu.tetrad.study,
-         * this event is sent downstream so that certain parameter objects can
-         * reset themselves.
+         * When a new execution is begun of a simulation edu.cmu.tetrad.study, this event is sent downstream so that
+         * certain parameter objects can reset themselves.
          */
         public void executionStarted(SessionEvent event) {
 
@@ -1892,14 +1840,12 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

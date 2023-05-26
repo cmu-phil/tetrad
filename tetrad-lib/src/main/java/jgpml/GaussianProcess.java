@@ -36,8 +36,8 @@ import jgpml.covariancefunctions.CovarianceFunction;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Main class of the package, contains the objects that constitutes a Gaussian Process as well
- * as the algorithm to train the Hyperparameters and to do predictions.
+ * Main class of the package, contains the objects that constitutes a Gaussian Process as well as the algorithm to train
+ * the Hyperparameters and to do predictions.
  */
 public class GaussianProcess {
 
@@ -78,7 +78,8 @@ public class GaussianProcess {
 
 
     /**
-     * Trains the GP Hyperparameters maximizing the marginal likelihood. By default the minimisation algorithm performs 100 iterations.
+     * Trains the GP Hyperparameters maximizing the marginal likelihood. By default the minimisation algorithm performs
+     * 100 iterations.
      *
      * @param X         - the input data points
      * @param y         - the target data points
@@ -89,7 +90,8 @@ public class GaussianProcess {
     }
 
     /**
-     * Trains the GP Hyperparameters maximizing the marginal likelihood. By default the algorithm performs 100 iterations.
+     * Trains the GP Hyperparameters maximizing the marginal likelihood. By default the algorithm performs 100
+     * iterations.
      *
      * @param X          - the input data points
      * @param y          - the target data points
@@ -104,8 +106,8 @@ public class GaussianProcess {
 
 
     /**
-     * Computes minus the log likelihood and its partial derivatives with
-     * respect to the hyperparameters; this mode is used to fit the hyperparameters.
+     * Computes minus the log likelihood and its partial derivatives with respect to the hyperparameters; this mode is
+     * used to fit the hyperparameters.
      *
      * @param logtheta column <code>Matrix</code> of hyperparameters
      * @param y        output dataset
@@ -154,10 +156,9 @@ public class GaussianProcess {
 
 
     /**
-     * Computes Gaussian predictions, whose mean and variance are returned.
-     * Note that in cases where the covariance function has noise contributions,
-     * the variance returned in S2 is for noisy test targets;
-     * if you want the variance of the noise-free latent function, you must subtract the noise variance.
+     * Computes Gaussian predictions, whose mean and variance are returned. Note that in cases where the covariance
+     * function has noise contributions, the variance returned in S2 is for noisy test targets; if you want the variance
+     * of the noise-free latent function, you must subtract the noise variance.
      *
      * @param xstar test dataset
      * @return [ystar Sstar] predicted mean and covariance
@@ -189,10 +190,9 @@ public class GaussianProcess {
 
 
     /**
-     * Computes Gaussian predictions, whose mean is returned.
-     * Note that in cases where the covariance function has noise contributions,
-     * the variance returned in S2 is for noisy test targets;
-     * if you want the variance of the noise-free latent function, you must substract the noise variance.
+     * Computes Gaussian predictions, whose mean is returned. Note that in cases where the covariance function has noise
+     * contributions, the variance returned in S2 is for noisy test targets; if you want the variance of the noise-free
+     * latent function, you must substract the noise variance.
      *
      * @param xstar test dataset
      * @return [ystar Sstar] predicted mean and covariance

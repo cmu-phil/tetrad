@@ -35,16 +35,13 @@ import java.util.List;
 final class BayesUtils {
 
     /**
-     * Ensures that the discrete variables in the given list are compatible with
-     * the variables in the data set by the same names. If a variable x in the
-     * list has a superlist of the categories for x in the data, the data
-     * variables is changed.
+     * Ensures that the discrete variables in the given list are compatible with the variables in the data set by the
+     * same names. If a variable x in the list has a superlist of the categories for x in the data, the data variables
+     * is changed.
      *
-     * @throws IllegalArgumentException if a variable exists in the list for
-     *                                  which no variable occurs in the data by
-     *                                  the same name or if the variable in the
-     *                                  data by the same name does not have a
-     *                                  subset of its categories.
+     * @throws IllegalArgumentException if a variable exists in the list for which no variable occurs in the data by the
+     *                                  same name or if the variable in the data by the same name does not have a subset
+     *                                  of its categories.
      */
     public static void ensureVarsInData(List<Node> pmVars,
                                         DataSet dataSet) {

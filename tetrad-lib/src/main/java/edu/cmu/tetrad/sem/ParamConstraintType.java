@@ -26,9 +26,8 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.io.ObjectStreamException;
 
 /**
- * A typesafe enum of the types of the types of constraints on freeParameters for
- * SEM models (LT, GT, EQ). For example, LT constraints require that the value
- * of a parameter in a given SemIm be less than some value.  That value may be a
+ * A typesafe enum of the types of the types of constraints on freeParameters for SEM models (LT, GT, EQ). For example,
+ * LT constraints require that the value of a parameter in a given SemIm be less than some value.  That value may be a
  * given number (double) or the value of another parameter.
  *
  * @author Frank Wimberly following Joe Ramsey's ParamType class.
@@ -63,8 +62,7 @@ public class ParamConstraintType implements TetradSerializable {
     private final transient String name;
 
     /**
-     * Protected constructor for the types; this allows for extension in case
-     * anyone wants to add formula types.
+     * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
     private ParamConstraintType(String name) {
         this.name = name;

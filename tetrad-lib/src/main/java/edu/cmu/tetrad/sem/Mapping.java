@@ -78,8 +78,7 @@ public class Mapping implements TetradSerializable {
      * Constructs matrix new mapping using the given freeParameters.
      *
      * @param parameter The parameter that this maps.
-     * @param matrix    The array containing matrix[i][j], the element to be
-     *                  manipulated.
+     * @param matrix    The array containing matrix[i][j], the element to be manipulated.
      * @param i         Left coordinates of matrix[i][j].
      * @param j         Right coordinate of matrix[i][j].
      */
@@ -118,8 +117,8 @@ public class Mapping implements TetradSerializable {
     }
 
     /**
-     * Sets the value of the array element at the stored coordinates (i, j).
-     * If the array is symmetric sets two elements.
+     * Sets the value of the array element at the stored coordinates (i, j). If the array is symmetric sets two
+     * elements.
      */
     public void setValue(double x) {
         if (this.semIm.isParameterBoundsEnforced() &&
@@ -152,8 +151,8 @@ public class Mapping implements TetradSerializable {
     }
 
     /**
-     * @return a String containing information (array name and values of
-     * subscripts) about the array element associated with this mapping.
+     * @return a String containing information (array name and values of subscripts) about the array element associated
+     * with this mapping.
      */
     public String toString() {
         return "<" + getParameter().getName() + " " + getParameter().getType() +
@@ -161,14 +160,12 @@ public class Mapping implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

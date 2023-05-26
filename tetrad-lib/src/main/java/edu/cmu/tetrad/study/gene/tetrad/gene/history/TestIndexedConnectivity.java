@@ -26,8 +26,8 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 /**
- * Tests the IndexedConnectivity class by constructing graphs with randomly
- * chosen parameters and seeing if they have the required properties.
+ * Tests the IndexedConnectivity class by constructing graphs with randomly chosen parameters and seeing if they have
+ * the required properties.
  *
  * @author josephramsey
  */
@@ -76,8 +76,8 @@ public class TestIndexedConnectivity extends TestCase {
     }
 
     /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
      */
     public static Test suite() {
 

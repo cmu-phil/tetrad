@@ -38,9 +38,8 @@ import java.util.List;
 
 /**
  * <p>Tries to find a good shifting of variables to minimize average BIC for
- * time-series data. The idea is that the data one is presented with may have
- * the variables temporally shifted with respect to one another. ShiftSearch
- * attempts to find a shifting of the variables that reduces this temporal
+ * time-series data. The idea is that the data one is presented with may have the variables temporally shifted with
+ * respect to one another. ShiftSearch attempts to find a shifting of the variables that reduces this temporal
  * shifting.</p>
  *
  * @author josephramsey

@@ -45,8 +45,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables by
- * regressing X on {Y} U Z and testing whether the coefficient for Y is zero.
+ * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables by regressing X on {Y} U Z and
+ * testing whether the coefficient for Y is zero.
  *
  * @author josephramsey
  * @author Frank Wimberly

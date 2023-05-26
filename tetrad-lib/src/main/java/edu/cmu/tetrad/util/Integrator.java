@@ -30,14 +30,13 @@ package edu.cmu.tetrad.util;
 public class Integrator {
 
     /**
-     * Finds the area under function f between x1 and x2 using Simpson's rule.
-     * Divides the interval [x1, x2] into numIntervals subintervals.
+     * Finds the area under function f between x1 and x2 using Simpson's rule. Divides the interval [x1, x2] into
+     * numIntervals subintervals.
      *
      * @param f            a Function object.
      * @param x1           the lower cutoff
      * @param x2           the upper cutoff
-     * @param numIntervals the number of intervals to divide the interval [x1,
-     *                     x2] into for integrating.
+     * @param numIntervals the number of intervals to divide the interval [x1, x2] into for integrating.
      * @return the area.
      */
     public static double getArea(Function f, double x1, double x2,

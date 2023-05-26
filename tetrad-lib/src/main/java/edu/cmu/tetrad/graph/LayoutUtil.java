@@ -61,8 +61,7 @@ public class LayoutUtil {
     }
 
     /**
-     * Arranges the nodes in the result graph according to their positions in
-     * the source graph.
+     * Arranges the nodes in the result graph according to their positions in the source graph.
      *
      * @return true if all the nodes were arranged, false if not.
      */
@@ -97,8 +96,7 @@ public class LayoutUtil {
     }
 
     /**
-     * Lays out a graph by placing springs between the nodes and letting the system
-     * settle (one node at a time).
+     * Lays out a graph by placing springs between the nodes and letting the system settle (one node at a time).
      *
      * @author josephramsey
      */
@@ -130,14 +128,12 @@ public class LayoutUtil {
         private double[][] p;
 
         /**
-         * l[i][j] is the natural length of the spring between node i and node j
-         * defined by L * d[i][j].
+         * l[i][j] is the natural length of the spring between node i and node j defined by L * d[i][j].
          */
         private double[][] l;
 
         /**
-         * k[i][j] is the strength of the spring between node i and node j, defined
-         * by K / (d[i][j] * d[i][j]).
+         * k[i][j] is the strength of the spring between node i and node j, defined by K / (d[i][j] * d[i][j]).
          */
         private double[][] k;
 
@@ -152,8 +148,8 @@ public class LayoutUtil {
         private ProgressMonitor monitor;
 
         /**
-         * True if nodes should be initialized in random locations, false if they
-         * should be initialized in their getModel locations.
+         * True if nodes should be initialized in random locations, false if they should be initialized in their
+         * getModel locations.
          */
         private boolean randomlyInitialized;
 
@@ -254,10 +250,8 @@ public class LayoutUtil {
          * Initializes the layout for the given nodes.
          *
          * @param nodes               the nodes to be laid out.
-         * @param randomlyInitialized true if the spring layout should start from a
-         *                            randomlyInitialized position, false if the
-         *                            spring layout should start from the getModel
-         *                            positions of the nodes.
+         * @param randomlyInitialized true if the spring layout should start from a randomlyInitialized position, false
+         *                            if the spring layout should start from the getModel positions of the nodes.
          */
         private void initialize(List<Node> nodes, boolean randomlyInitialized) {
             setComponentNodes(Collections.unmodifiableList(nodes));
@@ -531,9 +525,8 @@ public class LayoutUtil {
         }
 
         /**
-         * Floyd's all-pairs shortest-path algorithm, restricted to integral
-         * lengths. Returns an int[][] matrix I, where I[i][j] is the length of the
-         * shortest path from i to j.
+         * Floyd's all-pairs shortest-path algorithm, restricted to integral lengths. Returns an int[][] matrix I, where
+         * I[i][j] is the length of the shortest path from i to j.
          */
         private int[][] allPairsShortestPath() {
             int[][] I1 = new int[getComponentNodes().size()][getComponentNodes()
@@ -584,8 +577,8 @@ public class LayoutUtil {
     }
 
     /**
-     * Lays out a graph by linearly summing repulsive force between all nodes and
-     * attractive force between adjacent nodes.
+     * Lays out a graph by linearly summing repulsive force between all nodes and attractive force between adjacent
+     * nodes.
      *
      * @author josephramsey
      */
@@ -602,14 +595,12 @@ public class LayoutUtil {
         private int[][] edges;
 
         /**
-         * The position of each node. The position of the ith node is (pos[i][0],
-         * pos[i][1]).
+         * The position of each node. The position of the ith node is (pos[i][0], pos[i][1]).
          */
         private double[][] nodePosition;
 
         /**
-         * The disposition of each node. The disposition of the ith node is
-         * (disp[i][0], disp[i][1]).
+         * The disposition of each node. The disposition of the ith node is (disp[i][0], disp[i][1]).
          */
         private double[][] nodeDisposition;
 

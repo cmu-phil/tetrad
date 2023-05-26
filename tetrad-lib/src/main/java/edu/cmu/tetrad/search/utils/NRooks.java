@@ -5,9 +5,8 @@ import java.util.Stack;
 
 /**
  * <p>Returns row positions for placing rooks for an n x n matrix so the rooks
- * cannot attach each other, with a given boolean[][] specification of where rooks
- * are allowed to be placed. For this spec, spec[i][j] = true iff a rook can be
- * placed there.</p>
+ * cannot attach each other, with a given boolean[][] specification of where rooks are allowed to be placed. For this
+ * spec, spec[i][j] = true iff a rook can be placed there.</p>
  * <p>Had some help from ChatGPT for this.</p>
  *
  * @author josephramsey
@@ -18,8 +17,7 @@ public class NRooks {
     /**
      * Solves the N-Rooks problem for the given board or allowable positions.
      *
-     * @param allowablePositions A matrix of allowable rook positions, should be
-     *                           true iff the position is allowable.
+     * @param allowablePositions A matrix of allowable rook positions, should be true iff the position is allowable.
      * @return A list of row indices for where to place the rooks for each solution.
      */
     public static ArrayList<int[]> nRooks(boolean[][] allowablePositions) {

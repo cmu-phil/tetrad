@@ -27,17 +27,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Provides a static method for sampling without replacement from a dataset to
- * create a new dataset with a sample size supplied by the user.
+ * Provides a static method for sampling without replacement from a dataset to create a new dataset with a sample size
+ * supplied by the user.
  *
  * @author Frank Wimberly
  */
 public final class RandomSampler {
 
     /**
-     * This method takes a dataset and a sample size and creates a new dataset
-     * containing that number of samples by drawing with replacement from the
-     * original dataset.
+     * This method takes a dataset and a sample size and creates a new dataset containing that number of samples by
+     * drawing with replacement from the original dataset.
      */
     public static DataSet sample(DataSet dataSet,
                                  int newSampleSize) {

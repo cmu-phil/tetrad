@@ -23,7 +23,8 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.util.Vector;
 import edu.cmu.tetrad.util.*;
@@ -35,8 +36,8 @@ import java.util.concurrent.*;
 
 
 /**
- * This Orients a given undirected graph such that the edges in the graph are a superset
- * of the edges in the oriented graph, using FGES method.
+ * This Orients a given undirected graph such that the edges in the graph are a superset of the edges in the oriented
+ * graph, using FGES method.
  *
  * @author AJ Sedgewick, 5/2015
  * @see Fges
@@ -362,8 +363,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     }
 
     /**
-     * @return the initial graph for the search. The search is initialized to this graph and
-     * proceeds from there.
+     * @return the initial graph for the search. The search is initialized to this graph and proceeds from there.
      */
     public Graph getExternalGraph() {
         return this.externalGraph;
@@ -393,8 +393,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent to.
-     * By detault System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
      */
     public void setOut(PrintStream out) {
         this.out = out;
@@ -408,16 +407,14 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     }
 
     /**
-     * @return the set of preset adjacenies for the algorithm; edges not in this adjacencies graph
-     * will not be added.
+     * @return the set of preset adjacenies for the algorithm; edges not in this adjacencies graph will not be added.
      */
     public Graph getAdjacencies() {
         return this.adjacencies;
     }
 
     /**
-     * Sets the set of preset adjacenies for the algorithm; edges not in this adjacencies graph
-     * will not be added.
+     * Sets the set of preset adjacenies for the algorithm; edges not in this adjacencies graph will not be added.
      */
     public void setAdjacencies(Graph adjacencies) {
         this.adjacencies = adjacencies;

@@ -53,8 +53,7 @@ public class TestCyclicity {
     }
 
     /**
-     * Tests that a package dependency cycle does not exist for any of the
-     * analyzed packages.
+     * Tests that a package dependency cycle does not exist for any of the analyzed packages.
      */
     @Test
     public void testAllPackagesCycle() {

@@ -31,12 +31,11 @@ public class DelimiterUtils {
     }
 
     /**
-     * Get the enum delimiter corresponding to char delimiter: tab, space,
-     * comma, colon, semicolon, pipe.
+     * Get the enum delimiter corresponding to char delimiter: tab, space, comma, colon, semicolon, pipe.
      *
      * @param delimiter
-     * @return corresponding to enum delimiter, whitespace enum will be return
-     * if char does not match any listed above. if
+     * @return corresponding to enum delimiter, whitespace enum will be return if char does not match any listed above.
+     * if
      */
     public static Delimiter toDelimiter(char delimiter) {
         switch (delimiter) {

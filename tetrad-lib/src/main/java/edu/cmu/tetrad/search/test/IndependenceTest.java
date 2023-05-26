@@ -33,9 +33,8 @@ import java.util.List;
 
 /**
  * <p>Gives an interface that can be implemented by classes that do conditional
- * independence testing. These classes are capable of serving as conditional
- * independence "oracles" for constraint-based searches. Many methods are given
- * defaults so that such a test will be easy to implement in Python using JPype.</p>
+ * independence testing. These classes are capable of serving as conditional independence "oracles" for constraint-based
+ * searches. Many methods are given defaults so that such a test will be easy to implement in Python using JPype.</p>
  *
  * @author josephramsey
  */
@@ -48,15 +47,13 @@ public interface IndependenceTest {
     IndependenceResult checkIndependence(Node x, Node y, List<Node> z);
 
     /**
-     * @return the list of variables over which this independence checker is
-     * capable of determinining independence
+     * @return the list of variables over which this independence checker is capable of determinining independence
      * relations.
      */
     List<Node> getVariables();
 
     /**
-     * @return The data model for the independence test, either a DataSet or a
-     * CovarianceMatrix.
+     * @return The data model for the independence test, either a DataSet or a CovarianceMatrix.
      * @see DataSet
      * @see ICovarianceMatrix
      * @see DataModel

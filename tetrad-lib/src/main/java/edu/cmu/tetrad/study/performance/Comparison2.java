@@ -39,8 +39,7 @@ import java.util.List;
 import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
- * Does a comparison of algorithm results across algorithm type, sample sizes,
- * etc.
+ * Does a comparison of algorithm results across algorithm type, sample sizes, etc.
  *
  * @author josephramsey 2016.03.24
  * @author dmalinsky 2016.05.20
@@ -48,8 +47,8 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 public class Comparison2 {
 
     /**
-     * Simulates data from model parameterizing the given DAG, and runs the
-     * algorithm on that data, printing out error statistics.
+     * Simulates data from model parameterizing the given DAG, and runs the algorithm on that data, printing out error
+     * statistics.
      */
     public static ComparisonResult compare(ComparisonParameters params) {
         DataSet dataSet = null;

@@ -172,6 +172,7 @@ public class StatsListEditor extends JPanel {
         statistics.add(new BidirectedLatentPrecision());
 
 
+
         // Greg table
 //        statistics.add(new AncestorPrecision());
 //        statistics.add(new AncestorRecall());

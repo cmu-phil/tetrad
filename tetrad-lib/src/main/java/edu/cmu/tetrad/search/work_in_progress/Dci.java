@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -36,10 +36,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Implements the DCI (Distributed Causal Inference) algorithm for learning causal structure over a set of variable from
- * multiple datasets that each may only measure proper overlapping subsets of that sets, or datasets with some
- * variables in common and others not. The algorithm currently takes as input a set of PAGs (presumably learned using a
- * local learning algorithm such as FCI) and returns a complete set of PAGs over every variable included a dataset that
- * are consistent with all of the PAGs (same d-separations and d-connections)
+ * multiple datasets that each may only measure proper overlapping subsets of that sets, or datasets with some variables
+ * in common and others not. The algorithm currently takes as input a set of PAGs (presumably learned using a local
+ * learning algorithm such as FCI) and returns a complete set of PAGs over every variable included a dataset that are
+ * consistent with all the PAGs (same d-separations and d-connections)
  *
  * @author Robert Tillman
  */
@@ -403,8 +403,8 @@ public class Dci {
 
     /**
      * Implements the double-triangle orientation rule for the initial graph with only definite colliders from each
-     * dataset oriented, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-*D*-*C is a noncollider, which A, B and C jointly
-     * measured and A, D and C joinly measured, then D*-&gt;B.
+     * dataset oriented, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-*D*-*C is a noncollider, which A, B and C
+     * jointly measured and A, D and C joinly measured, then D*-&gt;B.
      */
     private void initialDoubleTriangle(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -588,8 +588,8 @@ public class Dci {
     }
 
     /**
-     * Finds the discriminating undirectedPaths relative only to variables measured jointly after the initial definite colliders
-     * have been oriented.
+     * Finds the discriminating undirectedPaths relative only to variables measured jointly after the initial definite
+     * colliders have been oriented.
      * <p>
      * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
      * the dots are a collider path from L to A with each node on the path (except L) a parent of C.
@@ -647,9 +647,9 @@ public class Dci {
 
     /**
      * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of
-     * a DDP consists of colliders that are parents of c. This only considers discriminating undirectedPaths that are completely
-     * jointly measured.
+     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
+     * consists of colliders that are parents of c. This only considers discriminating undirectedPaths that are
+     * completely jointly measured.
      */
     private void reachablePathFind(Graph graph, Node a, Node b, Node c,
                                    LinkedList<Node> reachable) {
@@ -1701,8 +1701,8 @@ public class Dci {
 
     /**
      * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of
-     * a DDP consists of colliders that are parents of c.
+     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
+     * consists of colliders that are parents of c.
      */
     private boolean reachablePathFindOrient(Graph graph, Node a, Node b, Node c,
                                             LinkedList<Node> reachable) {

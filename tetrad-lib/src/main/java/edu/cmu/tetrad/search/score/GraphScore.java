@@ -29,7 +29,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.Fges;
-import edu.cmu.tetrad.search.score.Score;
 
 import javax.help.UnsupportedOperationException;
 import java.util.ArrayList;
@@ -39,11 +38,10 @@ import java.util.Set;
 
 /**
  * <p>Implements a pscudo-"score" that implmenets implements Chickering and Meek's
- * (2002) locally consistent score criterion. This is not a true score; rather, a
- * -1 is returned in case dseparation holds and a 1 in case dseparation does not hold.
- * This is only meant to be used in the context of FGES, and allows the
- * search to follow its path prescribed by the locally consistent scoring
- * criterion. For a reference to the latter, pleasee this article:</p>
+ * (2002) locally consistent score criterion. This is not a true score; rather, a -1 is returned in case dseparation
+ * holds and a 1 in case dseparation does not hold. This is only meant to be used in the context of FGES, and allows the
+ * search to follow its path prescribed by the locally consistent scoring criterion. For a reference to the latter,
+ * pleasee this article:</p>
  *
  * <p>Chickering (2002) "Optimal structure identification with greedy search"
  * Journal of Machine Learning Research.</p>
@@ -51,14 +49,12 @@ import java.util.Set;
  * <p>For further discussion of using d-separation in the GES search, see:</p>
  *
  * <p>Nandy, P., Hauser, A., &amp; Maathuis, M. H. (2018). High-dimensional consistency
- * in score-based and hybrid structure learning. The Annals of Statistics, 46(6A),
- * 3151-3183.</p>
+ * in score-based and hybrid structure learning. The Annals of Statistics, 46(6A), 3151-3183.</p>
  *
  * <p>For more discussion please see:</p>
  *
  * <p>Shen, X., Zhu, S., Zhang, J., Hu, S., &amp; Chen, Z. (2022, August). Reframed GES
- * with a neural conditional dependence measure. In Uncertainty in Artificial
- * Intelligence (pp. 1782-1791). PMLR.</p>
+ * with a neural conditional dependence measure. In Uncertainty in Artificial Intelligence (pp. 1782-1791). PMLR.</p>
  *
  * @author josephramsey
  * @see Fges
@@ -88,8 +84,7 @@ public class GraphScore implements Score {
     /**
      * Constructor.
      *
-     * @param facts A list known independence facts; a lookup will be donw
-     *              from these facts.
+     * @param facts A list known independence facts; a lookup will be donw from these facts.
      * @see IndependenceFacts
      */
     public GraphScore(IndependenceFacts facts) {
@@ -127,8 +122,7 @@ public class GraphScore implements Score {
 
 
     /**
-     * Returns a "score difference", which amounts to a conditional
-     * local scoring criterion results
+     * Returns a "score difference", which amounts to a conditional local scoring criterion results
      *
      * @return The "difference".
      */

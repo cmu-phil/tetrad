@@ -24,10 +24,9 @@ package edu.cmu.tetrad.util.dist;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * Interface for a statistical distribution from which random values can
- * be drawn. Methods are provided for setting/getting parameters in the
- * interface. A single random number generator is used throughout Tetrad
- * to ensure randomness.
+ * Interface for a statistical distribution from which random values can be drawn. Methods are provided for
+ * setting/getting parameters in the interface. A single random number generator is used throughout Tetrad to ensure
+ * randomness.
  *
  * @author josephramsey
  */

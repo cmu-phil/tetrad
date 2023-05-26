@@ -21,8 +21,8 @@ package edu.cmu.tetrad.annotation;
 import java.lang.annotation.*;
 
 /**
- * Indicates an algorithm is nonexecutable. This is mainly used to indicate that
- * this algorithm is not run directed from this class.
+ * Indicates an algorithm is nonexecutable. This is mainly used to indicate that this algorithm is not run directed from
+ * this class.
  * <p>
  * Jan 18, 2018 2:59:34 PM
  *

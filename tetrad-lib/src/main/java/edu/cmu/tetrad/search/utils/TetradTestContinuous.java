@@ -244,8 +244,7 @@ public final class TetradTestContinuous implements TetradTest {
 
 
     /**
-     * --------------------------------------------------------------------------
-     * PRIVATE METHODS
+     * -------------------------------------------------------------------------- PRIVATE METHODS
      */
 
     private void evalTetradDifferences(int i, int j, int k, int l) {

@@ -21,7 +21,8 @@ public class SemBicScorer {
 
     /**
      * Scores the given DAG using the given data model, usimg a BIC score.
-     * @param dag The DAG.
+     *
+     * @param dag  The DAG.
      * @param data a continuous dataset or a covariance matrix.
      * @return The BIC score of the DAG.
      */

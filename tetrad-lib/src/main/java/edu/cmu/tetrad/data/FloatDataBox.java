@@ -27,8 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stores a 2D array of float data. Note that the missing value marker for this
- * box is Float.NaN.
+ * Stores a 2D array of float data. Note that the missing value marker for this box is Float.NaN.
  */
 public class FloatDataBox implements DataBox {
     static final long serialVersionUID = 23L;
@@ -90,8 +89,7 @@ public class FloatDataBox implements DataBox {
     }
 
     /**
-     * Sets the value at the given row/column to the given Number value.
-     * The value used is number.floatValue().
+     * Sets the value at the given row/column to the given Number value. The value used is number.floatValue().
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
@@ -106,8 +104,7 @@ public class FloatDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value
-     * is missing (-99), null, is returned.
+     * @return the Number value at the given row and column. If the value is missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
         float datum = this.data[row][col];

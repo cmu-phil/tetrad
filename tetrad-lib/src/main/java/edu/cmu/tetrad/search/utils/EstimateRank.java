@@ -35,7 +35,7 @@ import java.util.Arrays;
 public class EstimateRank {
 
     /**
-     *  Compute canonical correlations from data.
+     * Compute canonical correlations from data.
      */
     public static double[] CanCor(double[][] A, double[][] B) {
         RealMatrix Ua = new SingularValueDecomposition(new BlockRealMatrix(A)).getU();

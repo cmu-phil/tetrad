@@ -27,8 +27,8 @@ import java.util.Arrays;
 
 
 /**
- * Stores a cell count table of arbitrary dimension. Provides methods for
- * incrementing particular cells and for calculating marginals.
+ * Stores a cell count table of arbitrary dimension. Provides methods for incrementing particular cells and for
+ * calculating marginals.
  *
  * @author josephramsey
  * @see edu.cmu.tetrad.util.MultiDimIntTable
@@ -49,8 +49,7 @@ public final class CellTable {
     private final MultiDimIntTable table;
 
     /**
-     * Constructs a new cell table using the given array for dimensions,
-     * initializing all cells in the table to zero.
+     * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.
      *
      * @param dims an <code>int[]</code> value
      */
@@ -99,12 +98,10 @@ public final class CellTable {
     }
 
     /**
-     * Calculates a marginal sum for the cell table. The variables over which
-     * marginal sums should be taken are indicated by placing "-1's" in the
-     * appropriate positions in the coordinate argument. For instance, to find
-     * the margin for v0 = 1, v1 = 3, and v3 = 2, where the marginal sum ranges
-     * over all values of v2 and v4, the array [1, 3, -1, 2, -1] should be
-     * used.
+     * Calculates a marginal sum for the cell table. The variables over which marginal sums should be taken are
+     * indicated by placing "-1's" in the appropriate positions in the coordinate argument. For instance, to find the
+     * margin for v0 = 1, v1 = 3, and v3 = 2, where the marginal sum ranges over all values of v2 and v4, the array [1,
+     * 3, -1, 2, -1] should be used.
      *
      * @param coords an array of the sort described above.
      * @return the marginal sum specified.
@@ -131,12 +128,10 @@ public final class CellTable {
     }
 
     /**
-     * An alternative way to specify a marginal calculation. In this case,
-     * coords specifies a particular cell in the table, and varIndices is an
-     * array containing the indices of the variables over which the margin sum
-     * should be calculated. The sum is over the cell specified by 'coord' and
-     * all of the cells which differ from that cell in any of the specified
-     * coordinates.
+     * An alternative way to specify a marginal calculation. In this case, coords specifies a particular cell in the
+     * table, and varIndices is an array containing the indices of the variables over which the margin sum should be
+     * calculated. The sum is over the cell specified by 'coord' and all of the cells which differ from that cell in any
+     * of the specified coordinates.
      *
      * @param coords     an <code>int[]</code> value
      * @param marginVars an <code>int[]</code> value
@@ -153,8 +148,7 @@ public final class CellTable {
     }
 
     /**
-     * Makes a copy of the coordinate array so that the original is not messed
-     * up.
+     * Makes a copy of the coordinate array so that the original is not messed up.
      */
     private int[] internalCoordCopy(int[] coords) {
         int[] coordCopy = Arrays.copyOf(coords, coords.length);

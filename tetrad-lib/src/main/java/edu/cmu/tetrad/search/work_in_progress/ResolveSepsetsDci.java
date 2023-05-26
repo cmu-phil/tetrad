@@ -346,8 +346,7 @@ public final class ResolveSepsetsDci {
     /**
      * Checks independence from pooled samples using Worsley and Friston's method
      * <p>
-     * See K. J. Worsely and K. J. Friston. A test for conjunction. Statistics and Probability Letters
-     * 2000.
+     * See K. J. Worsely and K. J. Friston. A test for conjunction. Statistics and Probability Letters 2000.
      */
     public static boolean isIndependentPooledWorsleyFriston(List<IndependenceTest> independenceTests, Node x, Node y, List<Node> condSet) {
         double alpha = independenceTests.get(0).getAlpha();

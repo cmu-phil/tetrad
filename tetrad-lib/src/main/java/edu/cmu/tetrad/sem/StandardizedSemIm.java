@@ -34,23 +34,19 @@ import java.util.Map;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * A special SEM model in which variances of variables are always 1 and means of variables
- * are always 0. In order to ensure that means of variables are always zero, means or error
- * terms are set to zero. (They are alway Gaussian for this model.) Connection functions are
- * always linear. In order to ensure that variances of variables are always 1, only coefficients
- * are allowed to change, and the error terms take up the slack. Becuase of this constraint,
- * given settings of other freeParameters, the range of a given parameter is always bounded
- * above and below. The user may query this range and set set the value of the coefficient
- * to anything within this range. The SEM is initialized from a linear, gaussian SEM by
- * calculating (or estimating) what the coefficients would be if a data set were simulated
- * from that SEM, standardized, and reestimated with the same SEM PM. The coefficients of
- * such an estimated SEM PM are used to initialize the standardized SEM, repeating if necessary
- * (due to possible noise issues) to get coefficients for which all errors variances can
- * be calculated. (Variances need to be &gt;= 0 for Normal distributions.) This produces a
- * set of coefficients that are viable candidates for the standardized SEM. From there,
- * the user cannot make any change that does not also allow for a standardized SEM to be
- * defined, with error variances taking up the slack. Thus, the standardized SEM can
- * never go "out of bounds."
+ * A special SEM model in which variances of variables are always 1 and means of variables are always 0. In order to
+ * ensure that means of variables are always zero, means or error terms are set to zero. (They are alway Gaussian for
+ * this model.) Connection functions are always linear. In order to ensure that variances of variables are always 1,
+ * only coefficients are allowed to change, and the error terms take up the slack. Becuase of this constraint, given
+ * settings of other freeParameters, the range of a given parameter is always bounded above and below. The user may
+ * query this range and set set the value of the coefficient to anything within this range. The SEM is initialized from
+ * a linear, gaussian SEM by calculating (or estimating) what the coefficients would be if a data set were simulated
+ * from that SEM, standardized, and reestimated with the same SEM PM. The coefficients of such an estimated SEM PM are
+ * used to initialize the standardized SEM, repeating if necessary (due to possible noise issues) to get coefficients
+ * for which all errors variances can be calculated. (Variances need to be &gt;= 0 for Normal distributions.) This
+ * produces a set of coefficients that are viable candidates for the standardized SEM. From there, the user cannot make
+ * any change that does not also allow for a standardized SEM to be defined, with error variances taking up the slack.
+ * Thus, the standardized SEM can never go "out of bounds."
  * <p>
  * Currently we are not allowing bidirected edges in the SEM graph.
  */
@@ -88,8 +84,8 @@ public class StandardizedSemIm implements Simulator {
 
     /**
      * A map from error nodes in the graph to their error variances. These are not freeParameters in the model; their
-     * values are always calculated as residual variances, under the constraint that the variances of each
-     * variable must be 1.
+     * values are always calculated as residual variances, under the constraint that the variances of each variable must
+     * be 1.
      */
 //    private Map<Node, Double> errorVariances;
 
@@ -209,8 +205,7 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * Sets the coefficient for the a-&gt;b edge to the given coefficient, if within range. Otherwise
-     * does nothing.
+     * Sets the coefficient for the a-&gt;b edge to the given coefficient, if within range. Otherwise does nothing.
      *
      * @param a    a -&gt; b
      * @param b    a -&gt; b
@@ -238,8 +233,7 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * Sets the covariance for the a&lt;-&gt;b edge to the given covariance, if within range. Otherwise
-     * does nothing.
+     * Sets the covariance for the a&lt;-&gt;b edge to the given covariance, if within range. Otherwise does nothing.
      *
      * @param a     a &lt;-&gt; b
      * @param b     a &lt;-&gt; b
@@ -428,9 +422,9 @@ public class StandardizedSemIm implements Simulator {
 
     /**
      * @param error The error term. A node with NodeType.ERROR.
-     * @return the error variance for the given error term. THIS IS NOT A PARAMETER OF THE
-     * MODEL! Its value is simply calculated from the given coefficients of the model.
-     * Returns Double.NaN if the error variance cannot be computed.
+     * @return the error variance for the given error term. THIS IS NOT A PARAMETER OF THE MODEL! Its value is simply
+     * calculated from the given coefficients of the model. Returns Double.NaN if the error variance cannot be
+     * computed.
      */
     public double getErrorVariance(Node error) {
         return calculateErrorVarianceFromParams(error);
@@ -502,9 +496,9 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * @return The edge coefficient matrix of the model, a la SemIm. Note that this will normally need to be
-     * transposed, since [a][b] is the edge coefficient for a-->b, not b-->a. Sorry. History. THESE ARE
-     * PARAMETERS OF THE MODEL--THE ONLY PARAMETERS.
+     * @return The edge coefficient matrix of the model, a la SemIm. Note that this will normally need to be transposed,
+     * since [a][b] is the edge coefficient for a-->b, not b-->a. Sorry. History. THESE ARE PARAMETERS OF THE MODEL--THE
+     * ONLY PARAMETERS.
      */
     private Matrix edgeCoef() {
         if (this.edgeCoef != null) {
@@ -536,23 +530,20 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * @return For compatibility only. Returns the variable means of the model. These are always
-     * zero, since this is a standardized model. THESE ARE ALSO NOT PARAMETERS OF THE MODEL. ONLY THE
-     * COEFFICIENTS ARE PARAMETERS.
+     * @return For compatibility only. Returns the variable means of the model. These are always zero, since this is a
+     * standardized model. THESE ARE ALSO NOT PARAMETERS OF THE MODEL. ONLY THE COEFFICIENTS ARE PARAMETERS.
      */
     public double[] means() {
         return new double[this.semPm.getVariableNodes().size()];
     }
 
     /**
-     * A convenience method, in case we want to change out mind about how to simulate. For instance,
-     * it's unclear yet whether we can allow nongaussian errors, so we don't know yet whether the
-     * reduced form method is needed.
+     * A convenience method, in case we want to change out mind about how to simulate. For instance, it's unclear yet
+     * whether we can allow nongaussian errors, so we don't know yet whether the reduced form method is needed.
      *
      * @param sampleSize      The sample size of the desired data set.
      * @param latentDataSaved True if latent variables should be included in the data set.
-     * @return This returns a standardized data set simulated from the model, using the reduced form
-     * method.
+     * @return This returns a standardized data set simulated from the model, using the reduced form method.
      */
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         return simulateDataReducedForm(sampleSize, latentDataSaved);
@@ -623,8 +614,7 @@ public class StandardizedSemIm implements Simulator {
     }
 
     /**
-     * @return a copy of the implied covariance matrix over the measured
-     * variables only.
+     * @return a copy of the implied covariance matrix over the measured variables only.
      */
     public Matrix getImplCovarMeas() {
         return implCovarMeas().copy();
@@ -633,10 +623,9 @@ public class StandardizedSemIm implements Simulator {
     //========================================PRIVATE METHODS==========================================//
 
     /**
-     * @return Returns the error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b,
-     * with [a][a] of course being the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE
-     * CALCULATED. Note that elements of this matrix may be Double.NaN; this indicates that these
-     * elements cannot be calculated.
+     * @return Returns the error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b, with
+     * [a][a] of course being the variance of E_a. THESE ARE NOT PARAMETERS OF THE MODEL; THEY ARE CALCULATED. Note that
+     * elements of this matrix may be Double.NaN; this indicates that these elements cannot be calculated.
      */
     private Matrix errCovar(Map<Node, Double> errorVariances, boolean recalculate) {
         if (!recalculate && this.errorCovar != null) {
@@ -744,8 +733,8 @@ public class StandardizedSemIm implements Simulator {
     //-------------------------------------------PUBLIC CLASSES--------------------------------------------//
 
     /**
-     * Stores a coefficient range--i.e. the edge and coefficient value for which the range is needed,
-     * plus the low and high ends of the range to which the coefficient value may be adjusted.
+     * Stores a coefficient range--i.e. the edge and coefficient value for which the range is needed, plus the low and
+     * high ends of the range to which the coefficient value may be adjusted.
      *
      * @author josephramsey
      */

@@ -39,16 +39,13 @@ import java.util.List;
 
 /**
  * <p>Implements the Really Fast Causal Inference (RFCI) algorithm, which aims to
- * do a correct inference of inferrable causal structure under the assumption
- * that unmeasured common causes of variables in the data may exist. The graph
- * returned is slightly different from the partial ancestral graph (PAG) returned
- * by the FCI algorithm. The goal of of the algorithm is to avoid certain
- * expensive steps in the FCI procedure in a correct way. This was introduced
- * here:</p>
+ * do a correct inference of inferrable causal structure under the assumption that unmeasured common causes of variables
+ * in the data may exist. The graph returned is slightly different from the partial ancestral graph (PAG) returned by
+ * the FCI algorithm. The goal of of the algorithm is to avoid certain expensive steps in the FCI procedure in a correct
+ * way. This was introduced here:</p>
  *
  * <p>Colombo, D., Maathuis, M. H., Kalisch, M., & Richardson, T. S. (2012). Learning
- * high-dimensional directed acyclic graphs with latent and selection variables. The
- * Annals of Statistics, 294-321.</p>
+ * high-dimensional directed acyclic graphs with latent and selection variables. The Annals of Statistics, 294-321.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>

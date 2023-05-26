@@ -15,15 +15,13 @@ public interface RandomGraph extends TetradSerializable {
     long serialVersionUID = 23L;
 
     /**
-     * @param parameters Whatever parameters are need for the given graph. See
-     *                   getParameters().
+     * @param parameters Whatever parameters are need for the given graph. See getParameters().
      * @return Returns a random graph using the given parameters.
      */
     Graph createGraph(Parameters parameters);
 
     /**
-     * Returns a short, one-line description of this graph type. This will be
-     * printed in the report.
+     * Returns a short, one-line description of this graph type. This will be printed in the report.
      *
      * @return This description.
      */

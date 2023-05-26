@@ -34,13 +34,10 @@ import java.util.*;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * Stores a covariance matrix together with variable names and sample size,
- * intended as a representation of a data set. When constructed from a
- * continuous data set, the matrix is not checked for positive definiteness;
- * however, when a covariance matrix is supplied, its positive definiteness is
- * always checked. If the sample size is less than the number of variables, the
- * positive definiteness is "spot-checked"--that is, checked for various
- * submatrices.
+ * Stores a covariance matrix together with variable names and sample size, intended as a representation of a data set.
+ * When constructed from a continuous data set, the matrix is not checked for positive definiteness; however, when a
+ * covariance matrix is supplied, its positive definiteness is always checked. If the sample size is less than the
+ * number of variables, the positive definiteness is "spot-checked"--that is, checked for various submatrices.
  *
  * @author josephramsey
  * @see CorrelationMatrix
@@ -73,10 +70,9 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     //=============================CONSTRUCTORS=========================//
 
     /**
-     * Constructs a new covariance matrix from the given data set. If dataSet is
-     * a BoxDataSet with a VerticalDoubleDataBox, the data will be mean-centered
-     * by the constructor; is non-mean-centered version of the data is needed,
-     * the data should be copied before being send into the constructor.
+     * Constructs a new covariance matrix from the given data set. If dataSet is a BoxDataSet with a
+     * VerticalDoubleDataBox, the data will be mean-centered by the constructor; is non-mean-centered version of the
+     * data is needed, the data should be copied before being send into the constructor.
      *
      * @throws IllegalArgumentException if this is not a continuous data set.
      */
@@ -163,8 +159,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
-     * @return a submatrix of the covariance matrix with variables in the
-     * given order.
+     * @return a submatrix of the covariance matrix with variables in the given order.
      */
     public final ICovarianceMatrix getSubmatrix(int[] indices) {
         List<Node> submatrixVars = new LinkedList<>();
@@ -191,8 +186,7 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
-     * @return a submatrix of this matrix, with variables in the given
-     * order.
+     * @return a submatrix of this matrix, with variables in the given order.
      */
     public final CorrelationMatrixOnTheFly getSubmatrix(String[] submatrixVarNames) {
         throw new UnsupportedOperationException();
@@ -353,14 +347,12 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

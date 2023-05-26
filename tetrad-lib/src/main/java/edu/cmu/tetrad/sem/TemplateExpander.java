@@ -32,9 +32,8 @@ import java.util.regex.Pattern;
 
 
 /**
- * Expands templates for the generalized SEM PM. The template provided needs to be parseable, but the
- * expanded template may not be parseable. If it is not, the original template was ill-formedm, and
- * the expansion should be disgarded.
+ * Expands templates for the generalized SEM PM. The template provided needs to be parseable, but the expanded template
+ * may not be parseable. If it is not, the original template was ill-formedm, and the expansion should be disgarded.
  *
  * @author josephramsey
  */
@@ -52,21 +51,22 @@ public class TemplateExpander {
      * Returns the expanded template, which needs to be checked to make sure it can be used. Try setting it as the
      * expression for the node or freeParameters you wish to use it for.
      *
-     * @param template A template formula, which includes the functions TSUM and TPROD, which are not nestable,
-     *                 and NEW. TSUM(f($)) = f(X1) + f(X2) + .... TPROD(f($)) = f(X1) * f(X2) * .... NEW(a) = a new parameter with
-     *                 name beginning with a, such as a3, if a1 and a2 have already been used.
-     * @param semPm    The generalized SEM PM for which this is intended. This is needed in order to figure out what
-     *                 the parents of <code>node</code> are, and in order to determine new freeParameters. May be null. If it is null,
-     *                 then the template may not contain any TSUM, TPROD, or NEW expressions.
-     * @param node     The node this is intended for, if there is one. Like I said, the parents of a node need to
-     *                 be calculated. This may be null. If it is null, the template may not contain any TSUM or TPROD expressions
-     *                 --i.e. any TSUM or TPROD expressions--but it may contain NEW expressions. If semPm is null, then node must
-     *                 be null as well, since the node is relative to a generalized SEM PM.
+     * @param template A template formula, which includes the functions TSUM and TPROD, which are not nestable, and NEW.
+     *                 TSUM(f($)) = f(X1) + f(X2) + .... TPROD(f($)) = f(X1) * f(X2) * .... NEW(a) = a new parameter
+     *                 with name beginning with a, such as a3, if a1 and a2 have already been used.
+     * @param semPm    The generalized SEM PM for which this is intended. This is needed in order to figure out what the
+     *                 parents of <code>node</code> are, and in order to determine new freeParameters. May be null. If
+     *                 it is null, then the template may not contain any TSUM, TPROD, or NEW expressions.
+     * @param node     The node this is intended for, if there is one. Like I said, the parents of a node need to be
+     *                 calculated. This may be null. If it is null, the template may not contain any TSUM or TPROD
+     *                 expressions --i.e. any TSUM or TPROD expressions--but it may contain NEW expressions. If semPm is
+     *                 null, then node must be null as well, since the node is relative to a generalized SEM PM.
      * @return The expanded template.
-     * @throws ParseException for any of a variety of reasons. It may be that the original template cannot be parsed.
-     *                        It may be that the expanded formula without the error term added cannot be parsed. It may be that the
-     *                        expanded formula contains a "$", which means there was a "$" that was not properly embedded in a TSUM or
-     *                        TPROD. It may be that a TSUM or TPROD was embedded inside another TSUM or TPROD.
+     * @throws ParseException for any of a variety of reasons. It may be that the original template cannot be parsed. It
+     *                        may be that the expanded formula without the error term added cannot be parsed. It may be
+     *                        that the expanded formula contains a "$", which means there was a "$" that was not
+     *                        properly embedded in a TSUM or TPROD. It may be that a TSUM or TPROD was embedded inside
+     *                        another TSUM or TPROD.
      */
     public String expandTemplate(String template, GeneralizedSemPm semPm, Node node) throws ParseException {
         ExpressionParser parser = new ExpressionParser();

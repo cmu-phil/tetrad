@@ -45,14 +45,12 @@ public interface Simulation extends HasParameters, TetradSerializable {
     DataType getDataType();
 
     /**
-     * @return Returns a one-line description of the simulation, to be printed
-     * at the beginning of the report.
+     * @return Returns a one-line description of the simulation, to be printed at the beginning of the report.
      */
     String getDescription();
 
     /**
-     * @return Returns the parameters used in the simulation. These are the
-     * parameters whose values can be varied.
+     * @return Returns the parameters used in the simulation. These are the parameters whose values can be varied.
      */
     List<String> getParameters();
 }

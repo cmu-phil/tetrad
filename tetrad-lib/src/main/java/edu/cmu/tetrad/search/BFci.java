@@ -36,12 +36,11 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
 /**
  * <p>Uses BOSS in place of FGES for the initial step in the GFCI algorithm.
- * This tends to produce a accurate PAG than GFCI as a result, for the latent
- * variables case. This is a simple substitution; the reference for GFCI is here:</p>
+ * This tends to produce a accurate PAG than GFCI as a result, for the latent variables case. This is a simple
+ * substitution; the reference for GFCI is here:</p>
  *
  * <p>J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for
- * FGES.</p>
+ * for Latent Variable Models," JMLR 2016. Here, BOSS has been substituted for FGES.</p>
  *
  * <p>BOSS is a an algorithm that is currently being written up for publication,
  * so we don't yet have a reference for it.</p>
@@ -160,19 +159,6 @@ public final class BFci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum indegree of the output graph, to guide search.
-     *
-     * @param maxDegree This maximum.
-     */
-    public void setMaxDegree(int maxDegree) {
-        if (maxDegree < -1) {
-            throw new IllegalArgumentException("Depth must be -1 (unlimited) or >= 0: " + maxDegree);
-        }
-
-        // The maxDegree for the fast adjacency search.
-    }
-
-    /**
      * Sets the knowledge to be used for the search.
      *
      * @param knowledge This knowledge.
@@ -182,40 +168,17 @@ public final class BFci implements IGraphSearch {
     }
 
     /**
-     * Returns True if Zhang's complete rule set should be used, false if only
-     * 1-R4 (the rule set of the original FCI) should be used. False by
-     * default.
-     *
-     * @return This.
-     */
-    public boolean isCompleteRuleSetUsed() {
-        return this.completeRuleSetUsed;
-    }
-
-    /**
      * Sets whether the complete (Zhang's) ruleset should be used.
      *
-     * @param completeRuleSetUsed True if Zhang's complete rule set should be used, false if
-     *                            only R1-R4 (the rule set of the original FCI) should be used.
-     *                            False by default.
+     * @param completeRuleSetUsed True if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of
+     *                            the original FCI) should be used. False by default.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
     /**
-     * Returns the maximum length of any discriminating path, or -1 of
-     * unlimited.
-     *
-     * @return This maximum.
-     */
-    public int getMaxPathLength() {
-        return this.maxPathLength;
-    }
-
-    /**
-     * Returns the maximum length of any discriminating path, or -1
-     * if unlimited.
+     * Returns the maximum length of any discriminating path, or -1 if unlimited.
      *
      * @param maxPathLength This maximum.
      */

@@ -43,18 +43,16 @@ import java.util.List;
 
 /**
  * <p>Provides an implementation of Mimbuild, an algorithm that takes a clustering
- * of variables, each of which is explained by a single latent, then forms the
- * implied covariance matrix over the latent variables, then runs a CPDAG search
- * to in the structure over the latent themselves.</p>
+ * of variables, each of which is explained by a single latent, then forms the implied covariance matrix over the latent
+ * variables, then runs a CPDAG search to in the structure over the latent themselves.</p>
  *
  * <p>Specifically, the search will first infer the covariance matrix over the
- * latents and then will use the GRaSP algorithm (see) to infer the structure
- * graph over the latents, using the SEM Bic score with the given penalty discount
- * (default 2).</p>
+ * latents and then will use the GRaSP algorithm (see) to infer the structure graph over the latents, using the SEM Bic
+ * score with the given penalty discount (default 2).</p>
  *
  * <p>One may wish to obtain the implied correlation matrix over the latents and
- * run one's own choice of CPDDAG algorithm on it with one's own test or score;
- * a method is available to return this covariance matrix.</p>
+ * run one's own choice of CPDDAG algorithm on it with one's own test or score; a method is available to return this
+ * covariance matrix.</p>
  *
  * <p>A suitable clustering for Mimbuild may be obtained using the BPC or FOFC
  * algorithm (see).</p>
@@ -109,10 +107,9 @@ public class Mimbuild {
     /**
      * Does a Mimbuild search.
      *
-     * @param clustering  The clustering to use--this clusters the measured variables in such a way
-     *                    that each cluster is explained by a single latent variables.
-     * @param latentNames The names of the latent variables corresponding in order ot each cluster
-     *                    in the clustering.
+     * @param clustering  The clustering to use--this clusters the measured variables in such a way that each cluster is
+     *                    explained by a single latent variables.
+     * @param latentNames The names of the latent variables corresponding in order ot each cluster in the clustering.
      * @param measuresCov The covariance matrix over the measured variables.
      * @return The inferred graph over the latent variables.
      */
@@ -175,8 +172,7 @@ public class Mimbuild {
     }
 
     /**
-     * Returns the clustering of measured variables, each of which is explained
-     * by a single latent.
+     * Returns the clustering of measured variables, each of which is explained by a single latent.
      *
      * @return This clustering.
      */
@@ -217,8 +213,8 @@ public class Mimbuild {
     }
 
     /**
-     * The full graph inferred, including the edges from latents to measures and
-     * all fo the edges inferred among latents.
+     * The full graph inferred, including the edges from latents to measures and all fo the edges inferred among
+     * latents.
      *
      * @return This full graph.
      */
@@ -462,8 +458,7 @@ public class Mimbuild {
     }
 
     /**
-     * jf
-     * Clusters smaller than this size will be tossed out.
+     * jf Clusters smaller than this size will be tossed out.
      */
     public int getMinClusterSize() {
         return this.minClusterSize;

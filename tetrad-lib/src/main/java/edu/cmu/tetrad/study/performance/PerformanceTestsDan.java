@@ -27,9 +27,9 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.GFci;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 

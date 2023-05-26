@@ -71,8 +71,8 @@ public class EbicScore implements Score {
      * Constructs the score using a covariance matrix.
      *
      * @param dataSet               The continuous dataset to analyze.
-     * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly.
-     *                              True if precomputed.
+     * @param precomputeCovariances Whether the covariances should be precomputed or computed on the fly. True if
+     *                              precomputed.
      */
     public EbicScore(DataSet dataSet, boolean precomputeCovariances) {
 

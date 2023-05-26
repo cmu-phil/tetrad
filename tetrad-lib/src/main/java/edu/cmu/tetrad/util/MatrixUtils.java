@@ -36,9 +36,8 @@ import java.util.List;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * Class Matrix includes several public static functions performing matrix
- * operations. These function include: determinant, GJinverse, inverse,
- * multiple, difference, transpose, trace, duplicate, minor, identity, mprint,
+ * Class Matrix includes several public static functions performing matrix operations. These function include:
+ * determinant, GJinverse, inverse, multiple, difference, transpose, trace, duplicate, minor, identity, mprint,
  * impliedCovar, SEMimpliedCovar.
  *
  * @author Tianjiao Chu
@@ -154,9 +153,8 @@ public final class MatrixUtils {
     }
 
     /**
-     * Tests to see whether two matrices are equal within the given tolerance.
-     * If any two corresponding elements differ by more than the given
-     * tolerance, false is returned.
+     * Tests to see whether two matrices are equal within the given tolerance. If any two corresponding elements differ
+     * by more than the given tolerance, false is returned.
      *
      * @param ma        The first 2D matrix to check.
      * @param mb        The second 2D matrix to check.
@@ -169,9 +167,8 @@ public final class MatrixUtils {
     }
 
     /**
-     * Tests to see whether two vectors are equal within the given tolerance. If
-     * any two corresponding elements differ by more than the given tolerance,
-     * false is returned.
+     * Tests to see whether two vectors are equal within the given tolerance. If any two corresponding elements differ
+     * by more than the given tolerance, false is returned.
      *
      * @param va        The first matrix to check.
      * @param vb        The second matrix to check.
@@ -219,8 +216,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * A copy of the original (square) matrix with the stated index row/column
-     * removed
+     * A copy of the original (square) matrix with the stated index row/column removed
      */
     public static double[][] submatrix(double[][] m, int rem) {
         int[] indices = new int[m.length];
@@ -239,8 +235,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * @return the inverse of the given square matrix if it is nonsingular,
-     * otherwise the pseudoinverse.
+     * @return the inverse of the given square matrix if it is nonsingular, otherwise the pseudoinverse.
      */
     public static double[][] inverse(double[][] m) {
         Matrix mm = new Matrix(m);
@@ -266,8 +261,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * @return the outerProduct of ma and mb. The dimensions of ma and mb must
-     * be compatible for multiplication.
+     * @return the outerProduct of ma and mb. The dimensions of ma and mb must be compatible for multiplication.
      */
     public static double[][] product(double[][] ma, double[][] mb) {
         Matrix d = new Matrix(ma);
@@ -393,8 +387,7 @@ public final class MatrixUtils {
     }
 
     /**
-     * Concatenates the vectors rows[i], i = 0...rows.length, into a single
-     * vector.
+     * Concatenates the vectors rows[i], i = 0...rows.length, into a single vector.
      */
     public static double[] concatenate(double[][] vectors) {
         int numVectors = vectors.length;
@@ -429,16 +422,13 @@ public final class MatrixUtils {
     }
 
     /**
-     * @param edgeCoef The edge covariance matrix. edgeCoef(i, j) is a parameter
-     *                 in this matrix just in case i--&gt;j is an edge in the model. All other
-     *                 entries in the matrix are zero.
-     * @param errCovar The error covariance matrix. errCovar(i, i) is the
-     *                 variance of i; off-diagonal errCovar(i, j) are covariance parameters that
-     *                 are specified in the model. All other matrix entries are zero.
-     * @return The implied covariance matrix, which is the covariance matrix
-     * over the measured variables that is implied by all the given information.
-     * @throws IllegalArgumentException if edgeCoef or errCovar contains an
-     *                                  undefined value (Double.NaN).
+     * @param edgeCoef The edge covariance matrix. edgeCoef(i, j) is a parameter in this matrix just in case i--&gt;j is
+     *                 an edge in the model. All other entries in the matrix are zero.
+     * @param errCovar The error covariance matrix. errCovar(i, i) is the variance of i; off-diagonal errCovar(i, j) are
+     *                 covariance parameters that are specified in the model. All other matrix entries are zero.
+     * @return The implied covariance matrix, which is the covariance matrix over the measured variables that is implied
+     * by all the given information.
+     * @throws IllegalArgumentException if edgeCoef or errCovar contains an undefined value (Double.NaN).
      */
     public static Matrix impliedCovar2(Matrix edgeCoef, Matrix errCovar) {
         if (MatrixUtils.containsNaN(edgeCoef)) {
@@ -518,9 +508,8 @@ public final class MatrixUtils {
     }
 
     /**
-     * @return vech of the given array. (This is what you get when you stack all
-     * of the elements of m in the lower triangular of m to form a vector. The
-     * elements are stacked in columns left to right, top to bottom.)
+     * @return vech of the given array. (This is what you get when you stack all of the elements of m in the lower
+     * triangular of m to form a vector. The elements are stacked in columns left to right, top to bottom.)
      */
     public static double[][] vech(double[][] m) {
         if (!MatrixUtils.isSymmetric(m, 1.e-5)) {
@@ -564,9 +553,8 @@ public final class MatrixUtils {
     }
 
     /**
-     * @return vech of the given array. (This is what you get when you stack all
-     * of the elements of m to form a vector. The elements are stacked in
-     * columns left to right, top to bottom.)
+     * @return vech of the given array. (This is what you get when you stack all of the elements of m to form a vector.
+     * The elements are stacked in columns left to right, top to bottom.)
      */
     public static double[][] vec(double[][] m) {
         assert MatrixUtils.isSquare(m);
@@ -622,8 +610,8 @@ public final class MatrixUtils {
     }
 
     /**
-     * @return true just in case the given matrix has the given dimensions
-     * --that is, just in case m.length == i and m[0].length == j.
+     * @return true just in case the given matrix has the given dimensions --that is, just in case m.length == i and
+     * m[0].length == j.
      */
     public static boolean hasDimensions(double[][] m, int i, int j) {
         Matrix _m = new Matrix(m);
@@ -635,8 +623,8 @@ public final class MatrixUtils {
     }
 
     /**
-     * Return true if the given matrix is symmetric positive definite--that is,
-     * if it would make a valid covariance matrix.
+     * Return true if the given matrix is symmetric positive definite--that is, if it would make a valid covariance
+     * matrix.
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isPositiveDefinite(Matrix matrix) {
@@ -667,8 +655,8 @@ public final class MatrixUtils {
     }
 
     /**
-     * Converts a covariance matrix to a correlation matrix in place; the same
-     * matrix is returned for convenience, but m is modified in the process.
+     * Converts a covariance matrix to a correlation matrix in place; the same matrix is returned for convenience, but m
+     * is modified in the process.
      */
     public static Matrix convertCovToCorr(Matrix m) {
         if (m.getNumRows() != m.getNumColumns()) throw new IllegalArgumentException("Not a square matrix.");
@@ -694,9 +682,8 @@ public final class MatrixUtils {
     }
 
     /**
-     * Converts a matrix in lower triangular form to a symmetric matrix in
-     * square form. The lower triangular matrix need not contain matrix elements
-     * to represent elements in the upper triangle.
+     * Converts a matrix in lower triangular form to a symmetric matrix in square form. The lower triangular matrix need
+     * not contain matrix elements to represent elements in the upper triangle.
      */
     public static double[][] convertLowerTriangleToSymmetric(double[][] arr) {
         int size = arr.length;
@@ -713,9 +700,8 @@ public final class MatrixUtils {
     }
 
     /**
-     * Copies the given array, using a standard scientific notation number
-     * formatter and beginning each line with a tab character. The number format
-     * is DecimalFormat(" 0.0000;-0.0000").
+     * Copies the given array, using a standard scientific notation number formatter and beginning each line with a tab
+     * character. The number format is DecimalFormat(" 0.0000;-0.0000").
      */
     public static String toString(double[][] m) {
         NumberFormat nf = new DecimalFormat(" 0.0000;-0.0000");
@@ -732,9 +718,8 @@ public final class MatrixUtils {
     }
 
     /**
-     * Copies the given array, using a standard scientific notation number
-     * formatter and beginning each line with the given lineInit. The number
-     * format is DecimalFormat(" 0.0000;-0.0000").
+     * Copies the given array, using a standard scientific notation number formatter and beginning each line with the
+     * given lineInit. The number format is DecimalFormat(" 0.0000;-0.0000").
      */
     private static String toString(double[][] m, NumberFormat nf, List<String> variables) {
         String result;
@@ -954,8 +939,8 @@ public final class MatrixUtils {
 
     /**
      * @return the order of the matrix for which this is the vech.
-     * @throws IllegalArgumentException in case this matrix does not have
-     *                                  dimension n x 1 for some n = 0 + 1 + 2 + ... + k for some k.
+     * @throws IllegalArgumentException in case this matrix does not have dimension n x 1 for some n = 0 + 1 + 2 + ... +
+     *                                  k for some k.
      */
     private static int vechOrder(double[] vech) {
         int difference = vech.length;

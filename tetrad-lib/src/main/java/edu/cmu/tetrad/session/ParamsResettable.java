@@ -31,15 +31,13 @@ public interface ParamsResettable {
     long serialVersionUID = 23L;
 
     /**
-     * In some cases (for instance, algorithm runners), cloned session models
-     * need to have the object-identically same parameter objects as before
-     * cloning. This method lets Tetrad set that automatically.
+     * In some cases (for instance, algorithm runners), cloned session models need to have the object-identically same
+     * parameter objects as before cloning. This method lets Tetrad set that automatically.
      */
     void resetParams(Object params);
 
     /**
-     * @return the parameter object of a non-cloned model so that it can be set
-     * on the cloned model.
+     * @return the parameter object of a non-cloned model so that it can be set on the cloned model.
      */
     Object getResettableParams();
 }

@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -93,7 +93,7 @@ public final class SampleVcpcFast implements IGraphSearch {
 
     private Set<Edge> definitelyNonadjacencies;
 
-    private boolean aggressivelyPreventCycles;
+    private boolean meekPreventCycles;
 
     /**
      * The logger for this class. The config needs to be set.
@@ -147,15 +147,15 @@ public final class SampleVcpcFast implements IGraphSearch {
     /**
      * @return true just in case edges will not be added if they would create cycles.
      */
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+    public boolean isMeekPreventCycles() {
+        return this.meekPreventCycles;
     }
 
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
@@ -282,7 +282,7 @@ public final class SampleVcpcFast implements IGraphSearch {
 //            orientUnshieldedTriplesConcurrent(knowledge, getIndependenceTest(), getMaxIndegree());
             MeekRules meekRules = new MeekRules();
 
-            meekRules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+            meekRules.setMeekPreventCycles(this.meekPreventCycles);
             meekRules.setKnowledge(this.knowledge);
 
             meekRules.orientImplied(this.graph);
@@ -770,7 +770,7 @@ public final class SampleVcpcFast implements IGraphSearch {
     }
 
     public static boolean isArrowheadAllowed1(Node from, Node to,
-                                               Knowledge knowledge) {
+                                              Knowledge knowledge) {
         return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
                 !knowledge.isForbidden(from.toString(), to.toString());
     }

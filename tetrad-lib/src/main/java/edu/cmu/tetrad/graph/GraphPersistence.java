@@ -632,8 +632,7 @@ public class GraphPersistence {
     }
 
     /**
-     * @return an XML element representing the given graph. (Well, only a basic
-     * graph for now...)
+     * @return an XML element representing the given graph. (Well, only a basic graph for now...)
      */
     public static Element convertToXml(Graph graph) {
         Element element = new Element("graph");

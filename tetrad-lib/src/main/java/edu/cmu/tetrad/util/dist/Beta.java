@@ -24,8 +24,8 @@ package edu.cmu.tetrad.util.dist;
 import edu.cmu.tetrad.util.RandomUtil;
 
 /**
- * Implements a Beta distribution for purposes of drawing random numbers.
- * The parameters are alpha and beta. See Wikipedia.
+ * Implements a Beta distribution for purposes of drawing random numbers. The parameters are alpha and beta. See
+ * Wikipedia.
  *
  * @author josephramsey
  */

@@ -29,11 +29,9 @@ import edu.cmu.tetrad.graph.Node;
 
 /**
  * <p>Provides a static method for computing the score of a model, called the
- * BDe metric, given a dataset (assumes no missing values) and a Bayes
- * parameterized network (assumes no latent variables).&gt; 0 <p>See "Learning
- * Bayesian Networks:  The Combination of Knowledge and Statistical Data" by
- * David Heckerman, Dan Geiger, and David M. Chickering. Microsoft Technical
- * Report MSR-TR-94-09.&gt; 0
+ * BDe metric, given a dataset (assumes no missing values) and a Bayes parameterized network (assumes no latent
+ * variables).&gt; 0 <p>See "Learning Bayesian Networks:  The Combination of Knowledge and Statistical Data" by David
+ * Heckerman, Dan Geiger, and David M. Chickering. Microsoft Technical Report MSR-TR-94-09.&gt; 0
  *
  * @author Frank Wimberly
  */
@@ -51,8 +49,8 @@ final class BdeMetric {
     }
 
     /**
-     * This method computes the BDe score, which is the probability of the data
-     * given the model and the priors.  See (35) in the above-referenced paper.
+     * This method computes the BDe score, which is the probability of the data given the model and the priors.  See
+     * (35) in the above-referenced paper.
      */
     public double score() {
 

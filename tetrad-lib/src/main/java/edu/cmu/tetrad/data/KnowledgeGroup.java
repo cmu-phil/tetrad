@@ -28,8 +28,8 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Represents a "Other Group" in Knowledge, which can be understood as: Group1 -&gt; Group2 where there are
- * edges between all members of Group1 to Group2.
+ * Represents a "Other Group" in Knowledge, which can be understood as: Group1 -&gt; Group2 where there are edges
+ * between all members of Group1 to Group2.
  * <p>
  * Immutable.
  *
@@ -122,8 +122,8 @@ public final class KnowledgeGroup implements TetradSerializable {
 
 
     /**
-     * States whether this group is empty, that is there is no edges in it (Note there may be some
-     * partial information though).
+     * States whether this group is empty, that is there is no edges in it (Note there may be some partial information
+     * though).
      */
     public boolean isEmpty() {
         return this.fromGroup.isEmpty() || this.toGroup.isEmpty();
@@ -207,14 +207,12 @@ public final class KnowledgeGroup implements TetradSerializable {
 
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

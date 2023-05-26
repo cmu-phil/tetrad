@@ -2,6 +2,7 @@ package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -19,9 +20,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Requires that the parameter 'randomSelectionSize' be set to indicate how many
- * datasets should be taken at a time (randomly). This cannot given multiple
- * values.
+ * Requires that the parameter 'randomSelectionSize' be set to indicate how many datasets should be taken at a time
+ * (randomly). This cannot given multiple values.
  *
  * @author josephramsey
  */
@@ -104,7 +104,12 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
 
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
+        // Not used.
+    }
 
+    @Override
+    public void setIndTestWrapper(IndependenceWrapper test) {
+        // Not used.
     }
 
     @Override
@@ -174,8 +179,8 @@ public class FgesConcatenated implements MultiDataSetAlgorithm, HasKnowledge {
     }
 
     /**
-     * @param compareToTrue true if the result should be compared to the true graph, false
-     *                      if to the CPDAG of the true graph.
+     * @param compareToTrue true if the result should be compared to the true graph, false if to the CPDAG of the true
+     *                      graph.
      */
     public void setCompareToTrue(boolean compareToTrue) {
         this.compareToTrue = compareToTrue;

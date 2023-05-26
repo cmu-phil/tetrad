@@ -78,7 +78,8 @@ public class PossibleDConnectingPath {
 
 
     /**
-     * Finds all possible D-connection undirectedPaths as sub-graphs of the pag given at construction time from x to y given z.
+     * Finds all possible D-connection undirectedPaths as sub-graphs of the pag given at construction time from x to y
+     * given z.
      */
     public static List<PossibleDConnectingPath> findDConnectingPaths(Graph pag, Node x, Node y, Collection<Node> z) {
         if (!pag.containsNode(x) || !pag.containsNode(y) || x.equals(y)) {
@@ -104,8 +105,8 @@ public class PossibleDConnectingPath {
     }
 
     /**
-     * Finds all possible D-connection undirectedPaths as sub-graphs of the pag given at construction time from x to y given z for
-     * a particular path length.
+     * Finds all possible D-connection undirectedPaths as sub-graphs of the pag given at construction time from x to y
+     * given z for a particular path length.
      */
     public static List<PossibleDConnectingPath> findDConnectingPathsOfLength(Graph pag, Node x, Node y, Collection<Node> z, Integer length) {
         if (!pag.containsNode(x) || !pag.containsNode(y) || x.equals(y)) {

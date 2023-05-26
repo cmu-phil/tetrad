@@ -26,9 +26,8 @@ import org.apache.commons.math3.util.FastMath;
 
 /**
  * <p>Provides a static method for finding the Euclidean distance between a pair
- * of BayesIm's.  That is, it computes the square root of the sum of the squares
- * of the differences between corresponding parameters of the two Bayes
- * nets.&gt; 0 <p>The BayesPm's should be equal in the sense of the "equals"
+ * of BayesIm's.  That is, it computes the square root of the sum of the squares of the differences between
+ * corresponding parameters of the two Bayes nets.&gt; 0 <p>The BayesPm's should be equal in the sense of the "equals"
  * method of that class.&gt; 0
  *
  * @author Frank Wimberly
@@ -36,8 +35,7 @@ import org.apache.commons.math3.util.FastMath;
 final class BayesImDistanceFunction {
 
     /**
-     * The static distance method's arguments are the two BayesIM's whose
-     * BayesPm's are "equal".
+     * The static distance method's arguments are the two BayesIM's whose BayesPm's are "equal".
      */
     public static double distance(BayesIm firstBn, BayesIm secondBn) {
         if (!firstBn.getBayesPm().equals(secondBn.getBayesPm())) {

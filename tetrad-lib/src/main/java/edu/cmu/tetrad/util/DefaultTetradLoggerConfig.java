@@ -59,8 +59,7 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
 
 
     /**
-     * Constructs the config for the given event ids. This will create <code>Event</code>s with
-     * no descriptions.
+     * Constructs the config for the given event ids. This will create <code>Event</code>s with no descriptions.
      *
      * @param events The events that the logger reports.
      */

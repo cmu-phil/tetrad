@@ -33,12 +33,10 @@ import java.text.NumberFormat;
 import java.util.List;
 
 /**
- * Implements the Gibbs sampler apporach to obtain samples of arbitrary size
- * from the posterior distribution over the freeParameters of a SEM given a
- * continuous dataset and a SemPm. Point estimates, standard deviations and
- * interval estimates for the freeParameters can be computed from these samples. See
- * "Bayesian Estimation and Testing of Structural Equation Models" by Scheines,
- * Hoijtink and Boomsma, Psychometrika, v. 64, no. 1.
+ * Implements the Gibbs sampler apporach to obtain samples of arbitrary size from the posterior distribution over the
+ * freeParameters of a SEM given a continuous dataset and a SemPm. Point estimates, standard deviations and interval
+ * estimates for the freeParameters can be computed from these samples. See "Bayesian Estimation and Testing of
+ * Structural Equation Models" by Scheines, Hoijtink and Boomsma, Psychometrika, v. 64, no. 1.
  *
  * @author Frank Wimberly
  */
@@ -73,8 +71,7 @@ public final class SemEstimatorGibbs {
     private Matrix priorCov;
 
     /**
-     * The most recently estimated model, or null if no model has been estimated
-     * yet.
+     * The most recently estimated model, or null if no model has been estimated yet.
      *
      * @serial Can be null.
      */
@@ -87,8 +84,7 @@ public final class SemEstimatorGibbs {
     //=============================CONSTRUCTORS============================//
 
     /**
-     * @param semPm         a SemPm specifying the graph and parameterization for the
-     *                      model.
+     * @param semPm         a SemPm specifying the graph and parameterization for the model.
      * @param startIm       SemIm
      * @param sampleCovars  sample covariance matrix
      * @param flatPrior     whether or not the prior is informative
@@ -112,8 +108,7 @@ public final class SemEstimatorGibbs {
     //==============================PUBLIC METHODS=========================//
 
     /**
-     * Runs the estimator on the data and SemPm passed in through the
-     * constructor.
+     * Runs the estimator on the data and SemPm passed in through the constructor.
      */
     public void estimate() {  //dogibbs in pascal
 
@@ -521,14 +516,12 @@ public final class SemEstimatorGibbs {
 
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

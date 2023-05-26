@@ -10,8 +10,8 @@ import java.io.InputStream;
 import java.util.*;
 
 /**
- * Stores descriptions of the parameters for the simulation box. All parameters
- * that go into the interface need to be described here.
+ * Stores descriptions of the parameters for the simulation box. All parameters that go into the interface need to be
+ * described here.
  *
  * @author josephramsey
  * @author Zhou Yuan zhy19@pitt.edu

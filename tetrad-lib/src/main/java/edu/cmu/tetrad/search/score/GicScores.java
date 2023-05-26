@@ -293,9 +293,8 @@ public class GicScores implements Score {
     }
 
     /**
-     * Gives the options for the rules to use for calculating the scores. The "GIC"
-     * rules, and RICc, are the rules proposed in the Kim et al. paper for
-     * generalized information criteria.'
+     * Gives the options for the rules to use for calculating the scores. The "GIC" rules, and RICc, are the rules
+     * proposed in the Kim et al. paper for generalized information criteria.'
      *
      * @see GicScores
      */

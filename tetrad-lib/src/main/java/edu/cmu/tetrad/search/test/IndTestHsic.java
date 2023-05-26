@@ -44,8 +44,8 @@ import java.util.List;
 
 /**
  * <p>Checks the conditional independence X _||_ Y | S, where S is a set of continuous variable,
- * and X and Y are discrete variable not in S, using the Hilbert-Schmidth Independence
- * Criterion (HSIC), a kernel based nonparametric test for conditional independence.</p>
+ * and X and Y are discrete variable not in S, using the Hilbert-Schmidth Independence Criterion (HSIC), a kernel based
+ * nonparametric test for conditional independence.</p>
  *
  * <p>The Kpc algorithm by Tillman had run PC using this test; to run Kpc, simply select this test
  * for PC.</p>
@@ -541,8 +541,8 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * Sets the precision for the Incomplete Choleksy factorization method for approximating Gram matrices. A value &lt;= 0
-     * indicates that the Incomplete Cholesky method should not be used and instead use the exact matrices.
+     * Sets the precision for the Incomplete Choleksy factorization method for approximating Gram matrices. A value
+     * &lt;= 0 indicates that the Incomplete Cholesky method should not be used and instead use the exact matrices.
      *
      * @param precision This precision.
      */

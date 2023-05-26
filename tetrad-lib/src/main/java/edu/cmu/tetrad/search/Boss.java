@@ -15,30 +15,27 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * <p>Implements Best Order Score Search (BOSS). The following references
  * are relevant:</p>
  *
- * <p>Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations
- * of the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence
- * (pp. 1052-1062). PMLR.</p>
+ * <p>Lam, W. Y., Andrews, B., & Ramsey, J. (2022, August). Greedy relaxations
+ * of the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.</p>
  *
- * <p>Teyssier, M., &amp; Koller, D. (2012). Ordering-based search: A simple and effective
+ * <p>Teyssier, M., & Koller, D. (2012). Ordering-based search: A simple and effective
  * algorithm for learning Bayesian networks. arXiv preprint arXiv:1207.1429.</p>
  *
- * <p>Solus, L., Wang, Y., &amp; Uhler, C. (2021). Consistency guarantees for greedy
+ * <p>Solus, L., Wang, Y., & Uhler, C. (2021). Consistency guarantees for greedy
  * permutation-based causal inference algorithms. Biometrika, 108(4), 795-814.</p>
  *
  * <p>The BOSS algorithm is based on the idea that implied DAGs for permutations
- * are most optimal in their BIC scores when the variables in the permutations
- * are ordered causally--that is, so that that causes in the models come
- * before effects in a topological order.</p>
+ * are most optimal in their BIC scores when the variables in the permutations are ordered causally--that is, so that
+ * that causes in the models come before effects in a topological order.</p>
  *
  * <p>This algorithm is implemented as a "plugin-in" algorithm to a
- * PermutationSearch object (see), which deals with certain details of knowledge
- * handling that are common to different permutation searches.</p>
+ * PermutationSearch object (see), which deals with certain details of knowledge handling that are common to different
+ * permutation searches.</p>
  *
  * <p>BOSS, like GRaSP (see), is characterized by high adjacency and
- * oreintation precision (especially) and recall for moderate sample
- * sizes. BOSS scales up currently further than GRaSP to larger variable
- * sets and denser graphs and so is currently preferable from a practical
- * standpoint, though performance is essentially identical.</p>
+ * oreintation precision (especially) and recall for moderate sample sizes. BOSS scales up currently further than GRaSP
+ * to larger variable sets and denser graphs and so is currently preferable from a practical standpoint, though
+ * performance is essentially identical.</p>
  *
  * <p>The algorithm works as follows:</p>
  *
@@ -137,8 +134,8 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * Sets up BOSS to use the BES algorithm to render BOSS correct under the
-     * faithfulness assumption.
+     * Sets up BOSS to use the BES algorithm to render BOSS correct under the faithfulness assumption.
+     *
      * @param use True if BES should be used.
      */
     public void setUseBes(boolean use) {

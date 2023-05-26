@@ -26,13 +26,12 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 
 /**
- * Adjusts GFCI to use a permutation algorithm (in this case SP) to do the initial
- * steps of finding adjacencies and unshielded colliders.
+ * Adjusts GFCI to use a permutation algorithm (in this case SP) to do the initial steps of finding adjacencies and
+ * unshielded colliders.
  * <p>
  * GFCI reference is this:
  * <p>
- * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm
- * for Latent Variable Models," JMLR 2016.
+ * J.M. Ogarrio and P. Spirtes and J. Ramsey, "A Hybrid Causal Search Algorithm for Latent Variable Models," JMLR 2016.
  *
  * @author josephramsey
  */

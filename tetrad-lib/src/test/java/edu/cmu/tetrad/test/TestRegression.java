@@ -38,9 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tests the new regression classes. There is a tabular linear regression
- * model as well as a correlation linear regression model. (Space for more
- * in the future.)
+ * Tests the new regression classes. There is a tabular linear regression model as well as a correlation linear
+ * regression model. (Space for more in the future.)
  *
  * @author josephramsey
  */
@@ -64,8 +63,8 @@ public class TestRegression {
     }
 
     /**
-     * This tests whether the answer to a rather arbitrary problem changes.
-     * At one point, this was the answer being returned.
+     * This tests whether the answer to a rather arbitrary problem changes. At one point, this was the answer being
+     * returned.
      */
     @Test
     public void testTabular() {

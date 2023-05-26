@@ -54,8 +54,8 @@ public class SemOptimizerRicf implements SemOptimizer {
     //==============================PUBLIC METHODS========================//
 
     /**
-     * Optimizes the fitting function of the given Sem using the Powell method
-     * from Numerical Recipes by adjusting the freeParameters of the Sem.
+     * Optimizes the fitting function of the given Sem using the Powell method from Numerical Recipes by adjusting the
+     * freeParameters of the Sem.
      */
     public void optimize(SemIm semIm) {
         if (this.numRestarts < 1) this.numRestarts = 1;

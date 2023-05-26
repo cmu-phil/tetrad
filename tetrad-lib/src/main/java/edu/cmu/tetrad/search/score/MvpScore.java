@@ -50,9 +50,10 @@ public class MvpScore implements Score {
 
     /**
      * Constructor.
-     * @param dataSet The mixed dataset being analyzed.
+     *
+     * @param dataSet        The mixed dataset being analyzed.
      * @param structurePrior The structure prior
-     * @param fDegree The f degree.
+     * @param fDegree        The f degree.
      */
     public MvpScore(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 
@@ -97,6 +98,7 @@ public class MvpScore implements Score {
 
     /**
      * Returns the sample size.
+     *
      * @return This size.
      */
     public int getSampleSize() {
@@ -104,8 +106,8 @@ public class MvpScore implements Score {
     }
 
     /**
-     * A method for FGES returning a judgment of whether an edge with a given
-     * bump counts as a effect edge.
+     * A method for FGES returning a judgment of whether an edge with a given bump counts as a effect edge.
+     *
      * @param bump The bump.
      * @return True if so.
      * @see edu.cmu.tetrad.search.Fges

@@ -314,7 +314,6 @@ public class MvpLikelihood {
     }
 
 
-
     public double getDoF(int child_index, int[] parents) {
 
         double dof = 0;

@@ -127,8 +127,8 @@ public class SemOptimizerPowell implements SemOptimizer {
 
 
     /**
-     * Wraps the SEM maximum likelihood fitting function for purposes of being
-     * evaluated using the PAL ConjugateDirection optimizer.
+     * Wraps the SEM maximum likelihood fitting function for purposes of being evaluated using the PAL
+     * ConjugateDirection optimizer.
      *
      * @author josephramsey
      */
@@ -151,9 +151,8 @@ public class SemOptimizerPowell implements SemOptimizer {
 
 
         /**
-         * Computes the maximum likelihood function value for the given
-         * parameter values as given by the optimizer. These values are mapped to
-         * parameter values.
+         * Computes the maximum likelihood function value for the given parameter values as given by the optimizer.
+         * These values are mapped to parameter values.
          */
 
         @Override

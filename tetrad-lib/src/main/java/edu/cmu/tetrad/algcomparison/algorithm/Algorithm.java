@@ -34,8 +34,7 @@ public interface Algorithm extends HasParameters, TetradSerializable {
     Graph getComparisonGraph(Graph graph);
 
     /**
-     * Returns a short, one-line description of this algorithm. This will be
-     * printed in the report.
+     * Returns a short, one-line description of this algorithm. This will be printed in the report.
      *
      * @return This description.
      */

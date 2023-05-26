@@ -24,8 +24,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.graph;
 import edu.cmu.tetrad.study.gene.tetrad.gene.history.LaggedFactor;
 
 /**
- * Translates display names of lagged variables (e.g. "V1:L1") into model names
- * (e.g. "V1:1") and vice-versa.
+ * Translates display names of lagged variables (e.g. "V1:L1") into model names (e.g. "V1:1") and vice-versa.
  *
  * @author josephramsey
  */
@@ -58,8 +57,7 @@ public final class DisplayNameHandler {
     }
 
     /**
-     * Parses the given string representing a lagged factor and return the part
-     * that represents the factor.
+     * Parses the given string representing a lagged factor and return the part that represents the factor.
      */
     public static String extractFactor_Display(String laggedFactor) {
 
@@ -69,8 +67,7 @@ public final class DisplayNameHandler {
     }
 
     /**
-     * Extracts the lag from the lagged factor name string. precondition
-     * laggedFactor is a legal lagged factor.
+     * Extracts the lag from the lagged factor name string. precondition laggedFactor is a legal lagged factor.
      *
      * @param laggedFactor the lagged factor whose lag is wanted.
      * @return the lag of this lagged factor.

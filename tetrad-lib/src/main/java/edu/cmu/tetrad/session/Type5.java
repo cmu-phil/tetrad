@@ -32,9 +32,8 @@ public class Type5 implements SessionModel, TetradSerializableExcluded {
     static final long serialVersionUID = 23L;
 
     /**
-     * It should not be possible to constuct Type5, because it contains two
-     * arguments of the same type. There is in principle no way to decide which
-     * argument should be passed in which position.
+     * It should not be possible to constuct Type5, because it contains two arguments of the same type. There is in
+     * principle no way to decide which argument should be passed in which position.
      */
     public Type5(Type1 model1, Type1 model2, Parameters parameters) {
     }

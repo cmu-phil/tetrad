@@ -4,8 +4,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * .
- * Result of a comparison.
+ * . Result of a comparison.
  *
  * @author josephramsey 2016.03.24
  */

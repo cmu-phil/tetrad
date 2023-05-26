@@ -23,11 +23,9 @@ package edu.cmu.tetrad.util;
 
 
 /**
- * @author josephramsey
- * Returns values of the given square matrix, where the indices are remapped via
- * the given indices array. If the supplied matrix is 6 x 6, for example, and
- * the indices set are [5 4 2 1], then getValue(1, 2) will return element [4][2]
- * of the given matrix.
+ * @author josephramsey Returns values of the given square matrix, where the indices are remapped via the given indices
+ * array. If the supplied matrix is 6 x 6, for example, and the indices set are [5 4 2 1], then getValue(1, 2) will
+ * return element [4][2] of the given matrix.
  */
 public final class IndexedMatrix {
 
@@ -60,9 +58,8 @@ public final class IndexedMatrix {
     }
 
     /**
-     * Sets the index array. The index array must be of length &lt;= the order of
-     * the matrix, each element of which is distinct and &lt; the order of the
-     * matrix.
+     * Sets the index array. The index array must be of length &lt;= the order of the matrix, each element of which is
+     * distinct and &lt; the order of the matrix.
      *
      * @param indices The indices of the submatrix desired.
      */

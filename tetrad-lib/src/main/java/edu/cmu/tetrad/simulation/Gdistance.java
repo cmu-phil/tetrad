@@ -13,12 +13,11 @@ import java.util.concurrent.Executors;
 /**
  * Created by Erich on 7/3/2016.
  * <p>
- * This class is used to compare the distance between two graphs learned from fmri data
- * the distance is calculated as the mean of the distance of the edges between the graphs
- * the distance between two edges is calculated as the distance between their endpoints
- * the distance between edges calculated this way is a true distance
- * the distance between two graphs is not a true distance because it is not symmetric
- * this version allows for non-cubic voxels, and parallelizes the most expensive loop
+ * This class is used to compare the distance between two graphs learned from fmri data the distance is calculated as
+ * the mean of the distance of the edges between the graphs the distance between two edges is calculated as the distance
+ * between their endpoints the distance between edges calculated this way is a true distance the distance between two
+ * graphs is not a true distance because it is not symmetric this version allows for non-cubic voxels, and parallelizes
+ * the most expensive loop
  */
 public class Gdistance {
 

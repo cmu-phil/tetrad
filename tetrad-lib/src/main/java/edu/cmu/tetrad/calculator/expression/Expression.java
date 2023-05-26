@@ -28,11 +28,9 @@ import org.apache.commons.math3.distribution.RealDistribution;
 import java.util.List;
 
 /**
- * Represents a mathematical expression. Used in the Calculator and
- * the Generalized Sem model.
+ * Represents a mathematical expression. Used in the Calculator and the Generalized Sem model.
  * <p>
- * Note that expressions form trees. Each expression has a (possibly
- * empty) list of children.
+ * Note that expressions form trees. Each expression has a (possibly empty) list of children.
  *
  * @author Tyler Gibson
  */

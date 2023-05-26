@@ -24,8 +24,8 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.utils.PossibleDConnectingPath;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.PossibleDConnectingPath;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -36,7 +36,8 @@ import java.util.*;
  * Implements the ION (Integration of Overlapping Networks) algorithm for distributed causal inference. The algorithm
  * takes as input a set of PAGs (presumably learned using a local learning algorithm) over variable sets that may have
  * some variables in common and others not in common. The algorithm returns a complete set of PAGs over every variable
- * form an input PAG_of_the_true_DAG that are consistent (same d-separations and d-connections) with every input PAG_of_the_true_DAG.
+ * form an input PAG_of_the_true_DAG that are consistent (same d-separations and d-connections) with every input
+ * PAG_of_the_true_DAG.
  *
  * @author Robert Tillman
  * @author josephramsey
@@ -120,6 +121,7 @@ public class Ion {
 
     /**
      * Sets path length search on or off.
+     *
      * @param doPathLengthSearch True if on.
      */
     public void setDoPathLengthSearch(boolean doPathLengthSearch) {
@@ -128,6 +130,7 @@ public class Ion {
 
     /**
      * Sets adjacency search on or off
+     *
      * @param doAdjacencySearch True if on.
      */
     public void setDoAdjacencySearch(boolean doAdjacencySearch) {
@@ -136,6 +139,7 @@ public class Ion {
 
     /**
      * Sets the knowledge to be used for this search.
+     *
      * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -148,6 +152,7 @@ public class Ion {
 
     /**
      * Runs the ION search and returns a list of compatible graphs.
+     *
      * @return These graphs.
      */
     public List<Graph> search() {
@@ -598,6 +603,7 @@ public class Ion {
 
     /**
      * Summarizes time and hitting set time and size information for latex
+     *
      * @return A string summarizing this information.
      */
     public String getStats() {
@@ -675,9 +681,8 @@ public class Ion {
     }
 
     /**
-     * Transfers local information from the input PAGs by adding edges from
-     * local PAGs with their orientations and unorienting the edges if there
-     * is a conflict and recording definite noncolliders.
+     * Transfers local information from the input PAGs by adding edges from local PAGs with their orientations and
+     * unorienting the edges if there is a conflict and recording definite noncolliders.
      */
     private void transferLocal(Graph graph) {
         Set<NodePair> nonadjacencies = nonadjacencies(graph);
@@ -740,8 +745,7 @@ public class Ion {
     }
 
     /**
-     * @return variable pairs that are not in the intersection of the variable
-     * sets for any two input PAGs
+     * @return variable pairs that are not in the intersection of the variable sets for any two input PAGs
      */
     private List<NodePair> nonIntersection(Graph graph) {
         List<Set<String>> varsets = new ArrayList<>();
@@ -1341,8 +1345,8 @@ public class Ion {
 
     /**
      * a method to search "back from a" to find a DDP. It is called with a reachability list (first consisting only of
-     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of
-     * a DDP consists of colliders that are parents of c.
+     * a). This is breadth-first, utilizing "reachability" concept from Geiger, Verma, and Pearl 1990. The body of a DDP
+     * consists of colliders that are parents of c.
      */
     private boolean reachablePathFindOrient(Graph graph, Node a, Node b, Node c,
                                             LinkedList<Node> reachable) {

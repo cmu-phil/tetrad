@@ -32,18 +32,15 @@ import static jgpml.covariancefunctions.MatrixOperations.exp;
 import static jgpml.covariancefunctions.MatrixOperations.sumRows;
 
 /**
- * Linear covariance function with Automatic Relevance Determination (ARD). The
- * covariance function is parameterized as:
+ * Linear covariance function with Automatic Relevance Determination (ARD). The covariance function is parameterized
+ * as:
  * <p>
  * k(x^p,x^q) = x^p'*inv(P)*x^q
  * <p>
- * where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where
- * D is the dimension of the input space. The hyperparameters are:
+ * where the P matrix is diagonal with ARD parameters ell_1^2,...,ell_D^2, where D is the dimension of the input space.
+ * The hyperparameters are:
  * <p>
- * [ log(ell_1)  <br>
- * log(ell_2)  <br>
- * .          <br>
- * log(ell_D) ] <br>
+ * [ log(ell_1)  <br> log(ell_2)  <br> .          <br> log(ell_D) ] <br>
  * <p>
  * Note that there is no bias term; use covConst to add a bias.
  */
@@ -124,8 +121,8 @@ public class CovLINard implements CovarianceFunction {
     }
 
     /**
-     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
-     * to the hyperparameter with index <code>idx</code>
+     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
+     * <code>idx</code>
      *
      * @param loghyper hyperparameters
      * @param X        input dataset

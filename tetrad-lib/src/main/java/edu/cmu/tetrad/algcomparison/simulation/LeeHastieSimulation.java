@@ -19,8 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * A version of the Lee and Hastic simulation which is guaranteed ot generate a
- * discrete data set.
+ * A version of the Lee and Hastic simulation which is guaranteed ot generate a discrete data set.
  *
  * @author josephramsey
  */
@@ -84,6 +83,10 @@ public class LeeHastieSimulation implements Simulation {
                 dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
+            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+            }
+
             this.dataSets.add(dataSet);
         }
     }
@@ -110,6 +113,7 @@ public class LeeHastieSimulation implements Simulation {
         parameters.add(Params.MAX_CATEGORIES);
         parameters.add(Params.PERCENT_DISCRETE);
         parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.RANDOMIZE_COLUMNS);
         parameters.add(Params.SAMPLE_SIZE);

@@ -35,20 +35,17 @@ import java.util.List;
  * neighborhoods. Advances in neural information processing systems, 12.</p>
  *
  * <p>Grow-Shrink learns the Markov blanket of a node, given a conditional independence
- * test over a list of possible nodes. The Markov blanket is a set of nodes (or, in this
- * case a list of distinct nodes), conditional on which every other node in the set is
- * independent of X. In this case, a minimal Markov blanket is learned, which is to say,
- * a Mavkov boundary of X.</p>
+ * test over a list of possible nodes. The Markov blanket is a set of nodes (or, in this case a list of distinct nodes),
+ * conditional on which every other node in the set is independent of X. In this case, a minimal Markov blanket is
+ * learned, which is to say, a Mavkov boundary of X.</p>
  *
  * <p>Graphically, in a DAG, the Markov blanket of X is the set of parents, children, and
- * parents of children of X; GrowShrink will, for a faithful test, learn this set for X.
- * However, a graph over the nodes together with X is not learned; other algorithms are
- * available to do that (see, e.g., FgesMb, PcMb).</p>
+ * parents of children of X; GrowShrink will, for a faithful test, learn this set for X. However, a graph over the nodes
+ * together with X is not learned; other algorithms are available to do that (see, e.g., FgesMb, PcMb).</p>
  *
  * <p>We include GrowShrink in our algorithm suite mainly because it is a CMU algorithm
- * (see the above reference). Markov blanket search has been explored in some detail in
- * the literature and several algorithms are available. See for instance the BNLEARN
- * package in R:</p>
+ * (see the above reference). Markov blanket search has been explored in some detail in the literature and several
+ * algorithms are available. See for instance the BNLEARN package in R:</p>
  *
  * <p>https://www.bnlearn.com/</p>
  *

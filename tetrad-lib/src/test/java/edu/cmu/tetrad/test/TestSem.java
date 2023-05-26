@@ -81,8 +81,8 @@ public class TestSem {
     }
 
     /**
-     * The point of this test is to try to detect if the function of the
-     * estimation ever changes for perhaps extraneous reasons.
+     * The point of this test is to try to detect if the function of the estimation ever changes for perhaps extraneous
+     * reasons.
      */
     @Test
     public void testEstimation() {
