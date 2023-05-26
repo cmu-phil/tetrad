@@ -124,25 +124,50 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * @return the list of TetradNodes over which this independence checker is capable of determinine independence
+     * Returns the list of TetradNodes over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
+     *
+     * @return This list.
      */
     public List<Node> getVariables() {
         return new ArrayList<>(nodeList);
     }
 
-    public boolean determines(List<Node> z, Node x1) {
-        return z.contains(x1);
+    /**
+     * Returns true if z contains x.
+     *
+     * @param z A list of nodes.
+     * @param x The target node.
+     * @return True if z contains x.
+     */
+    public boolean determines(List<Node> z, Node x) {
+        return z.contains(x);
     }
 
+    /**
+     * Returns the alpha level for this test.
+     *
+     * @return This level.
+     */
     public double getAlpha() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Sets the alpha level for this test.
+     *
+     * @param alpha This level.
+     */
     public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Returns the variable associated with the given name in the graph.
+     *
+     * @param name The name of the variable.
+     * @return This variable.
+     */
     public Node getVariable(String name) {
         for (Node variable : nodeList) {
             if (variable.getName().equals(name)) {
@@ -154,7 +179,9 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * @return the variable associated with the given node in the graph.
+     * Returns the variable associated with the given node in the graph.
+     *
+     * @return This variable.
      */
     public Node getVariable(Node node) {
         return getVariable(node.getName());
@@ -177,20 +204,39 @@ public class IndTestIod implements IndependenceTest {
         return "IOD independence test (pooled over datasets)";
     }
 
+    /**
+     * The data set for this test is undefined, since the test is pooled over multiple datasets.
+     *
+     * @return null.
+     */
     public DataSet getData() {
         throw new UnsupportedOperationException("No single dataset; this test pools over multiple datasets.");
     }
 
+    /**
+     * The score for this test is undefined.
+     *
+     * @return Double.NaN.
+     */
     @Override
     public double getScore() {
         return Double.NaN;
-//        throw new java.lang.UnsupportedOperationException("Multiple p-values from multiple datasets.");
     }
 
+    /**
+     * Returns true if the test is verbose.
+     *
+     * @return True if so.
+     */
     public boolean isVerbose() {
         return this.verbose;
     }
 
+    /**
+     * Sets the test to verbose or not.
+     *
+     * @param verbose True if so.
+     */
     public void setVerbose(boolean verbose) {
         for (IndependenceTest test : tests) {
             test.setVerbose(verbose);
