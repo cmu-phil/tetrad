@@ -37,8 +37,8 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.All
 )
-// Bootstrapping makes no sense here, since the algorithm pools the data from various sources, which may be federeated
-// in principle, so we've removed the bootstrapping annotation from it and deleted the boostrapping code.
+// Bootstrapping makes no sense here, since the algorithm pools the data from various sources, which may be federated
+// in principle, so we've removed the bootstrapping annotation from it and deleted the bootstrapping code.
 public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -160,7 +160,7 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     @Override
