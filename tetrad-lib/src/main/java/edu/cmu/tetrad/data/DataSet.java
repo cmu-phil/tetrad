@@ -29,9 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implements a rectangular data set, in the sense of being a dataset with
- * a fixed number of columns and a fixed number of rows, the length of each
- * column being constant.
+ * Implements a rectangular data set, in the sense of being a dataset with a fixed number of columns and a fixed number
+ * of rows, the length of each column being constant.
  *
  * @author josephramsey
  */
@@ -41,8 +40,7 @@ public interface DataSet extends DataModel {
     /**
      * Adds the given variable to the data set.
      *
-     * @throws IllegalArgumentException if the variable is neither continuous
-     *                                  nor discrete.
+     * @throws IllegalArgumentException if the variable is neither continuous nor discrete.
      */
     void addVariable(Node variable);
 
@@ -65,23 +63,19 @@ public interface DataSet extends DataModel {
     void clearSelection();
 
     /**
-     * Ensures that the dataset has at least <code>columns</code> columns.
-     * Used for pasting data into the dataset. When creating new columns,
-     * names in the <code>excludedVarialbeNames</code> list may not be
-     * used. The purpose of this is to allow these names to be set later
-     * by the calling class, without incurring conflicts.
+     * Ensures that the dataset has at least <code>columns</code> columns. Used for pasting data into the dataset. When
+     * creating new columns, names in the <code>excludedVarialbeNames</code> list may not be used. The purpose of this
+     * is to allow these names to be set later by the calling class, without incurring conflicts.
      */
     void ensureColumns(int columns, List<String> excludedVariableNames);
 
     /**
-     * Returns true if and only if this data set contains at least one
-     * missing value.
+     * Returns true if and only if this data set contains at least one missing value.
      */
     boolean existsMissingValue();
 
     /**
-     * Ensures that the dataset has at least <code>rows</code> rows.
-     * Used for pasting data into the dataset.
+     * Ensures that the dataset has at least <code>rows</code> rows. Used for pasting data into the dataset.
      */
     void ensureRows(int rows);
 
@@ -105,8 +99,8 @@ public interface DataSet extends DataModel {
     Matrix getCovarianceMatrix();
 
     /**
-     * @return the value at the given row and column as a double. For
-     * discrete data, returns the integer value cast to a double.
+     * @return the value at the given row and column as a double. For discrete data, returns the integer value cast to a
+     * double.
      */
     double getDouble(int row, int column);
 
@@ -117,10 +111,9 @@ public interface DataSet extends DataModel {
     Matrix getDoubleData();
 
     /**
-     * @return the value at the given row and column as an int, rounding if
-     * necessary. For discrete variables, this returns the category index
-     * of the datum for the variable at that column. Returns
-     * DiscreteVariable.MISSING_VALUE for missing values.
+     * @return the value at the given row and column as an int, rounding if necessary. For discrete variables, this
+     * returns the category index of the datum for the variable at that column. Returns DiscreteVariable.MISSING_VALUE
+     * for missing values.
      */
     int getInt(int row, int column);
 
@@ -142,10 +135,9 @@ public interface DataSet extends DataModel {
     /**
      * @param row The index of the case.
      * @param col The index of the variable.
-     * @return the value at the given row and column as an Object. The type
-     * returned is deliberately vague, allowing for variables of any type.
-     * Primitives will be returned as corresponding wrapping objects (for
-     * example, doubles as Doubles).
+     * @return the value at the given row and column as an Object. The type returned is deliberately vague, allowing for
+     * variables of any type. Primitives will be returned as corresponding wrapping objects (for example, doubles as
+     * Doubles).
      */
     Object getObject(int row, int col);
 
@@ -165,32 +157,30 @@ public interface DataSet extends DataModel {
     Node getVariable(String name);
 
     /**
-     * @return (a copy of) the List of Variables for the data set, in the order
-     * of their columns.
+     * @return (a copy of) the List of Variables for the data set, in the order of their columns.
      */
     List<String> getVariableNames();
 
     /**
-     * @return (a copy of) the List of Variables for the data set, in the order
-     * of their columns.
+     * @return (a copy of) the List of Variables for the data set, in the order of their columns.
      */
     List<Node> getVariables();
 
     /**
-     * @return true if this is a continuous data set--that is, if it contains at
-     * least one column and all of the columns are continuous.
+     * @return true if this is a continuous data set--that is, if it contains at least one column and all of the columns
+     * are continuous.
      */
     boolean isContinuous();
 
     /**
-     * @return true if this is a discrete data set--that is, if it contains at
-     * least one column and all of the columns are discrete.
+     * @return true if this is a discrete data set--that is, if it contains at least one column and all of the columns
+     * are discrete.
      */
     boolean isDiscrete();
 
     /**
-     * @return true if this is a continuous data set--that is, if it contains at
-     * least one continuous column and one discrete columnn.
+     * @return true if this is a continuous data set--that is, if it contains at least one continuous column and one
+     * discrete columnn.
      */
     boolean isMixed();
 
@@ -220,8 +210,8 @@ public interface DataSet extends DataModel {
     void removeRows(int[] selectedRows);
 
     /**
-     * Sets the value at the given (row, column) to the given double value,
-     * assuming the variable for the column is continuous.
+     * Sets the value at the given (row, column) to the given double value, assuming the variable for the column is
+     * continuous.
      *
      * @param row    The index of the case.
      * @param column The index of the variable.
@@ -229,8 +219,8 @@ public interface DataSet extends DataModel {
     void setDouble(int row, int column, double value);
 
     /**
-     * Sets the value at the given (row, column) to the given int value,
-     * assuming the variable for the column is discrete.
+     * Sets the value at the given (row, column) to the given int value, assuming the variable for the column is
+     * discrete.
      *
      * @param row The index of the case.
      * @param col The index of the variable.
@@ -246,30 +236,28 @@ public interface DataSet extends DataModel {
     void setObject(int row, int col, Object value);
 
     /**
-     * Marks the given column as selected if 'selected' is true or deselected if
-     * 'selected' is false.
+     * Marks the given column as selected if 'selected' is true or deselected if 'selected' is false.
      */
     void setSelected(Node variable, boolean selected);
 
     DataSet subsetRowsColumns(int[] rows, int[] columns);
 
     /**
-     * Creates and returns a dataset consisting of those variables in the list
-     * vars.  Vars must be a subset of the variables of this DataSet. The
-     * ordering of the elements of vars will be the same as in the list of
-     * variables in this DataSet.
+     * Creates and returns a dataset consisting of those variables in the list vars.  Vars must be a subset of the
+     * variables of this DataSet. The ordering of the elements of vars will be the same as in the list of variables in
+     * this DataSet.
      */
     DataSet subsetColumns(List<Node> vars);
 
     /**
-     * @return a new data set in which the the column at indices[i] is placed at
-     * index i, for i = 0 to indices.length - 1. (View instead?)
+     * @return a new data set in which the the column at indices[i] is placed at index i, for i = 0 to indices.length -
+     * 1. (View instead?)
      */
     DataSet subsetColumns(int[] columns);
 
     /**
-     * @return a new data set in which the the row at indices[i] is placed at
-     * index i, for i = 0 to indices.length - 1. (View instead?)
+     * @return a new data set in which the the row at indices[i] is placed at index i, for i = 0 to indices.length - 1.
+     * (View instead?)
      */
     DataSet subsetRows(int[] rows);
 

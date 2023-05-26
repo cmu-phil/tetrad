@@ -32,42 +32,31 @@ import java.util.Set;
 
 /**
  * <p>Stores a directed graph over models of specific types, where the possible
- * parent relationships between the models are given in the constructors of the
- * model classes themselves. For instance, if a class Model1 has only this
- * constructor:&gt; 0 <code>public Model1(Model2 x, Model3 y)... </code>
+ * parent relationships between the models are given in the constructors of the model classes themselves. For instance,
+ * if a class Model1 has only this constructor:&gt; 0 <code>public Model1(Model2 x, Model3 y)... </code>
  * <p>then if a SessionNode is constructed with Model.class as argument, it will
- * configure itself as a SessionNode requiring two parents, one capable of
- * implementing models of type Model2 and a second capable of implementing
- * models of type Model3. If SessionNodes capable of implementing models of
- * types Model2 and Model3 are available as parents of Model1, a new object of
- * type Model1 can be constructed using them. If Model1 has more than one
- * constructor, then there is more than one possible set of parents that can be
- * used to construct it. SessionNodes can also support more than one possible
- * type of model. A SessionNode, for instance, can support the construction of
- * graphs in general, even if different graphs are implemented using different
- * classes. The SessionNode can keep track of what its parents are and therefore
- * which of its possible models it's capable of constructing. <p>The
- * Session itself keeps track of which nodes are in the session and manages
- * adding and removing nodes. Nodes that are added to the session must be
- * freshly constructed. This constraint eliminates a number of problems that
- * might otherwise exist if interconnected SessionNodes were permitted to
- * participate in more than one Session. If the addNode method is called with a
- * node that is not in the freshly constructed state (either because it was
- * actually just constructed or because the <code>reset</code> method was just
- * called on the node), an IllegalArgumentException is thrown. <p>When a
- * node is removed from a session, all of its connections to other objects are
- * eliminated and its models destroyed. This has consequences for other objects,
- * since destroying the model of a session node may result in the destruction of
- * models downstream and the elimination of parent/child relationships between
- * nodes is mutual.&gt; 0 <p>The Session organizes events coming from the
- * nodes in the session so that a listener to the Session receives all events
- * from the Session. This is convenience service so that listeners do not need
- * to pay attention to all of the different nodes in the session individually.
- * See <code>SessionEvent</code> for the types of events that are sent.&gt; 0
+ * configure itself as a SessionNode requiring two parents, one capable of implementing models of type Model2 and a
+ * second capable of implementing models of type Model3. If SessionNodes capable of implementing models of types Model2
+ * and Model3 are available as parents of Model1, a new object of type Model1 can be constructed using them. If Model1
+ * has more than one constructor, then there is more than one possible set of parents that can be used to construct it.
+ * SessionNodes can also support more than one possible type of model. A SessionNode, for instance, can support the
+ * construction of graphs in general, even if different graphs are implemented using different classes. The SessionNode
+ * can keep track of what its parents are and therefore which of its possible models it's capable of constructing.
+ * <p>The Session itself keeps track of which nodes are in the session and manages adding and removing nodes. Nodes that
+ * are added to the session must be freshly constructed. This constraint eliminates a number of problems that might
+ * otherwise exist if interconnected SessionNodes were permitted to participate in more than one Session. If the addNode
+ * method is called with a node that is not in the freshly constructed state (either because it was actually just
+ * constructed or because the <code>reset</code> method was just called on the node), an IllegalArgumentException is
+ * thrown. <p>When a node is removed from a session, all of its connections to other objects are eliminated and its
+ * models destroyed. This has consequences for other objects, since destroying the model of a session node may result in
+ * the destruction of models downstream and the elimination of parent/child relationships between nodes is mutual.&gt; 0
+ * <p>The Session organizes events coming from the nodes in the session so that a listener to the Session receives all
+ * events from the Session. This is convenience service so that listeners do not need to pay attention to all of the
+ * different nodes in the session individually. See <code>SessionEvent</code> for the types of events that are sent.&gt;
+ * 0
  * <p>It is intended for the Session to be serializable. For the Session and
- * SessionNode classes, this can be checked directly in unit tests. For the
- * various models that the Session can construct, this has to be tested
- * separately.&gt; 0
+ * SessionNode classes, this can be checked directly in unit tests. For the various models that the Session can
+ * construct, this has to be tested separately.&gt; 0
  *
  * @author josephramsey
  * @see SessionNode
@@ -93,8 +82,7 @@ public final class Session implements TetradSerializable {
     private final List<SessionNode> nodes = new LinkedList<>();
 
     /**
-     * Notes when the model has changed. Should be false at time of
-     * deserialization.
+     * Notes when the model has changed. Should be false at time of deserialization.
      */
     private transient boolean sessionChanged = true;
 
@@ -109,8 +97,7 @@ public final class Session implements TetradSerializable {
     private transient SessionSupport sessionSupport;
 
     /**
-     * Handles incoming session events, basically by redirecting to any
-     * listeners of this session.
+     * Handles incoming session events, basically by redirecting to any listeners of this session.
      */
     private transient SessionHandler sessionHandler;
 
@@ -155,13 +142,10 @@ public final class Session implements TetradSerializable {
      * created state.&gt; 0
      *
      * @throws NullPointerException     if the node is null.
-     * @throws IllegalArgumentException if the node is not in a freshly created
-     *                                  state. There are two ways to put a
-     *                                  SessionNode into a freshly created
-     *                                  state. One is to freshly create it,
-     *                                  using one of the constructors. The other
-     *                                  was is to call the <code>reset</code>
-     *                                  method on the SessionNode.
+     * @throws IllegalArgumentException if the node is not in a freshly created state. There are two ways to put a
+     *                                  SessionNode into a freshly created state. One is to freshly create it, using one
+     *                                  of the constructors. The other was is to call the <code>reset</code> method on
+     *                                  the SessionNode.
      * @see edu.cmu.tetrad.session.SessionNode#isFreshlyCreated
      * @see edu.cmu.tetrad.session.SessionNode#resetToFreshlyCreated
      */
@@ -183,13 +167,11 @@ public final class Session implements TetradSerializable {
     }
 
     /**
-     * Adds a list of nodes to the session. Each item in the list must be a
-     * SessionNode, and none of them may have a name that already exists in the
-     * session. Upon being added to the session, if any node has a parent that
-     * is not in the list, the parent is removed, the node's model is destroyed,
-     * and any models downstream are destroyed as well. Any children not in the
-     * list are removed. Also, any listeners that are not SessionNodes are
-     * removed from each node.
+     * Adds a list of nodes to the session. Each item in the list must be a SessionNode, and none of them may have a
+     * name that already exists in the session. Upon being added to the session, if any node has a parent that is not in
+     * the list, the parent is removed, the node's model is destroyed, and any models downstream are destroyed as well.
+     * Any children not in the list are removed. Also, any listeners that are not SessionNodes are removed from each
+     * node.
      */
     public void addNodeList(List<SessionNode> nodes) {
 
@@ -233,8 +215,7 @@ public final class Session implements TetradSerializable {
      * node might have to other objects.&gt; 0
      *
      * @param node the SessionNode to be removed.
-     * @throws IllegalArgumentException if the specified node is not in the
-     *                                  session.
+     * @throws IllegalArgumentException if the specified node is not in the session.
      * @see edu.cmu.tetrad.session.SessionNode#resetToFreshlyCreated
      */
     public void removeNode(SessionNode node) {
@@ -290,8 +271,7 @@ public final class Session implements TetradSerializable {
     //=====================PACKAGE PROTECTED METHODS=====================//
 
     /**
-     * Indirect reference to session support to avoid saving out any listeners
-     * during serialization.
+     * Indirect reference to session support to avoid saving out any listeners during serialization.
      */
     SessionSupport getSessionSupport() {
 
@@ -307,8 +287,7 @@ public final class Session implements TetradSerializable {
     }
 
     /**
-     * Indirect reference to session handler to avoid saving out listeners
-     * during serialization.
+     * Indirect reference to session handler to avoid saving out listeners during serialization.
      */
     SessionHandler getSessionHandler() {
         if (this.sessionHandler == null) {
@@ -355,8 +334,7 @@ public final class Session implements TetradSerializable {
     //=========================== MEMBER CLASSES =========================//
 
     /**
-     * Handles <code>SessionEvent</code>s. Hides the handling of these from the
-     * API.
+     * Handles <code>SessionEvent</code>s. Hides the handling of these from the API.
      */
     private class SessionHandler extends SessionAdapter {
 
@@ -409,8 +387,7 @@ public final class Session implements TetradSerializable {
         }
 
         /**
-         * Relays addingEdge events up the chain, without changing their
-         * source.
+         * Relays addingEdge events up the chain, without changing their source.
          */
         public void addingEdge(SessionEvent event) {
             getSessionSupport().fireSessionEvent(event, false);
@@ -422,14 +399,12 @@ public final class Session implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

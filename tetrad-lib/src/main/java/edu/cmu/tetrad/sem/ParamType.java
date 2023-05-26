@@ -26,10 +26,9 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.io.ObjectStreamException;
 
 /**
- * A typesafe enum of the types of the types of freeParameters for SEM models (COEF,
- * MEAN, VAR, COVAR). COEF freeParameters are edge coefficients in the linear SEM
- * model; VAR parmaeters are variances among the error terms; COVAR freeParameters
- * are (non-variance) covariances among the error terms.
+ * A typesafe enum of the types of the types of freeParameters for SEM models (COEF, MEAN, VAR, COVAR). COEF
+ * freeParameters are edge coefficients in the linear SEM model; VAR parmaeters are variances among the error terms;
+ * COVAR freeParameters are (non-variance) covariances among the error terms.
  *
  * @author josephramsey
  */
@@ -52,8 +51,7 @@ public class ParamType implements TetradSerializable {
     public static final ParamType VAR = new ParamType("Error Variance");
 
     /**
-     * A covariance parameter. (Does not include variance freeParameters; these are
-     * indicated using VAR.)
+     * A covariance parameter. (Does not include variance freeParameters; these are indicated using VAR.)
      */
     public static final ParamType COVAR = new ParamType("Error Covariance");
 
@@ -68,8 +66,7 @@ public class ParamType implements TetradSerializable {
     private final transient String name;
 
     /**
-     * Protected constructor for the types; this allows for extension in case
-     * anyone wants to add formula types.
+     * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
     private ParamType(String name) {
         this.name = name;

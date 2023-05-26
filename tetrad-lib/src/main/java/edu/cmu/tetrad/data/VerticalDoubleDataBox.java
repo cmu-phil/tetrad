@@ -50,8 +50,7 @@ public class VerticalDoubleDataBox implements DataBox {
     private final int numCols;
 
     /**
-     * Constructs an 2D double array consisting entirely of missing values
-     * (Double.NaN).
+     * Constructs an 2D double array consisting entirely of missing values (Double.NaN).
      */
     public VerticalDoubleDataBox(int rows, int cols) {
         this.data = new double[cols][rows];
@@ -123,8 +122,7 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     /**
-     * Sets the value at the given row/column to the given Number value.
-     * The value used is number.doubleValue().
+     * Sets the value at the given row/column to the given Number value. The value used is number.doubleValue().
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
@@ -139,8 +137,7 @@ public class VerticalDoubleDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value
-     * is missing (-99), null, is returned.
+     * @return the Number value at the given row and column. If the value is missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
         return this.data[col][row];

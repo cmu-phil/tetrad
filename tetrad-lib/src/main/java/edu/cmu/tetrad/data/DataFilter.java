@@ -23,16 +23,15 @@ package edu.cmu.tetrad.data;
 
 
 /**
- * Interface implemented by classes whose purpose is to generate modifications
- * of data sets. See implementations for details.
+ * Interface implemented by classes whose purpose is to generate modifications of data sets. See implementations for
+ * details.
  *
  * @author josephramsey
  */
 public interface DataFilter {
 
     /**
-     * Interpolates the given data set, producing a data set with no missing
-     * values.
+     * Interpolates the given data set, producing a data set with no missing values.
      */
     DataSet filter(DataSet dataSet);
 }

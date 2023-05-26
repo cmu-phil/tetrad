@@ -4,8 +4,8 @@ import java.lang.reflect.Array;
 import java.util.List;
 
 /**
- * Created by Erich on 8/21/2016.
- * This class is for storing precision and recall values for both adjacencies and orientations
+ * Created by Erich on 8/21/2016. This class is for storing precision and recall values for both adjacencies and
+ * orientations
  */
 public final class PRAOerrors {
     private double AdjRecall, AdjPrecision, OrientPrecision, OrientRecall; //these store the actual errors

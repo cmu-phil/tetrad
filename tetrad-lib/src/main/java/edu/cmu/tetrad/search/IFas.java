@@ -44,17 +44,15 @@ public interface IFas extends IGraphSearch {
     void setKnowledge(Knowledge knowledge);
 
     /**
-     * Returns the sepset map discovered during search--that is, the map from
-     * node pairs to the sepsets used in the search to removed the corresponding
-     * edges from the complete graph.
+     * Returns the sepset map discovered during search--that is, the map from node pairs to the sepsets used in the
+     * search to removed the corresponding edges from the complete graph.
      *
      * @return This map.
      */
     SepsetMap getSepsets();
 
     /**
-     * Sets the depth of the search--that is, the maximum number of variables
-     * conditioned on in the search.
+     * Sets the depth of the search--that is, the maximum number of variables conditioned on in the search.
      *
      * @param depth This maximum.
      */

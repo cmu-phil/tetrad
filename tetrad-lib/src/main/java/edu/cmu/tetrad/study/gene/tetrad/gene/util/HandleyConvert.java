@@ -29,8 +29,8 @@ import java.io.*;
 import java.util.StringTokenizer;
 
 /**
- * The purpose of this little converter is to convert "effect" files into
- * "cause" (BasicLagGraph) files. It takes files of the following form:
+ * The purpose of this little converter is to convert "effect" files into "cause" (BasicLagGraph) files. It takes files
+ * of the following form:
  * <pre>
  * cause effect1 effect2 effect3 ...
  * cause effect1 effect2 effect3 ...
@@ -42,11 +42,9 @@ import java.util.StringTokenizer;
 public class HandleyConvert {
 
     /**
-     * Assumes that the graph is given by the buffered reader and prints the
-     * conversion of the grap to the printstream.
+     * Assumes that the graph is given by the buffered reader and prints the conversion of the grap to the printstream.
      *
-     * @param in  the buffered reader containing the graph in the form of the
-     *            main javadoc for this class.
+     * @param in  the buffered reader containing the graph in the form of the main javadoc for this class.
      * @param out the printstream to write the converted graph to.
      */
     private void convert(BufferedReader in, PrintStream out) {
@@ -64,9 +62,8 @@ public class HandleyConvert {
     }
 
     /**
-     * Assumes that the line consists of a cause followed by a number of effects
-     * of that cause, in whitespace delimited format; adds the appropriate genes
-     * and lagged factors to the lagGraph.
+     * Assumes that the line consists of a cause followed by a number of effects of that cause, in whitespace delimited
+     * format; adds the appropriate genes and lagged factors to the lagGraph.
      *
      * @param line the input line described above.
      */
@@ -90,9 +87,8 @@ public class HandleyConvert {
     /**
      * Converts the graph file from the moves line.
      *
-     * @param args The expected argument is the filename of the graph file that
-     *             has been saved out using the toString() method of the
-     *             edu.cmu.genehistory.kernel.UpdateGraph class.
+     * @param args The expected argument is the filename of the graph file that has been saved out using the toString()
+     *             method of the edu.cmu.genehistory.kernel.UpdateGraph class.
      */
     public static void main(String[] args) {
         if (args.length != 1) {

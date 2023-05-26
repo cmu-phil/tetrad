@@ -31,16 +31,13 @@ import java.util.*;
 
 /**
  * <P>Stores a time series in the "update" (rather than, say, the "repeated")
- * form--that is, for a given set of factors (the word "factor" is being used
- * here to avoid ambiguity), only lags behind the getModel time step are recorded
- * temporally, with causal edges extending from lagged factors with lags &gt;= 1 to
- * factors in the getModel time step (lag = 0) only. This "update graph" is
- * viewed as a repeating structure; for each time step, the influences from
- * previous time steps of other factors are as the update graph specifies.
+ * form--that is, for a given set of factors (the word "factor" is being used here to avoid ambiguity), only lags behind
+ * the getModel time step are recorded temporally, with causal edges extending from lagged factors with lags &gt;= 1 to
+ * factors in the getModel time step (lag = 0) only. This "update graph" is viewed as a repeating structure; for each
+ * time step, the influences from previous time steps of other factors are as the update graph specifies.
  * <P>Factor names in this model are distinct String's. The form of these
- * String's is left entirely up to the code using this package. Lags are int's
- * &gt;= 0, although of course lagged factors used for edge specifications must
- * have lags &gt;= 1.
+ * String's is left entirely up to the code using this package. Lags are int's &gt;= 0, although of course lagged
+ * factors used for edge specifications must have lags &gt;= 1.
  *
  * @author josephramsey
  */
@@ -48,17 +45,15 @@ public final class BasicLagGraph implements LagGraph {
     static final long serialVersionUID = 23L;
 
     /**
-     * For each factor, stores the set of lagged factors which map into it.
-     * (Maps Strings to SortedSets of Strings.)  This is the main data structure
-     * for the graph.
+     * For each factor, stores the set of lagged factors which map into it. (Maps Strings to SortedSets of Strings.)
+     * This is the main data structure for the graph.
      *
      * @serial
      */
     private final SortedMap<String, SortedSet<LaggedFactor>> connectivity;
 
     /**
-     * The maximum allowable lag. edges may not be added with lags greater than
-     * this. The value must be &gt;= 1.
+     * The maximum allowable lag. edges may not be added with lags greater than this. The value must be &gt;= 1.
      *
      * @serial
      */
@@ -74,8 +69,7 @@ public final class BasicLagGraph implements LagGraph {
     //==========================CONSTRUCTORS=============================//
 
     /**
-     * Constructs an empty update graph--that is, a graph with no factors (and
-     * therefore no edges).
+     * Constructs an empty update graph--that is, a graph with no factors (and therefore no edges).
      */
     public BasicLagGraph() {
         this.connectivity = new TreeMap<>();
@@ -102,12 +96,10 @@ public final class BasicLagGraph implements LagGraph {
     //===========================PUBLIC METHODS===========================//
 
     /**
-     * Adds an edge to the given factor at lag 0 from the specified lagged
-     * factor.
+     * Adds an edge to the given factor at lag 0 from the specified lagged factor.
      *
      * @param factor       a factor name in the graph.
-     * @param laggedFactor a lagged factor with factor name in the graph and lag
-     *                     &gt;=1.
+     * @param laggedFactor a lagged factor with factor name in the graph and lag &gt;=1.
      * @throws IllegalArgumentException if the edge cannot be added.
      */
     public void addEdge(String factor, LaggedFactor laggedFactor)
@@ -144,8 +136,7 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
-     * Adds a factor to the graph. If the factor is already in the graph, no
-     * action is taken.
+     * Adds a factor to the graph. If the factor is already in the graph, no action is taken.
      *
      * @param factor the factor (name).
      */
@@ -172,8 +163,7 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
-     * Determines whether the edge to 'factor' at time lag 0 from 'laggedFactor'
-     * exists in the graph.
+     * Determines whether the edge to 'factor' at time lag 0 from 'laggedFactor' exists in the graph.
      *
      * @param factor       the "to" factor.
      * @param laggedFactor the "from" factor at the given lag.
@@ -206,8 +196,7 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
-     * Removes the lagged factor from the list of lagged factors associated with
-     * the given factor.
+     * Removes the lagged factor from the list of lagged factors associated with the given factor.
      *
      * @param factor       the "into" factor.
      * @param laggedFactor the "outof" lagged factor.
@@ -226,16 +215,15 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
-     * Gets the maximum allowable lag. Edges may not be added with lags greated
-     * than this.
+     * Gets the maximum allowable lag. Edges may not be added with lags greated than this.
      */
     public int getMaxLagAllowable() {
         return this.maxLagAllowable;
     }
 
     /**
-     * Sets the maximum allowable lag. Edges may not be added with lags greater
-     * than this. This value must be &gt;= the getModel value of getMaxLag().
+     * Sets the maximum allowable lag. Edges may not be added with lags greater than this. This value must be &gt;= the
+     * getModel value of getMaxLag().
      */
     public void setMaxLagAllowable(int maxLagAllowable) {
         if (maxLagAllowable >= getMaxLag()) {
@@ -244,8 +232,8 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
-     * Maximum lag needed to fully represent the graph, which is the largest lag
-     * of any of the lagged factors stored in the graph.
+     * Maximum lag needed to fully represent the graph, which is the largest lag of any of the lagged factors stored in
+     * the graph.
      *
      * @return the maximum lag in the mdoel.
      */
@@ -281,17 +269,13 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
-     * Returns (a copy of) the sorted map from factors to lagged factors which
-     * internally encodes the update graph. The purpose of this method is to
-     * allow update functions to store a copy of their own connectivity in a way
-     * which does not depend on the original update graph staying the way it is.
-     * The way to do this is to use this method to get a copy of the
-     * connectivity to store internally in the update function. Because it is a
-     * SortedMap, factors and lagged factors can be expected to stay in the same
-     * order. <p><i>Note:</i> This strategy is not implemented yet!  Please
-     * remove this note when it is implemented.  The idea is to get rid of the
-     * classes IndexedParent and Connectivity and use this sorted map to replace
-     * them.&gt; 0
+     * Returns (a copy of) the sorted map from factors to lagged factors which internally encodes the update graph. The
+     * purpose of this method is to allow update functions to store a copy of their own connectivity in a way which does
+     * not depend on the original update graph staying the way it is. The way to do this is to use this method to get a
+     * copy of the connectivity to store internally in the update function. Because it is a SortedMap, factors and
+     * lagged factors can be expected to stay in the same order. <p><i>Note:</i> This strategy is not implemented yet!
+     * Please remove this note when it is implemented.  The idea is to get rid of the classes IndexedParent and
+     * Connectivity and use this sorted map to replace them.&gt; 0
      *
      * @return this sorted map.
      */
@@ -345,8 +329,7 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
-     * Returns a string representation of the graph, indicating for each factor
-     * which lagged factors map into it.
+     * Returns a string representation of the graph, indicating for each factor which lagged factors map into it.
      *
      * @return this string.
      */
@@ -423,14 +406,12 @@ public final class BasicLagGraph implements LagGraph {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

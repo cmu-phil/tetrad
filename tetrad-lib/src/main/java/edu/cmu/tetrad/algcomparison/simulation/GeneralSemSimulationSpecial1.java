@@ -4,6 +4,7 @@ import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
@@ -18,8 +19,8 @@ import java.text.ParseException;
 import java.util.*;
 
 /**
- * This was used for a simulation to test the FTFC and FOFC algorithm and contains
- * some carefully selected functions to test nonlinearity and non-Gaussianity.
+ * This was used for a simulation to test the FTFC and FOFC algorithm and contains some carefully selected functions to
+ * test nonlinearity and non-Gaussianity.
  *
  * @author ekummerfeld@gmail.com
  * @author josephramsey
@@ -52,9 +53,15 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
                 graph = this.randomGraph.createGraph(parameters);
             }
 
+
             this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
+
+            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+            }
+
             dataSet.setName("" + (i + 1));
             this.dataSets.add(dataSet);
         }
@@ -94,6 +101,7 @@ public class GeneralSemSimulationSpecial1 implements Simulation {
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SEED);

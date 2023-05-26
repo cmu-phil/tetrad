@@ -15,10 +15,10 @@ import static org.apache.commons.math3.util.FastMath.floor;
 
 
 /**
- * Implements and extends a scorer extending Teyssier, M., and Koller, D. (2012). You give it a score function
- * and a variable ordering, and it computes the score. You can move any variable left or right, and it will
- * keep track of the score using the Teyssier and Kohler method. You can move a variable to a new position,
- * and you can bookmark a state and come back to it.
+ * Implements and extends a scorer extending Teyssier, M., and Koller, D. (2012). You give it a score function and a
+ * variable ordering, and it computes the score. You can move any variable left or right, and it will keep track of the
+ * score using the Teyssier and Kohler method. You can move a variable to a new position, and you can bookmark a state
+ * and come back to it.
  *
  * <p>Teyssier, M., &amp; Koller, D. (2012). Ordering-based search: A simple and effective algorithm for
  * learning Bayesian networks. arXiv preprint arXiv:1207.1429.</p>
@@ -45,8 +45,8 @@ public class TeyssierScorer {
     private double runningScore = 0f;
 
     /**
-     * Constructor that takes both a test or a score. Only one of these is used, dependeint
-     * on how the parameters are set.
+     * Constructor that takes both a test or a score. Only one of these is used, dependeint on how the parameters are
+     * set.
      *
      * @param test  The test.
      * @param score The score
@@ -109,8 +109,7 @@ public class TeyssierScorer {
     }
 
     /**
-     * Scores the given permutation. This needs to be done initially before any move or tuck
-     * operations are performed.
+     * Scores the given permutation. This needs to be done initially before any move or tuck operations are performed.
      *
      * @param order The permutation to score.
      * @return The score of it.
@@ -210,8 +209,8 @@ public class TeyssierScorer {
     }
 
     /**
-     * Returns true iff x-&gt;y or y-&gt;x is a covered edge. x-&gt;y is a covered edge if
-     * parents(x) = parents(y) \ {x}
+     * Returns true iff x-&gt;y or y-&gt;x is a covered edge. x-&gt;y is a covered edge if parents(x) = parents(y) \
+     * {x}
      *
      * @param x The first variable.
      * @param y The second variable.
@@ -416,8 +415,8 @@ public class TeyssierScorer {
     /**
      * Bookmarks the current pi as index key.
      *
-     * @param key This bookmark may be retrieved using the index 'key', an integer.
-     *            This bookmark will be stored until it is retrieved and then removed.
+     * @param key This bookmark may be retrieved using the index 'key', an integer. This bookmark will be stored until
+     *            it is retrieved and then removed.
      */
     public void bookmark(int key) {
         try {

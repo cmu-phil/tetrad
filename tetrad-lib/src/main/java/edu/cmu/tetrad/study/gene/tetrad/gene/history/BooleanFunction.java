@@ -28,8 +28,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 /**
- * Stores a boolean function from a set of boolean-valued parents to a single
- * boolean-valued column.
+ * Stores a boolean function from a set of boolean-valued parents to a single boolean-valued column.
  *
  * @author josephramsey
  */
@@ -44,9 +43,8 @@ public class BooleanFunction implements TetradSerializable {
     private final IndexedParent[] parents;
 
     /**
-     * The stored boolean function.  The order of the rows (for the given
-     * parents array, for two parents) is 00, 01, 10, 11, and so on for higher
-     * numbers of parents.
+     * The stored boolean function.  The order of the rows (for the given parents array, for two parents) is 00, 01, 10,
+     * 11, and so on for higher numbers of parents.
      *
      * @serial
      */
@@ -57,8 +55,7 @@ public class BooleanFunction implements TetradSerializable {
     /**
      * Constructs a new boolean function for the given array of parents.
      *
-     * @param parents an array containing each of the parents (lagged factors)
-     *                of a given factor.
+     * @param parents an array containing each of the parents (lagged factors) of a given factor.
      */
     public BooleanFunction(IndexedParent[] parents) {
         if (parents == null) {
@@ -104,8 +101,8 @@ public class BooleanFunction implements TetradSerializable {
     }
 
     /**
-     * Returns the boolean value in a given row of the table. To get the
-     * proper row, for a given combination of parent values, use the method
+     * Returns the boolean value in a given row of the table. To get the proper row, for a given combination of parent
+     * values, use the method
      * <code>getRow</code>
      *
      * @see #getRow
@@ -115,8 +112,8 @@ public class BooleanFunction implements TetradSerializable {
     }
 
     /**
-     * Sets the boolean value in a given row of the table. To get the proper
-     * row, for a given combination of parent values, use the method
+     * Sets the boolean value in a given row of the table. To get the proper row, for a given combination of parent
+     * values, use the method
      * <code>getRow</code>
      *
      * @see #getRow
@@ -126,20 +123,15 @@ public class BooleanFunction implements TetradSerializable {
     }
 
     /**
-     * Returns the row for the given combination of parent values. The rows are
-     * zero-indexed and are arranged in truth-table fashion, as follows. Row 0
-     * is the row where all parents have the value <code>true</code>. The
-     * last row (row 2 ^ numParents - 1) is the row where all parents have the
-     * value <code>false</code>. Reading down the truth table, the parent
-     * whose value changes most rapidly is the rightmost parent
-     * (parent[numParents - 1]); the parent whose value changes the most
-     * slowly, in fact changes only once halfway down the table, is the leftmost
-     * parent (parent[0]). This convention is adopted to make it easier to set
-     * the values of boolean functions manually; the majority of truth tables in
-     * logic books are set up this way.
+     * Returns the row for the given combination of parent values. The rows are zero-indexed and are arranged in
+     * truth-table fashion, as follows. Row 0 is the row where all parents have the value <code>true</code>. The last
+     * row (row 2 ^ numParents - 1) is the row where all parents have the value <code>false</code>. Reading down the
+     * truth table, the parent whose value changes most rapidly is the rightmost parent (parent[numParents - 1]); the
+     * parent whose value changes the most slowly, in fact changes only once halfway down the table, is the leftmost
+     * parent (parent[0]). This convention is adopted to make it easier to set the values of boolean functions manually;
+     * the majority of truth tables in logic books are set up this way.
      *
-     * @param parentValues an array of parent values. Should be in the same
-     *                     order as the parents, as returned by
+     * @param parentValues an array of parent values. Should be in the same order as the parents, as returned by
      *                     <code>getParents</code>.
      * @see #getParents
      */
@@ -163,8 +155,7 @@ public class BooleanFunction implements TetradSerializable {
     }
 
     /**
-     * Returns the combination of parent values represented by a given row in
-     * the table.
+     * Returns the combination of parent values represented by a given row in the table.
      */
     public boolean[] getParentValues(int row) {
 
@@ -193,12 +184,10 @@ public class BooleanFunction implements TetradSerializable {
     }
 
     /**
-     * Determines whether the getModel function is canalyzing, according to
-     * Kaufmann's definition in Oridins of Order: "I define as a canalyzing
-     * Boolean function any Boolean function having the property that it has at
-     * least one input having at least one value (1 or 0) which suffices to
-     * guarantee that the regulated element assumes a specific value (1 or
-     * 0)" (page 203-4).
+     * Determines whether the getModel function is canalyzing, according to Kaufmann's definition in Oridins of Order:
+     * "I define as a canalyzing Boolean function any Boolean function having the property that it has at least one
+     * input having at least one value (1 or 0) which suffices to guarantee that the regulated element assumes a
+     * specific value (1 or 0)" (page 203-4).
      */
     public boolean isCanalyzing() {
 
@@ -254,13 +243,11 @@ public class BooleanFunction implements TetradSerializable {
     }
 
     /**
-     * Determines whether each input parent has an influence on the
-     * outcome--that is, whether for each parent there is a combination of
-     * states for the other parents for which the function would be different if
-     * the given parent were true as opposed to false.
+     * Determines whether each input parent has an influence on the outcome--that is, whether for each parent there is a
+     * combination of states for the other parents for which the function would be different if the given parent were
+     * true as opposed to false.
      *
-     * @return true if each input parent has an influence on the outcome, false
-     * if not.
+     * @return true if each input parent has an influence on the outcome, false if not.
      */
     public boolean isEffective() {
 
@@ -309,14 +296,12 @@ public class BooleanFunction implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

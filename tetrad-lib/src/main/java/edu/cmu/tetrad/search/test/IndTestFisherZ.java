@@ -42,8 +42,8 @@ import static org.apache.commons.math3.util.FastMath.abs;
 import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
- * Checks conditional independence of variable in a continuous data set using Fisher's Z test.
- * See Spirtes, Glymour, and Scheines, "Causation, Prediction and Search," 2nd edition, page 94.
+ * Checks conditional independence of variable in a continuous data set using Fisher's Z test. See Spirtes, Glymour, and
+ * Scheines, "Causation, Prediction and Search," 2nd edition, page 94.
  *
  * @author josephramsey
  * @author Frank Wimberly
@@ -313,8 +313,8 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     /**
-     * Sets the variables to a new list of the same size. Useful if multiple independence tests
-     * are needed with object-identical sets of variables.
+     * Sets the variables to a new list of the same size. Useful if multiple independence tests are needed with
+     * object-identical sets of variables.
      *
      * @param variables The new list of variables.
      */

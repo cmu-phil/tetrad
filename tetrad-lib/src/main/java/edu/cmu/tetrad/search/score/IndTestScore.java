@@ -30,9 +30,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Gives a method of interpreting a test as a score. Various independence tests
- * will calculate p-values; they simply report alpha - p as a score, which will
- * be higher for greater dependence. This class wraps such an independence test
+ * Gives a method of interpreting a test as a score. Various independence tests will calculate p-values; they simply
+ * report alpha - p as a score, which will be higher for greater dependence. This class wraps such an independence test
  * and returns the score reported by that test.
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and negative

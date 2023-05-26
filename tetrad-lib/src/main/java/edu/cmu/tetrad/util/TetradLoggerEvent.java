@@ -35,8 +35,8 @@ public class TetradLoggerEvent extends EventObject {
 
 
     /**
-     * Constructs the event given the source and the <code>TetradLoggerConfig</code>
-     * associated with the event if there is one
+     * Constructs the event given the source and the <code>TetradLoggerConfig</code> associated with the event if there
+     * is one
      *
      * @param source - The source
      * @param config - The config, may be null.

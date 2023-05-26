@@ -28,9 +28,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the basic function of the SessionEvent class--that is, whether events
- * can be constructed properly and whether the information can be extracted from
- * them properly.
+ * Tests the basic function of the SessionEvent class--that is, whether events can be constructed properly and whether
+ * the information can be extracted from them properly.
  *
  * @author josephramsey
  */

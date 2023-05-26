@@ -24,13 +24,11 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 
 /**
- * Interface implemented by classes, instantiations of which are capable of
- * serving as variables for columns in a DataSet. Such a class provides needed
- * details as to how the data in its column are to be interpreted. In
- * particular, a variable has a name and specifies a value in the column that is
- * to be interpreted as a missing datum. The variable also specifies how
- * external data (in String form, say) is to be converted into raw data of the
- * type used in the column in question.
+ * Interface implemented by classes, instantiations of which are capable of serving as variables for columns in a
+ * DataSet. Such a class provides needed details as to how the data in its column are to be interpreted. In particular,
+ * a variable has a name and specifies a value in the column that is to be interpreted as a missing datum. The variable
+ * also specifies how external data (in String form, say) is to be converted into raw data of the type used in the
+ * column in question.
  *
  * @author josephramsey
  */
@@ -42,8 +40,7 @@ public interface Variable extends Node {
     long serialVersionUID = 23L;
 
     /**
-     * @return the missing value marker as an object--i.e. a double if
-     * continuous, an Integer if discrete, etc.
+     * @return the missing value marker as an object--i.e. a double if continuous, an Integer if discrete, etc.
      */
     Object getMissingValueMarker();
 
@@ -56,12 +53,10 @@ public interface Variable extends Node {
     boolean isMissingValue(Object value);
 
     /**
-     * Checks to see whether the passed value can be converted into a
-     * value for this variable.
+     * Checks to see whether the passed value can be converted into a value for this variable.
      *
-     * @param value The object value to be checked. For instance, for a
-     *              continuous variable, this would be a Double, for a discrete
-     *              variable, and Integer, etc.
+     * @param value The object value to be checked. For instance, for a continuous variable, this would be a Double, for
+     *              a discrete variable, and Integer, etc.
      * @return true iff the object is a valid value for this variable.
      */
     boolean checkValue(Object value);

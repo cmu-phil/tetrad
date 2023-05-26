@@ -27,8 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stores a 2D array of double data. Note that the missing value marker for this
- * box is -99.
+ * Stores a 2D array of double data. Note that the missing value marker for this box is -99.
  */
 public class DoubleDataBox implements DataBox {
     static final long serialVersionUID = 23L;
@@ -50,8 +49,7 @@ public class DoubleDataBox implements DataBox {
     private final int numCols;
 
     /**
-     * Constructs an 2D double array consisting entirely of missing values
-     * (Double.NaN).
+     * Constructs an 2D double array consisting entirely of missing values (Double.NaN).
      */
     public DoubleDataBox(int rows, int cols) {
         this.data = new double[rows][cols];
@@ -108,8 +106,7 @@ public class DoubleDataBox implements DataBox {
     }
 
     /**
-     * Sets the value at the given row/column to the given Number value.
-     * The value used is number.doubleValue().
+     * Sets the value at the given row/column to the given Number value. The value used is number.doubleValue().
      */
     public void set(int row, int col, Number value) {
         if (value == null) {
@@ -124,8 +121,7 @@ public class DoubleDataBox implements DataBox {
     }
 
     /**
-     * @return the Number value at the given row and column. If the value
-     * is missing (-99), null, is returned.
+     * @return the Number value at the given row and column. If the value is missing (-99), null, is returned.
      */
     public Number get(int row, int col) {
         double datum = this.data[row][col];

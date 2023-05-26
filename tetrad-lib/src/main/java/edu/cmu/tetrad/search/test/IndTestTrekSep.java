@@ -63,8 +63,8 @@ public final class IndTestTrekSep implements IndependenceTest {
      *
      * @param covMatrix  The covariance over the measures.
      * @param alpha      The significance level.
-     * @param clustering The clustering of the measured variables. In each cluster, all measured variable in
-     *                   the cluster are explained by a single latent.
+     * @param clustering The clustering of the measured variables. In each cluster, all measured variable in the cluster
+     *                   are explained by a single latent.
      * @param latents    The list of latent variables for the clusters, in order.
      */
     public IndTestTrekSep(ICovarianceMatrix covMatrix, double alpha, List<List<Node>> clustering, List<Node> latents) {
@@ -276,8 +276,8 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * Sets the varialbe to this list (of the same length). Useful is multiple test are used that
-     * need the same object-identical lists of variables.
+     * Sets the varialbe to this list (of the same length). Useful is multiple test are used that need the same
+     * object-identical lists of variables.
      *
      * @param variables This list.
      */

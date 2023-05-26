@@ -25,9 +25,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Tokenizes the given input character sequence using the type of delimiter
- * specified bythe given CPDAG. Meant to function just like StringTokenizer,
- * with more control over what counts as a tokenization delimiter.
+ * Tokenizes the given input character sequence using the type of delimiter specified bythe given CPDAG. Meant to
+ * function just like StringTokenizer, with more control over what counts as a tokenization delimiter.
  *
  * @author josephramsey
  */
@@ -44,8 +43,7 @@ public final class RegexTokenizer {
     private final Matcher delimiterMatcher;
 
     /**
-     * Matcher for searching for the right-hand quote char of a pair of quote
-     * chars.
+     * Matcher for searching for the right-hand quote char of a pair of quote chars.
      */
     private final Matcher quoteCharMatcher;
 
@@ -65,14 +63,12 @@ public final class RegexTokenizer {
     private boolean finalTokenParsed;
 
     /**
-     * True iff the parser should be aware of quotation marks and remove
-     * them from returned tokens.
+     * True iff the parser should be aware of quotation marks and remove them from returned tokens.
      */
     private boolean quoteSensitive = true;
 
     /**
-     * Constructs a tokenizer for the given input line, using the given Pattern
-     * as delimiter.
+     * Constructs a tokenizer for the given input line, using the given Pattern as delimiter.
      */
     public RegexTokenizer(CharSequence line, Pattern delimiterPattern,
                           char quoteChar) {
@@ -130,8 +126,7 @@ public final class RegexTokenizer {
     }
 
     /**
-     * True iff the parser should be aware of quotation marks and remove them
-     * from returned strings.
+     * True iff the parser should be aware of quotation marks and remove them from returned strings.
      */
     public void setQuoteSensitive(boolean quoteSensitive) {
         this.quoteSensitive = quoteSensitive;

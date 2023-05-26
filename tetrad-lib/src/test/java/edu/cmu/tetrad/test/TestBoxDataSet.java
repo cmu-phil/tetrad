@@ -34,11 +34,9 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 /**
- * Tests the various functions of a rectangular data set. The tests must make
- * use of interface methods only; calls to underlying methods of implementing
- * classes will undermine generality. The point of this is to allow a transition
- * to be made from Column-based DataSets to COLT-matrix-based datasets. All
- * tests should work for both.
+ * Tests the various functions of a rectangular data set. The tests must make use of interface methods only; calls to
+ * underlying methods of implementing classes will undermine generality. The point of this is to allow a transition to
+ * be made from Column-based DataSets to COLT-matrix-based datasets. All tests should work for both.
  *
  * @author josephramsey
  */

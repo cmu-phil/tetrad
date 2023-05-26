@@ -9,8 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * The adjacency precision. The true positives are the number of adjacencies in both
- * the true and estimated graphs.
+ * The adjacency precision. The true positives are the number of adjacencies in both the true and estimated graphs.
  *
  * @author josephramsey
  */

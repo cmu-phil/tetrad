@@ -22,9 +22,8 @@
 package edu.cmu.tetrad.data;
 
 /**
- * For use wherever a legitimately triangular matrix is useful for storage purposes.
- * A bit slower than using a standard square matrix, so use one of those unless storage
- * is a concern.
+ * For use wherever a legitimately triangular matrix is useful for storage purposes. A bit slower than using a standard
+ * square matrix, so use one of those unless storage is a concern.
  *
  * @author Mike Freenor
  */

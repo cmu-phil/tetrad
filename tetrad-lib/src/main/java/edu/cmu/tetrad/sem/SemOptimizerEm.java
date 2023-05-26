@@ -33,9 +33,8 @@ import edu.cmu.tetrad.util.Vector;
 import java.util.List;
 
 /**
- * Optimizes a DAG SEM with hidden variables using expectation-maximization.
- * IT SHOULD NOT BE USED WITH SEMs THAT ARE NOT DAGS. For DAGs without hidden
- * variables, SemOptimizerRegression should be more efficient.
+ * Optimizes a DAG SEM with hidden variables using expectation-maximization. IT SHOULD NOT BE USED WITH SEMs THAT ARE
+ * NOT DAGS. For DAGs without hidden variables, SemOptimizerRegression should be more efficient.
  *
  * @author Ricardo Silva
  * @author josephramsey Cleanup, modernization.

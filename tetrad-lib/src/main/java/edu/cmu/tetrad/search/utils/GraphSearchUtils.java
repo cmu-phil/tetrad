@@ -100,10 +100,9 @@ public final class GraphSearchUtils {
     }
 
     /**
-     * Performs step C of the algorithm, as indicated on page xxx of CPS, with
-     * the modification that X--W--Y is oriented as X--&gt;W&lt;--Y if W is
-     * *determined by* the sepset of (X, Y), rather than W just being *in* the
-     * sepset of (X, Y).
+     * Performs step C of the algorithm, as indicated on page xxx of CPS, with the modification that X--W--Y is oriented
+     * as X--&gt;W&lt;--Y if W is *determined by* the sepset of (X, Y), rather than W just being *in* the sepset of (X,
+     * Y).
      */
     public static void pcdOrientC(IndependenceTest test, Knowledge knowledge, Graph graph) {
         TetradLogger.getInstance().log("info", "Starting Collider Orientation:");
@@ -210,8 +209,8 @@ public final class GraphSearchUtils {
     }
 
     /**
-     * Step C of PC; orients colliders using specified sepset. That is, orients
-     * x *-* y *-* z as x *-&gt; y &lt;-* z just in case y is in Sepset({x, z}).
+     * Step C of PC; orients colliders using specified sepset. That is, orients x *-* y *-* z as x *-&gt; y &lt;-* z
+     * just in case y is in Sepset({x, z}).
      */
     public static void orientCollidersUsingSepsets(SepsetMap set, Knowledge knowledge, Graph graph, boolean verbose,
                                                    boolean enforceCpdag) {
@@ -278,7 +277,7 @@ public final class GraphSearchUtils {
      * Checks if an arrowhead is allowed by background knowledge.
      */
     public static boolean isArrowheadAllowed(Object from, Object to,
-                                              Knowledge knowledge) {
+                                             Knowledge knowledge) {
         if (knowledge == null) {
             return true;
         }
@@ -476,8 +475,8 @@ public final class GraphSearchUtils {
     }
 
     /**
-     * Stores a result for checking whether a graph is a legal PAG--(a) whether it is (a
-     * boolean), and (b) the reason why it is not, if it is not (a String).
+     * Stores a result for checking whether a graph is a legal PAG--(a) whether it is (a boolean), and (b) the reason
+     * why it is not, if it is not (a String).
      */
     public static class LegalPagRet {
         private final boolean legalPag;
@@ -543,8 +542,8 @@ public final class GraphSearchUtils {
     }
 
     /**
-     * Stores a result for checking whether a graph is a legal MAG--(a) whether it is (a
-     * boolean), and (b) the reason why it is not, if it is not (a String).
+     * Stores a result for checking whether a graph is a legal MAG--(a) whether it is (a boolean), and (b) the reason
+     * why it is not, if it is not (a String).
      */
     public static class LegalMagRet {
         private final boolean legalMag;
@@ -769,26 +768,20 @@ public final class GraphSearchUtils {
     }
 
     /**
-     * @param initialNodes The nodes that reachability undirectedPaths start
-     *                     from.
-     * @param legalPairs   Specifies initial edges (given initial nodes) and legal
-     *                     edge pairs.
-     * @param c            a set of vertices (intuitively, the set of variables to be
-     *                     conditioned on.
-     * @param d            a set of vertices (intuitively to be used in tests of legality,
-     *                     for example, the set of ancestors of c).
+     * @param initialNodes The nodes that reachability undirectedPaths start from.
+     * @param legalPairs   Specifies initial edges (given initial nodes) and legal edge pairs.
+     * @param c            a set of vertices (intuitively, the set of variables to be conditioned on.
+     * @param d            a set of vertices (intuitively to be used in tests of legality, for example, the set of
+     *                     ancestors of c).
      * @param graph        the graph with respect to which reachability is
-     * @return the set of nodes reachable from the given set of initial nodes in
-     * the given graph according to the criteria in the given legal pairs
-     * object.
+     * @return the set of nodes reachable from the given set of initial nodes in the given graph according to the
+     * criteria in the given legal pairs object.
      * <p>
-     * A variable v is reachable from initialNodes iff for some variable X in
-     * initialNodes thers is a path U [X, Y1, ..., v] such that
-     * legalPairs.isLegalFirstNode(X, Y1) and for each [H1, H2, H3] as subpaths
-     * of U, legalPairs.isLegalPairs(H1, H2, H3).
+     * A variable v is reachable from initialNodes iff for some variable X in initialNodes thers is a path U [X, Y1,
+     * ..., v] such that legalPairs.isLegalFirstNode(X, Y1) and for each [H1, H2, H3] as subpaths of U,
+     * legalPairs.isLegalPairs(H1, H2, H3).
      * <p>
-     * The algorithm used is a variant of Algorithm 1 from Geiger, Verma, and
-     * Pearl (1990).
+     * The algorithm used is a variant of Algorithm 1 from Geiger, Verma, and Pearl (1990).
      */
     public static Set<Node> getReachableNodes(List<Node> initialNodes,
                                               LegalPairs legalPairs, List<Node> c, List<Node> d, Graph graph, int maxPathLength) {
@@ -1095,7 +1088,6 @@ public final class GraphSearchUtils {
         if (!(e1 == null && e2 == null)) {
             if (e1 != null && e2 != null) {
                 if (!e1.equals(e2)) {
-                    System.out.println("Difference " + e1 + " " + e2);
                     error++;
                 }
             } else if (e2 == null) {
@@ -1206,8 +1198,7 @@ public final class GraphSearchUtils {
     }
 
     /**
-     * Just counts arrowhead errors--for cyclic edges counts an arrowhead at
-     * each node.
+     * Just counts arrowhead errors--for cyclic edges counts an arrowhead at each node.
      */
     public static GraphUtils.GraphComparison getGraphComparison2(Graph graph, Graph trueGraph) {
         graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
@@ -1599,8 +1590,8 @@ public final class GraphSearchUtils {
     }
 
     /**
-     * Gives the options for triple type for a conservative unshielded collider orientation,
-     * which may be "collider" or "noncollider" or "ambiguous".
+     * Gives the options for triple type for a conservative unshielded collider orientation, which may be "collider" or
+     * "noncollider" or "ambiguous".
      */
     public enum CpcTripleType {
         COLLIDER, NONCOLLIDER, AMBIGUOUS

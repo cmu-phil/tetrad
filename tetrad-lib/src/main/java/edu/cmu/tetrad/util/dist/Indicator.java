@@ -24,8 +24,8 @@ package edu.cmu.tetrad.util.dist;
 import edu.cmu.tetrad.util.RandomUtil;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Jan 15, 2008 Time: 5:07:01 PM
- * To change this template use File | Settings | File Templates.
+ * Created by IntelliJ IDEA. User: jdramsey Date: Jan 15, 2008 Time: 5:07:01 PM To change this template use File |
+ * Settings | File Templates.
  */
 public class Indicator implements Distribution {
     static final long serialVersionUID = 23L;

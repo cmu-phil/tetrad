@@ -25,17 +25,13 @@ import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
  * <p>Implements a function from the previous time steps of a history array to
- * the getModel time step. The function is implemented factor by factor; for each
- * factor, the indexed connectivity specifies a specific set of parents
- * (IndexedParents) that the function is permitted to depend on for that factor;
- * the getLabel method returns the value for that set of parents in the
- * history. The update function may optionally be associated with an
- * IndexedLagGraph to provide information about the <i>intended</i> graphical
- * structure of the function (say, from a causal point of view). This
- * IndexedLagGraph gives information about the string names and order of the
- * factors and the number and order of the parents (IndexedParent's) for each
- * factor. This information should be encoded in the function itself, but there
- * is no requirement that the function be checked against the graph explicitly
+ * the getModel time step. The function is implemented factor by factor; for each factor, the indexed connectivity
+ * specifies a specific set of parents (IndexedParents) that the function is permitted to depend on for that factor; the
+ * getLabel method returns the value for that set of parents in the history. The update function may optionally be
+ * associated with an IndexedLagGraph to provide information about the <i>intended</i> graphical structure of the
+ * function (say, from a causal point of view). This IndexedLagGraph gives information about the string names and order
+ * of the factors and the number and order of the parents (IndexedParent's) for each factor. This information should be
+ * encoded in the function itself, but there is no requirement that the function be checked against the graph explicitly
  * to make sure the graph is actually implemented.
  *
  * @author josephramsey
@@ -58,14 +54,12 @@ public interface UpdateFunction extends TetradSerializable {
     double getValue(int factorIndex, double[][] history);
 
     /**
-     * Returns the number of factors in the history. This is used to set up the
-     * initial history array.
+     * Returns the number of factors in the history. This is used to set up the initial history array.
      */
     int getNumFactors();
 
     /**
-     * Returns the max lag of the gene history. This is used to set up the
-     * initial history array.
+     * Returns the max lag of the gene history. This is used to set up the initial history array.
      */
     int getMaxLag();
 }

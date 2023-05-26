@@ -49,8 +49,7 @@ public class RegressionDataset implements Regression {
     private final List<Node> variables;
 
     /**
-     * The significance level for determining which regressors are significant
-     * based on their p values.
+     * The significance level for determining which regressors are significant based on their p values.
      */
     private double alpha = 0.05;
 
@@ -67,8 +66,7 @@ public class RegressionDataset implements Regression {
     /**
      * Constructs a linear regression model for the given tabular data set.
      *
-     * @param data A rectangular data set, the relevant variables of which
-     *             are continuous.
+     * @param data A rectangular data set, the relevant variables of which are continuous.
      */
     public RegressionDataset(DataSet data) {
         this.data = data.getDoubleData();
@@ -88,8 +86,7 @@ public class RegressionDataset implements Regression {
     //===========================PUBLIC METHODS========================//
 
     /**
-     * Sets the alpha level for deciding which regressors are significant
-     * based on their p values.
+     * Sets the alpha level for deciding which regressors are significant based on their p values.
      */
     public void setAlpha(double alpha) {
         this.alpha = alpha;
@@ -107,9 +104,8 @@ public class RegressionDataset implements Regression {
      *
      * @param target     The target variable.
      * @param regressors The regressor variables.
-     * @return The regression plane, specifying for each regressors its
-     * coefficeint, se, t, and p values, and specifying the same for the
-     * constant.
+     * @return The regression plane, specifying for each regressors its coefficeint, se, t, and p values, and specifying
+     * the same for the constant.
      */
     public RegressionResult regress(Node target, List<Node> regressors) {
         int n = getRows().length;
@@ -307,12 +303,10 @@ public class RegressionDataset implements Regression {
     }
 
     /**
-     * Calculates the residual sum of squares for parameter data x, actual
-     * values y, and regression coefficients b--i.e., for each point in the
-     * data, the predicted value for that point is calculated, and then it is
-     * subtracted from the actual value. The sum of the squares of these
-     * difference values over all points in the data is calculated and
-     * returned.
+     * Calculates the residual sum of squares for parameter data x, actual values y, and regression coefficients
+     * b--i.e., for each point in the data, the predicted value for that point is calculated, and then it is subtracted
+     * from the actual value. The sum of the squares of these difference values over all points in the data is
+     * calculated and returned.
      *
      * @param x the array of data.
      * @param y the target vector.

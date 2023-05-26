@@ -24,11 +24,10 @@ package edu.pitt.csb.mgm;
 import cern.colt.matrix.DoubleMatrix1D;
 
 /**
- * This interface should be used for non-differentiable convex functions that are decomposable such that
- * f(x) = g(x) + h(x) where g(x) is a differentiable convex function (i.e. smooth) and h(x) is a convex but not
- * necessarily differentiable (i.e. non-smooth) and has a proximal operator prox_t(x) = argmin_z 1/(2t) norm2(x-z)^2 +
- * h(z) has a solution for any t &gt; 0. Typically g(x) will be a likelihood, and h(x) is a penalty term (as in l_1 in the
- * lasso)
+ * This interface should be used for non-differentiable convex functions that are decomposable such that f(x) = g(x) +
+ * h(x) where g(x) is a differentiable convex function (i.e. smooth) and h(x) is a convex but not necessarily
+ * differentiable (i.e. non-smooth) and has a proximal operator prox_t(x) = argmin_z 1/(2t) norm2(x-z)^2 + h(z) has a
+ * solution for any t &gt; 0. Typically g(x) will be a likelihood, and h(x) is a penalty term (as in l_1 in the lasso)
  * <p>
  * <p>
  * Created by ajsedgewick on 8/4/15.
@@ -73,8 +72,8 @@ public abstract class ConvexProximal {
     abstract double nonSmoothValue(DoubleMatrix1D X);
 
     /**
-     * A proximal operator is the solution to this optimization problem:
-     * prox_t(x) = argmin_z \frac{1}{2t} \|x-z\|^2_2 + h(x)
+     * A proximal operator is the solution to this optimization problem: prox_t(x) = argmin_z \frac{1}{2t} \|x-z\|^2_2 +
+     * h(x)
      *
      * @param t positive parameter for prox operator
      * @param X input vector

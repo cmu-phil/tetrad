@@ -235,8 +235,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * Returns a number that is positive when dependence holds and more positive
-     * for greater dependence.
+     * Returns a number that is positive when dependence holds and more positive for greater dependence.
      *
      * @return This number
      * @see Fges

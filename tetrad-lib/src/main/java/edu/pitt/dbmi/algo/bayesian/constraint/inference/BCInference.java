@@ -86,20 +86,18 @@ public class BCInference {
     private int numberOfScores;
 
     /**
-     * Cases is a two-dimensional array dataset. If the dataset is M x N, the
-     * size of the two-dimensional array is (M + 2) x (N + 2). In other words,
-     * the size of the array is always 2 more of the number of data. Likewise,
-     * if the data for nodeDimension is N then the size of the array is N + 2.
+     * Cases is a two-dimensional array dataset. If the dataset is M x N, the size of the two-dimensional array is (M +
+     * 2) x (N + 2). In other words, the size of the array is always 2 more of the number of data. Likewise, if the data
+     * for nodeDimension is N then the size of the array is N + 2.
      * <p>
-     * The case array index starts from 1 (not zero) to numberOfCases. The
-     * nodeDimension array index start from 1 (not zero) to numberOfNodes.
+     * The case array index starts from 1 (not zero) to numberOfCases. The nodeDimension array index start from 1 (not
+     * zero) to numberOfNodes.
      * <p>
-     * nodeDimension array contains values denote the number of discrete values
-     * that Node can have (e.g., 2 for a binary variable).
+     * nodeDimension array contains values denote the number of discrete values that Node can have (e.g., 2 for a binary
+     * variable).
      *
      * @param cases         is a two-dimensional integer array containing the data
-     * @param nodeDimension one-dimensional integer array containing the
-     *                      dimension of each variable
+     * @param nodeDimension one-dimensional integer array containing the dimension of each variable
      */
     public BCInference(int[][] cases, int[] nodeDimension) {
         this.cases = cases;
@@ -136,21 +134,17 @@ public class BCInference {
     }
 
     /**
-     * This function takes a constraint, which has a value of either
-     * OP.dependent or OP.independent, of the form "X independent Y given Z" or
-     * "X dependent Y given Z" and returns a probability for that constraint
-     * given the data in cases and assumed prior probability for that constraint
-     * given the data in cases and assumed prior probabilities. Currently, it
-     * assumes uniform parameter priors and a structure prior of 0.5. A
-     * structure prior of 0.5 means taht a priori we have that P(X independent Y
-     * given Z) = P(X dependent Y given Z) = 0.5.
+     * This function takes a constraint, which has a value of either OP.dependent or OP.independent, of the form "X
+     * independent Y given Z" or "X dependent Y given Z" and returns a probability for that constraint given the data in
+     * cases and assumed prior probability for that constraint given the data in cases and assumed prior probabilities.
+     * Currently, it assumes uniform parameter priors and a structure prior of 0.5. A structure prior of 0.5 means taht
+     * a priori we have that P(X independent Y given Z) = P(X dependent Y given Z) = 0.5.
      * <p>
-     * Z[0] is the length of the set represented by array Z. For an example,
-     * Z[0] = 1 represents the set Z of size 1. Z[] = 0 represents an empty
-     * set.
+     * Z[0] is the length of the set represented by array Z. For an example, Z[0] = 1 represents the set Z of size 1.
+     * Z[] = 0 represents an empty set.
      * <p>
-     * Set Z with two elements: Z = {3, 2} Z[] = 2 // set Z has two elements
-     * (length of 2) Z[1] = 3 // first element Z[2] = 2 // second element.
+     * Set Z with two elements: Z = {3, 2} Z[] = 2 // set Z has two elements (length of 2) Z[1] = 3 // first element
+     * Z[2] = 2 // second element.
      * <p>
      * Empty set: Z = {}; Z[0] = 0
      *
@@ -158,8 +152,7 @@ public class BCInference {
      * @param x          node x
      * @param y          node y
      * @param z          set of nodes
-     * @return P(x dependent y given z | data)  or P(x independent y given z |
-     * data)
+     * @return P(x dependent y given z | data)  or P(x independent y given z | data)
      */
     public synchronized double probConstraint(OP constraint, int x, int y, int[] z) {
 //        if (true) return 0.5;
@@ -268,11 +261,9 @@ public class BCInference {
     }
 
     /**
-     * This function returns the prior probability that X independent Y given Z.
-     * It currently simply returns the uniform prior of 0.5. It can be revised
-     * to return an informative prior. The code that calls priorIndependent()
-     * currently assumes that it returns a value in (0, 1), and thus, does not
-     * return 0 or 1.
+     * This function returns the prior probability that X independent Y given Z. It currently simply returns the uniform
+     * prior of 0.5. It can be revised to return an informative prior. The code that calls priorIndependent() currently
+     * assumes that it returns a value in (0, 1), and thus, does not return 0 or 1.
      */
     private double priorIndependent(int x, int y, int[] z) {
         return 0.5;  // currently assumes uniform priors
@@ -355,8 +346,7 @@ public class BCInference {
     }
 
     /**
-     * @param q    is the number of possible joint instantiation of the parents of
-     *             the parents of the node.
+     * @param q    is the number of possible joint instantiation of the parents of the parents of the node.
      * @param pess is the prior equivalent sample size
      */
     private double scoringFn1(int node, int instancePtr, double q, double pess) {

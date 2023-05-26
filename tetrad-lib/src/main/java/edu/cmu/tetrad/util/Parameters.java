@@ -4,9 +4,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Stores a list of named parameters with their values. Stores default values
- * for known parameters. Returns a list of parameters with their values, for the
- * parameters whose values have been retrieved, using the toString method.
+ * Stores a list of named parameters with their values. Stores default values for known parameters. Returns a list of
+ * parameters with their values, for the parameters whose values have been retrieved, using the toString method.
  *
  * @author josephramsey
  */
@@ -45,8 +44,7 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Returns a list of the parameters whose values were actually used in the
-     * course of the simulation.
+     * Returns a list of the parameters whose values were actually used in the course of the simulation.
      *
      * @return this list, in String form
      */
@@ -58,8 +56,7 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Returns the integer value of the given parameter, looking up its default
-     * in the ParamDescriptions map.
+     * Returns the integer value of the given parameter, looking up its default in the ParamDescriptions map.
      *
      * @param name The name of the parameter.
      * @return The integer value of this parameter.
@@ -69,8 +66,7 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Returns the long value of the given parameter, looking up its default in
-     * the ParamDescriptions map.
+     * Returns the long value of the given parameter, looking up its default in the ParamDescriptions map.
      *
      * @param name The name of the parameter.
      * @return The long value of this parameter.
@@ -80,8 +76,7 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Returns the boolean value of the given parameter, looking up its default
-     * in the ParamDescriptions map.
+     * Returns the boolean value of the given parameter, looking up its default in the ParamDescriptions map.
      *
      * @param name The name of the parameter.
      * @return The boolean value of this parameter.
@@ -95,8 +90,7 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Returns the double value of the given parameter, looking up its default
-     * in the ParamDescriptions map.
+     * Returns the double value of the given parameter, looking up its default in the ParamDescriptions map.
      *
      * @param name The name or the parameter.
      * @return The double value of this parameter.
@@ -106,8 +100,7 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Returns the string value of the given parameter, looking up its default
-     * in the ParamDescriptions map.
+     * Returns the string value of the given parameter, looking up its default in the ParamDescriptions map.
      *
      * @param name The name or the parameter.
      * @return The string value of this parameter.
@@ -117,8 +110,7 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Returns the object value of the given parameter, looking up its default
-     * in the ParamDescriptions map.
+     * Returns the object value of the given parameter, looking up its default in the ParamDescriptions map.
      *
      * @param name The name of the parameter.
      * @return The object value of this parameter.
@@ -128,8 +120,7 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Returns the integer value of the given parameter, looking up its default
-     * in the ParamDescriptions map.
+     * Returns the integer value of the given parameter, looking up its default in the ParamDescriptions map.
      *
      * @param name The name of the parameter.
      * @return The integer value of this parameter.
@@ -139,8 +130,7 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Returns the long value of the given parameter, looking up its default in
-     * the ParamDescriptions map.
+     * Returns the long value of the given parameter, looking up its default in the ParamDescriptions map.
      *
      * @param name The name of the parameter.
      * @return The long value of this parameter.
@@ -150,8 +140,7 @@ public class Parameters implements TetradSerializable {
     }
 
     /**
-     * Returns the boolean value of the given parameter, using the given
-     * default.
+     * Returns the boolean value of the given parameter, using the given default.
      *
      * @param name The name of the parameter.
      * @return The boolean value of this parameter.

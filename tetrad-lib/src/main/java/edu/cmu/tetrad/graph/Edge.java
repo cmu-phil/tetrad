@@ -31,11 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents an edge node1 *-# node2 where * and # are endpoints of type
- * Endpoint--that is, Endpoint.TAIL, Endpoint.ARROW, or Endpoint.CIRCLE.
+ * Represents an edge node1 *-# node2 where * and # are endpoints of type Endpoint--that is, Endpoint.TAIL,
+ * Endpoint.ARROW, or Endpoint.CIRCLE.
  * <p>
- * Note that because speed is of the essence, and Edge cannot be compared to an
- * object of any other type; this will throw an exception.
+ * Note that because speed is of the essence, and Edge cannot be compared to an object of any other type; this will
+ * throw an exception.
  *
  * @author josephramsey
  */
@@ -68,8 +68,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     // =========================CONSTRUCTORS============================//
 
     /**
-     * Constructs a new edge by specifying the nodes it connects and the
-     * endpoint types.
+     * Constructs a new edge by specifying the nodes it connects and the endpoint types.
      *
      * @param node1     the first node
      * @param node2     the second node _
@@ -184,8 +183,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
-     * Traverses the edge in an undirected fashion--given one node along the
-     * edge, returns the node at the opposite end of the edge.
+     * Traverses the edge in an undirected fashion--given one node along the edge, returns the node at the opposite end
+     * of the edge.
      */
     public final Node getDistalNode(Node node) {
         if (this.node1 == node) {
@@ -207,8 +206,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
-     * @return true just in case the edge is pointing toward the given node--
-     * that is, x --&gt; node or x o--&gt; node.
+     * @return true just in case the edge is pointing toward the given node-- that is, x --&gt; node or x o--&gt; node.
      */
     public boolean pointsTowards(Node node) {
         Endpoint proximal = getProximalEndpoint(node);
@@ -335,8 +333,7 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
-     * Two edges are equal just in case they connect the same nodes and have the
-     * same endpoints proximal to each node.
+     * Two edges are equal just in case they connect the same nodes and have the same endpoints proximal to each node.
      */
     public final boolean equals(Object o) {
         if (o == this)
@@ -402,14 +399,12 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.)
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.)
      */
     private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
         s.defaultReadObject();

@@ -32,13 +32,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Implementation of 2SLS, adapted to deal with estimation of covariance
- * matrices. See "An alternative two stage least squares (2SLS) estimator for
- * latent variable equations" by Kenneth Bollen (Psychometrika - vol. 61, no1.,
- * 109-121, March 1996). IMPORTANT: this algorithm assumes that the SemPm
- * is a pure measurement model! With at least TWO measurements per latent.
- * Large parts of this code (that is, everything but estimateCoeffs and
- * estimateCovars) were reused from SEMEstimateAdapter.
+ * Implementation of 2SLS, adapted to deal with estimation of covariance matrices. See "An alternative two stage least
+ * squares (2SLS) estimator for latent variable equations" by Kenneth Bollen (Psychometrika - vol. 61, no1., 109-121,
+ * March 1996). IMPORTANT: this algorithm assumes that the SemPm is a pure measurement model! With at least TWO
+ * measurements per latent. Large parts of this code (that is, everything but estimateCoeffs and estimateCovars) were
+ * reused from SEMEstimateAdapter.
  *
  * @author Ricardo Silva
  */
@@ -51,8 +49,7 @@ class Tsls {
     private String nodeName;
 
     /**
-     * We require a DataSet (with continuous dataSet) and a SemPm with matching
-     * variables.
+     * We require a DataSet (with continuous dataSet) and a SemPm with matching variables.
      */
     public Tsls(SemPm spm, DataSet dataSet, String nm) {
         initialization(spm, dataSet, nm);

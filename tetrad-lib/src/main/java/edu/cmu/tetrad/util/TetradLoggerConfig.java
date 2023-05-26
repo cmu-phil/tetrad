@@ -24,8 +24,8 @@ package edu.cmu.tetrad.util;
 import java.util.List;
 
 /**
- * Represents the configuration for the logger.  The idea is that each model has its own logger
- * configuration, which is merely the events that the model supports.
+ * Represents the configuration for the logger.  The idea is that each model has its own logger configuration, which is
+ * merely the events that the model supports.
  *
  * @author Tyler Gibson
  */
@@ -33,15 +33,14 @@ public interface TetradLoggerConfig extends TetradSerializable {
 
 
     /**
-     * States whether the event associated with the given id is active, that is whether
-     * it should be logged or not.
+     * States whether the event associated with the given id is active, that is whether it should be logged or not.
      */
     boolean isEventActive(String id);
 
 
     /**
-     * States whether the config is active or not. THe config is considered active if there is
-     * at least one active event.
+     * States whether the config is active or not. THe config is considered active if there is at least one active
+     * event.
      *
      * @return - true iff its active.
      */

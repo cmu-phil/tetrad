@@ -30,14 +30,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Represents propositions over the variables of a particular BayesIm describing
- * and event of a fairly general sort--namely, conjunctions of propositions that
- * particular variables take on values from a particular disjunctive list of
- * categories. For example, X1 = 1 or 2 and X2 = 3 and X3 = 1 or 3 and X4 = 2 or 3 or
- * 5. The proposition is created by allowing or disallowing particular
- * categories. Notice that "knowing nothing" about a variable is the same as
- * saying that all categories for that variable are allowed, so the proposition
- * by default allows all categories for all variables--i.e. it is a tautology.
+ * Represents propositions over the variables of a particular BayesIm describing and event of a fairly general
+ * sort--namely, conjunctions of propositions that particular variables take on values from a particular disjunctive
+ * list of categories. For example, X1 = 1 or 2 and X2 = 3 and X3 = 1 or 3 and X4 = 2 or 3 or 5. The proposition is
+ * created by allowing or disallowing particular categories. Notice that "knowing nothing" about a variable is the same
+ * as saying that all categories for that variable are allowed, so the proposition by default allows all categories for
+ * all variables--i.e. it is a tautology.
  *
  * @author josephramsey
  */
@@ -103,8 +101,7 @@ public final class SemProposition implements TetradSerializable {
     }
 
     /**
-     * @return the index of the variable with the given name, or -1 if such a
-     * variable does not exist.
+     * @return the index of the variable with the given name, or -1 if such a variable does not exist.
      */
     public int getNodeIndex() {
 
@@ -158,14 +155,12 @@ public final class SemProposition implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

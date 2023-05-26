@@ -4,9 +4,8 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 
 /**
- * Adds a column to the output table in which values for the given parameter
- * are listed. The parameter must have numerical values, and these will be
- * represented as continuous.
+ * Adds a column to the output table in which values for the given parameter are listed. The parameter must have
+ * numerical values, and these will be represented as continuous.
  *
  * @author josephramsey
  */
@@ -16,8 +15,7 @@ public class ParameterColumn implements Statistic {
     private final String parameter;
 
     /**
-     * @param parameter The name of the parameter to list. If this parameter
-     *                  does not exist, '*' is output.
+     * @param parameter The name of the parameter to list. If this parameter does not exist, '*' is output.
      */
     public ParameterColumn(String parameter) {
         this.parameter = parameter;

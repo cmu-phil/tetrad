@@ -40,8 +40,8 @@ import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * <p>Implements a conditional Gaussian likelihood. Please note that this likelihood will be
- * maximal only if the continuous variables are jointly Gaussian conditional on the
- * discrete variables; in all other cases, it will be less than maximal. The reference is here:</p>
+ * maximal only if the continuous variables are jointly Gaussian conditional on the discrete variables; in all other
+ * cases, it will be less than maximal. The reference is here:</p>
  *
  * <p>Andrews, B., Ramsey, J., & Cooper, G. F. (2018). Scoring Bayesian networks of mixed variables.
  * International journal of data science and analytics, 6, 3-18.</p>
@@ -89,8 +89,8 @@ public class ConditionalGaussianLikelihood {
     }
 
     /**
-     * Gives return value for a conditional Gaussain likelihood, returning a likelihood
-     * value and the degrees of freedom for it.
+     * Gives return value for a conditional Gaussain likelihood, returning a likelihood value and the degrees of freedom
+     * for it.
      */
     public static class Ret {
         private final double lik;

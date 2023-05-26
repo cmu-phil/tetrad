@@ -35,9 +35,8 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.*;
 
 /**
- * Implements the Purify algorithm, which is a implementation of the automated
- * purification methods described on CPS and the report "Learning Measurement Models"
- * CMU-CALD-03-100.
+ * Implements the Purify algorithm, which is a implementation of the automated purification methods described on CPS and
+ * the report "Learning Measurement Models" CMU-CALD-03-100.
  * <p>
  * No background knowledge is allowed yet. Future versions of this algorithm will include it.
  * <p>
@@ -150,7 +149,8 @@ public class Purify {
     }
 
     /**
-     * ****************************************************** SEARCH INTERFACE *******************************************************
+     * ****************************************************** SEARCH INTERFACE
+     * *******************************************************
      */
 
     public Graph search() {
@@ -299,7 +299,8 @@ public class Purify {
     }
 
     /**
-     * ****************************************************** DEBUG UTILITIES *******************************************************
+     * ****************************************************** DEBUG UTILITIES
+     * *******************************************************
      */
 
     private void printClustering(List<int[]> clustering) {
@@ -407,8 +408,7 @@ public class Purify {
 
     /**
      * Marks for deletion nodes within a single cluster that are part of some tetrad constraint that does not hold
-     * according to a statistical test. False discovery rates will be used to adjust for multiple hypothesis
-     * tests.
+     * according to a statistical test. False discovery rates will be used to adjust for multiple hypothesis tests.
      */
     private void intraConstructPhase(int[] cluster, boolean[] eliminated,
                                      String clusterName) {
@@ -667,8 +667,7 @@ public class Purify {
 
     /**
      * Marks for deletion nodes that are part of some tetrad constraint between two clusters that does not hold
-     * according to a statistical test. False discovery rates will be used to adjust for multiple hypothesis
-     * tests.
+     * according to a statistical test. False discovery rates will be used to adjust for multiple hypothesis tests.
      */
 
     private void crossConstructPhase(List<int[]> partition, boolean[] eliminated) {

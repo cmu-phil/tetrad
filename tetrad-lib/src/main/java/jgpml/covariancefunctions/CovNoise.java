@@ -33,13 +33,12 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.Arrays;
 
 /**
- * Independent covariance function, ie "white noise", with specified variance.
- * The covariance function is specified as:
+ * Independent covariance function, ie "white noise", with specified variance. The covariance function is specified as:
  * <p>
  * k(x^p,x^q) = s2 * \delta(p,q)
  * <p>
- * where s2 is the noise variance and \delta(p,q) is a Kronecker delta function
- * which is 1 iff p=q and zero otherwise. The hyperparameter is
+ * where s2 is the noise variance and \delta(p,q) is a Kronecker delta function which is 1 iff p=q and zero otherwise.
+ * The hyperparameter is
  * <p>
  * [ log(sqrt(s2)) ]
  */
@@ -103,8 +102,8 @@ public class CovNoise implements CovarianceFunction {
     }
 
     /**
-     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
-     * to the hyperparameter with index <code>idx</code>
+     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
+     * <code>idx</code>
      *
      * @param loghyper hyperparameters
      * @param X        input dataset

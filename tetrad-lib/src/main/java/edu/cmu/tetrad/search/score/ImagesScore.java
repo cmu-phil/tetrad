@@ -25,22 +25,19 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.Grasp;
-import edu.cmu.tetrad.search.score.Score;
 
 import java.util.List;
 
 /**
  * <p>Implements a score to average results over multiple scores. This is
- * used for the IMaGES algorithm. The idea is that one pick and algorithm
- * that takes (only) a score as input, such as FGES or GRaSP or BOSS,
- * and then constructs an ImagesScore (which class) with a list of
- * datasets as input, using same object-identical variables, and feeds this
- * Images score to this algorithm through the contructor. One then runs the
+ * used for the IMaGES algorithm. The idea is that one pick and algorithm that takes (only) a score as input, such as
+ * FGES or GRaSP or BOSS, and then constructs an ImagesScore (which class) with a list of datasets as input, using same
+ * object-identical variables, and feeds this Images score to this algorithm through the contructor. One then runs the
  * algorithm to get an estimate of the structure.</p>
  *
  * <p>Importantly, only the variables from the first score will be returned
- * from the getVariables method, so it is up to the user to ensure that all of
- * the scores share the same (object-identical) variables.</p>
+ * from the getVariables method, so it is up to the user to ensure that all of the scores share the same
+ * (object-identical) variables.</p>
  *
  * <p>As for all scores in Tetrad, higher scores mean more dependence, and
  * negative scores indicate independence.</p>
@@ -59,8 +56,8 @@ public class ImagesScore implements Score {
     private final List<Node> variables;
 
     /**
-     * Constructs an IMaGES score using the given list of individual scores.
-     * These scores will be averaged to obtain the IMaGES score itself.
+     * Constructs an IMaGES score using the given list of individual scores. These scores will be averaged to obtain the
+     * IMaGES score itself.
      *
      * @param scores The list of scores.
      */
@@ -75,10 +72,8 @@ public class ImagesScore implements Score {
     }
 
     /**
-     * Returns the average of the individual scores returned from each
-     * component score from their localScoreDiff methods. Score differences
-     * that are returned as undefined (NaN) are excluded from the
-     * average.
+     * Returns the average of the individual scores returned from each component score from their localScoreDiff
+     * methods. Score differences that are returned as undefined (NaN) are excluded from the average.
      *
      * @return This average score.
      */
@@ -100,10 +95,9 @@ public class ImagesScore implements Score {
     }
 
     /**
-     * Returns the (aggregate) local score for a variable given its parents,
-     * which is obtained by averaging the local such scores obtained from each
-     * individual score provided in the constructor, excluding scores that are
-     * returned as undefined (which are left out of the average).
+     * Returns the (aggregate) local score for a variable given its parents, which is obtained by averaging the local
+     * such scores obtained from each individual score provided in the constructor, excluding scores that are returned
+     * as undefined (which are left out of the average).
      *
      * @param i The variable whose score is needed.
      * @return This score.
@@ -135,10 +129,9 @@ public class ImagesScore implements Score {
     }
 
     /**
-     * Returns the (aggregate) local score for a variable given one of its
-     * parents, which is obtained by averaging the local such scores obtained
-     * from each individual score provided in the constructor, excluding scores
-     * that are returned as undefined (which are left out of the average).
+     * Returns the (aggregate) local score for a variable given one of its parents, which is obtained by averaging the
+     * local such scores obtained from each individual score provided in the constructor, excluding scores that are
+     * returned as undefined (which are left out of the average).
      *
      * @param i The variable whose score is needed.
      * @return This score.
@@ -160,10 +153,9 @@ public class ImagesScore implements Score {
     }
 
     /**
-     * Returns the (aggregate) local node score, which is obtained by
-     * averaging the local scores obtained from each individual score
-     * provided in the constructor, excluding scores that are returned
-     * as undefined (which are left out of the average).
+     * Returns the (aggregate) local node score, which is obtained by averaging the local scores obtained from each
+     * individual score provided in the constructor, excluding scores that are returned as undefined (which are left out
+     * of the average).
      *
      * @param i The variable whose score is needed.
      * @return This score.

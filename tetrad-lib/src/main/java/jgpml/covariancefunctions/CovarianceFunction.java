@@ -59,8 +59,8 @@ public interface CovarianceFunction {
     Matrix[] compute(Matrix loghyper, Matrix X, Matrix Xstar);
 
     /**
-     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect
-     * to the hyperparameter with index <code>idx</code>
+     * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
+     * <code>idx</code>
      *
      * @param loghyper hyperparameters
      * @param X        input dataset

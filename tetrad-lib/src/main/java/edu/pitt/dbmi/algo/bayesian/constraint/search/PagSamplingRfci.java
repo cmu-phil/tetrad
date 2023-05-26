@@ -4,8 +4,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.Rfci;
+import edu.cmu.tetrad.search.test.IndTestProbabilistic;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.GraphSampling;
 
@@ -92,8 +92,8 @@ public class PagSamplingRfci implements IGraphSearch {
     }
 
     /**
-     * Call shutdown to reject incoming tasks, and then calling shutdownNow, if
-     * necessary, to cancel any lingering tasks.
+     * Call shutdown to reject incoming tasks, and then calling shutdownNow, if necessary, to cancel any lingering
+     * tasks.
      */
     private void shutdownAndAwaitTermination(ExecutorService pool) {
         pool.shutdown();

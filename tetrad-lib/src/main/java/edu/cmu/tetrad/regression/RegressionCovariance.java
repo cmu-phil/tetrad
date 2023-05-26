@@ -33,8 +33,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Implements a regression model from correlations--that is, from a correlation
- * matrix, a list of standard deviations, and a list of means.
+ * Implements a regression model from correlations--that is, from a correlation matrix, a list of standard deviations,
+ * and a list of means.
  *
  * @author josephramsey
  */
@@ -46,8 +46,7 @@ public class RegressionCovariance implements Regression {
     private final CorrelationMatrix correlations;
 
     /**
-     * 2
-     * The standard deviations for the variable in <code>correlations</code>.
+     * 2 The standard deviations for the variable in <code>correlations</code>.
      */
     private final Vector sd;
 
@@ -57,8 +56,7 @@ public class RegressionCovariance implements Regression {
     private final Vector means;
 
     /**
-     * The alpha level, determining which coefficients will be considered
-     * significant.
+     * The alpha level, determining which coefficients will be considered significant.
      */
     private double alpha = 0.05;
 
@@ -70,8 +68,8 @@ public class RegressionCovariance implements Regression {
     //=========================CONSTRUCTORS===========================//
 
     /**
-     * Constructs a covariance-based regression model using the given covariance
-     * matrix, assuming that no means are specified.
+     * Constructs a covariance-based regression model using the given covariance matrix, assuming that no means are
+     * specified.
      *
      * @param covariances The covariance matrix.
      */
@@ -80,12 +78,11 @@ public class RegressionCovariance implements Regression {
     }
 
     /**
-     * Constructs a covariance-based regression model, assuming that the
-     * covariance matrix and the means are as specified.
+     * Constructs a covariance-based regression model, assuming that the covariance matrix and the means are as
+     * specified.
      *
      * @param covariances The covariance matrix, for variables <V1,...,Vn>
-     * @param means       A vector of means, for variables <V1,...,Vn>. May be
-     *                    null.
+     * @param means       A vector of means, for variables <V1,...,Vn>. May be null.
      */
     private RegressionCovariance(ICovarianceMatrix covariances, Vector means) {
         this(new CorrelationMatrix(covariances), RegressionCovariance.standardDeviations(covariances),
@@ -93,13 +90,11 @@ public class RegressionCovariance implements Regression {
     }
 
     /**
-     * Constructs a new covariance-based regression model, assuming the given
-     * correlations, standard deviations, and means are all specified.
+     * Constructs a new covariance-based regression model, assuming the given correlations, standard deviations, and
+     * means are all specified.
      *
-     * @param correlations       The correlation matrix, for variables
-     *                           <V1,...,Vn>.
-     * @param standardDeviations Standard deviations for variables <V1,..,Vn>.
-     *                           Must not be null.
+     * @param correlations       The correlation matrix, for variables <V1,...,Vn>.
+     * @param standardDeviations Standard deviations for variables <V1,..,Vn>. Must not be null.
      * @param means              3 for variables <V1,...,Vn>. May be null.
      */
     private RegressionCovariance(CorrelationMatrix correlations,
@@ -125,8 +120,7 @@ public class RegressionCovariance implements Regression {
     //===========================PUBLIC METHODS==========================//
 
     /**
-     * Sets the cutoff for significance. Parameters with p values less than this
-     * will be labeled as significant.
+     * Sets the cutoff for significance. Parameters with p values less than this will be labeled as significant.
      *
      * @param alpha The significance level.
      */
@@ -142,10 +136,9 @@ public class RegressionCovariance implements Regression {
     }
 
     /**
-     * Regresses the given target on the given regressors, yielding a regression
-     * plane, in which coefficients are given for each regressor plus the
-     * constant (if means have been specified, that is, for the last), and se,
-     * t, and p values are given for each regressor.
+     * Regresses the given target on the given regressors, yielding a regression plane, in which coefficients are given
+     * for each regressor plus the constant (if means have been specified, that is, for the last), and se, t, and p
+     * values are given for each regressor.
      *
      * @param target     The variable being regressed.
      * @param regressors The list of regressors.

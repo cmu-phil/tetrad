@@ -6,8 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Calculates the Matthew's correlation coefficient for adjacencies. See this page in
- * Wikipedia:
+ * Calculates the Matthew's correlation coefficient for adjacencies. See this page in Wikipedia:
  * <p>
  * https://en.wikipedia.org/wiki/Matthews_correlation_coefficient
  * <p>

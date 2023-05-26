@@ -30,11 +30,10 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Implements the Anderson-Darling test for normality, with P values calculated
- * as in R's ad.test method (in package nortest).
+ * Implements the Anderson-Darling test for normality, with P values calculated as in R's ad.test method (in package
+ * nortest).
  * <p>
- * Note that in the calculation, points x such that log(1 - normal_cdf(x))
- * is infinite are ignored.
+ * Note that in the calculation, points x such that log(1 - normal_cdf(x)) is infinite are ignored.
  *
  * @author josephramsey
  */
@@ -80,16 +79,14 @@ public class AndersonDarlingTest {
     }
 
     /**
-     * @return the A^2* statistic, which is the A^2 statistic adjusted
-     * heuristically for sample size.
+     * @return the A^2* statistic, which is the A^2 statistic adjusted heuristically for sample size.
      */
     public double getASquaredStar() {
         return this.aSquaredStar;
     }
 
     /**
-     * @return the p value of the A^2* statistic, which is interpolated using
-     * exponential functions.
+     * @return the p value of the A^2* statistic, which is interpolated using exponential functions.
      */
     public double getP() {
         return this.p;

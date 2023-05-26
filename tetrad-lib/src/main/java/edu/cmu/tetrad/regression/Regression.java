@@ -27,16 +27,15 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.List;
 
 /**
- * Implements a multiple regression model, allowing data to be specified
- * either as a tabular data set or as a covariance matrix plus list of means.
+ * Implements a multiple regression model, allowing data to be specified either as a tabular data set or as a covariance
+ * matrix plus list of means.
  *
  * @author josephramsey
  */
 public interface Regression {
 
     /**
-     * Sets the significance level at which coefficients are judged to be
-     * significant.
+     * Sets the significance level at which coefficients are judged to be significant.
      *
      * @param alpha the significance level.
      */
@@ -48,8 +47,7 @@ public interface Regression {
     Graph getGraph();
 
     /**
-     * Regresses <code>target</code> on the <code>regressors</code>, yielding
-     * a regression plane.
+     * Regresses <code>target</code> on the <code>regressors</code>, yielding a regression plane.
      *
      * @param target     the target variable, being regressed.
      * @param regressors the list of variables being regressed on.
@@ -58,8 +56,7 @@ public interface Regression {
     RegressionResult regress(Node target, List<Node> regressors);
 
     /**
-     * Regresses <code>target</code> on the <code>regressors</code>, yielding
-     * a regression plane.
+     * Regresses <code>target</code> on the <code>regressors</code>, yielding a regression plane.
      *
      * @param target     the target variable, being regressed.
      * @param regressors the list of variables being regressed on.

@@ -24,11 +24,10 @@ package edu.cmu.tetrad.session;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * Interface implemented by all session models in Tetrad. Note that every class
- * C that implements SessionModel MUST be accompanied by a unit test that
- * ensures (1) that C can serialized out and loaded back in, passing a roundtrip
- * test (C.equals(save(load(C))), and (2) that sample models from every
- * published version of Tetrad in which C has changed will load correctly.
+ * Interface implemented by all session models in Tetrad. Note that every class C that implements SessionModel MUST be
+ * accompanied by a unit test that ensures (1) that C can serialized out and loaded back in, passing a roundtrip test
+ * (C.equals(save(load(C))), and (2) that sample models from every published version of Tetrad in which C has changed
+ * will load correctly.
  *
  * @author josephramsey
  */

@@ -31,23 +31,18 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Stores information about required and forbidden edges and common causes for
- * use in algorithm. This information can be set edge by edge or else globally
- * via temporal tiers. When setting temporal tiers, all edges from later tiers
- * to earlier tiers are forbidden.
+ * Stores information about required and forbidden edges and common causes for use in algorithm. This information can be
+ * set edge by edge or else globally via temporal tiers. When setting temporal tiers, all edges from later tiers to
+ * earlier tiers are forbidden.
  * <p>
- * For this class, all variable names are referenced by name only. This is
- * because the same Knowledge object is intended to plug into different graphs
- * with MyNodes that possibly have the same names. Thus, if the Knowledge object
- * forbids the edge X --&gt; Y, then it forbids any edge which connects a MyNode
- * named "X" to a MyNode named "Y", even if the underlying MyNodes themselves
- * named "X" and "Y", respectively, are not the same.
+ * For this class, all variable names are referenced by name only. This is because the same Knowledge object is intended
+ * to plug into different graphs with MyNodes that possibly have the same names. Thus, if the Knowledge object forbids
+ * the edge X --&gt; Y, then it forbids any edge which connects a MyNode named "X" to a MyNode named "Y", even if the
+ * underlying MyNodes themselves named "X" and "Y", respectively, are not the same.
  * <p>
- * In place of variable names, wildcard expressions containing the wildcard '*'
- * may be substituted. These will be matched to as many myNodes as possible. The
- * '*' wildcard matches any string of consecutive characters up until the
- * following character is encountered. Thus, "X*a" will match "X123a" and
- * "X45a".
+ * In place of variable names, wildcard expressions containing the wildcard '*' may be substituted. These will be
+ * matched to as many myNodes as possible. The '*' wildcard matches any string of consecutive characters up until the
+ * following character is encountered. Thus, "X*a" will match "X123a" and "X45a".
  *
  * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)
@@ -211,8 +206,7 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Adds the given variable or wildcard cpdag to the given tier. The tier
-     * is a non-negative integer.
+     * Adds the given variable or wildcard cpdag to the given tier. The tier is a non-negative integer.
      */
     public void addToTier(int tier, String spec) {
         if (tier < 0) {
@@ -235,8 +229,7 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Puts a variable into tier i if its name is xxx:ti for some xxx and some
-     * i.
+     * Puts a variable into tier i if its name is xxx:ti for some xxx and some i.
      */
     public void addToTiersByVarNames(List<String> varNames) {
         if (!this.variables.containsAll(varNames)) {
@@ -258,8 +251,8 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Adds a knowledge group. Legacy method, replaced by setForbidden,
-     * setRequired with cpdags. Needed for the interface.
+     * Adds a knowledge group. Legacy method, replaced by setForbidden, setRequired with cpdags. Needed for the
+     * interface.
      */
     public void addKnowledgeGroup(KnowledgeGroup group) {
         this.knowledgeGroups.add(group);
@@ -398,8 +391,7 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Determines whether the edge var1 --&gt; var2 is forbidden by the temporal
-     * tiers.
+     * Determines whether the edge var1 --&gt; var2 is forbidden by the temporal tiers.
      */
     public boolean isForbiddenByTiers(String var1, String var2) {
         return forbiddenTierRules().stream()
@@ -441,8 +433,7 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Checks whether it is the case that any variable is forbidden by any other
-     * variable within a given tier.
+     * Checks whether it is the case that any variable is forbidden by any other variable within a given tier.
      */
     public boolean isTierForbiddenWithin(int tier) {
         ensureTiers(tier);
@@ -617,8 +608,7 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Forbids any variable from being parent of any other variable within the
-     * given tier, or cancels this forbidding.
+     * Forbids any variable from being parent of any other variable within the given tier, or cancels this forbidding.
      */
     public void setTierForbiddenWithin(int tier, boolean forbidden) {
         ensureTiers(tier);
@@ -632,8 +622,8 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * @return the largest indes of a tier in which every variable is forbidden
-     * by every other variable, or -1 if there is not such tier.
+     * @return the largest indes of a tier in which every variable is forbidden by every other variable, or -1 if there
+     * is not such tier.
      */
     public int getMaxTierForbiddenWithin() {
         for (int tier = this.tierSpecs.size(); tier >= 0; tier--) {
@@ -763,8 +753,8 @@ public final class Knowledge implements TetradSerializable {
     }
 
     /**
-     * Two Knowledge objects are equal just in case their forbidden and required
-     * edges are equal, and their tiers are equal.
+     * Two Knowledge objects are equal just in case their forbidden and required edges are equal, and their tiers are
+     * equal.
      */
     public boolean equals(Object o) {
         if (!(o instanceof Knowledge)) {

@@ -5,7 +5,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -22,14 +21,13 @@ import static org.apache.commons.math3.util.FastMath.min;
 
 /**
  * <p>Extracts the backward step of GES for use GES but also in other
- * algorithms. The GES algorithm consists of a forward phase (FES = Forward
- * Equivalence Search) and a backward phase (BES = Backward Equivalence Search).
- * We find the BES step by itself is useful in a number of algorithms, so we
+ * algorithms. The GES algorithm consists of a forward phase (FES = Forward Equivalence Search) and a backward phase
+ * (BES = Backward Equivalence Search). We find the BES step by itself is useful in a number of algorithms, so we
  * extract this step and give as a separate algorithm.</p>
  *
  * <p>The idea of the backward search is to start with a model that is
- * Markov and removed edges from it and do the corresponding reorientations,
- * improving the score each time, until the score can no longer be improved.</p>
+ * Markov and removed edges from it and do the corresponding reorientations, improving the score each time, until the
+ * score can no longer be improved.</p>
  * <p>We use the optimized implementation used in the FGES implementation
  * of GES.</p>
  *
@@ -238,7 +236,7 @@ public class Bes {
     private Set<Node> revertToCPDAG(Graph graph) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
-        rules.setAggressivelyPreventCycles(true);
+        rules.setMeekPreventCycles(true);
         boolean meekVerbose = false;
         rules.setVerbose(meekVerbose);
         return rules.orientImplied(graph);

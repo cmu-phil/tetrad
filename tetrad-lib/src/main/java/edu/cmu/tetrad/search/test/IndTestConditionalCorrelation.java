@@ -33,9 +33,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Checks conditional independence of variable in a continuous data set using a
- * conditional correlation test for the nonlinear nonGaussian with additive error
- * case. This is for additive (but otherwise general) models.
+ * Checks conditional independence of variable in a continuous data set using a conditional correlation test for the
+ * nonlinear nonGaussian with additive error case. This is for additive (but otherwise general) models.
  *
  * @author josephramsey
  */
@@ -141,8 +140,8 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Sets the significance level at which independence judgments should be made.
-     * Affects the cutoff for partial correlations to be considered statistically equal to zero.
+     * Sets the significance level at which independence judgments should be made. Affects the cutoff for partial
+     * correlations to be considered statistically equal to zero.
      *
      * @param alpha The alpha level.
      */
@@ -165,9 +164,8 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variables over which this independence checker is capable
-     * of determinine independence relations-- that is, all the variables in the given
-     * graph or the given data set.
+     * Returns the list of variables over which this independence checker is capable of determinine independence
+     * relations-- that is, all the variables in the given graph or the given data set.
      *
      * @return This list.
      */

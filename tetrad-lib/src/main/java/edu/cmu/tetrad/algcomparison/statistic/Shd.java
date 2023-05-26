@@ -7,8 +7,7 @@ import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import org.apache.commons.math3.util.FastMath;
 
 /**
- * Calculates the structural Hamming distance (SHD) between the estimated graph and
- * the true graph.
+ * Calculates the structural Hamming distance (SHD) between the estimated graph and the true graph.
  *
  * @author josephramsey
  */

@@ -105,22 +105,19 @@ public final class DataUtils {
 
     /**
      * @param index Ond plus the given index.
-     * @return the default category for index i. (The default category should
-     * ALWAYS be obtained by calling this method.)
+     * @return the default category for index i. (The default category should ALWAYS be obtained by calling this
+     * method.)
      */
     public static String defaultCategory(int index) {
         return Integer.toString(index);
     }
 
     /**
-     * Adds missing data values to cases in accordance with probabilities
-     * specified in a double array which has as many elements as there are
-     * columns in the input dataset.  Hence, if the first element of the array of
-     * probabilities is alpha, then the first column will contain a -99 (or
-     * other missing value code) in a given case with probability alpha.
-     * This method will be useful in generating datasets which can be used to
-     * test algorithm that handle missing data and/or latent variables.
-     * Author:  Frank Wimberly
+     * Adds missing data values to cases in accordance with probabilities specified in a double array which has as many
+     * elements as there are columns in the input dataset.  Hence, if the first element of the array of probabilities is
+     * alpha, then the first column will contain a -99 (or other missing value code) in a given case with probability
+     * alpha. This method will be useful in generating datasets which can be used to test algorithm that handle missing
+     * data and/or latent variables. Author:  Frank Wimberly
      *
      * @param inData The data to which random missing data is to be added.
      * @param probs  The probability of adding missing data to each column.
@@ -1005,8 +1002,7 @@ public final class DataUtils {
     }
 
     /**
-     * @return a sample with replacement with the given sample size from the
-     * given dataset.
+     * @return a sample with replacement with the given sample size from the given dataset.
      */
     public static Matrix getBootstrapSample(Matrix data, int sampleSize) {
         int actualSampleSize = data.getNumRows();
@@ -1024,8 +1020,7 @@ public final class DataUtils {
     }
 
     /**
-     * @return a sample without replacement with the given sample size from the
-     * given dataset.
+     * @return a sample without replacement with the given sample size from the given dataset.
      */
     public static DataSet getResamplingDataset(DataSet data, int sampleSize) {
         int actualSampleSize = data.getNumRows();
@@ -1106,8 +1101,7 @@ public final class DataUtils {
     }
 
     /**
-     * @return a sample with replacement with the given sample size from the
-     * given dataset.
+     * @return a sample with replacement with the given sample size from the given dataset.
      */
     public static DataSet getBootstrapSample(DataSet data, int sampleSize) {
         int actualSampleSize = data.getNumRows();
@@ -1541,6 +1535,27 @@ public final class DataUtils {
 
         double rho = (n * sum - n * m) / (m * (n * n - n));
         return n / (1. + (n - 1.) * rho);
+    }
+
+    public static DataSet removeRandomColumns(DataSet dataSet, double aDouble) {
+        int columns = dataSet.getNumColumns();
+        int rows = dataSet.getNumRows();
+        if (rows == 0) {
+            return dataSet;
+        }
+
+        List<Integer> keepCols = new ArrayList<>();
+
+        for (int j = 0; j < columns; j++) {
+            if (RandomUtil.getInstance().nextDouble() > aDouble) {
+                keepCols.add(j);
+            }
+        }
+
+        int[] newCols = new int[keepCols.size()];
+        for (int j = 0; j < keepCols.size(); j++) newCols[j] = keepCols.get(j);
+
+        return dataSet.subsetColumns(newCols);
     }
 }
 

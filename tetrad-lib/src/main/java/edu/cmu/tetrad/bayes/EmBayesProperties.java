@@ -106,9 +106,8 @@ public final class EmBayesProperties {
     }
 
     /**
-     * Calculates the BIC (Bayes Information Criterion) score for a BayesPM with
-     * respect to a given discrete data set. Following formulas of Andrew Moore,
-     * www.cs.cmu.edu/~awm.
+     * Calculates the BIC (Bayes Information Criterion) score for a BayesPM with respect to a given discrete data set.
+     * Following formulas of Andrew Moore, www.cs.cmu.edu/~awm.
      */
     public double getBic() {
         return logProbDataGivenStructure() - parameterPenalty();

@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Allows editors launched for session nodes to register that relevant changes
- * have been made that will require models downstream to be reconstructed.
+ * Allows editors launched for session nodes to register that relevant changes have been made that will require models
+ * downstream to be reconstructed.
  *
  * @author William Taysom
  * @author josephramsey
@@ -96,8 +96,7 @@ public final class ModificationRegistery {
     }
 
     /**
-     * Removes the given session node from the list of sessions nodes for which
-     * changes have been made.
+     * Removes the given session node from the list of sessions nodes for which changes have been made.
      */
     public static void unregisterSessionNode(SessionNode sessionNode) {
         ModificationRegistery.EDITED_MODELS.remove(sessionNode);

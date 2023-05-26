@@ -32,14 +32,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Represents propositions over the variables of a particular BayesIm describing
- * an event of a fairly general sort--namely, conjunctions of propositions that
- * particular variables take on values from a particular disjunctive list of
- * categories. For example, X1 = 1 or 2 and X2 = 3 and X3 = 1 or 3 and X4 = 2 or 3 or
- * 5. The proposition is created by allowing or disallowing particular
- * categories. Notice that "knowing nothing" about a variable is the same as
- * saying that all categories for that variable are allowed, so the proposition
- * by default allows all categories for all variables--i.e. it is a tautology.
+ * Represents propositions over the variables of a particular BayesIm describing an event of a fairly general
+ * sort--namely, conjunctions of propositions that particular variables take on values from a particular disjunctive
+ * list of categories. For example, X1 = 1 or 2 and X2 = 3 and X3 = 1 or 3 and X4 = 2 or 3 or 5. The proposition is
+ * created by allowing or disallowing particular categories. Notice that "knowing nothing" about a variable is the same
+ * as saying that all categories for that variable are allowed, so the proposition by default allows all categories for
+ * all variables--i.e. it is a tautology.
  *
  * @author josephramsey
  */
@@ -95,8 +93,7 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Copies the info out of the old proposition into a new proposition for the
-     * new BayesIm.
+     * Copies the info out of the old proposition into a new proposition for the new BayesIm.
      */
     public Proposition(VariableSource variableSource, Proposition proposition) {
         this(variableSource);
@@ -132,8 +129,7 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Copies the info out of the old proposition into a new proposition for the
-     * new BayesIm.
+     * Copies the info out of the old proposition into a new proposition for the new BayesIm.
      */
     public Proposition(Proposition proposition) {
         this.variableSource = proposition.variableSource;
@@ -175,8 +171,7 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Without changing the status of the specified category, disallows all
-     * other categories for the given variable.
+     * Without changing the status of the specified category, disallows all other categories for the given variable.
      */
     public void disallowComplement(int variable, int category) {
         for (int i = 0; i < this.allowedCategories[variable].length; i++) {
@@ -187,8 +182,7 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Sets the given value to true and all other values to false for the
-     * given variable.
+     * Sets the given value to true and all other values to false for the given variable.
      */
     public void setCategory(int variable, int category) {
         setVariable(variable, false);
@@ -209,8 +203,8 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * @return true iff there is some combination of categories for all the
-     * variables of the proposition that is allowed.
+     * @return true iff there is some combination of categories for all the variables of the proposition that is
+     * allowed.
      */
     public boolean existsCombination() {
         loop:
@@ -240,8 +234,8 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * @return the single category selected for the given variable, or -1 if it
-     * is not the case that a single value is selected.
+     * @return the single category selected for the given variable, or -1 if it is not the case that a single value is
+     * selected.
      */
     public int getSingleCategory(int variable) {
         int count = 0;
@@ -262,8 +256,7 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Restricts this proposition to the categories for each variable that are
-     * true in the given proposition.
+     * Restricts this proposition to the categories for each variable that are true in the given proposition.
      */
     public void restrictToProposition(Proposition proposition) {
         if (proposition.getVariableSource() != this.variableSource) {
@@ -281,8 +274,7 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * @return the index of the variable with the given name, or -1 if such a
-     * variable does not exist.
+     * @return the index of the variable with the given name, or -1 if such a variable does not exist.
      */
     public int getNodeIndex(String name) {
         List<Node> variables = getVariableSource().getVariables();
@@ -329,17 +321,15 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Specifies that all categories for the given variable are either all
-     * allowed (true) or all disallowed (false).
+     * Specifies that all categories for the given variable are either all allowed (true) or all disallowed (false).
      */
     public void setVariable(int variable, boolean allowed) {
         Arrays.fill(this.allowedCategories[variable], allowed);
     }
 
     /**
-     * Specifies that all variables in the proposition are either completely
-     * allowed (true) or completely disallowed (false) for all of their
-     * categories.
+     * Specifies that all variables in the proposition are either completely allowed (true) or completely disallowed
+     * (false) for all of their categories.
      */
     public void setToTautology() {
         for (int i = 0; i < this.allowedCategories.length; i++) {
@@ -450,14 +440,12 @@ public final class Proposition implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

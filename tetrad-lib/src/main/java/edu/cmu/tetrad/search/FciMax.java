@@ -24,10 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.FciOrient;
-import edu.cmu.tetrad.search.utils.SepsetMap;
-import edu.cmu.tetrad.search.utils.SepsetsPossibleDsep;
-import edu.cmu.tetrad.search.utils.SepsetsSet;
+import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.*;
 
 import java.util.*;
@@ -36,25 +33,21 @@ import java.util.concurrent.RecursiveTask;
 
 /**
  * <p>Modifies FCI to do orientation of unshielded colliders (X*-*Y*-*Z with X and Z
- * not adjacent) using the max-P rule (see the PC-Max algorithm). This reference
- * is relevant:</p>
+ * not adjacent) using the max-P rule (see the PC-Max algorithm). This reference is relevant:</p>
  *
  * <p>Raghu, V. K., Zhao, W., Pu, J., Leader, J. K., Wang, R., Herman, J., ... &amp;
- * Wilson, D. O. (2019). Feasibility of lung cancer prediction from low-dose CT scan
- * and smoking factors using causal models. Thorax, 74(7), 643-649.</p>
+ * Wilson, D. O. (2019). Feasibility of lung cancer prediction from low-dose CT scan and smoking factors using causal
+ * models. Thorax, 74(7), 643-649.</p>
  *
  * <p>Max-P triple orientation is a method for orienting unshielded triples
- * X*=-*Y*-*Z as one of the following: (a) Collider, X->Y<-Z, or (b) Noncollider,
- * X-->Y-->Z, or X<-Y<-Z, or X<-Y->Z. One does this by conditioning on subsets of
- * adj(X) or adj(Z). One first checks conditional independence of X and Z
- * conditional on each of these subsets, and lists the p-values for each test.
- * Then, one chooses the conditioning set out of all of these that maximizes
- * the p-value. If this conditioning set contains Y, then the triple is judged
- * to be a noncollider; otherwise, it is judged to be a collider.</p>
+ * X*=-*Y*-*Z as one of the following: (a) Collider, X->Y<-Z, or (b) Noncollider, X-->Y-->Z, or X<-Y<-Z, or X<-Y->Z. One
+ * does this by conditioning on subsets of adj(X) or adj(Z). One first checks conditional independence of X and Z
+ * conditional on each of these subsets, and lists the p-values for each test. Then, one chooses the conditioning set
+ * out of all of these that maximizes the p-value. If this conditioning set contains Y, then the triple is judged to be
+ * a noncollider; otherwise, it is judged to be a collider.</p>
  *
  * <p>All unshielded triples in the graph given by FAS are judged as colliders
- * or non-colliders and the colliders oriented. Then the final FCI orientation
- * rules are applied, as in FCI.</p>
+ * or non-colliders and the colliders oriented. Then the final FCI orientation rules are applied, as in FCI.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
  * edges, including knowledge of temporal tiers.</p>
@@ -62,77 +55,23 @@ import java.util.concurrent.RecursiveTask;
  * @author josephramsey
  * @see Fci
  * @see Fas
- * @see PcMax
  * @see FciOrient
  * @see Knowledge
  */
 public final class FciMax implements IGraphSearch {
-
-    /**
-     * The SepsetMap being constructed.
-     */
     private SepsetMap sepsets;
-
-    /**
-     * The background knowledge.
-     */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The variables to search over (optional)
-     */
-    private final List<Node> variables = new ArrayList<>();
-
-    /**
-     * The test to use for the search.
-     */
     private final IndependenceTest independenceTest;
-
-    /**
-     * flag for complete rule set, true if should use complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
-
-    /**
-     * True iff the possible dsep search is done.
-     */
-    private boolean possibleDsepSearchDone = true;
-
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
-    private int maxPathLength = -1;
-
-    /**
-     * The depth for the fast adjacency search.
-     */
-    private int depth = -1;
-
-    /**
-     * Elapsed time of last search.
-     */
     private long elapsedTime;
-
-    /**
-     * The logger to use.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * True iff verbose output should be printed.
-     */
-    private boolean verbose;
-
-    /**
-     * FAS heuristic
-     */
-    private int heuristic;
-
-    /**
-     * FAS stable option.
-     */
-    private boolean stable;
+    private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+    private boolean stable = false;
+    private boolean completeRuleSetUsed = true;
     private boolean doDiscriminatingPathRule = false;
+    private boolean possibleDsepSearchDone = true;
+    private int maxPathLength = -1;
+    private int depth = -1;
+    private boolean verbose = false;
 
     //============================CONSTRUCTORS============================//
 
@@ -145,41 +84,6 @@ public final class FciMax implements IGraphSearch {
         }
 
         this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param independenceTest The test to use for oracle conditional independence information.
-     * @param searchVars       A specific list of variables to search over.
-     */
-    public FciMax(IndependenceTest independenceTest, List<Node> searchVars) {
-        if (independenceTest == null) {
-            throw new NullPointerException();
-        }
-
-        this.independenceTest = independenceTest;
-        this.variables.addAll(independenceTest.getVariables());
-
-        Set<Node> remVars = new HashSet<>();
-        for (Node node1 : this.variables) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            boolean search = false;
-            for (Node node2 : searchVars) {
-                if (node1.getName().equals(node2.getName())) {
-                    search = true;
-                }
-            }
-            if (!search) {
-                remVars.add(node1);
-            }
-        }
-
-        this.variables.removeAll(remVars);
     }
 
     //========================PUBLIC METHODS==========================//
@@ -198,19 +102,16 @@ public final class FciMax implements IGraphSearch {
 
         fas.setKnowledge(getKnowledge());
         fas.setDepth(this.depth);
-        fas.setHeuristic(this.heuristic);
+        fas.setPcHeuristicType(this.pcHeuristicType);
         fas.setVerbose(this.verbose);
         fas.setStable(this.stable);
-        fas.setHeuristic(this.heuristic);
+        fas.setPcHeuristicType(this.pcHeuristicType);
 
         //The PAG being constructed.
         Graph graph = fas.search();
         this.sepsets = fas.getSepsets();
 
         graph.reorientAllWith(Endpoint.CIRCLE);
-
-        SepsetsPossibleDsep sp = new SepsetsPossibleDsep(graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
-        sp.setVerbose(this.verbose);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
         // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
@@ -351,11 +252,11 @@ public final class FciMax implements IGraphSearch {
     /**
      * Sets the FAS heuristic from PC used in search.
      *
-     * @param heuristic This heuristic.
+     * @param pcHeuristicType This heuristic.
      * @see Pc
      */
-    public void setHeuristic(int heuristic) {
-        this.heuristic = heuristic;
+    public void setPcHeuristicType(PcCommon.PcHeuristicType pcHeuristicType) {
+        this.pcHeuristicType = pcHeuristicType;
     }
 
     /**

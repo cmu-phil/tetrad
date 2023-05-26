@@ -52,7 +52,6 @@ public class TestKnowledge {
         testKnowledge(dataSet, knowledge, parameters, new Fges(score));
         testKnowledge(dataSet, knowledge, parameters, new Grasp(test, score));
         testKnowledge(dataSet, knowledge, parameters, new Pc(test));
-        testKnowledge(dataSet, knowledge, parameters, new PcMax(test));
         testKnowledge(dataSet, knowledge, parameters, new Sp(score));
 
         testKnowledge(dataSet, knowledge, parameters, new Bfci(test, score));

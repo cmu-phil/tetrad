@@ -32,8 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Stores information for a variable source about evidence we have for each variable as
- * well as whether each variable has been manipulated.
+ * Stores information for a variable source about evidence we have for each variable as well as whether each variable
+ * has been manipulated.
  *
  * @author josephramsey
  */
@@ -48,8 +48,7 @@ public final class Evidence implements TetradSerializable {
     private final Proposition proposition;
 
     /**
-     * A manipulation indicating how the bayes Im should be manipulated before
-     * updating.
+     * A manipulation indicating how the bayes Im should be manipulated before updating.
      *
      * @serial
      */
@@ -208,8 +207,7 @@ public final class Evidence implements TetradSerializable {
     }
 
     /**
-     * Returna true just in case this evidence has a list of variables
-     * equal to those of the given variable source.
+     * Returna true just in case this evidence has a list of variables equal to those of the given variable source.
      */
     public boolean isIncompatibleWith(VariableSource variableSource) {
         List<Node> variables1 = getVariableSource().getVariables();
@@ -241,14 +239,12 @@ public final class Evidence implements TetradSerializable {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

@@ -32,8 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tests the MeasurementSimulator class using diagnostics devised by Richard
- * Scheines. The diagnostics are described in the Javadocs, below.
+ * Tests the MeasurementSimulator class using diagnostics devised by Richard Scheines. The diagnostics are described in
+ * the Javadocs, below.
  *
  * @author josephramsey
  */

@@ -37,8 +37,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the MeasurementSimulator class using diagnostics devised by Richard
- * Scheines. The diagnostics are described in the Javadocs, below.
+ * Tests the MeasurementSimulator class using diagnostics devised by Richard Scheines. The diagnostics are described in
+ * the Javadocs, below.
  *
  * @author josephramsey
  */
@@ -133,9 +133,8 @@ public class TestSemIm {
     }
 
     /**
-     * The Cholesky decomposition of a symmetric, positive definite matrix
-     * multiplied by the transpose of the Cholesky decomposition should be equal
-     * to the original matrix itself.
+     * The Cholesky decomposition of a symmetric, positive definite matrix multiplied by the transpose of the Cholesky
+     * decomposition should be equal to the original matrix itself.
      */
     @Test
     public void testCholesky() {

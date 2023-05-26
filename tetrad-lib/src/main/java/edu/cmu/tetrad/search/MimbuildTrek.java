@@ -196,6 +196,7 @@ public class MimbuildTrek {
 
     /**
      * The p-value of the model.
+     *
      * @return This p-value.
      */
     public double getpValue() {
@@ -431,8 +432,7 @@ public class MimbuildTrek {
     }
 
     /**
-     * jf
-     * Clusters smaller than this size will be tossed out.
+     * jf Clusters smaller than this size will be tossed out.
      */
     public int getMinClusterSize() {
         return this.minClusterSize;

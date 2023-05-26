@@ -83,8 +83,8 @@ public final class TestDiscreteProbs extends TestCase {
     }
 
     /**
-     * This method uses reflection to collect up all of the test methods from
-     * this class and return them to the test runner.
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
      */
     public static Test suite() {
 

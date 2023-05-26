@@ -21,9 +21,8 @@ import java.util.concurrent.*;
 
 /**
  * <p>Implements the CStaR algorithm (Steckoven et al., 2012), which finds a CPDAG of that
- * data and then tries all orientations of the undirected edges about a variable in the
- * CPDAG to estimate a minimum bound on the effect for a given edge. Some references include
- * the following:</p>
+ * data and then tries all orientations of the undirected edges about a variable in the CPDAG to estimate a minimum
+ * bound on the effect for a given edge. Some references include the following:</p>
  *
  * <p>Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L., Maathuis, M. H., and
  * Bühlmann, P. (2012). Causal stability ranking. Bioinformatics, 28(21), 2819-2823.</p>
@@ -107,8 +106,8 @@ public class Cstar {
     }
 
     /**
-     * Sets whether the algorithm should be parallelized. Different runs of the algorithms
-     * can be run in different threads in parallel.
+     * Sets whether the algorithm should be parallelized. Different runs of the algorithms can be run in different
+     * threads in parallel.
      *
      * @param parallelized True if so.
      */
@@ -138,8 +137,8 @@ public class Cstar {
      * @param possibleCauses  A set of variables in the datasets over which to search.
      * @param possibleEffects The effect variables.
      * @param test            This test is only used to make more tests like it for subsamples.
-     * @param path            A path where interim results are to be stored. If null, interim results will not be stored.
-     *                        If the path is specified, then if the process is stopped and restarted, previously
+     * @param path            A path where interim results are to be stored. If null, interim results will not be
+     *                        stored. If the path is specified, then if the process is stopped and restarted, previously
      *                        computed interim results will be loaded.
      * @see Record
      */
@@ -799,14 +798,12 @@ public class Cstar {
     }
 
     /**
-     * An enumeration of the options available for estiting the CPDAG
-     * used for the algorthm.
+     * An enumeration of the options available for estiting the CPDAG used for the algorthm.
      */
     public enum CpdagAlgorithm {PC_STABLE, FGES, GRaSP}
 
     /**
-     * An enumeration of the methods for selecting samples from the full
-     * dataset.
+     * An enumeration of the methods for selecting samples from the full dataset.
      */
     public enum SampleStyle {BOOTSTRAP, SPLIT}
 

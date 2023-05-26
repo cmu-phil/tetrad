@@ -7,8 +7,7 @@ import edu.cmu.tetrad.graph.Graph;
 import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 
 /**
- * The adjacency precision. The true positives are the number of adjacencies in both
- * the true and estimated graphs.
+ * The adjacency precision. The true positives are the number of adjacencies in both the true and estimated graphs.
  *
  * @author josephramsey
  */

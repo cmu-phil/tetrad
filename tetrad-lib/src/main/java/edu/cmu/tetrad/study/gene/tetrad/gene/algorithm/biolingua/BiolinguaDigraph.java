@@ -86,8 +86,7 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     }
 
     /**
-     * Returns a string with the indexes of all parents of node i separated by
-     * spaces (useful for printouts)
+     * Returns a string with the indexes of all parents of node i separated by spaces (useful for printouts)
      */
     public String strOfParents(int i) {
         int[] ap = this.getParents(i);
@@ -108,9 +107,8 @@ public class BiolinguaDigraph extends Digraph implements OutputGraph {
     }
 
     /**
-     * Returns a specially formatted string with all the contents of this Graph.
-     * Actually this string is compliant with the same format expected when
-     * reading the graph from a file.
+     * Returns a specially formatted string with all the contents of this Graph. Actually this string is compliant with
+     * the same format expected when reading the graph from a file.
      */
     public String toString() {
         String s = this.getClass().getName() + " " + this.graphName + "\n" +

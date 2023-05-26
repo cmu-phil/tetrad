@@ -28,8 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Sundry graph utils that need to be located in the data package to
- * avoid package cycles.
+ * Sundry graph utils that need to be located in the data package to avoid package cycles.
  */
 public class DataGraphUtils {
     public static Graph randomSingleFactorModel(int numStructuralNodes,
@@ -228,9 +227,8 @@ public class DataGraphUtils {
     }
 
     /**
-     * First a random single factor model is created with the specified number of latent nodes and latent
-     * edges, and impurity structure. Then this is converted to a bifactor model by adding new latents and
-     * edges.
+     * First a random single factor model is created with the specified number of latent nodes and latent edges, and
+     * impurity structure. Then this is converted to a bifactor model by adding new latents and edges.
      */
     public static Graph randomBifactorModel(int numStructuralNodes,
                                             int numStructuralEdges, int numMeasurementsPerLatent,

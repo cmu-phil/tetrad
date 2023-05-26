@@ -23,13 +23,9 @@ package edu.cmu.tetrad.sem;
 
 
 /**
- * Created by IntelliJ IDEA.
- * User: mattheweasterday
- * Date: May 30, 2004
- * Time: 3:00:43 PM
+ * Created by IntelliJ IDEA. User: mattheweasterday Date: May 30, 2004 Time: 3:00:43 PM
  * <p>
- * This class contains all the constants used in the xml representation of a SEM
- * graph.
+ * This class contains all the constants used in the xml representation of a SEM graph.
  */
 class SemXmlConstants {
     public static final String SEM = "sem";

@@ -35,9 +35,8 @@ import java.util.*;
 public class MbUtils {
 
     /**
-     * Trims the graph to the target, the parents and children of the target, and
-     * the parents of the children of the target. Bidirected edges are interpreted
-     * as if they could be oriented in either direction.
+     * Trims the graph to the target, the parents and children of the target, and the parents of the children of the
+     * target. Bidirected edges are interpreted as if they could be oriented in either direction.
      *
      * @param graph             The graph.
      * @param target            The target.
@@ -234,6 +233,7 @@ public class MbUtils {
 
     /**
      * Returns an example DAG from the given MB CPDAG.
+     *
      * @param mbCpdag The MB CPDAG.
      * @return An example DAG in this CPDAG.
      */
@@ -242,8 +242,8 @@ public class MbUtils {
     }
 
     /**
-     * The recursive method used to list the MB DAGS consistent with an MB CPDAG (i.e. with the independence
-     * information available to the search).
+     * The recursive method used to list the MB DAGS consistent with an MB CPDAG (i.e. with the independence information
+     * available to the search).
      */
     private static Set<Graph> listMbDags(Graph mbCPDAG,
                                          boolean orientBidirectedEdges,

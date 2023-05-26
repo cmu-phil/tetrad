@@ -34,8 +34,8 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * Checks conditional independence of variable in a continuous data set using Daudin's method. See
  * <p>
- * Ramsey, J. D. (2014). A scalable conditional independence test for nonlinear, non-Gaussian data. arXiv
- * preprint arXiv:1401.5031.
+ * Ramsey, J. D. (2014). A scalable conditional independence test for nonlinear, non-Gaussian data. arXiv preprint
+ * arXiv:1401.5031.
  * <p>
  * This is corrected using Lemma 2, condition 4 of
  * <p>
@@ -44,8 +44,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * This all follows the original Daudin paper, which is this:
  * <p>
- * Daudin, J. J. (1980). Partial association measures and a  application to qualitative regression.
- * Biometrika, 67(3), 581-590.
+ * Daudin, J. J. (1980). Partial association measures and a  application to qualitative regression. Biometrika, 67(3),
+ * 581-590.
  * <p>
  * We use Nadaraya-Watson kernel regression, though we further restrict the sample size to nearby points.
  *
@@ -120,9 +120,8 @@ public final class ConditionalCorrelationIndependence {
     //==================CONSTRUCTORS====================//
 
     /**
-     * Constructs a new Independence test which checks independence facts based on the
-     * correlation data implied by the given data set (must be continuous). The given
-     * significance level is used.
+     * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
+     * given data set (must be continuous). The given significance level is used.
      *
      * @param dataSet A data set containing only continuous columns.
      */
@@ -175,11 +174,10 @@ public final class ConditionalCorrelationIndependence {
     }
 
     /**
-     * Calculates the residuals of x regressed nonparametrically onto z. Left public
-     * so it can be accessed separately.
+     * Calculates the residuals of x regressed nonparametrically onto z. Left public so it can be accessed separately.
      *
-     * @return a double[2][] array. The first double[] array contains the residuals for x
-     * and the second double[] array contains the resituls for y.
+     * @return a double[2][] array. The first double[] array contains the residuals for x and the second double[] array
+     * contains the resituls for y.
      */
     public double[] residuals(Node x, List<Node> z, List<Integer> rows) {
         int[] _rows = new int[rows.size()];
@@ -354,9 +352,8 @@ public final class ConditionalCorrelationIndependence {
     }
 
     /**
-     * Returns the minimal scores value calculated by the method for the most
-     * recent independence check, less the cutoff so that negative scores correspond
-     * to independence.
+     * Returns the minimal scores value calculated by the method for the most recent independence check, less the cutoff
+     * so that negative scores correspond to independence.
      *
      * @return This minimal score.
      */
@@ -385,9 +382,8 @@ public final class ConditionalCorrelationIndependence {
     //=====================PRIVATE METHODS====================//
 
     /**
-     * @return true just in the case the x and y vectors are independent,
-     * once undefined values have been removed. Left public so it can be
-     * accessed separately.
+     * @return true just in the case the x and y vectors are independent, once undefined values have been removed. Left
+     * public so it can be accessed separately.
      */
     private double independent(double[] x, double[] y) {
         double[] _x = new double[x.length];

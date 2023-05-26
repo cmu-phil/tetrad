@@ -25,8 +25,7 @@ package edu.cmu.tetrad.study.gene.tetrad.gene.algorithm.util;
 import java.io.*;
 
 /**
- * Implements a space-efficient Lower Triangular Matrix of
- * elements of type <code>short</code>
+ * Implements a space-efficient Lower Triangular Matrix of elements of type <code>short</code>
  *
  * @author <a href="http://www.eecs.tulane.edu/Saavedra" target="_TOP">Raul Saavedra</a>
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
@@ -43,18 +42,14 @@ public abstract class BasicLTMatrix extends BasicMatrix {
     /**
      * Creates a lower triangular matrix reading it from file
      * <code>fname</code>. The file has to be an ascii one and follow a
-     * particular format:<p> *LtMatrix* [name] [n]<br> [0,0]<br> [1,0] [1,1]<br>
-     * [2,0] [2,1] [2,2]<br> :<br> [n-1,0] [n-1,1] ...  [n-1,n-1]<p> Where
-     * [n] is the number of rows and columns in the matrix, and [i,j] is element
-     * at position i,j in the matrix.<br> For example, a 3x3 identity matrix
-     * could be represented as follows:<p> LtMatrix Identity3x3<br> <br> 3
-     * // # rows and columns<br> <br> // Matrix elements:<br> 1<br> 0 1<br> 0 0
-     * 1<p> Notice there can be slash-slash (and also slash-star) style
-     * comments anywhere in the file.  Numbers can be separated by any number of
-     * blank delimiters: tabs, spaces, carriage returns.  In the examples above
-     * they appear in different lines for more readability of the file. The file
-     * may have less elements than the total needed to fill the matrix.  If it
-     * has more elements an illegal argument exception will be generated.
+     * particular format:<p> *LtMatrix* [name] [n]<br> [0,0]<br> [1,0] [1,1]<br> [2,0] [2,1] [2,2]<br> :<br> [n-1,0]
+     * [n-1,1] ...  [n-1,n-1]<p> Where [n] is the number of rows and columns in the matrix, and [i,j] is element at
+     * position i,j in the matrix.<br> For example, a 3x3 identity matrix could be represented as follows:<p> LtMatrix
+     * Identity3x3<br> <br> 3 // # rows and columns<br> <br> // Matrix elements:<br> 1<br> 0 1<br> 0 0 1<p> Notice there
+     * can be slash-slash (and also slash-star) style comments anywhere in the file.  Numbers can be separated by any
+     * number of blank delimiters: tabs, spaces, carriage returns.  In the examples above they appear in different lines
+     * for more readability of the file. The file may have less elements than the total needed to fill the matrix.  If
+     * it has more elements an illegal argument exception will be generated.
      */
     public BasicLTMatrix(String fname)
             throws IOException {
@@ -118,8 +113,7 @@ public abstract class BasicLTMatrix extends BasicMatrix {
     }
 
     /**
-     * Returns a specially formatted string with all the contents of this
-     * matrix
+     * Returns a specially formatted string with all the contents of this matrix
      */
     public String toString() {
         StringBuilder s = new StringBuilder(this.getClass().getName() + " " + this.name + "\n" + this.n +

@@ -36,8 +36,7 @@ import java.util.*;
 
 
 /**
- * Checks independence facts for variables associated with a sepset by simply
- * querying the sepset
+ * Checks independence facts for variables associated with a sepset by simply querying the sepset
  *
  * @author Robert Tillman
  */
@@ -65,8 +64,7 @@ public class IndTestSepsetDci implements IndependenceTest {
     private boolean verbose;
 
     /**
-     * Constructs a new independence test that returns d-separation facts for the given
-     * graph as independence results.
+     * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
      */
     public IndTestSepsetDci(SepsetMapDci sepset, List<Node> nodes) {
         if (sepset == null) {

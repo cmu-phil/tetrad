@@ -25,8 +25,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
@@ -43,8 +43,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Contains some utilities for doing autoregression. Should probably be improved
- * by somebody.
+ * Contains some utilities for doing autoregression. Should probably be improved by somebody.
  *
  * @author josephramsey
  * @author danielmalinsky (some improvements)
@@ -52,10 +51,9 @@ import java.util.List;
 public class TsUtils {
 
     /**
-     * @return the VAR residuals of the given time series with the given number
-     * of lags. That is, every variable at the model lag is regressed onto every
-     * variable at previous lags, up to the given number of lags, and the
-     * residuals of these regressions for each variable are returned.
+     * @return the VAR residuals of the given time series with the given number of lags. That is, every variable at the
+     * model lag is regressed onto every variable at previous lags, up to the given number of lags, and the residuals of
+     * these regressions for each variable are returned.
      */
     public static DataSet ar(DataSet timeSeries, int numLags) {
         DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
@@ -339,10 +337,9 @@ public class TsUtils {
     }
 
     /**
-     * Calculates the dth difference of the given data. If d = 0, the original
-     * data is returned. If d = 1, the data (with one fewer rows) is returned,
-     * with each row subtracted from its successor. If d = 1, the same operation
-     * is applied to the result of d = 1. And so on.
+     * Calculates the dth difference of the given data. If d = 0, the original data is returned. If d = 1, the data
+     * (with one fewer rows) is returned, with each row subtracted from its successor. If d = 1, the same operation is
+     * applied to the result of d = 1. And so on.
      *
      * @param data the data to be differenced.
      * @param d    the number of differences to take, &gt;= 0.
@@ -371,8 +368,7 @@ public class TsUtils {
     }
 
     /**
-     * Creates new time series dataset from the given one (fixed to deal with
-     * mixed datasets)
+     * Creates new time series dataset from the given one (fixed to deal with mixed datasets)
      */
     public static DataSet createLagData(DataSet data, int numLags) {
         List<Node> variables = data.getVariables();
@@ -452,8 +448,7 @@ public class TsUtils {
     }
 
     /**
-     * Creates new time series dataset from the given one with index variable
-     * (e.g., time)
+     * Creates new time series dataset from the given one with index variable (e.g., time)
      */
     public static DataSet addIndex(DataSet data) {
         data = data.copy();

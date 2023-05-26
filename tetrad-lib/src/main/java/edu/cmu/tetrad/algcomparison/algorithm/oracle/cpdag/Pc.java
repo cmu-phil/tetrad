@@ -14,6 +14,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PC.
+ * Peter/Clark algorithm (PC).
  *
  * @author josephramsey
  */
@@ -35,14 +36,10 @@ import java.util.List;
 @Bootstrapping
 public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         ReturnsBootstrapGraphs {
-
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
     private Knowledge knowledge = new Knowledge();
-
-    private Graph externalGraph = null;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
-
 
     public Pc() {
     }
@@ -64,14 +61,51 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
                 knowledge = timeSeries.getKnowledge();
             }
 
+            PcCommon.ConflictRule conflictRule;
+
+            switch (parameters.getInt(Params.CONFLICT_RULE)) {
+                case 1:
+                    conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;
+                    break;
+                case 2:
+                    conflictRule = PcCommon.ConflictRule.ORIENT_BIDIRECTED;
+                    break;
+                case 3:
+                    conflictRule = PcCommon.ConflictRule.OVERWRITE_EXISTING;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+
+            }
+
+//            PcCommon.PcHeuristicType pcHeuristicType;
+//
+//            switch (parameters.getInt(Params.PC_HEURISTIC)) {
+//                case 0:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+//                    break;
+//                case 1:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
+//                    break;
+//                case 2:
+//                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_2;
+//                    break;
+//                case 3:
+//                    pcHeuristicType =  PcCommon.PcHeuristicType.HEURISTIC_3;
+//                    break;
+//                default:
+//                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+//            }
+
             edu.cmu.tetrad.search.Pc search = new edu.cmu.tetrad.search.Pc(getIndependenceWrapper().getTest(dataModel, parameters));
+            search.setUseMaxPHeuristic(parameters.getBoolean(Params.USE_MAX_P_HEURISTIC));
             search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setAggressivelyPreventCycles(true);
+            search.setMeekPreventCycles(parameters.getBoolean(Params.MEEK_PREVENT_CYCLES));
+//            search.setPcHeuristicType(pcHeuristicType);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(this.knowledge);
-//            search.setConcurrent(parameters.getBoolean(Params.CONCURRENT_FAS));
-            search.setUseMaxP(parameters.getBoolean(Params.USE_MAX_P_ORIENTATION_HEURISTIC));
-            search.setMaxPPathLength(parameters.getInt(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH));
+            search.setStable(parameters.getBoolean(Params.STABLE_FAS));
+            search.setConflictRule(conflictRule);
             return search.search();
         } else {
             Pc pcAll = new Pc(this.test);
@@ -107,15 +141,12 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.STABLE_FAS);
-//        parameters.add(Params.CONCURRENT_FAS);
-//        parameters.add(Params.COLLIDER_DISCOVERY_RULE);
+        parameters.add(Params.USE_MAX_P_HEURISTIC);
         parameters.add(Params.CONFLICT_RULE);
+        parameters.add(Params.MEEK_PREVENT_CYCLES);
+//        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.DEPTH);
-//        parameters.add(Params.FAS_HEURISTIC);
-        parameters.add(Params.USE_MAX_P_ORIENTATION_HEURISTIC);
-        parameters.add(Params.MAX_P_ORIENTATION_MAX_PATH_LENGTH);
         parameters.add(Params.TIME_LAG);
-
         parameters.add(Params.VERBOSE);
         return parameters;
     }
@@ -138,10 +169,6 @@ public class Pc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     @Override
     public void setIndependenceWrapper(IndependenceWrapper test) {
         this.test = test;
-    }
-
-    public void setExternalGraph(Graph externalGraph) {
-        this.externalGraph = externalGraph;
     }
 
     @Override

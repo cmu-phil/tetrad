@@ -24,9 +24,8 @@ package edu.cmu.tetrad.graph;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * A typesafe enumeration of the types of endpoints that are permitted in
- * Tetrad-style graphs: null (-), arrow (-&gt;), circle (-o), start (-*),
- * and null (no endpoint).
+ * A typesafe enumeration of the types of endpoints that are permitted in Tetrad-style graphs: null (-), arrow (-&gt;),
+ * circle (-o), start (-*), and null (no endpoint).
  *
  * @author josephramsey
  */

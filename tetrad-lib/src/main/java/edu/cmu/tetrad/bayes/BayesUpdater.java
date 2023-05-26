@@ -24,12 +24,10 @@ package edu.cmu.tetrad.bayes;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * Interface for a discrete Bayes updating algorithm. The main task of such and
- * algorithm is to calculate P(X = x' | evidence), where evidence takes the form
- * of a Proposition over the variables in the Bayes net, possibly with
- * additional information about which variables in the Bayes net have been
- * manipulated. Some updaters may be able to calculate joint marginals as
- * well--that is, P(AND_i{Xi = xi'} | evidence). Also, not all updaters can take
+ * Interface for a discrete Bayes updating algorithm. The main task of such and algorithm is to calculate P(X = x' |
+ * evidence), where evidence takes the form of a Proposition over the variables in the Bayes net, possibly with
+ * additional information about which variables in the Bayes net have been manipulated. Some updaters may be able to
+ * calculate joint marginals as well--that is, P(AND_i{Xi = xi'} | evidence). Also, not all updaters can take
  * manipulation information into account. See implementations for details.
  *
  * @author josephramsey
@@ -41,8 +39,7 @@ public interface BayesUpdater extends TetradSerializable {
     long serialVersionUID = 23L;
 
     /**
-     * @return P(variable = value | evidence), where evidence is
-     * getEvidence().
+     * @return P(variable = value | evidence), where evidence is getEvidence().
      */
     double getMarginal(int variable, int category);
 
@@ -52,14 +49,12 @@ public interface BayesUpdater extends TetradSerializable {
     boolean isJointMarginalSupported();
 
     /**
-     * @return P(variables[i] = values[i] | evidence), where evidence is
-     * getEvidence().
+     * @return P(variables[i] = values[i] | evidence), where evidence is getEvidence().
      */
     double getJointMarginal(int[] variables, int[] values);
 
     /**
-     * Sets new evidence for the updater. Once this is called, old updating
-     * results should not longer be available.
+     * Sets new evidence for the updater. Once this is called, old updating results should not longer be available.
      */
     void setEvidence(Evidence evidence);
 

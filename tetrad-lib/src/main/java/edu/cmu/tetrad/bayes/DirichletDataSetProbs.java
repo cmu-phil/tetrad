@@ -29,8 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Estimates probabilities directly from data on the fly using maximum
- * likelihood method.
+ * Estimates probabilities directly from data on the fly using maximum likelihood method.
  *
  * @author josephramsey
  */
@@ -44,18 +43,15 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     private final DataSet dataSet;
 
     /**
-     * An array whose length is the number of dimensions of the cell and whose
-     * contents, for each value dims[i], are the numbers of values for each
-     * i'th dimension. Each of these dimensions must be an integer greater than
-     * zero.
+     * An array whose length is the number of dimensions of the cell and whose contents, for each value dims[i], are the
+     * numbers of values for each i'th dimension. Each of these dimensions must be an integer greater than zero.
      *
      * @serial
      */
     private final int[] dims;
 
     /**
-     * Indicates whether bounds on coordinate values are explicitly enforced.
-     * This may slow down loops.
+     * Indicates whether bounds on coordinate values are explicitly enforced. This may slow down loops.
      *
      * @serial
      */
@@ -103,8 +99,8 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     //===========================PUBLIC METHODS=========================//
 
     /**
-     * @return the estimated probability for the given cell. The order of the
-     * variable values is the order of the variables in getVariable().
+     * @return the estimated probability for the given cell. The order of the variable values is the order of the
+     * variables in getVariable().
      */
     public double getCellProb(int[] variableValues) {
         int[] point = new int[this.dims.length];
@@ -144,8 +140,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the estimated conditional probability for the given assertion
-     * conditional on the given condition.
+     * @return the estimated conditional probability for the given assertion conditional on the given condition.
      */
     public double getConditionalProb(Proposition assertion,
                                      Proposition condition) {
@@ -206,8 +201,7 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
     }
 
     /**
-     * @return the list of variables for the dataset that this is estimating
-     * probabilities for.
+     * @return the list of variables for the dataset that this is estimating probabilities for.
      */
     public List<Node> getVariables() {
         return null;

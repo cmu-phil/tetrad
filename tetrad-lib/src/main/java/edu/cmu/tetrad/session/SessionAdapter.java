@@ -42,15 +42,13 @@ public class SessionAdapter implements SessionListener {
     }
 
     /**
-     * Indicates that a parent has been added to a node. Note that this implies
-     * a child is added to the parent.
+     * Indicates that a parent has been added to a node. Note that this implies a child is added to the parent.
      */
     public void parentAdded(SessionEvent event) {
     }
 
     /**
-     * Indicates that a parent has been removed from a node. Note that this
-     * implies a child is removed from the parent.
+     * Indicates that a parent has been removed from a node. Note that this implies a child is removed from the parent.
      */
     public void parentRemoved(SessionEvent event) {
     }
@@ -68,15 +66,15 @@ public class SessionAdapter implements SessionListener {
     }
 
     /**
-     * Indicates that the createModel method has been called but there is more
-     * than one model consistent with the parents, so a choice has to be made.
+     * Indicates that the createModel method has been called but there is more than one model consistent with the
+     * parents, so a choice has to be made.
      */
     public void modelUnclear(SessionEvent event) {
     }
 
     /**
-     * Indicates that a new execution of a simulation edu.cmu.tetrad.study has begun. (Some
-     * parameter objects need to be reset for every execution.
+     * Indicates that a new execution of a simulation edu.cmu.tetrad.study has begun. (Some parameter objects need to be
+     * reset for every execution.
      */
     public void executionStarted(SessionEvent event) {
     }
@@ -88,8 +86,7 @@ public class SessionAdapter implements SessionListener {
     }
 
     /**
-     * Indicates that the model is contemplating adding an edge (but hasn't
-     * yet).
+     * Indicates that the model is contemplating adding an edge (but hasn't yet).
      */
     public void addingEdge(SessionEvent event) {
     }

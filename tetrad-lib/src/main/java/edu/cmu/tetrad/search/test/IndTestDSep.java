@@ -36,9 +36,9 @@ import java.util.List;
 
 /**
  * <p>Checks independence facts for variables associated with the nodes in a given graph by
- * checking d-separation facts on the underlying nodes. We use the IndependenceTest
- * interface here so that this d-separation test can be used in place of a statistical
- * conditional independence test in algorithms to provide oracle information.</p>
+ * checking d-separation facts on the underlying nodes. We use the IndependenceTest interface here so that this
+ * d-separation test can be used in place of a statistical conditional independence test in algorithms to provide oracle
+ * information.</p>
  *
  * @author josephramsey
  */
@@ -62,9 +62,8 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * Constructor.
      *
-     * @param graph The graph for which d-separation facts should be checked.
-     *              This may be a DAG, CPDAG, or PAG. In the latter case,
-     *              m-separation results will be returned (same algorithm).
+     * @param graph The graph for which d-separation facts should be checked. This may be a DAG, CPDAG, or PAG. In the
+     *              latter case, m-separation results will be returned (same algorithm).
      */
     public IndTestDSep(Graph graph) {
         this(graph, false);
@@ -73,10 +72,8 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * Constructor.
      *
-     * @param facts     Independence facts to be used for direct calculations of
-     *                  d-separation.
-     * @param variables The variables for the facts, if different from those
-     *                  that independenceFacts would return.
+     * @param facts     Independence facts to be used for direct calculations of d-separation.
+     * @param variables The variables for the facts, if different from those that independenceFacts would return.
      * @see IndependenceFacts
      */
     public IndTestDSep(IndependenceFacts facts, List<Node> variables) {
@@ -87,8 +84,7 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * Constructor.
      *
-     * @param facts Independence facts to be used for direct calculations of
-     *              d-separation.
+     * @param facts Independence facts to be used for direct calculations of d-separation.
      * @see IndependenceFacts
      */
     public IndTestDSep(IndependenceFacts facts) {
@@ -98,12 +94,10 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * Constructor.
      *
-     * @param graph       The graph for which d-separation facts should be checked.
-     *                    This may be a DAG, CPDAG, or PAG. In the latter case,
-     *                    m-separation results will be returned (same algorithm).
-     * @param keepLatents Whether latent in the graph should be used in conditional
-     *                    independence facts. If the graph is being marginalized,
-     *                    this should be false.
+     * @param graph       The graph for which d-separation facts should be checked. This may be a DAG, CPDAG, or PAG. In
+     *                    the latter case, m-separation results will be returned (same algorithm).
+     * @param keepLatents Whether latent in the graph should be used in conditional independence facts. If the graph is
+     *                    being marginalized, this should be false.
      */
     public IndTestDSep(Graph graph, boolean keepLatents) {
         if (graph == null) {
@@ -119,11 +113,9 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * Constructor.
      *
-     * @param facts       Independence facts to be used for direct calculations of
-     *                    d-separation.
-     * @param keepLatents Whether latent in the graph should be used in conditional
-     *                    independence facts. If the graph is being marginalized,
-     *                    this should be false.
+     * @param facts       Independence facts to be used for direct calculations of d-separation.
+     * @param keepLatents Whether latent in the graph should be used in conditional independence facts. If the graph is
+     *                    being marginalized, this should be false.
      * @see IndependenceFacts
      */
     public IndTestDSep(IndependenceFacts facts, boolean keepLatents) {
@@ -241,8 +233,7 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * Auxiliary method to calculate dsep(x, y | z) directly from nodes instead
-     * of from variables.
+     * Auxiliary method to calculate dsep(x, y | z) directly from nodes instead of from variables.
      *
      * @return True if so.
      */
@@ -261,9 +252,8 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * This obviousy does not return an actual p-value, though it does return
-     * a number that is positive for depdendence and negative for independence,
-     * satisfying the contract.
+     * This obviousy does not return an actual p-value, though it does return a number that is positive for depdendence
+     * and negative for independence, satisfying the contract.
      *
      * @return This value.
      */
@@ -273,9 +263,8 @@ public class IndTestDSep implements IndependenceTest {
 
 
     /**
-     * Return the list of TetradNodes over which this independence checker is capable
-     * of determinine independence relations-- that is, all the variables in the given
-     * graph or the given data set.
+     * Return the list of TetradNodes over which this independence checker is capable of determinine independence
+     * relations-- that is, all the variables in the given graph or the given data set.
      *
      * @return This list.
      */
@@ -291,8 +280,8 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * Returns an alpha level, 0.5. This is an arbitrary nubmer that will help decide whether
-     * a pseudo p-value returned by the test represents a dependence or an independence.
+     * Returns an alpha level, 0.5. This is an arbitrary nubmer that will help decide whether a pseudo p-value returned
+     * by the test represents a dependence or an independence.
      *
      * @return 0.5.
      * @see #getPValue()
@@ -302,8 +291,8 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * @throws UnsupportedOperationException it makes no sense to set an alpha level
-     *                                       for a d-separation test away from the default.
+     * @throws UnsupportedOperationException it makes no sense to set an alpha level for a d-separation test away from
+     *                                       the default.
      * @see #getAlpha()
      */
     public void setAlpha(double alpha) {

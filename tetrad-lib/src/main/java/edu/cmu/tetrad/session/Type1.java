@@ -32,11 +32,10 @@ public class Type1 implements SessionModel, TetradSerializableExcluded {
     static final long serialVersionUID = 23L;
 
     /**
-     * A sample constructor that takes Model 2 and Type3 as parent. The session
-     * node wrapping this should allow parent session nodes to be added that
-     * wrap either Type2 or Type3 and when parents of both types are added it
-     * should allow a model of type Type1 to be created. SessionNodes wrapping
-     * models of other types should not be addable as parents.
+     * A sample constructor that takes Model 2 and Type3 as parent. The session node wrapping this should allow parent
+     * session nodes to be added that wrap either Type2 or Type3 and when parents of both types are added it should
+     * allow a model of type Type1 to be created. SessionNodes wrapping models of other types should not be addable as
+     * parents.
      */
     public Type1(Type2 model1, Type3 model2, Parameters parameters) {
     }

@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.algcomparison.statistic;
 
-import edu.cmu.tetrad.algcomparison.statistic.utils.AdjacencyConfusion;
 import edu.cmu.tetrad.algcomparison.statistic.utils.OrientationConfusion;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;

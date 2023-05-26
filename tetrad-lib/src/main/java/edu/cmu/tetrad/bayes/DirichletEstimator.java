@@ -26,8 +26,7 @@ import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
 
 /**
- * Estimates a DirichletBayesIm from a DirichletBayesIm (the prior) and a data
- * set.
+ * Estimates a DirichletBayesIm from a DirichletBayesIm (the prior) and a data set.
  *
  * @author josephramsey
  */

@@ -14,6 +14,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * FAS.
+ * Fast Adjacency Search (FAS)--i.e., the PC adjacency step, which is used in many algorithms.
  *
  * @author josephramsey
  */
@@ -41,7 +42,6 @@ public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-
     public Fas() {
     }
 
@@ -52,14 +52,34 @@ public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+//            PcCommon.PcHeuristicType pcHeuristicType;
+//
+//            switch (parameters.getInt(Params.PC_HEURISTIC)) {
+//                case 0:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.NONE;
+//                    break;
+//                case 1:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_1;
+//                    break;
+//                case 2:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_2;
+//                    break;
+//                case 3:
+//                    pcHeuristicType = PcCommon.PcHeuristicType.HEURISTIC_3;
+//                    break;
+//                default:
+//                    throw new IllegalArgumentException("Unknown conflict rule: " + parameters.getInt(Params.CONFLICT_RULE));
+//            }
+
             edu.cmu.tetrad.search.Fas search = new edu.cmu.tetrad.search.Fas(this.test.getTest(dataSet, parameters));
             search.setStable(parameters.getBoolean(Params.STABLE_FAS));
-            search.setHeuristic(parameters.getInt(Params.FAS_HEURISTIC));
+//            search.setPcHeuristicType(pcHeuristicType);
             search.setDepth(parameters.getInt(Params.DEPTH));
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             Object obj = parameters.get(Params.PRINT_STREAM);
+
             if (obj instanceof PrintStream) {
                 search.setOut((PrintStream) obj);
             }
@@ -99,7 +119,7 @@ public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
-        parameters.add(Params.FAS_HEURISTIC);
+//        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.VERBOSE);
         return parameters;
@@ -112,7 +132,7 @@ public class Fas implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     @Override
     public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
+        this.knowledge = new Knowledge(knowledge);
     }
 
     @Override

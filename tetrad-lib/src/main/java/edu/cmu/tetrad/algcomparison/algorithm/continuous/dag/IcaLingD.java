@@ -21,6 +21,7 @@ import java.util.List;
 
 /**
  * LiNG-D.
+ *
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(

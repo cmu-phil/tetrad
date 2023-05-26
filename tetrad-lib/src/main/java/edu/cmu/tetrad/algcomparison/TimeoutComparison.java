@@ -93,12 +93,10 @@ public class TimeoutComparison {
     /**
      * Compares algorithms.
      *
-     * @param dataPath    Path to the directory where data and graph files have
-     *                    been saved.
+     * @param dataPath    Path to the directory where data and graph files have been saved.
      * @param resultsPath Path to the file where the results should be stored.
      * @param algorithms  The list of algorithms to be compared.
-     * @param statistics  The list of statistics on which to compare the
-     *                    algorithm, and their utility weights.
+     * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
      * @param parameters  The list of parameters and their values.
      */
     public void compareFromFiles(String dataPath, String resultsPath, Algorithms algorithms,
@@ -199,11 +197,9 @@ public class TimeoutComparison {
      * Compares algorithms.
      *
      * @param resultsPath Path to the file where the output should be printed.
-     * @param simulations The list of simulationWrapper that is used to generate
-     *                    graphs and data for the comparison.
+     * @param simulations The list of simulationWrapper that is used to generate graphs and data for the comparison.
      * @param algorithms  The list of algorithms to be compared.
-     * @param statistics  The list of statistics on which to compare the
-     *                    algorithm, and their utility weights.
+     * @param statistics  The list of statistics on which to compare the algorithm, and their utility weights.
      */
     public void compareFromSimulations(String resultsPath, Simulations simulations, String outputFileName, Algorithms algorithms,
                                        Statistics statistics, Parameters parameters, long timeout, TimeUnit unit) {
@@ -444,8 +440,7 @@ public class TimeoutComparison {
     /**
      * Saves simulationWrapper data.
      *
-     * @param dataPath   The path to the directory where the simulationWrapper
-     *                   data should be saved.
+     * @param dataPath   The path to the directory where the simulationWrapper data should be saved.
      * @param simulation The simulate used to generate the graphs and data.
      * @param parameters The parameters to be used in the simulationWrapper.
      */
@@ -855,16 +850,14 @@ public class TimeoutComparison {
     }
 
     /**
-     * @return True iff a column of utilities marked "W" should be shown in the
-     * output.
+     * @return True iff a column of utilities marked "W" should be shown in the output.
      */
     public boolean isShowUtilities() {
         return this.showUtilities;
     }
 
     /**
-     * @param showUtilities True iff a column of utilities marked "W" should be
-     *                      shown in the output.
+     * @param showUtilities True iff a column of utilities marked "W" should be shown in the output.
      */
     public void setShowUtilities(boolean showUtilities) {
         this.showUtilities = showUtilities;
@@ -921,16 +914,14 @@ public class TimeoutComparison {
     }
 
     /**
-     * @return True iff tables should be tab delimited (e.g. for easy pasting
-     * into Excel).
+     * @return True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public boolean isTabDelimitedTables() {
         return this.tabDelimitedTables;
     }
 
     /**
-     * @param tabDelimitedTables True iff tables should be tab delimited (e.g.
-     *                           for easy pasting into Excel).
+     * @param tabDelimitedTables True iff tables should be tab delimited (e.g. for easy pasting into Excel).
      */
     public void setTabDelimitedTables(boolean tabDelimitedTables) {
         this.tabDelimitedTables = tabDelimitedTables;

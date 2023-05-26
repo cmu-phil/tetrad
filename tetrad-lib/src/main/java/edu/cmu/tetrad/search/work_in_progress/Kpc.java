@@ -42,12 +42,12 @@ import java.util.Set;
 
 /**
  * <p>Kernelized PC algorithm. This is the same as the PC class, the nonparametric
- * kernel-based HSIC test is used for independence testing and the parameters for
- * this test can be set directly when Kpc is initialized.</p>
+ * kernel-based HSIC test is used for independence testing and the parameters for this test can be set directly when Kpc
+ * is initialized.</p>
  *
  * <p>Moving this to the work_in_progress package because it has not been tested
- * in a very long time, and there is another option available that has been
- * tested, namely, to run PC using the KCI test due to Kun Zhang.</p>
+ * in a very long time, and there is another option available that has been tested, namely, to run PC using the KCI test
+ * due to Kun Zhang.</p>
  *
  * @author Robert Tillman.
  */
@@ -84,10 +84,10 @@ public class Kpc implements IGraphSearch {
     private long elapsedTime;
 
     /**
-     * True if cycles are to be aggressively prevented. May be expensive for large graphs (but also useful for large
+     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large
      * graphs).
      */
-    private boolean aggressivelyPreventCycles;
+    private boolean meekPreventCycles;
 
     /**
      * The logger to use.
@@ -137,15 +137,15 @@ public class Kpc implements IGraphSearch {
     /**
      * @return true iff edges will not be added if they would create cycles.
      */
-    public boolean isAggressivelyPreventCycles() {
-        return this.aggressivelyPreventCycles;
+    public boolean isMeekPreventCycles() {
+        return this.meekPreventCycles;
     }
 
     /**
-     * @param aggressivelyPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
+     * @param meekPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
      */
-    public void setAggressivelyPreventCycles(boolean aggressivelyPreventCycles) {
-        this.aggressivelyPreventCycles = aggressivelyPreventCycles;
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
@@ -221,8 +221,8 @@ public class Kpc implements IGraphSearch {
 
     /**
      * Runs PC starting with a commplete graph over the given list of nodes, using the given independence test and
-     * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information
-     * is consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
+     * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information is
+     * consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
      * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
      * or due to statistical errors in conditional independence judgments.
      * <p>
@@ -262,7 +262,7 @@ public class Kpc implements IGraphSearch {
         GraphSearchUtils.pcOrientbk(this.knowledge, this.graph, nodes);
         GraphSearchUtils.orientCollidersUsingSepsets(this.sepset, this.knowledge, this.graph, this.verbose, true);
         MeekRules rules = new MeekRules();
-        rules.setAggressivelyPreventCycles(this.aggressivelyPreventCycles);
+        rules.setMeekPreventCycles(this.meekPreventCycles);
         rules.setKnowledge(this.knowledge);
         rules.orientImplied(this.graph);
 
@@ -302,6 +302,7 @@ public class Kpc implements IGraphSearch {
 
     /**
      * Sets whether verbose output should be printed.
+     *
      * @param verbose True if so.
      */
     public void setVerbose(boolean verbose) {

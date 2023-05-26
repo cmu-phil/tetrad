@@ -33,8 +33,7 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 /**
- * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the
- * Graph interface.
+ * Tests the functions of EndpointMatrixGraph and EdgeListGraph through the Graph interface.
  *
  * @author josephramsey
  */

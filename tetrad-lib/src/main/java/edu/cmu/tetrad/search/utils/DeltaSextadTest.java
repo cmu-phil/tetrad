@@ -33,9 +33,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Implements a test for simultaneously zero sextads in the style of Bollen, K. (1990).
- * Sociological Methods and Research 19, 80-92 and Bollen and Ting, Confirmatory Tetrad
- * Analysis.
+ * Implements a test for simultaneously zero sextads in the style of Bollen, K. (1990). Sociological Methods and
+ * Research 19, 80-92 and Bollen and Ting, Confirmatory Tetrad Analysis.
  *
  * @author josephramsey
  */

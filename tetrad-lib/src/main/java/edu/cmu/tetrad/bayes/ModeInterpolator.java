@@ -30,8 +30,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.Arrays;
 
 /**
- * Creates a data set in which missing values in each column are filled using
- * the mode of that column.
+ * Creates a data set in which missing values in each column are filled using the mode of that column.
  *
  * @author josephramsey
  */

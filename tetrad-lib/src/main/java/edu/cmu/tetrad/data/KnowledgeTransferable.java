@@ -24,8 +24,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * Interface implemented by classes that are capable of participating in the
- * transfer of knowledge objects.
+ * Interface implemented by classes that are capable of participating in the transfer of knowledge objects.
  *
  * @author josephramsey
  * @see Knowledge

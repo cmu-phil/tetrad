@@ -61,8 +61,8 @@ public class Histogram {
     //========================================PUBLIC METHODS=================================//
 
     /**
-     * Sets the target. Setting the target removes all conditioning variables and sets the number of
-     * bins to the default (using Sturges' formula).
+     * Sets the target. Setting the target removes all conditioning variables and sets the number of bins to the default
+     * (using Sturges' formula).
      *
      * @param target The name of the target in the data set.
      */
@@ -192,8 +192,7 @@ public class Histogram {
     }
 
     /**
-     * For a continuous target, returns the maximum value of the values histogrammed,
-     * for the unconditioned data.
+     * For a continuous target, returns the maximum value of the values histogrammed, for the unconditioned data.
      */
     public double getMax() {
         List<Double> conditionedDataContinuous = getUnconditionedDataContinuous();
@@ -202,8 +201,7 @@ public class Histogram {
     }
 
     /**
-     * For a continuous target, returns the minimum value of the values histogrammed,
-     * for the unconditioned data.
+     * For a continuous target, returns the minimum value of the values histogrammed, for the unconditioned data.
      */
     public double getMin() {
         List<Double> conditionedDataContinuous = getUnconditionedDataContinuous();
@@ -212,8 +210,8 @@ public class Histogram {
     }
 
     /**
-     * For a continuous target, returns the number of values histogrammed. This may be
-     * less than the sample size of the data set because of conditioning.
+     * For a continuous target, returns the number of values histogrammed. This may be less than the sample size of the
+     * data set because of conditioning.
      */
     public int getN() {
         List<Double> conditionedDataContinuous = getConditionedDataContinuous();
@@ -221,8 +219,7 @@ public class Histogram {
     }
 
     /**
-     * A convenience method to return the data for a particular named continuous
-     * variable.
+     * A convenience method to return the data for a particular named continuous variable.
      *
      * @param variable The name of the variable.
      */
