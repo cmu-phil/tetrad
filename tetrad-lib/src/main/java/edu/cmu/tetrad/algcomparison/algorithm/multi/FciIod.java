@@ -13,7 +13,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
-import edu.cmu.tetrad.search.work_in_progress.IndTestIod;
+import edu.cmu.tetrad.search.IndTestIod;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -31,7 +31,7 @@ import java.util.List;
  * Conference on Artificial Intelligence and Statistics (pp. 3-15). JMLR Workshop and Conference Proceedings.</p>
  *
  * @author josephramsey
- * @see edu.cmu.tetrad.search.work_in_progress.IndTestIod
+ * @see IndTestIod
  */
 @edu.cmu.tetrad.annotation.Algorithm(
         name = "FCI-IOD",
