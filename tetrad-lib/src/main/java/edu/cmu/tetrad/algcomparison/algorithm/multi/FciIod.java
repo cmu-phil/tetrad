@@ -80,20 +80,17 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
 
             IndTestIod test = new IndTestIod(tests);
 
-            Fci fci = new Fci(test);
+            edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test);
+            search.setDepth(parameters.getInt(Params.DEPTH));
+            search.setKnowledge(this.knowledge);
+            search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+            search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
+            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+            search.setStable(parameters.getBoolean(Params.STABLE_FAS));
 
-            fci.setKnowledge(knowledge);
-
-            fci.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
-            fci.setDepth(parameters.getInt(Params.DEPTH));
-
-            fci.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
-
-            fci.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-
-            return fci.search();
-
+            return search.search();
         } else {
             FciIod imagesSemBic = new FciIod();
 
