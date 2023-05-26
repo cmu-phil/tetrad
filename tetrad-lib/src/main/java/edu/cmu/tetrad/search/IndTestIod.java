@@ -103,7 +103,7 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * Checks the indicated independence fact.
+     * Checks the indicated independence fact by pooling available tests for the given variables.
      *
      * @param x one node.
      * @param y a second node.
