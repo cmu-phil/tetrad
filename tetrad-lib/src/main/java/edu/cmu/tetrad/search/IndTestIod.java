@@ -56,7 +56,7 @@ public class IndTestIod implements IndependenceTest {
     private boolean verbose;
 
     /**
-     * Constructs a new independence test that returns d-separation facts for the given graph as independence results.
+     * Constructs a new pooled independence test from the given list of independence tests.
      */
     public IndTestIod(List<IndependenceTest> tests) {
         for (IndependenceTest test : tests) {
@@ -96,10 +96,10 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * Required by IndependenceTest.
+     * @throws UnsupportedOperationException Since the method is not implemented.
      */
     public IndependenceTest indTestSubset(List<Node> vars) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("This method is not implemented.");
     }
 
     /**
@@ -189,7 +189,9 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * @return the node associated with the given variable in the graph.
+     * Return the node associated with the given variable in the graph.
+     *
+     * @return This node.
      */
     public Node getNode(Node variable) {
         for (Node node : nodeList) {
@@ -201,6 +203,11 @@ public class IndTestIod implements IndependenceTest {
         throw new IllegalArgumentException("Variable not found: " + variable);
     }
 
+    /**
+     * Returns a string representation of this test.
+     *
+     * @return This string.
+     */
     public String toString() {
         return "IOD independence test (pooled over datasets)";
     }
