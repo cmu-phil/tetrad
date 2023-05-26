@@ -160,6 +160,11 @@ public class FaskVote implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreW
     }
 
     @Override
+    public void setIndTestWrapper(IndependenceWrapper test) {
+        this.test = test;
+    }
+
+    @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }

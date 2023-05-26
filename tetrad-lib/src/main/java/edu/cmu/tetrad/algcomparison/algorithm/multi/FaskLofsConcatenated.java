@@ -1,6 +1,7 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -76,7 +77,12 @@ public class FaskLofsConcatenated implements MultiDataSetAlgorithm, HasKnowledge
 
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
+        // Not used.
+    }
 
+    @Override
+    public void setIndTestWrapper(IndependenceWrapper test) {
+        // Not used.
     }
 
     private Graph getGraph(FasLofs search) {

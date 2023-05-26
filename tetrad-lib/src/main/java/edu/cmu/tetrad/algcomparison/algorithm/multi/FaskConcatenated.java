@@ -95,7 +95,12 @@ public class FaskConcatenated implements MultiDataSetAlgorithm, HasKnowledge, Ta
 
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
+        // Not used.
+    }
 
+    @Override
+    public void setIndTestWrapper(IndependenceWrapper test) {
+        // Not used.
     }
 
     @Override

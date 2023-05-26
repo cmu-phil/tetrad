@@ -2,6 +2,7 @@ package edu.pitt.dbmi.algo.resampling;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
@@ -22,6 +23,7 @@ public class GeneralResamplingTest {
     private final GeneralResamplingSearch resamplingSearch;
     private final ResamplingEdgeEnsemble edgeEnsemble;
     private ScoreWrapper scoreWrapper;
+    private IndependenceWrapper independenceWrapper;
     private PrintStream out = System.out;
     private Parameters parameters;
     private Algorithm algorithm;
@@ -323,6 +325,10 @@ public class GeneralResamplingTest {
 
     public void setScoreWrapper(ScoreWrapper scoreWrapper) {
         this.scoreWrapper = scoreWrapper;
+    }
+
+    public void setIndTestWrapper(IndependenceWrapper independenceWrapper) {
+        this.independenceWrapper = independenceWrapper;
     }
 
     /**

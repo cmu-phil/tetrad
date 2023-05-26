@@ -6,17 +6,16 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
+import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Boss;
-import edu.cmu.tetrad.search.PermutationSearch;
-import edu.cmu.tetrad.search.score.ImagesScore;
-import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.Fci;
+import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
+import edu.cmu.tetrad.search.work_in_progress.IndTestIod;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -27,38 +26,38 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Wraps the IMaGES algorithm for continuous variables.
- * <p>
- * Requires that the parameter 'randomSelectionSize' be set to indicate how many datasets should be taken at a time
- * (randomly). This cannot given multiple values.
+ * <p>Runs IOD on multiple datasets. The reference is here:</p>
+ *
+ * <p>Tillman, R., & Spirtes, P. (2011, June). Learning equivalence classes of acyclic models with latent and selection
+ * variables from multiple datasets with overlapping variables. In Proceedings of the Fourteenth International
+ * Conference on Artificial Intelligence and Statistics (pp. 3-15). JMLR Workshop and Conference Proceedings.</p>
  *
  * @author josephramsey
+ * @see edu.cmu.tetrad.search.work_in_progress.IndTestIod
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "IMaGES",
-        command = "images",
+        name = "IOD",
+        command = "iod",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.All
 )
 @Bootstrapping
-public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWrapper {
+public class Iod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private Knowledge knowledge = new Knowledge();
 
-    private ScoreWrapper score = new SemBicScore();
+    private IndependenceWrapper test;
 
-    public Images(ScoreWrapper score) {
-        this.score = score;
+    public Iod(IndependenceWrapper test) {
+        this.test = test;
     }
 
-    public Images() {
+    public Iod() {
     }
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-        int meta = parameters.getInt(Params.IMAGES_META_ALG);
-
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             List<DataModel> _dataSets = new ArrayList<>();
 
@@ -74,29 +73,31 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                 dataSets = _dataSets;
             }
 
-            List<Score> scores = new ArrayList<>();
+            List<IndependenceTest> tests = new ArrayList<>();
 
             for (DataModel dataModel : dataSets) {
-                Score s = score.getScore(dataModel, parameters);
-                scores.add(s);
+                IndependenceTest s = test.getTest(dataModel, parameters);
+                tests.add(s);
             }
 
-            ImagesScore score = new ImagesScore(scores);
+            IndTestIod test = new IndTestIod(tests);
 
-            if (meta == 1) {
-                edu.cmu.tetrad.search.Fges search = new edu.cmu.tetrad.search.Fges(score);
-                search.setKnowledge(this.knowledge);
-                search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-                return search.search();
-            } else if (meta == 2) {
-                PermutationSearch search = new PermutationSearch(new Boss(score));
-                search.setKnowledge(this.knowledge);
-                return search.search();
-            } else {
-                throw new IllegalArgumentException("Unrecognized meta option: " + meta);
-            }
+            Fci fci = new Fci(test);
+
+            fci.setKnowledge(knowledge);
+
+            fci.setVerbose(parameters.getBoolean(Params.VERBOSE));
+
+            fci.setDepth(parameters.getInt(Params.DEPTH));
+
+            fci.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+
+            fci.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+
+            return fci.search();
+
         } else {
-            Images imagesSemBic = new Images();
+            Iod imagesSemBic = new Iod();
 
             List<DataSet> dataSets2 = new ArrayList<>();
 
@@ -127,9 +128,19 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             search.setKnowledge(this.knowledge);
-            search.setScoreWrapper(score);
+            search.setIndTestWrapper(test);
             return search.search();
         }
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        // Not used.
+    }
+
+    @Override
+    public void setIndTestWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 
     @Override
@@ -137,7 +148,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
         } else {
-            Images images = new Images();
+            Iod images = new Iod();
 
             List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
@@ -148,13 +159,9 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
                     parameters.getInt(Params.RESAMPLING_ENSEMBLE),
                     parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
 
-            if (score == null) {
-                System.out.println();
-            }
-
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setScoreWrapper(score);
+//            search.setScoreWrapper(score);
             return search.search();
         }
     }
@@ -166,7 +173,7 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
 
     @Override
     public String getDescription() {
-        return "IMaGES";
+        return "IOD";
     }
 
     @Override
@@ -200,17 +207,12 @@ public class Images implements MultiDataSetAlgorithm, HasKnowledge, UsesScoreWra
     }
 
     @Override
-    public ScoreWrapper getScoreWrapper() {
-        return this.score;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
     }
 
     @Override
-    public void setScoreWrapper(ScoreWrapper score) {
-        this.score = score;
-    }
-
-    @Override
-    public void setIndTestWrapper(IndependenceWrapper test) {
-        // Not used.
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 }

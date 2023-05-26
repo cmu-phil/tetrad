@@ -145,7 +145,7 @@ public class Fas implements IFas {
 
         for (Edge edge : edges) {
             this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new ArrayList<>());
-            scores.put(edge, this.test.getScore());
+            scores.put(edge, this.test. getScore());
         }
 
         if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_2 || this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {

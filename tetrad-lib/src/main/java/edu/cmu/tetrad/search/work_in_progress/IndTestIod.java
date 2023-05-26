@@ -114,7 +114,7 @@ public class IndTestIod implements IndependenceTest {
 
         for (IndependenceTest test : this.tests) {
             if (containsAll(x, y, z, test)) {
-                tests.add(test.indTestSubset(z));
+                tests.add(test);
             }
         }
 
@@ -183,7 +183,8 @@ public class IndTestIod implements IndependenceTest {
 
     @Override
     public double getScore() {
-        throw new java.lang.UnsupportedOperationException("Multiple p-values from multiple datasets.");
+        return Double.NaN;
+//        throw new java.lang.UnsupportedOperationException("Multiple p-values from multiple datasets.");
     }
 
     public boolean isVerbose() {
