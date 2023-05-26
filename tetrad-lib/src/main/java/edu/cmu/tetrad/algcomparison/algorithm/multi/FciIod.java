@@ -6,14 +6,12 @@ import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
-import edu.cmu.tetrad.annotation.Bootstrapping;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fci;
+import edu.cmu.tetrad.search.IndTestIod;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
-import edu.cmu.tetrad.search.IndTestIod;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
@@ -39,7 +37,8 @@ import java.util.List;
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.All
 )
-@Bootstrapping
+// Bootstrapping makes no sense here, since the algorithm pools the data from various sources, which may be federeated
+// in principle, so we've removed the bootstrapping annotation from it and deleted the boostrapping code.
 public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
@@ -56,76 +55,40 @@ public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndepen
 
     @Override
     public Graph search(List<DataModel> dataSets, Parameters parameters) {
-        if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            List<DataModel> _dataSets = new ArrayList<>();
+        List<DataModel> _dataSets = new ArrayList<>();
 
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                for (DataModel dataSet : dataSets) {
-                    DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
-                    if (dataSet.getName() != null) {
-                        timeSeries.setName(dataSet.getName());
-                    }
-                    _dataSets.add(timeSeries);
+        if (parameters.getInt(Params.TIME_LAG) > 0) {
+            for (DataModel dataSet : dataSets) {
+                DataSet timeSeries = TsUtils.createLagData((DataSet) dataSet, parameters.getInt(Params.TIME_LAG));
+                if (dataSet.getName() != null) {
+                    timeSeries.setName(dataSet.getName());
                 }
-
-                dataSets = _dataSets;
+                _dataSets.add(timeSeries);
             }
 
-            List<IndependenceTest> tests = new ArrayList<>();
-
-            for (DataModel dataModel : dataSets) {
-                IndependenceTest s = test.getTest(dataModel, parameters);
-                tests.add(s);
-            }
-
-            IndTestIod test = new IndTestIod(tests);
-
-            edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test);
-            search.setDepth(parameters.getInt(Params.DEPTH));
-            search.setKnowledge(this.knowledge);
-            search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
-            search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-            search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
-            search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setStable(parameters.getBoolean(Params.STABLE_FAS));
-
-            return search.search();
-        } else {
-            FciIod imagesSemBic = new FciIod();
-
-            List<DataSet> dataSets2 = new ArrayList<>();
-
-            for (DataModel dataModel : dataSets) {
-                dataSets2.add((DataSet) dataModel);
-            }
-
-            List<DataSet> _dataSets = new ArrayList<>();
-
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                for (DataSet dataSet : dataSets2) {
-                    DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                    if (dataSet.getName() != null) {
-                        timeSeries.setName(dataSet.getName());
-                    }
-                    _dataSets.add(timeSeries);
-                }
-
-                dataSets2 = _dataSets;
-            }
-
-            GeneralResamplingTest search = new GeneralResamplingTest(
-                    dataSets2,
-                    imagesSemBic,
-                    parameters.getInt(Params.NUMBER_RESAMPLING),
-                    parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE),
-                    parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setKnowledge(this.knowledge);
-            search.setIndTestWrapper(test);
-            return search.search();
+            dataSets = _dataSets;
         }
+
+        List<IndependenceTest> tests = new ArrayList<>();
+
+        for (DataModel dataModel : dataSets) {
+            IndependenceTest s = test.getTest(dataModel, parameters);
+            tests.add(s);
+        }
+
+        IndTestIod test = new IndTestIod(tests);
+
+        edu.cmu.tetrad.search.Fci search = new edu.cmu.tetrad.search.Fci(test);
+        search.setDepth(parameters.getInt(Params.DEPTH));
+        search.setKnowledge(this.knowledge);
+        search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
+        search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
+        search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
+        search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
+        search.setVerbose(parameters.getBoolean(Params.VERBOSE));
+        search.setStable(parameters.getBoolean(Params.STABLE_FAS));
+
+        return search.search();
     }
 
     @Override
