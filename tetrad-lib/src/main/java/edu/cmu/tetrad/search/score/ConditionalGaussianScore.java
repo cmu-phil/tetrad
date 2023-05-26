@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p></p>Implements a conditional Gaussian BIC score for FGS, which calculates a BIC
+ * <p>Implements a conditional Gaussian BIC score for FGS, which calculates a BIC
  * score for mixed discrete/Gaussian data using the conditional Gaussian likelihood function (see). The reference is
  * here:</p>
  *

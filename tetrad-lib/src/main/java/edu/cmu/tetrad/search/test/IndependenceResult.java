@@ -7,7 +7,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
- * <p></p>Stores a single conditional independence result, e.g., whether
+ * <p>Stores a single conditional independence result, e.g., whether
  * X _||_ Y | Z1,..,Zn holds or does not, and the p-value of the test.</p>
  *
  * @author josephramsey
@@ -20,7 +20,7 @@ public final class IndependenceResult implements TetradSerializable {
     private final double pValue;
 
     /**
-     * Construtor.
+     * Constructor.
      *
      * @param fact   The fact itself.
      * @param indep  The conditional independence result, true if the fact holds, false if not.
