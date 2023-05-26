@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
+import org.jetbrains.annotations.NotNull;
 
 import javax.help.UnsupportedOperationException;
 import java.util.*;
@@ -245,7 +246,7 @@ public class IndTestIod implements IndependenceTest {
         this.verbose = verbose;
     }
 
-    private boolean containsAll(Node x, Node y, List<Node> z, IndependenceTest test) {
+    private boolean containsAll(@NotNull Node x, Node y, List<Node> z, @NotNull IndependenceTest test) {
         if (test.getVariable(x.getName()) == null) {
             return false;
         }
