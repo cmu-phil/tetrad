@@ -95,6 +95,10 @@ public class ConditionalGaussianSimulation implements Simulation {
                 dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
+            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+            }
+
             this.dataSets.add(dataSet);
         }
     }
@@ -121,6 +125,7 @@ public class ConditionalGaussianSimulation implements Simulation {
         parameters.add(Params.MAX_CATEGORIES);
         parameters.add(Params.PERCENT_DISCRETE);
         parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.VAR_LOW);

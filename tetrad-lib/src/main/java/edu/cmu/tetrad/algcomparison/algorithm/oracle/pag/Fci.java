@@ -128,7 +128,6 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.DEPTH);
-//        parameters.add(Params.PC_HEURISTIC);
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.MAX_PATH_LENGTH);
         parameters.add(Params.POSSIBLE_DSEP_DONE);

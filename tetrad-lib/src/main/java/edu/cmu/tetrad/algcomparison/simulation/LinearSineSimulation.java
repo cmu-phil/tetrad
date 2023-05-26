@@ -78,6 +78,11 @@ public class LinearSineSimulation implements Simulation {
             this.graphs.add(graph);
 
             DataSet dataSet = simulate(graph, parameters);
+
+            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+            }
+
             dataSet.setName("" + (i + 1));
             this.dataSets.add(dataSet);
         }
@@ -102,6 +107,7 @@ public class LinearSineSimulation implements Simulation {
     public List<String> getParameters() {
         List<String> parameters = this.randomGraph.getParameters();
         parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add("interceptLow");

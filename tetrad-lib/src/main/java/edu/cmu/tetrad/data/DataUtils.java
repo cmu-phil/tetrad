@@ -1536,6 +1536,27 @@ public final class DataUtils {
         double rho = (n * sum - n * m) / (m * (n * n - n));
         return n / (1. + (n - 1.) * rho);
     }
+
+    public static DataSet removeRandomColumns(DataSet dataSet, double aDouble) {
+        int columns = dataSet.getNumColumns();
+        int rows = dataSet.getNumRows();
+        if (rows == 0) {
+            return dataSet;
+        }
+
+        List<Integer> keepCols = new ArrayList<>();
+
+        for (int j = 0; j < columns; j++) {
+            if (RandomUtil.getInstance().nextDouble() > aDouble) {
+                keepCols.add(j);
+            }
+        }
+
+        int[] newCols = new int[keepCols.size()];
+        for (int j = 0; j < keepCols.size(); j++) newCols[j] = keepCols.get(j);
+
+        return dataSet.subsetColumns(newCols);
+    }
 }
 
 

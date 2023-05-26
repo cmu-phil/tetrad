@@ -1,10 +1,8 @@
 package edu.cmu.tetrad.algcomparison.algorithm.multi;
 
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
-import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -36,24 +34,24 @@ import java.util.List;
  * @see edu.cmu.tetrad.search.work_in_progress.IndTestIod
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "IOD",
-        command = "iod",
+        name = "FCI-IOD",
+        command = "fci-iod",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.All
 )
 @Bootstrapping
-public class Iod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
+public class FciIod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private Knowledge knowledge = new Knowledge();
 
     private IndependenceWrapper test;
 
-    public Iod(IndependenceWrapper test) {
+    public FciIod(IndependenceWrapper test) {
         this.test = test;
     }
 
-    public Iod() {
+    public FciIod() {
     }
 
     @Override
@@ -97,7 +95,7 @@ public class Iod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependen
             return fci.search();
 
         } else {
-            Iod imagesSemBic = new Iod();
+            FciIod imagesSemBic = new FciIod();
 
             List<DataSet> dataSets2 = new ArrayList<>();
 
@@ -148,7 +146,7 @@ public class Iod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependen
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             return search(Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet)), parameters);
         } else {
-            Iod images = new Iod();
+            FciIod images = new FciIod();
 
             List<DataSet> dataSets = Collections.singletonList(SimpleDataLoader.getMixedDataSet(dataSet));
             GeneralResamplingTest search = new GeneralResamplingTest(dataSets,
@@ -173,7 +171,7 @@ public class Iod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependen
 
     @Override
     public String getDescription() {
-        return "IOD";
+        return "FCI-IOD";
     }
 
     @Override
@@ -183,14 +181,14 @@ public class Iod implements MultiDataSetAlgorithm, HasKnowledge, TakesIndependen
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new LinkedList<>();
-        parameters.addAll(new SemBicScore().getParameters());
-
-        parameters.addAll((new Fges()).getParameters());
-        parameters.add(Params.RANDOM_SELECTION_SIZE);
+        List<String> parameters = new LinkedList<>(test.getParameters());
+        parameters.add(Params.DEPTH);
+        parameters.add(Params.STABLE_FAS);
+        parameters.add(Params.MAX_PATH_LENGTH);
+        parameters.add(Params.POSSIBLE_DSEP_DONE);
+        parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
+        parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);
-        parameters.add(Params.IMAGES_META_ALG);
-
         parameters.add(Params.VERBOSE);
 
         return parameters;

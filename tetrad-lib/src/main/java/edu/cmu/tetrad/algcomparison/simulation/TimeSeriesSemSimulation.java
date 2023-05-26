@@ -3,10 +3,7 @@ package edu.cmu.tetrad.algcomparison.simulation;
 import edu.cmu.tetrad.algcomparison.graph.RandomGraph;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.TimeLagGraph;
@@ -74,6 +71,10 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
 
             dataSet = TsUtils.createLagData(dataSet, numLags);
 
+            if (parameters.getDouble(Params.PROB_REMOVE_COLUMN) > 0) {
+                dataSet = DataUtils.removeRandomColumns(dataSet, parameters.getDouble(Params.PROB_REMOVE_COLUMN));
+            }
+
             dataSet.setName("" + (i + 1));
             dataSet.setKnowledge(this.knowledge.copy());
             this.dataSets.add(dataSet);
@@ -111,6 +112,7 @@ public class TimeSeriesSemSimulation implements Simulation, HasKnowledge {
         parameters.add(Params.STANDARDIZE);
         parameters.add(Params.MEASUREMENT_VARIANCE);
         parameters.add(Params.NUM_RUNS);
+        parameters.add(Params.PROB_REMOVE_COLUMN);
         parameters.add(Params.DIFFERENT_GRAPHS);
         parameters.add(Params.SAMPLE_SIZE);
         parameters.add(Params.SAVE_LATENT_VARS);
