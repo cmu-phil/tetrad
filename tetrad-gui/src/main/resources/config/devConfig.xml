@@ -169,6 +169,17 @@
                 <editor-class>edu.cmu.tetradapp.editor.GraphEditor
                 </editor-class>
             </model>
+            <model name="Remove Null Edges from Bootstrapping" acronym="Remove null edges"
+                   help="graph" category="Graph Manipulations">
+                <logger>
+                    <event id="info" description="Information" default="on"/>
+                    <event id="graph" description="Graph" default="on"/>
+                </logger>
+                <model-class>edu.cmu.tetradapp.model.RemoveNullEdgesGraphWrapper
+                </model-class>
+                <editor-class>edu.cmu.tetradapp.editor.GraphEditor
+                </editor-class>
+            </model>
             <model name="Generate Complete Graph" acronym="Generate complete graph"
                    help="graph" category="Graph Manipulations">
                 <logger>
