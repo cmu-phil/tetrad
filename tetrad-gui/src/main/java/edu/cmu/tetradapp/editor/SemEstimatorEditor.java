@@ -151,12 +151,14 @@ public final class SemEstimatorEditor extends JPanel {
         estimateButton.addActionListener((e) -> {
             Window owner = (Window) getTopLevelAncestor();
 
-            new WatchedProcess(owner) {
+            class MyWatchedProcess extends WatchedProcess2 {
                 @Override
                 public void watch() {
                     reestimate();
                 }
             };
+
+            SwingUtilities.invokeLater(MyWatchedProcess::new);
         });
 
         JButton report = new JButton("Report");

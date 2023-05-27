@@ -25,7 +25,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetradapp.model.Simulation;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.ParameterComponents;
-import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetradapp.util.WatchedProcess2;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -300,7 +300,7 @@ public class ParameterTab extends JPanel {
             return;
         }
 
-        new WatchedProcess((Window) getTopLevelAncestor()) {
+        class MyWatchedProcess extends WatchedProcess2 {
             @Override
             public void watch() {
                 try {
@@ -325,7 +325,10 @@ public class ParameterTab extends JPanel {
                     }
                 }
             }
-        };
+        }
+        ;
+
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
     }
 
     private Box createLabeledComponent(String text, Component comp) {

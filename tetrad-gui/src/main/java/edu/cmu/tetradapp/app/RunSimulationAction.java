@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.session.SessionNode;
-import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetradapp.util.WatchedProcess2;
 
 import javax.swing.*;
 import java.awt.*;
@@ -107,14 +107,17 @@ class RunSimulationAction extends AbstractAction {
     private void executeSessionNode(SessionNode sessionNode) {
         Window owner = (Window) this.sessionEditorNode.getTopLevelAncestor();
 
-        new WatchedProcess(owner) {
+        class MyWatchedProcess extends WatchedProcess2 {
             public void watch() {
                 SessionEditorWorkbench workbench = getWorkbench();
 
                 workbench.getSimulationStudy().execute(sessionNode, true);
 
             }
-        };
+        }
+        ;
+
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
     }
 
 }

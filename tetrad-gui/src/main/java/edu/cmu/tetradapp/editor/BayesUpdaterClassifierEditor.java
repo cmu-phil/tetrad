@@ -21,15 +21,15 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.classify.ClassifierBayesUpdaterDiscrete;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.classify.ClassifierBayesUpdaterDiscrete;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RocCalculator;
 import edu.cmu.tetradapp.model.BayesUpdaterClassifierWrapper;
-import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetradapp.util.WatchedProcess2;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -50,12 +50,12 @@ import java.util.List;
  */
 public class BayesUpdaterClassifierEditor extends JPanel {
     private final ClassifierBayesUpdaterDiscrete classifier;
+    private final JMenuItem saveRoc;
     private JComboBox variableDropdown;
     private JTabbedPane tabbedPane;
     private JComboBox categoryDropdown;
     private GraphWorkbench workbench;
     private RocPlot rocPlot;
-    private final JMenuItem saveRoc;
 
     private BayesUpdaterClassifierEditor(ClassifierBayesUpdaterDiscrete classifier) {
         if (classifier == null) {
@@ -95,6 +95,13 @@ public class BayesUpdaterClassifierEditor extends JPanel {
             showRocCurve();
             showConfusionMatrix();
         }
+    }
+
+    /**
+     * Constructs a new instanted model editor from a Bayes IM wrapper.
+     */
+    public BayesUpdaterClassifierEditor(BayesUpdaterClassifierWrapper wrapper) {
+        this(wrapper.getClassifier());
     }
 
     private void saveRocImage() {
@@ -140,14 +147,17 @@ public class BayesUpdaterClassifierEditor extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 Window owner = (Window) getTopLevelAncestor();
 
-                new WatchedProcess(owner) {
+                class MyWatchedProcess extends WatchedProcess2 {
                     public void watch() {
                         doClassify();
                         showClassification();
                         showRocCurve();
                         showConfusionMatrix();
                     }
-                };
+                }
+                ;
+
+                SwingUtilities.invokeLater(MyWatchedProcess::new);
             }
         });
 
@@ -419,13 +429,6 @@ public class BayesUpdaterClassifierEditor extends JPanel {
             getTabbedPane().add(scroll, tabIndex);
             getTabbedPane().setTitleAt(tabIndex, "Confusion Matrix");
         }
-    }
-
-    /**
-     * Constructs a new instanted model editor from a Bayes IM wrapper.
-     */
-    public BayesUpdaterClassifierEditor(BayesUpdaterClassifierWrapper wrapper) {
-        this(wrapper.getClassifier());
     }
 
     private ClassifierBayesUpdaterDiscrete getClassifier() {

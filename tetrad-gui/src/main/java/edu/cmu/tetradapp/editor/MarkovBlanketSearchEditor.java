@@ -26,14 +26,14 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetradapp.util.IndTestType;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.MarkovBlanketSearchRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
-import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetradapp.util.IndTestType;
+import edu.cmu.tetradapp.util.WatchedProcess2;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -64,22 +64,17 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
      * The button one clicks to executeButton the algorithm.
      */
     private final JButton executeButton = new JButton();
-
-
-    /**
-     * The scrollpange for the result workbench.
-     */
-    private JScrollPane workbenchScroll;
-
-
     /**
      * Table used to display data.
      */
     private final TabularDataJTable table;
-
     /**
-     * True if the warning message that previously defined knowledge is being
-     * used has already been shown and doesn't need to be shown again.
+     * The scrollpange for the result workbench.
+     */
+    private JScrollPane workbenchScroll;
+    /**
+     * True if the warning message that previously defined knowledge is being used has already been shown and doesn't
+     * need to be shown again.
      */
     private boolean knowledgeMessageShown;
 
@@ -130,16 +125,16 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
 
     /**
-     * Executes the algorithm. The execution takes place inside a thread, so one
-     * cannot count on a result graph having been found when the method
+     * Executes the algorithm. The execution takes place inside a thread, so one cannot count on a result graph having
+     * been found when the method
      */
     private void execute() {
         Window owner = (Window) getTopLevelAncestor();
 
-        WatchedProcess process = new WatchedProcess(owner) {
+        class MyWatchedProcess extends WatchedProcess2 {
             public void watch() {
                 getExecuteButton().setEnabled(false);
-                setErrorMessage(null);
+//                setErrorMessage(null);
 
                 if (!MarkovBlanketSearchEditor.this.knowledgeMessageShown) {
                     Knowledge knowledge = (Knowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge());
@@ -174,12 +169,11 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
                     if (messageString == null) {
                         messageString = message;
                     }
-                    setErrorMessage(messageString);
+//                    setErrorMessage(messageString);
 
                     getExecuteButton().setEnabled(true);
                     throw new RuntimeException(e);
                 }
-
 
                 setLabel();
                 DataSet modelForMarkovBlanket = MarkovBlanketSearchEditor.this.algorithmRunner.getDataModelForMarkovBlanket();
@@ -189,26 +183,28 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
                 MarkovBlanketSearchEditor.this.table.repaint();
                 getExecuteButton().setEnabled(true);
             }
-        };
+        }
+        ;
 
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
 
-        Thread watcher = new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(300);
-
-                    if (!process.isAlive()) {
-                        getExecuteButton().setEnabled(true);
-                        return;
-                    }
-                } catch (InterruptedException e) {
-                    getExecuteButton().setEnabled(true);
-                    return;
-                }
-            }
-        });
-
-        watcher.start();
+//        Thread watcher = new Thread(() -> {
+//            while (true) {
+//                try {
+//                    Thread.sleep(300);
+//
+////                    if (!process.isAlive()) {
+////                        getExecuteButton().setEnabled(true);
+////                        return;
+////                    }
+//                } catch (InterruptedException e) {
+//                    getExecuteButton().setEnabled(true);
+//                    return;
+//                }
+//            }
+//        });
+//
+//        watcher.start();
     }
 
     private void setLabel() {
@@ -388,14 +384,6 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
     }
 
     /**
-     * Not supported.
-     */
-    public void setGraph(Graph g) {
-        throw new UnsupportedOperationException("Cannot set the graph on a search editor.");
-    }
-
-
-    /**
      * @return the graph.
      */
     public Graph getGraph() {
@@ -405,12 +393,19 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         return new EdgeListGraph();
     }
 
-    public void setTestType(IndTestType testType) {
-        getParams().set("indTestType", testType);
+    /**
+     * Not supported.
+     */
+    public void setGraph(Graph g) {
+        throw new UnsupportedOperationException("Cannot set the graph on a search editor.");
     }
 
     public IndTestType getTestType() {
         return (IndTestType) getParams().get("indTestType", IndTestType.FISHER_Z);
+    }
+
+    public void setTestType(IndTestType testType) {
+        getParams().set("indTestType", testType);
     }
 }
 

@@ -24,7 +24,7 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetradapp.model.*;
-import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetradapp.util.WatchedProcess2;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -65,8 +65,8 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
     private EvidenceWizardMultiple evidenceWizardMultiple;
 
     /**
-     * Contains the other right-hand panels; included so that the right-hand
-     * view panel (contained in this panel) can easily be reset.
+     * Contains the other right-hand panels; included so that the right-hand view panel (contained in this panel) can
+     * easily be reset.
      */
     private JPanel singleResultPanel;
 
@@ -76,14 +76,12 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
     private JPanel multiResultPanel;
 
     /**
-     * Remember which tab the user selected last time around so as not to
-     * irritate the user.
+     * Remember which tab the user selected last time around so as not to irritate the user.
      */
     private int updatedBayesImWizardTab;
 
     /**
-     * A JPanel with a card layout that contains the various cards of the
-     * wizard.
+     * A JPanel with a card layout that contains the various cards of the wizard.
      */
     private JPanel cardPanel;
 
@@ -341,11 +339,14 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
         if (owner == null) {
             resetSingleResultPanelSub();
         } else {
-            new WatchedProcess(owner) {
+            class MyWatchedProcess extends WatchedProcess2 {
                 public void watch() {
                     resetSingleResultPanelSub();
                 }
-            };
+            }
+            ;
+
+            SwingUtilities.invokeLater(MyWatchedProcess::new);
         }
     }
 

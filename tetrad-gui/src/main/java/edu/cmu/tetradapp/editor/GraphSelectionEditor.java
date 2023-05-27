@@ -21,14 +21,12 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.GraphSelectionWrapper;
 import edu.cmu.tetradapp.ui.DualListPanel;
 import edu.cmu.tetradapp.ui.PaddingPanel;
-import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.ImageUtils;
-import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetradapp.util.*;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -134,7 +132,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         executeButton.addActionListener(e -> {
             Window owner = (Window) getTopLevelAncestor();
 
-            new WatchedProcess(owner) {
+            class MyWatchedProcess extends WatchedProcess2 {
                 public void watch() {
                     GraphWorkbench workbench = getWorkbench();
                     List<DisplayNode> displayNodes = workbench.getSelectedNodes();
@@ -150,6 +148,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                     tabbedPaneGraphs(wrapper);
                 }
             };
+
+            SwingUtilities.invokeLater(MyWatchedProcess::new);
         });
 
         workbenchScrollsPanel.validate();

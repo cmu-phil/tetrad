@@ -32,7 +32,7 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
-import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetradapp.util.WatchedProcess2;
 
 import javax.swing.*;
 import java.awt.*;
@@ -64,11 +64,9 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     private final AlgorithmCard algorithmCard;
     private final ParameterCard parameterCard;
     private final GraphCard graphCard;
-
-    private String jsonResult;
-
     private final GeneralAlgorithmRunner algorithmRunner;
     private final TetradDesktop desktop;
+    private String jsonResult;
 
     public GeneralAlgorithmEditor(GeneralAlgorithmRunner algorithmRunner) {
         this.algorithmRunner = algorithmRunner;
@@ -175,7 +173,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     }
 
     private void doSearch() {
-        new WatchedProcess((Window) getTopLevelAncestor()) {
+        class MyWatchedProcess extends WatchedProcess2 {
             @Override
             public void watch() {
                 AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();
@@ -198,7 +196,17 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
 
                 }
             }
-        };
+        }
+        ;
+
+//        class MyWatchedProcess extends WatchedProcess2 {
+//            @Override
+//            public void watch() throws InterruptedException {
+//                Thread.sleep(1000);
+//            }
+//        };
+
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
 
     }
 
