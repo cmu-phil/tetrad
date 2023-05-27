@@ -16,8 +16,11 @@ public abstract class WatchedProcess2 {
     private Thread longRunningThread;
     private JDialog dialog;
 
+    /**
+     * Constructor.
+     */
     public WatchedProcess2() {
-        frame = new JFrame("Thread Stop Example");
+        frame = new JFrame("Hidden Frame");
         startLongRunningThread();
     }
 
