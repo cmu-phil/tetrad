@@ -1,302 +1,113 @@
-///////////////////////////////////////////////////////////////////////////////
-// For information as to what this class does, see the Javadoc, below.       //
-// Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,       //
-// 2007, 2008, 2009, 2010, 2014, 2015, 2022 by Peter Spirtes, Richard        //
-// Scheines, Joseph Ramsey, and Clark Glymour.                               //
-//                                                                           //
-// This program is free software; you can redistribute it and/or modify      //
-// it under the terms of the GNU General Public License as published by      //
-// the Free Software Foundation; either version 2 of the License, or         //
-// (at your option) any later version.                                       //
-//                                                                           //
-// This program is distributed in the hope that it will be useful,           //
-// but WITHOUT ANY WARRANTY; without even the implied warranty of            //
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             //
-// GNU General Public License for more details.                              //
-//                                                                           //
-// You should have received a copy of the GNU General Public License         //
-// along with this program; if not, write to the Free Software               //
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
-///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.util;
 
-import edu.cmu.tetrad.util.JOptionUtils;
-import edu.cmu.tetrad.util.TaskManager;
-
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import java.awt.*;
 
 /**
- * Runs a process, popping up a dialog with a stop button if the time to
- * complete is too long. The process to be run should override the watch()
- * method.
+ * <p>Runs a long process, watching it with a thread and popping up a Stop button that the user can click to stop the
+ * process.</p>
+ *
+ * <p>Replacement for the old WatchedProcess, which called the deprecated Thread.stop() method. This method is
+ * deprecated because it can leave the program in an inconsistent state. This class uses Thread.interrupt() instead,
+ * which is the recommended way to stop a thread.</p>
+ *
+ * <p>Example usage:</p>
+ *
+ * <pre>
+ * class MyWatchedProcess extends WatchedProcess2 {
+ *
+ *     &#64;Override
+ *     public void watch() throws InterruptedException {
+ *         // Long process...
+ *     }
+ * };
+ *
+ * SwingUtilities.invokeLater(MyWatchedProcess::new);
+ * </pre>
  *
  * @author josephramsey
+ * @author ChatGPT
  */
 public abstract class WatchedProcess {
+    private final JFrame frame;
+    private Thread longRunningThread;
+    private JDialog dialog;
 
     /**
-     * The thread that the watched process dialog runs in. This thread can be
-     * stopped (using wonderful yet deprecated stop( ) method, giving the user
-     * control over any process that's running in it.
+     * Constructor.
      */
-    private Thread thread;
+    public WatchedProcess() {
+        frame = new JFrame("Hidden Frame");
+        startLongRunningThread();
+    }
 
     /**
-     * If the thread stops with an error, the error message is stored here.
-     */
-    private String errorMessage;
-
-    /**
-     * The number of milliseconds the thread sleeps before checking on user
-     * input again.
-     */
-    private final long delay = 200L;
-
-    /**
-     * The dialog displayed to the user that lets them click "Stop" when they
-     * want the process to stop.
-     */
-    private JDialog stopDialog;
-
-    /**
-     * The anstor Window in front of which the stop dialog is being displayed.
-     */
-    private final Window owner;
-
-    /**
-     * True iff the "watch process" dialogs should display. These threads block,
-     * so displaying them makes debugging difficult. On the other hand, not
-     * displaying them means that users cannot stop processes, so they hate
-     * that. SO...if you set this to false, make sure you set it to true before
-     * you're done working!
-     * <p>
-     * It must be set to true for posted versions. There's unit test that checks
-     * for that.
-     */
-    private static final boolean SHOW_DIALOG = true;
-
-    /**
-     * The object on which the watch dialog should be centered.
-     */
-    private final Component centeringComp;
-
-    /**
-     * Constructs a new watched process.
+     * This is the method that will be called in a separate thread. It should be a long-running process that can be
+     * interrupted by the user.
      *
-     * @param owner The ancestor window in front of which the stop dialog is
-     *              being displayed.
+     * @throws InterruptedException if the process is interrupted while running.
      */
-    public WatchedProcess(Window owner) {
-        this(owner, JOptionUtils.centeringComp());
-    }
+    public abstract void watch() throws InterruptedException;
 
-    /**
-     * Constructs a new watched process.
-     *
-     * @param owner The ancestor window in front of which the stop dialog is
-     *              being displayed.
-     */
-    private WatchedProcess(Window owner, Component centeringComp) {
-        if (owner == null) {
-            throw new NullPointerException();
-        }
+    private void startLongRunningThread() {
+        longRunningThread = new Thread(() -> {
+            if (Thread.interrupted()) {
+                // Thread was interrupted, so exit the loop and terminate
+                System.out.println("Thread was interrupted. Stopping...");
+                return;
+            }
 
-        this.owner = owner;
-        this.centeringComp = centeringComp;
-        watchProcess();
-
-    }
-
-    //=============================PUBLIC METHODS========================//
-
-    /**
-     * To watch a process, override this method, as follows:
-     * <pre>
-     * Window owner = (Window) getTopLevelAncestor();
-     *
-     * new WatchedProcess(owner) {
-     *    public void watch() {
-     *       ...your stuff to watch...
-     *    }
-     * };
-     * </pre>
-     */
-    public abstract void watch();
-
-    private String getErrorMessage() {
-        return this.errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    private JDialog getStopDialog() {
-        return this.stopDialog;
-    }
-
-    private void setStopDialog(JDialog stopDialog) {
-        this.stopDialog = stopDialog;
-    }
-
-    private Window getOwner() {
-        return this.owner;
-    }
-
-    private boolean isShowDialog() {
-        return WatchedProcess.SHOW_DIALOG;
-    }
-
-    public boolean isAlive() {
-        return this.thread.isAlive();
-    }
-
-    //================================PRIVATE METHODS====================//
-    private void watchProcess() {
-        Runnable runnable = () -> {
             try {
                 watch();
-            } catch (Exception e) {
-                e.printStackTrace();
-                String message = e.getMessage();
-
-                if (e.getCause() != null) {
-                    message = e.getCause().getMessage();
-                }
-
-                setErrorMessage(message);
-                throw e;
+            } catch (InterruptedException e) {
+                // Thread was interrupted while sleeping, so exit the loop and terminate
+                System.out.println("Thread was interrupted while watching. Stopping...");
+                return;
             }
-        };
 
-        Thread thread = new Thread(runnable);
-        setThread(thread);
-        thread.setPriority(7);
-        thread.start();
+            // Process completed successfully
+            System.out.println("Process completed successfully.");
 
-        if (isShowDialog()) {
-            Thread watcher = new Thread(() -> {
-                try {
-                    Thread.sleep(WatchedProcess.this.delay);
-                } catch (InterruptedException e) {
-                    return;
-                }
+            if (dialog != null) {
+                dialog.dispose();
+                dialog = null;
+            }
+        });
 
-                if (getErrorMessage() != null) {
-                    JOptionPane.showMessageDialog(
-                            WatchedProcess.this.centeringComp, getErrorMessage());
-                    return;
-                }
+        longRunningThread.start();
 
-                JProgressBar progressBar = new JProgressBar(0, 100);
-                progressBar.setIndeterminate(true);
+        showStopDialog();
+    }
 
-                JButton stopButton = new JButton("Stop");
-
-                stopButton.addActionListener(e -> {
-                    if (getThread() != null) {
-                        while (getThread().isAlive()) {
-                            TaskManager.getInstance().setCanceled(true);
-                            getThread().stop();
-
-                            try {
-                                Thread.sleep(500);
-                            } catch (InterruptedException e1) {
-                                JOptionPane.showMessageDialog(
-                                        WatchedProcess.this.centeringComp,
-                                        "Could not stop thread.");
-                                return;
-                            }
-                        }
-
-                    }
-                });
-
-                Box b = Box.createVerticalBox();
-                Box b1 = Box.createHorizontalBox();
-                b1.add(progressBar);
-                b1.add(stopButton);
-                b.add(b1);
-
-                if (isShowDialog()) {
-                    Frame ancestor = (Frame) JOptionUtils.centeringComp()
-                            .getTopLevelAncestor();
-                    JDialog dialog
-                            = new JDialog(ancestor, "Executing...", false);
-                    setStopDialog(dialog);
-
-                    dialog.getContentPane().add(b);
-                    dialog.pack();
-                    dialog.setLocationRelativeTo(
-                            WatchedProcess.this.centeringComp);
-
-//                        LogUtils.getInstance().add(out, Level.FINER);
-                    while (getThread().isAlive()) {
-                        try {
-                            Thread.sleep(200);
-                            if (existsOtherDialog()) {
-                                dialog.setVisible(false);
-                            } else {
-                                dialog.setVisible(true);
-                                dialog.toFront();
-                            }
-
-//                                anomaliesTextArea.setCaretPosition(out.getLengthWritten());
-                        } catch (InterruptedException e) {
-                            return;
-                        }
-                    }
-
-//                        LogUtils.getInstance().remove(out);
-                    dialog.setVisible(false);
-                    dialog.dispose();
-
-                    if (getErrorMessage() != null) {
-                        JOptionPane.showMessageDialog(
-                                WatchedProcess.this.centeringComp,
-                                "Stopped with error:\n"
-                                        + getErrorMessage());
-                    }
-                }
-            });
-
-            watcher.start();
+    private void stopLongRunningThread() {
+        if (longRunningThread != null && longRunningThread.isAlive()) {
+            longRunningThread.interrupt();
         }
     }
 
-    private Thread getThread() {
-        return this.thread;
-    }
+    private void showStopDialog() {
+        dialog = new JDialog(frame, "Stop Process", Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setUndecorated(true);
+        dialog.setSize(100, 50);
+        dialog.setResizable(false);
 
-    private void setThread(Thread thread) {
-        this.thread = thread;
-    }
+        JButton stopButton = new JButton("Stop");
 
-    private boolean existsOtherDialog() {
-        Frame ancestor = (Frame) JOptionUtils.centeringComp()
-                .getTopLevelAncestor();
-        Window[] ownedWindows = ancestor.getOwnedWindows();
+        stopButton.addActionListener(e -> {
+            stopLongRunningThread();
+            dialog.dispose();
+        });
 
-        for (Window window : ownedWindows) {
-            if (window instanceof Dialog
-                    && !(window == getStopDialog())
-                    && !(window == getOwner())) {
-                Dialog dialog = (Dialog) window;
-                if (dialog.isVisible()) {
-                    return true;
-                }
-            }
-        }
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.BLACK, Color.BLACK));
+        panel.add(stopButton);
 
-        return false;
-    }
+        dialog.getContentPane().add(panel);
 
-    /**
-     * True if the thread is canceled. Implements of the watch() method should
-     * check for this periodically and respond gracefully.
-     */
-    public boolean isCanceled() {
-        return false;
+        dialog.setLocationRelativeTo(frame);
+        dialog.setVisible(true);
     }
 }

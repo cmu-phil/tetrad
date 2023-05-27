@@ -26,13 +26,13 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
-import edu.cmu.tetradapp.util.IndTestType;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.AlgorithmRunner;
 import edu.cmu.tetradapp.util.GraphHistory;
+import edu.cmu.tetradapp.util.IndTestType;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
@@ -51,10 +51,9 @@ import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 
 /**
- * Abstract base class for a number of search editors. The advantage of
- * extending this class, in case you were wondering, is that it will handle
- * threading for you, provide a stop button for algorithm, and do logging. The
- * execute button used must be getExecuteButton(), or else logging won't work.
+ * Abstract base class for a number of search editors. The advantage of extending this class, in case you were
+ * wondering, is that it will handle threading for you, provide a stop button for algorithm, and do logging. The execute
+ * button used must be getExecuteButton(), or else logging won't work.
  *
  * @author josephramsey
  */
@@ -64,38 +63,31 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
      * The algorithm wrapper being viewed.
      */
     private final AlgorithmRunner algorithmRunner;
-
-    /**
-     * The workbench displaying the result workbench.
-     */
-    private GraphWorkbench workbench;
-
-
     /**
      * The button one clicks to executeButton the algorithm.
      */
     private final JButton executeButton = new JButton();
-
     /**
      * The label for the result graph workbench.
      */
     private final String resultLabel;
-
-    /**
-     * The scrollpange for the result workbench.
-     */
-    private JScrollPane workbenchScroll;
-
-    /**
-     * True if the warning message that previously defined knowledge is being
-     * used has already been shown and doesn't need to be shown again.
-     */
-    boolean knowledgeMessageShown;
-
     /**
      * History of graph edits.
      */
     private final GraphHistory graphHistory = new GraphHistory();
+    /**
+     * True if the warning message that previously defined knowledge is being used has already been shown and doesn't
+     * need to be shown again.
+     */
+    boolean knowledgeMessageShown;
+    /**
+     * The workbench displaying the result workbench.
+     */
+    private GraphWorkbench workbench;
+    /**
+     * The scrollpange for the result workbench.
+     */
+    private JScrollPane workbenchScroll;
 
     //============================CONSTRUCTOR===========================//
 
@@ -133,15 +125,9 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         return this.workbench;
     }
 
-
-    /**
-     * Not supported.
-     */
-    public void setGraph(Graph g) {
-        this.workbench.setGraph(g);
-        throw new UnsupportedOperationException("Cannot set the graph on a search editor.");
+    void setWorkbench(GraphWorkbench graphWorkbench) {
+        this.workbench = graphWorkbench;
     }
-
 
     /**
      * @return the graph.
@@ -153,13 +139,18 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         return new EdgeListGraph();
     }
 
+    /**
+     * Not supported.
+     */
+    public void setGraph(Graph g) {
+        this.workbench.setGraph(g);
+        throw new UnsupportedOperationException("Cannot set the graph on a search editor.");
+    }
 
     /**
-     * Returns a list of all the SessionNodeWrappers (TetradNodes) and
-     * SessionNodeEdges that are model components for the respective
-     * SessionNodes and SessionEdges selected in the workbench. Note that the
-     * workbench, not the SessionEditorNodes themselves, keeps track of the
-     * selection.
+     * Returns a list of all the SessionNodeWrappers (TetradNodes) and SessionNodeEdges that are model components for
+     * the respective SessionNodes and SessionEdges selected in the workbench. Note that the workbench, not the
+     * SessionEditorNodes themselves, keeps track of the selection.
      *
      * @return the set of selected model nodes.
      */
@@ -182,6 +173,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         return selectedModelComponents;
     }
 
+    //===========================PROTECTED METHODS==========================//
 
     /**
      * Not supported.
@@ -190,36 +182,31 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         throw new UnsupportedOperationException("Cannot paste into Search editor.");
     }
 
-    //===========================PROTECTED METHODS==========================//
-
     /**
-     * Constructs the toolbar panel. For the execute button, must use
-     * getExecuteButton() in order for logging to work.
+     * Constructs the toolbar panel. For the execute button, must use getExecuteButton() in order for logging to work.
      */
     protected abstract JPanel getToolbar();
 
     /**
-     * Adds any special menus needed for a particular search editor. These will
-     * be added to the right of the normal ones.
+     * Adds any special menus needed for a particular search editor. These will be added to the right of the normal
+     * ones.
      */
     protected abstract void addSpecialMenus(JMenuBar menuBar);
 
-
     /**
-     * Executes the algorithm. The execution takes place inside a thread, so one
-     * cannot count on a result graph having been found when the method
+     * Executes the algorithm. The execution takes place inside a thread, so one cannot count on a result graph having
+     * been found when the method
      */
     void execute() {
-        Window owner = (Window) getTopLevelAncestor();
-
-        WatchedProcess process = new WatchedProcess(owner) {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 try {
                     getExecuteButton().setEnabled(false);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                setErrorMessage(null);
+
+//                setErrorMessage(null);
 
                 if (!AbstractSearchEditor.this.knowledgeMessageShown) {
                     Parameters searchParams = getAlgorithmRunner().getParams();
@@ -260,7 +247,8 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                     if (messageString == null) {
                         messageString = message;
                     }
-                    setErrorMessage(messageString);
+
+//                    setErrorMessage(messageString);
 
                     TetradLogger.getInstance().error("************Algorithm stopped!");
 
@@ -282,25 +270,28 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
                 getExecuteButton().setEnabled(true);
                 firePropertyChange("modelChanged", null, null);
             }
-        };
+        }
+        ;
 
-        Thread watcher = new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(300);
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
 
-                    if (!process.isAlive()) {
-                        getExecuteButton().setEnabled(true);
-                        return;
-                    }
-                } catch (InterruptedException e) {
-                    getExecuteButton().setEnabled(true);
-                    return;
-                }
-            }
-        });
+//        Thread watcher = new Thread(() -> {
+//            while (true) {
+//                try {
+//                    Thread.sleep(300);
+//
+//                    if (!process.isAlive()) {
+//                        getExecuteButton().setEnabled(true);
+//                        return;
+//                    }
+//                } catch (InterruptedException e) {
+//                    getExecuteButton().setEnabled(true);
+//                    return;
+//                }
+//            }
+//        });
 
-        watcher.start();
+//        watcher.start();
     }
 
     void doPostExecutionSteps() {
@@ -309,16 +300,15 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
     protected abstract void doDefaultArrangement(Graph resultGraph);
 
-
     JButton getExecuteButton() {
         return this.executeButton;
     }
 
+    //===========================PRIVATE METHODS==========================//
+
     AlgorithmRunner getAlgorithmRunner() {
         return this.algorithmRunner;
     }
-
-    //===========================PRIVATE METHODS==========================//
 
     private Graph resultGraph() {
         Graph resultGraph = this.algorithmRunner.getGraph();
@@ -330,14 +320,6 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         return resultGraph;
     }
 
-    void setWorkbench(GraphWorkbench graphWorkbench) {
-        this.workbench = graphWorkbench;
-    }
-
-    void setWorkbenchScroll(JScrollPane workbenchScroll) {
-        this.workbenchScroll = workbenchScroll;
-    }
-
     /**
      * Sets up the editor, does the layout, and so on.
      */
@@ -347,7 +329,6 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         add(workbenchScroll(), BorderLayout.CENTER);
         add(menuBar(), BorderLayout.NORTH);
     }
-
 
     JScrollPane workbenchScroll() {
         Graph resultGraph = resultGraph();
@@ -384,17 +365,6 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         return this.workbenchScroll;
     }
 
-//     JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
-//        JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
-//
-//        copy.setAccelerator(
-//                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
-//        paste.setAccelerator(
-//                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
-//
-//        edit.add(copy);
-//        edit.add(paste);
-
     /**
      * Creates the menubar for the search editor.
      */
@@ -418,6 +388,16 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         return menuBar;
     }
 
+//     JMenuItem copy = new JMenuItem(new CopySubgraphAction(this));
+//        JMenuItem paste = new JMenuItem(new PasteSubgraphAction(this));
+//
+//        copy.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
+//        paste.setAccelerator(
+//                KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
+//
+//        edit.add(copy);
+//        edit.add(paste);
 
     String getResultLabel() {
         return this.resultLabel;
@@ -425,6 +405,10 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
 
     JScrollPane getWorkbenchScroll() {
         return this.workbenchScroll;
+    }
+
+    void setWorkbenchScroll(JScrollPane workbenchScroll) {
+        this.workbenchScroll = workbenchScroll;
     }
 
     Graph getLatestWorkbenchGraph() {
@@ -479,12 +463,12 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         return this.graphHistory;
     }
 
-    public void setTestType(IndTestType testType) {
-        getAlgorithmRunner().getParams().set("indTestType", testType);
-    }
-
     public IndTestType getTestType() {
         return (IndTestType) getAlgorithmRunner().getParams().get("indTestType", IndTestType.FISHER_Z);
+    }
+
+    public void setTestType(IndTestType testType) {
+        getAlgorithmRunner().getParams().set("indTestType", testType);
     }
 
     public DataModel getDataModel() {

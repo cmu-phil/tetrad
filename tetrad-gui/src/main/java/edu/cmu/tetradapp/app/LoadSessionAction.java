@@ -108,7 +108,7 @@ final class LoadSessionAction extends AbstractAction {
 
         // The watcher thread is causing a race condition with JFileChooser.showOpenDialog somehow. Placing that
         // code outside the thread.
-        new WatchedProcess(owner) {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 try {
                     FileInputStream in = new FileInputStream(file);
@@ -168,7 +168,10 @@ final class LoadSessionAction extends AbstractAction {
                     JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), "An error occurred attempting to load the session.");
                 }
             }
-        };
+        }
+        ;
+
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
     }
 
 

@@ -64,15 +64,15 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @author josephramsey
  */
 public class MarkovCheckEditor extends JPanel {
-    private Graph dag;
     private final MarkovCheckIndTestModel model;
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    private final IndependenceTest test;
+    private Graph dag;
     private AbstractTableModel tableModelIndep;
     private AbstractTableModel tableModelDep;
     private int sortDir;
     private int lastSortCol;
-    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private boolean parallelized = true;
-    private final IndependenceTest test;
     private double fractionDependentIndep = Double.NaN;
     private double fractionDependentDep = Double.NaN;
     private JLabel fractionDepLabelIndep;
@@ -527,37 +527,8 @@ public class MarkovCheckEditor extends JPanel {
         }
     }
 
-    static class Renderer extends DefaultTableCellRenderer {
-        private JTable table;
-        private boolean selected;
-
-        public Renderer() {
-        }
-
-        public void setValue(Object value) {
-            if (selected) {
-                setForeground(table.getSelectionForeground());
-                setBackground(table.getSelectionBackground());
-            } else {
-                this.setForeground(table.getForeground());
-                this.setBackground(table.getBackground());
-            }
-
-            this.setText(value.toString());
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            this.table = table;
-            selected = isSelected;
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
-    }
-
     private void generateResults(boolean indep) {
-        Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
-
-        new WatchedProcess(owner) {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
 
                 if (model.getVars().size() < 2) {
@@ -694,7 +665,9 @@ public class MarkovCheckEditor extends JPanel {
                     tableModelDep.fireTableDataChanged();
                 }
             }
-        };
+        }
+
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
     }
 
     private int getChunkSize(int n) {
@@ -757,6 +730,33 @@ public class MarkovCheckEditor extends JPanel {
         panel.setLayout(new BorderLayout());
         panel.add(vBox, BorderLayout.CENTER);
         return panel;
+    }
+
+    static class Renderer extends DefaultTableCellRenderer {
+        private JTable table;
+        private boolean selected;
+
+        public Renderer() {
+        }
+
+        public void setValue(Object value) {
+            if (selected) {
+                setForeground(table.getSelectionForeground());
+                setBackground(table.getSelectionBackground());
+            } else {
+                this.setForeground(table.getForeground());
+                this.setBackground(table.getBackground());
+            }
+
+            this.setText(value.toString());
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            this.table = table;
+            selected = isSelected;
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
     }
 }
 

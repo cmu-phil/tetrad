@@ -44,12 +44,10 @@ import java.text.NumberFormat;
 import java.util.List;
 
 /**
- * Allows the user to choose a variable in a Bayes net and edit the parameters
- * associated with that variable.  Parameters are of the form
- * P(Node=value1|Parent1=value2, Parent2=value2,...); values for these
- * parameters are probabilities ranging from 0.0 to 1.0. For a given combination
- * of parent values for selectedNode N, the probabilities for the values of N
- * conditional on that combination of parent values must sum to 1.0
+ * Allows the user to choose a variable in a Bayes net and edit the parameters associated with that variable. Parameters
+ * are of the form P(Node=value1|Parent1=value2, Parent2=value2,...); values for these parameters are probabilities
+ * ranging from 0.0 to 1.0. For a given combination of parent values for selectedNode N, the probabilities for the
+ * values of N conditional on that combination of parent values must sum to 1.0
  *
  * @author josephramsey
  */
@@ -57,17 +55,15 @@ public final class UpdatedBayesImWizard extends JPanel {
     private final Evidence evidence;
     private final GraphWorkbench workbench;
     private final UpdaterWrapper updaterWrapper;
-
+    private final JComboBox varNamesComboBox;
+    private final JComboBox varNamesComboBox2;
+    private final JPanel marginalsPanel;
     /**
      * Last node selected.
      */
     private Node selectedNode;
-
-    private final JComboBox varNamesComboBox;
-    private final JComboBox varNamesComboBox2;
     private UpdaterEditingTable editingTable;
     private JPanel tablePanel;
-    private final JPanel marginalsPanel;
 
     public UpdatedBayesImWizard(UpdaterWrapper updaterWrapper,
                                 GraphWorkbench workbench, int tab, Node selectedNode) {
@@ -425,21 +421,16 @@ public final class UpdatedBayesImWizard extends JPanel {
     }
 
     /**
-     * Sets the getModel display to reflect the stored values of the getModel
-     * selectedNode.
+     * Sets the getModel display to reflect the stored values of the getModel selectedNode.
      */
     private void setCurrentNode(Node node) {
-        Window owner = (Window) getTopLevelAncestor();
-
-        if (owner == null) {
-            setCurrentNodeSub(node);
-        } else {
-            new WatchedProcess(owner) {
-                public void watch() {
-                    setCurrentNodeSub(node);
-                }
-            };
+        class MyWatchedProcess extends WatchedProcess {
+            public void watch() {
+                setCurrentNodeSub(node);
+            }
         }
+
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
     }
 
     private void setCurrentNodeSub(Node node) {
@@ -629,15 +620,12 @@ final class UpdaterEditingTable extends JTable {
 }
 
 /**
- * The abstract table model containing the parameters to be edited for a given
- * node.  Parameters for a given node N with parents P1, P2, ..., are of the
- * form P(N=v0 | P1=v1, P2=v2, ..., Pn = vn).  The first n columns of this table
- * for each row contains a combination of values for (P1, P2, ... Pn), such as
- * (v0, v1, ..., vn).  If there are m values for N, the next m columns contain
- * numbers in the range [0.0, 1.0] representing conditional probabilities that N
- * takes on that corresponding value given this combination of parent values.
- * These conditional probabilities may be edited.  As they are being edited for
- * a given row, the only condition is that they be greater than or equal to 0.0.
+ * The abstract table model containing the parameters to be edited for a given node.  Parameters for a given node N with
+ * parents P1, P2, ..., are of the form P(N=v0 | P1=v1, P2=v2, ..., Pn = vn).  The first n columns of this table for
+ * each row contains a combination of values for (P1, P2, ... Pn), such as (v0, v1, ..., vn).  If there are m values for
+ * N, the next m columns contain numbers in the range [0.0, 1.0] representing conditional probabilities that N takes on
+ * that corresponding value given this combination of parent values. These conditional probabilities may be edited.  As
+ * they are being edited for a given row, the only condition is that they be greater than or equal to 0.0.
  *
  * @author josephramsey
  */
@@ -649,14 +637,12 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
     private final BayesIm bayesIm;
 
     /**
-     * This table can only display conditional probabilities for one node at at
-     * time. This is the node.
+     * This table can only display conditional probabilities for one node at at time. This is the node.
      */
     private final int nodeIndex;
 
     /**
-     * The wizard that takes the user through the process of editing the
-     * probability tables.
+     * The wizard that takes the user through the process of editing the probability tables.
      */
     private final UpdatedBayesImWizard wizard;
 
@@ -664,8 +650,7 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
     private int failedCol = -1;
 
     /**
-     * Constructs a new editing table model for a given a node in a given
-     * bayesIm.
+     * Constructs a new editing table model for a given a node in a given bayesIm.
      */
     public UpdaterEditingTableModel(Node node, BayesIm bayesIm,
                                     UpdatedBayesImWizard wizard) {
@@ -717,8 +702,8 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
     }
 
     /**
-     * @return the total number of columns in the table, which is equal to the
-     * number of parents for the node plus the number of values for the node.
+     * @return the total number of columns in the table, which is equal to the number of parents for the node plus the
+     * number of values for the node.
      */
     public int getColumnCount() {
         int numParents = getBayesIm().getNumParents(getNodeIndex());
@@ -727,12 +712,10 @@ final class UpdaterEditingTableModel extends AbstractTableModel {
     }
 
     /**
-     * @return the value of the table at the given row and column. The type
-     * of value returned depends on the column.  If there are n parent values
-     * and m node values, then the first n columns have String values
-     * representing the values of the parent nodes for a particular combination
-     * (row) and the next m columns have Double values representing conditional
-     * probabilities of node values given parent value combinations.
+     * @return the value of the table at the given row and column. The type of value returned depends on the column.  If
+     * there are n parent values and m node values, then the first n columns have String values representing the values
+     * of the parent nodes for a particular combination (row) and the next m columns have Double values representing
+     * conditional probabilities of node values given parent value combinations.
      */
     public Object getValueAt(int tableRow, int tableCol) {
         int[] parentVals =

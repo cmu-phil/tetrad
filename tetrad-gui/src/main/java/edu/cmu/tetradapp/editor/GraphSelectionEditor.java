@@ -132,9 +132,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         JButton executeButton = new JButton("Graph It!");
 
         executeButton.addActionListener(e -> {
-            Window owner = (Window) getTopLevelAncestor();
-
-            new WatchedProcess(owner) {
+            class MyWatchedProcess extends WatchedProcess {
                 public void watch() {
                     GraphWorkbench workbench = getWorkbench();
                     List<DisplayNode> displayNodes = workbench.getSelectedNodes();
@@ -150,6 +148,8 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                     tabbedPaneGraphs(wrapper);
                 }
             };
+
+            SwingUtilities.invokeLater(MyWatchedProcess::new);
         });
 
         workbenchScrollsPanel.validate();

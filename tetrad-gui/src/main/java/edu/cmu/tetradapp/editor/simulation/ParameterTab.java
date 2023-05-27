@@ -300,7 +300,7 @@ public class ParameterTab extends JPanel {
             return;
         }
 
-        new WatchedProcess((Window) getTopLevelAncestor()) {
+        class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
                 try {
@@ -325,7 +325,9 @@ public class ParameterTab extends JPanel {
                     }
                 }
             }
-        };
+        }
+
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
     }
 
     private Box createLabeledComponent(String text, Component comp) {
