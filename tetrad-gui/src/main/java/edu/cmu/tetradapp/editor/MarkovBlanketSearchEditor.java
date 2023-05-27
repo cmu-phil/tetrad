@@ -33,7 +33,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetradapp.model.MarkovBlanketSearchRunner;
 import edu.cmu.tetradapp.util.DoubleTextField;
 import edu.cmu.tetradapp.util.IndTestType;
-import edu.cmu.tetradapp.util.WatchedProcess2;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -129,7 +129,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
      * been found when the method
      */
     private void execute() {
-        class MyWatchedProcess extends WatchedProcess2 {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 getExecuteButton().setEnabled(false);
 

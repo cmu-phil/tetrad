@@ -28,7 +28,7 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.ImageUtils;
 import edu.cmu.tetradapp.util.IntTextField;
-import edu.cmu.tetradapp.util.WatchedProcess2;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -132,7 +132,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
         JButton executeButton = new JButton("Graph It!");
 
         executeButton.addActionListener(e -> {
-            class MyWatchedProcess extends WatchedProcess2 {
+            class MyWatchedProcess extends WatchedProcess {
                 public void watch() {
                     GraphWorkbench workbench = getWorkbench();
                     List<DisplayNode> displayNodes = workbench.getSelectedNodes();

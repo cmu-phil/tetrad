@@ -32,7 +32,7 @@ import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.AlgorithmModel;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.FinalizingEditor;
-import edu.cmu.tetradapp.util.WatchedProcess2;
+import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import java.awt.*;
@@ -173,7 +173,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
     }
 
     private void doSearch() {
-        class MyWatchedProcess extends WatchedProcess2 {
+        class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
                 AlgorithmModel algoModel = GeneralAlgorithmEditor.this.algorithmCard.getSelectedAlgorithm();

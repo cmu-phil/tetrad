@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.app;
 
 import edu.cmu.tetrad.session.SessionNode;
-import edu.cmu.tetradapp.util.WatchedProcess2;
+import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import java.awt.*;
@@ -105,7 +105,7 @@ class RunSimulationAction extends AbstractAction {
 
 
     private void executeSessionNode(SessionNode sessionNode) {
-        class MyWatchedProcess extends WatchedProcess2 {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 SessionEditorWorkbench workbench = getWorkbench();
 

@@ -24,7 +24,7 @@ import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetradapp.model.*;
-import edu.cmu.tetradapp.util.WatchedProcess2;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -334,7 +334,7 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
     }
 
     private void resetSingleResultPanel() {
-        class MyWatchedProcess extends WatchedProcess2 {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 resetSingleResultPanelSub();
             }

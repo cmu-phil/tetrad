@@ -30,7 +30,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.UpdaterWrapper;
 import edu.cmu.tetradapp.util.SortingComboBox;
-import edu.cmu.tetradapp.util.WatchedProcess2;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 import org.apache.commons.math3.util.FastMath;
@@ -443,7 +443,7 @@ public class UpdatedBayesImWizardObs extends JPanel {
      * Sets the getModel display to reflect the stored values of the getModel selectedNode.
      */
     private void setCurrentNode(Node node) {
-        class MyWatchedProcess extends WatchedProcess2 {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 setCurrentNodeSub(node);
             }

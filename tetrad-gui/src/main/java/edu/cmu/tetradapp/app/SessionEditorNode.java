@@ -31,7 +31,7 @@ import edu.cmu.tetradapp.model.SessionNodeWrapper;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.UnlistedSessionModel;
 import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.WatchedProcess2;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 
 import javax.swing.*;
@@ -246,7 +246,7 @@ public final class SessionEditorNode extends DisplayNode {
     public void doDoubleClickAction(Graph sessionWrapper) {
         this.sessionWrapper = (SessionWrapper) sessionWrapper;
 
-        class MyWatchedProcess extends WatchedProcess2 {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 TetradLogger.getInstance().setTetradLoggerConfig(getSessionNode().getLoggerConfig());
                 launchEditorVisit();
@@ -803,7 +803,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     private void executeSessionNode(SessionNode sessionNode) {
-        class MyWatchedProcess extends WatchedProcess2 {
+        class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
                 final Class c = SessionEditorWorkbench.class;
@@ -823,7 +823,7 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     private void createDescendantModels() {
-        class MyWatchedProcess extends WatchedProcess2 {
+        class MyWatchedProcess extends WatchedProcess {
             @Override
             public void watch() {
                 final Class clazz = SessionEditorWorkbench.class;

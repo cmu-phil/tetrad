@@ -29,7 +29,7 @@ import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.RocCalculator;
 import edu.cmu.tetradapp.model.BayesUpdaterClassifierWrapper;
-import edu.cmu.tetradapp.util.WatchedProcess2;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -145,7 +145,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
 
         classifyButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                class MyWatchedProcess extends WatchedProcess2 {
+                class MyWatchedProcess extends WatchedProcess {
                     public void watch() {
                         doClassify();
                         showClassification();

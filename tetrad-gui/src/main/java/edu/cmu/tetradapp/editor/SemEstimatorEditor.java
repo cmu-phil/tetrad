@@ -149,7 +149,7 @@ public final class SemEstimatorEditor extends JPanel {
         JButton estimateButton = new JButton("Estimate Again");
 
         estimateButton.addActionListener((e) -> {
-            class MyWatchedProcess extends WatchedProcess2 {
+            class MyWatchedProcess extends WatchedProcess {
                 @Override
                 public void watch() {
                     reestimate();

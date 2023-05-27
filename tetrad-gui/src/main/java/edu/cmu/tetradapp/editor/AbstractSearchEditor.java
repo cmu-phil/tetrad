@@ -33,7 +33,7 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.AlgorithmRunner;
 import edu.cmu.tetradapp.util.GraphHistory;
 import edu.cmu.tetradapp.util.IndTestType;
-import edu.cmu.tetradapp.util.WatchedProcess2;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.DisplayEdge;
 import edu.cmu.tetradapp.workbench.DisplayNode;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -198,7 +198,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
      * been found when the method
      */
     void execute() {
-        class MyWatchedProcess extends WatchedProcess2 {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 try {
                     getExecuteButton().setEnabled(false);

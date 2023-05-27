@@ -34,7 +34,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetradapp.model.IndTestProducer;
 import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
 import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.WatchedProcess2;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
@@ -528,7 +528,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private void generateResults(boolean indep) {
-        class MyWatchedProcess extends WatchedProcess2 {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
 
                 if (model.getVars().size() < 2) {

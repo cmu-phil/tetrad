@@ -28,7 +28,7 @@ import edu.cmu.tetrad.util.Version;
 import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.WatchedProcess2;
+import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import java.awt.*;
@@ -108,7 +108,7 @@ final class LoadSessionAction extends AbstractAction {
 
         // The watcher thread is causing a race condition with JFileChooser.showOpenDialog somehow. Placing that
         // code outside the thread.
-        class MyWatchedProcess extends WatchedProcess2 {
+        class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 try {
                     FileInputStream in = new FileInputStream(file);
