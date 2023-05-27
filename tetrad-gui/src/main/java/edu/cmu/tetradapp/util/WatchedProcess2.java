@@ -4,6 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
+ * <p>Runs a long process, watching it with a thread and popping up a Stop button that the user can click to stop the
+ * process.</p>
+ *
  * <p>Replacement for the old WatchedProcess, which called the deprecated Thread.stop() method. This method is
  * deprecated because it can leave the program in an inconsistent state. This class uses Thread.interrupt() instead,
  * which is the recommended way to stop a thread.</p>
