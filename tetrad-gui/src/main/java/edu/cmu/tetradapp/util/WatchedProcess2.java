@@ -4,9 +4,23 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Replacement for the old WatchedProcess, which called the deprecated Thread.stop() method. This method is
+ * <p>Replacement for the old WatchedProcess, which called the deprecated Thread.stop() method. This method is
  * deprecated because it can leave the program in an inconsistent state. This class uses Thread.interrupt() instead,
- * which is the recommended way to stop a thread.
+ * which is the recommended way to stop a thread.</p>
+ *
+ * <p>Example usage:</p>
+ *
+ * <pre>
+ * class MyWatchedProcess extends WatchedProcess2 {
+ *
+ *     &#64;Override
+ *     public void watch() throws InterruptedException {
+ *         // Long process...
+ *     }
+ * };
+ *
+ * SwingUtilities.invokeLater(MyWatchedProcess::new);
+ *  </pre>
  *
  * @author josephramsey
  * @author ChatGPT
