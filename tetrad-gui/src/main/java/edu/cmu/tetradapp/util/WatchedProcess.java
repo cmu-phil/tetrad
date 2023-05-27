@@ -62,17 +62,17 @@ public abstract class WatchedProcess {
                 watch();
             } catch (InterruptedException e) {
                 // Thread was interrupted while sleeping, so exit the loop and terminate
-                System.out.println("Thread was interrupted while sleeping. Stopping...");
+                System.out.println("Thread was interrupted while watching. Stopping...");
                 return;
             }
+
+            // Process completed successfully
+            System.out.println("Process completed successfully.");
 
             if (dialog != null) {
                 dialog.dispose();
                 dialog = null;
             }
-
-            // Process completed successfully
-            System.out.println("Process completed successfully.");
         });
 
         longRunningThread.start();
