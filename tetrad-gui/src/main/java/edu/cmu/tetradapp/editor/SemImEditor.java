@@ -296,6 +296,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             file.add(new SaveComponentImage(this.semImGraphicalEditor.getWorkbench(),
                     "Save Graph Image..."));
             file.add(this.getCopyMatrixMenuItem());
+            file.add(this.getCoefMatrixMenuItem());
+            file.add(this.getCopyErrCovarMenuItem());
             JMenuItem saveSemAsXml = new JMenuItem("Save SEM as XML");
             file.add(saveSemAsXml);
 
@@ -304,10 +306,10 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
                     File outfile = EditorUtils.getSaveFile("semIm", "xml", getComp(),
                             false, "Save SEM IM as XML...");
 
-                    SemIm bayesIm = (SemIm) SemImEditor.this.oneEditorPanel.getSemIm();
+                    SemIm semIm = (SemIm) SemImEditor.this.oneEditorPanel.getSemIm();
                     FileOutputStream out = new FileOutputStream(outfile);
 
-                    Element element = SemXmlRenderer.getElement(bayesIm);
+                    Element element = SemXmlRenderer.getElement(semIm);
                     Document document = new Document(element);
                     Serializer serializer = new Serializer(out);
                     serializer.setLineSeparator("\n");
@@ -509,6 +511,51 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             });
             return item;
         }
+
+        private JMenuItem getCoefMatrixMenuItem() {
+            JMenuItem item = new JMenuItem("Copy Coefficient Matrix");
+
+            item.addActionListener((e) -> {
+                if (oneEditorPanel == null) {
+                    throw new IllegalStateException("Not estimated");
+                }
+
+                SemIm semIm = (SemIm) SemImEditor.this.oneEditorPanel.getSemIm();
+
+                if (semIm == null) throw new IllegalStateException("SemIm is null");
+
+                Matrix edgeCoef = semIm.getEdgeCoef();
+
+                Clipboard board = Toolkit.getDefaultToolkit().getSystemClipboard();
+                StringSelection selection = new StringSelection(edgeCoef.toString());
+                board.setContents(selection, selection);
+            });
+
+            return item;
+        }
+
+        private JMenuItem getCopyErrCovarMenuItem() {
+            JMenuItem item = new JMenuItem("Copy Error Covariance Matrix");
+
+            item.addActionListener((e) -> {
+                if (oneEditorPanel == null) {
+                    throw new IllegalStateException("Not estimated");
+                }
+
+                SemIm semIm = (SemIm) SemImEditor.this.oneEditorPanel.getSemIm();
+
+                if (semIm == null) throw new IllegalStateException("SemIm is null");
+
+                Matrix edgeCoef = semIm.getErrCovar();
+
+                Clipboard board = Toolkit.getDefaultToolkit().getSystemClipboard();
+                StringSelection selection = new StringSelection(edgeCoef.toString());
+                board.setContents(selection, selection);
+            });
+
+            return item;
+        }
+
 
         private ISemIm getSemIm() {
             return this.semImWrapper.getSemIm();
@@ -1099,7 +1146,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         private void setEdgeValue(Edge edge, String text) {
             try {
                 Parameter parameter = getEdgeParameter(edge);
-                double d = new Double(text);
+                double d = Double.parseDouble(text);
 
                 if (this.editor.isEditCovariancesAsCorrelations()
                         && parameter.getType() == ParamType.COVAR) {
@@ -1145,7 +1192,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         private void setNodeValue(Node node, String text) {
             try {
                 Parameter parameter = getNodeParameter(node);
-                double d = new Double(text);
+                double d = Double.parseDouble(text);
 
                 if (parameter.getType() == ParamType.VAR && d >= 0) {
                     semIm().setParamValue(node, node, d * d);

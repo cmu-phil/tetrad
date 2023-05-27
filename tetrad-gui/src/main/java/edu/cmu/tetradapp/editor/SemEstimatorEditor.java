@@ -449,6 +449,8 @@ public final class SemEstimatorEditor extends JPanel {
             JMenuItem saveSemAsXml = new JMenuItem("Save SEM as XML");
             file.add(saveSemAsXml);
             file.add(this.getCopyMatrixMenuItem());
+            file.add(this.getCopyCoefMatrixMenuItem());
+            file.add(this.getCopyErrCovarMenuItem());
             file.addSeparator();
             file.add(new SaveComponentImage(this.semImGraphicalEditor.getWorkbench(),
                     "Save Graph Image..."));
@@ -664,6 +666,50 @@ public final class SemEstimatorEditor extends JPanel {
                 StringSelection selection = new StringSelection(s);
                 board.setContents(selection, selection);
             });
+            return item;
+        }
+
+        private JMenuItem getCopyCoefMatrixMenuItem() {
+            JMenuItem item = new JMenuItem("Copy Coefficient Matrix");
+
+            item.addActionListener((e) -> {
+                if (oneEditorPanel == null) {
+                    throw new IllegalStateException("Not estimated");
+                }
+
+                SemIm semIm = (SemIm) SemEstimatorEditor.this.oneEditorPanel.getSemIm();
+
+                if (semIm == null) throw new IllegalStateException("SemIm is null");
+
+                Matrix edgeCoef = semIm.getEdgeCoef();
+
+                Clipboard board = Toolkit.getDefaultToolkit().getSystemClipboard();
+                StringSelection selection = new StringSelection(edgeCoef.toString());
+                board.setContents(selection, selection);
+            });
+
+            return item;
+        }
+
+        private JMenuItem getCopyErrCovarMenuItem() {
+            JMenuItem item = new JMenuItem("Copy Error Covariance Matrix");
+
+            item.addActionListener((e) -> {
+                if (oneEditorPanel == null) {
+                    throw new IllegalStateException("Not estimated");
+                }
+
+                SemIm semIm = (SemIm) SemEstimatorEditor.this.oneEditorPanel.getSemIm();
+
+                if (semIm == null) throw new IllegalStateException("SemIm is null");
+
+                Matrix edgeCoef = semIm.getErrCovar();
+
+                Clipboard board = Toolkit.getDefaultToolkit().getSystemClipboard();
+                StringSelection selection = new StringSelection(edgeCoef.toString());
+                board.setContents(selection, selection);
+            });
+
             return item;
         }
 
