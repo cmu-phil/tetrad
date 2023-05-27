@@ -528,8 +528,6 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private void generateResults(boolean indep) {
-        Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
-
         class MyWatchedProcess extends WatchedProcess2 {
             public void watch() {
 
@@ -668,7 +666,6 @@ public class MarkovCheckEditor extends JPanel {
                 }
             }
         }
-        ;
 
         SwingUtilities.invokeLater(MyWatchedProcess::new);
     }

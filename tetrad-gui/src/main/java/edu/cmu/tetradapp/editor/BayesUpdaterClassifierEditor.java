@@ -145,8 +145,6 @@ public class BayesUpdaterClassifierEditor extends JPanel {
 
         classifyButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Window owner = (Window) getTopLevelAncestor();
-
                 class MyWatchedProcess extends WatchedProcess2 {
                     public void watch() {
                         doClassify();

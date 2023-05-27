@@ -326,7 +326,6 @@ public class ParameterTab extends JPanel {
                 }
             }
         }
-        ;
 
         SwingUtilities.invokeLater(MyWatchedProcess::new);
     }

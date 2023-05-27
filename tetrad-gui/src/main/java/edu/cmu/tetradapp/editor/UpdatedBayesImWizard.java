@@ -44,10 +44,10 @@ import java.text.NumberFormat;
 import java.util.List;
 
 /**
- * Allows the user to choose a variable in a Bayes net and edit the parameters associated with that variable.
- * Parameters are of the form P(Node=value1|Parent1=value2, Parent2=value2,...); values for these parameters are
- * probabilities ranging from 0.0 to 1.0. For a given combination of parent values for selectedNode N, the probabilities
- * for the values of N conditional on that combination of parent values must sum to 1.0
+ * Allows the user to choose a variable in a Bayes net and edit the parameters associated with that variable. Parameters
+ * are of the form P(Node=value1|Parent1=value2, Parent2=value2,...); values for these parameters are probabilities
+ * ranging from 0.0 to 1.0. For a given combination of parent values for selectedNode N, the probabilities for the
+ * values of N conditional on that combination of parent values must sum to 1.0
  *
  * @author josephramsey
  */
@@ -424,20 +424,13 @@ public final class UpdatedBayesImWizard extends JPanel {
      * Sets the getModel display to reflect the stored values of the getModel selectedNode.
      */
     private void setCurrentNode(Node node) {
-        Window owner = (Window) getTopLevelAncestor();
-
-        if (owner == null) {
-            setCurrentNodeSub(node);
-        } else {
-            class MyWatchedProcess extends WatchedProcess2 {
-                public void watch() {
-                    setCurrentNodeSub(node);
-                }
+        class MyWatchedProcess extends WatchedProcess2 {
+            public void watch() {
+                setCurrentNodeSub(node);
             }
-            ;
-
-            SwingUtilities.invokeLater(MyWatchedProcess::new);
         }
+
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
     }
 
     private void setCurrentNodeSub(Node node) {

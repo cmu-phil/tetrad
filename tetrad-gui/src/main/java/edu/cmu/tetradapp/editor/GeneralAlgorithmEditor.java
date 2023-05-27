@@ -197,17 +197,8 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
                 }
             }
         }
-        ;
-
-//        class MyWatchedProcess extends WatchedProcess2 {
-//            @Override
-//            public void watch() throws InterruptedException {
-//                Thread.sleep(1000);
-//            }
-//        };
 
         SwingUtilities.invokeLater(MyWatchedProcess::new);
-
     }
 
     @Override

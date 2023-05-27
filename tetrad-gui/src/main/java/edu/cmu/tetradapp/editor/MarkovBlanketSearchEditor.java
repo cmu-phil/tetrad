@@ -129,12 +129,9 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
      * been found when the method
      */
     private void execute() {
-        Window owner = (Window) getTopLevelAncestor();
-
         class MyWatchedProcess extends WatchedProcess2 {
             public void watch() {
                 getExecuteButton().setEnabled(false);
-//                setErrorMessage(null);
 
                 if (!MarkovBlanketSearchEditor.this.knowledgeMessageShown) {
                     Knowledge knowledge = (Knowledge) getAlgorithmRunner().getParams().get("knowledge", new Knowledge());
@@ -160,17 +157,6 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
                     TetradLogger.getInstance().error(message);
 
-                    String messageString = e.getMessage();
-
-                    if (e.getCause() != null) {
-                        messageString = e.getCause().getMessage();
-                    }
-
-                    if (messageString == null) {
-                        messageString = message;
-                    }
-//                    setErrorMessage(messageString);
-
                     getExecuteButton().setEnabled(true);
                     throw new RuntimeException(e);
                 }
@@ -184,27 +170,8 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
                 getExecuteButton().setEnabled(true);
             }
         }
-        ;
 
         SwingUtilities.invokeLater(MyWatchedProcess::new);
-
-//        Thread watcher = new Thread(() -> {
-//            while (true) {
-//                try {
-//                    Thread.sleep(300);
-//
-////                    if (!process.isAlive()) {
-////                        getExecuteButton().setEnabled(true);
-////                        return;
-////                    }
-//                } catch (InterruptedException e) {
-//                    getExecuteButton().setEnabled(true);
-//                    return;
-//                }
-//            }
-//        });
-//
-//        watcher.start();
     }
 
     private void setLabel() {

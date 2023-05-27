@@ -198,8 +198,6 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
      * been found when the method
      */
     void execute() {
-        Window owner = (Window) getTopLevelAncestor();
-
         class MyWatchedProcess extends WatchedProcess2 {
             public void watch() {
                 try {

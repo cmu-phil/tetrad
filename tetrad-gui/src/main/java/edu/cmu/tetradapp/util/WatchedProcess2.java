@@ -23,7 +23,7 @@ import java.awt.*;
  * };
  *
  * SwingUtilities.invokeLater(MyWatchedProcess::new);
- *  </pre>
+ * </pre>
  *
  * @author josephramsey
  * @author ChatGPT

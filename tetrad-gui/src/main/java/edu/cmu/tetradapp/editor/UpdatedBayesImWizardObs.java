@@ -443,20 +443,13 @@ public class UpdatedBayesImWizardObs extends JPanel {
      * Sets the getModel display to reflect the stored values of the getModel selectedNode.
      */
     private void setCurrentNode(Node node) {
-        Window owner = (Window) getTopLevelAncestor();
-
-        if (owner == null) {
-            setCurrentNodeSub(node);
-        } else {
-            class MyWatchedProcess extends WatchedProcess2 {
-                public void watch() {
-                    setCurrentNodeSub(node);
-                }
+        class MyWatchedProcess extends WatchedProcess2 {
+            public void watch() {
+                setCurrentNodeSub(node);
             }
-            ;
-
-            SwingUtilities.invokeLater(MyWatchedProcess::new);
         }
+
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
     }
 
     private void setCurrentNodeSub(Node node) {

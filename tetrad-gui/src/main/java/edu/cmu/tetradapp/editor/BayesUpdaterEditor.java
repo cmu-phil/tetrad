@@ -334,20 +334,13 @@ public class BayesUpdaterEditor extends JPanel implements DelegatesEditing {
     }
 
     private void resetSingleResultPanel() {
-        Window owner = (Window) getTopLevelAncestor();
-
-        if (owner == null) {
-            resetSingleResultPanelSub();
-        } else {
-            class MyWatchedProcess extends WatchedProcess2 {
-                public void watch() {
-                    resetSingleResultPanelSub();
-                }
+        class MyWatchedProcess extends WatchedProcess2 {
+            public void watch() {
+                resetSingleResultPanelSub();
             }
-            ;
-
-            SwingUtilities.invokeLater(MyWatchedProcess::new);
         }
+
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
     }
 
     private void resetSingleResultPanelSub() {

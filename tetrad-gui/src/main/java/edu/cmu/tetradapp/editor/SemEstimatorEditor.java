@@ -149,8 +149,6 @@ public final class SemEstimatorEditor extends JPanel {
         JButton estimateButton = new JButton("Estimate Again");
 
         estimateButton.addActionListener((e) -> {
-            Window owner = (Window) getTopLevelAncestor();
-
             class MyWatchedProcess extends WatchedProcess2 {
                 @Override
                 public void watch() {

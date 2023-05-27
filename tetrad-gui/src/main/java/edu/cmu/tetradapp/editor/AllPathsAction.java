@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.WatchedProcess2;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
@@ -81,12 +80,8 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
         DesktopController.getInstance().addEditorWindow(window, JLayeredPane.PALETTE_LAYER);
         window.setVisible(true);
 
-        Window owner = (Window) JOptionUtils.centeringComp().getTopLevelAncestor();
-
         class MyWatchedProcess extends WatchedProcess2 {
             public void watch() {
-//                if (isCanceled()) return;
-
                 for (int i = 0; i < graph.getNodes().size(); i++) {
                     for (int j = 0; j < graph.getNodes().size(); j++) {
 

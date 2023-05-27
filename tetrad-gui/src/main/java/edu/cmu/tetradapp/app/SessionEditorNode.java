@@ -245,7 +245,6 @@ public final class SessionEditorNode extends DisplayNode {
     @Override
     public void doDoubleClickAction(Graph sessionWrapper) {
         this.sessionWrapper = (SessionWrapper) sessionWrapper;
-        Window owner = (Window) getTopLevelAncestor();
 
         class MyWatchedProcess extends WatchedProcess2 {
             public void watch() {
@@ -804,8 +803,6 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     private void executeSessionNode(SessionNode sessionNode) {
-        Window owner = (Window) getTopLevelAncestor();
-
         class MyWatchedProcess extends WatchedProcess2 {
             @Override
             public void watch() {
@@ -826,8 +823,6 @@ public final class SessionEditorNode extends DisplayNode {
     }
 
     private void createDescendantModels() {
-        Window owner = (Window) getTopLevelAncestor();
-
         class MyWatchedProcess extends WatchedProcess2 {
             @Override
             public void watch() {

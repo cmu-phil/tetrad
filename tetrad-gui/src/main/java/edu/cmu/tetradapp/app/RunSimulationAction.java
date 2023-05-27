@@ -105,8 +105,6 @@ class RunSimulationAction extends AbstractAction {
 
 
     private void executeSessionNode(SessionNode sessionNode) {
-        Window owner = (Window) this.sessionEditorNode.getTopLevelAncestor();
-
         class MyWatchedProcess extends WatchedProcess2 {
             public void watch() {
                 SessionEditorWorkbench workbench = getWorkbench();
