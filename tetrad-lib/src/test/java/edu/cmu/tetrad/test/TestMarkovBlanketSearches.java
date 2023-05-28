@@ -30,10 +30,7 @@ import edu.cmu.tetrad.search.test.IndTestDSep;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -49,9 +46,9 @@ public class TestMarkovBlanketSearches {
         IndTestDSep test = new IndTestDSep(graph);
 
         IMbSearch search = new GrowShrink(test);
-        List<Node> blanket = search.findMb(test.getVariable("T"));
+        Set<Node> blanket = search.findMb(test.getVariable("T"));
 
-        List<Node> b = new ArrayList<>();
+        Set<Node> b = new HashSet<>();
         b.add(graph.getNode("X"));
         b.add(graph.getNode("W"));
 
@@ -69,7 +66,7 @@ public class TestMarkovBlanketSearches {
 
         IndTestDSep test = new IndTestDSep(graph);
         IMbSearch mbSearch = new GrowShrink(test);
-        List<Node> blanket = mbSearch.findMb(test.getVariable("T"));
+        Set<Node> blanket = mbSearch.findMb(test.getVariable("T"));
 
         List<Node> mbd = GraphUtils.markovBlanketDag(graph.getNode("T"), graph).getNodes();
         mbd.remove(graph.getNode("T"));
@@ -98,14 +95,14 @@ public class TestMarkovBlanketSearches {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
         for (Node node : nodes) {
-            List<Node> resultNodes = search.findMb(node);
+            Set<Node> resultNodes = search.findMb(node);
 
             Graph trueMb = GraphUtils.markovBlanketDag(node, dag);
-            List<Node> trueNodes = trueMb.getNodes();
+            Set<Node> trueNodes = new HashSet<>(trueMb.getNodes());
             trueNodes.remove(node);
 
-            trueNodes.sort(Comparator.comparing(Node::getName));
-            resultNodes.sort(Comparator.comparing(Node::getName));
+//            trueNodes.sort(Comparator.comparing(Node::getName));
+//            resultNodes.sort(Comparator.comparing(Node::getName));
 
 //            assertEquals(trueNodes, resultNodes);
         }

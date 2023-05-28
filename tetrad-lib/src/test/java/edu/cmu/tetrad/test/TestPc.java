@@ -166,6 +166,7 @@ public class TestPc {
         // Set up search.
         IndependenceTest independence = new IndTestDSep(graph);
         Pc pc = new Pc(independence);
+        pc.setVerbose(true);
 
         // Run search
 //        Graph resultGraph = pc.search();
@@ -174,7 +175,8 @@ public class TestPc {
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert(outputGraph);
 
-        // PrintUtil out problem and graphs.
+        System.out.println("resultGraph = " + resultGraph);
+        System.out.println("trueGraph = " + trueGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 

@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -32,10 +33,7 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.pitt.dbmi.algo.bayesian.constraint.inference.BCInference;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Uses BCInference by Cooper and Bui to calculate probabilistic conditional independence judgments.
@@ -116,7 +114,10 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
     }
 
     @Override
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+
         Node[] nodes = new Node[z.size()];
         for (int i = 0; i < z.size(); i++) nodes[i] = z.get(i);
         return checkIndependence(x, y, nodes);
@@ -132,7 +133,7 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, Arrays.asList(z), p));
+                        LogUtilsSearch.independenceFactMsg(x, y, GraphUtils.asSet(z), p));
             }
         }
 
@@ -166,7 +167,7 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(Set<Node> z, Node y) {
         throw new UnsupportedOperationException();
     }
 

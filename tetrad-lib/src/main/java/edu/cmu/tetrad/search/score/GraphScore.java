@@ -109,7 +109,7 @@ public class GraphScore implements Score {
         Set<Node> mb = new HashSet<>();
 
         for (Node z0 : prefix) {
-            List<Node> cond = new ArrayList<>(prefix);
+            Set<Node> cond = new HashSet<>(prefix);
             cond.remove(z0);
 
             if (dag.paths().isDConnectedTo(n, z0, cond)) {
@@ -228,7 +228,7 @@ public class GraphScore implements Score {
     private double locallyConsistentScoringCriterion(int x, int y, int[] z) {
         Node _y = variables.get(y);
         Node _x = variables.get(x);
-        List<Node> _z = getVariableList(z);
+        Set<Node> _z = getVariableSet(z);
 
         boolean dSeparatedFrom;
 
@@ -243,7 +243,7 @@ public class GraphScore implements Score {
         return dSeparatedFrom ? -1.0 : 1.0;
     }
 
-    private boolean isDSeparatedFrom(Node x, Node y, List<Node> z) {
+    private boolean isDSeparatedFrom(Node x, Node y, Set<Node> z) {
         if (dag != null) {
             return dag.paths().isDSeparatedFrom(x, y, z);
         } else if (facts != null) {
@@ -253,12 +253,20 @@ public class GraphScore implements Score {
         throw new IllegalArgumentException("Expecting either a DAG or an IndependenceFacts object.");
     }
 
-    private boolean isDConnectedTo(Node x, Node y, List<Node> z) {
+    private boolean isDConnectedTo(Node x, Node y, Set<Node> z) {
         return !isDSeparatedFrom(x, y, z);
     }
 
     private List<Node> getVariableList(int[] indices) {
         List<Node> variables = new ArrayList<>();
+        for (int i : indices) {
+            variables.add(this.variables.get(i));
+        }
+        return variables;
+    }
+
+    private Set<Node> getVariableSet(int[] indices) {
+        Set<Node> variables = new HashSet<>();
         for (int i : indices) {
             variables.add(this.variables.get(i));
         }

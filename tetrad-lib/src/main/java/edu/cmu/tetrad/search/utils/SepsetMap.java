@@ -46,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class SepsetMap implements TetradSerializable {
     static final long serialVersionUID = 23L;
 
-    private Map<Set<Node>, List<Node>> sepsets = new ConcurrentHashMap<>();
+    private Map<Set<Node>, Set<Node>> sepsets = new ConcurrentHashMap<>();
     private Map<Set<Node>, Double> pValues = new ConcurrentHashMap<>();
     private final Map<Node, HashSet<Node>> parents = new HashMap<>();
 
@@ -80,7 +80,7 @@ public final class SepsetMap implements TetradSerializable {
     /**
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.
      */
-    public void set(Node x, Node y, List<Node> z) {
+    public void set(Node x, Node y, Set<Node> z) {
         Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
@@ -94,7 +94,7 @@ public final class SepsetMap implements TetradSerializable {
     /**
      * Retrieves the sepset previously set for {a, b}, or null if no such set was previously set.
      */
-    public List<Node> get(Node a, Node b) {
+    public Set<Node> get(Node a, Node b) {
         Set<Node> pair = new HashSet<>(2);
         pair.add(a);
         pair.add(b);

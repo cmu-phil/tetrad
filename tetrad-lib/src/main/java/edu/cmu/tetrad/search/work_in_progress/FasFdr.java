@@ -295,7 +295,7 @@ public class FasFdr implements IFas {
 
                 if (addDependencies) {
                     if (independent) {
-                        List<Node> theRest = new ArrayList<>();
+                        Set<Node> theRest = new HashSet<>();
 
                         for (Node node : nodes) {
                             if (node != x && node != y) theRest.add(node);
@@ -313,7 +313,7 @@ public class FasFdr implements IFas {
                     if (independent) {
                         if (!adjacencies.get(x).contains(y)) continue;
 
-                        List<Node> theRest = new ArrayList<>();
+                        Set<Node> theRest = new HashSet<>();
 
                         for (Node node : nodes) {
                             if (node != x && node != y) theRest.add(node);
@@ -392,7 +392,7 @@ public class FasFdr implements IFas {
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, ppx);
+                        Set<Node> condSet = GraphUtils.asSet(choice, ppx);
                         IndependenceResult result;
 
                         try {

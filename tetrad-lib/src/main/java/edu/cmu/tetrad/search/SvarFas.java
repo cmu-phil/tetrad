@@ -273,7 +273,7 @@ public class SvarFas implements IFas {
     }
 
     private boolean searchAtDepth0(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
-        List<Node> empty = Collections.emptyList();
+        Set<Node> empty = Collections.emptySet();
         List<Node> simListX = new ArrayList<>();
         List<Node> simListY = new ArrayList<>();
         for (int i = 0; i < nodes.size(); i++) {
@@ -451,7 +451,7 @@ public class SvarFas implements IFas {
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, ppx);
+                        Set<Node> condSet = GraphUtils.asSet(choice, ppx);
 
                         boolean independent;
 
@@ -505,7 +505,7 @@ public class SvarFas implements IFas {
     }
 
     // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
-    private void removeSimilarPairs(Map<Node, Set<Node>> adjacencies, IndependenceTest test, Node x, Node y, List<Node> condSet) {
+    private void removeSimilarPairs(Map<Node, Set<Node>> adjacencies, IndependenceTest test, Node x, Node y, Set<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");
         System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
         if (x.getName().equals("time") || y.getName().equals("time")) {
@@ -564,7 +564,7 @@ public class SvarFas implements IFas {
                 adjacencies.get(x1).remove(y1);
                 adjacencies.get(y1).remove(x1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
-                List<Node> condSetAB = new ArrayList<>();
+                Set<Node> condSetAB = new HashSet<>();
                 for (Node tempNode : condSet) {
                     int ind_temptier = this.knowledge.isInWhichTier(tempNode);
                     List<String> temptier = this.knowledge.getTier(ind_temptier);
@@ -604,7 +604,7 @@ public class SvarFas implements IFas {
                 adjacencies.get(x1).remove(y1);
                 adjacencies.get(y1).remove(x1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
-                List<Node> condSetAB = new ArrayList<>();
+                Set<Node> condSetAB = new HashSet<>();
                 for (Node tempNode : condSet) {
                     int ind_temptier = this.knowledge.isInWhichTier(tempNode);
                     List<String> temptier = this.knowledge.getTier(ind_temptier);

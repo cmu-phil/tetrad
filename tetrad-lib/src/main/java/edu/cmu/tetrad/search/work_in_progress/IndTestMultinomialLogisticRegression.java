@@ -90,7 +90,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (x instanceof DiscreteVariable) {
             return isIndependentMultinomialLogisticRegression(x, y, z);
         } else if (y instanceof DiscreteVariable) {
@@ -146,7 +146,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         return variables;
     }
 
-    private IndependenceResult isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
+    private IndependenceResult isIndependentMultinomialLogisticRegression(Node x, Node y, Set<Node> z) {
         if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
@@ -229,7 +229,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         return this._rows;
     }
 
-    private IndependenceResult isIndependentRegression(Node x, Node y, List<Node> z) {
+    private IndependenceResult isIndependentRegression(Node x, Node y, Set<Node> z) {
         if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }

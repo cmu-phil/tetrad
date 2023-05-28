@@ -33,6 +33,7 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implements the Possible-D-Sep search step of Spirtes, et al's (1993) FCI algorithm (pp 144-145). Specifically, the
@@ -89,7 +90,7 @@ public class PossibleDsepFci {
             Node x = edge.getNode1();
             Node y = edge.getNode2();
 
-            List<Node> condSet = getSepset(this.test, x, y);
+            Set<Node> condSet = getSepset(this.test, x, y);
 
             if (condSet != null) {
                 for (Node n : condSet) {
@@ -108,8 +109,8 @@ public class PossibleDsepFci {
         return this.sepset;
     }
 
-    public List<Node> getSepset(IndependenceTest test, Node node1, Node node2) {
-        List<Node> condSet = getCondSet(test, node1, node2, this.maxReachablePathLength);
+    public Set<Node> getSepset(IndependenceTest test, Node node1, Node node2) {
+        Set<Node> condSet = getCondSet(test, node1, node2, this.maxReachablePathLength);
 
         if (this.sepset == null) {
             condSet = getCondSet(test, node2, node1, this.maxReachablePathLength);
@@ -147,7 +148,7 @@ public class PossibleDsepFci {
         this.maxReachablePathLength = maxReachablePathLength == -1 ? Integer.MAX_VALUE : maxReachablePathLength;
     }
 
-    private List<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
+    private Set<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
         List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
         List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
         boolean noEdgeRequired = getKnowledge().noEdgeRequired(node1.getName(), node2.getName());
@@ -161,7 +162,7 @@ public class PossibleDsepFci {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                List<Node> condSet = GraphUtils.asList(choice, possParents);
+                Set<Node> condSet = GraphUtils.asSet(choice, possParents);
                 boolean independent = test.checkIndependence(node1, node2, condSet).isIndependent();
 
                 if (independent && noEdgeRequired) {

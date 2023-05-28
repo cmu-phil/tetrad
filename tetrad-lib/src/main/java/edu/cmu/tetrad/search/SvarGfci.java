@@ -37,6 +37,7 @@ import org.apache.commons.math3.util.FastMath;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -295,7 +296,7 @@ public final class SvarGfci implements IGraphSearch {
                     //  **/
 
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = this.sepsets.getSepset(a, c);
+                    Set<Node> sepset = this.sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);

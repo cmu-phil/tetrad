@@ -26,9 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -211,17 +209,17 @@ public final class TestGraphUtils {
         assertTrue(!graph.paths().isAncestorOf(y, a));
         assertTrue(!graph.paths().isAncestorOf(x, b));
 
-        assertTrue(graph.paths().isDConnectedTo(a, y, new ArrayList<>()));
-        assertTrue(graph.paths().isDConnectedTo(b, x, new ArrayList<>()));
+        assertTrue(graph.paths().isDConnectedTo(a, y, new HashSet<>()));
+        assertTrue(graph.paths().isDConnectedTo(b, x, new HashSet<>()));
 
-        assertTrue(graph.paths().isDConnectedTo(a, y, Collections.singletonList(x)));
-        assertTrue(graph.paths().isDConnectedTo(b, x, Collections.singletonList(y)));
+        assertTrue(graph.paths().isDConnectedTo(a, y, Collections.singleton(x)));
+        assertTrue(graph.paths().isDConnectedTo(b, x, Collections.singleton(y)));
 
-        assertTrue(graph.paths().isDConnectedTo(a, y, Collections.singletonList(b)));
-        assertTrue(graph.paths().isDConnectedTo(b, x, Collections.singletonList(a)));
+        assertTrue(graph.paths().isDConnectedTo(a, y, Collections.singleton(b)));
+        assertTrue(graph.paths().isDConnectedTo(b, x, Collections.singleton(a)));
 
-        assertTrue(graph.paths().isDConnectedTo(y, a, Collections.singletonList(b)));
-        assertTrue(graph.paths().isDConnectedTo(x, b, Collections.singletonList(a)));
+        assertTrue(graph.paths().isDConnectedTo(y, a, Collections.singleton(b)));
+        assertTrue(graph.paths().isDConnectedTo(x, b, Collections.singleton(a)));
     }
 
     @Test
@@ -243,11 +241,11 @@ public final class TestGraphUtils {
         assertTrue(graph.paths().isAncestorOf(a, b));
         assertTrue(graph.paths().isAncestorOf(a, c));
 
-        assertTrue(graph.paths().isDConnectedTo(a, b, Collections.EMPTY_LIST));
-        assertTrue(graph.paths().isDConnectedTo(a, c, Collections.EMPTY_LIST));
+        assertTrue(graph.paths().isDConnectedTo(a, b, Collections.EMPTY_SET));
+        assertTrue(graph.paths().isDConnectedTo(a, c, Collections.EMPTY_SET));
 
-        assertTrue(graph.paths().isDConnectedTo(a, c, Collections.singletonList(b)));
-        assertTrue(graph.paths().isDConnectedTo(c, a, Collections.singletonList(b)));
+        assertTrue(graph.paths().isDConnectedTo(a, c, Collections.singleton(b)));
+        assertTrue(graph.paths().isDConnectedTo(c, a, Collections.singleton(b)));
     }
 
 
@@ -263,8 +261,8 @@ public final class TestGraphUtils {
             Node z1 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
             Node z2 = nodes.get(RandomUtil.getInstance().nextInt(numNodes));
 
-            if (graph.paths().isDSeparatedFrom(x, y, list(z1)) && graph.paths().isDSeparatedFrom(x, y, list(z2)) &&
-                    !graph.paths().isDSeparatedFrom(x, y, list(z1, z2))) {
+            if (graph.paths().isDSeparatedFrom(x, y, set(z1)) && graph.paths().isDSeparatedFrom(x, y, set(z2)) &&
+                    !graph.paths().isDSeparatedFrom(x, y, set(z1, z2))) {
                 System.out.println("x = " + x);
                 System.out.println("y = " + y);
                 System.out.println("z1 = " + z1);
@@ -275,8 +273,8 @@ public final class TestGraphUtils {
         }
     }
 
-    private List<Node> list(Node... z) {
-        List<Node> list = new ArrayList<>();
+    private Set<Node> set(Node... z) {
+        Set<Node> list = new HashSet<>();
         Collections.addAll(list, z);
         return list;
     }

@@ -103,7 +103,7 @@ public final class SampleVcpcFast implements IGraphSearch {
     /**
      * The sepsets.
      */
-    private Map<Edge, List<Node>> apparentlyNonadjacencies;
+    private Map<Edge, Set<Node>> apparentlyNonadjacencies;
 
     /**
      * Whether verbose output about independencies is output.
@@ -408,10 +408,10 @@ public final class SampleVcpcFast implements IGraphSearch {
 
             for (Graph _graph : new ArrayList<>(CPDAGs)) {
 
-                List<Node> boundaryX = new ArrayList<>(boundary(x, _graph));
-                List<Node> boundaryY = new ArrayList<>(boundary(y, _graph));
-                List<Node> futureX = new ArrayList<>(future(x, _graph));
-                List<Node> futureY = new ArrayList<>(future(y, _graph));
+                Set<Node> boundaryX = new HashSet<>(boundary(x, _graph));
+                Set<Node> boundaryY = new HashSet<>(boundary(y, _graph));
+                Set<Node> futureX = new HashSet<>(future(x, _graph));
+                Set<Node> futureY = new HashSet<>(future(y, _graph));
 
                 if (y == x) {
                     continue;

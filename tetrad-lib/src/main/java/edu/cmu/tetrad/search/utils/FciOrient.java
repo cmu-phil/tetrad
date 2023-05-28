@@ -721,7 +721,7 @@ public final class FciOrient {
             throw new IllegalArgumentException();
         }
 
-        List<Node> sepset = getSepsets().getSepset(d, c);
+        Set<Node> sepset = getSepsets().getSepset(d, c);
 
         if (this.verbose) {
             logger.forceLogMessage("Sepset for d = " + d + " and c = " + c + " = " + sepset);

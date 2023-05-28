@@ -67,7 +67,7 @@ public class IndependenceFacts implements DataModel {
                 Node x = nodes.get(choice[perm[0]]);
                 Node y = nodes.get(choice[perm[1]]);
 
-                List<Node> Z = new ArrayList<>();
+                Set<Node> Z = new HashSet<>();
 
                 for (int i = 2; i < perm.length; i++) {
                     Z.add(nodes.get(choice[perm[i]]));
@@ -175,7 +175,7 @@ public class IndependenceFacts implements DataModel {
 //        return unsortedFacts.contains(fact);
     }
 
-    public boolean isIndependent(Node x, Node y, List<Node> z) {
+    public boolean isIndependent(Node x, Node y, Set<Node> z) {
         boolean found = false;
 
         for (IndependenceFact fact : unsortedFacts) {

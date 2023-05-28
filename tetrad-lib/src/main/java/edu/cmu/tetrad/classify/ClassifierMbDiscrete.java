@@ -41,8 +41,7 @@ import edu.pitt.dbmi.data.reader.Delimiter;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Performs a Bayesian classification of a test set based on a given training set. PC-MB is used to select a Markov
@@ -137,10 +136,12 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
 
         PcMb search = new PcMb(indTest, this.depth);
         search.setDepth(this.depth);
-        List<Node> mbPlusTarget = search.findMb(this.target);
+        Set<Node> mbPlusTarget = search.findMb(this.target);
         mbPlusTarget.add(this.target);
 
-        DataSet subset = this.train.subsetColumns(mbPlusTarget);
+        ArrayList<Node> vars = new ArrayList<>(mbPlusTarget);
+        Collections.sort(vars);
+        DataSet subset = this.train.subsetColumns(vars);
 
         System.out.println("subset vars = " + subset.getVariables());
 

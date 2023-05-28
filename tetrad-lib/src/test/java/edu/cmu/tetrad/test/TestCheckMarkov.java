@@ -13,6 +13,7 @@ import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 public class TestCheckMarkov {
@@ -59,9 +60,9 @@ public class TestCheckMarkov {
                     + " non-descendants = " + nondesc);
 
             for (Node y : nondesc) {
-                System.out.print("\t" + LogUtilsSearch.independenceFact(x, y, cond));
+                System.out.print("\t" + LogUtilsSearch.independenceFact(x, y, new HashSet<>(cond)));
 
-                IndependenceResult result = test.checkIndependence(x, y, cond);
+                IndependenceResult result = test.checkIndependence(x, y, new HashSet<>(cond));
 
                 if (result.isIndependent()) {
                     numIndep++;

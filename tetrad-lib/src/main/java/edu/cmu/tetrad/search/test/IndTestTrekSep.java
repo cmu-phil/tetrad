@@ -31,10 +31,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Vector;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -117,7 +114,7 @@ public final class IndTestTrekSep implements IndependenceTest {
      * @return True iff x _||_ y | z.
      * @throws org.apache.commons.math3.linear.SingularMatrixException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         int n = sampleSize();
         int xi = this.latents.indexOf(x);
         int yi = this.latents.indexOf(y);

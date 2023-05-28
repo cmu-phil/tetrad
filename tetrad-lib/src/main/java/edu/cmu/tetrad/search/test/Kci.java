@@ -133,7 +133,7 @@ public class Kci implements IndependenceTest {
      * @return The independence result.
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (Thread.currentThread().isInterrupted()) {
             return new IndependenceResult(new IndependenceFact(x, y, z),
                     true, Double.NaN);
@@ -447,10 +447,13 @@ public class Kci implements IndependenceTest {
      *
      * @return true just in case independence holds.
      */
-    private IndependenceResult isIndependentConditional(Node x, Node y, List<Node> z, IndependenceFact fact, double[][] _data,
+    private IndependenceResult isIndependentConditional(Node x, Node y, Set<Node> _z, IndependenceFact fact, double[][] _data,
                                                         int N, Matrix H, Matrix I, double[] _h, Map<Node, Integer> hash) {
         Matrix kx;
         Matrix ky;
+
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         try {
             Matrix KXZ = center(kernelMatrix(_data, x, z, this.widthMultiplier, hash, N, _h), H);

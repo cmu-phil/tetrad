@@ -685,7 +685,7 @@ public class TeyssierScorer {
                     parents.add(z0);
                     continue;
                 }
-                if (this.test.checkIndependence(n, z0, new ArrayList<>(parents)).isDependent()) {
+                if (this.test.checkIndependence(n, z0, new HashSet<>(parents)).isDependent()) {
                     parents.add(z0);
                     changed1 = true;
                 }
@@ -696,7 +696,7 @@ public class TeyssierScorer {
                     continue;
                 }
                 parents.remove(z1);
-                if (this.test.checkIndependence(n, z1, new ArrayList<>(parents)).isDependent()) {
+                if (this.test.checkIndependence(n, z1, new HashSet<>(parents)).isDependent()) {
                     parents.add(z1);
                 } else {
                     changed1 = true;
@@ -733,8 +733,7 @@ public class TeyssierScorer {
         for (Node y : prefix) {
             Set<Node> minus = new HashSet<>(prefix);
             minus.remove(y);
-            ArrayList<Node> z = new ArrayList<>(minus);
-            sort(z);
+            Set<Node> z = new HashSet<>(minus);
 
             if (this.test.checkIndependence(x, y, z).isDependent()) {
                 parents.add(y);

@@ -36,7 +36,9 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Calculates independence from pooled residuals using the Fisher Z method.
@@ -115,10 +117,10 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
      * @throws org.apache.commons.math3.linear.SingularMatrixException if a matrix singularity is encountered.
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
 
         x = getVariable(this.variables, x.getName());
-        z = GraphUtils.replaceNodes(z, this.variables);
+        List<Node> z = GraphUtils.replaceNodes(new ArrayList<>(_z), new ArrayList<>(this.variables));
 
         // Calculate the residual of x and y conditional on z for each data set and concatenate them.
         double[] residualsX = residuals(x, z);
@@ -158,7 +160,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
                 0.5 * (FastMath.log(1.0 + r) - FastMath.log(1.0 - r));
 
         if (Double.isNaN(fisherZ)) {
-            return new IndependenceResult(new IndependenceFact(x, y, z),
+            return new IndependenceResult(new IndependenceFact(x, y, _z),
                     true, Double.NaN);
         }
 
@@ -169,11 +171,11 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, this.pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, this.pValue));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue);
 
     }
 

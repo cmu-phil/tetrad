@@ -331,7 +331,7 @@ public final class Cfci implements IGraphSearch {
                 }
 
                 TripleType type = getTripleType(x, y, z, test, depth);
-                List<Node> sepset = sepsets.get(x, z);
+                Set<Node> sepset = sepsets.get(x, z);
 
                 if (type == TripleType.COLLIDER || (sepset != null && !sepset.contains(y))) {
                     if (isArrowheadAllowed(x, y) &&
@@ -408,7 +408,7 @@ public final class Cfci implements IGraphSearch {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                List<Node> condSet = Cfci.asList(choice, _nodes);
+                Set<Node> condSet = GraphUtils.asSet(choice, _nodes);
 
                 if (test.checkIndependence(x, z, condSet).isIndependent()) {
                     if (condSet.contains(y)) {
@@ -436,7 +436,7 @@ public final class Cfci implements IGraphSearch {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                List<Node> condSet = Cfci.asList(choice, _nodes);
+                Set<Node> condSet = GraphUtils.asSet(choice, _nodes);
 
                 if (test.checkIndependence(x, z, condSet).isIndependent()) {
                     if (condSet.contains(y)) {
@@ -451,7 +451,7 @@ public final class Cfci implements IGraphSearch {
         // Note: Unless sepsets are being collected during fas, most likely
         // this will be null. (Only sepsets found during possible dsep search
         // will be here.)
-        List<Node> condSet = getSepsets().get(x, z);
+        Set<Node> condSet = getSepsets().get(x, z);
 
         if (condSet != null) {
             if (condSet.contains(y)) {

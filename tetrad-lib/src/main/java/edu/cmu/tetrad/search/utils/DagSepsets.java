@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 
 import javax.help.UnsupportedOperationException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Determines sepsets, collider, and noncolliders by examining d-separation facts in a DAG.
@@ -53,7 +54,7 @@ public class DagSepsets implements SepsetProducer {
      * @return The list of sepsets for {a, b}.
      */
     @Override
-    public List<Node> getSepset(Node a, Node b) {
+    public Set<Node> getSepset(Node a, Node b) {
         return this.dag.getSepset(a, b);
     }
 
@@ -67,7 +68,7 @@ public class DagSepsets implements SepsetProducer {
      */
     @Override
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        List<Node> sepset = this.dag.getSepset(i, k);
+        Set<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -93,7 +94,7 @@ public class DagSepsets implements SepsetProducer {
      * @return True if the condition holds.
      */
     @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
+    public boolean isIndependent(Node a, Node b, Set<Node> c) {
         return this.dag.paths().isDSeparatedFrom(a, b, c);
     }
 

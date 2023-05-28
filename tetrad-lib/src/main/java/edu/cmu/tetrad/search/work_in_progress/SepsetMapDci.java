@@ -49,10 +49,10 @@ public final class SepsetMapDci {
     /**
      * @serial
      */
-    private Map<Set<Node>, List<Node>> sepsets =
+    private Map<Set<Node>, Set<Node>> sepsets =
             new HashMap<>();
 
-    private Map<Set<Node>, List<List<Node>>> sepsetSets =
+    private Map<Set<Node>, Set<Set<Node>>> sepsetSets =
             new HashMap<>();
 
     private final Map<Node, LinkedHashSet<Node>> parents = new HashMap<>();
@@ -79,22 +79,22 @@ public final class SepsetMapDci {
     /**
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.
      */
-    public void set(Node x, Node y, List<Node> z) {
+    public void set(Node x, Node y, Set<Node> z) {
         Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
         if (this.sepsets.get(pair) == null) {
             this.sepsets.put(pair, z);
         } else {
-            List<Node> newSet = new ArrayList<>(this.sepsets.get(pair));
+            Set<Node> newSet = new HashSet<>(this.sepsets.get(pair));
             newSet.addAll(z);
             this.sepsets.put(pair, newSet);
         }
         if (this.sepsetSets.containsKey(pair)) {
-            this.sepsetSets.get(pair).add(new ArrayList<>(z));
+            this.sepsetSets.get(pair).add(new HashSet<>(z));
         } else {
-            List<List<Node>> condSets = new ArrayList<>();
-            condSets.add(new ArrayList<>(z));
+            Set<Set<Node>> condSets = new HashSet<>();
+            condSets.add(new HashSet<>(z));
             this.sepsetSets.put(pair, condSets);
         }
     }
@@ -102,7 +102,7 @@ public final class SepsetMapDci {
     /**
      * Retrieves the sepset previously set for {x, y}, or null if no such set was previously set.
      */
-    public List<Node> get(Node x, Node y) {
+    public Set<Node> get(Node x, Node y) {
         Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);
@@ -112,7 +112,7 @@ public final class SepsetMapDci {
     /**
      * Retrieves the set of all condioning sets for {x, y} or null if no such set was ever set
      */
-    public List<List<Node>> getSet(Node x, Node y) {
+    public Set<Set<Node>> getSet(Node x, Node y) {
         Set<Node> pair = new HashSet<>(2);
         pair.add(x);
         pair.add(y);

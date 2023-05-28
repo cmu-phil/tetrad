@@ -31,8 +31,7 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>Performs a test of conditional independence X _||_ Y | Z1...Zn where all
@@ -96,7 +95,9 @@ public class IndTestMvpLrt implements IndependenceTest {
      * @return This result.
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         int _x = this.nodesHash.get(x);
         int _y = this.nodesHash.get(y);
@@ -106,10 +107,10 @@ public class IndTestMvpLrt implements IndependenceTest {
         list0[0] = _x;
         list1[0] = _y;
         for (int i = 0; i < z.size(); i++) {
-            int _z = this.nodesHash.get(z.get(i));
-            list0[i + 1] = _z;
-            list1[i + 1] = _z;
-            list2[i] = _z;
+            int __z = this.nodesHash.get(z.get(i));
+            list0[i + 1] = __z;
+            list1[i + 1] = __z;
+            list2[i] = __z;
         }
 
         double lik_0;
@@ -149,11 +150,11 @@ public class IndTestMvpLrt implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, getPValue()));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue);
     }
 
     /**

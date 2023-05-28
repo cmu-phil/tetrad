@@ -447,7 +447,7 @@ public class Ion {
             }
             // look for unconditional associations
             for (IonIndependenceFacts fact : associations) {
-                for (List<Node> nodes : fact.getZ()) {
+                for (Set<Node> nodes : fact.getZ()) {
                     if (nodes.isEmpty()) {
                         List<List<Node>> treks = Ion.treks(pag, fact.x, fact.y);
                         if (treks.size() == 1) {
@@ -480,7 +480,7 @@ public class Ion {
                 elimTreks = false;
                 // looks for unconditional associations
                 for (IonIndependenceFacts fact : associations) {
-                    for (List<Node> nodes : fact.getZ()) {
+                    for (Set<Node> nodes : fact.getZ()) {
                         if (nodes.isEmpty()) {
                             if (Ion.treks(newPag, fact.x, fact.y).isEmpty()) {
                                 elimTreks = true;
@@ -807,14 +807,14 @@ public class Ion {
                         for (Node node : subset) {
                             pagSubset.add(pag.getNode(node.getName()));
                         }
-                        if (pag.paths().isDSeparatedFrom(pagX, pagY, new ArrayList<>(pagSubset))) {
+                        if (pag.paths().isDSeparatedFrom(pagX, pagY, new HashSet<>(pagSubset))) {
                             if (!pag.isAdjacentTo(pagX, pagY)) {
                                 addIndep = true;
-                                indep.addMoreZ(new ArrayList<>(subset));
+                                indep.addMoreZ(new HashSet<>(subset));
                             }
                         } else {
                             addAssoc = true;
-                            assoc.addMoreZ(new ArrayList<>(subset));
+                            assoc.addMoreZ(new HashSet<>(subset));
                         }
                     }
                 }
@@ -852,7 +852,7 @@ public class Ion {
      */
     private boolean predictsFalseIndependence(Set<IonIndependenceFacts> associations, Graph pag) {
         for (IonIndependenceFacts assocFact : associations)
-            for (List<Node> conditioningSet : assocFact.getZ())
+            for (Set<Node> conditioningSet : assocFact.getZ())
                 if (pag.paths().isDSeparatedFrom(
                         assocFact.getX(), assocFact.getY(), conditioningSet))
                     return true;
@@ -1398,7 +1398,7 @@ public class Ion {
         for (IonIndependenceFacts iif : this.separations) {
             if ((iif.getX().equals(l) && iif.getY().equals(c)) ||
                     iif.getY().equals(l) && iif.getX().equals(c)) {
-                for (List<Node> condSet : iif.getZ()) {
+                for (Set<Node> condSet : iif.getZ()) {
                     if (condSet.contains(b)) {
                         graph.setEndpoint(c, b, Endpoint.TAIL);
                         this.discrimGraphs.add(graph);
@@ -1540,12 +1540,12 @@ public class Ion {
     private static final class IonIndependenceFacts {
         private final Node x;
         private final Node y;
-        private final Collection<List<Node>> z;
+        private final Set<Set<Node>> z;
 
         /**
          * Constructs a triple of nodes.
          */
-        public IonIndependenceFacts(Node x, Node y, Collection<List<Node>> z) {
+        public IonIndependenceFacts(Node x, Node y, Set<Set<Node>> z) {
             if (x == null || y == null || z == null) {
                 throw new NullPointerException();
             }
@@ -1563,11 +1563,11 @@ public class Ion {
             return this.y;
         }
 
-        public Collection<List<Node>> getZ() {
+        public Set<Set<Node>> getZ() {
             return this.z;
         }
 
-        public void addMoreZ(List<Node> moreZ) {
+        public void addMoreZ(Set<Node> moreZ) {
             this.z.add(moreZ);
         }
 

@@ -29,9 +29,7 @@ import org.apache.commons.math3.util.FastMath;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents a Bayes IM in which all of the conditional probability tables have been updated to take into account
@@ -552,8 +550,8 @@ public final class UpdatedBayesIm implements BayesIm {
             nodesInEvidence.add(this.bayesIm.getBayesPm().getNode(_node.getName()));
         }
 
-        List<Node> conditionedNodes
-                = new LinkedList<>(nodesInEvidence);
+        Set<Node> conditionedNodes
+                = new HashSet<>(nodesInEvidence);
         conditionedNodes.addAll(this.bayesIm.getDag().getParents(node));
 
         for (int i = 0; i < this.bayesIm.getNumNodes(); i++) {

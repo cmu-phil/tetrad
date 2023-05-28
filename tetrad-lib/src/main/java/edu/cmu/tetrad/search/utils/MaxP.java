@@ -63,7 +63,6 @@ public final class MaxP {
      * Adds colliders to the given graph using the max P rule.
      *
      * @param graph The graph to orient.
-     * @see edu.cmu.tetrad.search.PcMax
      */
     public synchronized void orient(Graph graph) {
         addColliders(graph);
@@ -187,7 +186,7 @@ public final class MaxP {
         }
 
         double p = 0;
-        List<Node> S = null;
+        Set<Node> S = null;
 
         SublistGenerator cg1 = new SublistGenerator(adja.size(), this.depth);
         int[] comb2;
@@ -197,7 +196,7 @@ public final class MaxP {
                 break;
             }
 
-            List<Node> s = GraphUtils.asList(comb2, adja);
+            Set<Node> s = GraphUtils.asSet(comb2, adja);
 
             IndependenceResult result = this.independenceTest.checkIndependence(a, c, s);
             double _p = result.getPValue();
@@ -216,7 +215,7 @@ public final class MaxP {
                 break;
             }
 
-            List<Node> s = GraphUtils.asList(comb3, adjc);
+            Set<Node> s = GraphUtils.asSet(comb3, adjc);
 
             IndependenceResult result = this.independenceTest.checkIndependence(a, c, s);
             double _p = result.getPValue();

@@ -110,7 +110,7 @@ public class IndTestIod implements IndependenceTest {
      * @param z a List of nodes (conditioning variables)
      * @return True iff x _||_ y | z
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         List<IndependenceTest> tests = new ArrayList<>();
 
         for (IndependenceTest test : this.tests) {
@@ -253,7 +253,7 @@ public class IndTestIod implements IndependenceTest {
         this.verbose = verbose;
     }
 
-    private boolean containsAll(@NotNull Node x, Node y, List<Node> z, @NotNull IndependenceTest test) {
+    private boolean containsAll(@NotNull Node x, Node y, Set<Node> z, @NotNull IndependenceTest test) {
         if (test.getVariable(x.getName()) == null) {
             return false;
         }

@@ -46,9 +46,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -552,9 +550,9 @@ public class MarkovCheckEditor extends JPanel {
 //                    nondesc.removeAll(dag.getParents(x));
 //                    nondesc.remove(x);
 
-                    List<Node> z = dag.getParents(x);
-                    List<Node> ds = new ArrayList<>();
-                    List<Node> dc = new ArrayList<>();
+                    Set<Node> z = new HashSet<>(dag.getParents(x));
+                    Set<Node> ds = new HashSet<>();
+                    Set<Node> dc = new HashSet<>();
 
                     List<Node> other = dag.getNodes();
                     other.removeAll(z);
@@ -606,7 +604,7 @@ public class MarkovCheckEditor extends JPanel {
 
                             Node x = fact.getX();
                             Node y = fact.getY();
-                            List<Node> z = fact.getZ();
+                            Set<Node> z = fact.getZ();
                             boolean verbose = test.isVerbose();
                             test.setVerbose(false);
                             IndependenceResult result = test.checkIndependence(x, y, z);

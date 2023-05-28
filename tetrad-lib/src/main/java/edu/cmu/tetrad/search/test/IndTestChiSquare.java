@@ -32,6 +32,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
@@ -166,16 +167,19 @@ public final class IndTestChiSquare implements IndependenceTest {
      *
      * @return True iff x _||_ y | z.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
-        if (z == null) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        if (_z == null) {
             throw new NullPointerException();
         }
 
-        for (Node v : z) {
+        for (Node v : _z) {
             if (v == null) {
                 throw new NullPointerException();
             }
         }
+
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
@@ -204,11 +208,11 @@ public final class IndTestChiSquare implements IndependenceTest {
         if (verbose) {
             if (result.isIndep()) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, this.pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, this.pValue));
             }
         }
 
-        IndependenceFact fact = new IndependenceFact(x, y, z);
+        IndependenceFact fact = new IndependenceFact(x, y, _z);
         return new IndependenceResult(fact, result.isIndep(), result.getPValue());
     }
 

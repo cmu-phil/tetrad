@@ -333,7 +333,7 @@ public class Pcd implements IGraphSearch {
                 Node x = adj.get(choice[0]);
                 Node z = adj.get(choice[1]);
 
-                List<Node> nodes = this.sepsets.get(x, z);
+                Set<Node> nodes = this.sepsets.get(x, z);
 
                 // Note that checking adj(x, z) does not suffice when knowledge
                 // has been specified.

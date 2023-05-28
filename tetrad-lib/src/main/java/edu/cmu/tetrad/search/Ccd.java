@@ -189,13 +189,13 @@ public final class Ccd implements IGraphSearch {
 
             List<Node> adja = graph.getAdjacentNodes(a);
             double score = Double.POSITIVE_INFINITY;
-            List<Node> S = null;
+            Set<Node> S = null;
 
             SublistGenerator cg2 = new SublistGenerator(adja.size(), -1);
             int[] comb2;
 
             while ((comb2 = cg2.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb2, adja);
+                Set<Node> s = GraphUtils.asSet(comb2, adja);
                 this.independenceTest.checkIndependence(a, c, s);
                 double _score = this.independenceTest.getScore();
 
@@ -211,7 +211,7 @@ public final class Ccd implements IGraphSearch {
             int[] comb3;
 
             while ((comb3 = cg3.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb3, adjc);
+                Set<Node> s = GraphUtils.asSet(comb3, adjc);
                 this.independenceTest.checkIndependence(c, a, s);
                 double _score = this.independenceTest.getScore();
 
@@ -270,7 +270,7 @@ public final class Ccd implements IGraphSearch {
                 }
 
                 //...X is not in sepset<A, Y>...
-                List<Node> sepset = sepsets.getSepset(a, y);
+                Set<Node> sepset = sepsets.getSepset(a, y);
 
                 if (sepset == null) {
                     continue;
@@ -318,7 +318,7 @@ public final class Ccd implements IGraphSearch {
 
             if (!psi.isDefCollider(a, b, c)) continue;
 
-            List<Node> S = sepsets.getSepset(a, c);
+            Set<Node> S = sepsets.getSepset(a, c);
             if (S == null) continue;
             ArrayList<Node> TT = new ArrayList<>(local.get(a));
             TT.removeAll(S);
@@ -334,7 +334,7 @@ public final class Ccd implements IGraphSearch {
                 B.addAll(S);
                 B.add(b);
 
-                if (sepsets.isIndependent(a, c, new ArrayList<>(B))) {
+                if (sepsets.isIndependent(a, c, new HashSet<>(B))) {
                     psi.addDottedUnderlineTriple(a, b, c);
                     supSepsets.put(new Triple(a, b, c), B);
                     break;
@@ -434,7 +434,7 @@ public final class Ccd implements IGraphSearch {
                 Set<Node> supSepUnionD = new HashSet<>();
                 supSepUnionD.add(d);
                 supSepUnionD.addAll(supSepsets.get(triple));
-                List<Node> listSupSepUnionD = new ArrayList<>(supSepUnionD);
+                Set<Node> listSupSepUnionD = new HashSet<>(supSepUnionD);
 
                 //If A and C are a pair of vertices d-connected given
                 //SupSepset<A,B,C> union {D} then orient Bo-oD or B-oD

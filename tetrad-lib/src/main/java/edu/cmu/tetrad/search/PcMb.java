@@ -259,7 +259,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                                 break;
                             }
 
-                            List<Node> s = GraphUtils.asList(choice, adjT);
+                            Set<Node> s = GraphUtils.asSet(choice, adjT);
                             if (!s.contains(v)) continue;
 
                             if (independent(target, w, s)) {
@@ -493,9 +493,9 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param target The target variable.
      * @return This list.
      */
-    public List<Node> findMb(Node target) {
+    public Set<Node> findMb(Node target) {
         Graph graph = search(Collections.singletonList(target));
-        List<Node> nodes = graph.getNodes();
+        Set<Node> nodes = new HashSet<>(graph.getNodes());
         nodes.remove(target);
         return nodes;
     }
@@ -554,7 +554,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                 continue;
             }
 
-            if (!independent(v, w, new LinkedList<>()) && !edgeForbidden(v, w)) {
+            if (!independent(v, w, new HashSet<>()) && !edgeForbidden(v, w)) {
                 addEdge(graph, w, v);
                 numAssociated++;
             }
@@ -611,7 +611,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                     break;
                 }
 
-                List<Node> condSet = GraphUtils.asList(choice, adjNode);
+                Set<Node> condSet = GraphUtils.asSet(choice, adjNode);
 
                 if (independent(node, y, condSet) && !edgeRequired(node, y)) {
                     graph.removeEdge(node, y);
@@ -643,7 +643,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.resultGraph = graph;
     }
 
-    private boolean independent(Node v, Node w, List<Node> z) {
+    private boolean independent(Node v, Node w, Set<Node> z) {
         boolean independent = getTest().checkIndependence(v, w, z).isIndependent();
 
         this.numIndependenceTests++;
@@ -746,7 +746,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                     break;
                 }
 
-                List<Node> condSet = PcMb.asList(choice, _nodes);
+                Set<Node> condSet = GraphUtils.asSet(choice, _nodes);
 
                 if (independent(x, z, condSet)) {
                     if (condSet.contains(y)) {
@@ -782,7 +782,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                     break;
                 }
 
-                List<Node> condSet = PcMb.asList(choice, _nodes);
+                Set<Node> condSet = GraphUtils.asSet(choice, _nodes);
 
                 if (independent(x, z, condSet)) {
                     if (condSet.contains(y)) {

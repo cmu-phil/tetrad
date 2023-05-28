@@ -572,7 +572,7 @@ public class RfciBsc implements IGraphSearch {
                         String[] splitParent2 = splitParent[1].trim().split(Pattern.quote("|"));
                         Node _Y = pag.getNode(splitParent2[0].trim());
 
-                        List<Node> _Z = new ArrayList<>();
+                        Set<Node> _Z = new HashSet<>();
                         if (splitParent2.length > 1) {
                             String[] splitParent3 = splitParent2[1].trim().split(Pattern.quote(","));
                             for (String s : splitParent3) {

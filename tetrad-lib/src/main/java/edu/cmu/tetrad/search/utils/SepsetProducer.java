@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Provides a covenience interface for classes that can generate and keep
@@ -33,7 +34,7 @@ import java.util.List;
  * @see SepsetMap
  */
 public interface SepsetProducer {
-    List<Node> getSepset(Node a, Node b);
+    Set<Node> getSepset(Node a, Node b);
 
     boolean isUnshieldedCollider(Node i, Node j, Node k);
 
@@ -43,6 +44,6 @@ public interface SepsetProducer {
 
     void setVerbose(boolean verbose);
 
-    boolean isIndependent(Node d, Node c, List<Node> path);
+    boolean isIndependent(Node d, Node c, Set<Node> path);
 }
 

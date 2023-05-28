@@ -27,6 +27,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
+import edu.cmu.tetrad.util.LogUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -117,7 +118,7 @@ public class Fas implements IFas {
         this.logger.addOutputStream(out);
 
         if (verbose) {
-            this.logger.log("info", "Starting Fast Adjacency Search.");
+            this.logger.forceLogMessage("Starting Fast Adjacency Search.");
         }
 
         this.test.setVerbose(this.verbose);
@@ -144,7 +145,7 @@ public class Fas implements IFas {
         }
 
         for (Edge edge : edges) {
-            this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new ArrayList<>());
+            this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
             scores.put(edge, this.test. getScore());
         }
 
@@ -172,22 +173,24 @@ public class Fas implements IFas {
                 edges.remove(edge);
                 adjacencies.get(edge.getNode1()).remove(edge.getNode2());
                 adjacencies.get(edge.getNode2()).remove(edge.getNode1());
-                this.sepset.set(edge.getNode1(), edge.getNode2(), new ArrayList<>());
+                this.sepset.set(edge.getNode1(), edge.getNode2(), new HashSet<>());
             }
         }
 
         for (int d = 0; d <= _depth; d++) {
+            System.out.println("Depth: " + d);
+
             boolean more;
 
-            if (this.stable) {
-                Map<Node, Set<Node>> adjacenciesCopy = new HashMap<>();
-
-                for (Node node : adjacencies.keySet()) {
-                    adjacenciesCopy.put(node, new LinkedHashSet<>(adjacencies.get(node)));
-                }
-
-                adjacencies = adjacenciesCopy;
-            }
+//            if (this.stable) {
+//                Map<Node, Set<Node>> adjacenciesCopy = new HashMap<>();
+//
+//                for (Node node : adjacencies.keySet()) {
+//                    adjacenciesCopy.put(node, new LinkedHashSet<>(adjacencies.get(node)));
+//                }
+//
+//                adjacencies = adjacenciesCopy;
+//            }
 
             more = searchAtDepth(scores, edges, this.test, adjacencies, d);
 
@@ -212,7 +215,7 @@ public class Fas implements IFas {
         }
 
         if (verbose) {
-            this.logger.log("info", "Finishing Fast Adjacency Search.");
+            this.logger.forceLogMessage("Finishing Fast Adjacency Search.");
         }
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
@@ -395,6 +398,8 @@ public class Fas implements IFas {
             Collections.reverse(ppx);
         }
 
+        Graph g0 = new EdgeListGraph(getNodes());
+
         if (ppx.size() >= depth) {
             ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
             int[] choice;
@@ -404,9 +409,17 @@ public class Fas implements IFas {
                     break;
                 }
 
-                List<Node> Z = GraphUtils.asList(choice, ppx);
+                Set<Node> Z = GraphUtils.asSet(choice, ppx);
 
                 this.numIndependenceTests++;
+
+//                System.out.println("Checking independence of " + x.getName() + " and " + y.getName() + " given " + Z);
+
+                if (x.getName().equals("X2") && y.getName().equals("X3") && Z.contains(g0.getNode("X1"))) {
+                    System.out.println("here");
+                    test.checkIndependence(x, y, Z).isIndependent();
+                }
+
                 boolean independent = test.checkIndependence(x, y, Z).isIndependent();
 
                 boolean noEdgeRequired =

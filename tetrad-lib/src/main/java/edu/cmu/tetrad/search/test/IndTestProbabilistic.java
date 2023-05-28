@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -139,7 +140,10 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     @Override
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+
         Node[] nodes = new Node[z.size()];
         for (int i = 0; i < z.size(); i++) nodes[i] = z.get(i);
         return checkIndependence(x, y, nodes);
@@ -156,7 +160,7 @@ public class IndTestProbabilistic implements IndependenceTest {
 
         List<Integer> rows = getRows(this.data, allVars, this.indices);
         if (rows.isEmpty())
-            return new IndependenceResult(new IndependenceFact(x, y, z),
+            return new IndependenceResult(new IndependenceFact(x, y, GraphUtils.asSet(z)),
                     true, Double.NaN);
 
         BCInference bci;
@@ -209,7 +213,7 @@ public class IndTestProbabilistic implements IndependenceTest {
         if (this.verbose) {
             if (ind) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, Arrays.asList(z), p));
+                        LogUtilsSearch.independenceFactMsg(x, y, GraphUtils.asSet(z), p));
             }
         }
 
@@ -246,7 +250,7 @@ public class IndTestProbabilistic implements IndependenceTest {
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
+    public boolean determines(Set<Node> z, Node y) {
         throw new UnsupportedOperationException();
     }
 

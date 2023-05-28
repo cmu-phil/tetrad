@@ -358,13 +358,13 @@ public final class FciMax implements IGraphSearch {
 
             List<Node> adja = graph.getAdjacentNodes(a);
             double score = Double.POSITIVE_INFINITY;
-            List<Node> S = null;
+            Set<Node> S = null;
 
             SublistGenerator cg2 = new SublistGenerator(adja.size(), -1);
             int[] comb2;
 
             while ((comb2 = cg2.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb2, adja);
+                Set<Node> s = GraphUtils.asSet(comb2, adja);
                 this.independenceTest.checkIndependence(a, c, s);
                 double _score = this.independenceTest.getScore();
 
@@ -380,7 +380,7 @@ public final class FciMax implements IGraphSearch {
             int[] comb3;
 
             while ((comb3 = cg3.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb3, adjc);
+                Set<Node> s = GraphUtils.asSet(comb3, adjc);
                 this.independenceTest.checkIndependence(c, a, s);
                 double _score = this.independenceTest.getScore();
 

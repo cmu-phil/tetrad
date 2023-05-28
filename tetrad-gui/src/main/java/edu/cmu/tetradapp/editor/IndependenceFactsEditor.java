@@ -627,7 +627,7 @@ public class IndependenceFactsEditor extends JPanel {
                         Node x = independenceTest.getVariable(vars4[0]);
                         Node y = independenceTest.getVariable(vars4[1]);
 
-                        List<Node> z = new ArrayList<>();
+                        Set<Node> z = new HashSet<>();
 
                         for (int i = 2; i < vars4.length; i++) {
                             z.add(independenceTest.getVariable(vars4[i]));
@@ -684,7 +684,7 @@ public class IndependenceFactsEditor extends JPanel {
     }
 
 
-    private static String factString(Node x, Node y, List<Node> condSet) {
+    private static String factString(Node x, Node y, Set<Node> condSet) {
         StringBuilder sb = new StringBuilder();
 
         sb.append(x.getName());

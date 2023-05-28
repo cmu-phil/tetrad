@@ -65,10 +65,10 @@ public final class IndTestMulti implements IndependenceTest {
         for (IndependenceTest independenceTest : independenceTests) {
             nodeNames.addAll(independenceTest.getVariableNames());
         }
-        if (independenceTests.get(0).getVariables().size() != nodeNames.size()) {
+        if (independenceTests.iterator().next().getVariables().size() != nodeNames.size()) {
             throw new IllegalArgumentException("Data sets must have same variables.");
         }
-        this.variables = independenceTests.get(0).getVariables();
+        this.variables = independenceTests.iterator().next().getVariables();
         this.independenceTests = independenceTests;
         this.method = method;
     }
@@ -88,7 +88,7 @@ public final class IndTestMulti implements IndependenceTest {
      * @return True iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         boolean independent = ResolveSepsets.isIndependentPooled(this.method, this.independenceTests, x, y, z);
 
         if (independent) {
@@ -152,7 +152,7 @@ public final class IndTestMulti implements IndependenceTest {
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Pooled Independence Test:  alpha = " + this.independenceTests.get(0).getAlpha();
+        return "Pooled Independence Test:  alpha = " + this.independenceTests.iterator().next().getAlpha();
     }
 
     /**

@@ -358,7 +358,7 @@ public interface Graph extends TetradSerializable {
      */
     TimeLagGraph getTimeLagGraph();
 
-    List<Node> getSepset(Node n1, Node n2);
+    Set<Node> getSepset(Node n1, Node n2);
 
     void setNodes(List<Node> nodes);
 

@@ -37,7 +37,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -81,7 +83,7 @@ public class TestIndTestWaldLr {
             Node x4 = data.getVariable("X4");
             Node x5 = data.getVariable("X5");
 
-            List<Node> cond = new ArrayList<>();
+            Set<Node> cond = new HashSet<>();
             cond.add(x3);
             cond.add(x4);
             cond.add(x5);
@@ -89,7 +91,7 @@ public class TestIndTestWaldLr {
             Node x1Graph = graph.getNode(x1.getName());
             Node x2Graph = graph.getNode(x2.getName());
 
-            List<Node> condGraph = new ArrayList<>();
+            Set<Node> condGraph = new HashSet<>();
 
             for (Node node : cond) {
                 condGraph.add(graph.getNode(node.getName()));

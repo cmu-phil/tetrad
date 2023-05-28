@@ -81,7 +81,7 @@ public final class GraphInPag {
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                List<Node> S = GraphUtils.asList(choice, W);
+                Set<Node> S = GraphUtils.asSet(choice, W);
 
                 if (test.isDSeparated(A, B, S)) {
                     return false;

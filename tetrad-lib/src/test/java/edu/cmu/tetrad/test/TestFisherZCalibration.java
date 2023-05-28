@@ -20,9 +20,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class TestFisherZCalibration {
 
@@ -79,7 +77,7 @@ public class TestFisherZCalibration {
             Node x = variables.get(0);
             Node y = variables.get(1);
 
-            List<Node> z = new ArrayList<>();
+            Set<Node> z = new HashSet<>();
             for (int j = 0; j < depth; j++) {
                 z.add(variables.get(j + 2));
             }
@@ -157,7 +155,7 @@ public class TestFisherZCalibration {
             Node _x3 = dataSet.getVariable("X3");
             Node _x4 = dataSet.getVariable("X4");
 
-            test.checkIndependence(_x1, _x2, Collections.singletonList(_x4));
+            test.checkIndependence(_x1, _x2, Collections.singleton(_x4));
             return test.getScore();
         } catch (AssertionError e) {
             return Double.NaN;

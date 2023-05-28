@@ -43,6 +43,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables by regressing X on {Y} U Z and
@@ -118,7 +119,7 @@ public final class IndTestRegression implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node xVar, Node yVar, List<Node> zList) {
+    public IndependenceResult checkIndependence(Node xVar, Node yVar, Set<Node> zList) {
         if (zList == null) {
             throw new NullPointerException();
         }

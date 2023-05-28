@@ -109,7 +109,7 @@ public class IndTestSepsetDci implements IndependenceTest {
      * @param z a List of nodes (conditioning variables)
      * @return True iff x _||_ y | z
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
@@ -123,8 +123,8 @@ public class IndTestSepsetDci implements IndependenceTest {
         boolean independent = false;
 
         if (this.sepset.get(x, y) != null) {
-            List<List<Node>> condSets = this.sepset.getSet(x, y);
-            for (List<Node> condSet : condSets) {
+            Set<Set<Node>> condSets = this.sepset.getSet(x, y);
+            for (Set<Node> condSet : condSets) {
                 if (condSet.size() == z.size() && condSet.containsAll(z)) {
                     final double pValue = 1.0;
 

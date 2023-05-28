@@ -201,7 +201,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double p = 0.0;
         try {
             p = getPValue(x, y, z);
@@ -244,7 +244,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @return The p-value.
      * @throws SingularMatrixException If a singularity occurs when invering a matrix.
      */
-    public double getPValue(Node x, Node y, List<Node> z) throws SingularMatrixException {
+    public double getPValue(Node x, Node y, Set<Node> z) throws SingularMatrixException {
         double r;
         int n;
 
@@ -429,7 +429,7 @@ public final class IndTestFisherZ implements IndependenceTest {
             try {
                 Czz.inverse();
             } catch (SingularMatrixException e) {
-                System.out.println(LogUtilsSearch.determinismDetected(z, x));
+                System.out.println(LogUtilsSearch.determinismDetected(new HashSet<>(z), x));
                 return true;
             }
         }
@@ -437,7 +437,10 @@ public final class IndTestFisherZ implements IndependenceTest {
         return false;
     }
 
-    private double partialCorrelation(Node x, Node y, List<Node> z, List<Integer> rows) throws SingularMatrixException {
+    private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows) throws SingularMatrixException {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+
         int[] indices = new int[z.size() + 2];
         indices[0] = this.indexMap.get(x.getName());
         indices[1] = this.indexMap.get(y.getName());
@@ -485,7 +488,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         return cov;
     }
 
-    private double getR(Node x, Node y, List<Node> z, List<Integer> rows) {
+    private double getR(Node x, Node y, Set<Node> z, List<Integer> rows) {
         return partialCorrelation(x, y, z, rows);
     }
 

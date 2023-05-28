@@ -30,9 +30,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * <p>Checks independence facts for variables associated with the nodes in a given graph by
@@ -44,6 +42,7 @@ import java.util.List;
  */
 public class IndTestDSep implements IndependenceTest {
 
+    private Map<Node, Set<Node>> ancestorMap;
     private IndependenceFacts independenceFacts;
 
     /**
@@ -106,6 +105,7 @@ public class IndTestDSep implements IndependenceTest {
 
         this.graph = graph;
 
+        this.ancestorMap = graph.paths().getAncestorMap();
         this._observedVars = calcVars(graph.getNodes(), keepLatents);
         this.observedVars = new ArrayList<>(_observedVars);
     }
@@ -179,7 +179,7 @@ public class IndTestDSep implements IndependenceTest {
      * @return An independence result for dsep(x, y | z).
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
@@ -207,7 +207,7 @@ public class IndTestDSep implements IndependenceTest {
         boolean dSeparated;
 
         if (graph != null) {
-            dSeparated = !getGraph().paths().isDConnectedTo(x, y, z);
+            dSeparated = !getGraph().paths().isDConnectedTo(x, y, z, ancestorMap);
         } else {
             dSeparated = independenceFacts.isIndependent(x, y, z);
         }
@@ -237,7 +237,7 @@ public class IndTestDSep implements IndependenceTest {
      *
      * @return True if so.
      */
-    public boolean isDSeparated(Node x, Node y, List<Node> z) {
+    public boolean isDSeparated(Node x, Node y, Set<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }

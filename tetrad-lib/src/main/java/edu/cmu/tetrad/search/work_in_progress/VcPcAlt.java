@@ -225,7 +225,7 @@ public final class VcPcAlt implements IGraphSearch {
         // on purpose; it is not used in this search.
         this.graph = fas.search();
 
-        Map<Edge, List<Node>> apparentlyNonadjacencies = fas.getApparentlyNonadjacencies();
+        Map<Edge, Set<Node>> apparentlyNonadjacencies = fas.getApparentlyNonadjacencies();
 
         if (isDoOrientation()) {
             if (this.verbose) {
@@ -361,10 +361,10 @@ public final class VcPcAlt implements IGraphSearch {
 
             for (Graph _graph : new ArrayList<>(patterns)) {
 
-                List<Node> boundaryX = new ArrayList<>(boundary(x, _graph));
-                List<Node> boundaryY = new ArrayList<>(boundary(y, _graph));
-                List<Node> futureX = new ArrayList<>(future(x, _graph));
-                List<Node> futureY = new ArrayList<>(future(y, _graph));
+                Set<Node> boundaryX = new HashSet<>(boundary(x, _graph));
+                Set<Node> boundaryY = new HashSet<>(boundary(y, _graph));
+                Set<Node> futureX = new HashSet<>(future(x, _graph));
+                Set<Node> futureY = new HashSet<>(future(y, _graph));
 
                 if (y == x) {
                     continue;

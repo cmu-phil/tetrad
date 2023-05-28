@@ -94,7 +94,10 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         throw new UnsupportedOperationException();
     }
 
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+
         int[] all = new int[z.size() + 2];
         all[0] = this.variablesMap.get(x);
         all[1] = this.variablesMap.get(y);
@@ -137,11 +140,11 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, getPValue()));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, getPValue());
     }
 
     /**

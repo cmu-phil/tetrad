@@ -366,7 +366,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         Set<Edge> edges = this.edgeLists.get(node);
 
         if (edges == null) {
-            System.out.println();
+            return new ArrayList<>();
         }
 
         for (Edge edge : edges) {
@@ -439,16 +439,36 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     @Override
-    public List<Node> getSepset(Node x, Node y) {
+    public Set<Node> getSepset(Node x, Node y) {
         return new Paths(this).getSepset(x, y);
     }
 
-    public boolean isDSeparatedFrom(Node x, Node y, List<Node> z) {
+    /**
+     * Determines whether x and y are d-separated given z.
+     *
+     * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
+     */
+    public boolean isDSeparatedFrom(Node x, Node y, Set<Node> z) {
         return !new Paths(this).isDConnectedTo(x, y, z);
     }
 
-    public boolean isDSeparatedFrom(List<Node> x, List<Node> y, List<Node> z) {
+    /**
+     * Determines whether two nodes are d-separated given z.
+     *
+     * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
+     */
+    public boolean isDSeparatedFrom(Set<Node> x, Set<Node> y, Set<Node> z) {
         return !new Paths(this).isDConnectedTo(x, y, z);
+    }
+
+    /**
+     * Determines whether two nodes are d-separated given z.
+     *
+     * @param ancestors A map of ancestors for each node.
+     * @return True if the nodes are d-separated given z, false if not.
+     */
+    public boolean isDSeparatedFrom(Set<Node> x, Set<Node> y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+        return !new Paths(this).isDConnectedTo(x, y, z, ancestors);
     }
 
     /**

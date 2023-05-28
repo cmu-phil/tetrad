@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Provides a SepsetProcuder that selects the first sepset it comes to from
@@ -58,17 +59,17 @@ public class SepsetsGreedy implements SepsetProducer {
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest score value.
      */
-    public List<Node> getSepset(Node i, Node k) {
+    public Set<Node> getSepset(Node i, Node k) {
         return getSepsetGreedy(i, k);
     }
 
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        List<Node> set = getSepsetGreedy(i, k);
+        Set<Node> set = getSepsetGreedy(i, k);
         return set != null && !set.contains(j);
     }
 
     @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
+    public boolean isIndependent(Node a, Node b, Set<Node> c) {
         IndependenceResult result = this.independenceTest.checkIndependence(a, b, c);
         this.result = result;
         return result.isIndependent();
@@ -105,9 +106,9 @@ public class SepsetsGreedy implements SepsetProducer {
         this.depth = depth;
     }
 
-    private List<Node> getSepsetGreedy(Node i, Node k) {
+    private Set<Node> getSepsetGreedy(Node i, Node k) {
         if (this.extraSepsets != null) {
-            List<Node> v = this.extraSepsets.get(i, k);
+            Set<Node> v = this.extraSepsets.get(i, k);
 
             if (v != null) {
                 return v;
@@ -125,7 +126,7 @@ public class SepsetsGreedy implements SepsetProducer {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, adji);
+                    Set<Node> v = GraphUtils.asSet(choice, adji);
 
                     if (this.independenceTest.checkIndependence(i, k, v).isIndependent()) {
                         return v;
@@ -138,7 +139,7 @@ public class SepsetsGreedy implements SepsetProducer {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> v = GraphUtils.asList(choice, adjk);
+                    Set<Node> v = GraphUtils.asSet(choice, adjk);
 
                     if (this.independenceTest.checkIndependence(i, k, v).isIndependent()) {
                         return v;

@@ -26,6 +26,7 @@ import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Provides a sepset producer using conditional independence tests to generate
@@ -47,20 +48,20 @@ public class SepsetsSet implements SepsetProducer {
     }
 
     @Override
-    public List<Node> getSepset(Node a, Node b) {
+    public Set<Node> getSepset(Node a, Node b) {
         //isIndependent(a, b, sepsets.get(a, b));
         return this.sepsets.get(a, b);
     }
 
     @Override
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        List<Node> sepset = this.sepsets.get(i, k);
+        Set<Node> sepset = this.sepsets.get(i, k);
         if (sepset == null) throw new IllegalArgumentException("That triple was covered: " + i + " " + j + " " + k);
         else return !sepset.contains(j);
     }
 
     @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
+    public boolean isIndependent(Node a, Node b, Set<Node> c) {
         IndependenceResult result = this.test.checkIndependence(a, b, c);
         this.result = result;
         return result.isIndependent();

@@ -1475,7 +1475,7 @@ public final class TestGrasp {
 
 //        IndTestDSep dsep = new IndTestDSep(graph);
 //        GraphScore score = new GraphScore(graph);
-        List<Node> order = list(x1, x2, x3, x4, x5);
+        Set<Node> order = set(x1, x2, x3, x4, x5);
 
         Grasp boss = new Grasp(new DSeparationTest(graph), new DSeparationScore(graph));
 
@@ -1675,21 +1675,21 @@ public final class TestGrasp {
     }
 
     private static void extractedWayne(Node x1, Node x2, Node x3, Node x4, IndependenceTest chiSq) {
-        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeList()) + " " + chiSq.checkIndependence(x1, x2).isIndependent());
-        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeList(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).isIndependent());
-        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeList(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).isIndependent());
-        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeList(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet()) + " " + chiSq.checkIndependence(x1, x2).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).isIndependent());
     }
 
     @NotNull
-    private static List<Node> nodeList(Node... n) {
-        List<Node> list = new ArrayList<>();
+    private static Set<Node> nodeSet(Node... n) {
+        Set<Node> list = new HashSet<>();
         for (Node m : n) list.add(m);
         return list;
     }
 
-    private List<Node> list(ContinuousVariable... s) {
-        List<Node> l = new ArrayList<>();
+    private Set<Node> set(ContinuousVariable... s) {
+        Set<Node> l = new HashSet<>();
 
         for (Node n : s) {
             l.add(n);
@@ -2015,8 +2015,8 @@ public final class TestGrasp {
 
         IndependenceFacts facts = new IndependenceFacts();
 
-        facts.add(new IndependenceFact(x1, x3, list(x2)));
-        facts.add(new IndependenceFact(x2, x4, list(x1, x3)));
+        facts.add(new IndependenceFact(x1, x3, set(x2)));
+        facts.add(new IndependenceFact(x2, x4, set(x1, x3)));
 
         return new Ret("Simple 4-node 2-path model", facts, 4);
     }
@@ -2029,9 +2029,9 @@ public final class TestGrasp {
 
         IndependenceFacts facts = new IndependenceFacts();
 
-        facts.add(new IndependenceFact(x1, x3, list(x2)));
-        facts.add(new IndependenceFact(x2, x4, list(x1, x3)));
-        facts.add(new IndependenceFact(x1, x4, list())); // unfaithful.
+        facts.add(new IndependenceFact(x1, x3, set(x2)));
+        facts.add(new IndependenceFact(x2, x4, set(x1, x3)));
+        facts.add(new IndependenceFact(x1, x4, set())); // unfaithful.
 
         return new Ret("Simple 4-node path canceling model", facts, 4);
     }
@@ -2044,11 +2044,11 @@ public final class TestGrasp {
 
         IndependenceFacts facts = new IndependenceFacts();
 
-        facts.add(new IndependenceFact(x1, x2, list()));
-        facts.add(new IndependenceFact(x1, x2, list(x3)));
-        facts.add(new IndependenceFact(x1, x3, list()));
-        facts.add(new IndependenceFact(x1, x3, list(x2)));
-        facts.add(new IndependenceFact(x2, x3, list(x4)));
+        facts.add(new IndependenceFact(x1, x2, set()));
+        facts.add(new IndependenceFact(x1, x2, set(x3)));
+        facts.add(new IndependenceFact(x1, x3, set()));
+        facts.add(new IndependenceFact(x1, x3, set(x2)));
+        facts.add(new IndependenceFact(x2, x3, set(x4)));
 
         return new Ret("Wayne triangle faithfulness fail example", facts, 4);
     }
@@ -2062,9 +2062,9 @@ public final class TestGrasp {
 
         IndependenceFacts facts = new IndependenceFacts();
 
-        facts.add(new IndependenceFact(x1, x3, list(x2)));
-        facts.add(new IndependenceFact(x2, x4, list(x1, x3)));
-        facts.add(new IndependenceFact(x4, x5, list()));
+        facts.add(new IndependenceFact(x1, x3, set(x2)));
+        facts.add(new IndependenceFact(x2, x4, set(x1, x3)));
+        facts.add(new IndependenceFact(x4, x5, set()));
 
         return new Ret("Solus Theorem 11, SMR !==> ESP (Figure 8)", facts, 8);
     }
@@ -2080,9 +2080,9 @@ public final class TestGrasp {
         IndependenceFacts facts = new IndependenceFacts();
 
         facts.add(new IndependenceFact(x1, x3));
-        facts.add(new IndependenceFact(x1, x5, list(x2, x3, x4)));
-        facts.add(new IndependenceFact(x4, x6, list(x1, x2, x3, x5)));
-        facts.add(new IndependenceFact(x1, x3, list(x2, x4, x5, x6)));
+        facts.add(new IndependenceFact(x1, x5, set(x2, x3, x4)));
+        facts.add(new IndependenceFact(x4, x6, set(x1, x2, x3, x5)));
+        facts.add(new IndependenceFact(x1, x3, set(x2, x4, x5, x6)));
 
         return new Ret("Solus Theorem 12, TSP !==> Orientation Faithfulness (Figure 11)", facts, 12);
     }
@@ -2150,9 +2150,9 @@ public final class TestGrasp {
 
         IndependenceFacts facts = new IndependenceFacts();
 
-        facts.add(new IndependenceFact(x1, x2, list(x4)));
-        facts.add(new IndependenceFact(x1, x3, list(x2)));
-        facts.add(new IndependenceFact(x2, x4, list(x1, x3)));
+        facts.add(new IndependenceFact(x1, x2, set(x4)));
+        facts.add(new IndependenceFact(x1, x3, set(x2)));
+        facts.add(new IndependenceFact(x2, x4, set(x1, x3)));
 
         return new Ret("Solus Theorem 12, ESP !==> TSP (Figure 7)", facts, 4);
     }
@@ -2166,11 +2166,11 @@ public final class TestGrasp {
 
         IndependenceFacts facts = new IndependenceFacts();
 
-        facts.add(new IndependenceFact(x1, x5, list(x2, x3)));
-        facts.add(new IndependenceFact(x2, x4, list(x1, x3)));
-        facts.add(new IndependenceFact(x3, x5, list(x1, x2, x4)));
-        facts.add(new IndependenceFact(x1, x4, list(x2, x3, x5)));
-        facts.add(new IndependenceFact(x1, x4, list(x2, x3)));
+        facts.add(new IndependenceFact(x1, x5, set(x2, x3)));
+        facts.add(new IndependenceFact(x2, x4, set(x1, x3)));
+        facts.add(new IndependenceFact(x3, x5, set(x1, x2, x4)));
+        facts.add(new IndependenceFact(x1, x4, set(x2, x3, x5)));
+        facts.add(new IndependenceFact(x1, x4, set(x2, x3)));
 
         return new Ret("Solus Theorem 11, TSP !==> Faithfulness (Figure 6)", facts, 7);
     }
@@ -2183,9 +2183,9 @@ public final class TestGrasp {
 
         IndependenceFacts facts = new IndependenceFacts();
 
-        facts.add(new IndependenceFact(x1, x3, list(x2)));
-        facts.add(new IndependenceFact(x2, x4, list(x1, x3)));
-        facts.add(new IndependenceFact(x1, x2, list(x4)));
+        facts.add(new IndependenceFact(x1, x3, set(x2)));
+        facts.add(new IndependenceFact(x2, x4, set(x1, x3)));
+        facts.add(new IndependenceFact(x1, x2, set(x4)));
 
         return new Ret("Raskutti Theorem 2.4 SMR !==> Adjacency Faithfulness", facts, 4);
     }
@@ -2199,27 +2199,27 @@ public final class TestGrasp {
 
         IndependenceFacts facts = new IndependenceFacts();
 
-        facts.add(new IndependenceFact(x0, x2, list(x1)));
-        facts.add(new IndependenceFact(x0, x2, list(x1, x3)));
-        facts.add(new IndependenceFact(x0, x2, list(x1, x3, x4)));
+        facts.add(new IndependenceFact(x0, x2, set(x1)));
+        facts.add(new IndependenceFact(x0, x2, set(x1, x3)));
+        facts.add(new IndependenceFact(x0, x2, set(x1, x3, x4)));
 
-        facts.add(new IndependenceFact(x0, x4, list(x1, x3)));
-        facts.add(new IndependenceFact(x0, x4, list(x2, x3)));
-        facts.add(new IndependenceFact(x0, x4, list(x1, x2, x3)));
+        facts.add(new IndependenceFact(x0, x4, set(x1, x3)));
+        facts.add(new IndependenceFact(x0, x4, set(x2, x3)));
+        facts.add(new IndependenceFact(x0, x4, set(x1, x2, x3)));
 
-        facts.add(new IndependenceFact(x1, x3, list(x0)));
-        facts.add(new IndependenceFact(x1, x3, list(x0, x2)));
-        facts.add(new IndependenceFact(x1, x3, list(x0, x2, x4)));
+        facts.add(new IndependenceFact(x1, x3, set(x0)));
+        facts.add(new IndependenceFact(x1, x3, set(x0, x2)));
+        facts.add(new IndependenceFact(x1, x3, set(x0, x2, x4)));
 
-        facts.add(new IndependenceFact(x1, x4, list(x0, x2)));
-        facts.add(new IndependenceFact(x1, x4, list(x2, x3)));
-        facts.add(new IndependenceFact(x1, x4, list(x0, x2, x3)));
+        facts.add(new IndependenceFact(x1, x4, set(x0, x2)));
+        facts.add(new IndependenceFact(x1, x4, set(x2, x3)));
+        facts.add(new IndependenceFact(x1, x4, set(x0, x2, x3)));
 
-        facts.add(new IndependenceFact(x2, x3, list(x0)));
-        facts.add(new IndependenceFact(x2, x3, list(x1)));
-        facts.add(new IndependenceFact(x2, x3, list(x0, x1)));
+        facts.add(new IndependenceFact(x2, x3, set(x0)));
+        facts.add(new IndependenceFact(x2, x3, set(x1)));
+        facts.add(new IndependenceFact(x2, x3, set(x0, x1)));
 
-        facts.add(new IndependenceFact(x0, x4, list()));
+        facts.add(new IndependenceFact(x0, x4, set()));
 
         return new Ret("Wayne example 1", facts, 8);
     }
@@ -2360,8 +2360,8 @@ public final class TestGrasp {
         return true;
     }
 
-    private List<Node> list(Node... nodes) {
-        List<Node> list = new ArrayList<>();
+    private Set<Node> set(Node... nodes) {
+        Set<Node> list = new HashSet<>();
         Collections.addAll(list, nodes);
         return list;
     }
@@ -2696,7 +2696,7 @@ public final class TestGrasp {
         Graph graph = RandomGraph.randomGraph(20, 0, 40, 100, 100, 100, false);
 
         for (Node x : graph.getNodes()) {
-            List<Node> parents = graph.getParents(x);
+            Set<Node> parents = new HashSet<>(graph.getParents(x));
 
             for (Node y : graph.getNodes()) {
                 if (!graph.paths().isDescendentOf(y, x) && !parents.contains(y)) {
@@ -3219,7 +3219,7 @@ public final class TestGrasp {
                 List<List<Node>> treks = graph.paths().treks(x, y, 4);
 
                 if (treks.size() >= 2) {
-                    IndependenceFact fact = new IndependenceFact(x, y, new ArrayList<>());
+                    IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>());
                     facts.add(fact);
                     System.out.println("Added " + fact);
 
@@ -3246,8 +3246,8 @@ public final class TestGrasp {
                             }
                         }
 
-                        if (dsep.checkIndependence(x, y, new ArrayList<>(pathColliders)).isIndependent()) {
-                            IndependenceFact fact = new IndependenceFact(x, y, new ArrayList<>(pathColliders));
+                        if (dsep.checkIndependence(x, y, new HashSet<>(pathColliders)).isIndependent()) {
+                            IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(pathColliders));
                             facts.add(fact);
                             System.out.println("Added " + fact);
                             count++;

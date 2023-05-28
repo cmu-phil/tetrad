@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -84,7 +85,7 @@ public class IndTestScore implements Score {
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
-        this.test.checkIndependence(this.variables.get(x), this.variables.get(y), getVariableList(z));
+        this.test.checkIndependence(this.variables.get(x), this.variables.get(y),new HashSet<>(getVariableList(z)));
         return this.test.getScore();
     }
 

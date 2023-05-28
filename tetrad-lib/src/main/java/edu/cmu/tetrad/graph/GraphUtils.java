@@ -812,6 +812,12 @@ public final class GraphUtils {
         return set;
     }
 
+    public static Set<Node> asSet(Node...nodes) {
+        Set<Node> set = new HashSet<>();
+        Collections.addAll(set, nodes);
+        return set;
+    }
+
     public static int numDirectionalErrors(Graph result, Graph cpdag) {
         int count = 0;
 
@@ -1797,7 +1803,7 @@ public final class GraphUtils {
                 Node c = adjacentNodes.get(combination[1]);
 
                 if (graph.isAdjacentTo(a, c) && referenceCpdag.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
+                    Set<Node> sepset = sepsets.getSepset(a, c);
                     if (sepset != null) {
                         graph.removeEdge(a, c);
                     }

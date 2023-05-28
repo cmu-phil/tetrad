@@ -545,16 +545,16 @@ public final class SvarFciOrient {
 
         List<Node> path = getPath(d, previous);
 
-        boolean ind = getSepsets().isIndependent(d, c, path);
+        boolean ind = getSepsets().isIndependent(d, c, new HashSet<>(path));
 
         List<Node> path2 = new ArrayList<>(path);
 
         path2.remove(b);
 
-        boolean ind2 = getSepsets().isIndependent(d, c, path2);
+        boolean ind2 = getSepsets().isIndependent(d, c, new HashSet<>(path2));
 
         if (!ind && !ind2) {
-            List<Node> sepset = getSepsets().getSepset(d, c);
+            Set<Node> sepset = getSepsets().getSepset(d, c);
 
             if (this.verbose) {
                 System.out.println("Sepset for d = " + d + " and c = " + c + " = " + sepset);

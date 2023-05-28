@@ -34,6 +34,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.addForbiddenReverseEdgesForDirectedEdges;
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
@@ -334,7 +335,7 @@ public final class SpFci implements IGraphSearch {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
+                    Set<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);

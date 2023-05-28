@@ -74,7 +74,7 @@ public class VcFas {
      */
     private final TetradLogger logger = TetradLogger.getInstance();
 
-    private final Map<Edge, List<Node>> apparentlyNonadjacencies = new HashMap<>();
+    private final Map<Edge, Set<Node>> apparentlyNonadjacencies = new HashMap<>();
 
     /**
      * The depth 0 graph, specified initially.
@@ -185,7 +185,7 @@ public class VcFas {
     //==============================PRIVATE METHODS======================/
 
     private boolean searchAtDepth0(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
-        List<Node> empty = Collections.emptyList();
+        Set<Node> empty = Collections.emptySet();
         for (int i = 0; i < nodes.size(); i++) {
             if ((i + 1) % 100 == 0) System.out.println("Node # " + (i + 1));
 
@@ -284,7 +284,7 @@ public class VcFas {
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, ppx);
+                        Set<Node> condSet = GraphUtils.asSet(choice, ppx);
 
                         boolean independent;
 
@@ -337,7 +337,7 @@ public class VcFas {
         return this.numIndependenceTests;
     }
 
-    public Map<Edge, List<Node>> getApparentlyNonadjacencies() {
+    public Map<Edge, Set<Node>> getApparentlyNonadjacencies() {
         return this.apparentlyNonadjacencies;
     }
 

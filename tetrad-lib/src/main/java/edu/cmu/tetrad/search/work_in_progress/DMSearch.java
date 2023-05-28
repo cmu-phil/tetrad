@@ -650,7 +650,7 @@ public class DMSearch {
                                  SortedSet<Node> outputsLatent, SortedSet<Node> outputsLatentEffect,
                                  Graph pattern, LatentStructure structure, Node latent, Node latentEffect) {
 
-        List<Node> latentList = new ArrayList<Node>();
+        Set<Node> latentList = new HashSet<>();
 
         latentList.addAll(inputsLatent);
 

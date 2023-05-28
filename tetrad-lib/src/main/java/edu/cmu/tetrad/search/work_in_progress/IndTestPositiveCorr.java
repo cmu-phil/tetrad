@@ -35,10 +35,7 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.commons.math3.util.FastMath.*;
@@ -129,17 +126,20 @@ public final class IndTestPositiveCorr implements IndependenceTest {
      *
      * @param x0 the one variable being compared.
      * @param y0 the second variable being compared.
-     * @param z0 the list of conditioning variables.
+     * @param _z0 the list of conditioning variables.
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node x0, Node y0, List<Node> z0) {
+    public IndependenceResult checkIndependence(Node x0, Node y0, Set<Node> _z0) {
 
-        System.out.println(LogUtilsSearch.independenceFact(x0, y0, z0));
+        System.out.println(LogUtilsSearch.independenceFact(x0, y0, _z0));
 
 
         double[] x = this.data[this.dataSet.getColumn(x0)];
         double[] y = this.data[this.dataSet.getColumn(y0)];
+
+        List<Node> z0 = new ArrayList<>(_z0);
+        Collections.sort(z0);
 
         double[][] _Z = new double[z0.size()][];
 
@@ -184,7 +184,7 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
         System.out.println(possibleEdge);
 
-        return new IndependenceResult(new IndependenceFact(x0, y0, z0), !possibleEdge, getPValue());
+        return new IndependenceResult(new IndependenceFact(x0, y0, _z0), !possibleEdge, getPValue());
     }
 
     /**

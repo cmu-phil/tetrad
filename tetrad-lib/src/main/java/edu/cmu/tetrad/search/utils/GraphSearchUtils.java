@@ -128,8 +128,7 @@ public final class GraphSearchUtils {
                     continue;
                 }
 
-                List<Node> sepset = GraphSearchUtils.sepset(graph, x, z, new HashSet<>(), new HashSet<>(),
-                        test);
+                Set<Node> sepset = GraphSearchUtils.sepset(graph, x, z, new HashSet<>(), new HashSet<>(), test);
 
                 if (sepset == null) {
                     continue;
@@ -139,11 +138,9 @@ public final class GraphSearchUtils {
                     continue;
                 }
 
-                List<Node> augmentedSet = new LinkedList<>(sepset);
+                Set<Node> augmentedSet = new HashSet<>(sepset);
 
-                if (!augmentedSet.contains(y)) {
-                    augmentedSet.add(y);
-                }
+                augmentedSet.add(y);
 
                 if (test.determines(sepset, x)) {
                     continue;
@@ -177,8 +174,7 @@ public final class GraphSearchUtils {
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
     }
 
-    private static List<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining,
-                                     IndependenceTest independenceTest) {
+    private static Set<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining, IndependenceTest independenceTest) {
         List<Node> adj = graph.getAdjacentNodes(a);
         adj.addAll(graph.getAdjacentNodes(c));
         adj.remove(c);
@@ -196,11 +192,11 @@ public final class GraphSearchUtils {
                 v2.remove(c);
 
 //                    if (isForbidden(a, c, new ArrayList<>(v2)))
-                independenceTest.checkIndependence(a, c, new ArrayList<>(v2));
+                independenceTest.checkIndependence(a, c, new HashSet<>(v2));
                 double p2 = independenceTest.getScore();
 
                 if (p2 < 0) {
-                    return new ArrayList<>(v2);
+                    return v2;
                 }
             }
         }
@@ -236,7 +232,7 @@ public final class GraphSearchUtils {
                     continue;
                 }
 
-                List<Node> sepset = set.get(a, c);
+                Set<Node> sepset = set.get(a, c);
 
                 //I think the null check needs to be here --AJ
                 if (sepset != null && !sepset.contains(b)
@@ -968,7 +964,7 @@ public final class GraphSearchUtils {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                List<Node> cond = GraphUtils.asList(choice, _nodes);
+                Set<Node> cond = GraphUtils.asSet(choice, _nodes);
 
                 if (test.checkIndependence(x, z, cond).isIndependent()) {
                     if (cond.contains(y)) {
@@ -995,7 +991,7 @@ public final class GraphSearchUtils {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                List<Node> cond = GraphUtils.asList(choice, _nodes);
+                Set<Node> cond = GraphUtils.asSet(choice, _nodes);
 
                 if (test.checkIndependence(x, z, cond).isIndependent()) {
                     if (cond.contains(y)) {
