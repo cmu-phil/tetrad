@@ -67,6 +67,7 @@ public class MarkovCheckEditor extends JPanel {
     private final MarkovCheckIndTestModel model;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final IndependenceTest test;
+    private final IndTestDSep dsep;
     private Graph dag;
     private AbstractTableModel tableModelIndep;
     private AbstractTableModel tableModelDep;
@@ -128,7 +129,8 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         this.dag = sourceGraph;
-        model.setVars(dag.getNodeNames());
+        dsep = new IndTestDSep(this.dag);
+        model.setVars(this.dag.getNodeNames());
 
         JPanel indep = buildGuiIndep();
         JPanel dep = buildGuiDep();
@@ -161,7 +163,7 @@ public class MarkovCheckEditor extends JPanel {
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Checks whether X ~_||_ Y | parents(X) for Y in desc(X)"));
+        b2.add(new JLabel("Checks whether X ~_||_ Y | parents(X) for dconn(X, Y | parents(X))"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
@@ -342,7 +344,7 @@ public class MarkovCheckEditor extends JPanel {
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Checks whether X _||_ Y | parents(X) for Y not in (desc(X) U parentx(X))"));
+        b2.add(new JLabel("Checks whether X _||_ Y | parents(X) for dsep(X, Y | parents(X))"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
@@ -544,23 +546,39 @@ public class MarkovCheckEditor extends JPanel {
 
                 // Listing all facts before checking any (in preparation for parallelization).
                 for (Node x : dag.getNodes()) {
-                    List<Node> desc = dag.paths().getDescendants(Collections.singletonList(x));
-                    List<Node> nondesc = dag.getNodes();
-                    nondesc.removeAll(desc);
-                    nondesc.removeAll(dag.getParents(x));
-                    nondesc.remove(x);
+//                    List<Node> desc = dag.paths().getDescendants(Collections.singletonList(x));
+//                    List<Node> nondesc = dag.getNodes();
+//                    nondesc.removeAll(desc);
+//                    nondesc.removeAll(dag.getParents(x));
+//                    nondesc.remove(x);
 
                     List<Node> z = dag.getParents(x);
+                    List<Node> ds = new ArrayList<>();
+                    List<Node> dc = new ArrayList<>();
 
+                    List<Node> other = dag.getNodes();
+                    other.removeAll(z);
+
+                    for (Node y : other) {
+                        if (y == x) continue;
+                        if (dsep.isDSeparated(x, y, z)) {
+                            ds.add(y);
+                        } else {
+                            dc.add(y);
+                        }
+                    }
+
+//                    System.out.println("Node " + x + " parents = " + z
+//                            + " non-descendants = " + nondesc);
                     System.out.println("Node " + x + " parents = " + z
-                            + " non-descendants = " + nondesc);
+                            + " d-separated | z = " + ds + " d-connected | z = " + dc);
 
                     if (indep) {
-                        for (Node y : nondesc) {
+                        for (Node y : ds) {
                             facts.add(new IndependenceFact(x, y, z));
                         }
                     } else {
-                        for (Node y : desc) {
+                        for (Node y : dc) {
                             facts.add(new IndependenceFact(x, y, z));
                         }
                     }
@@ -590,18 +608,20 @@ public class MarkovCheckEditor extends JPanel {
                             Node y = fact.getY();
                             List<Node> z = fact.getZ();
                             boolean verbose = test.isVerbose();
-                            test.setVerbose(verbose);
+                            test.setVerbose(false);
                             IndependenceResult result = test.checkIndependence(x, y, z);
                             boolean indep = result.isIndependent();
                             double pValue = result.getPValue();
                             test.setVerbose(verbose);
 
-                            results.add(new IndependenceResult(fact, indep, pValue));
+                            if (!Double.isNaN(pValue)) {
+                                results.add(new IndependenceResult(fact, indep, pValue));
 
-                            if (indep) {
-                                tableModelIndep.fireTableDataChanged();
-                            } else {
-                                tableModelDep.fireTableDataChanged();
+                                if (indep) {
+                                    tableModelIndep.fireTableDataChanged();
+                                } else {
+                                    tableModelDep.fireTableDataChanged();
+                                }
                             }
                         }
 
