@@ -37,10 +37,7 @@ import edu.cmu.tetradapp.util.IonInput;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Holds a tetrad-style graph with all of the constructors necessary for it to
@@ -272,10 +269,10 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
                 continue;
             }
 
-            List<Edge> edges = imGraph.getEdges(node1, node2);
+            Set<Edge> edges = imGraph.getEdges(node1, node2);
 
             if (edges.size() == 1) {
-                graph2.addEdge(edges.get(0));
+                graph2.addEdge(edges.iterator().next());
             } else {
                 Expression expression1 = pm.getNodeExpression(node1);
                 Expression expression2 = pm.getNodeExpression(node2);

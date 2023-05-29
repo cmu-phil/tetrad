@@ -547,7 +547,7 @@ public final class SemGraphEditor extends JPanel
             for (int j = i + 1; j < exoNodes.size(); j++) {
                 Node node1 = exoNodes.get(i);
                 Node node2 = exoNodes.get(j);
-                List<Edge> edges = graph.getEdges(node1, node2);
+                Set<Edge> edges = graph.getEdges(node1, node2);
 
                 for (Edge edge : edges) {
                     if (Edges.isBidirectedEdge(edge)) {

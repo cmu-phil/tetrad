@@ -753,7 +753,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
     // Get all adj that are connected to Y by an undirected edge and not adjacent to X.
     private List<Node> getTNeighbors(Node x, Node y) {
-        List<Edge> yEdges = graph.getEdges(y);
+        Set<Edge> yEdges = graph.getEdges(y);
         List<Node> tNeighbors = new ArrayList<>();
 
         for (Edge edge : yEdges) {

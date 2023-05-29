@@ -1142,8 +1142,9 @@ public class Dci {
         Node last = start;
         Node current = start;
         for (int k = 1; k < newGraph.getNumNodes(); k++) {
-            List<Edge> adjEdges = newGraph.getEdges(current);
+            List<Edge> adjEdges = new ArrayList<>(newGraph.getEdges(current));
             next = adjEdges.get(0).getDistalNode(current);
+            assert next != null;
             if (next.equals(last)) {
                 next = adjEdges.get(1).getDistalNode(current);
             }

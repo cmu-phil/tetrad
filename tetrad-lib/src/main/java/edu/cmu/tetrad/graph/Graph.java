@@ -155,12 +155,12 @@ public interface Graph extends TetradSerializable {
      * @return the list of edges connected to a particular node. No particular ordering of the edges in the list is
      * guaranteed.
      */
-    List<Edge> getEdges(Node node);
+    Set<Edge> getEdges(Node node);
 
     /**
      * @return the edges connecting node1 and node2.
      */
-    List<Edge> getEdges(Node node1, Node node2);
+    Set<Edge> getEdges(Node node1, Node node2);
 
     /**
      * @return the set of edges in the graph.  No particular ordering of the edges in the list is guaranteed.

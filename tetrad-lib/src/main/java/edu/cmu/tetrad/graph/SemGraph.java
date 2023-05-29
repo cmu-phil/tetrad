@@ -305,7 +305,7 @@ public final class SemGraph implements Graph {
     }
 
     public boolean removeEdge(Node node1, Node node2) {
-        List<Edge> edges = getEdges(node1, node2);
+        Set<Edge> edges = getEdges(node1, node2);
 
         if (edges.size() > 1) {
             throw new IllegalStateException(
@@ -426,11 +426,11 @@ public final class SemGraph implements Graph {
         return getGraph().getEdges();
     }
 
-    public List<Edge> getEdges(Node node) {
+    public Set<Edge> getEdges(Node node) {
         return getGraph().getEdges(node);
     }
 
-    public List<Edge> getEdges(Node node1, Node node2) {
+    public Set<Edge> getEdges(Node node1, Node node2) {
         return getGraph().getEdges(node1, node2);
     }
 
@@ -680,11 +680,11 @@ public final class SemGraph implements Graph {
         }
 
         Graph graph = getGraph();
-        List<Edge> edges = graph.getEdges(node1);
+        Set<Edge> edges = graph.getEdges(node1);
 
         if (edges == null) {
             System.out.println();
-            edges = new ArrayList<>();
+            edges = new HashSet<>();
         }
 
         List<Edge> attachedEdges = new LinkedList<>(edges);

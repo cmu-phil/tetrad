@@ -258,11 +258,11 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getEdges();
     }
 
-    public List<Edge> getEdges(Node node) {
+    public Set<Edge> getEdges(Node node) {
         return getGraph().getEdges(node);
     }
 
-    public List<Edge> getEdges(Node node1, Node node2) {
+    public Set<Edge> getEdges(Node node1, Node node2) {
         return getGraph().getEdges(node1, node2);
     }
 

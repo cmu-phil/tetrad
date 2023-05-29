@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * A confusion matrix for arrows--i.e. TP, FP, TN, FN for counts of arrow endpoints. A true positive arrow is counted
@@ -58,11 +59,11 @@ public class ArrowConfusion {
 
         for (Edge edge : truth1.getEdges()) {
 
-            List<Edge> edges1 = est1.getEdges(edge.getNode1(), edge.getNode2());
+            Set<Edge> edges1 = est1.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge1;
 
             if (edges1.size() == 1) {
-                edge1 = edges1.get(0);
+                edge1 = edges1.iterator().next();
             } else {
                 edge1 = est1.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
@@ -77,11 +78,11 @@ public class ArrowConfusion {
                 e2Est = edge1.getProximalEndpoint(edge.getNode2());
             }
 
-            List<Edge> edges2 = truth1.getEdges(edge.getNode1(), edge.getNode2());
+            Set<Edge> edges2 = truth1.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge2;
 
             if (edges2.size() == 1) {
-                edge2 = edges2.get(0);
+                edge2 = edges2.iterator().next();
 //                if (Edges.isUndirectedEdge(edge2)) continue;
             } else {
                 edge2 = truth1.getDirectedEdge(edge.getNode1(), edge.getNode2());
@@ -152,11 +153,11 @@ public class ArrowConfusion {
 
         for (Edge edge : est1.getEdges()) {
 
-            List<Edge> edges1 = est1.getEdges(edge.getNode1(), edge.getNode2());
+            Set<Edge> edges1 = est1.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge1;
 
             if (edges1.size() == 1) {
-                edge1 = edges1.get(0);
+                edge1 = edges1.iterator().next();
             } else {
                 edge1 = est1.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
@@ -171,11 +172,11 @@ public class ArrowConfusion {
             }
 
 
-            List<Edge> edges2 = truth1.getEdges(edge.getNode1(), edge.getNode2());
+            Set<Edge> edges2 = truth1.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge2;
 
             if (edges2.size() == 1) {
-                edge2 = edges2.get(0);
+                edge2 = edges2.iterator().next();
 //                if (Edges.isUndirectedEdge(edge2)) continue;
             } else {
                 edge2 = truth1.getDirectedEdge(edge.getNode1(), edge.getNode2());
@@ -227,8 +228,8 @@ public class ArrowConfusion {
         for (Edge edge : truth1.getEdges()) {
 
 
-            List<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
-            List<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
+            Set<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
+            Set<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() == 2 && TwoCycle2.size() == 2) {
                 //              System.out.println("2-cycle correctly inferred " + TwoCycle1);
@@ -243,8 +244,8 @@ public class ArrowConfusion {
 
         for (Edge edge : est1.getEdges()) {
 
-            List<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
-            List<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
+            Set<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
+            Set<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() != 2 && TwoCycle2.size() == 2) {
                 //              System.out.println("2-cycle falsely inferred" + TwoCycle2);

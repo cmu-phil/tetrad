@@ -190,11 +190,11 @@ public final class Dag implements Graph {
         return this.graph.getDirectedEdge(node1, node2);
     }
 
-    public List<Edge> getEdges(Node node) {
+    public Set<Edge> getEdges(Node node) {
         return this.graph.getEdges(node);
     }
 
-    public List<Edge> getEdges(Node node1, Node node2) {
+    public Set<Edge> getEdges(Node node1, Node node2) {
         return this.graph.getEdges(node1, node2);
     }
 

@@ -1256,10 +1256,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
             Graph graph = getGraph();
 
-            List<Edge> edges = graph.getEdges(node1, node2);
+            Set<Edge> edges = graph.getEdges(node1, node2);
 
             for (int i = 0; i < edges.size(); i++) {
-                Edge edge = edges.get(i);
+                Edge edge = edges.iterator().next();
                 Node _node1 = edge.getNode1();
                 boolean awayFrom = (_node1 == node1);
 

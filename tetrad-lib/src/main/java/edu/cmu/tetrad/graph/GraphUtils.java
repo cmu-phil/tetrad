@@ -169,7 +169,7 @@ public final class GraphUtils {
 
     //all adjancencies are directed <=> there is no uncertainty about whom the parents of 'node' are.
     public static boolean allAdjacenciesAreDirected(Node node, Graph graph) {
-        List<Edge> nodeEdges = graph.getEdges(node);
+        Set<Edge> nodeEdges = graph.getEdges(node);
         for (Edge edge : nodeEdges) {
             if (!edge.isDirected()) {
                 return false;

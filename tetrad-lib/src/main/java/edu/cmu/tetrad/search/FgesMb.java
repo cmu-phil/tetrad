@@ -1166,7 +1166,7 @@ public final class FgesMb {
 
     // Get all adj that are connected to Y by an undirected edge and not adjacent to X.
     private List<Node> getTNeighbors(Node x, Node y) {
-        List<Edge> yEdges = this.graph.getEdges(y);
+        Set<Edge> yEdges = this.graph.getEdges(y);
         List<Node> tNeighbors = new ArrayList<>();
 
         for (Edge edge : yEdges) {
@@ -1188,7 +1188,7 @@ public final class FgesMb {
 
     // Get all adj that are connected to Y.
     private Set<Node> getNeighbors(Node y) {
-        List<Edge> yEdges = this.graph.getEdges(y);
+        Set<Edge> yEdges = this.graph.getEdges(y);
         Set<Node> neighbors = new HashSet<>();
 
         for (Edge edge : yEdges) {

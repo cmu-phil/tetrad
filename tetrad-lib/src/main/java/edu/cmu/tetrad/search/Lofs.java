@@ -1263,12 +1263,12 @@ public class Lofs {
     }
 
     private boolean isTwoCycle(Graph graph, Node x, Node y) {
-        List<Edge> edges = graph.getEdges(x, y);
+        Set<Edge> edges = graph.getEdges(x, y);
         return edges.size() == 2;
     }
 
     private boolean isUndirected(Graph graph, Node x, Node y) {
-        List<Edge> edges = graph.getEdges(x, y);
+        Set<Edge> edges = graph.getEdges(x, y);
         if (edges.size() == 1) {
             Edge edge = graph.getEdge(x, y);
             return Edges.isUndirectedEdge(edge);

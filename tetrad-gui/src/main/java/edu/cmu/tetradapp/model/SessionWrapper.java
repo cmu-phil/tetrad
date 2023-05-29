@@ -383,8 +383,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * @return the list of edges connected to a particular node. No particular
      * ordering of the edges in the list is guaranteed.
      */
-    public List<Edge> getEdges(Node node) {
-        List<Edge> edgeList = new LinkedList<>();
+    public Set<Edge> getEdges(Node node) {
+        Set<Edge> edgeList = new HashSet<>();
 
         for (Edge edge : this.sessionEdges) {
             if ((edge.getNode1() == node) || (edge.getNode2() == node)) {
@@ -688,7 +688,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     /**
      * @return the edges connecting node1 and node2.
      */
-    public List<Edge> getEdges(Node node1, Node node2) {
+    public Set<Edge> getEdges(Node node1, Node node2) {
         throw new UnsupportedOperationException();
     }
 

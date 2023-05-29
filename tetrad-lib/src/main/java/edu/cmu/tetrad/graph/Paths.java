@@ -1863,11 +1863,11 @@ public class Paths implements TetradSerializable {
     }
 
     public boolean isDirectedFromTo(Node node1, Node node2) {
-        List<Edge> edges = graph.getEdges(node1, node2);
+        Set<Edge> edges = graph.getEdges(node1, node2);
         if (edges.size() != 1) {
             return false;
         }
-        Edge edge = edges.get(0);
+        Edge edge = edges.iterator().next();
         return edge.pointsTowards(node2);
     }
 
