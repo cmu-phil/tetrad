@@ -28,6 +28,7 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Identifiability, based on RowSummingExactUpdater
@@ -925,7 +926,7 @@ public final class Identifiability implements ManipulatingBayesUpdater {
         for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
             if (this.evidence.isManipulated(i)) {
                 Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
-                List<Node> parents = updatedGraph.getParents(node);
+                Set<Node> parents = updatedGraph.getParents(node);
 
                 for (Node parent1 : parents) {
                     updatedGraph.removeEdge(node, parent1);

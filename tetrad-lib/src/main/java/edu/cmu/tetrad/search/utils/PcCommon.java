@@ -440,7 +440,7 @@ public final class PcCommon implements IGraphSearch {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node y : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(y);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(y));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -483,8 +483,8 @@ public final class PcCommon implements IGraphSearch {
     }
 
     private Set<Set<Node>> getSepsets(Node i, Node k, Graph g) {
-        List<Node> adji = g.getAdjacentNodes(i);
-        List<Node> adjk = g.getAdjacentNodes(k);
+        List<Node> adji = new ArrayList<>(g.getAdjacentNodes(i));
+        List<Node> adjk = new ArrayList<>(g.getAdjacentNodes(k));
         Set<Set<Node>> sepsets = new HashSet<>();
 
         for (int d = 0; d <= FastMath.max(adji.size(), adjk.size()); d++) {
@@ -569,7 +569,7 @@ public final class PcCommon implements IGraphSearch {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;

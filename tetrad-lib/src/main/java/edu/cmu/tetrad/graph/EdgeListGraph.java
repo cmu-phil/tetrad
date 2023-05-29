@@ -282,8 +282,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return the list of children for a node.
      */
     @Override
-    public List<Node> getChildren(Node node) {
-        List<Node> children = new ArrayList<>();
+    public Set<Node> getChildren(Node node) {
+        Set<Node> children = new HashSet<>();
 
         for (Edge edge : getEdges(node)) {
             if (Edges.isDirectedEdge(edge)) {
@@ -361,12 +361,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return the list of parents for a node.
      */
     @Override
-    public List<Node> getParents(Node node) {
-        List<Node> parents = new ArrayList<>();
+    public Set<Node> getParents(Node node) {
+        Set<Node> parents = new HashSet<>();
         Set<Edge> edges = this.edgeLists.get(node);
 
         if (edges == null) {
-            return new ArrayList<>();
+            return new HashSet<>();
         }
 
         for (Edge edge : edges) {
@@ -552,7 +552,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * the duplication.
      */
     @Override
-    public List<Node> getAdjacentNodes(Node node) {
+    public Set<Node> getAdjacentNodes(Node node) {
         Set<Edge> edges = this.edgeLists.get(node);
         Set<Node> adj = new HashSet<>();
 
@@ -564,7 +564,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             adj.add(edge.getDistalNode(node));
         }
 
-        return new ArrayList<>(adj);
+        return new HashSet<>(adj);
     }
 
     /**

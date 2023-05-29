@@ -149,7 +149,7 @@ public final class SvarGfci implements IGraphSearch {
         this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxIndegree);
 
         for (Node b : independenceTest.getVariables()) {
-            List<Node> adjacentNodes = fgesGraph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(fgesGraph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -274,7 +274,7 @@ public final class SvarGfci implements IGraphSearch {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;

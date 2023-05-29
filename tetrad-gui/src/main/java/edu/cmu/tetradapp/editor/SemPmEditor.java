@@ -46,6 +46,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Edits a SEM PM model.
@@ -537,7 +538,7 @@ class SemPmGraphicalEditor extends JPanel {
         StringBuilder eqn = new StringBuilder(node.getName() + " = B0_" + node.getName());
 
         SemGraph semGraph = semPm().getGraph();
-        List<Node> parentNodes = semGraph.getParents(node);
+        Set<Node> parentNodes = semGraph.getParents(node);
 
         for (Node parentNodeObj : parentNodes) {
             Parameter edgeParam = getEdgeParameter(

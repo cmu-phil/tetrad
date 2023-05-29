@@ -216,7 +216,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         this.errorNodes = new ArrayList<>();
 
         for (Node variable : this.variableNodes) {
-            List<Node> parents = this.graph.getParents(variable);
+            Set<Node> parents = this.graph.getParents(variable);
             boolean added = false;
 
             for (Node _node : parents) {
@@ -332,7 +332,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
             for (int i = 0; i < variableNodes.size(); i++) {
                 Node node = variableNodes.get(i);
-                List<Node> parents = getVariableParents(node);
+                List<Node> parents = new ArrayList<>(getVariableParents(node));
 
                 StringBuilder buf = new StringBuilder();
 
@@ -476,7 +476,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         List<String> parameterNames = parser.getParameters();
 
         // Make a list of parent names.
-        List<Node> parents = this.graph.getParents(node);
+        Set<Node> parents = this.graph.getParents(node);
         List<String> parentNames = new LinkedList<>();
 
         for (Node parent : parents) {
@@ -929,7 +929,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      * @return all parents of the given node, with error node(s?) last.
      */
     public List<Node> getParents(Node node) {
-        List<Node> parents = this.graph.getParents(node);
+        Set<Node> parents = this.graph.getParents(node);
         parents = putErrorNodesLast(parents);
         return new ArrayList<>(parents);
     }
@@ -967,9 +967,9 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      * @param node A node in the graph.
      * @return The non-error parents of <code>node</code>.
      */
-    private List<Node> getVariableParents(Node node) {
-        List<Node> allParents = this.graph.getParents(node);
-        List<Node> parents = new LinkedList<>();
+    private Set<Node> getVariableParents(Node node) {
+        Set<Node> allParents = this.graph.getParents(node);
+        Set<Node> parents = new HashSet<>();
 
         for (Node _parent : allParents) {
             if (_parent.getNodeType() != NodeType.ERROR) {
@@ -979,8 +979,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return parents;
     }
 
-    private List<Node> putErrorNodesLast(List<Node> parents) {
-        List<Node> sortedNodes = new LinkedList<>();
+    private Set<Node> putErrorNodesLast(Set<Node> parents) {
+        Set<Node> sortedNodes = new HashSet<>();
 
         for (Node node : parents) {
             if (node.getNodeType() != NodeType.ERROR) {

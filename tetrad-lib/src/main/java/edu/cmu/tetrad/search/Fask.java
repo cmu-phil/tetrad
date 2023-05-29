@@ -430,7 +430,7 @@ public final class Fask implements IGraphSearch {
         for (int j = 0; j < nodes.size(); j++) {
             Node y = nodes.get(j);
 
-            List<Node> pary = this.graph.getParents(y);
+            List<Node> pary = new ArrayList<>(this.graph.getParents(y));
             RegressionResult result = this.regressionDataset.regress(y, pary);
             double[] coef = result.getCoef();
 

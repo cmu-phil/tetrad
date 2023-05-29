@@ -62,6 +62,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Edits a SEM instantiated model.
@@ -1255,7 +1256,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             StringBuilder eqn = new StringBuilder(node.getName() + " = B0_" + node.getName());
 
             SemGraph semGraph = semIm().getSemPm().getGraph();
-            List<Node> parentNodes = semGraph.getParents(node);
+            Set<Node> parentNodes = semGraph.getParents(node);
 
             for (Node parentNodeObj : parentNodes) {
                 Parameter edgeParam = getEdgeParameter(

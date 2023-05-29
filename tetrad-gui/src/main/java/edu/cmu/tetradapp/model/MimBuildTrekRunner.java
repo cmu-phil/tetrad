@@ -37,6 +37,7 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the MIMBuild
@@ -206,9 +207,9 @@ public class MimBuildTrekRunner extends AbstractMimRunner implements GraphSource
         Collections.sort(latents);
 
         for (Node latent : latents) {
-            List<Node> children = graph.getChildren(latent);
-            children.removeAll(latents);
-            Collections.sort(children);
+            Set<Node> children = graph.getChildren(latent);
+            latents.forEach(children::remove);
+//            Collections.sort(children);
 
             builder.append(latent.getName()).append(": ");
 

@@ -215,7 +215,7 @@ public final class GraphTools {
         // add edges to connect parents with common child
         graph.getNodes()
                 .forEach(node -> {
-                    List<Node> parents = graph.getParents(node);
+                    Set<Node> parents = graph.getParents(node);
                     if (!(parents == null || parents.isEmpty()) && parents.size() > 1) {
                         Node[] p = parents.toArray(new Node[0]);
                         for (int i = 0; i < p.length; i++) {

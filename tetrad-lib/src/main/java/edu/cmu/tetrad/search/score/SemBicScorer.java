@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Scores an entire DAG using the SemBicScore.
@@ -46,7 +47,7 @@ public class SemBicScorer {
         double _score = 0.0;
 
         for (Node node : dag.getNodes()) {
-            List<Node> x = dag.getParents(node);
+            Set<Node> x = dag.getParents(node);
 
             int[] parentIndices = new int[x.size()];
 

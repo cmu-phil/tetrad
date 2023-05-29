@@ -1924,13 +1924,11 @@ public class PerformanceTests {
         for (int i = 0; i < numVars; i++) {
             Node node = nodes.get(i);
 
-            List<Node> adj = graph.getAdjacentNodes(node);
+            Set<Node> adj = graph.getAdjacentNodes(node);
 
             int degree = adj.size();
 
-            if (degreeCounts.get(degree) == null) {
-                degreeCounts.put(degree, 0);
-            }
+            degreeCounts.putIfAbsent(degree, 0);
 
             degreeCounts.put(degree, degreeCounts.get(degree) + 1);
         }

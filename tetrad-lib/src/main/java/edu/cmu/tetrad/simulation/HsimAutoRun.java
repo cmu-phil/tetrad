@@ -105,7 +105,7 @@ public class HsimAutoRun {
 
             List<Node> queue = new ArrayList<>();
             queue.add(centroid);
-            List<Node> queueAdd = new ArrayList<>();
+            Set<Node> queueAdd;
             //while queue has size less than the resim size, grow it
             //if (verbose) System.out.println(queue);
             while (queue.size() < resimSize) {

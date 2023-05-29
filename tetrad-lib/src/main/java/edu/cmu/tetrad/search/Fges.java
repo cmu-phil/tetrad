@@ -564,7 +564,7 @@ public final class Fges implements IGraphSearch, DagScorer {
 
                     Node y = nodes.get(_y);
 
-                    List<Node> adj;
+                    Set<Node> adj;
 
                     if (mode == Mode.heuristicSpeedup) {
                         adj = effectEdgesGraph.getAdjacentNodes(y);
@@ -585,9 +585,9 @@ public final class Fges implements IGraphSearch, DagScorer {
                             }
                         }
 
-                        adj = new ArrayList<>(g);
+                        adj = new HashSet<>(g);
                     } else if (mode == Mode.allowUnfaithfulness) {
-                        adj = new ArrayList<>(variables);
+                        adj = new HashSet<>(variables);
                     } else {
                         throw new IllegalStateException();
                     }
@@ -935,7 +935,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     // Find all adj that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
     // directed edge).
     private Set<Node> getNaYX(Node x, Node y) {
-        List<Node> adj = graph.getAdjacentNodes(y);
+        Set<Node> adj = graph.getAdjacentNodes(y);
         Set<Node> nayx = new HashSet<>();
 
         for (Node z : adj) {
@@ -1038,7 +1038,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         double _score = 0;
 
         for (Node node : getVariables()) {
-            List<Node> x = dag.getParents(node);
+            Set<Node> x = dag.getParents(node);
 
             int[] parentIndices = new int[x.size()];
 

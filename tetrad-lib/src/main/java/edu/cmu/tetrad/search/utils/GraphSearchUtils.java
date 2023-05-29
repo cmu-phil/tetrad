@@ -110,7 +110,7 @@ public final class GraphSearchUtils {
         List<Node> nodes = graph.getNodes();
 
         for (Node y : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(y));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -175,7 +175,7 @@ public final class GraphSearchUtils {
     }
 
     private static Set<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining, IndependenceTest independenceTest) {
-        List<Node> adj = graph.getAdjacentNodes(a);
+        List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(a));
         adj.addAll(graph.getAdjacentNodes(c));
         adj.remove(c);
         adj.remove(a);
@@ -214,7 +214,7 @@ public final class GraphSearchUtils {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -786,7 +786,7 @@ public final class GraphSearchUtils {
         List<ReachabilityEdge> nextEdges = new LinkedList<>();
 
         for (Node x : initialNodes) {
-            List<Node> adjX = graph.getAdjacentNodes(x);
+            Set<Node> adjX = graph.getAdjacentNodes(x);
 
             for (Node y : adjX) {
                 if (legalPairs.isLegalFirstEdge(x, y)) {
@@ -811,7 +811,7 @@ public final class GraphSearchUtils {
             for (ReachabilityEdge edge : currEdges) {
                 Node x = edge.getFrom();
                 Node y = edge.getTo();
-                List<Node> adjY = graph.getAdjacentNodes(y);
+                Set<Node> adjY = graph.getAdjacentNodes(y);
 
                 for (Node z : adjY) {
                     if ((visited.get(y, z)) == Boolean.TRUE) {
@@ -949,7 +949,7 @@ public final class GraphSearchUtils {
         int numSepsetsContainingY = 0;
         int numSepsetsNotContainingY = 0;
 
-        List<Node> _nodes = graph.getAdjacentNodes(x);
+        List<Node> _nodes = new ArrayList<>(graph.getAdjacentNodes(x));
         _nodes.remove(z);
         TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
@@ -980,7 +980,7 @@ public final class GraphSearchUtils {
             }
         }
 
-        _nodes = graph.getAdjacentNodes(z);
+        _nodes = new ArrayList<>(graph.getAdjacentNodes(z));
         _nodes.remove(x);
         TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 

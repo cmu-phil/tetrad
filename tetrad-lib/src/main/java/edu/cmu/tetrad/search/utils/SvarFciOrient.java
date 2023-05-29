@@ -162,7 +162,7 @@ public final class SvarFciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -302,7 +302,7 @@ public final class SvarFciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node B : nodes) {
-            List<Node> adj = graph.getAdjacentNodes(B);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
             if (adj.size() < 2) {
                 continue;
@@ -490,7 +490,7 @@ public final class SvarFciOrient {
 
         Map<Node, Node> previous = new HashMap<>();
 
-        List<Node> cParents = graph.getParents(c);
+        Set<Node> cParents = graph.getParents(c);
 
         Q.offer(a);
         V.add(a);
@@ -664,7 +664,7 @@ public final class SvarFciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacents = graph.getAdjacentNodes(b);
+            List<Node> adjacents = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacents.size() < 2) continue;
 

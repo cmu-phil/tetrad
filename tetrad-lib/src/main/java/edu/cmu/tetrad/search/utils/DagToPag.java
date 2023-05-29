@@ -233,7 +233,7 @@ public final class DagToPag {
         }
 
         for (Node b : measured) {
-            List<Node> adjb = graph.getAdjacentNodes(b);
+            List<Node> adjb = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjb.size() < 2) continue;
 

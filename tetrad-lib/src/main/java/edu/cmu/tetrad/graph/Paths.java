@@ -1604,7 +1604,7 @@ public class Paths implements TetradSerializable {
 
         component.add(node);
         unsortedNodes.remove(node);
-        List<Node> adj = graph.getAdjacentNodes(node);
+        Set<Node> adj = graph.getAdjacentNodes(node);
 
         for (Node anAdj : adj) {
             if (!component.contains(anAdj)) {

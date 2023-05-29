@@ -90,7 +90,7 @@ public class RandomGraph {
         List<Node> nodes = dag.getNodes();
 
         for (Node node : nodes) {
-            List<Node> children = dag.getChildren(node);
+            Set<Node> children = dag.getChildren(node);
 
             if (children.size() >= 2) {
                 commonCauses.add(node);
@@ -376,12 +376,12 @@ public class RandomGraph {
         List<Node> nodes = dag.getNodes();
 
         for (Node node : nodes) {
-            List<Node> children = dag.getChildren(node);
+            Set<Node> children = dag.getChildren(node);
 
             if (children.size() >= 2) {
                 commonCausesAndEffects.add(node);
             } else {
-                List<Node> parents = dag.getParents(node);
+                Set<Node> parents = dag.getParents(node);
                 if (parents.size() >= 2 && children.size() >= 1) {
                     commonCausesAndEffects.add(node);
                 }

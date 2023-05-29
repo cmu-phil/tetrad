@@ -35,9 +35,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -282,10 +280,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
     private void adjacentNodes(Graph graph, JTextArea textArea, List<Node> nodes1, List<Node> nodes2) {
         for (Node node1 : nodes1) {
             for (Node node2 : nodes2) {
-                List<Node> parents = graph.getParents(node1);
-                List<Node> children = graph.getChildren(node1);
+                Set<Node> parents = graph.getParents(node1);
+                Set<Node> children = graph.getChildren(node1);
 
-                List<Node> ambiguous = graph.getAdjacentNodes(node1);
+                Set<Node> ambiguous = graph.getAdjacentNodes(node1);
                 ambiguous.removeAll(parents);
                 ambiguous.removeAll(children);
 
@@ -295,10 +293,10 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
                 textArea.append("\nAmbiguous: " + niceList(ambiguous));
 
 
-                List<Node> parents2 = graph.getParents(node2);
-                List<Node> children2 = graph.getChildren(node2);
+                Set<Node> parents2 = graph.getParents(node2);
+                Set<Node> children2 = graph.getChildren(node2);
 
-                List<Node> ambiguous2 = graph.getAdjacentNodes(node2);
+                Set<Node> ambiguous2 = graph.getAdjacentNodes(node2);
                 ambiguous2.removeAll(parents2);
                 ambiguous2.removeAll(children2);
 
@@ -310,10 +308,12 @@ public class PathsAction extends AbstractAction implements ClipboardOwner {
         }
     }
 
-    private String niceList(List<Node> nodes) {
-        if (nodes.isEmpty()) {
+    private String niceList(Set<Node> _nodes) {
+        if (_nodes.isEmpty()) {
             return "--NONE--";
         }
+
+        List<Node> nodes = new ArrayList<>(_nodes);
 
         Collections.sort(nodes);
 

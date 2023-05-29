@@ -902,7 +902,7 @@ public final class FgesMb {
                     for (int _w = this.from; _w < this.to; _w++) {
                         Node x = this.nodes.get(_w);
 
-                        List<Node> adj;
+                        Set<Node> adj;
 
                         if (FgesMb.this.mode == Mode.heuristicSpeedup) {
                             adj = FgesMb.this.effectEdgesGraph.getAdjacentNodes(x);
@@ -923,12 +923,12 @@ public final class FgesMb {
                                 }
                             }
 
-                            adj = new ArrayList<>(g);
+                            adj = new HashSet<>(g);
                         } else if (FgesMb.this.mode == Mode.allowUnfaithfulness) {
                             HashSet<Node> D = new HashSet<>(
                                     FgesMb.this.graph.paths().getDconnectedVars(x, new HashSet<>()));
                             D.remove(x);
-                            adj = new ArrayList<>(D);
+                            adj = new HashSet<>(D);
                         } else {
                             throw new IllegalStateException();
                         }
@@ -1115,7 +1115,7 @@ public final class FgesMb {
 
         for (Node r : toProcess) {
             this.neighbors.put(r, getNeighbors(r));
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(r);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(r));
             this.pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0,
                     adjacentNodes.size(), this.hashIndices));
         }
@@ -1406,7 +1406,7 @@ public final class FgesMb {
     // Find all adj that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
     // directed edge).
     private Set<Node> getNaYX(Node x, Node y) {
-        List<Node> adj = this.graph.getAdjacentNodes(y);
+        Set<Node> adj = this.graph.getAdjacentNodes(y);
         Set<Node> nayx = new HashSet<>();
 
         for (Node z : adj) {

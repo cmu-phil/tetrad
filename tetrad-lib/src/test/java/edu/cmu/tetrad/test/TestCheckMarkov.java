@@ -15,6 +15,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TestCheckMarkov {
 
@@ -54,7 +55,7 @@ public class TestCheckMarkov {
             List<Node> nondesc = dag.getNodes();
             nondesc.removeAll(desc);
 
-            List<Node> cond = dag.getParents(x);
+            Set<Node> cond = dag.getParents(x);
 
             System.out.println("Node " + x + " parents = " + cond
                     + " non-descendants = " + nondesc);

@@ -74,8 +74,8 @@ public class SepsetsConservative implements SepsetProducer {
             }
         }
 
-        List<Node> adji = this.graph.getAdjacentNodes(i);
-        List<Node> adjk = this.graph.getAdjacentNodes(k);
+        List<Node> adji = new ArrayList<>(this.graph.getAdjacentNodes(i));
+        List<Node> adjk = new ArrayList<>(this.graph.getAdjacentNodes(k));
         adji.remove(k);
         adjk.remove(i);
 
@@ -133,7 +133,7 @@ public class SepsetsConservative implements SepsetProducer {
         List<Set<Node>> sepsetsContainingY = new ArrayList<>();
         List<Set<Node>> sepsetsNotContainingY = new ArrayList<>();
 
-        List<Node> _nodes = this.graph.getAdjacentNodes(x);
+        List<Node> _nodes = new ArrayList<>(this.graph.getAdjacentNodes(x));
         _nodes.remove(z);
 
         int _depth = depth;
@@ -164,7 +164,7 @@ public class SepsetsConservative implements SepsetProducer {
             }
         }
 
-        _nodes = this.graph.getAdjacentNodes(z);
+        _nodes = new ArrayList<>(this.graph.getAdjacentNodes(z));
         _nodes.remove(x);
 
         _depth = depth;

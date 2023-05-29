@@ -812,8 +812,8 @@ public class StandardizedSemIm implements Simulator {
     private double calculateErrorVarianceFromParams(Node error) {
         error = this.semGraph.getNode(error.getName());
 
-        Node child = this.semGraph.getChildren(error).get(0);
-        List<Node> parents = this.semGraph.getParents(child);
+        Node child = this.semGraph.getChildren(error).iterator().next();
+        List<Node> parents = new ArrayList<>(this.semGraph.getParents(child));
 
         double otherVariance = 0;
 

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -288,7 +289,7 @@ public final class GFci implements IGraphSearch {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;

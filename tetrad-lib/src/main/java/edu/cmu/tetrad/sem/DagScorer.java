@@ -123,7 +123,7 @@ public final class DagScorer implements TetradSerializable, Scorer {
             }
 
             int idx = indexOf(node);
-            List<Node> parents = dag.getParents(node);
+            List<Node> parents = new ArrayList<>(dag.getParents(node));
 
             for (int i = 0; i < parents.size(); i++) {
                 Node nextParent = parents.get(i);

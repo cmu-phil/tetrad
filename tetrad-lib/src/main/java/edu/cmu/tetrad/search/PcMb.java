@@ -249,7 +249,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
                         _a.retainAll(graph.getAdjacentNodes(w));
                         if (_a.size() > 1) continue;
 
-                        List<Node> adjT = graph.getAdjacentNodes(target);
+                        List<Node> adjT = new ArrayList<>(graph.getAdjacentNodes(target));
                         SublistGenerator cg = new SublistGenerator(
                                 adjT.size(), this.depth);
                         int[] choice;
@@ -675,7 +675,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         }
 
         for (Node y : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(y));
 
             if (adjacentNodes.size() < 2) {
                 continue;

@@ -313,7 +313,7 @@ public final class Cfci implements IGraphSearch {
         this.ambiguousTriples = new HashSet<>();
 
         for (Node y : getGraph().getNodes()) {
-            List<Node> adjacentNodes = getGraph().getAdjacentNodes(y);
+            List<Node> adjacentNodes = new ArrayList<>(getGraph().getAdjacentNodes(y));
 
             if (adjacentNodes.size() < 2) {
                 continue;

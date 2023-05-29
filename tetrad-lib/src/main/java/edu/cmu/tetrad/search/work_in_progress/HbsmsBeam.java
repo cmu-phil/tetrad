@@ -265,7 +265,7 @@ public final class HbsmsBeam implements Hbsms {
                 }
 
                 Regression regression = new RegressionCovariance(this.cov);
-                List<Node> parents = graph.getParents(child);
+                List<Node> parents = new ArrayList<>(graph.getParents(child));
                 RegressionResult result = regression.regress(child, parents);
                 double p = result.getP()[parents.indexOf(parent) + 1];
 

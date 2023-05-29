@@ -289,7 +289,7 @@ public class Bes {
     }
 
     private Set<Node> getNaYX(Node x, Node y, Graph graph) {
-        List<Node> adj = graph.getAdjacentNodes(y);
+        Set<Node> adj = graph.getAdjacentNodes(y);
         Set<Node> nayx = new HashSet<>();
 
         for (Node z : adj) {

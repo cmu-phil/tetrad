@@ -425,7 +425,7 @@ public class TimeLagGraph implements Graph {
         return getGraph().isDefCollider(node1, node2, node3);
     }
 
-    public List<Node> getChildren(Node node) {
+    public Set<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
 
@@ -441,7 +441,7 @@ public class TimeLagGraph implements Graph {
         return getGraph().getDirectedEdge(node1, node2);
     }
 
-    public List<Node> getParents(Node node) {
+    public Set<Node> getParents(Node node) {
         return getGraph().getParents(node);
     }
 
@@ -510,7 +510,7 @@ public class TimeLagGraph implements Graph {
         return getGraph().isExogenous(node);
     }
 
-    public List<Node> getAdjacentNodes(Node node) {
+    public Set<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }
 

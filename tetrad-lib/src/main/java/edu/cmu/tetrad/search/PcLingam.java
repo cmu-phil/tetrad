@@ -40,6 +40,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Implements the PC-LiNGAM algorithm which first finds a CPDAG for the variables
@@ -228,7 +229,7 @@ public class PcLingam {
 
         for (int i = 0; i < nodes.size(); i++) {
             Node _target = nodes.get(i);
-            List<Node> _regressors = dag.getParents(_target);
+            Set<Node> _regressors = dag.getParents(_target);
             Node target = getVariable(variables, _target.getName());
             List<Node> regressors = new ArrayList<>();
 

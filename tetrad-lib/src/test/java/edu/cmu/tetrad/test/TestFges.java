@@ -1453,22 +1453,22 @@ public class TestFges {
                     Node x = edge.getNode1();
                     Node y = edge.getNode2();
 
-                    List<Node> okx = dag.getAdjacentNodes(x);
+                    Set<Node> okx = dag.getAdjacentNodes(x);
                     okx.removeAll(dag.getChildren(x));
                     okx.remove(y);
 
-                    List<Node> oky = dag.getAdjacentNodes(y);
+                    Set<Node> oky = dag.getAdjacentNodes(y);
                     oky.removeAll(dag.getChildren(y));
                     oky.remove(x);
 
                     if (!okx.isEmpty()) {
-                        Node other = okx.get(0);
+                        Node other = okx.iterator().next();
                         dag.removeEdge(other, x);
                         dag.removeEdge(y, x);
                         dag.addDirectedEdge(other, x);
                         dag.addDirectedEdge(y, x);
                     } else if (!oky.isEmpty()) {
-                        Node other = oky.get(0);
+                        Node other = oky.iterator().next();
                         dag.removeEdge(other, y);
                         dag.removeEdge(x, y);
                         dag.addDirectedEdge(other, y);

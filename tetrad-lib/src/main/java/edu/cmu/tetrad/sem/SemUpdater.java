@@ -32,6 +32,7 @@ import edu.cmu.tetrad.util.Vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Calculates updated structural equation models given evidence of the form X1=x1',...,The main task of such and
@@ -189,7 +190,7 @@ public class SemUpdater implements TetradSerializable {
         for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
             if (this.evidence.isManipulated(i)) {
                 Node node = this.evidence.getNode(i);
-                List<Node> parents = updatedGraph.getParents(node);
+                Set<Node> parents = updatedGraph.getParents(node);
 
                 for (Node parent : parents) {
                     if (parent.getNodeType() == NodeType.ERROR) {

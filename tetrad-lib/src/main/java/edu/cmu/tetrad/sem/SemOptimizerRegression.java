@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -86,7 +87,7 @@ public class SemOptimizerRegression implements SemOptimizer {
             if (!graph.isParameterizable(node)) continue;
 
             int idx = nodes.indexOf(node);
-            List<Node> parents = graph.getParents(node);
+            List<Node> parents = new ArrayList<>(graph.getParents(node));
 //            Node errorParent = node;
 
             for (int i = 0; i < parents.size(); i++) {

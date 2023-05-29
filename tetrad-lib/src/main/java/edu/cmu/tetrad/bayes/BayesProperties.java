@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.score.DiscreteBicScore;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.util.FastMath;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -230,7 +231,7 @@ public final class BayesProperties {
         int dof = 0;
 
         for (Node node : graph.getNodes()) {
-            List<Node> parents = graph.getParents(node);
+            List<Node> parents = new ArrayList<>(graph.getParents(node));
 
             int i = this.variables.indexOf(getVariable(node.getName()));
 
@@ -252,7 +253,7 @@ public final class BayesProperties {
         int dof = 0;
 
         for (Node node : graph.getNodes()) {
-            List<Node> parents = graph.getParents(node);
+            List<Node> parents = new ArrayList<>(graph.getParents(node));
 
             int i = this.variables.indexOf(getVariable(node.getName()));
 

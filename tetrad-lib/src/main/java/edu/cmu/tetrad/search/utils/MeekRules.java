@@ -203,7 +203,7 @@ public class MeekRules {
      * If a-->b-->c, a--c, then a-->c.
      */
     private boolean meekR2(Node a, Node c, Graph graph, Set<Node> visited) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(c);
+        Set<Node> adjacentNodes = graph.getAdjacentNodes(c);
         adjacentNodes.remove(a);
 
         Set<Node> common = getCommonAdjacents(a, c, graph);
@@ -332,7 +332,7 @@ public class MeekRules {
     private boolean revertToUnshieldedColliders(Node y, Graph graph, Set<Node> visited) {
         boolean did = false;
 
-        List<Node> parents = graph.getParents(y);
+        Set<Node> parents = graph.getParents(y);
 
         P:
         for (Node p : parents) {

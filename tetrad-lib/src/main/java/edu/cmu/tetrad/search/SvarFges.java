@@ -981,7 +981,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
                         Node x = this.nodes.get(_w);
 
-                        List<Node> adj;
+                        Set<Node> adj;
 
                         if (SvarFges.this.mode == Mode.heuristicSpeedup) {
                             adj = SvarFges.this.effectEdgesGraph.getAdjacentNodes(x);
@@ -1002,11 +1002,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                                 }
                             }
 
-                            adj = new ArrayList<>(g);
+                            adj = new HashSet<>(g);
                         } else if (SvarFges.this.mode == Mode.allowUnfaithfulness) {
                             HashSet<Node> D = new HashSet<>(SvarFges.this.graph.paths().getDconnectedVars(x, new HashSet<>()));
                             D.remove(x);
-                            adj = new ArrayList<>(D);
+                            adj = new HashSet<>(D);
                         } else {
                             throw new IllegalStateException();
                         }
@@ -1178,7 +1178,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
         for (Node r : toProcess) {
             this.neighbors.put(r, getNeighbors(r));
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(r);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(r));
             this.pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0,
                     adjacentNodes.size(), this.hashIndices));
         }
@@ -1617,7 +1617,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     // Find all adj that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
     // directed edge).
     private Set<Node> getNaYX(Node x, Node y) {
-        List<Node> adj = this.graph.getAdjacentNodes(y);
+        Set<Node> adj = this.graph.getAdjacentNodes(y);
         Set<Node> nayx = new HashSet<>();
 
         for (Node z : adj) {

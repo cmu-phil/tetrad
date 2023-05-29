@@ -135,7 +135,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         getGraph().reorientAllWith(endpoint);
     }
 
-    public List<Node> getAdjacentNodes(Node node) {
+    public Set<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }
 
@@ -338,7 +338,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().isDefCollider(node1, node2, node3);
     }
 
-    public List<Node> getChildren(Node node) {
+    public Set<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
 
@@ -354,7 +354,7 @@ public class KnowledgeGraph implements Graph, TetradSerializableExcluded {
         return getGraph().getDirectedEdge(node1, node2);
     }
 
-    public List<Node> getParents(Node node) {
+    public Set<Node> getParents(Node node) {
         return getGraph().getParents(node);
     }
 

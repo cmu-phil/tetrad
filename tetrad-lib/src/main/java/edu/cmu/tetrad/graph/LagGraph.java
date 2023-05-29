@@ -134,11 +134,11 @@ public class LagGraph implements Graph {
         getGraph().reorientAllWith(endpoint);
     }
 
-    public List<Node> getAdjacentNodes(Node node) {
+    public Set<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }
 
-    public List<Node> getChildren(Node node) {
+    public Set<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
 
@@ -207,7 +207,7 @@ public class LagGraph implements Graph {
         return getGraph().getOutdegree(node);
     }
 
-    public List<Node> getParents(Node node) {
+    public Set<Node> getParents(Node node) {
         return getGraph().getParents(node);
     }
 

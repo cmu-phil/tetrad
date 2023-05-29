@@ -45,7 +45,7 @@ public class MbUtils {
     public static void trimToMbNodes(Graph graph, Node target,
                                      boolean includeBidirected) {
         if (includeBidirected) {
-            List<Node> pc = graph.getAdjacentNodes(target);
+            Set<Node> pc = graph.getAdjacentNodes(target);
             List<Node> children = graph.getNodesOutTo(target, Endpoint.ARROW);
 
             Set<Node> parentsOfChildren = new HashSet<>();
@@ -143,7 +143,7 @@ public class MbUtils {
      * @param target The target.
      */
     public static void trimEdgesAmongParents(Graph graph, Node target) {
-        List<Node> parents = graph.getParents(target);
+        List<Node> parents = new ArrayList<>(graph.getParents(target));
 
         if (parents.size() >= 2) {
             ChoiceGenerator cg = new ChoiceGenerator(parents.size(), 2);

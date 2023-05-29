@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Performs updating operations on a BayesIm by summing over cells in the joint probability table for the BayesIm. Quite
@@ -325,7 +326,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
             if (this.evidence.isManipulated(i)) {
                 Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
-                List<Node> parents = updatedGraph.getParents(node);
+                Set<Node> parents = updatedGraph.getParents(node);
 
                 for (Node parent1 : parents) {
                     updatedGraph.removeEdge(node, parent1);

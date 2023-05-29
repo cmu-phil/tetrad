@@ -681,12 +681,12 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         List<OrderedPair<Node>> pairs = new ArrayList<>();
 
         for (Node x : _nodes) {
-            List<Node> adj;
+            Set<Node> adj;
 
             if (isFaithfulnessAssumed()) {
                 adj = this.effectEdgesGraph.getAdjacentNodes(x);
             } else {
-                adj = this.variables;
+                adj = new HashSet<>(this.variables);
             }
 
             for (Node w : adj) {
@@ -1344,7 +1344,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
 
     // Runs Meek rules on jsut the changed nodes.
     private Set<Node> reorientNode(Graph graph, Node a) {
-        List<Node> nodes = graph.getAdjacentNodes(a);
+        Set<Node> nodes = graph.getAdjacentNodes(a);
         nodes.add(a);
 
         Set<Edge> edges = graph.getEdges(a);

@@ -320,7 +320,7 @@ public class Pcd implements IGraphSearch {
         this.unshieldedNoncolliders = new HashSet<>();
 
         for (Node y : this.graph.getNodes()) {
-            List<Node> adj = this.graph.getAdjacentNodes(y);
+            List<Node> adj = new ArrayList<>(this.graph.getAdjacentNodes(y));
 
             if (adj.size() < 2) {
                 continue;

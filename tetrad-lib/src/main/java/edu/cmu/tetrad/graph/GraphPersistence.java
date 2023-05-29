@@ -1044,7 +1044,7 @@ public class GraphPersistence {
     public static List<Triple> getCollidersFromGraph(Node node, Graph graph) {
         List<Triple> colliders = new ArrayList<>();
 
-        List<Node> adj = graph.getAdjacentNodes(node);
+        List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(node));
         if (adj.size() < 2) {
             return new LinkedList<>();
         }

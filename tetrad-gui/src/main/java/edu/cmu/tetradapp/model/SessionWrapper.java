@@ -695,8 +695,8 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
     /**
      * @return the list of parents for a node.
      */
-    public List<Node> getParents(Node node) {
-        return new ArrayList<>(((SessionNode) node).getParents());
+    public Set<Node> getParents(Node node) {
+        return new HashSet<>(((SessionNode) node).getParents());
     }
 
     public boolean isSessionChanged() {

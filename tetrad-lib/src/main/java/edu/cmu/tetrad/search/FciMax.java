@@ -338,7 +338,7 @@ public final class FciMax implements IGraphSearch {
     }
 
     private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+        List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
         if (adjacentNodes.size() < 2) {
             return;
@@ -356,7 +356,7 @@ public final class FciMax implements IGraphSearch {
                 continue;
             }
 
-            List<Node> adja = graph.getAdjacentNodes(a);
+            List<Node> adja = new ArrayList<>(graph.getAdjacentNodes(a));
             double score = Double.POSITIVE_INFINITY;
             Set<Node> S = null;
 
@@ -374,7 +374,7 @@ public final class FciMax implements IGraphSearch {
                 }
             }
 
-            List<Node> adjc = graph.getAdjacentNodes(c);
+            List<Node> adjc = new ArrayList<>(graph.getAdjacentNodes(c));
 
             SublistGenerator cg3 = new SublistGenerator(adjc.size(), -1);
             int[] comb3;

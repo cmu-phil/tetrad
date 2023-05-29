@@ -214,7 +214,7 @@ public final class SemGraph implements Graph {
             for (Iterator<Node> it = notFound.iterator(); it.hasNext(); ) {
                 Node node = it.next();
 
-                List<Node> parents = getParents(node);
+                Set<Node> parents = getParents(node);
 //                parents.removeAll(errorTerms);
 
                 if (new HashSet<>(found).containsAll(parents)) {
@@ -288,7 +288,7 @@ public final class SemGraph implements Graph {
         throw new UnsupportedOperationException();
     }
 
-    public List<Node> getAdjacentNodes(Node node) {
+    public Set<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }
 
@@ -507,7 +507,7 @@ public final class SemGraph implements Graph {
             this.errorNodes.remove(node);
         }
 
-        List<Node> children = getGraph().getChildren(node);
+        Set<Node> children = getGraph().getChildren(node);
         getGraph().removeNode(node);
 
         for (Node child : children) {
@@ -533,7 +533,7 @@ public final class SemGraph implements Graph {
         return getGraph().isDefCollider(node1, node2, node3);
     }
 
-    public List<Node> getChildren(Node node) {
+    public Set<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
 
@@ -550,7 +550,7 @@ public final class SemGraph implements Graph {
         return graph.getDirectedEdge(node1, node2);
     }
 
-    public List<Node> getParents(Node node) {
+    public Set<Node> getParents(Node node) {
         return getGraph().getParents(node);
     }
 

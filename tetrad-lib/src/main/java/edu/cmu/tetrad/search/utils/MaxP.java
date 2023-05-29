@@ -140,7 +140,7 @@ public final class MaxP {
     }
 
     private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+        List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
         if (adjacentNodes.size() < 2) {
             return;
@@ -175,8 +175,8 @@ public final class MaxP {
     }
 
     private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) {
-        List<Node> adja = graph.getAdjacentNodes(a);
-        List<Node> adjc = graph.getAdjacentNodes(c);
+        List<Node> adja = new ArrayList<>(graph.getAdjacentNodes(a));
+        List<Node> adjc = new ArrayList<>(graph.getAdjacentNodes(c));
         adja.remove(c);
         adjc.remove(a);
 

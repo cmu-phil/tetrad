@@ -30,6 +30,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import org.apache.commons.math3.util.FastMath;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -115,8 +116,8 @@ public class SepsetsGreedy implements SepsetProducer {
             }
         }
 
-        List<Node> adji = this.graph.getAdjacentNodes(i);
-        List<Node> adjk = this.graph.getAdjacentNodes(k);
+        List<Node> adji = new ArrayList<>(this.graph.getAdjacentNodes(i));
+        List<Node> adjk = new ArrayList<>(this.graph.getAdjacentNodes(k));
         adji.remove(k);
         adjk.remove(i);
 

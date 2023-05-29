@@ -216,7 +216,7 @@ public final class TestGraph {
             int i = RandomUtil.getInstance().nextInt(nodes.size());
             Node y = nodes.get(i);
 
-            List<Node> adjCenter = graph.getAdjacentNodes(y);
+            List<Node> adjCenter = new ArrayList<>(graph.getAdjacentNodes(y));
 
             if (adjCenter.isEmpty()) {
                 continue;
@@ -255,8 +255,8 @@ public final class TestGraph {
         graph.addDirectedEdge(x2, x3);
         graph.addDirectedEdge(x3, x4);
 
-        List<Node> children = graph.getChildren(x1);
-        List<Node> parents = graph.getParents(x4);
+        Set<Node> children = graph.getChildren(x1);
+        Set<Node> parents = graph.getParents(x4);
 
         assertTrue(graph.paths().isDConnectedTo(x1, x3, new HashSet<>()));
 

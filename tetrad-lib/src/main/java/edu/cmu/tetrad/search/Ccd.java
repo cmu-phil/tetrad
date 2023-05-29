@@ -169,7 +169,7 @@ public final class Ccd implements IGraphSearch {
     }
 
     private void doNodeCollider(Graph graph, Map<Triple, Double> colliders, Map<Triple, Double> noncolliders, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+        List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
         if (adjacentNodes.size() < 2) {
             return;
@@ -187,7 +187,7 @@ public final class Ccd implements IGraphSearch {
                 continue;
             }
 
-            List<Node> adja = graph.getAdjacentNodes(a);
+            List<Node> adja = new ArrayList<>(graph.getAdjacentNodes(a));
             double score = Double.POSITIVE_INFINITY;
             Set<Node> S = null;
 
@@ -205,7 +205,7 @@ public final class Ccd implements IGraphSearch {
                 }
             }
 
-            List<Node> adjc = graph.getAdjacentNodes(c);
+            List<Node> adjc = new ArrayList<>(graph.getAdjacentNodes(c));
 
             SublistGenerator cg3 = new SublistGenerator(adjc.size(), -1);
             int[] comb3;
@@ -244,8 +244,8 @@ public final class Ccd implements IGraphSearch {
 
             // x and y are adjacent.
 
-            List<Node> adjx = psi.getAdjacentNodes(x);
-            List<Node> adjy = psi.getAdjacentNodes(y);
+            Set<Node> adjx = psi.getAdjacentNodes(x);
+            Set<Node> adjy = psi.getAdjacentNodes(y);
 
             for (Node node : adjx) {
                 if (psi.getEdge(node, x).getProximalEndpoint(x) == Endpoint.ARROW
@@ -302,7 +302,7 @@ public final class Ccd implements IGraphSearch {
 
     private void doNodeStepD(Graph psi, SepsetProducer sepsets, Map<Triple, Set<Node>> supSepsets,
                              Map<Node, List<Node>> local, Node b) {
-        List<Node> adj = psi.getAdjacentNodes(b);
+        List<Node> adj = new ArrayList<>(psi.getAdjacentNodes(b));
 
         if (adj.size() < 2) {
             return;
@@ -351,7 +351,7 @@ public final class Ccd implements IGraphSearch {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            List<Node> aAdj = psi.getAdjacentNodes(a);
+            Set<Node> aAdj = psi.getAdjacentNodes(a);
 
             for (Node d : aAdj) {
                 if (d == b) continue;
@@ -376,7 +376,7 @@ public final class Ccd implements IGraphSearch {
                 }
             }
 
-            List<Node> cAdj = psi.getAdjacentNodes(c);
+            Set<Node> cAdj = psi.getAdjacentNodes(c);
 
             for (Node d : cAdj) {
                 if (d == b) continue;

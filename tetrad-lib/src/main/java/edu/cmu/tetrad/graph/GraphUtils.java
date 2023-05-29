@@ -52,7 +52,7 @@ public final class GraphUtils {
             throw new IllegalArgumentException("Can only get an associated node " + "for an error node: " + errorNode);
         }
 
-        List<Node> children = graph.getChildren(errorNode);
+        Set<Node> children = graph.getChildren(errorNode);
 
         if (children.size() != 1) {
             System.out.println("children of " + errorNode + " = " + children);
@@ -61,7 +61,7 @@ public final class GraphUtils {
             throw new IllegalArgumentException("An error node should have only " + "one child, which is its associated node: " + errorNode);
         }
 
-        return children.get(0);
+        return children.iterator().next();
     }
 
     /**
@@ -102,14 +102,14 @@ public final class GraphUtils {
         blanket.addNode(target);
 
         // Add parents of target.
-        List<Node> parents = dag.getParents(target);
+        Set<Node> parents = dag.getParents(target);
         for (Node parent1 : parents) {
             blanket.addNode(parent1);
             blanket.addDirectedEdge(parent1, target);
         }
 
         // Add children of target and parents of children of target.
-        List<Node> children = dag.getChildren(target);
+        Set<Node> children = dag.getChildren(target);
         List<Node> parentsOfChildren = new LinkedList<>();
         for (Node child : children) {
             if (!blanket.containsNode(child)) {
@@ -118,7 +118,7 @@ public final class GraphUtils {
 
             blanket.addDirectedEdge(target, child);
 
-            List<Node> parentsOfChild = dag.getParents(child);
+            Set<Node> parentsOfChild = dag.getParents(child);
             parentsOfChild.remove(target);
             for (Node aParentsOfChild : parentsOfChild) {
                 if (!parentsOfChildren.contains(aParentsOfChild)) {
@@ -642,7 +642,7 @@ public final class GraphUtils {
     public static List<Triple> getNoncollidersFromGraph(Node node, Graph graph) {
         List<Triple> noncolliders = new ArrayList<>();
 
-        List<Node> adj = graph.getAdjacentNodes(node);
+        List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(node));
         if (adj.size() < 2) {
             return new LinkedList<>();
         }
@@ -672,7 +672,7 @@ public final class GraphUtils {
     public static List<Triple> getAmbiguousTriplesFromGraph(Node node, Graph graph) {
         List<Triple> ambiguousTriples = new ArrayList<>();
 
-        List<Node> adj = graph.getAdjacentNodes(node);
+        List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(node));
         if (adj.size() < 2) {
             return new LinkedList<>();
         }
@@ -700,7 +700,7 @@ public final class GraphUtils {
         List<Triple> underlinedTriples = new ArrayList<>();
         Set<Triple> allUnderlinedTriples = graph.getUnderLines();
 
-        List<Node> adj = graph.getAdjacentNodes(node);
+        List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(node));
         if (adj.size() < 2) {
             return new LinkedList<>();
         }
@@ -728,7 +728,7 @@ public final class GraphUtils {
         List<Triple> dottedUnderlinedTriples = new ArrayList<>();
         Set<Triple> allDottedUnderlinedTriples = graph.getDottedUnderlines();
 
-        List<Node> adj = graph.getAdjacentNodes(node);
+        List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(node));
         if (adj.size() < 2) {
             return new LinkedList<>();
         }
@@ -765,7 +765,7 @@ public final class GraphUtils {
         LinkedList<Triple> colliders = new LinkedList<>();
 
         for (Node node : graph.getNodes()) {
-            List<Node> adj = graph.getAdjacentNodes(node);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(node));
 
             if (adj.size() < 2) {
                 continue;
@@ -1785,7 +1785,7 @@ public final class GraphUtils {
                 break;
             }
 
-            List<Node> adjacentNodes = referenceCpdag.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(referenceCpdag.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -1823,7 +1823,7 @@ public final class GraphUtils {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;

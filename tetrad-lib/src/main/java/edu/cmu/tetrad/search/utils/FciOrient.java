@@ -164,7 +164,7 @@ public final class FciOrient {
                 break;
             }
 
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -305,7 +305,7 @@ public final class FciOrient {
                 break;
             }
 
-            List<Node> adj = graph.getAdjacentNodes(B);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
             if (adj.size() < 2) {
                 continue;
@@ -398,7 +398,7 @@ public final class FciOrient {
                 Node a = B.get(0);
                 Node c = B.get(1);
 
-                List<Node> adj = graph.getAdjacentNodes(a);
+                List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(a));
                 adj.retainAll(graph.getAdjacentNodes(c));
 
                 for (Node d : adj) {
@@ -491,7 +491,7 @@ public final class FciOrient {
 
         Map<Node, Node> previous = new HashMap<>();
 
-        List<Node> cParents = graph.getParents(c);
+        Set<Node> cParents = graph.getParents(c);
 
         Q.offer(a);
         V.add(a);
@@ -621,7 +621,7 @@ public final class FciOrient {
                 break;
             }
 
-            List<Node> adjacents = graph.getAdjacentNodes(b);
+            List<Node> adjacents = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacents.size() < 2) {
                 continue;
@@ -807,7 +807,7 @@ public final class FciOrient {
         LinkedList<Node> soFar = new LinkedList<>();
         soFar.add(n1);
 
-        List<Node> adjacencies = graph.getAdjacentNodes(n1);
+        Set<Node> adjacencies = graph.getAdjacentNodes(n1);
         for (Node curr : adjacencies) {
             getUcPdPsHelper(curr, soFar, n2, ucPdPaths, graph);
         }
@@ -852,7 +852,7 @@ public final class FciOrient {
             ucPdPaths.add(new LinkedList<>(soFar));
         } else {
             // Otherwise, try each node adjacent to the getModel one.
-            List<Node> adjacents = graph.getAdjacentNodes(curr);
+            Set<Node> adjacents = graph.getAdjacentNodes(curr);
             for (Node next : adjacents) {
                 getUcPdPsHelper(next, soFar, end, ucPdPaths, graph);
             }

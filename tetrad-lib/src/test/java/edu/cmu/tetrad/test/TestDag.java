@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -68,8 +69,8 @@ public final class TestDag {
         graph.addDirectedEdge(x3, x4);
         graph.addDirectedEdge(x5, x4);
 
-        List<Node> children = graph.getChildren(x1);
-        List<Node> parents = graph.getParents(x4);
+        Set<Node> children = graph.getChildren(x1);
+        Set<Node> parents = graph.getParents(x4);
 
         assertTrue(children.contains(x2));
         assertTrue(parents.contains(x3));

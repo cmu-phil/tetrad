@@ -489,7 +489,7 @@ public class Dci {
         List<Node> nodes = graph.getNodes();
 
         for (Node B : nodes) {
-            List<Node> adj = graph.getAdjacentNodes(B);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
             if (adj.size() < 2) {
                 continue;
@@ -940,7 +940,7 @@ public class Dci {
     private Set<Triple> getAllTriples(Graph graph) {
         Set<Triple> triples = new HashSet<>();
         for (Node node : graph.getNodes()) {
-            List<Node> adjNodes = graph.getAdjacentNodes(node);
+            List<Node> adjNodes = new ArrayList<>(graph.getAdjacentNodes(node));
             for (int i = 0; i < adjNodes.size() - 1; i++) {
                 for (int j = i + 1; j < adjNodes.size(); j++) {
                     triples.add(new Triple(adjNodes.get(i), node, adjNodes.get(j)));
@@ -1599,7 +1599,7 @@ public class Dci {
             List<Node> nodes = graph.getNodes();
 
             for (Node B : nodes) {
-                List<Node> adj = graph.getAdjacentNodes(B);
+                List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
                 if (adj.size() < 2) {
                     continue;
@@ -1630,7 +1630,7 @@ public class Dci {
         List<Node> nodes = graph.getNodes();
 
         for (Node B : nodes) {
-            List<Node> adj = graph.getAdjacentNodes(B);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
             if (adj.size() < 2) {
                 continue;

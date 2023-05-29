@@ -238,7 +238,7 @@ public final class FactoredBayesStructuralEM {
         double score = 0.0;   //Fast test 11/29/04
 
         for (Node node1 : nodes) {
-            List<Node> parents = dag.getParents(node1);
+            Set<Node> parents = dag.getParents(node1);
             Set<Node> parentsSet = new HashSet<>(parents);
             double fScore = bdeMetricCache.scoreLnGam(node1, parentsSet,
                     bayesPm, bayesIm);
