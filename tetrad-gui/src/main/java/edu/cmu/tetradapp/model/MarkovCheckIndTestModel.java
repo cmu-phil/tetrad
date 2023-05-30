@@ -21,10 +21,12 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.session.SessionModel;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 import java.util.ArrayList;
@@ -38,8 +40,9 @@ import java.util.List;
  */
 public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;
+    private final DataModel dataModel;
+    private final Parameters parameters;
 
-    private final IndTestProducer indTestProducer;
     private String name = "";
     private List<String> vars = new LinkedList<>();
     private List<IndependenceResult> resultsIndep = new ArrayList<>();
@@ -55,14 +58,10 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
         return new Knowledge();
     }
 
-
-    public MarkovCheckIndTestModel(IndTestProducer producer, GraphWrapper graphWrapper) {
-        this.indTestProducer = producer;
+    public MarkovCheckIndTestModel(DataWrapper dataModel, GraphWrapper graphWrapper, Parameters parameters) {
+        this.dataModel = dataModel.getSelectedDataModel();
         this.graph = graphWrapper.getGraph();
-    }
-
-    public IndTestProducer getIndTestProducer() {
-        return this.indTestProducer;
+        this.parameters = parameters;
     }
 
     @Override
@@ -74,6 +73,15 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
     public Graph getGraph() {
         return this.graph;
     }
+
+    public DataModel getDataModel() {
+        return dataModel;
+    }
+
+    public Parameters getParameters() {
+        return parameters;
+    }
+
 
     @Override
     public String getName() {
@@ -103,7 +111,6 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
             this.resultsDep = results;
         }
     }
-
 }
 
 
