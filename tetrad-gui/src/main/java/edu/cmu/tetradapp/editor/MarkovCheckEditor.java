@@ -46,8 +46,8 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.NumberFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
@@ -723,6 +723,16 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private JPanel createHistogramPanel(boolean indep) {
+        JPanel jPanel = new JPanel();
+
+
+        if (model.getResults(indep).isEmpty()) {
+            JLabel label = new JLabel("No results available; please click the Check button first.");
+            JPanel panel = new JPanel();
+            panel.add(label);
+            return panel;
+        }
+
         DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(model.getResults(indep).size(), 1),
                 Collections.singletonList(new ContinuousVariable("P-Values")));
 
@@ -744,7 +754,7 @@ public class MarkovCheckEditor extends JPanel {
         vBox.add(box);
         vBox.add(Box.createVerticalStrut(5));
 
-        JPanel panel = new JPanel();
+        JPanel panel = jPanel;
         panel.setLayout(new BorderLayout());
         panel.add(vBox, BorderLayout.CENTER);
         return panel;
