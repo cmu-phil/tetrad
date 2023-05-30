@@ -725,7 +725,6 @@ public class MarkovCheckEditor extends JPanel {
     private JPanel createHistogramPanel(boolean indep) {
         JPanel jPanel = new JPanel();
 
-
         if (model.getResults(indep).isEmpty()) {
             JLabel label = new JLabel("No results available; please click the Check button first.");
             JPanel panel = new JPanel();
