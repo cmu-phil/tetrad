@@ -34,6 +34,7 @@ import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
+import edu.cmu.tetrad.algcomparison.score.GicScores;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -2402,7 +2403,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_DATA_ORDER, true);
         params.set(Params.NUM_STARTS, 1);
 
-        // default for kim et al. is gic = 4, pd = 1.
+        // default for GIC scores is gic = 4, pd = 1.
         params.set(Params.SEM_GIC_RULE, 4);
 //        params.set(Params.ALPHA, 0.01);
         params.set(Params.SEM_BIC_STRUCTURE_PRIOR, 3);
@@ -2525,7 +2526,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_DATA_ORDER, true);
         params.set(Params.NUM_STARTS, 1);
 
-        // default for kim et al. is gic = 4, pd = 1.
+        // default for GIC scores is gic = 4, pd = 1.
         params.set(Params.SEM_GIC_RULE, 4);
         params.set(Params.PENALTY_DISCOUNT, 1);
         params.set(Params.ALPHA, 0.01);
@@ -2732,7 +2733,7 @@ public final class TestGrasp {
             params.set(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE, false);
             params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, false);
 
-            // default for kim et al. is gic = 4, pd = 1.
+            // default for GIC scores is gic = 4, pd = 1.
             params.set(Params.SEM_GIC_RULE, 2, 3, 4);
             params.set(Params.PENALTY_DISCOUNT, 1, 2, 3);
             params.set(Params.ALPHA, 0.01);
@@ -2745,7 +2746,7 @@ public final class TestGrasp {
             algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
             algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
             algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.EbicScore()));
-            algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.KimEtAlScores()));
+            algorithms.add(new Boss(new GicScores()));
             algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
 
             Simulations simulations = new Simulations();
@@ -2799,7 +2800,7 @@ public final class TestGrasp {
             params.set(Params.DO_DISCRIMINATING_PATH_COLLIDER_RULE, false);
             params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, false);
 
-            // default for kim et al. is gic = 4, pd = 1.
+            // default for GIC scores is gic = 4, pd = 1.
             params.set(Params.SEM_GIC_RULE, 4);
             params.set(Params.PENALTY_DISCOUNT, 2);
             params.set(Params.ALPHA, 0.01);

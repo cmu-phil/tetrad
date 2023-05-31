@@ -42,10 +42,14 @@ import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
@@ -85,6 +89,8 @@ public class MarkovCheckEditor extends JPanel {
     boolean updatingTestModels = true;
     private IndependenceTest independenceTest;
     private final DataModel dataSet;
+    private JLabel markovTestLabel = new JLabel("(Unspecified Test)");
+    private JLabel faithfulnessTestLabel = new JLabel("(Unspecified Test)");
 
     /**
      * Constructs a new editor for the given model.
@@ -99,6 +105,37 @@ public class MarkovCheckEditor extends JPanel {
         this.graph = model.getGraph();
 
         refreshTestList();
+
+        indTestComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (updatingTestModels) {
+                    return;
+                }
+
+                IndependenceTestModel selectedItem = (IndependenceTestModel) indTestComboBox.getSelectedItem();
+                Class<IndependenceWrapper> clazz = (selectedItem == null) ? null : selectedItem.getIndependenceTest().getClazz();
+
+                if (clazz != null) {
+                    try {
+                        IndependenceWrapper independenceTest1 = clazz.getDeclaredConstructor(new Class[0]).newInstance();
+                        independenceTest = independenceTest1.getTest(dataSet, parameters);
+                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                            NoSuchMethodException e1) {
+                        throw new RuntimeException(e1);
+                    }
+                }
+
+                if (independenceTest == null) {
+                    throw new NullPointerException("Expecting a test");
+                }
+
+                markovTestLabel.setText(independenceTest.toString());
+                faithfulnessTestLabel.setText(independenceTest.toString());
+
+//                refreshTestList();
+            }
+        });
 
         IndependenceTestModel selectedItem = (IndependenceTestModel) indTestComboBox.getSelectedItem();
         Class<IndependenceWrapper> clazz = (selectedItem == null) ? null : selectedItem.getIndependenceTest().getClazz();
@@ -205,9 +242,12 @@ public class MarkovCheckEditor extends JPanel {
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
+        markovTestLabel.setText(independenceTest.toString());
+        faithfulnessTestLabel.setText(independenceTest.toString());
+
         Box b2a = Box.createHorizontalBox();
         b2a.add(new JLabel("Test: "));
-        b2a.add(new JLabel(getIndependenceTest().toString()));
+        b2a.add(faithfulnessTestLabel);
         b2a.add(Box.createHorizontalGlue());
         b1.add(b2a);
 
@@ -291,6 +331,13 @@ public class MarkovCheckEditor extends JPanel {
         };
 
         JTable table = new JTable(tableModelDep);
+
+        tableModelDep.addTableModelListener(e -> {
+            if (e.getColumn() == 2) {
+                revalidate();
+                repaint();
+            }
+        });
 
         table.getColumnModel().getColumn(0).setMinWidth(40);
         table.getColumnModel().getColumn(0).setMaxWidth(40);
@@ -393,12 +440,14 @@ public class MarkovCheckEditor extends JPanel {
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
+        markovTestLabel.setText(getIndependenceTest().toString());
+        faithfulnessTestLabel.setText(getIndependenceTest().toString());
+
         Box b2a = Box.createHorizontalBox();
         b2a.add(new JLabel("Test: "));
-        b2a.add(new JLabel(getIndependenceTest().toString()));
+        b2a.add(markovTestLabel);
         b2a.add(Box.createHorizontalGlue());
         b1.add(b2a);
-
 
         b1.add(Box.createVerticalStrut(5));
 
@@ -481,6 +530,13 @@ public class MarkovCheckEditor extends JPanel {
         };
 
         JTable table = new JTable(tableModelIndep);
+
+        tableModelIndep.addTableModelListener(e -> {
+            if (e.getColumn() == 2) {
+                revalidate();
+                repaint();
+            }
+        });
 
         table.getColumnModel().getColumn(0).setMinWidth(40);
         table.getColumnModel().getColumn(0).setMaxWidth(40);
@@ -788,14 +844,14 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(model.getResults(indep).size(), 1),
-                Collections.singletonList(new ContinuousVariable("P-Values")));
+                Collections.singletonList(new ContinuousVariable("P-Value/Bump")));
 
         for (int i = 0; i < model.getResults(indep).size(); i++) {
             dataSet.setDouble(i, 0, model.getResults(indep).get(i).getPValue());
         }
 
         Histogram histogram = new Histogram(dataSet);
-        histogram.setTarget("P-Values");
+        histogram.setTarget("P-Value/Bump");
         HistogramView view = new HistogramView(histogram);
 
         Box box = Box.createHorizontalBox();
@@ -858,7 +914,6 @@ public class MarkovCheckEditor extends JPanel {
     private void refreshTestList() {
         DataType dataType = getDataType();
 
-        this.updatingTestModels = true;
         this.indTestComboBox.removeAllItems();
 
         List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(dataType);

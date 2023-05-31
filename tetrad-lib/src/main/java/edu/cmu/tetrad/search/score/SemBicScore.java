@@ -541,6 +541,10 @@ public class SemBicScore implements Score {
         ICovarianceMatrix cov = getCovariances().getSubmatrix(cols);
         return new SemBicScore(cov);
     }
+
+    public String toString() {
+        return "SEM BIC Score";
+    }
 }
 
 

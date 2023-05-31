@@ -217,4 +217,8 @@ public class IndTestMnlrLr implements IndependenceTest {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
+
+    public String toString() {
+        return "IndTestMnlrLr";
+    }
 }

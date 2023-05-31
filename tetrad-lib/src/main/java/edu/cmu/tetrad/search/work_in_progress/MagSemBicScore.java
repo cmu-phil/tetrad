@@ -323,5 +323,8 @@ public class MagSemBicScore implements Score {
         }
     }
 
+    public String toString() {
+        return "MAG(" + this.score + ")";
+    }
 
 }

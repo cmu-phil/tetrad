@@ -329,6 +329,9 @@ public class GicScores implements Score {
     }
 
 
+    public String toString() {
+        return "GIC Score";
+    }
 }
 
 
