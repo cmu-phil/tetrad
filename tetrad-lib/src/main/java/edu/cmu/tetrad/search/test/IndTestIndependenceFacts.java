@@ -86,7 +86,7 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, __z), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, __z), independent, getPValue(), getAlpha() - getPValue());
     }
 
     /**
@@ -155,16 +155,6 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
      */
     public DataModel getData() {
         return this.facts;
-    }
-
-    /**
-     * Returns NaN.
-     *
-     * @return This.
-     */
-    @Override
-    public double getScore() {
-        return getPValue();
     }
 
     /**

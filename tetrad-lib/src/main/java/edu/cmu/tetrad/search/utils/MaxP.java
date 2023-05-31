@@ -240,10 +240,10 @@ public final class MaxP {
             return;
         }
 
-        this.independenceTest.checkIndependence(a, c);
-        double s1 = this.independenceTest.getScore();
-        this.independenceTest.checkIndependence(a, c, b);
-        double s2 = this.independenceTest.getScore();
+        IndependenceResult result1 =  this.independenceTest.checkIndependence(a, c);
+        double s1 = result1.getScore();
+        IndependenceResult result2 = this.independenceTest.checkIndependence(a, c, b);
+        double s2 = result2.getScore();
 
         boolean mycollider2 = s2 > s1;
 

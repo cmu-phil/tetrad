@@ -23,11 +23,18 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.PcCommon;
+import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveTask;
 
@@ -365,8 +372,8 @@ public final class FciMax implements IGraphSearch {
 
             while ((comb2 = cg2.next()) != null) {
                 Set<Node> s = GraphUtils.asSet(comb2, adja);
-                this.independenceTest.checkIndependence(a, c, s);
-                double _score = this.independenceTest.getScore();
+                IndependenceResult result = this.independenceTest.checkIndependence(a, c, s);
+                double _score = result.getScore();
 
                 if (_score < score) {
                     score = _score;
@@ -381,8 +388,8 @@ public final class FciMax implements IGraphSearch {
 
             while ((comb3 = cg3.next()) != null) {
                 Set<Node> s = GraphUtils.asSet(comb3, adjc);
-                this.independenceTest.checkIndependence(c, a, s);
-                double _score = this.independenceTest.getScore();
+                IndependenceResult result = this.independenceTest.checkIndependence(c, a, s);
+                double _score = result.getScore();
 
                 if (_score < score) {
                     score = _score;

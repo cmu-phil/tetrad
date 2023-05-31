@@ -128,7 +128,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
     }
 
     /**
@@ -188,17 +188,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      */
     public DataSet getData() {
         return this.dataSet;
-    }
-
-
-    /**
-     * Returns a number is more positive for stronger judgments of dependence.
-     *
-     * @return This number.
-     */
-    @Override
-    public double getScore() {
-        return this.score;
     }
 
     /**

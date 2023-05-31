@@ -66,11 +66,6 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     private double alpha;
 
     /**
-     * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
-     */
-    private double pValue;
-
-    /**
      * Stores a reference to the dataset being analyzed.
      */
     private final DataSet dataSet;
@@ -184,7 +179,9 @@ public final class IndTestPositiveCorr implements IndependenceTest {
 
         System.out.println(possibleEdge);
 
-        return new IndependenceResult(new IndependenceFact(x0, y0, _z0), !possibleEdge, getPValue());
+        double pValue = getPValue();
+
+        return new IndependenceResult(new IndependenceFact(x0, y0, _z0), !possibleEdge, pValue, alpha - pValue);
     }
 
     /**
@@ -307,12 +304,6 @@ public final class IndTestPositiveCorr implements IndependenceTest {
     @Override
     public int getSampleSize() {
         return this.covMatrix.getSampleSize();
-    }
-
-
-    @Override
-    public double getScore() {
-        return abs(this.fisherZ) - this.cutoff;
     }
 
     public boolean isVerbose() {

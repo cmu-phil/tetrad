@@ -194,7 +194,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         } catch (SingularMatrixException e) {
             System.out.println(LogUtilsSearch.determinismDetected(z, x));
             this.fisherZ = Double.POSITIVE_INFINITY;
-            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN, Double.NaN);
         }
 
         double q = 0.5 * (log(1.0 + r) - FastMath.log(1.0 - r));
@@ -210,7 +210,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN,abs(this.fisherZ) - this.cutoff);
     }
 
     private double partialCorrelation(Node x, Node y, Set<Node> _z) throws SingularMatrixException {
@@ -357,12 +357,6 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     @Override
     public int getSampleSize() {
         return this.covMatrix.getSampleSize();
-    }
-
-
-    @Override
-    public double getScore() {
-        return abs(this.fisherZ) - this.cutoff;
     }
 
     public boolean isVerbose() {

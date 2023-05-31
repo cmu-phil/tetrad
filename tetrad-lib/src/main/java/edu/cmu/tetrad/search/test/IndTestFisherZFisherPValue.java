@@ -143,7 +143,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         }
 
         if (numZeros >= pValues.size() / 2)
-            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
 
         if (tf == 0) throw new IllegalArgumentException(
                 "For the Fisher method, all component p values in the calculation may not be zero, " +
@@ -161,7 +161,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         }
 
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, p, getAlpha() - p);
     }
 
     /**
@@ -235,17 +235,6 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         }
 
         return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
-    }
-
-    /**
-     * Returns a number that is positive when dependence holds and more positive for greater dependence.
-     *
-     * @return This number
-     * @see Fges
-     */
-    @Override
-    public double getScore() {
-        return getPValue();
     }
 
     /**

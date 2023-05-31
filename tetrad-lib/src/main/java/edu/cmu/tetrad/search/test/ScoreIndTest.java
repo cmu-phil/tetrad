@@ -82,8 +82,8 @@ public class ScoreIndTest implements IndependenceTest {
         List<Node> z1 = new ArrayList<>(z);
         Collections.sort(z1);
 
-        if (determines(z1, x)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());
-        if (determines(z1, y)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());
+//        if (determines(z1, x)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());
+//        if (determines(z1, y)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());
 
         double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y),
                 varIndices(z1));
@@ -99,7 +99,7 @@ public class ScoreIndTest implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN, bump);
     }
 
     /**
@@ -194,15 +194,6 @@ public class ScoreIndTest implements IndependenceTest {
      */
     public int getSampleSize() {
         return this.score.getSampleSize();
-    }
-
-    /**
-     * Returns A score that is higher with more likely models.
-     *
-     * @return This score.
-     */
-    public double getScore() {
-        return this.bump;
     }
 
     /**

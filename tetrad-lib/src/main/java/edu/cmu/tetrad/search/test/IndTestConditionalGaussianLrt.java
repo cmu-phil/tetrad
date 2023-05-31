@@ -51,7 +51,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     // Likelihood function
     private final ConditionalGaussianLikelihood likelihood;
-    private double pValue = Double.NaN;
 
     private boolean verbose;
     private int numCategoriesToDiscretize = 3;
@@ -123,11 +122,11 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         double lik0 = ret1.getLik() - ret2.getLik();
         double dof0 = ret1.getDof() - ret2.getDof();
 
-        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN);
-        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN);
-        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN);
+        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
+        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
+        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
         if (lik0 == Double.POSITIVE_INFINITY)
-            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
 
         double pValue;
 
@@ -137,26 +136,16 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
             pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
         }
 
-        this.pValue = pValue;
-
-        boolean independent = this.pValue > this.alpha;
+        boolean independent = pValue > this.alpha;
 
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, _z, this.pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue);
-    }
-
-    /**
-     * Returns the probability associated with the most recently executed independence test, or Double.NaN if p value is
-     * not meaningful for this test.
-     */
-    public double getPValue() {
-        return this.pValue;
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, getAlpha() - pValue);
     }
 
     /**
@@ -203,16 +192,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
      */
     public DataSet getData() {
         return this.data;
-    }
-
-    /**
-     * Returns a number that is higher for stronger judgments of dependence and negative for judgments of independence.
-     *
-     * @return This number.
-     */
-    @Override
-    public double getScore() {
-        return getAlpha() - getPValue();
     }
 
     /**

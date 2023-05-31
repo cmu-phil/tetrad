@@ -186,7 +186,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             if (this.verbose) {
                 TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, getPValue()));
             }
-            return new IndependenceResult(new IndependenceFact(xVar, yVar, _z), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(xVar, yVar, _z), false, Double.NaN, Double.NaN);
         }
 
         if (r > 1) r = 1;
@@ -218,7 +218,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(xVar, yVar, _z), indFisher, getPValue());
+        return new IndependenceResult(new IndependenceFact(xVar, yVar, _z), indFisher, getPValue(), getAlpha() - getPValue());
     }
 
     /**
@@ -271,17 +271,6 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      */
     public DataSet getData() {
         return this.dataSet;
-    }
-
-    /**
-     * Returns the score of the data.
-     *
-     * @return A number that's great than zero iff dependent.
-     * @see Fges
-     */
-    @Override
-    public double getScore() {
-        return alpha - getPValue();
     }
 
     /**

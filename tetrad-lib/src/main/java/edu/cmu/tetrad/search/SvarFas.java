@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -319,23 +320,23 @@ public class SvarFas implements IFas {
                     }
                 }
 
-                boolean independent;
+                IndependenceResult result;
 
                 try {
                     this.numIndependenceTests++;
-                    independent = test.checkIndependence(x, y, empty).isIndependent();
+                    result = test.checkIndependence(x, y, empty);
                     System.out.println("############# independence given empty set: x,y " + x + ", " +
-                            y + " independence = " + independent);
+                            y + " independence = " + result.isIndependent());
                 } catch (Exception e) {
                     e.printStackTrace();
-                    independent = false;
+                    result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN, Double.NaN);
                 }
 
                 boolean noEdgeRequired =
                         this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
 //                getSepsets().setReturnEmptyIfNotSet(false); // added 05.30.2016
-                if (independent && noEdgeRequired) {
+                if (result.isIndependent() && noEdgeRequired) {
 //                    if (!getSepsets().isReturnEmptyIfNotSet()) {
                     getSepsets().set(x, y, empty);
                     System.out.println("$$$$$$$$$$$ look for similar pairs x,y = " + x + ", " + y);
@@ -353,14 +354,13 @@ public class SvarFas implements IFas {
                         System.out.println("$$$$$$$$$$$ found similar pair x,y = " + x1 + ", " + y1);
                         getSepsets().set(x1, y1, empty);
                     }
-//                    }
 
                     TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFact(x, y, empty) + " score = " +
-                            this.nf.format(test.getScore()));
+                            this.nf.format(result.getScore()));
 
                     if (this.verbose) {
                         this.out.println(LogUtilsSearch.independenceFact(x, y, empty) + " score = " +
-                                this.nf.format(test.getScore()));
+                                this.nf.format(result.getScore()));
                     }
 
                 } else if (!forbiddenEdge(x, y)) {
@@ -387,7 +387,7 @@ public class SvarFas implements IFas {
 
                     if (this.verbose) {
                         TetradLogger.getInstance().log("dependencies", LogUtilsSearch.independenceFact(x, y, empty) + " score = " +
-                                this.nf.format(test.getScore()));
+                                this.nf.format(result.getScore()));
                     }
                 }
             }

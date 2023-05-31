@@ -137,7 +137,7 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pInd);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pInd, getAlpha() - pInd);
     }
 
     public double probConstraint(BCInference.OP op, Node x, Node y, Node[] z) {
@@ -184,12 +184,6 @@ public class ProbabilisticMapIndependence implements IndependenceTest {
     @Override
     public DataModel getData() {
         return data;
-    }
-
-
-    @Override
-    public double getScore() {
-        return posterior;
     }
 
     public Map<IndependenceFact, Double> getH() {

@@ -161,7 +161,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
         if (Double.isNaN(fisherZ)) {
             return new IndependenceResult(new IndependenceFact(x, y, _z),
-                    true, Double.NaN);
+                    true, Double.NaN, Double.NaN);
         }
 
         double pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(fisherZ)));
@@ -175,7 +175,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, getPValue() - getAlpha());
 
     }
 
@@ -246,17 +246,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
         }
 
         return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
-    }
-
-    /**
-     * Returns a number that is positive when dependence holds and more positive for greater dependence.
-     *
-     * @return This number
-     * @see Fges
-     */
-    @Override
-    public double getScore() {
-        return -(getPValue() - getAlpha());
     }
 
     /**

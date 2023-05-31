@@ -229,7 +229,7 @@ public class IndTestDSep implements IndependenceTest {
 
         this.pvalue = pValue;
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), dSeparated, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, z), dSeparated, pValue, getPValue() == 1 ? -1 : 1);
     }
 
     /**
@@ -338,16 +338,6 @@ public class IndTestDSep implements IndependenceTest {
      */
     public DataSet getData() {
         throw new UnsupportedOperationException("This is a d-separation test, no data available.");
-    }
-
-    /**
-     * Returns 1 for d-connections, -1 for d-separations
-     *
-     * @return This number.
-     */
-    @Override
-    public double getScore() {
-        return getPValue() == 1 ? -1 : 1;
     }
 
     /**

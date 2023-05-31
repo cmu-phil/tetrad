@@ -145,7 +145,7 @@ public class IndTestSepsetDci implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue(), getAlpha() - getPValue());
     }
 
     /**
@@ -207,11 +207,6 @@ public class IndTestSepsetDci implements IndependenceTest {
 
     public DataSet getData() {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public double getScore() {
-        return getPValue();
     }
 
     public boolean isVerbose() {

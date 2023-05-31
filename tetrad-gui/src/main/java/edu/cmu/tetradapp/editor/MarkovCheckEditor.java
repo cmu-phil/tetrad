@@ -42,14 +42,10 @@ import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
@@ -75,7 +71,9 @@ public class MarkovCheckEditor extends JPanel {
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final IndTestDSep dsep;
     private final Graph graph;
-    private final boolean parallelized = true;
+    private boolean parallelized = false;
+    private final JLabel markovTestLabel = new JLabel("(Unspecified Test)");
+    private final Parameters parameters;
     private AbstractTableModel tableModelIndep;
     private AbstractTableModel tableModelDep;
     private int sortDir;
@@ -89,8 +87,9 @@ public class MarkovCheckEditor extends JPanel {
     boolean updatingTestModels = true;
     private IndependenceTest independenceTest;
     private final DataModel dataSet;
-    private JLabel markovTestLabel = new JLabel("(Unspecified Test)");
-    private JLabel faithfulnessTestLabel = new JLabel("(Unspecified Test)");
+    private final JLabel faithfulnessTestLabel = new JLabel("(Unspecified Test)");
+    private IndependenceWrapper independenceWrapper;
+    private JTextField textField;
 
     /**
      * Constructs a new editor for the given model.
@@ -100,61 +99,19 @@ public class MarkovCheckEditor extends JPanel {
             throw new NullPointerException("Expecting a model");
         }
 
-        Parameters parameters = model.getParameters();
+        this.model = model;
+
         this.dataSet = model.getDataModel();
         this.graph = model.getGraph();
+        this.parameters = model.getParameters();
 
         refreshTestList();
+        setTest();
 
-        indTestComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (updatingTestModels) {
-                    return;
-                }
-
-                IndependenceTestModel selectedItem = (IndependenceTestModel) indTestComboBox.getSelectedItem();
-                Class<IndependenceWrapper> clazz = (selectedItem == null) ? null : selectedItem.getIndependenceTest().getClazz();
-
-                if (clazz != null) {
-                    try {
-                        IndependenceWrapper independenceTest1 = clazz.getDeclaredConstructor(new Class[0]).newInstance();
-                        independenceTest = independenceTest1.getTest(dataSet, parameters);
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                            NoSuchMethodException e1) {
-                        throw new RuntimeException(e1);
-                    }
-                }
-
-                if (independenceTest == null) {
-                    throw new NullPointerException("Expecting a test");
-                }
-
-                markovTestLabel.setText(independenceTest.toString());
-                faithfulnessTestLabel.setText(independenceTest.toString());
-
-//                refreshTestList();
-            }
+        indTestComboBox.addActionListener(e -> {
+            setTest();
         });
 
-        IndependenceTestModel selectedItem = (IndependenceTestModel) indTestComboBox.getSelectedItem();
-        Class<IndependenceWrapper> clazz = (selectedItem == null) ? null : selectedItem.getIndependenceTest().getClazz();
-
-        if (clazz != null) {
-            try {
-                IndependenceWrapper independenceTest1 = clazz.getDeclaredConstructor(new Class[0]).newInstance();
-                independenceTest = independenceTest1.getTest(dataSet, parameters);
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                     NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        if (independenceTest == null) {
-            throw new NullPointerException("Expecting a test");
-        }
-
-        this.model = model;
         Graph sourceGraph = model.getGraph();
         List<Node> variables = independenceTest.getVariables();
 
@@ -205,7 +162,16 @@ public class MarkovCheckEditor extends JPanel {
         Box box1 = Box.createHorizontalBox();
         box1.add(indTestComboBox);
         box1.add(Box.createHorizontalStrut(10));
-        box1.add(new JButton("Params"));
+        JButton params = new JButton("Params");
+
+        params.addActionListener(e -> {
+            setTest();
+            JOptionPane dialog = new JOptionPane(createParamsPanel(independenceWrapper, parameters), JOptionPane.PLAIN_MESSAGE);
+            dialog.createDialog("Set Parameters").setVisible(true);
+            setTest();
+        });
+
+        box1.add(params);
         box.add(box1);
 
         JTabbedPane pane = new JTabbedPane();
@@ -214,6 +180,34 @@ public class MarkovCheckEditor extends JPanel {
         box.add(pane);
 
         add(box);
+    }
+
+    private void setTest() {
+        IndependenceTestModel selectedItem = (IndependenceTestModel) indTestComboBox.getSelectedItem();
+        Class<IndependenceWrapper> clazz = (selectedItem == null) ? null : selectedItem.getIndependenceTest().getClazz();
+
+        if (clazz != null) {
+            try {
+                independenceWrapper = clazz.getDeclaredConstructor(new Class[0]).newInstance();
+                independenceTest = independenceWrapper.getTest(dataSet, parameters);
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                     NoSuchMethodException e1) {
+                throw new RuntimeException(e1);
+            }
+        }
+
+        if (independenceTest == null) {
+            throw new NullPointerException("Expecting a test");
+        }
+
+        markovTestLabel.setText(independenceTest.toString());
+        faithfulnessTestLabel.setText(independenceTest.toString());
+
+        model.getResults(true).clear();
+        model.getResults(false).clear();
+
+        invalidate();
+        repaint();
     }
 
     //========================PUBLIC METHODS==========================//
@@ -227,13 +221,13 @@ public class MarkovCheckEditor extends JPanel {
 
         list.addActionListener(e -> generateResults(false));
 
-        JButton clear = new JButton("Clear");
-        clear.setFont(new Font("Dialog", Font.PLAIN, 14));
-        clear.addActionListener(e -> {
-            model.getResults(false).clear();
-            revalidate();
-            repaint();
-        });
+//        JButton clear = new JButton("Clear");
+//        clear.setFont(new Font("Dialog", Font.PLAIN, 14));
+//        clear.addActionListener(e -> {
+//            model.getResults(false).clear();
+//            revalidate();
+//            repaint();
+//        });
 
         Box b1 = Box.createVerticalBox();
 
@@ -246,8 +240,8 @@ public class MarkovCheckEditor extends JPanel {
         faithfulnessTestLabel.setText(independenceTest.toString());
 
         Box b2a = Box.createHorizontalBox();
-        b2a.add(new JLabel("Test: "));
-        b2a.add(faithfulnessTestLabel);
+//        b2a.add(new JLabel("Test: "));
+//        b2a.add(faithfulnessTestLabel);
         b2a.add(Box.createHorizontalGlue());
         b1.add(b2a);
 
@@ -334,8 +328,8 @@ public class MarkovCheckEditor extends JPanel {
 
         tableModelDep.addTableModelListener(e -> {
             if (e.getColumn() == 2) {
-                revalidate();
-                repaint();
+                table.revalidate();
+                table.repaint();
             }
         });
 
@@ -387,7 +381,7 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         b4.add(Box.createHorizontalGlue());
-        b4.add(clear);
+//        b4.add(clear);
         b4.add(list);
         b4.add(showHistogram);
 
@@ -444,8 +438,8 @@ public class MarkovCheckEditor extends JPanel {
         faithfulnessTestLabel.setText(getIndependenceTest().toString());
 
         Box b2a = Box.createHorizontalBox();
-        b2a.add(new JLabel("Test: "));
-        b2a.add(markovTestLabel);
+//        b2a.add(new JLabel("Test: "));
+//        b2a.add(markovTestLabel);
         b2a.add(Box.createHorizontalGlue());
         b1.add(b2a);
 
@@ -533,8 +527,8 @@ public class MarkovCheckEditor extends JPanel {
 
         tableModelIndep.addTableModelListener(e -> {
             if (e.getColumn() == 2) {
-                revalidate();
-                repaint();
+                table.revalidate();
+                table.repaint();
             }
         });
 
@@ -582,11 +576,15 @@ public class MarkovCheckEditor extends JPanel {
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
                 editorWindow.setVisible(true);
+
+                setTest();
+                generateResults(false);
+
             }
         });
 
         b4.add(Box.createHorizontalGlue());
-        b4.add(clear);
+//        b4.add(clear);
         b4.add(list);
         b4.add(showHistogram);
 
@@ -641,6 +639,14 @@ public class MarkovCheckEditor extends JPanel {
     private void generateResults(boolean indep) {
         class MyWatchedProcess extends WatchedProcess {
             public void watch() {
+                if (indep) {
+                    model.getResults(true).clear();
+                } else {
+                    model.getResults(false).clear();
+                }
+
+                invalidate();
+                repaint();
 
                 if (model.getVars().size() < 2) {
                     if (indep) {
@@ -724,7 +730,7 @@ public class MarkovCheckEditor extends JPanel {
                             independenceTest.setVerbose(verbose);
 
                             if (!Double.isNaN(pValue)) {
-                                results.add(new IndependenceResult(fact, indep, pValue));
+                                results.add(new IndependenceResult(fact, indep, pValue, independenceTest.getAlpha() - pValue));
 
                                 if (indep) {
                                     tableModelIndep.fireTableDataChanged();
@@ -899,12 +905,16 @@ public class MarkovCheckEditor extends JPanel {
     private DataType getDataType() {
         if (dataSet.isContinuous() && !(dataSet instanceof ICovarianceMatrix)) {
             // covariance dataset is continuous at the same time - Zhou
+            parallelized = false;
             return DataType.Continuous;
         } else if (dataSet.isDiscrete()) {
+            parallelized = false;
             return DataType.Discrete;
         } else if (dataSet.isMixed()) {
+            parallelized = false;
             return DataType.Mixed;
         } else if (dataSet instanceof ICovarianceMatrix) { // Better to add an isCovariance() - Zhou
+            parallelized = true;
             return DataType.Covariance;
         } else {
             return null;
@@ -932,7 +942,38 @@ public class MarkovCheckEditor extends JPanel {
         indTestComboBox.setSelectedItem(IndependenceTestModels.getInstance().getDefaultModel(dataType));
     }
 
+    private JPanel createParamsPanel(IndependenceWrapper independenceWrapper, Parameters params) {
+        Set<String> testParameters = new HashSet<>(independenceWrapper.getParameters());
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        for (String parameter : testParameters) {
+            JPanel subPanel = new JPanel();
+            subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.X_AXIS));
+            subPanel.add(new JLabel(parameter));
+            subPanel.add(Box.createHorizontalGlue());
+            textField = new JTextField(params.get(parameter).toString());
+            textField.setMaximumSize(new Dimension(Short.MAX_VALUE, textField.getPreferredSize().height));
+
+            textField.addActionListener(e -> {
+                try {
+                    params.set(parameter, Double.parseDouble(textField.getText()));
+                } catch (Exception ex) {
+                    // Ignore
+                }
+
+                textField.setText(params.get(parameter).toString());
+            });
+
+            subPanel.add(textField);
+            panel.add(subPanel);
+        }
+
+        return panel;
+    }
 }
+
 
 
 

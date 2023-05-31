@@ -341,7 +341,7 @@ public final class IndTestHsic implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, this.pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, this.pValue, alpha - pValue);
     }
 
     /**
@@ -613,17 +613,6 @@ public final class IndTestHsic implements IndependenceTest {
      */
     public DataSet getData() {
         return this.dataSet;
-    }
-
-
-    /**
-     * Returns the score for this this test, alpha - p.
-     *
-     * @return This score.
-     */
-    @Override
-    public double getScore() {
-        return alpha - getPValue();
     }
 
     /**

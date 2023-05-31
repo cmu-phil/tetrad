@@ -58,7 +58,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     private double alpha;
     private DataSet dataSet;
     private boolean verbose = true;
-    private double p = Double.NaN;
+//    private double p = Double.NaN;
     private double r = Double.NaN;
 
     //==========================CONSTRUCTORS=============================//
@@ -208,7 +208,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         } catch (SingularMatrixException e) {
             e.printStackTrace();
             return new IndependenceResult(new IndependenceFact(x, y, z),
-                    false, p);
+                    false, p, alpha - p);
         }
 
         boolean independent = p > this.alpha;
@@ -222,21 +222,21 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         if (Double.isNaN(p)) {
             return new IndependenceResult(new IndependenceFact(x, y, z),
-                    false, p);
+                    false, p, alpha - p);
         } else {
             return new IndependenceResult(new IndependenceFact(x, y, z),
-                    independent, p);
+                    independent, p, alpha - p);
         }
     }
 
-    /**
-     * Returns the probability associated with the most recently computed independence test.
-     *
-     * @return This probability.
-     */
-    public double getPValue() {
-        return this.p;
-    }
+//    /**
+//     * Returns the probability associated with the most recently computed independence test.
+//     *
+//     * @return This probability.
+//     */
+//    public double getPValue() {
+//        return this.p;
+//    }
 
     /**
      * Returns the p-value for x _||_ y | z.
@@ -266,7 +266,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         double fisherZ = sqrt(n - 3. - z.size()) * q;
         double p = 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
 
-        this.p = p;
+//        this.p = p;
         return p;
     }
 
@@ -371,16 +371,6 @@ public final class IndTestFisherZ implements IndependenceTest {
     @Override
     public int getSampleSize() {
         return this.cor.getSampleSize();
-    }
-
-    /**
-     * Returns the score for this test, alpha - p. Should be dependent only for positive values.
-     *
-     * @return This score.
-     */
-    @Override
-    public double getScore() {
-        return this.alpha - this.p;//FastMath.abs(fisherZ) - cutoff;
     }
 
     /**

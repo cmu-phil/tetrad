@@ -400,7 +400,7 @@ public class FasFdr implements IFas {
                             this.pValueList.add(result.getPValue());
                         } catch (Exception e) {
                             result = new IndependenceResult(new IndependenceFact(x, y, condSet),
-                                    false, Double.NaN);
+                                    false, Double.NaN, Double.NaN);
                         }
 
                         boolean noEdgeRequired =

@@ -161,7 +161,7 @@ public class IndTestProbabilistic implements IndependenceTest {
         List<Integer> rows = getRows(this.data, allVars, this.indices);
         if (rows.isEmpty())
             return new IndependenceResult(new IndependenceFact(x, y, GraphUtils.asSet(z)),
-                    true, Double.NaN);
+                    true, Double.NaN, Double.NaN);
 
         BCInference bci;
         Map<Node, Integer> indices;
@@ -217,7 +217,7 @@ public class IndTestProbabilistic implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), ind, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), ind, p, this.posterior);
     }
 
 
@@ -267,12 +267,6 @@ public class IndTestProbabilistic implements IndependenceTest {
     @Override
     public DataModel getData() {
         return this.data;
-    }
-
-
-    @Override
-    public double getScore() {
-        return this.posterior;
     }
 
     public Map<IndependenceFact, Double> getH() {

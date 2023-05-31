@@ -262,7 +262,7 @@ public final class IndTestCramerT implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, alpha - pValue);
     }
 
     /**
@@ -345,13 +345,6 @@ public final class IndTestCramerT implements IndependenceTest {
     public DataSet getData() {
         return this.dataSet;
     }
-
-
-    @Override
-    public double getScore() {
-        return -(getPValue() - getAlpha());
-    }
-
 
     /**
      * @return a string representation of this test.

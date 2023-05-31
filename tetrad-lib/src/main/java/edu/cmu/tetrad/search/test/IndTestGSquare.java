@@ -207,7 +207,7 @@ public final class IndTestGSquare implements IndependenceTest {
         }
 
         return new IndependenceResult(new IndependenceFact(x, y, _z),
-                result.isIndep(), result.getPValue());
+                result.isIndep(), result.getPValue(), alpha - result.getPValue());
     }
 
     /**
@@ -328,17 +328,6 @@ public final class IndTestGSquare implements IndependenceTest {
      */
     public DataSet getData() {
         return this.dataSet;
-    }
-
-
-    /**
-     * Returns the score, alpha - p.
-     *
-     * @return This score.
-     */
-    @Override
-    public double getScore() {
-        return alpha - getPValue();
     }
 
     /**

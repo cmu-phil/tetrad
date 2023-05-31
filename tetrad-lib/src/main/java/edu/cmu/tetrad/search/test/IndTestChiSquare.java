@@ -72,8 +72,6 @@ public final class IndTestChiSquare implements IndependenceTest {
      */
     private int df;
 
-    private double pValue;
-
     private boolean verbose;
 
     /**
@@ -154,15 +152,6 @@ public final class IndTestChiSquare implements IndependenceTest {
     }
 
     /**
-     * Returns the p value associated with the most recent call of isIndependent.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.pValue;
-    }
-
-    /**
      * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
      *
      * @return True iff x _||_ y | z.
@@ -203,17 +192,17 @@ public final class IndTestChiSquare implements IndependenceTest {
         ChiSquareTest.Result result = this.chiSquareTest.calcChiSquare(testIndices);
         this.xSquare = result.getXSquare();
         this.df = result.getDf();
-        this.pValue = result.getPValue();
+        double pValue = result.getPValue();
 
         if (verbose) {
             if (result.isIndep()) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, _z, this.pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
         IndependenceFact fact = new IndependenceFact(x, y, _z);
-        return new IndependenceResult(fact, result.isIndep(), result.getPValue());
+        return new IndependenceResult(fact, result.isIndep(), result.getPValue(), getAlpha() - pValue);
     }
 
     /**
@@ -323,16 +312,6 @@ public final class IndTestChiSquare implements IndependenceTest {
      */
     public DataSet getData() {
         return this.dataSet;
-    }
-
-    /**
-     * Returns a number which is more positive for more dependent test tesults.
-     *
-     * @return This number.
-     */
-    @Override
-    public double getScore() {
-        return -(getPValue() - getAlpha());
     }
 
     /**

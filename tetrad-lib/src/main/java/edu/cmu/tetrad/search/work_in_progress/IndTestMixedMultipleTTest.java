@@ -163,16 +163,6 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
     }
 
     /**
-     * Returns alpha minus the last p-value calculated.
-     *
-     * @return Thsi.
-     */
-    @Override
-    public double getScore() {
-        return alpha - getPValue();
-    }
-
-    /**
      * @return a string representation of this test.
      */
     public String toString() {
@@ -327,7 +317,7 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
     }
 
     int[] _rows;
@@ -424,6 +414,6 @@ public class IndTestMixedMultipleTTest implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
     }
 }

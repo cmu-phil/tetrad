@@ -97,7 +97,7 @@ public final class IndTestMulti implements IndependenceTest {
             TetradLogger.getInstance().log("dependencies", "In aggregate dependent: " + LogUtilsSearch.independenceFact(x, y, z));
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue(), getAlpha() - getPValue());
     }
 
     public double getPValue() {
@@ -135,17 +135,6 @@ public final class IndTestMulti implements IndependenceTest {
      */
     public DataSet getData() {
         throw new UnsupportedOperationException();
-    }
-
-
-    /**
-     * Returns alpha - pvalue.
-     *
-     * @return This.
-     */
-    @Override
-    public double getScore() {
-        return getAlpha() - getPValue();
     }
 
     /**

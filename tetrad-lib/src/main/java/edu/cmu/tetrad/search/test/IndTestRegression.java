@@ -144,7 +144,7 @@ public final class IndTestRegression implements IndependenceTest {
             result = regression.regress(xVar, regressors);
         } catch (Exception e) {
             return new IndependenceResult(new IndependenceFact(xVar, yVar, zList),
-                    false, Double.NaN);
+                    false, Double.NaN, Double.NaN);
         }
 
         double p = result.getP()[1];
@@ -167,7 +167,7 @@ public final class IndTestRegression implements IndependenceTest {
         }
 
         return new IndependenceResult(new IndependenceFact(xVar, yVar, zList),
-                independent, p);
+                independent, p, getAlpha() - p);
     }
 
     /**
@@ -280,12 +280,6 @@ public final class IndTestRegression implements IndependenceTest {
 
     public DataSet getData() {
         return this.dataSet;
-    }
-
-
-    @Override
-    public double getScore() {
-        return getPValue();
     }
 
     public boolean isVerbose() {

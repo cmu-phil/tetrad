@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -145,8 +146,8 @@ public class Fas implements IFas {
         }
 
         for (Edge edge : edges) {
-            this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
-            scores.put(edge, this.test. getScore());
+            IndependenceResult result = this.test.checkIndependence(edge.getNode1(), edge.getNode2(), new HashSet<>());
+            scores.put(edge, result.getScore());
         }
 
         if (this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_2 || this.heuristic == PcCommon.PcHeuristicType.HEURISTIC_3) {

@@ -154,7 +154,7 @@ public class IndTestMvpLrt implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, alpha - pValue);
     }
 
     /**
@@ -210,16 +210,6 @@ public class IndTestMvpLrt implements IndependenceTest {
      */
     public DataSet getData() {
         return this.data;
-    }
-
-    /**
-     * Returns alph - p.
-     *
-     * @return This score.
-     */
-    @Override
-    public double getScore() {
-        return getAlpha() - getPValue();
     }
 
     /**

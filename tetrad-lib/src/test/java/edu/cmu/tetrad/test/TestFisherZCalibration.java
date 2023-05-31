@@ -10,6 +10,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.test.IndTestDSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -20,7 +21,10 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class TestFisherZCalibration {
 
@@ -155,8 +159,8 @@ public class TestFisherZCalibration {
             Node _x3 = dataSet.getVariable("X3");
             Node _x4 = dataSet.getVariable("X4");
 
-            test.checkIndependence(_x1, _x2, Collections.singleton(_x4));
-            return test.getScore();
+            IndependenceResult result = test.checkIndependence(_x1, _x2, Collections.singleton(_x4));
+            return result.getScore();
         } catch (AssertionError e) {
             return Double.NaN;
         }

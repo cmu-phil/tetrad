@@ -330,7 +330,7 @@ public class Fasd implements IFas {
                     result = test.checkIndependence(x, y, empty);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN);
+                    result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN, Double.NaN);
                 }
 
                 boolean noEdgeRequired =

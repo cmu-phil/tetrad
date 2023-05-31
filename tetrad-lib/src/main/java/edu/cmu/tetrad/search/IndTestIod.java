@@ -121,7 +121,7 @@ public class IndTestIod implements IndependenceTest {
 
         boolean independent = ResolveSepsets.isIndependentPooled(ResolveSepsets.Method.fisher, tests, x, y, z);
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN, Double.NaN);
     }
 
     /**
@@ -219,16 +219,6 @@ public class IndTestIod implements IndependenceTest {
      */
     public DataSet getData() {
         throw new UnsupportedOperationException("No single dataset; this test pools over multiple datasets.");
-    }
-
-    /**
-     * The score for this test is undefined.
-     *
-     * @return Double.NaN.
-     */
-    @Override
-    public double getScore() {
-        return Double.NaN;
     }
 
     /**

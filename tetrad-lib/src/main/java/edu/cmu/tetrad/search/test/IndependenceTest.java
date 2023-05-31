@@ -63,13 +63,6 @@ public interface IndependenceTest {
     DataModel getData();
 
     /**
-     * Return A score that is higher with more likely models.
-     *
-     * @return This score.
-     */
-    double getScore();
-
-    /**
      * Sets whether this test will print verbose output.
      *
      * @param verbose True if so.

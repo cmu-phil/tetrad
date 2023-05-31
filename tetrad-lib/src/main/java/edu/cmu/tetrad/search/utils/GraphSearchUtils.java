@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils.TwoCycleErrors;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
@@ -192,8 +193,8 @@ public final class GraphSearchUtils {
                 v2.remove(c);
 
 //                    if (isForbidden(a, c, new ArrayList<>(v2)))
-                independenceTest.checkIndependence(a, c, new HashSet<>(v2));
-                double p2 = independenceTest.getScore();
+                IndependenceResult result = independenceTest.checkIndependence(a, c, new HashSet<>(v2));
+                double p2 = result.getScore();
 
                 if (p2 < 0) {
                     return v2;
