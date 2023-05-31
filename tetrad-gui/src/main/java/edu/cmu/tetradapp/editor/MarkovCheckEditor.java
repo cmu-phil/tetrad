@@ -108,9 +108,7 @@ public class MarkovCheckEditor extends JPanel {
         refreshTestList();
         setTest();
 
-        indTestComboBox.addActionListener(e -> {
-            setTest();
-        });
+        indTestComboBox.addActionListener(e -> setTest());
 
         Graph sourceGraph = model.getGraph();
         List<Node> variables = independenceTest.getVariables();
@@ -221,16 +219,7 @@ public class MarkovCheckEditor extends JPanel {
 
         list.addActionListener(e -> generateResults(false));
 
-//        JButton clear = new JButton("Clear");
-//        clear.setFont(new Font("Dialog", Font.PLAIN, 14));
-//        clear.addActionListener(e -> {
-//            model.getResults(false).clear();
-//            revalidate();
-//            repaint();
-//        });
-
         Box b1 = Box.createVerticalBox();
-
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Checks whether X ~_||_ Y | parents(X) for dconn(X, Y | parents(X))"));
         b2.add(Box.createHorizontalGlue());
@@ -240,11 +229,8 @@ public class MarkovCheckEditor extends JPanel {
         faithfulnessTestLabel.setText(independenceTest.toString());
 
         Box b2a = Box.createHorizontalBox();
-//        b2a.add(new JLabel("Test: "));
-//        b2a.add(faithfulnessTestLabel);
         b2a.add(Box.createHorizontalGlue());
         b1.add(b2a);
-
         b1.add(Box.createVerticalStrut(5));
 
         this.tableModelDep = new AbstractTableModel() {
@@ -381,7 +367,6 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         b4.add(Box.createHorizontalGlue());
-//        b4.add(clear);
         b4.add(list);
         b4.add(showHistogram);
 
@@ -438,8 +423,6 @@ public class MarkovCheckEditor extends JPanel {
         faithfulnessTestLabel.setText(getIndependenceTest().toString());
 
         Box b2a = Box.createHorizontalBox();
-//        b2a.add(new JLabel("Test: "));
-//        b2a.add(markovTestLabel);
         b2a.add(Box.createHorizontalGlue());
         b1.add(b2a);
 
@@ -576,15 +559,10 @@ public class MarkovCheckEditor extends JPanel {
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
                 editorWindow.setVisible(true);
-
-                setTest();
-                generateResults(false);
-
             }
         });
 
         b4.add(Box.createHorizontalGlue());
-//        b4.add(clear);
         b4.add(list);
         b4.add(showHistogram);
 
@@ -639,11 +617,7 @@ public class MarkovCheckEditor extends JPanel {
     private void generateResults(boolean indep) {
         class MyWatchedProcess extends WatchedProcess {
             public void watch() {
-                if (indep) {
-                    model.getResults(true).clear();
-                } else {
-                    model.getResults(false).clear();
-                }
+                model.getResults(indep).clear();
 
                 invalidate();
                 repaint();
@@ -661,12 +635,6 @@ public class MarkovCheckEditor extends JPanel {
 
                 // Listing all facts before checking any (in preparation for parallelization).
                 for (Node x : graph.getNodes()) {
-//                    List<Node> desc = dag.paths().getDescendants(Collections.singletonList(x));
-//                    List<Node> nondesc = dag.getNodes();
-//                    nondesc.removeAll(desc);
-//                    nondesc.removeAll(dag.getParents(x));
-//                    nondesc.remove(x);
-
                     Set<Node> z = new HashSet<>(graph.getParents(x));
                     Set<Node> ds = new HashSet<>();
                     Set<Node> dc = new HashSet<>();
@@ -683,8 +651,6 @@ public class MarkovCheckEditor extends JPanel {
                         }
                     }
 
-//                    System.out.println("Node " + x + " parents = " + z
-//                            + " non-descendants = " + nondesc);
                     System.out.println("Node " + x + " parents = " + z
                             + " d-separated | z = " + ds + " d-connected | z = " + dc);
 
@@ -724,13 +690,21 @@ public class MarkovCheckEditor extends JPanel {
                             Set<Node> z = fact.getZ();
                             boolean verbose = independenceTest.isVerbose();
                             independenceTest.setVerbose(false);
-                            IndependenceResult result = independenceTest.checkIndependence(x, y, z);
+                            IndependenceResult result = null;
+                            try {
+                                result = independenceTest.checkIndependence(x, y, z);
+                            } catch (Exception e) {
+                                JOptionPane.showMessageDialog(MarkovCheckEditor.this,
+                                        "Error while checking independence: " + e.getMessage(),
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+                                throw new RuntimeException(e);
+                            }
                             boolean indep = result.isIndependent();
                             double pValue = result.getPValue();
                             independenceTest.setVerbose(verbose);
 
                             if (!Double.isNaN(pValue)) {
-                                results.add(new IndependenceResult(fact, indep, pValue, independenceTest.getAlpha() - pValue));
+                                results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
 
                                 if (indep) {
                                     tableModelIndep.fireTableDataChanged();
