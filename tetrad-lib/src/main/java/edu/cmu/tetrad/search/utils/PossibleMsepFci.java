@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Implements the Possible-D-Sep search step of Spirtes, et al's (1993) FCI algorithm (pp 144-145). Specifically, the
+ * Implements the Possible-M-Sep search step of Spirtes, et al's (1993) FCI algorithm (pp 144-145). Specifically, the
  * methods in this class perform step D. of the algorithm. The algorithm implemented by this class is a bit broader,
  * however, because it allows for the possibility that some pairs of variables have already been compared by a different
  * algorithm. Specifically, if the <code>prevCheck</code> variable is provided in the constructor, then the algorithm
@@ -46,7 +46,7 @@ import java.util.Set;
  *
  * @author David Danks
  */
-public class PossibleDsepFci {
+public class PossibleMsepFci {
     private final Graph graph;
     private final IndependenceTest test;
     private final SepsetMap sepset;
@@ -60,14 +60,14 @@ public class PossibleDsepFci {
      * @param graph The GaSearchGraph on which to work
      * @param test  The IndependenceChecker to use as an oracle
      */
-    public PossibleDsepFci(Graph graph, IndependenceTest test) {
+    public PossibleMsepFci(Graph graph, IndependenceTest test) {
         if (graph == null) {
             throw new NullPointerException("null GaSearchGraph passed in " +
-                    "PossibleDSepSearch constructor!");
+                    "PossibleMSepSearch constructor!");
         }
         if (test == null) {
             throw new NullPointerException("null IndependenceChecker passed " +
-                    "in PossibleDSepSearch " + "constructor!");
+                    "in PossibleMSepSearch " + "constructor!");
         }
 
         this.graph = graph;
@@ -79,8 +79,8 @@ public class PossibleDsepFci {
 
     /**
      * Performs pairwise comparisons of each variable in the graph with the variables that have not already been
-     * checked. We get the Possible-D-Sep sets for the pair of variables, and we check to see if they are independent
-     * conditional on some subset of the union of Possible-D-Sep sets. This method returns the SepSet passed in the
+     * checked. We get the Possible-M-Sep sets for the pair of variables, and we check to see if they are independent
+     * conditional on some subset of the union of Possible-M-Sep sets. This method returns the SepSet passed in the
      * constructor (if any), possibly augmented by some edge removals in this step. The GaSearchGraph passed in the
      * constructor is directly changed.
      */
@@ -149,11 +149,11 @@ public class PossibleDsepFci {
     }
 
     private Set<Node> getCondSet(IndependenceTest test, Node node1, Node node2, int maxPathLength) {
-        List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
-        List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
+        List<Node> possibleMsepSet = getPossibleMsep(node1, node2, maxPathLength);
+        List<Node> possibleMsep = new ArrayList<>(possibleMsepSet);
         boolean noEdgeRequired = getKnowledge().noEdgeRequired(node1.getName(), node2.getName());
 
-        List<Node> possParents = possibleParents(node1, possibleDsep, getKnowledge());
+        List<Node> possParents = possibleParents(node1, possibleMsep, getKnowledge());
 
         int _depth = getDepth() == -1 ? 1000 : getDepth();
 
@@ -198,7 +198,7 @@ public class PossibleDsepFci {
     }
 
     /**
-     * A variable v is in Possible-D-Sep(A,B) iff
+     * A variable v is in Possible-M-Sep(A,B) iff
      * <pre>
      * 	(i) v != A & v != B
      * 	(ii) there is an undirected path U between A and v such that for every
@@ -207,15 +207,15 @@ public class PossibleDsepFci {
      * 		(b) X is adjacent to Z.
      * </pre>
      */
-    private List<Node> getPossibleDsep(Node node1, Node node2, int maxPathLength) {
-        List<Node> dsep = this.graph.paths().possibleDsep(node1, node2, maxPathLength);
+    private List<Node> getPossibleMsep(Node node1, Node node2, int maxPathLength) {
+        List<Node> msep = this.graph.paths().possibleMsep(node1, node2, maxPathLength);
 
-        dsep.remove(node1);
-        dsep.remove(node2);
+        msep.remove(node1);
+        msep.remove(node2);
 
-//        TetradLogger.getInstance().log("details", "Possible-D-Sep(" + node1 + ", " + node2 + ") = " + dsep);
+//        TetradLogger.getInstance().log("details", "Possible-M-Sep(" + node1 + ", " + node2 + ") = " + msep);
 
-        return dsep;
+        return msep;
     }
 
 }

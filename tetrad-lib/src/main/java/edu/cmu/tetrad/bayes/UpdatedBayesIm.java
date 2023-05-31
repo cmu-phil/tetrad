@@ -559,7 +559,7 @@ public final class UpdatedBayesIm implements BayesIm {
 
             // Added the condition node == node2 since the updater was corrected to exclude this.
             // jdramsey 12.13.2014
-            if (node == node2 || this.bayesIm.getDag().paths().isDConnectedTo(node, node2, conditionedNodes)) {
+            if (node == node2 || this.bayesIm.getDag().paths().isMConnectedTo(node, node2, conditionedNodes)) {
                 relevantVars[i] = true;
             }
         }

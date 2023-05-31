@@ -66,11 +66,11 @@ public class SepsetsConservative implements SepsetProducer {
         Set<Node> _v = null;
 
         if (this.extraSepsets != null) {
-            Set<Node> possibleDsep = this.extraSepsets.get(i, k);
-            if (possibleDsep != null) {
-                IndependenceResult result = this.independenceTest.checkIndependence(i, k, possibleDsep);
+            Set<Node> possibleMsep = this.extraSepsets.get(i, k);
+            if (possibleMsep != null) {
+                IndependenceResult result = this.independenceTest.checkIndependence(i, k, possibleMsep);
                 _p = result.getPValue();
-                _v = possibleDsep;
+                _v = possibleMsep;
             }
         }
 

@@ -30,10 +30,10 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
+import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
-import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
+import edu.cmu.tetrad.algcomparison.score.MSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.GicScores;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.*;
@@ -89,7 +89,7 @@ public final class TestGrasp {
 //        new TestGrasp().wayneCheckDensityClaim2();
 //        new TestGrasp().bryanCheckDensityClaims();
 
-//        new TestGrasp().testDsep();
+//        new TestGrasp().testMsep();
 
         new TestGrasp().testCgScore();
 
@@ -1372,7 +1372,7 @@ public final class TestGrasp {
 
 
 //                    List<Node> variables = facts.getVariables();
-                    IndTestDSep test = new IndTestDSep(facts, variables);
+                    IndTestMSep test = new IndTestMSep(facts, variables);
 
                     edu.cmu.tetrad.search.Grasp boss = new edu.cmu.tetrad.search.Grasp(test, new GraphScore(facts));
                     boss.setNonSingularDepth(1);
@@ -1474,16 +1474,16 @@ public final class TestGrasp {
 
         System.out.println(graph);
 
-//        IndTestDSep dsep = new IndTestDSep(graph);
+//        IndTestMSep msep = new IndTestMSep(graph);
 //        GraphScore score = new GraphScore(graph);
         Set<Node> order = set(x1, x2, x3, x4, x5);
 
-        Grasp boss = new Grasp(new DSeparationTest(graph), new DSeparationScore(graph));
+        Grasp boss = new Grasp(new MSeparationTest(graph), new MSeparationScore(graph));
 
         Parameters parameters = new Parameters();
         parameters.set(Params.GRASP_USE_RASKUTTI_UHLER, true);
 
-//        Boss boss = new Boss(dsep, score);
+//        Boss boss = new Boss(msep, score);
 //        boss.setUseRaskuttiUhler(true);
 //        boss.setUseScore(false);
 //        boss.setDepth(3);
@@ -1491,7 +1491,7 @@ public final class TestGrasp {
         Graph best = boss.search(null, parameters);
         System.out.println("best = " + best);
 
-//        TeyssierScorer scorer = new TeyssierScorer(dsep, score);
+//        TeyssierScorer scorer = new TeyssierScorer(msep, score);
 ////        scorer.setUseScore(false);
 //        scorer.setUseRaskuttiUhler(true);
 //
@@ -1708,10 +1708,10 @@ public final class TestGrasp {
         System.out.println("SP DAG = " + spGraph);
         System.out.println("Failing Estimated DAG = " + failingDag);
 
-        IndTestDSep dsep = new IndTestDSep(failingDag);
+        IndTestMSep msep = new IndTestMSep(failingDag);
 
         for (IndependenceFact fact : facts.getFacts()) {
-            if (dsep.isDSeparated(fact.getX(), fact.getY(), fact.getZ())) {
+            if (msep.isMSeparated(fact.getX(), fact.getY(), fact.getZ())) {
                 System.out.println("Possible unfaithful d-connection: " + fact);
             }
         }
@@ -1983,7 +1983,7 @@ public final class TestGrasp {
 //        simulations.add(new SemSimulationTrueModel(new RandomForward()));
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new Grasp(new DSeparationTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Grasp(new MSeparationTest(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
 
         Comparison comparison = new Comparison();
         comparison.setShowAlgorithmIndices(true);
@@ -2394,7 +2394,7 @@ public final class TestGrasp {
         params.set(Params.DEPTH, -1);
         params.set(Params.MAX_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
-        params.set(Params.POSSIBLE_DSEP_DONE, true);
+        params.set(Params.POSSIBLE_MSEP_DONE, true);
         params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, true);
 
         // Flags
@@ -2494,8 +2494,8 @@ public final class TestGrasp {
 
     }
 
-    // Test algs from dsep
-    public void testFcoAlgsFromDsep() {
+    // Test algs from msep
+    public void testFcoAlgsFromMsep() {
         RandomUtil.getInstance().setSeed(38482838482L);
 
         Parameters params = new Parameters();
@@ -2517,7 +2517,7 @@ public final class TestGrasp {
         params.set(Params.DEPTH, -1);
         params.set(Params.MAX_PATH_LENGTH, 2);
         params.set(Params.COMPLETE_RULE_SET_USED, true);
-        params.set(Params.POSSIBLE_DSEP_DONE, true);
+        params.set(Params.POSSIBLE_MSEP_DONE, true);
         params.set(Params.DO_DISCRIMINATING_PATH_TAIL_RULE, true);
 
         // Flags
@@ -2590,8 +2590,8 @@ public final class TestGrasp {
 
             Map<String, Map<Statistic, Double>> algNameMap = trueGraphMap.get(i);
 
-            IndependenceWrapper test = new DSeparationTest(new EdgeListGraph(trueGraph));
-            ScoreWrapper score = new DSeparationScore(new EdgeListGraph(trueGraph));
+            IndependenceWrapper test = new MSeparationTest(new EdgeListGraph(trueGraph));
+            ScoreWrapper score = new MSeparationScore(new EdgeListGraph(trueGraph));
 
             Algorithms algorithms = new Algorithms();
 
@@ -2701,7 +2701,7 @@ public final class TestGrasp {
 
             for (Node y : graph.getNodes()) {
                 if (!graph.paths().isDescendentOf(y, x) && !parents.contains(y)) {
-                    if (!graph.paths().isDSeparatedFrom(x, y, parents)) {
+                    if (!graph.paths().isMSeparatedFrom(x, y, parents)) {
                         System.out.println("Failure! " + LogUtilsSearch.dependenceFactMsg(x, y, parents, 1.0));
                     }
                 }
@@ -2881,7 +2881,7 @@ public final class TestGrasp {
             Ret facts = allFacts.get(i);
             count++;
 
-            TeyssierScorer scorer = new TeyssierScorer(new IndTestDSep(facts.getFacts()),
+            TeyssierScorer scorer = new TeyssierScorer(new IndTestMSep(facts.getFacts()),
                     new GraphScore(facts.getFacts()));
 
             OrderedMap<String, Set<Graph>> graphs = new ListOrderedMap<>();
@@ -2896,7 +2896,7 @@ public final class TestGrasp {
             while ((perm = gen.next()) != null) {
                 List<Node> p = GraphUtils.asList(perm, variables);
 
-                edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new IndTestDSep(facts.getFacts()));
+                edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new IndTestMSep(facts.getFacts()));
                 search.setDepth(depth);
                 List<Node> order = search.bestOrder(p);
 //                System.out.println(p + " " + order + " truth = " + facts.getTruth() + " found = " + search.getNumEdges());// + " " + search.getGraph(false));
@@ -2952,7 +2952,7 @@ public final class TestGrasp {
             Ret facts = allFacts.get(i);
             count++;
 
-            TeyssierScorer scorer = new TeyssierScorer(new IndTestDSep(facts.getFacts()),
+            TeyssierScorer scorer = new TeyssierScorer(new IndTestMSep(facts.getFacts()),
                     new GraphScore(facts.getFacts()));
 
             OrderedMap<String, Set<Graph>> graphs = new ListOrderedMap<>();
@@ -2967,7 +2967,7 @@ public final class TestGrasp {
             while ((perm = gen.next()) != null) {
                 List<Node> p = GraphUtils.asList(perm, variables);
 
-                edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new IndTestDSep(facts.getFacts()));
+                edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new IndTestMSep(facts.getFacts()));
                 search.setDepth(depth);
                 search.setUncoveredDepth(depth);
                 search.setNonSingularDepth(depth);
@@ -3037,7 +3037,7 @@ public final class TestGrasp {
                         DataSet dataSet = im.simulateData(s, false);
                         List<Node> V = dataSet.getVariables();
 
-                        IndTestDSep dsep = new IndTestDSep(graph);
+                        IndTestMSep msep = new IndTestMSep(graph);
 
                         SemBicScore score = new SemBicScore(dataSet);
                         score.setPenaltyDiscount(1);
@@ -3057,9 +3057,9 @@ public final class TestGrasp {
                             perm[w] = l.get(w);
                         }
 
-                        List<Node> _perm0 = GraphUtils.asList(perm, dsep.getVariables());
+                        List<Node> _perm0 = GraphUtils.asList(perm, msep.getVariables());
 
-                        TeyssierScorer scorer1 = new TeyssierScorer(dsep,
+                        TeyssierScorer scorer1 = new TeyssierScorer(msep,
                                 new GraphScore(graph));
                         scorer1.setUseRaskuttiUhler(true);
                         scorer1.score(_perm0);
@@ -3123,7 +3123,7 @@ public final class TestGrasp {
         for (int k = 0; k < 100; k++) {
             Graph g = RandomGraph.randomGraph(10, 0, 15, 100,
                     100, 100, false);
-            IndTestDSep test = new IndTestDSep(g);
+            IndTestMSep test = new IndTestMSep(g);
             GraphScore score = new GraphScore(g);
 
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
@@ -3203,7 +3203,7 @@ public final class TestGrasp {
 
         System.out.println("Source = " + graph);//SearchGraphUtils.cpdagForDag(graph));
 
-        IndTestDSep dsep = new IndTestDSep(graph);
+        IndTestMSep msep = new IndTestMSep(graph);
         IndependenceFacts facts = new IndependenceFacts(graph);
 
         List<Node> nodes = graph.getNodes();
@@ -3247,7 +3247,7 @@ public final class TestGrasp {
                             }
                         }
 
-                        if (dsep.checkIndependence(x, y, new HashSet<>(pathColliders)).isIndependent()) {
+                        if (msep.checkIndependence(x, y, new HashSet<>(pathColliders)).isIndependent()) {
                             IndependenceFact fact = new IndependenceFact(x, y, new HashSet<>(pathColliders));
                             facts.add(fact);
                             System.out.println("Added " + fact);
@@ -3262,7 +3262,7 @@ public final class TestGrasp {
 
         if (count >= 2) {
 
-            IndependenceTest test = new IndTestDSep(facts);
+            IndependenceTest test = new IndTestMSep(facts);
 
             edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test);
             grasp.bestOrder(test.getVariables());

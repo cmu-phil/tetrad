@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -69,7 +69,7 @@ import static org.apache.commons.math3.util.FastMath.min;
 public class MarkovCheckEditor extends JPanel {
     private final MarkovCheckIndTestModel model;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private final IndTestDSep dsep;
+    private final IndTestMSep msep;
     private final Graph graph;
     private boolean parallelized = false;
     private final JLabel markovTestLabel = new JLabel("(Unspecified Test)");
@@ -150,7 +150,7 @@ public class MarkovCheckEditor extends JPanel {
                             "\nyou would either have to form the “collapsed graph” or use sigma-separation.");
         }
 
-        dsep = new IndTestDSep(this.graph);
+        msep = new IndTestMSep(this.graph);
         model.setVars(this.graph.getNodeNames());
 
         JPanel indep = buildGuiIndep();
@@ -221,7 +221,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box b1 = Box.createVerticalBox();
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Checks whether X ~_||_ Y | parents(X) for dconn(X, Y | parents(X))"));
+        b2.add(new JLabel("Checks whether X ~_||_ Y | parents(X) for mconn(X, Y | parents(X))"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
@@ -270,17 +270,17 @@ public class MarkovCheckEditor extends JPanel {
 
                     String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
 
-                    return "dconn(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
+                    return "mconn(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
                 }
 
                 IndependenceResult result = model.getResults(false).get(rowIndex);
 
                 if (columnIndex == 2) {
-                    if (getIndependenceTest() instanceof IndTestDSep) {
+                    if (getIndependenceTest() instanceof IndTestMSep) {
                         if (result.isIndependent()) {
-                            return "D-SEPARATED";
+                            return "M-SEPARATED";
                         } else {
-                            return "d-connected";
+                            return "m-connected";
                         }
                     } else {
                         if (result.isIndependent()) {
@@ -415,7 +415,7 @@ public class MarkovCheckEditor extends JPanel {
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Checks whether X _||_ Y | parents(X) for dsep(X, Y | parents(X))"));
+        b2.add(new JLabel("Checks whether X _||_ Y | parents(X) for msep(X, Y | parents(X))"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
@@ -468,15 +468,15 @@ public class MarkovCheckEditor extends JPanel {
 
                     String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
 
-                    return "dsep(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
+                    return "msep(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
                 }
 
                 if (columnIndex == 2) {
-                    if (getIndependenceTest() instanceof IndTestDSep) {
+                    if (getIndependenceTest() instanceof IndTestMSep) {
                         if (result.isIndependent()) {
-                            return "D-SEPARATED";
+                            return "M-SEPARATED";
                         } else {
-                            return "d-connected";
+                            return "m-connected";
                         }
                     } else {
                         if (result.isIndependent()) {
@@ -636,30 +636,30 @@ public class MarkovCheckEditor extends JPanel {
                 // Listing all facts before checking any (in preparation for parallelization).
                 for (Node x : graph.getNodes()) {
                     Set<Node> z = new HashSet<>(graph.getParents(x));
-                    Set<Node> ds = new HashSet<>();
-                    Set<Node> dc = new HashSet<>();
+                    Set<Node> ms = new HashSet<>();
+                    Set<Node> mc = new HashSet<>();
 
                     List<Node> other = graph.getNodes();
                     other.removeAll(z);
 
                     for (Node y : other) {
                         if (y == x) continue;
-                        if (dsep.isDSeparated(x, y, z)) {
-                            ds.add(y);
+                        if (msep.isMSeparated(x, y, z)) {
+                            ms.add(y);
                         } else {
-                            dc.add(y);
+                            mc.add(y);
                         }
                     }
 
                     System.out.println("Node " + x + " parents = " + z
-                            + " d-separated | z = " + ds + " d-connected | z = " + dc);
+                            + " m-separated | z = " + ms + " m-connected | z = " + mc);
 
                     if (indep) {
-                        for (Node y : ds) {
+                        for (Node y : ms) {
                             facts.add(new IndependenceFact(x, y, z));
                         }
                     } else {
-                        for (Node y : dc) {
+                        for (Node y : mc) {
                             facts.add(new IndependenceFact(x, y, z));
                         }
                     }
@@ -694,6 +694,7 @@ public class MarkovCheckEditor extends JPanel {
                             try {
                                 result = independenceTest.checkIndependence(x, y, z);
                             } catch (Exception e) {
+                                e.printStackTrace();
                                 JOptionPane.showMessageDialog(MarkovCheckEditor.this,
                                         "Error while checking independence: " + e.getMessage(),
                                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -888,7 +889,7 @@ public class MarkovCheckEditor extends JPanel {
             parallelized = false;
             return DataType.Mixed;
         } else if (dataSet instanceof ICovarianceMatrix) { // Better to add an isCovariance() - Zhou
-            parallelized = true;
+            parallelized = false;
             return DataType.Covariance;
         } else {
             return null;

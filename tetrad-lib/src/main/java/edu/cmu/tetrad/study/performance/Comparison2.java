@@ -10,7 +10,7 @@ import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -131,7 +131,7 @@ public class Comparison2 {
                 System.out.println("Creating Time Lag Graph : " + trueDag);
             }
 
-            test = new IndTestDSep(trueDag);
+            test = new IndTestMSep(trueDag);
             score = new GraphScore(trueDag);
 
             if (params.getAlgorithm() == null) {

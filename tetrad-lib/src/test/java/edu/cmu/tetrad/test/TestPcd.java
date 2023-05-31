@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.Pcd;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 
 import static org.junit.Assert.assertTrue;
@@ -80,7 +80,7 @@ public class TestPcd {
         Graph graph = GraphUtils.convert(inputGraph);
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
+        IndependenceTest independence = new IndTestMSep(graph);
         Pcd pc = new Pcd(independence);
 
         // Run search
@@ -105,7 +105,7 @@ public class TestPcd {
         Graph graph = GraphUtils.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
+        IndependenceTest independence = new IndTestMSep(graph);
         Pc pc = new Pc(independence);
         pc.setKnowledge(knowledge);
 

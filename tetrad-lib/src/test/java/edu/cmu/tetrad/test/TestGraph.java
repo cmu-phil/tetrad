@@ -258,7 +258,7 @@ public final class TestGraph {
         Set<Node> children = graph.getChildren(x1);
         Set<Node> parents = graph.getParents(x4);
 
-        assertTrue(graph.paths().isDConnectedTo(x1, x3, new HashSet<>()));
+        assertTrue(graph.paths().isMConnectedTo(x1, x3, new HashSet<>()));
 
 
         graph.removeNode(x2);

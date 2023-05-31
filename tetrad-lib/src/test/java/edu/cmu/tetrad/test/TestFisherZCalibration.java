@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -58,14 +58,14 @@ public class TestFisherZCalibration {
         List<Node> variables = data.getVariables();
         graph = GraphUtils.replaceNodes(graph, variables);
 
-        IndependenceTest dsep = new IndTestDSep(graph);
+        IndependenceTest msep = new IndTestMSep(graph);
 
         for (int depth : new int[]{0, 1}) {
-            testOneDepth(parameters, test1, test2, variables, dsep, depth);
+            testOneDepth(parameters, test1, test2, variables, msep, depth);
         }
     }
 
-    private void testOneDepth(Parameters parameters, IndependenceTest test1, IndependenceTest test2, List<Node> variables, IndependenceTest dsep, int depth) {
+    private void testOneDepth(Parameters parameters, IndependenceTest test1, IndependenceTest test2, List<Node> variables, IndependenceTest msep, int depth) {
         int countSame = 0;
         int fn1 = 0;
         int fn2 = 0;
@@ -88,15 +88,15 @@ public class TestFisherZCalibration {
 
             boolean fzInd = test1.checkIndependence(x, y, z).isIndependent();
             boolean sembInd = test2.checkIndependence(x, y, z).isIndependent();
-            boolean _dsep = dsep.checkIndependence(x, y, z).isIndependent();
+            boolean _msep = msep.checkIndependence(x, y, z).isIndependent();
 
             if (fzInd == sembInd) countSame++;
 
-            if (fzInd && !_dsep) fn1++;
-            if (!fzInd && _dsep) fp1++;
-            if (sembInd && !_dsep) fn2++;
-            if (!sembInd && _dsep) fp2++;
-            if (_dsep) ds++;
+            if (fzInd && !_msep) fn1++;
+            if (!fzInd && _msep) fp1++;
+            if (sembInd && !_msep) fn2++;
+            if (!sembInd && _msep) fp2++;
+            if (_msep) ds++;
         }
 
         TextTable table = new TextTable(3, 3);

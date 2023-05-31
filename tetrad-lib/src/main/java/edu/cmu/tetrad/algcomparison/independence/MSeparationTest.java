@@ -4,7 +4,7 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -12,16 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper for D-separation test. Requires a true DAG as input.
+ * Wrapper for M-separation test. Requires a true DAG as input.
  *
  * @author josephramsey
  */
 @TestOfIndependence(
-        name = "D-Separation Test",
-        command = "d-sep-test",
+        name = "M-Separation Test",
+        command = "m-sep-test",
         dataType = DataType.Graph
 )
-public class DSeparationTest implements IndependenceWrapper {
+public class MSeparationTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
     private Graph graph;
@@ -29,26 +29,26 @@ public class DSeparationTest implements IndependenceWrapper {
     /**
      * Use this empty constructor to satisfy the java reflection
      */
-    public DSeparationTest() {
+    public MSeparationTest() {
 
     }
 
-    public DSeparationTest(Graph graph) {
+    public MSeparationTest(Graph graph) {
         this.graph = graph;
     }
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         if (dataSet == null) {
-            return new IndTestDSep(this.graph);
+            return new IndTestMSep(this.graph);
         } else {
-            throw new IllegalArgumentException("Expecting no data for a d-separation test.");
+            throw new IllegalArgumentException("Expecting no data for a m-separation test.");
         }
     }
 
     @Override
     public String getDescription() {
-        return "D-Separation Test";
+        return "M-Separation Test";
     }
 
     @Override

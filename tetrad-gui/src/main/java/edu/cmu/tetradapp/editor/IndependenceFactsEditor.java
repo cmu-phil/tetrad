@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -266,7 +266,7 @@ public class IndependenceFactsEditor extends JPanel {
 
                 for (int i = 0; i < IndependenceFactsEditor.this.indTestProducers.size(); i++) {
                     if (columnIndex == i + 2) {
-                        if (getIndependenceTest(i) instanceof IndTestDSep) {
+                        if (getIndependenceTest(i) instanceof IndTestMSep) {
                             if (independenceResult.getType() == IndependenceResultIndFacts.Type.INDEPENDENT) {
                                 return "D-SEPARATED";
                             } else if (independenceResult.getType() == IndependenceResultIndFacts.Type.DEPENDENT) {

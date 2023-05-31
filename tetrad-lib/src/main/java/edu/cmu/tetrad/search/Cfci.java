@@ -81,9 +81,9 @@ public final class Cfci implements IGraphSearch {
     private boolean completeRuleSetUsed = true;
 
     /**
-     * True iff the possible dsep search is done.
+     * True iff the possible msep search is done.
      */
-    private boolean possibleDsepSearchDone = true;
+    private boolean possibleMsepSearchDone = true;
 
     /**
      * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
@@ -162,8 +162,8 @@ public final class Cfci implements IGraphSearch {
 
         // Note we don't use the sepsets from this search.
 
-        // Optional step: Possible Dsep. (Needed for correctness but very time consuming.)
-        if (isPossibleDsepSearchDone()) {
+        // Optional step: Possible Msep. (Needed for correctness but very time consuming.)
+        if (isPossibleMsepSearchDone()) {
             long time1 = MillisecondTimes.timeMillis();
             ruleR0(this.independenceTest, this.depth, this.sepsets);
 
@@ -176,13 +176,13 @@ public final class Cfci implements IGraphSearch {
             // Step FCI D.
             long time3 = MillisecondTimes.timeMillis();
 
-            PossibleDsepFci possibleDSep = new PossibleDsepFci(this.graph, this.independenceTest);
-            possibleDSep.setDepth(this.depth);
-            possibleDSep.setKnowledge(this.knowledge);
-            possibleDSep.setMaxPathLength(getMaxReachablePathLength());
+            PossibleMsepFci possibleMSep = new PossibleMsepFci(this.graph, this.independenceTest);
+            possibleMSep.setDepth(this.depth);
+            possibleMSep.setKnowledge(this.knowledge);
+            possibleMSep.setMaxPathLength(getMaxReachablePathLength());
 
             // We use these sepsets though.
-            this.sepsets.addAll(possibleDSep.search());
+            this.sepsets.addAll(possibleMSep.search());
             long time4 = MillisecondTimes.timeMillis();
 
             if (this.verbose) {
@@ -449,7 +449,7 @@ public final class Cfci implements IGraphSearch {
         }
 
         // Note: Unless sepsets are being collected during fas, most likely
-        // this will be null. (Only sepsets found during possible dsep search
+        // this will be null. (Only sepsets found during possible msep search
         // will be here.)
         Set<Node> condSet = getSepsets().get(x, z);
 
@@ -496,12 +496,12 @@ public final class Cfci implements IGraphSearch {
         this.maxReachablePathLength = maxReachablePathLength;
     }
 
-    public boolean isPossibleDsepSearchDone() {
-        return this.possibleDsepSearchDone;
+    public boolean isPossibleMsepSearchDone() {
+        return this.possibleMsepSearchDone;
     }
 
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
+    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
+        this.possibleMsepSearchDone = possibleMsepSearchDone;
     }
 
     public int getMaxReachablePathLength() {

@@ -98,7 +98,7 @@ final class IndTestChooser {
 
         if (dataSource instanceof Graph) {
             return getGraphTest((Graph) dataSource, params,
-                    IndTestType.D_SEPARATION);
+                    IndTestType.M_SEPARATION);
         }
         if (dataSource instanceof ICovarianceMatrix) {
             return getCovMatrixTest((ICovarianceMatrix) dataSource, params);
@@ -200,10 +200,10 @@ final class IndTestChooser {
 
     private IndependenceTest getGraphTest(Graph graph, Parameters params,
                                           IndTestType testType) {
-        if (IndTestType.D_SEPARATION != testType) {
-            params.set("indTestType", IndTestType.D_SEPARATION);
+        if (IndTestType.M_SEPARATION != testType) {
+            params.set("indTestType", IndTestType.M_SEPARATION);
         }
-        return new IndTestDSep(graph);
+        return new IndTestMSep(graph);
     }
 
     private IndependenceTest getCovMatrixTest(ICovarianceMatrix covMatrix,

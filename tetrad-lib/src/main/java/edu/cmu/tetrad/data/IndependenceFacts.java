@@ -24,7 +24,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.util.PermutationGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 
@@ -48,7 +48,7 @@ public class IndependenceFacts implements DataModel {
     }
 
     public IndependenceFacts(Graph graph) {
-        IndTestDSep dsep = new IndTestDSep(graph);
+        IndTestMSep msep = new IndTestMSep(graph);
 
         Set<IndependenceFact> facts = new HashSet<>();
 
@@ -73,7 +73,7 @@ public class IndependenceFacts implements DataModel {
                     Z.add(nodes.get(choice[perm[i]]));
                 }
 
-                if (dsep.checkIndependence(x, y, Z).isIndependent()) {
+                if (msep.checkIndependence(x, y, Z).isIndependent()) {
                     facts.add(new IndependenceFact(x, y, Z));
                 }
             }

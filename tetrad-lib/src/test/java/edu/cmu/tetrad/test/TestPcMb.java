@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.PcMb;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -46,7 +46,7 @@ public class TestPcMb {
     public void testGenerateDaglist() {
         Graph graph = GraphUtils.convert("T-->X1,T-->X2,X1-->X2,T-->X3,X4-->T");
 
-        IndTestDSep test = new IndTestDSep(graph);
+        IndTestMSep test = new IndTestMSep(graph);
         PcMb search = new PcMb(test, -1);
         Node t = test.getGraph().getNode("T");
         Graph resultGraph = search.search(Collections.singletonList(t));
@@ -74,7 +74,7 @@ public class TestPcMb {
         Graph dag = RandomGraph.randomGraph(nodes1, 0, 10,
                 5, 5, 5, false);
 
-        IndependenceTest test = new IndTestDSep(dag);
+        IndependenceTest test = new IndTestMSep(dag);
         PcMb search = new PcMb(test, -1);
 
         List<Node> nodes = dag.getNodes();

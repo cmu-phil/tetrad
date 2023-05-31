@@ -178,7 +178,7 @@ public final class SvarFci implements IGraphSearch {
 
         this.graph.reorientAllWith(Endpoint.CIRCLE);
 
-        SepsetProducer sp = new SepsetsPossibleDsep(this.graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
+        SepsetProducer sp = new SepsetsPossibleMsep(this.graph, this.independenceTest, this.knowledge, this.depth, this.maxPathLength);
         sp.setVerbose(this.verbose);
 
         SvarFciOrient svarFciOrient = new SvarFciOrient(new SepsetsSet(this.sepsets, this.independenceTest), this.independenceTest);
@@ -196,9 +196,9 @@ public final class SvarFci implements IGraphSearch {
                 this.sepsets.set(x, y, sepset);
 
 
-                System.out.println("Possible DSEP Removed " + x + "--- " + y + " sepset = " + sepset);
+                System.out.println("Possible MSEP Removed " + x + "--- " + y + " sepset = " + sepset);
 
-                // This is another added component to enforce repeating structure, specifically for possibleDsep
+                // This is another added component to enforce repeating structure, specifically for possibleMsep
                 removeSimilarPairs(getIndependenceTest(), x, y, sepset); // added 4.27.2016
             }
         }

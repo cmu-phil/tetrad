@@ -739,7 +739,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
                         Node y = nodes.get(i);
                         Set<Node> cond = new HashSet<>();
-                        Set<Node> D = new HashSet<>(SvarFges.this.graph.paths().getDconnectedVars(y, cond));
+                        Set<Node> D = new HashSet<>(SvarFges.this.graph.paths().getMConnectedVars(y, cond));
                         D.remove(y);
                         SvarFges.this.effectEdgesGraph.getAdjacentNodes(y).forEach(D::remove);
 
@@ -1004,7 +1004,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
                             adj = new HashSet<>(g);
                         } else if (SvarFges.this.mode == Mode.allowUnfaithfulness) {
-                            HashSet<Node> D = new HashSet<>(SvarFges.this.graph.paths().getDconnectedVars(x, new HashSet<>()));
+                            HashSet<Node> D = new HashSet<>(SvarFges.this.graph.paths().getMConnectedVars(x, new HashSet<>()));
                             D.remove(x);
                             adj = new HashSet<>(D);
                         } else {

@@ -23,10 +23,10 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
-import edu.cmu.tetrad.algcomparison.independence.DSeparationTest;
+import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.independence.TakesGraph;
-import edu.cmu.tetrad.algcomparison.score.DSeparationScore;
+import edu.cmu.tetrad.algcomparison.score.MSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
@@ -257,17 +257,17 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
         if (getDataModelList().size() == 0 && getSourceGraph() != null) {
             if (algo instanceof UsesScoreWrapper) {
-                // We inject the graph to the score to satisfy the tests like DSeparationScore - Zhou
+                // We inject the graph to the score to satisfy the tests like MSeparationScore - Zhou
                 ScoreWrapper scoreWrapper = ((UsesScoreWrapper) algo).getScoreWrapper();
-                if (scoreWrapper instanceof DSeparationScore) {
-                    ((DSeparationScore) scoreWrapper).setGraph(getSourceGraph());
+                if (scoreWrapper instanceof MSeparationScore) {
+                    ((MSeparationScore) scoreWrapper).setGraph(getSourceGraph());
                 }
             }
 
             if (algo instanceof TakesIndependenceWrapper) {
                 IndependenceWrapper wrapper = ((TakesIndependenceWrapper) algo).getIndependenceWrapper();
-                if (wrapper instanceof DSeparationTest) {
-                    ((DSeparationTest) wrapper).setGraph(getSourceGraph());
+                if (wrapper instanceof MSeparationTest) {
+                    ((MSeparationTest) wrapper).setGraph(getSourceGraph());
                 }
             }
 
@@ -564,8 +564,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         Algorithm algo = getAlgorithm();
 
         if (getDataModelList().size() == 0 && getSourceGraph() != null) {
-            // We inject the graph to the test to satisfy the tests like DSeparationTest - Zhou
-            IndependenceWrapper test = new DSeparationTest(getSourceGraph());
+            // We inject the graph to the test to satisfy the tests like MSeparationTest - Zhou
+            IndependenceWrapper test = new MSeparationTest(getSourceGraph());
 
             if (this.independenceTests == null) {
                 this.independenceTests = new ArrayList<>();

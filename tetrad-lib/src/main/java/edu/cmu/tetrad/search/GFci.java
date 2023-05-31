@@ -85,7 +85,7 @@ public final class GFci implements IGraphSearch {
     private boolean faithfulnessAssumed = true;
     private final Score score;
     private boolean doDiscriminatingPathRule = true;
-    private boolean possibleDsepSearchDone = true;
+    private boolean possibleMsepSearchDone = true;
     private int depth = -1;
 
     //============================CONSTRUCTORS============================//
@@ -135,8 +135,8 @@ public final class GFci implements IGraphSearch {
 
         modifiedR0(fgesGraph, sepsets);
 
-        if (this.possibleDsepSearchDone) {
-            graph.paths().removeByPossibleDsep(independenceTest, null);
+        if (this.possibleMsepSearchDone) {
+            graph.paths().removeByPossibleMsep(independenceTest, null);
         }
 
         FciOrient fciOrient = new FciOrient(sepsets);
@@ -261,16 +261,16 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the possible d-sep search should be done.
+     * Sets whether the possible m-sep search should be done.
      *
-     * @param possibleDsepSearchDone True if so.
+     * @param possibleMsepSearchDone True if so.
      */
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
+    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
+        this.possibleMsepSearchDone = possibleMsepSearchDone;
     }
 
     /**
-     * Sets the depth of the search for the possible d-sep search.
+     * Sets the depth of the search for the possible m-sep search.
      *
      * @param depth This depth.
      */

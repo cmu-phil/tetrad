@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
-import edu.cmu.tetrad.search.utils.PossibleDConnectingPath;
+import edu.cmu.tetrad.search.utils.PossibleMConnectingPath;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -199,7 +199,7 @@ public class Ion {
         List<Set<IonIndependenceFacts>> sepAndAssoc = findSepAndAssoc(graph);
         this.separations = sepAndAssoc.get(0);
         Set<IonIndependenceFacts> associations = sepAndAssoc.get(1);
-        Map<Collection<Node>, List<PossibleDConnectingPath>> paths;
+        Map<Collection<Node>, List<PossibleMConnectingPath>> paths;
 //        Queue<Graph> step3PagsSet = new LinkedList<Graph>();
         HashSet<Graph> step3PagsSet = new HashSet<>();
         Set<Graph> reject = new HashSet<>();
@@ -241,17 +241,17 @@ public class Ion {
                     // deques first PAG from searchPags
                     Graph pag = searchPags.poll();
                     // Part 3.a - finds possibly d-connecting undirectedPaths between each pair of nodes
-                    // known to be d-separated
-                    List<PossibleDConnectingPath> dConnections = new ArrayList<>();
+                    // known to be m-separated
+                    List<PossibleMConnectingPath> mConnections = new ArrayList<>();
                     // checks to see if looping over adjacencies
                     if (this.doAdjacencySearch) {
                         for (Collection<Node> conditions : fact.getZ()) {
                             // checks to see if looping over path lengths
                             if (this.pathLengthSearch) {
-                                dConnections.addAll(PossibleDConnectingPath.findDConnectingPathsOfLength
+                                mConnections.addAll(PossibleMConnectingPath.findMConnectingPathsOfLength
                                         (pag, fact.getX(), fact.getY(), conditions, l));
                             } else {
-                                dConnections.addAll(PossibleDConnectingPath.findDConnectingPaths
+                                mConnections.addAll(PossibleMConnectingPath.findMConnectingPaths
                                         (pag, fact.getX(), fact.getY(), conditions));
                             }
                         }
@@ -260,24 +260,24 @@ public class Ion {
                             for (Collection<Node> conditions : allfact.getZ()) {
                                 // checks to see if looping over path lengths
                                 if (this.pathLengthSearch) {
-                                    dConnections.addAll(PossibleDConnectingPath.findDConnectingPathsOfLength
+                                    mConnections.addAll(PossibleMConnectingPath.findMConnectingPathsOfLength
                                             (pag, allfact.getX(), allfact.getY(), conditions, l));
                                 } else {
-                                    dConnections.addAll(PossibleDConnectingPath.findDConnectingPaths
+                                    mConnections.addAll(PossibleMConnectingPath.findMConnectingPaths
                                             (pag, allfact.getX(), allfact.getY(), conditions));
                                 }
                             }
                         }
                     }
                     // accept PAG_of_the_true_DAG go to next PAG_of_the_true_DAG if no possibly d-connecting undirectedPaths
-                    if (dConnections.isEmpty()) {
+                    if (mConnections.isEmpty()) {
                         step3PagsSet.add(pag);
                         continue;
                     }
                     // maps conditioning sets to list of possibly d-connecting undirectedPaths
                     paths = new HashMap<>();
-                    for (PossibleDConnectingPath path : dConnections) {
-                        List<PossibleDConnectingPath> p = paths.get(path.getConditions());
+                    for (PossibleMConnectingPath path : mConnections) {
+                        List<PossibleMConnectingPath> p = paths.get(path.getConditions());
                         if (p == null) {
                             p = new LinkedList<>();
                         }
@@ -807,7 +807,7 @@ public class Ion {
                         for (Node node : subset) {
                             pagSubset.add(pag.getNode(node.getName()));
                         }
-                        if (pag.paths().isDSeparatedFrom(pagX, pagY, new HashSet<>(pagSubset))) {
+                        if (pag.paths().isMSeparatedFrom(pagX, pagY, new HashSet<>(pagSubset))) {
                             if (!pag.isAdjacentTo(pagX, pagY)) {
                                 addIndep = true;
                                 indep.addMoreZ(new HashSet<>(subset));
@@ -853,7 +853,7 @@ public class Ion {
     private boolean predictsFalseIndependence(Set<IonIndependenceFacts> associations, Graph pag) {
         for (IonIndependenceFacts assocFact : associations)
             for (Set<Node> conditioningSet : assocFact.getZ())
-                if (pag.paths().isDSeparatedFrom(
+                if (pag.paths().isMSeparatedFrom(
                         assocFact.getX(), assocFact.getY(), conditioningSet))
                     return true;
         return false;
@@ -876,20 +876,20 @@ public class Ion {
     }
 
     /**
-     * Given a map between sets of conditioned on variables and lists of PossibleDConnectingPaths, finds all the
+     * Given a map between sets of conditioned on variables and lists of PossibleMConnectingPaths, finds all the
      * possible GraphChanges which could be used to block said undirectedPaths
      */
-    private List<Set<GraphChange>> findChanges(Map<Collection<Node>, List<PossibleDConnectingPath>> paths) {
+    private List<Set<GraphChange>> findChanges(Map<Collection<Node>, List<PossibleMConnectingPath>> paths) {
         List<Set<GraphChange>> pagChanges = new ArrayList<>();
 
-        Set<Map.Entry<Collection<Node>, List<PossibleDConnectingPath>>> entries = paths.entrySet();
+        Set<Map.Entry<Collection<Node>, List<PossibleMConnectingPath>>> entries = paths.entrySet();
         /* Loop through each entry, ie each conditioned set of variables. */
-        for (Map.Entry<Collection<Node>, List<PossibleDConnectingPath>> entry : entries) {
+        for (Map.Entry<Collection<Node>, List<PossibleMConnectingPath>> entry : entries) {
             Collection<Node> conditions = entry.getKey();
-            List<PossibleDConnectingPath> dConnecting = entry.getValue();
+            List<PossibleMConnectingPath> mConnectng = entry.getValue();
 
             /* loop through each path */
-            for (PossibleDConnectingPath possible : dConnecting) {
+            for (PossibleMConnectingPath possible : mConnectng) {
                 List<Node> possPath = possible.getPath();
                 /* Created with 2*# of undirectedPaths as appoximation. might have to increase size once */
                 Set<GraphChange> pathChanges = new HashSet<>(2 * possPath.size());
@@ -967,9 +967,9 @@ public class Ion {
 
                             /* list of possible decendant undirectedPaths */
 
-                            List<PossibleDConnectingPath> decendantPaths = new ArrayList<>();
+                            List<PossibleMConnectingPath> decendantPaths = new ArrayList<>();
                             decendantPaths
-                                    = PossibleDConnectingPath.findDConnectingPaths
+                                    = PossibleMConnectingPath.findMConnectingPaths
                                     (possible.getPag(), current, outside, new ArrayList<>());
 
                             if (decendantPaths.isEmpty()) {
@@ -980,7 +980,7 @@ public class Ion {
                             }
 
                             /* loop over each possible path which might indicate decendency */
-                            for (PossibleDConnectingPath decendantPDCPath : decendantPaths) {
+                            for (PossibleMConnectingPath decendantPDCPath : decendantPaths) {
                                 List<Node> decendantPath = decendantPDCPath.getPath();
 
                                 /* walk down path checking orientation (path may already

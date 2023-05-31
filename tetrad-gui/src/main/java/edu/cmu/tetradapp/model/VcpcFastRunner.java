@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.work_in_progress.VcPcFast;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -196,7 +196,7 @@ public class VcpcFastRunner extends AbstractAlgorithmRunner
 
     public IndependenceTest getIndependenceTest() {
         if (this.dag != null) {
-            return new IndTestDSep(getGraph());
+            return new IndTestMSep(getGraph());
         }
 
         Object dataModel = getDataModel();

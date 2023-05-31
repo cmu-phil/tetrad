@@ -17,11 +17,11 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "D-separation Score",
-        command = "d-sep-score",
+        name = "M-separation Score",
+        command = "m-sep-score",
         dataType = DataType.Graph
 )
-public class DSeparationScore implements ScoreWrapper {
+public class MSeparationScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private Graph graph;
@@ -30,11 +30,11 @@ public class DSeparationScore implements ScoreWrapper {
     /**
      * Use this empty constructor to satisfy the java reflection
      */
-    public DSeparationScore() {
+    public MSeparationScore() {
 
     }
 
-    public DSeparationScore(Graph graph) {
+    public MSeparationScore(Graph graph) {
         this.graph = graph;
     }
 
@@ -44,13 +44,13 @@ public class DSeparationScore implements ScoreWrapper {
         if (dataSet == null) {
             return new GraphScore(this.graph);
         } else {
-            throw new IllegalArgumentException("Expecting no data for a d-separation test.");
+            throw new IllegalArgumentException("Expecting no data for a m-separation test.");
         }
     }
 
     @Override
     public String getDescription() {
-        return "D-separation Score";
+        return "M-separation Score";
     }
 
     @Override

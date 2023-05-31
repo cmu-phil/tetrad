@@ -75,7 +75,7 @@ public final class FciMax implements IGraphSearch {
     private boolean stable = false;
     private boolean completeRuleSetUsed = true;
     private boolean doDiscriminatingPathRule = false;
-    private boolean possibleDsepSearchDone = true;
+    private boolean possibleMsepSearchDone = true;
     private int maxPathLength = -1;
     private int depth = -1;
     private boolean verbose = false;
@@ -121,10 +121,10 @@ public final class FciMax implements IGraphSearch {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
-        if (this.possibleDsepSearchDone) {
+        // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
+        if (this.possibleMsepSearchDone) {
             new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest)).ruleR0(graph);
-            graph.paths().removeByPossibleDsep(independenceTest, sepsets);
+            graph.paths().removeByPossibleMsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
@@ -217,12 +217,12 @@ public final class FciMax implements IGraphSearch {
     }
 
     /**
-     * Sets whether the (time-consuming) possible dsep step should be done.
+     * Sets whether the (time-consuming) possible msep step should be done.
      *
-     * @param possibleDsepSearchDone True if so.
+     * @param possibleMsepSearchDone True if so.
      */
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
+    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
+        this.possibleMsepSearchDone = possibleMsepSearchDone;
     }
 
     /**

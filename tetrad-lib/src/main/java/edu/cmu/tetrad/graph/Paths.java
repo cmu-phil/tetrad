@@ -614,7 +614,7 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-    public boolean isDConnectedTo(Set<Node> x, Set<Node> y, Set<Node> z) {
+    public boolean isMConnectedTo(Set<Node> x, Set<Node> y, Set<Node> z) {
         Set<Node> ancestors = ancestorsOf(z);
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
@@ -670,7 +670,7 @@ public class Paths implements TetradSerializable {
      * @param ancestorMap A map of nodes to their ancestors.
      * @return True if x and y are d-connected given z.
      */
-    public boolean isDConnectedTo(Set<Node> x, Set<Node> y, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
+    public boolean isMConnectedTo(Set<Node> x, Set<Node> y, Set<Node> z, Map<Node, Set<Node>> ancestorMap) {
         if (ancestorMap == null) throw new NullPointerException("Ancestor map cannot be null.");
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
@@ -730,7 +730,7 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-    public Set<Node> getDconnectedVars(Node y, Set<Node> z) {
+    public Set<Node> getMConnectedVars(Node y, Set<Node> z) {
         Set<Node> Y = new HashSet<>();
 
         class EdgeNode {
@@ -794,7 +794,7 @@ public class Paths implements TetradSerializable {
         return Y;
     }
 
-    public Set<Node> getDconnectedVars(Node y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+    public Set<Node> getMConnectedVars(Node y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
         Set<Node> Y = new HashSet<>();
 
         class EdgeNode {
@@ -1090,8 +1090,8 @@ public class Paths implements TetradSerializable {
         return null;
     }
 
-    public List<Node> possibleDsep(Node x, Node y, int maxPathLength) {
-        Set<Node> dsep = new HashSet<>();
+    public List<Node> possibleMsep(Node x, Node y, int maxPathLength) {
+        Set<Node> msep = new HashSet<>();
 
         Queue<OrderedPair<Node>> Q = new ArrayDeque<>();
         Set<OrderedPair<Node>> V = new HashSet<>();
@@ -1115,7 +1115,7 @@ public class Paths implements TetradSerializable {
             Q.offer(edge);
             V.add(edge);
             addToSet(previous, b, x);
-            dsep.add(b);
+            msep.add(b);
         }
 
         while (!Q.isEmpty()) {
@@ -1133,7 +1133,7 @@ public class Paths implements TetradSerializable {
             Node b = t.getSecond();
 
             if (existOnePathWithPossibleParents(previous, b, x, b)) {
-                dsep.add(b);
+                msep.add(b);
             }
 
             for (Node c : graph.getAdjacentNodes(b)) {
@@ -1165,38 +1165,38 @@ public class Paths implements TetradSerializable {
             }
         }
 
-        dsep.remove(x);
-        dsep.remove(y);
+        msep.remove(x);
+        msep.remove(y);
 
-        List<Node> _dsep = new ArrayList<>(dsep);
+        List<Node> _msep = new ArrayList<>(msep);
 
-        Collections.sort(_dsep);
-        Collections.reverse(_dsep);
+        Collections.sort(_msep);
+        Collections.reverse(_msep);
 
-        return _dsep;
+        return _msep;
     }
 
     /**
-     * Remove edges by the possible d-separation rule.
+     * Remove edges by the possible m-separation rule.
      *
      * @param test    The independence test to use to remove edges.
      * @param sepsets A sepset map to which sepsets should be added. May be null, in which case sepsets will not be
      *                recorded.
      */
-    public void removeByPossibleDsep(IndependenceTest test, SepsetMap sepsets) {
+    public void removeByPossibleMsep(IndependenceTest test, SepsetMap sepsets) {
         for (Edge edge : graph.getEdges()) {
             Node a = edge.getNode1();
             Node b = edge.getNode2();
 
             {
-                List<Node> possibleDsep = possibleDsep(a, b, -1);
+                List<Node> possibleMsep = possibleMsep(a, b, -1);
 
-                SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
+                SublistGenerator gen = new SublistGenerator(possibleMsep.size(), possibleMsep.size());
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
                     if (choice.length < 2) continue;
-                    Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
+                    Set<Node> sepset = GraphUtils.asSet(choice, possibleMsep);
                     if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                     if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                     if (test.checkIndependence(a, b, sepset).isIndependent()) {
@@ -1213,14 +1213,14 @@ public class Paths implements TetradSerializable {
 
             if (graph.containsEdge(edge)) {
                 {
-                    List<Node> possibleDsep = possibleDsep(b, a, -1);
+                    List<Node> possibleMsep = possibleMsep(b, a, -1);
 
-                    SublistGenerator gen = new SublistGenerator(possibleDsep.size(), possibleDsep.size());
+                    SublistGenerator gen = new SublistGenerator(possibleMsep.size(), possibleMsep.size());
                     int[] choice;
 
                     while ((choice = gen.next()) != null) {
                         if (choice.length < 2) continue;
-                        Set<Node> sepset = GraphUtils.asSet(choice, possibleDsep);
+                        Set<Node> sepset = GraphUtils.asSet(choice, possibleMsep);
                         if (new HashSet<>(graph.getAdjacentNodes(a)).containsAll(sepset)) continue;
                         if (new HashSet<>(graph.getAdjacentNodes(b)).containsAll(sepset)) continue;
                         if (test.checkIndependence(a, b, sepset).isIndependent()) {
@@ -1335,7 +1335,7 @@ public class Paths implements TetradSerializable {
             });
         });
 
-        return dag.paths().isDSeparatedFrom(x, y, z);
+        return dag.paths().isMSeparatedFrom(x, y, z);
     }
 
     // Finds a sepset for x and y, if there is one; otherwise, returns null.
@@ -1445,7 +1445,7 @@ public class Paths implements TetradSerializable {
      *
      * @return true if x and y are d-connected given z; false otherwise.
      */
-    public boolean isDConnectedTo(Node x, Node y, Set<Node> z) {
+    public boolean isMConnectedTo(Node x, Node y, Set<Node> z) {
         class EdgeNode {
 
             private final Edge edge;
@@ -1522,7 +1522,7 @@ public class Paths implements TetradSerializable {
      *
      * @return true if x and y are d-connected given z; false otherwise.
      */
-    public boolean isDConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+    public boolean isMConnectedTo(Node x, Node y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
         class EdgeNode {
 
             private final Edge edge;
@@ -1825,10 +1825,10 @@ public class Paths implements TetradSerializable {
      * @param node2 the second node.
      * @param z     the conditioning set.
      * @return true if node1 is d-separated from node2 given set t, false if not.
-     * @see #isDConnectedTo
+     * @see #isMConnectedTo
      */
-    public boolean isDSeparatedFrom(Node node1, Node node2, Set<Node> z) {
-        return !isDConnectedTo(node1, node2, z);
+    public boolean isMSeparatedFrom(Node node1, Node node2, Set<Node> z) {
+        return !isMConnectedTo(node1, node2, z);
     }
 
     /**

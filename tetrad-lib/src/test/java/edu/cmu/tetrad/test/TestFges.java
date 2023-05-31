@@ -40,7 +40,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.*;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -245,7 +245,7 @@ public class TestFges {
         g.addDirectedEdge(x4, x2);
         g.addDirectedEdge(x4, x3);
 
-        Graph CPDAG1 = new Pc(new IndTestDSep(g)).search();
+        Graph CPDAG1 = new Pc(new IndTestMSep(g)).search();
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(g));
         fges.setFaithfulnessAssumed(true);
         Graph CPDAG2 = fges.search();
@@ -654,7 +654,7 @@ public class TestFges {
 
         // Build comparison graph.
         Graph answer = GraphUtils.convert(answerGraph);
-//        Graph answer = new PC(new IndTestDSep(input)).search();
+//        Graph answer = new PC(new IndTestMSep(input)).search();
 
 //        System.out.println("Input = " + input);
 //        System.out.println("Knowledge = " + knowledge);
@@ -1584,7 +1584,7 @@ public class TestFges {
         DataSet dataSet = im.simulateData(N, false);
         SemBicScore score = new SemBicScore(dataSet);
 
-        IndTestDSep dsep = new IndTestDSep(graph);
+        IndTestMSep msep = new IndTestMSep(graph);
         int count = 1;
 
         for (int i = 0; i < 10000; i++) {
@@ -1598,12 +1598,12 @@ public class TestFges {
                 z.add(nodes.get(c));
             }
 
-            boolean _dsep = dsep.checkIndependence(x, y, new HashSet<>(z)).isIndependent();
+            boolean _msep = msep.checkIndependence(x, y, new HashSet<>(z)).isIndependent();
             double diff = scoreGraphChange(x, y, z, this.hashIndices, score);
             boolean diffNegative = diff < 0;
 
-            if (!_dsep && _dsep != diffNegative) {
-                System.out.println(count++ + "\t" + (_dsep ? "dsep" : "dconn") + "\t" + (diffNegative ? "indep" : "dep") + "\tdiff = " + diff);
+            if (!_msep && _msep != diffNegative) {
+                System.out.println(count++ + "\t" + (_msep ? "msep" : "mconn") + "\t" + (diffNegative ? "indep" : "dep") + "\tdiff = " + diff);
             }
         }
 

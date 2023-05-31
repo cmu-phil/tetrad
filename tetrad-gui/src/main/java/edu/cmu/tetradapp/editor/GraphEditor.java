@@ -22,7 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.Parameters;
@@ -598,7 +598,7 @@ public final class GraphEditor extends JPanel implements GraphEditable, LayoutEd
     public IndependenceTest getIndependenceTest() {
         Graph graph = getWorkbench().getGraph();
         EdgeListGraph listGraph = new EdgeListGraph(graph);
-        return new IndTestDSep(listGraph);
+        return new IndTestMSep(listGraph);
     }
 
     public boolean isHasInterventional() {

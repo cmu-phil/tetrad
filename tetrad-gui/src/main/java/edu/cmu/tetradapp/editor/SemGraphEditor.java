@@ -22,7 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetrad.util.JOptionUtils;
@@ -577,7 +577,7 @@ public final class SemGraphEditor extends JPanel
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        return new IndTestDSep(this.workbench.getGraph());
+        return new IndTestMSep(this.workbench.getGraph());
     }
 
 }

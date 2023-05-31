@@ -326,17 +326,17 @@ class IndTestMenuItems {
 
     private static void addGraphTestMenuItems(JMenu test, IndTestTypeSetter setter) {
         IndTestType testType = setter.getTestType();
-        if (testType != IndTestType.D_SEPARATION) {
-            setter.setTestType(IndTestType.D_SEPARATION);
+        if (testType != IndTestType.M_SEPARATION) {
+            setter.setTestType(IndTestType.M_SEPARATION);
         }
 
         ButtonGroup group = new ButtonGroup();
-        JCheckBoxMenuItem dsep = new JCheckBoxMenuItem("D-Separation");
-        group.add(dsep);
-        test.add(dsep);
-        dsep.setSelected(true);
+        JCheckBoxMenuItem msep = new JCheckBoxMenuItem("M-Separation");
+        group.add(msep);
+        test.add(msep);
+        msep.setSelected(true);
 
-        dsep.addActionListener(e -> setter.setTestType(IndTestType.D_SEPARATION));
+        msep.addActionListener(e -> setter.setTestType(IndTestType.M_SEPARATION));
     }
 
 }

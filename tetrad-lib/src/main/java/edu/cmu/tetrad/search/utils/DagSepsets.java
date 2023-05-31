@@ -84,7 +84,7 @@ public class DagSepsets implements SepsetProducer {
     }
 
     /**
-     * Returns true just in case dsep(a, b | c) in the DAG. Don't let the name isIndependent fool you; this is a
+     * Returns true just in case msep(a, b | c) in the DAG. Don't let the name isIndependent fool you; this is a
      * d-separation method. We only use the name isIndependent so that this can be used in place of an independence
      * check.
      *
@@ -95,7 +95,7 @@ public class DagSepsets implements SepsetProducer {
      */
     @Override
     public boolean isIndependent(Node a, Node b, Set<Node> c) {
-        return this.dag.paths().isDSeparatedFrom(a, b, c);
+        return this.dag.paths().isMSeparatedFrom(a, b, c);
     }
 
     /**

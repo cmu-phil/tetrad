@@ -827,7 +827,7 @@ public final class VcPcFast implements IGraphSearch {
 //
 //                System.out.println(_graph);
 //
-//                IndependenceTest test = new IndTestDSep(_graph);
+//                IndependenceTest test = new IndTestMSep(_graph);
 //                if (!test.isIndependent(x, y, boundaryX)) {
 //                    continue MARKOV;
 //                }

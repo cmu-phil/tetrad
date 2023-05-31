@@ -76,7 +76,7 @@ public final class TestEdgeListGraph {
         assertEquals(children, Collections.singleton(this.x2));
         assertEquals(parents, Collections.singleton(this.x3));
 
-        assertTrue(this.graph.paths().isDConnectedTo(this.x1, this.x3, Collections.EMPTY_SET));
+        assertTrue(this.graph.paths().isMConnectedTo(this.x1, this.x3, Collections.EMPTY_SET));
         this.graph.removeNode(this.x2);
 
         // No cycles.

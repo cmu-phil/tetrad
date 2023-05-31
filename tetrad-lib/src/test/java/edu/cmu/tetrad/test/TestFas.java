@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.junit.Test;
 
@@ -55,7 +55,7 @@ public class TestFas {
 
         Graph graph = RandomGraph.randomGraphRandomForwardEdges(vars, 0, (int) (numVars * edgesPerNode), 30, 15, 15, false, true);
 
-        IndependenceTest test = new IndTestDSep(graph);
+        IndependenceTest test = new IndTestMSep(graph);
 
         Graph fasGraph = new Fas(test).search();
         Graph pcGraph = new Pc(test).search();
