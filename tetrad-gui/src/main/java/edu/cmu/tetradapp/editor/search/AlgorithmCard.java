@@ -536,6 +536,7 @@ public class AlgorithmCard extends JPanel {
         this.updatingTestModels = true;
         this.indTestComboBox.removeAllItems();
         AlgorithmModel algoModel = this.algorithmList.getSelectedValue();
+        if (algoModel != null && algoModel.isRequiredTest()) {
             List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(this.dataType);
             if (this.linearGaussianRadBtn.isSelected()) {
                 models.stream()
@@ -553,6 +554,7 @@ public class AlgorithmCard extends JPanel {
                 models.stream()
                         .forEach(e -> this.indTestComboBox.addItem(e));
             }
+        }
         this.updatingTestModels = false;
         if (this.indTestComboBox.getItemCount() > 0) {
             this.indTestComboBox.setEnabled(true);
