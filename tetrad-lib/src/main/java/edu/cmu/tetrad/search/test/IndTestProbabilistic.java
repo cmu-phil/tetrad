@@ -204,6 +204,7 @@ public class IndTestProbabilistic implements IndependenceTest {
         posterior = p;
 
         boolean ind;
+
         if (threshold) {
             ind = (p >= cutoff);
         } else {
@@ -217,7 +218,8 @@ public class IndTestProbabilistic implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), ind, p, this.posterior);
+        // Note p here is not a p-value but rather a posterior probability.
+        return new IndependenceResult(new IndependenceFact(x, y, z), ind, p, Double.NaN);
     }
 
 

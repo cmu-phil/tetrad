@@ -152,7 +152,7 @@ public class GraphScore implements Score {
      * @throws UnsupportedOperationException Since the method doesn't make sense here.
      */
     public double localScore(int i) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("The 'local score' method is not supported here.");
     }
 
     /**
