@@ -85,9 +85,6 @@ public final class GraspFci implements IGraphSearch {
     // True iff verbose output should be printed.
     private boolean verbose;
 
-    // The sample size.
-    int sampleSize;
-
     // The score.
     private final Score score;
     private int numStarts = 1;
@@ -105,7 +102,7 @@ public final class GraspFci implements IGraphSearch {
         if (score == null) {
             throw new NullPointerException();
         }
-        this.sampleSize = score.getSampleSize();
+
         this.score = score;
         this.independenceTest = test;
     }
@@ -129,9 +126,7 @@ public final class GraspFci implements IGraphSearch {
 
         this.graph = new EdgeListGraph(nodes);
 
-//        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
-
-        // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
+        // Run GRaSP to get a CPDAG (like GFCI with FGES)...
         Grasp alg = new Grasp(independenceTest, score);
         alg.setOrdered(ordered);
         alg.setUseScore(useScore);

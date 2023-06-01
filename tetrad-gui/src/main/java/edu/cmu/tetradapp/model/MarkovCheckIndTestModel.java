@@ -58,9 +58,9 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
         return new Knowledge();
     }
 
-    public MarkovCheckIndTestModel(DataWrapper dataModel, GraphWrapper graphWrapper, Parameters parameters) {
+    public MarkovCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, Parameters parameters) {
         this.dataModel = dataModel.getSelectedDataModel();
-        this.graph = graphWrapper.getGraph();
+        this.graph = graphSource.getGraph();
         this.parameters = parameters;
     }
 

@@ -123,11 +123,11 @@ public class MarkovCheckEditor extends JPanel {
 
         sourceGraph = edu.cmu.tetrad.graph.GraphUtils.replaceNodes(sourceGraph, newVars);
 
-        for (Edge e : sourceGraph.getEdges()) {
-            if (!e.isDirected()) {
-                throw new IllegalArgumentException("At least this edge in the source graph is not directed: " + e);
-            }
-        }
+//        for (Edge e : sourceGraph.getEdges()) {
+//            if (!e.isDirected()) {
+//                throw new IllegalArgumentException("At least this edge in the source graph is not directed: " + e);
+//            }
+//        }
 
         List<Node> missingVars = new ArrayList<>();
 
