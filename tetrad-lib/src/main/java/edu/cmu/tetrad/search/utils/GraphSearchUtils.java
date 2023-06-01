@@ -525,8 +525,16 @@ public final class GraphSearchUtils {
                 }
             }
 
-            String reason = "Could be a MAG or between a MAG and a PAG; cannot recover the original graph by finding " +
-                    "the PAG of an implied MAG";
+            String reason;
+
+            if (legalMag.isLegalMag()) {
+                reason = "This is a Mag but not a PAG; cannot recover the original graph by finding " +
+                        "the PAG of an implied MAG";
+
+            } else {
+                reason = "Could be between a MAG and a PAG; cannot recover the original graph by finding " +
+                        "the PAG of an implied MAG";
+            }
 
             if (!edgeMismatch.equals("")) {
                 reason = reason + ". " + edgeMismatch;

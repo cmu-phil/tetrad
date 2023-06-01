@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
+import edu.cmu.tetradapp.util.WatchedProcess;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
 
 import javax.swing.*;
@@ -60,24 +61,43 @@ public class PagColorer extends JCheckBoxMenuItem {
                         breakDown("Would you like to verify that this is a legal PAG?", 60),
                         "Legal PAG check", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                 if (ret == JOptionPane.YES_NO_OPTION) {
-                    GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph);
-                    String reason = breakDown(legalPag.getReason(), 60);
+                    class MyWatchedProcess extends WatchedProcess {
+                        @Override
+                        public void watch() {
+                            GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph);
+                            String reason = breakDown(legalPag.getReason(), 60);
 
-                    if (!legalPag.isLegalPag()) {
-                        JOptionPane.showMessageDialog(workbench,
-                                "This is not a legal PAG--one reason is as follows:" +
-                                        "\n\n" + reason + ".",
-                                "Legal PAG check",
-                                JOptionPane.WARNING_MESSAGE);
-                    } else {
-                        JOptionPane.showMessageDialog(workbench, reason);
+                            if (!legalPag.isLegalPag()) {
+                                JOptionPane.showMessageDialog(workbench,
+                                        "This is not a legal PAG--one reason is as follows:" +
+                                                "\n\n" + reason + ".",
+                                        "Legal PAG check",
+                                        JOptionPane.WARNING_MESSAGE);
+                            } else {
+                                JOptionPane.showMessageDialog(workbench, reason);
+                            }
+                        }
                     }
-                }
 
-                _workbench.setDoPagColoring(true);
+                    SwingUtilities.invokeLater(MyWatchedProcess::new);
+//                    GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph);
+//                    String reason = breakDown(legalPag.getReason(), 60);
+//
+//                    if (!legalPag.isLegalPag()) {
+//                        JOptionPane.showMessageDialog(workbench,
+//                                "This is not a legal PAG--one reason is as follows:" +
+//                                        "\n\n" + reason + ".",
+//                                "Legal PAG check",
+//                                JOptionPane.WARNING_MESSAGE);
+//                    } else {
+//                        JOptionPane.showMessageDialog(workbench, reason);
+//                    }
+//                }
+
+                    _workbench.setDoPagColoring(true);
+                }
             }
         });
-
     }
 
     private String breakDown(String reason, int maxColumns) {
@@ -101,7 +121,7 @@ public class PagColorer extends JCheckBoxMenuItem {
             buf2.append(buf1);
         }
 
-        return buf2.toString();
+        return buf2.toString().trim();
     }
 }
 
