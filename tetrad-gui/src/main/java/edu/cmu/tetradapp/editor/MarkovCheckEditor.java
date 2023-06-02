@@ -385,7 +385,7 @@ public class MarkovCheckEditor extends JPanel {
         if (pValues.size() < 2) {
             kgPValue = Double.NaN;
         } else {
-            kgPValue = UniformityTest.getpValue(pValues);
+            kgPValue = UniformityTest.getPValue(pValues);
         }
 
         kgLabelDep = new JLabel("KG Uniformity Test p-value = "
@@ -600,7 +600,7 @@ public class MarkovCheckEditor extends JPanel {
         if (pValues.size() < 2) {
             kgPValue = Double.NaN;
         } else {
-            kgPValue = UniformityTest.getpValue(pValues);
+            kgPValue = UniformityTest.getPValue(pValues);
         }
 
         kgLabelIndep = new JLabel("KG Uniformity Test p-value = "
@@ -794,7 +794,7 @@ public class MarkovCheckEditor extends JPanel {
                 if (pValues.size() < 2) {
                     kgPValue = Double.NaN;
                 } else {
-                    kgPValue = UniformityTest.getpValue(pValues);
+                    kgPValue = UniformityTest.getPValue(pValues);
                 }
 
                 if (indep) {

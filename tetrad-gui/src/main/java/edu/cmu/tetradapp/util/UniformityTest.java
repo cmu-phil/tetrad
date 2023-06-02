@@ -8,7 +8,7 @@ import java.util.List;
 
 public class UniformityTest {
 
-    public static double getpValue(List<Double> points) {
+    public static double getPValue(List<Double> points) {
         // Convert the list to a primitive double array
         double[] data = points.stream().mapToDouble(Double::doubleValue).toArray();
 
@@ -26,7 +26,7 @@ public class UniformityTest {
         // Generate a list of points (sample data)
         List<Double> points = generatePoints();
 
-        double pValue = getpValue(points);
+        double pValue = getPValue(points);
 
         // Check the p-value against a significance level (e.g., 0.05)
         double significanceLevel = 0.05;
