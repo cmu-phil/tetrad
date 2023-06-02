@@ -143,12 +143,12 @@ public class MarkovCheckEditor extends JPanel {
                     "\n    " + missingVars);
         }
 
-        if (sourceGraph.paths().existsDirectedCycle()) {
-            JOptionPane.showMessageDialog(
-                    JOptionUtils.centeringComp().getTopLevelAncestor(),
-                    "That graph is not a DAG. For linear models, this is OK, but for nonlinear models," +
-                            "\nyou would either have to form the “collapsed graph” or use sigma-separation.");
-        }
+//        if (sourceGraph.paths().existsDirectedCycle()) {
+//            JOptionPane.showMessageDialog(
+//                    JOptionUtils.centeringComp().getTopLevelAncestor(),
+//                    "That graph is not a DAG. For linear models, this is OK, but for nonlinear models," +
+//                            "\nyou would either have to form the “collapsed graph” or use sigma-separation.");
+//        }
 
         msep = new IndTestMSep(this.graph);
         model.setVars(this.graph.getNodeNames());

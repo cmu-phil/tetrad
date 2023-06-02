@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search.work_in_progress;
 
+import edu.cmu.tetrad.annotation.Experimental;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Edge;
@@ -43,6 +44,7 @@ import java.util.*;
  *
  * @author Bryan Andrews
  */
+@Experimental
 public class MagSemBicScore implements Score {
 
     private final SemBicScore score;
