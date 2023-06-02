@@ -955,7 +955,7 @@ public final class SemIm implements Im, ISemIm {
      * @return a copy of the sample covariance matrix, or null if no sample covar has been set.
      */
     public Matrix getSampleCovar() {
-        return this.sampleCovarC;
+        return this.sampleCovarC == null ? null : this.sampleCovarC.copy();
     }
 
     /**
