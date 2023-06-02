@@ -82,8 +82,8 @@ public class MarkovCheckEditor extends JPanel {
     private double fractionDependentDep = Double.NaN;
     private JLabel fractionDepLabelIndep;
     private JLabel fractionDepLabelDep;
-    private JLabel kgLabelDep;
-    private JLabel kgLabelIndep;
+    private JLabel ksLabelDep;
+    private JLabel ksLabelIndep;
     private final JComboBox<IndependenceTestModel> indTestComboBox = new JComboBox<>();
     boolean updatingTestModels = true;
     private IndependenceTest independenceTest;
@@ -209,7 +209,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box b1 = Box.createVerticalBox();
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Checks whether X ~_||_ Y | parents(X) for mconn(X, Y | parents(X))"));
+        b2.add(new JLabel("Tests whether X _||_ Y | parents(X) for mconn(X, Y | parents(X))"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
@@ -227,11 +227,11 @@ public class MarkovCheckEditor extends JPanel {
                 if (column == 0) {
                     return "Index";
                 } else if (column == 1) {
-                    return "Fact";
+                    return "Graphical Prediction";
                 } else if (column == 2) {
-                    return "Result";
+                    return "Test Result";
                 } else if (column == 3) {
-                    return "P-Value/Bump";
+                    return "P-Value or Bump";
                 }
 
                 return null;
@@ -259,7 +259,7 @@ public class MarkovCheckEditor extends JPanel {
 
                     String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
 
-                    return "mconn(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
+                    return "Dep(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
                 }
 
                 IndependenceResult result = results1.get(rowIndex);
@@ -342,13 +342,15 @@ public class MarkovCheckEditor extends JPanel {
         b4.add(Box.createGlue());
         b4.add(Box.createHorizontalStrut(10));
 
-        JButton showHistogram = new JButton("Show Score Histogram");
+        String title = "Histogram for P-Value or Bump Assuming Local Faithfulness";
+
+        JButton showHistogram = new JButton("Show Histogram for P-Values or Bumps");
         showHistogram.setFont(new Font("Dialog", Font.PLAIN, 14));
         showHistogram.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 JPanel component = createHistogramPanel(false);
-                EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, MarkovCheckEditor.this);
+                EditorWindow editorWindow = new EditorWindow(component, title, "Close", false, MarkovCheckEditor.this);
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
                 editorWindow.setVisible(true);
@@ -388,15 +390,19 @@ public class MarkovCheckEditor extends JPanel {
             kgPValue = UniformityTest.getPValue(pValues);
         }
 
-        kgLabelDep = new JLabel("KG Uniformity Test p-value = "
-                + NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue));
+        ksLabelDep = new JLabel("P-value of Kolmogorov-Smirnov Uniformity Test p-value = "
+                + ((Double.isNaN(kgPValue)
+                ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue))));
+
+//        ksLabelDep = new JLabel("P-value of Kolmogorov-Smirnov Uniformity Test p-value = "
+//                + NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue));
 
         b5.add(fractionDepLabelDep);
         b1.add(b5);
 
         Box b6 = Box.createHorizontalBox();
         b6.add(Box.createHorizontalGlue());
-        b6.add(kgLabelDep);
+        b6.add(ksLabelDep);
         b1.add(b6);
 
         JPanel panel = new JPanel();
@@ -423,7 +429,7 @@ public class MarkovCheckEditor extends JPanel {
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Checks whether X _||_ Y | parents(X) for msep(X, Y | parents(X))"));
+        b2.add(new JLabel("Tests whether X _||_ Y | parents(X) for msep(X, Y | parents(X))"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
@@ -441,11 +447,11 @@ public class MarkovCheckEditor extends JPanel {
                 if (column == 0) {
                     return "Index";
                 } else if (column == 1) {
-                    return "Fact";
+                    return "Graphical Prediction";
                 } else if (column == 2) {
-                    return "Result";
+                    return "Test Result";
                 } else if (column == 3) {
-                    return "P-value/Bump";
+                    return "P-value or Bump";
                 }
 
                 return null;
@@ -476,7 +482,7 @@ public class MarkovCheckEditor extends JPanel {
 
                     String z = Z.stream().map(Node::getName).collect(Collectors.joining(", "));
 
-                    return "msep(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
+                    return "Ind(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
                 }
 
                 if (columnIndex == 2) {
@@ -557,13 +563,15 @@ public class MarkovCheckEditor extends JPanel {
         b4.add(Box.createGlue());
         b4.add(Box.createHorizontalStrut(10));
 
-        JButton showHistogram = new JButton("Show P-Value Histogram");
+        String title = "Histogram for P-Value or Bump Assuming Local Markov";
+
+        JButton showHistogram = new JButton("Show Histogram for P-Values or Bumps");
         showHistogram.setFont(new Font("Dialog", Font.PLAIN, 14));
         showHistogram.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 JPanel component = createHistogramPanel(true);
-                EditorWindow editorWindow = new EditorWindow(component, "Histogram", "Close", false, MarkovCheckEditor.this);
+                EditorWindow editorWindow = new EditorWindow(component, title, "Close", false, MarkovCheckEditor.this);
                 DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
                 editorWindow.pack();
                 editorWindow.setVisible(true);
@@ -595,23 +603,27 @@ public class MarkovCheckEditor extends JPanel {
 
         List<Double> pValues = getPValues(results);
 
-        double kgPValue;
+        double ksPValue;
 
         if (pValues.size() < 2) {
-            kgPValue = Double.NaN;
+            ksPValue = Double.NaN;
         } else {
-            kgPValue = UniformityTest.getPValue(pValues);
+            ksPValue = UniformityTest.getPValue(pValues);
         }
 
-        kgLabelIndep = new JLabel("KG Uniformity Test p-value = "
-                + NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue));
+        ksLabelIndep = new JLabel("P-value of Kolmogorov-Smirnov Uniformity Test p-value = "
+                + ((Double.isNaN(ksPValue)
+                ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue))));
+
+//        ksLabelIndep = new JLabel("P-value of Kolmogorov-Smirnov Uniformity Test = "
+//                + NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue));
 
         b5.add(fractionDepLabelIndep);
         b1.add(b5);
 
         Box b6 = Box.createHorizontalBox();
         b6.add(Box.createHorizontalGlue());
-        b6.add(kgLabelIndep);
+        b6.add(ksLabelIndep);
         b1.add(b6);
 
         JPanel panel = new JPanel();
@@ -789,20 +801,28 @@ public class MarkovCheckEditor extends JPanel {
 
                 List<Double> pValues = getPValues(results);
 
-                double kgPValue;
+                double ksPValue;
 
                 if (pValues.size() < 2) {
-                    kgPValue = Double.NaN;
+                    ksPValue = Double.NaN;
                 } else {
-                    kgPValue = UniformityTest.getPValue(pValues);
+                    ksPValue = UniformityTest.getPValue(pValues);
                 }
 
                 if (indep) {
-                    kgLabelIndep.setText("KG Uniformity Test p-value = "
-                            + NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue));
+                    ksLabelIndep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
+                            + ((Double.isNaN(ksPValue)
+                            ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue))));
+
+//                    ksLabelIndep.setText("\"P-value of Kolmogorov-Smirnov Uniformity Test = "
+//                            + NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue));
                 } else {
-                    kgLabelDep.setText("KG Uniformity Test p-value = "
-                            + NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue));
+                    ksLabelDep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
+                            + ((Double.isNaN(ksPValue)
+                            ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue))));
+
+//                    ksLabelDep.setText("\"P-value of Kolmogorov-Smirnov Uniformity Test = "
+//                            + NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue));
                 }
 
                 if (indep) {
@@ -873,14 +893,14 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(results.size(), 1),
-                Collections.singletonList(new ContinuousVariable("P-Value/Bump")));
+                Collections.singletonList(new ContinuousVariable("P-Value or Bump")));
 
         for (int i = 0; i < results.size(); i++) {
             dataSet.setDouble(i, 0, results.get(i).getPValue());
         }
 
         Histogram histogram = new Histogram(dataSet);
-        histogram.setTarget("P-Value/Bump");
+        histogram.setTarget("P-Value or Bump");
         HistogramView view = new HistogramView(histogram);
 
         Box box = Box.createHorizontalBox();
