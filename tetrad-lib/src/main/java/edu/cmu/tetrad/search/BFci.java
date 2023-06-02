@@ -29,8 +29,10 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
@@ -219,7 +221,7 @@ public final class BFci implements IGraphSearch {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -236,7 +238,7 @@ public final class BFci implements IGraphSearch {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
+                    Set<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);

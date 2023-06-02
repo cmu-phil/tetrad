@@ -644,13 +644,13 @@ public class DMSearch {
     }
 
 
-    //Finds any input set that dseps outputs for a pair of directly related latents, then adds input set to approp. set
+    //Finds any input set that mseps outputs for a pair of directly related latents, then adds input set to approp. set
     //Finally removes latent effect from list of latent effects.
     private void applySobersStep(SortedSet<Node> inputsLatent, SortedSet<Node> inputsLatentEffect,
                                  SortedSet<Node> outputsLatent, SortedSet<Node> outputsLatentEffect,
                                  Graph pattern, LatentStructure structure, Node latent, Node latentEffect) {
 
-        List<Node> latentList = new ArrayList<Node>();
+        Set<Node> latentList = new HashSet<>();
 
         latentList.addAll(inputsLatent);
 

@@ -489,7 +489,7 @@ public class Dci {
         List<Node> nodes = graph.getNodes();
 
         for (Node B : nodes) {
-            List<Node> adj = graph.getAdjacentNodes(B);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
             if (adj.size() < 2) {
                 continue;
@@ -711,7 +711,7 @@ public class Dci {
     private void doDdpOrientation(Graph graph, Node l, Node a, Node b, Node c) {
         Set<Node> sepset = new HashSet<>();
         for (SepsetMapDci msepset : this.sepsetMaps) {
-            List<Node> condSet = msepset.get(l, c);
+            Set<Node> condSet = msepset.get(l, c);
             if (condSet != null) {
                 sepset.addAll(condSet);
             }
@@ -940,7 +940,7 @@ public class Dci {
     private Set<Triple> getAllTriples(Graph graph) {
         Set<Triple> triples = new HashSet<>();
         for (Node node : graph.getNodes()) {
-            List<Node> adjNodes = graph.getAdjacentNodes(node);
+            List<Node> adjNodes = new ArrayList<>(graph.getAdjacentNodes(node));
             for (int i = 0; i < adjNodes.size() - 1; i++) {
                 for (int j = i + 1; j < adjNodes.size(); j++) {
                     triples.add(new Triple(adjNodes.get(i), node, adjNodes.get(j)));
@@ -1142,8 +1142,9 @@ public class Dci {
         Node last = start;
         Node current = start;
         for (int k = 1; k < newGraph.getNumNodes(); k++) {
-            List<Edge> adjEdges = newGraph.getEdges(current);
+            List<Edge> adjEdges = new ArrayList<>(newGraph.getEdges(current));
             next = adjEdges.get(0).getDistalNode(current);
+            assert next != null;
             if (next.equals(last)) {
                 next = adjEdges.get(1).getDistalNode(current);
             }
@@ -1598,7 +1599,7 @@ public class Dci {
             List<Node> nodes = graph.getNodes();
 
             for (Node B : nodes) {
-                List<Node> adj = graph.getAdjacentNodes(B);
+                List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
                 if (adj.size() < 2) {
                     continue;
@@ -1629,7 +1630,7 @@ public class Dci {
         List<Node> nodes = graph.getNodes();
 
         for (Node B : nodes) {
-            List<Node> adj = graph.getAdjacentNodes(B);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
             if (adj.size() < 2) {
                 continue;
@@ -1753,7 +1754,7 @@ public class Dci {
         this.changeFlag = true;
         List<Node> sepset = new ArrayList<>();
         for (SepsetMapDci msepset : this.sepsetMaps) {
-            List<Node> condSet = msepset.get(l, c);
+            Set<Node> condSet = msepset.get(l, c);
             if (condSet != null) {
                 sepset.addAll(condSet);
             }
@@ -1795,8 +1796,8 @@ public class Dci {
                     if (sepset.get(x, y) == null) {
                         continue;
                     }
-                    for (List<Node> condSet : sepset.getSet(x, y)) {
-                        if (!graph.paths().isDSeparatedFrom(x, y, condSet)) {
+                    for (Set<Node> condSet : sepset.getSet(x, y)) {
+                        if (!graph.paths().isMSeparatedFrom(x, y, condSet)) {
                             return true;
                         }
                     }
@@ -1827,8 +1828,8 @@ public class Dci {
                     continue;
                 }
                 int c = 1;
-                List<List<Node>> conds = consSepset.getSet(x, y);
-                for (List<Node> z : conds) {
+                Set<Set<Node>> conds = consSepset.getSet(x, y);
+                for (Set<Node> z : conds) {
                     System.out.println("Resolving inconsistencies... " + c + " of " + conds.size() + " (" + p + " of " + pairs.size() + " pairs and )" + (k + 1) + " of " + this.marginalVars.size() + " datasets)");
                     if (this.marginalVars.get(k).containsAll(z)) {
                         newSepset.set(x, y, z);
@@ -1915,11 +1916,11 @@ public class Dci {
             for (Set<Node> set : new PowerSet<>(condSet)) {
                 System.out.println("Resolving inconsistencies... " + c + " of " + cs + " (" + p + " of " + pairs.size() + " pairs)");
                 c++;
-                List<Node> z = new ArrayList<>(set);
-                if (allInd.paths().isDConnectedTo(pair.getFirst(), pair.getSecond(), z)) {
+                Set<Node> z = new HashSet<>(set);
+                if (allInd.paths().isMConnectedTo(pair.getFirst(), pair.getSecond(), z)) {
                     continue;
                 }
-                combinedSepset.set(pair.getFirst(), pair.getSecond(), new ArrayList<>(set));
+                combinedSepset.set(pair.getFirst(), pair.getSecond(), new HashSet<>(set));
 
             }
             p++;
@@ -1934,8 +1935,8 @@ public class Dci {
                 if (combinedSepset.getSet(x, y) == null) {
                     continue;
                 }
-                List<List<Node>> conds = combinedSepset.getSet(x, y);
-                for (List<Node> z : conds) {
+                Set<Set<Node>> conds = combinedSepset.getSet(x, y);
+                for (Set<Node> z : conds) {
                     if (marginalVar.containsAll(z)) {
                         newSepset.set(x, y, z);
                     }
@@ -1972,7 +1973,7 @@ public class Dci {
                 if (fciSepset.get(x, y) == null) {
                     continue;
                 }
-                List<Node> set = fciSepset.get(x, y);
+                Set<Node> set = fciSepset.get(x, y);
                 List<Node> currentset = new ArrayList<>();
                 if (newSepset.get(x, y) != null) {
                     currentset.addAll(newSepset.get(x, y));
@@ -1987,9 +1988,9 @@ public class Dci {
                     possibleCond.remove(node);
                     PowerSet<Node> pset = new PowerSet<>(possibleCond);
                     for (Set<Node> inpset : pset) {
-                        List<Node> cond = new ArrayList<>(inpset);
+                        Set<Node> cond = new HashSet<>(inpset);
                         cond.add(node);
-                        if (fciResult.paths().isDSeparatedFrom(x, y, cond)) {
+                        if (fciResult.paths().isMSeparatedFrom(x, y, cond)) {
                             newSepset.set(x, y, cond);
                         }
                     }
@@ -2022,8 +2023,8 @@ public class Dci {
             int ps = (int) FastMath.pow(2, possibleNodes.size());
             for (Set<Node> condSet : new PowerSet<>(possibleNodes)) {
                 System.out.println("Getting closure set... " + c + " of " + ps + "(" + p + " of " + pairs.size() + " remaining)");
-                if (graph.paths().isDSeparatedFrom(x, y, new ArrayList<>(condSet))) {
-                    sepset.set(x, y, new ArrayList<>(condSet));
+                if (graph.paths().isMSeparatedFrom(x, y, new HashSet<>(condSet))) {
+                    sepset.set(x, y, new HashSet<>(condSet));
                 }
                 c++;
             }
@@ -2041,7 +2042,7 @@ public class Dci {
                 Object[] pairArray = pair.toArray();
                 Node x = (Node) pairArray[0];
                 Node y = (Node) pairArray[1];
-                for (List<Node> condSet : sepset.getSet(x, y)) {
+                for (Set<Node> condSet : sepset.getSet(x, y)) {
                     allSepsets.set(x, y, condSet);
                 }
             }

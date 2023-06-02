@@ -147,13 +147,14 @@ public class TestMimbuild {
                     continue;
                 }
 
-                List<Node> _children = full.getChildren(node);
+                List<Node> _children = new ArrayList<>(full.getChildren(node));
 
                 _children.removeAll(ReidentifyVariables.getLatents(full));
 
                 List<String> childNames = getNames(_children);
 
                 if (new HashSet<>(childNames).equals(new HashSet<>(d))) {
+                    assert g2 != null;
                     g2.getNode(node.getName()).setName(latentName);
                 }
             }

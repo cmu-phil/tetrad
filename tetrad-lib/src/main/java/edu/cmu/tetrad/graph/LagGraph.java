@@ -305,7 +305,7 @@ public class LagGraph implements Graph {
     }
 
     @Override
-    public List<Node> getSepset(Node n1, Node n2) {
+    public Set<Node> getSepset(Node n1, Node n2) {
         throw new UnsupportedOperationException();
     }
 

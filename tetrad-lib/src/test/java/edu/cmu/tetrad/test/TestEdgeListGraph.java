@@ -28,6 +28,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static junit.framework.TestCase.fail;
 import static org.junit.Assert.assertEquals;
@@ -75,7 +76,7 @@ public final class TestEdgeListGraph {
         assertEquals(children, Collections.singletonList(this.x2));
         assertEquals(parents, Collections.singletonList(this.x3));
 
-        assertTrue(this.graph.paths().isDConnectedTo(this.x1, this.x3, Collections.EMPTY_LIST));
+        assertTrue(this.graph.paths().isMConnectedTo(this.x1, this.x3, Collections.EMPTY_SET));
         this.graph.removeNode(this.x2);
 
         // No cycles.

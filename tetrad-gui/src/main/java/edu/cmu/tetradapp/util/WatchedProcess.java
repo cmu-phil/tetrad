@@ -15,7 +15,7 @@ import java.awt.*;
  * <p>Example usage:</p>
  *
  * <pre>
- * class MyWatchedProcess extends WatchedProcess2 {
+ * class MyWatchedProcess extends WatchedProcess {
  *
  *     &#64;Override
  *     public void watch() throws InterruptedException {

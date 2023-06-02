@@ -101,6 +101,8 @@ public final class GSquareTest {
      */
     public Result calcGSquare(int[] testIndices) {
 
+        if (testIndices.length < 2) throw new IllegalArgumentException("Need at least two variables for G Square test.");
+
         // Reset the cell table for the columns referred to in
         // 'testIndices.' Do cell coefs for those columns.
         getCellTable().addToTable(getDataSet(), testIndices);

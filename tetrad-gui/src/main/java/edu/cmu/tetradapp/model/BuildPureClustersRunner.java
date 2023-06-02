@@ -43,6 +43,7 @@ import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Extends AbstractAlgorithmRunner to produce a wrapper for the
@@ -263,7 +264,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
             }
 
             List<Node> children = searchGraph.getChildren(node);
-            children.removeAll(ReidentifyVariables.getLatents(searchGraph));
+            ReidentifyVariables.getLatents(searchGraph).forEach(children::remove);
 
             for (int i = 0; i < partition.size(); i++) {
                 if (new HashSet<>(partition.get(i)).equals(new HashSet<>(children))) {

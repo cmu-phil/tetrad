@@ -30,10 +30,7 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Stores a table of probabilities for a Bayes net and, together with BayesPm and Dag, provides methods to manipulate
@@ -1055,7 +1052,7 @@ public final class MlBayesImObs implements BayesIm {
         // Set up parents array.  Should store the parents of
         // each node as ints in a particular order.
         Graph graph = getBayesPm().getDag();
-        List<Node> parentList = graph.getParents(node);
+        List<Node> parentList = new ArrayList<>(graph.getParents(node));
         int[] parentArray = new int[parentList.size()];
 
         for (int i = 0; i < parentList.size(); i++) {

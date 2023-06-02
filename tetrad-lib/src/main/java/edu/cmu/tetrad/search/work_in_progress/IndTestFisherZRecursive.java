@@ -37,10 +37,7 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.StrictMath.log;
@@ -188,7 +185,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         int n = sampleSize();
         double r;
 
@@ -197,7 +194,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         } catch (SingularMatrixException e) {
             System.out.println(LogUtilsSearch.determinismDetected(z, x));
             this.fisherZ = Double.POSITIVE_INFINITY;
-            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN, Double.NaN);
         }
 
         double q = 0.5 * (log(1.0 + r) - FastMath.log(1.0 - r));
@@ -213,10 +210,13 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN,abs(this.fisherZ) - this.cutoff);
     }
 
-    private double partialCorrelation(Node x, Node y, List<Node> z) throws SingularMatrixException {
+    private double partialCorrelation(Node x, Node y, Set<Node> _z) throws SingularMatrixException {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+
         return this.recursivePartialCorrelation.corr(x, y, z);
 
     }
@@ -268,8 +268,10 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
      * UnsupportedOperationException.
      */
-    public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
-        int[] parents = new int[z.size()];
+    public boolean determines(Set<Node> _z, Node x) throws UnsupportedOperationException {
+        int[] parents = new int[_z.size()];
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         for (int j = 0; j < parents.length; j++) {
             parents[j] = this.covMatrix.getVariables().indexOf(z.get(j));
@@ -283,7 +285,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
             try {
                 Czz.inverse();
             } catch (SingularMatrixException e) {
-                System.out.println(LogUtilsSearch.determinismDetected(z, x));
+                System.out.println(LogUtilsSearch.determinismDetected(_z, x));
                 return true;
             }
         }
@@ -355,12 +357,6 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     @Override
     public int getSampleSize() {
         return this.covMatrix.getSampleSize();
-    }
-
-
-    @Override
-    public double getScore() {
-        return abs(this.fisherZ) - this.cutoff;
     }
 
     public boolean isVerbose() {

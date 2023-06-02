@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Gives an interface for Markov blanket searches.
@@ -35,7 +36,7 @@ public interface IMbSearch {
     /**
      * Given the target this returns all the nodes in the Markov Blanket.
      */
-    List<Node> findMb(Node target);
+    Set<Node> findMb(Node target);
 
     /**
      * The name of the algorithm.

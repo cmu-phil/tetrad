@@ -95,7 +95,7 @@ public final class VcPcFast implements IGraphSearch {
     /**
      * The sepsets.
      */
-    private Map<Edge, List<Node>> apparentlyNonadjacencies;
+    private Map<Edge, Set<Node>> apparentlyNonadjacencies;
 
     /**
      * Whether verbose output about independencies is output.
@@ -392,10 +392,10 @@ public final class VcPcFast implements IGraphSearch {
 
             for (Graph _graph : new ArrayList<>(patterns)) {
 
-                List<Node> boundaryX = new ArrayList<>(boundary(x, _graph));
-                List<Node> boundaryY = new ArrayList<>(boundary(y, _graph));
-                List<Node> futureX = new ArrayList<>(future(x, _graph));
-                List<Node> futureY = new ArrayList<>(future(y, _graph));
+                Set<Node> boundaryX = new HashSet<>(boundary(x, _graph));
+                Set<Node> boundaryY = new HashSet<>(boundary(y, _graph));
+                Set<Node> futureX = new HashSet<>(future(x, _graph));
+                Set<Node> futureY = new HashSet<>(future(y, _graph));
 
                 if (y == x) {
                     continue;
@@ -549,7 +549,7 @@ public final class VcPcFast implements IGraphSearch {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node y : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(y);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(y));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -610,7 +610,7 @@ public final class VcPcFast implements IGraphSearch {
         int numSepsetsContainingY = 0;
         int numSepsetsNotContainingY = 0;
 
-        List<Node> _nodes = graph.getAdjacentNodes(x);
+        List<Node> _nodes = new ArrayList<>(graph.getAdjacentNodes(x));
 
 
         _nodes.remove(z);
@@ -628,7 +628,7 @@ public final class VcPcFast implements IGraphSearch {
                 int[] choice;
 
                 while ((choice = cg.next()) != null) {
-                    List<Node> cond = GraphUtils.asList(choice, _nodes);
+                    Set<Node> cond = GraphUtils.asSet(choice, _nodes);
 
                     // JOE THIS IS WHERE I ASK THE FACTS INDEPENDENCE QUESTIONS.
 
@@ -653,7 +653,7 @@ public final class VcPcFast implements IGraphSearch {
                 }
             }
 
-            _nodes = graph.getAdjacentNodes(z);
+            _nodes = new ArrayList<>(graph.getAdjacentNodes(z));
             _nodes.remove(x);
             TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
@@ -668,7 +668,7 @@ public final class VcPcFast implements IGraphSearch {
                 int[] choice;
 
                 while ((choice = cg.next()) != null) {
-                    List<Node> cond = GraphUtils.asList(choice, _nodes);
+                    Set<Node> cond = GraphUtils.asSet(choice, _nodes);
 
                     if (test.checkIndependence(x, z, cond).isIndependent()) {
 //                        System.out.println("Indep: " + x + " _||_ " + z + " | " + cond);
@@ -827,7 +827,7 @@ public final class VcPcFast implements IGraphSearch {
 //
 //                System.out.println(_graph);
 //
-//                IndependenceTest test = new IndTestDSep(_graph);
+//                IndependenceTest test = new IndTestMSep(_graph);
 //                if (!test.isIndependent(x, y, boundaryX)) {
 //                    continue MARKOV;
 //                }

@@ -32,6 +32,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Checks the conditional independence X _||_ Y | S, where S is a set of discrete variable, and X and Y are discrete
@@ -149,10 +150,10 @@ public final class IndTestGSquare implements IndependenceTest {
      *
      * @param x the one variable being compared.
      * @param y the second variable being compared.
-     * @param z the list of conditioning varNames.
+     * @param _z the list of conditioning varNames.
      * @return True iff x _||_ y | z.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         if (x == null) {
             throw new NullPointerException();
         }
@@ -161,15 +162,18 @@ public final class IndTestGSquare implements IndependenceTest {
             throw new NullPointerException();
         }
 
-        if (z == null) {
+        if (_z == null) {
             throw new NullPointerException();
         }
 
-        for (Node node : z) {
+        for (Node node : _z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
+
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
@@ -198,12 +202,12 @@ public final class IndTestGSquare implements IndependenceTest {
         if (this.verbose) {
             if (result.isIndep()) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, getPValue()));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z),
-                result.isIndep(), result.getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, _z),
+                result.isIndep(), result.getPValue(), alpha - result.getPValue());
     }
 
     /**
@@ -247,20 +251,23 @@ public final class IndTestGSquare implements IndependenceTest {
     /**
      * Returns a judgment whether the variables in z determine x.
      *
-     * @param z The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
+     * @param _z The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
      * @param x The one variable whose determination by z we want to know.
      * @return true if it is estimated that z determines x or z determines y.
      */
-    public boolean determines(List<Node> z, Node x) {
-        if (z == null) {
+    public boolean determines(Set<Node> _z, Node x) {
+        if (_z == null) {
             throw new NullPointerException();
         }
 
-        for (Node node : z) {
+        for (Node node : _z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
+
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         // For testing x, y given z1,...,zn, set up an array of length
         // n + 2 containing the indices of these variables in order.
@@ -321,17 +328,6 @@ public final class IndTestGSquare implements IndependenceTest {
      */
     public DataSet getData() {
         return this.dataSet;
-    }
-
-
-    /**
-     * Returns the score, alpha - p.
-     *
-     * @return This score.
-     */
-    @Override
-    public double getScore() {
-        return alpha - getPValue();
     }
 
     /**

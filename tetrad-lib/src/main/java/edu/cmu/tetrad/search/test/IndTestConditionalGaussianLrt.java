@@ -33,9 +33,7 @@ import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
@@ -53,7 +51,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
 
     // Likelihood function
     private final ConditionalGaussianLikelihood likelihood;
-    private double pValue = Double.NaN;
 
     private boolean verbose;
     private int numCategoriesToDiscretize = 3;
@@ -93,8 +90,11 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
      * @return an independence result (see)
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
         this.likelihood.setNumCategoriesToDiscretize(this.numCategoriesToDiscretize);
+
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         List<Node> allVars = new ArrayList<>(z);
         allVars.add(x);
@@ -111,9 +111,9 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         list0[0] = _x;
 
         for (int i = 0; i < z.size(); i++) {
-            int _z = this.nodesHash.get(z.get(i));
-            list0[i + 1] = _z;
-            list2[i] = _z;
+            int __z = this.nodesHash.get(z.get(i));
+            list0[i + 1] = __z;
+            list2[i] = __z;
         }
 
         ConditionalGaussianLikelihood.Ret ret1 = likelihood.getLikelihood(_y, list0);
@@ -122,11 +122,11 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         double lik0 = ret1.getLik() - ret2.getLik();
         double dof0 = ret1.getDof() - ret2.getDof();
 
-        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
-        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
-        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
+        if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
+        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
+        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
         if (lik0 == Double.POSITIVE_INFINITY)
-            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
 
         double pValue;
 
@@ -136,26 +136,16 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
             pValue = 1.0 - new ChiSquaredDistribution(dof0).cumulativeProbability(2.0 * lik0);
         }
 
-        this.pValue = pValue;
-
-        boolean independent = this.pValue > this.alpha;
+        boolean independent = pValue > this.alpha;
 
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, this.pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
-    }
-
-    /**
-     * Returns the probability associated with the most recently executed independence test, or Double.NaN if p value is
-     * not meaningful for this test.
-     */
-    public double getPValue() {
-        return this.pValue;
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, getAlpha() - pValue);
     }
 
     /**
@@ -202,16 +192,6 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
      */
     public DataSet getData() {
         return this.data;
-    }
-
-    /**
-     * Returns a number that is higher for stronger judgments of dependence and negative for judgments of independence.
-     *
-     * @return This number.
-     */
-    @Override
-    public double getScore() {
-        return getAlpha() - getPValue();
     }
 
     /**

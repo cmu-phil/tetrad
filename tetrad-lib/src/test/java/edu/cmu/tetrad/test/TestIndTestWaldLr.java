@@ -27,7 +27,7 @@ import edu.cmu.tetrad.data.Discretizer;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -37,7 +37,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -81,7 +83,7 @@ public class TestIndTestWaldLr {
             Node x4 = data.getVariable("X4");
             Node x5 = data.getVariable("X5");
 
-            List<Node> cond = new ArrayList<>();
+            Set<Node> cond = new HashSet<>();
             cond.add(x3);
             cond.add(x4);
             cond.add(x5);
@@ -89,7 +91,7 @@ public class TestIndTestWaldLr {
             Node x1Graph = graph.getNode(x1.getName());
             Node x2Graph = graph.getNode(x2.getName());
 
-            List<Node> condGraph = new ArrayList<>();
+            Set<Node> condGraph = new HashSet<>();
 
             for (Node node : cond) {
                 condGraph.add(graph.getNode(node.getName()));
@@ -97,9 +99,9 @@ public class TestIndTestWaldLr {
 
             // Using the Wald LR test since it's most up to date.
             IndependenceTest test = new IndTestMultinomialLogisticRegressionWald(data, 0.05, false);
-            IndTestDSep dsep = new IndTestDSep(graph);
+            IndTestMSep msep = new IndTestMSep(graph);
 
-            boolean correct = test.checkIndependence(x2, x1, cond) == dsep.checkIndependence(x2Graph, x1Graph, condGraph);
+            boolean correct = test.checkIndependence(x2, x1, cond) == msep.checkIndependence(x2Graph, x1Graph, condGraph);
 
             if (correct) {
                 numPassed++;

@@ -30,6 +30,7 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -228,7 +229,7 @@ public class SemOptimizerEm implements SemOptimizer {
                 continue;
             }
             int idx = nodes.indexOf(node);
-            List<Node> _parents = this.graph.getParents(node);
+            List<Node> _parents = new ArrayList<>(this.graph.getParents(node));
             for (int i = 0; i < _parents.size(); i++) {
                 Node nextParent = _parents.get(i);
                 if (nextParent.getNodeType() == NodeType.ERROR) {

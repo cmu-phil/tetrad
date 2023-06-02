@@ -686,7 +686,7 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
             if (isFaithfulnessAssumed()) {
                 adj = this.effectEdgesGraph.getAdjacentNodes(x);
             } else {
-                adj = this.variables;
+                adj = new ArrayList<>(this.variables);
             }
 
             for (Node w : adj) {

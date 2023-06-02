@@ -29,7 +29,10 @@ import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import javax.help.UnsupportedOperationException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Checks conditional independence against a list of conditional independence facts, manually entered.
@@ -64,8 +67,11 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
      * @return the independence result.
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
-        Node[] _z = new Node[z.size()];
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> __z) {
+        List<Node> z = new ArrayList<Node>(__z);
+        Collections.sort(z);
+
+        Node[] _z = new Node[__z.size()];
 
         for (int i = 0; i < z.size(); i++) {
             _z[i] = z.get(i);
@@ -76,11 +82,11 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, __z, getPValue()));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
+        return new IndependenceResult(new IndependenceFact(x, y, __z), independent, getPValue(), getAlpha() - getPValue());
     }
 
     /**
@@ -149,16 +155,6 @@ public final class IndTestIndependenceFacts implements IndependenceTest {
      */
     public DataModel getData() {
         return this.facts;
-    }
-
-    /**
-     * Returns NaN.
-     *
-     * @return This.
-     */
-    @Override
-    public double getScore() {
-        return getPValue();
     }
 
     /**

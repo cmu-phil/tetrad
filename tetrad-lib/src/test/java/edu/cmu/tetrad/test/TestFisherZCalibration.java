@@ -8,8 +8,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -20,9 +21,10 @@ import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TextTable;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TestFisherZCalibration {
 
@@ -56,14 +58,14 @@ public class TestFisherZCalibration {
         List<Node> variables = data.getVariables();
         graph = GraphUtils.replaceNodes(graph, variables);
 
-        IndependenceTest dsep = new IndTestDSep(graph);
+        IndependenceTest msep = new IndTestMSep(graph);
 
         for (int depth : new int[]{0, 1}) {
-            testOneDepth(parameters, test1, test2, variables, dsep, depth);
+            testOneDepth(parameters, test1, test2, variables, msep, depth);
         }
     }
 
-    private void testOneDepth(Parameters parameters, IndependenceTest test1, IndependenceTest test2, List<Node> variables, IndependenceTest dsep, int depth) {
+    private void testOneDepth(Parameters parameters, IndependenceTest test1, IndependenceTest test2, List<Node> variables, IndependenceTest msep, int depth) {
         int countSame = 0;
         int fn1 = 0;
         int fn2 = 0;
@@ -79,22 +81,22 @@ public class TestFisherZCalibration {
             Node x = variables.get(0);
             Node y = variables.get(1);
 
-            List<Node> z = new ArrayList<>();
+            Set<Node> z = new HashSet<>();
             for (int j = 0; j < depth; j++) {
                 z.add(variables.get(j + 2));
             }
 
             boolean fzInd = test1.checkIndependence(x, y, z).isIndependent();
             boolean sembInd = test2.checkIndependence(x, y, z).isIndependent();
-            boolean _dsep = dsep.checkIndependence(x, y, z).isIndependent();
+            boolean _msep = msep.checkIndependence(x, y, z).isIndependent();
 
             if (fzInd == sembInd) countSame++;
 
-            if (fzInd && !_dsep) fn1++;
-            if (!fzInd && _dsep) fp1++;
-            if (sembInd && !_dsep) fn2++;
-            if (!sembInd && _dsep) fp2++;
-            if (_dsep) ds++;
+            if (fzInd && !_msep) fn1++;
+            if (!fzInd && _msep) fp1++;
+            if (sembInd && !_msep) fn2++;
+            if (!sembInd && _msep) fp2++;
+            if (_msep) ds++;
         }
 
         TextTable table = new TextTable(3, 3);
@@ -157,8 +159,8 @@ public class TestFisherZCalibration {
             Node _x3 = dataSet.getVariable("X3");
             Node _x4 = dataSet.getVariable("X4");
 
-            test.checkIndependence(_x1, _x2, Collections.singletonList(_x4));
-            return test.getScore();
+            IndependenceResult result = test.checkIndependence(_x1, _x2, Collections.singleton(_x4));
+            return result.getScore();
         } catch (AssertionError e) {
             return Double.NaN;
         }

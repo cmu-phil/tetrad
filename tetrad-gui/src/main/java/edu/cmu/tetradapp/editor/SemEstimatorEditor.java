@@ -56,6 +56,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Lets the user interact with a SEM estimator.
@@ -152,7 +153,12 @@ public final class SemEstimatorEditor extends JPanel {
             class MyWatchedProcess extends WatchedProcess {
                 @Override
                 public void watch() {
-                    reestimate();
+                    try {
+                        reestimate();
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(estimateButton, ex.getMessage());
+                        ex.printStackTrace();
+                    }
                 }
             };
 
@@ -1899,15 +1905,14 @@ public final class SemEstimatorEditor extends JPanel {
             String eqn = node.getName() + " = B0_" + node.getName();
 
             SemGraph semGraph = semIm().getSemPm().getGraph();
-            List parentNodes = semGraph.getParents(node);
+            List<Node> parentNodes = semGraph.getParents(node);
 
-            for (Object parentNodeObj : parentNodes) {
-                Node parentNode = (Node) parentNodeObj;
+            for (Node parentNodeObj : parentNodes) {
                 Parameter edgeParam = getEdgeParameter(
-                        semGraph.getDirectedEdge(parentNode, node));
+                        semGraph.getDirectedEdge(parentNodeObj, node));
 
                 if (edgeParam != null) {
-                    eqn = eqn + " + " + edgeParam.getName() + "*" + parentNode;
+                    eqn = eqn + " + " + edgeParam.getName() + "*" + parentNodeObj;
                 }
             }
 

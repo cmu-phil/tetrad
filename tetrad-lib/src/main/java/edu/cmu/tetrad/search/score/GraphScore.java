@@ -38,15 +38,15 @@ import java.util.Set;
 
 /**
  * <p>Implements a pscudo-"score" that implmenets implements Chickering and Meek's
- * (2002) locally consistent score criterion. This is not a true score; rather, a -1 is returned in case dseparation
- * holds and a 1 in case dseparation does not hold. This is only meant to be used in the context of FGES, and allows the
+ * (2002) locally consistent score criterion. This is not a true score; rather, a -1 is returned in case mseparation
+ * holds and a 1 in case mseparation does not hold. This is only meant to be used in the context of FGES, and allows the
  * search to follow its path prescribed by the locally consistent scoring criterion. For a reference to the latter,
  * pleasee this article:</p>
  *
  * <p>Chickering (2002) "Optimal structure identification with greedy search"
  * Journal of Machine Learning Research.</p>
  *
- * <p>For further discussion of using d-separation in the GES search, see:</p>
+ * <p>For further discussion of using m-separation in the GES search, see:</p>
  *
  * <p>Nandy, P., Hauser, A., &amp; Maathuis, M. H. (2018). High-dimensional consistency
  * in score-based and hybrid structure learning. The Annals of Statistics, 46(6A), 3151-3183.</p>
@@ -109,10 +109,10 @@ public class GraphScore implements Score {
         Set<Node> mb = new HashSet<>();
 
         for (Node z0 : prefix) {
-            List<Node> cond = new ArrayList<>(prefix);
+            Set<Node> cond = new HashSet<>(prefix);
             cond.remove(z0);
 
-            if (dag.paths().isDConnectedTo(n, z0, cond)) {
+            if (dag.paths().isMConnectedTo(n, z0, cond)) {
                 mb.add(z0);
             }
         }
@@ -152,7 +152,7 @@ public class GraphScore implements Score {
      * @throws UnsupportedOperationException Since the method doesn't make sense here.
      */
     public double localScore(int i) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("The 'local score' method is not supported here.");
     }
 
     /**
@@ -228,12 +228,12 @@ public class GraphScore implements Score {
     private double locallyConsistentScoringCriterion(int x, int y, int[] z) {
         Node _y = variables.get(y);
         Node _x = variables.get(x);
-        List<Node> _z = getVariableList(z);
+        Set<Node> _z = getVariableSet(z);
 
         boolean dSeparatedFrom;
 
         if (dag != null) {
-            dSeparatedFrom = dag.paths().isDSeparatedFrom(_x, _y, _z);
+            dSeparatedFrom = dag.paths().isMSeparatedFrom(_x, _y, _z);
         } else if (facts != null) {
             dSeparatedFrom = facts.isIndependent(_x, _y, _z);
         } else {
@@ -243,9 +243,9 @@ public class GraphScore implements Score {
         return dSeparatedFrom ? -1.0 : 1.0;
     }
 
-    private boolean isDSeparatedFrom(Node x, Node y, List<Node> z) {
+    private boolean isMSeparatedFrom(Node x, Node y, Set<Node> z) {
         if (dag != null) {
-            return dag.paths().isDSeparatedFrom(x, y, z);
+            return dag.paths().isMSeparatedFrom(x, y, z);
         } else if (facts != null) {
             return facts.isIndependent(x, y, z);
         }
@@ -253,12 +253,20 @@ public class GraphScore implements Score {
         throw new IllegalArgumentException("Expecting either a DAG or an IndependenceFacts object.");
     }
 
-    private boolean isDConnectedTo(Node x, Node y, List<Node> z) {
-        return !isDSeparatedFrom(x, y, z);
+    private boolean isMConnectedTo(Node x, Node y, Set<Node> z) {
+        return !isMSeparatedFrom(x, y, z);
     }
 
     private List<Node> getVariableList(int[] indices) {
         List<Node> variables = new ArrayList<>();
+        for (int i : indices) {
+            variables.add(this.variables.get(i));
+        }
+        return variables;
+    }
+
+    private Set<Node> getVariableSet(int[] indices) {
+        Set<Node> variables = new HashSet<>();
         for (int i : indices) {
             variables.add(this.variables.get(i));
         }

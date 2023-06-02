@@ -734,7 +734,7 @@ public class Ricf {
         int[][] pars = new int[p][];
 
         for (int i = 0; i < p; i++) {
-            List<Node> parents = mag.getParents(nodes.get(i));
+            List<Node> parents = new ArrayList<>(mag.getParents(nodes.get(i)));
             int[] indices = new int[parents.size()];
 
             for (int j = 0; j < parents.size(); j++) {

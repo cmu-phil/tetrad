@@ -24,6 +24,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.graph.GraphUtils.TwoCycleErrors;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
@@ -110,7 +111,7 @@ public final class GraphSearchUtils {
         List<Node> nodes = graph.getNodes();
 
         for (Node y : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(y);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(y));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -128,8 +129,7 @@ public final class GraphSearchUtils {
                     continue;
                 }
 
-                List<Node> sepset = GraphSearchUtils.sepset(graph, x, z, new HashSet<>(), new HashSet<>(),
-                        test);
+                Set<Node> sepset = GraphSearchUtils.sepset(graph, x, z, new HashSet<>(), new HashSet<>(), test);
 
                 if (sepset == null) {
                     continue;
@@ -139,11 +139,9 @@ public final class GraphSearchUtils {
                     continue;
                 }
 
-                List<Node> augmentedSet = new LinkedList<>(sepset);
+                Set<Node> augmentedSet = new HashSet<>(sepset);
 
-                if (!augmentedSet.contains(y)) {
-                    augmentedSet.add(y);
-                }
+                augmentedSet.add(y);
 
                 if (test.determines(sepset, x)) {
                     continue;
@@ -177,9 +175,8 @@ public final class GraphSearchUtils {
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
     }
 
-    private static List<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining,
-                                     IndependenceTest independenceTest) {
-        List<Node> adj = graph.getAdjacentNodes(a);
+    private static Set<Node> sepset(Graph graph, Node a, Node c, Set<Node> containing, Set<Node> notContaining, IndependenceTest independenceTest) {
+        List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(a));
         adj.addAll(graph.getAdjacentNodes(c));
         adj.remove(c);
         adj.remove(a);
@@ -196,11 +193,11 @@ public final class GraphSearchUtils {
                 v2.remove(c);
 
 //                    if (isForbidden(a, c, new ArrayList<>(v2)))
-                independenceTest.checkIndependence(a, c, new ArrayList<>(v2));
-                double p2 = independenceTest.getScore();
+                IndependenceResult result = independenceTest.checkIndependence(a, c, new HashSet<>(v2));
+                double p2 = result.getScore();
 
                 if (p2 < 0) {
-                    return new ArrayList<>(v2);
+                    return v2;
                 }
             }
         }
@@ -218,7 +215,7 @@ public final class GraphSearchUtils {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -236,7 +233,7 @@ public final class GraphSearchUtils {
                     continue;
                 }
 
-                List<Node> sepset = set.get(a, c);
+                Set<Node> sepset = set.get(a, c);
 
                 //I think the null check needs to be here --AJ
                 if (sepset != null && !sepset.contains(b)
@@ -528,8 +525,16 @@ public final class GraphSearchUtils {
                 }
             }
 
-            String reason = "Could be a MAG or between a MAG and a PAG; cannot recover the original graph by finding " +
-                    "the PAG of an implied MAG";
+            String reason;
+
+            if (legalMag.isLegalMag()) {
+                reason = "This is a Mag but not a PAG; cannot recover the original graph by finding " +
+                        "the PAG of an implied MAG";
+
+            } else {
+                reason = "Could be between a MAG and a PAG; cannot recover the original graph by finding " +
+                        "the PAG of an implied MAG";
+            }
 
             if (!edgeMismatch.equals("")) {
                 reason = reason + ". " + edgeMismatch;
@@ -953,7 +958,7 @@ public final class GraphSearchUtils {
         int numSepsetsContainingY = 0;
         int numSepsetsNotContainingY = 0;
 
-        List<Node> _nodes = graph.getAdjacentNodes(x);
+        List<Node> _nodes = new ArrayList<>(graph.getAdjacentNodes(x));
         _nodes.remove(z);
         TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
@@ -968,7 +973,7 @@ public final class GraphSearchUtils {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                List<Node> cond = GraphUtils.asList(choice, _nodes);
+                Set<Node> cond = GraphUtils.asSet(choice, _nodes);
 
                 if (test.checkIndependence(x, z, cond).isIndependent()) {
                     if (cond.contains(y)) {
@@ -984,7 +989,7 @@ public final class GraphSearchUtils {
             }
         }
 
-        _nodes = graph.getAdjacentNodes(z);
+        _nodes = new ArrayList<>(graph.getAdjacentNodes(z));
         _nodes.remove(x);
         TetradLogger.getInstance().log("adjacencies", "Adjacents for " + x + "--" + y + "--" + z + " = " + _nodes);
 
@@ -995,7 +1000,7 @@ public final class GraphSearchUtils {
             int[] choice;
 
             while ((choice = cg.next()) != null) {
-                List<Node> cond = GraphUtils.asList(choice, _nodes);
+                Set<Node> cond = GraphUtils.asSet(choice, _nodes);
 
                 if (test.checkIndependence(x, z, cond).isIndependent()) {
                     if (cond.contains(y)) {

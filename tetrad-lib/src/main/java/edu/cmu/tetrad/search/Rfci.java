@@ -31,10 +31,7 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -326,7 +323,7 @@ public final class Rfci implements IGraphSearch {
 
     //===========================PRIVATE METHODS=========================//
 
-    private List<Node> getSepset(Node i, Node k) {
+    private Set<Node> getSepset(Node i, Node k) {
         return this.sepsets.get(i, k);
     }
 
@@ -348,11 +345,11 @@ public final class Rfci implements IGraphSearch {
             Node j = thisTuple[1];
             Node k = thisTuple[2];
 
-            List<Node> nodes1 = getSepset(i, k);
+            Set<Node> nodes1 = getSepset(i, k);
 
             if (nodes1 == null) continue;
 
-            List<Node> sepSet = new ArrayList<>(nodes1);
+            Set<Node> sepSet = new HashSet<>(nodes1);
             sepSet.remove(j);
 
             boolean independent1 = false;
@@ -456,7 +453,7 @@ public final class Rfci implements IGraphSearch {
             Node j = thisTuple[1];
             Node k = thisTuple[2];
 
-            List<Node> sepset = getSepset(i, k);
+            Set<Node> sepset = getSepset(i, k);
 
             if (sepset == null) {
                 continue;
@@ -488,7 +485,7 @@ public final class Rfci implements IGraphSearch {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node j : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(j);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(j));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -517,9 +514,12 @@ public final class Rfci implements IGraphSearch {
     // set the sepSet of x and y to the minimal such subset of the given sepSet
     // and remove the edge <x, y> if background knowledge allows
     /////////////////////////////////////////////////////////////////////////////
-    private void setMinSepSet(List<Node> sepSet, Node x, Node y) {
-        List<Node> empty = Collections.emptyList();
+    private void setMinSepSet(Set<Node> _sepSet, Node x, Node y) {
+        Set<Node> empty = Collections.emptySet();
         boolean independent;
+
+        List<Node> sepSet = new ArrayList<>(_sepSet);
+        Collections.sort(sepSet);
 
         try {
             independent = this.independenceTest.checkIndependence(x, y, empty).isIndependent();
@@ -538,7 +538,7 @@ public final class Rfci implements IGraphSearch {
             int[] combination;
 
             while ((combination = cg.next()) != null) {
-                List<Node> condSet = GraphUtils.asList(combination, sepSet);
+                Set<Node> condSet = GraphUtils.asSet(combination, sepSet);
 
                 independent = this.independenceTest.checkIndependence(x, y, condSet).isIndependent();
 

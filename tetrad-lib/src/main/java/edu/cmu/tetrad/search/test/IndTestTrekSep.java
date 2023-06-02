@@ -31,10 +31,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Vector;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -49,9 +46,7 @@ public final class IndTestTrekSep implements IndependenceTest {
     private final List<List<Node>> clustering;
     private List<Node> variables;
     private double alpha;
-    private double pValue;
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private DataSet dataSet;
     private final Map<Node, Integer> indexMap;
     private final Map<String, Node> nameMap;
 
@@ -117,7 +112,7 @@ public final class IndTestTrekSep implements IndependenceTest {
      * @return True iff x _||_ y | z.
      * @throws org.apache.commons.math3.linear.SingularMatrixException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         int n = sampleSize();
         int xi = this.latents.indexOf(x);
         int yi = this.latents.indexOf(y);
@@ -161,17 +156,8 @@ public final class IndTestTrekSep implements IndependenceTest {
 //        return rank <= z.size();
 
         boolean independent = rank <= z.size();
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, this.pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN, Double.NaN);
 
-    }
-
-    /**
-     * Returns the probability associated with the most recently computed independence test.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.pValue;
     }
 
     /**
@@ -258,12 +244,10 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * Returns the data set being analyzed.
-     *
-     * @return This data.
+     * @throws UnsupportedOperationException Always.
      */
     public DataSet getData() {
-        return this.dataSet;
+        throw new UnsupportedOperationException("Dataset not available.");
     }
 
     /**
@@ -297,18 +281,11 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * Returns a singleton list consisting just of the dataset for this test.
-     *
-     * @return This lsit.
+     * @throws UnsupportedOperationException Always.
      */
     @Override
     public List<DataSet> getDataSets() {
-
-        List<DataSet> dataSets = new ArrayList<>();
-
-        dataSets.add(this.dataSet);
-
-        return dataSets;
+        throw new UnsupportedOperationException("Dataset not available.");
     }
 
     /**
@@ -319,16 +296,6 @@ public final class IndTestTrekSep implements IndependenceTest {
     @Override
     public int getSampleSize() {
         return this.covMatrix.getSampleSize();
-    }
-
-    /**
-     * Returns alpha - p.
-     *
-     * @return This nubmer.
-     */
-    @Override
-    public double getScore() {
-        return alpha - getPValue();
     }
 
     /**

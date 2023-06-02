@@ -384,7 +384,7 @@ public class SessionWrapper extends EdgeListGraph implements SessionWrapperIndir
      * ordering of the edges in the list is guaranteed.
      */
     public List<Edge> getEdges(Node node) {
-        List<Edge> edgeList = new LinkedList<>();
+        List<Edge> edgeList = new ArrayList<>();
 
         for (Edge edge : this.sessionEdges) {
             if ((edge.getNode1() == node) || (edge.getNode2() == node)) {

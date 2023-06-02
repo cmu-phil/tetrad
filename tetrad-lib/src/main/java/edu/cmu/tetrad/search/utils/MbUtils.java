@@ -143,7 +143,7 @@ public class MbUtils {
      * @param target The target.
      */
     public static void trimEdgesAmongParents(Graph graph, Node target) {
-        List<Node> parents = graph.getParents(target);
+        List<Node> parents = new ArrayList<>(graph.getParents(target));
 
         if (parents.size() >= 2) {
             ChoiceGenerator cg = new ChoiceGenerator(parents.size(), 2);

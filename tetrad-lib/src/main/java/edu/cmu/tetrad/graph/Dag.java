@@ -352,7 +352,7 @@ public final class Dag implements Graph {
         return this.graph.getTimeLagGraph();
     }
 
-    public List<Node> getSepset(Node n1, Node n2) {
+    public Set<Node> getSepset(Node n1, Node n2) {
         return this.graph.getSepset(n1, n2);
     }
 

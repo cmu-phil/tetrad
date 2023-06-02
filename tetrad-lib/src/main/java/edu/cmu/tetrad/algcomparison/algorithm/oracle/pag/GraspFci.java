@@ -151,7 +151,7 @@ public class GraspFci implements Algorithm, UsesScoreWrapper, TakesIndependenceW
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
-        params.add(Params.POSSIBLE_DSEP_DONE);
+        params.add(Params.POSSIBLE_MSEP_DONE);
 
         // General
         params.add(Params.TIME_LAG);

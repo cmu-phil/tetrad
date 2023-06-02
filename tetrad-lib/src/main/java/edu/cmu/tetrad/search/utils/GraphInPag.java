@@ -22,7 +22,7 @@
 package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 
 import java.util.ArrayList;
@@ -65,7 +65,7 @@ public final class GraphInPag {
         //If A and B are in O, there is an edge between A and B in gamma
         //iff for every W subset of O minus {A, B}, A and B are d-connected
         //given W in [every graph] in delta (dag).
-        IndTestDSep test = new IndTestDSep(pag);
+        IndTestMSep test = new IndTestMSep(pag);
 
         List<Node> V = new ArrayList<>(dag.getNodes());
 
@@ -81,9 +81,9 @@ public final class GraphInPag {
             int[] choice;
 
             while ((choice = gen.next()) != null) {
-                List<Node> S = GraphUtils.asList(choice, W);
+                Set<Node> S = GraphUtils.asSet(choice, W);
 
-                if (test.isDSeparated(A, B, S)) {
+                if (test.isMSeparated(A, B, S)) {
                     return false;
                 }
 

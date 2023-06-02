@@ -475,7 +475,7 @@ public class RBExperiments {
             BCInference.OP op;
             double p;
 
-            if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;
@@ -498,7 +498,7 @@ public class RBExperiments {
                         String[] splitParent2 = splitParent[1].trim().split(Pattern.quote("|"));
                         Node Y = pag.getNode(splitParent2[0].trim());
 
-                        List<Node> Z = new ArrayList<>();
+                        Set<Node> Z = new HashSet<>();
                         if (splitParent2.length > 1) {
                             String[] splitParent3 = splitParent2[1].trim().split(Pattern.quote(","));
                             for (String s : splitParent3) {
@@ -506,7 +506,7 @@ public class RBExperiments {
                             }
                         }
                         IndependenceFact parentFact = new IndependenceFact(X, Y, Z);
-                        if (pag.paths().isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
+                        if (pag.paths().isMSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
                             parentValues[parentIndex] = 1;
                         } else {
                             parentValues[parentIndex] = 0;
@@ -563,7 +563,7 @@ public class RBExperiments {
         for (IndependenceFact fact : H.keySet()) {
             BCInference.OP op;
 
-            if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;

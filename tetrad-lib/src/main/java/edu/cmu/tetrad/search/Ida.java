@@ -190,7 +190,7 @@ public class Ida {
         List<Node> parents = this.pattern.getParents(x);
         List<Node> children = this.pattern.getChildren(x);
 
-        List<Node> siblings = this.pattern.getAdjacentNodes(x);
+        List<Node> siblings = new ArrayList<>(this.pattern.getAdjacentNodes(x));
         siblings.removeAll(parents);
         siblings.removeAll(children);
 

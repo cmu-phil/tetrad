@@ -216,7 +216,7 @@ public final class TestGraph {
             int i = RandomUtil.getInstance().nextInt(nodes.size());
             Node y = nodes.get(i);
 
-            List<Node> adjCenter = graph.getAdjacentNodes(y);
+            List<Node> adjCenter = new ArrayList<>(graph.getAdjacentNodes(y));
 
             if (adjCenter.isEmpty()) {
                 continue;
@@ -258,7 +258,7 @@ public final class TestGraph {
         List<Node> children = graph.getChildren(x1);
         List<Node> parents = graph.getParents(x4);
 
-        assertTrue(graph.paths().isDConnectedTo(x1, x3, new LinkedList<>()));
+        assertTrue(graph.paths().isMConnectedTo(x1, x3, new HashSet<>()));
 
 
         graph.removeNode(x2);

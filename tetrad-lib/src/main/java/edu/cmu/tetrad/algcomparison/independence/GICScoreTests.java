@@ -21,12 +21,12 @@ import java.util.List;
  * @author josephramsey
  */
 @TestOfIndependence(
-        name = "Kim et al. BIC Tests",
-        command = "kim-bic-tests",
+        name = "GIC Score Tests",
+        command = "gic-score-tests",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 @LinearGaussian
-public class KimEtAlScoreTests implements IndependenceWrapper {
+public class GICScoreTests implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
 
@@ -77,7 +77,7 @@ public class KimEtAlScoreTests implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "Kim et al. BIC Tests";
+        return "GIC Score Tests";
     }
 
     @Override

@@ -738,8 +738,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                         }
 
                         Node y = nodes.get(i);
-                        List<Node> cond = new ArrayList<>();
-                        Set<Node> D = new HashSet<>(SvarFges.this.graph.paths().getDconnectedVars(y, cond));
+                        Set<Node> cond = new HashSet<>();
+                        Set<Node> D = new HashSet<>(SvarFges.this.graph.paths().getMConnectedVars(y, cond));
                         D.remove(y);
                         SvarFges.this.effectEdgesGraph.getAdjacentNodes(y).forEach(D::remove);
 
@@ -1004,7 +1004,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
                             adj = new ArrayList<>(g);
                         } else if (SvarFges.this.mode == Mode.allowUnfaithfulness) {
-                            HashSet<Node> D = new HashSet<>(SvarFges.this.graph.paths().getDconnectedVars(x, new ArrayList<>()));
+                            HashSet<Node> D = new HashSet<>(SvarFges.this.graph.paths().getMConnectedVars(x, new HashSet<>()));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {
@@ -1059,7 +1059,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         Set<Node> naYX = getNaYX(a, b);
         if (!GraphUtils.isClique(naYX, this.graph)) return;
 
-        List<Node> TNeighbors = getTNeighbors(a, b);
+        List<Node> TNeighbors = new ArrayList<>(getTNeighbors(a, b));
         int _maxIndegree = this.maxIndegree == -1 ? 1000 : this.maxIndegree;
 
         int _max = FastMath.min(TNeighbors.size(), _maxIndegree - this.graph.getIndegree(b));
@@ -1178,7 +1178,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
         for (Node r : toProcess) {
             this.neighbors.put(r, getNeighbors(r));
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(r);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(r));
             this.pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0,
                     adjacentNodes.size(), this.hashIndices));
         }
@@ -1295,9 +1295,9 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     // Get all adj that are connected to Y by an undirected edge and not adjacent to X.
-    private List<Node> getTNeighbors(Node x, Node y) {
+    private Set<Node> getTNeighbors(Node x, Node y) {
         List<Edge> yEdges = this.graph.getEdges(y);
-        List<Node> tNeighbors = new ArrayList<>();
+        Set<Node> tNeighbors = new HashSet<>();
 
         for (Edge edge : yEdges) {
             if (!Edges.isUndirectedEdge(edge)) {

@@ -32,7 +32,7 @@ import java.util.*;
  *
  * @author Tyler Gibson
  */
-public class PossibleDConnectingPath {
+public class PossibleMConnectingPath {
 
     /**
      * The pag we are searching in.
@@ -49,7 +49,7 @@ public class PossibleDConnectingPath {
      */
     private final List<Node> path;
 
-    private PossibleDConnectingPath(Graph p, Set<Node> conditions, List<Node> path) {
+    private PossibleMConnectingPath(Graph p, Set<Node> conditions, List<Node> path) {
         if (p == null || conditions == null || path == null) {
             throw new NullPointerException();
         }
@@ -81,7 +81,7 @@ public class PossibleDConnectingPath {
      * Finds all possible D-connection undirectedPaths as sub-graphs of the pag given at construction time from x to y
      * given z.
      */
-    public static List<PossibleDConnectingPath> findDConnectingPaths(Graph pag, Node x, Node y, Collection<Node> z) {
+    public static List<PossibleMConnectingPath> findMConnectingPaths(Graph pag, Node x, Node y, Collection<Node> z) {
         if (!pag.containsNode(x) || !pag.containsNode(y) || x.equals(y)) {
             return Collections.emptyList();
         }
@@ -91,15 +91,15 @@ public class PossibleDConnectingPath {
             }
         }
         if (pag.isAdjacentTo(x, y)) {
-            return Collections.singletonList(new PossibleDConnectingPath(pag, new HashSet<>(z), Arrays.asList(x, y)));
+            return Collections.singletonList(new PossibleMConnectingPath(pag, new HashSet<>(z), Arrays.asList(x, y)));
         }
-        List<PossibleDConnectingPath> connectingPaths = new LinkedList<>();
+        List<PossibleMConnectingPath> connectingPaths = new LinkedList<>();
         Set<Node> conditions = new HashSet<>(z);
-        Set<Node> closure = PossibleDConnectingPath.getConditioningClosure(pag, z);
+        Set<Node> closure = PossibleMConnectingPath.getConditioningClosure(pag, z);
         Set<List<Node>> paths = new HashSet<>();
-        PossibleDConnectingPath.findPaths(pag, paths, null, x, y, conditions, closure, new LinkedList<>());
+        PossibleMConnectingPath.findPaths(pag, paths, null, x, y, conditions, closure, new LinkedList<>());
         for (List<Node> path : paths) {
-            connectingPaths.add(new PossibleDConnectingPath(pag, conditions, path));
+            connectingPaths.add(new PossibleMConnectingPath(pag, conditions, path));
         }
         return connectingPaths;
     }
@@ -108,7 +108,7 @@ public class PossibleDConnectingPath {
      * Finds all possible D-connection undirectedPaths as sub-graphs of the pag given at construction time from x to y
      * given z for a particular path length.
      */
-    public static List<PossibleDConnectingPath> findDConnectingPathsOfLength(Graph pag, Node x, Node y, Collection<Node> z, Integer length) {
+    public static List<PossibleMConnectingPath> findMConnectingPathsOfLength(Graph pag, Node x, Node y, Collection<Node> z, Integer length) {
         if (!pag.containsNode(x) || !pag.containsNode(y) || x.equals(y)) {
             return Collections.emptyList();
         }
@@ -118,25 +118,25 @@ public class PossibleDConnectingPath {
             }
         }
         if (pag.isAdjacentTo(x, y)) {
-            return Collections.singletonList(new PossibleDConnectingPath(pag, new HashSet<>(z), Arrays.asList(x, y)));
+            return Collections.singletonList(new PossibleMConnectingPath(pag, new HashSet<>(z), Arrays.asList(x, y)));
         }
-        List<PossibleDConnectingPath> connectingPaths = new LinkedList<>();
+        List<PossibleMConnectingPath> connectingPaths = new LinkedList<>();
         Set<Node> conditions = new HashSet<>(z);
-        Set<Node> closure = PossibleDConnectingPath.getConditioningClosure(pag, z);
+        Set<Node> closure = PossibleMConnectingPath.getConditioningClosure(pag, z);
         Set<List<Node>> paths = new HashSet<>();
-        PossibleDConnectingPath.findPathsOfLength(pag, paths, null, x, y, conditions, closure, new LinkedList<>(), length);
+        PossibleMConnectingPath.findPathsOfLength(pag, paths, null, x, y, conditions, closure, new LinkedList<>(), length);
         for (List<Node> path : paths) {
-            connectingPaths.add(new PossibleDConnectingPath(pag, conditions, path));
+            connectingPaths.add(new PossibleMConnectingPath(pag, conditions, path));
         }
         return connectingPaths;
     }
 
 
     public boolean equals(Object o) {
-        if (!(o instanceof PossibleDConnectingPath)) {
+        if (!(o instanceof PossibleMConnectingPath)) {
             return false;
         }
-        PossibleDConnectingPath p = (PossibleDConnectingPath) o;
+        PossibleMConnectingPath p = (PossibleMConnectingPath) o;
         return p.pag.equals(this.pag) && p.path.equals(this.path) && p.conditions.equals(this.conditions);
     }
 
@@ -146,7 +146,7 @@ public class PossibleDConnectingPath {
     private static Set<Node> getConditioningClosure(Graph pag, Collection<Node> z) {
         Set<Node> closure = new HashSet<>();
         for (Node node : z) {
-            PossibleDConnectingPath.doParentClosureVisit(pag, node, closure);
+            PossibleMConnectingPath.doParentClosureVisit(pag, node, closure);
         }
         return closure;
     }
@@ -169,7 +169,7 @@ public class PossibleDConnectingPath {
                     continue;
                 }
 
-                PossibleDConnectingPath.doParentClosureVisit(pag, sub, closure);
+                PossibleMConnectingPath.doParentClosureVisit(pag, sub, closure);
             }
         }
     }
@@ -197,7 +197,7 @@ public class PossibleDConnectingPath {
             if (previous == null) {
                 List<Node> h = new ArrayList<>(history);
                 h.add(current);
-                PossibleDConnectingPath.findPaths(pag, paths, current, adj, target, condition, conditionClosure, h);
+                PossibleMConnectingPath.findPaths(pag, paths, current, adj, target, condition, conditionClosure, h);
                 continue;
             }
             boolean pass;
@@ -206,13 +206,13 @@ public class PossibleDConnectingPath {
             if (pag.isDefCollider(previous, current, adj)) {
                 pass = isConditionClosure;
             } else {
-                pass = !isCondition || !pag.isUnderlineTriple(previous, current, adj) && PossibleDConnectingPath.isOpen(pag, previous, current, adj);
+                pass = !isCondition || !pag.isUnderlineTriple(previous, current, adj) && PossibleMConnectingPath.isOpen(pag, previous, current, adj);
             }
 
             if (pass) {
                 List<Node> h = new ArrayList<>(history);
                 h.add(current);
-                PossibleDConnectingPath.findPaths(pag, paths, current, adj, target, condition, conditionClosure, h);
+                PossibleMConnectingPath.findPaths(pag, paths, current, adj, target, condition, conditionClosure, h);
             }
         }
 
@@ -244,7 +244,7 @@ public class PossibleDConnectingPath {
             if (previous == null) {
                 List<Node> h = new ArrayList<>(history);
                 h.add(current);
-                PossibleDConnectingPath.findPathsOfLength(pag, paths, current, adj, target, condition, conditionClosure, h, length);
+                PossibleMConnectingPath.findPathsOfLength(pag, paths, current, adj, target, condition, conditionClosure, h, length);
                 continue;
             }
             boolean pass;
@@ -253,13 +253,13 @@ public class PossibleDConnectingPath {
             if (pag.isDefCollider(previous, current, adj)) {
                 pass = isConditionClosure;
             } else {
-                pass = !isCondition || !pag.isUnderlineTriple(previous, current, adj) && PossibleDConnectingPath.isOpen(pag, previous, current, adj);
+                pass = !isCondition || !pag.isUnderlineTriple(previous, current, adj) && PossibleMConnectingPath.isOpen(pag, previous, current, adj);
             }
 
             if (pass) {
                 List<Node> h = new ArrayList<>(history);
                 h.add(current);
-                PossibleDConnectingPath.findPathsOfLength(pag, paths, current, adj, target, condition, conditionClosure, h, length);
+                PossibleMConnectingPath.findPathsOfLength(pag, paths, current, adj, target, condition, conditionClosure, h, length);
             }
         }
 

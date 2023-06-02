@@ -26,32 +26,29 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.GrowShrink;
 import edu.cmu.tetrad.search.IMbSearch;
 import edu.cmu.tetrad.search.PcMb;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
 public class TestMarkovBlanketSearches {
 
     /**
-     * Simple test using d-separation.
+     * Simple test using n-separation.
      */
     @Test
     public void testSubgraph1() {
         Graph graph = GraphUtils.convert("T-->X,X-->Y,W-->X,W-->Y");
 
-        IndTestDSep test = new IndTestDSep(graph);
+        IndTestMSep test = new IndTestMSep(graph);
 
         IMbSearch search = new GrowShrink(test);
-        List<Node> blanket = search.findMb(test.getVariable("T"));
+        Set<Node> blanket = search.findMb(test.getVariable("T"));
 
-        List<Node> b = new ArrayList<>();
+        Set<Node> b = new HashSet<>();
         b.add(graph.getNode("X"));
         b.add(graph.getNode("W"));
 
@@ -67,9 +64,9 @@ public class TestMarkovBlanketSearches {
                 "T-->C3,PC1a-->C1,PC1b-->C1,PC2a-->C2,PC2b<--C2,PC3a-->C3," +
                 "PC3b-->C3,PC1b-->PC2a,PC1a<--PC3b,U,V");
 
-        IndTestDSep test = new IndTestDSep(graph);
+        IndTestMSep test = new IndTestMSep(graph);
         IMbSearch mbSearch = new GrowShrink(test);
-        List<Node> blanket = mbSearch.findMb(test.getVariable("T"));
+        Set<Node> blanket = mbSearch.findMb(test.getVariable("T"));
 
         List<Node> mbd = GraphUtils.markovBlanketDag(graph.getNode("T"), graph).getNodes();
         mbd.remove(graph.getNode("T"));
@@ -88,7 +85,7 @@ public class TestMarkovBlanketSearches {
 
         Graph dag = new Dag(RandomGraph.randomGraph(nodes1, 0, 10,
                 5, 5, 5, false));
-        IndependenceTest test = new IndTestDSep(dag);
+        IndependenceTest test = new IndTestMSep(dag);
         PcMb search = new PcMb(test, -1);
 
         dag = GraphUtils.replaceNodes(dag, nodes1);
@@ -98,14 +95,14 @@ public class TestMarkovBlanketSearches {
         NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
         for (Node node : nodes) {
-            List<Node> resultNodes = search.findMb(node);
+            Set<Node> resultNodes = search.findMb(node);
 
             Graph trueMb = GraphUtils.markovBlanketDag(node, dag);
-            List<Node> trueNodes = trueMb.getNodes();
+            Set<Node> trueNodes = new HashSet<>(trueMb.getNodes());
             trueNodes.remove(node);
 
-            trueNodes.sort(Comparator.comparing(Node::getName));
-            resultNodes.sort(Comparator.comparing(Node::getName));
+//            trueNodes.sort(Comparator.comparing(Node::getName));
+//            resultNodes.sort(Comparator.comparing(Node::getName));
 
 //            assertEquals(trueNodes, resultNodes);
         }

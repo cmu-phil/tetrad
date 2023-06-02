@@ -38,8 +38,10 @@ import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables. Partial correlations are
@@ -118,20 +120,23 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      *
      * @param xVar the one variable being compared.
      * @param yVar the second variable being compared.
-     * @param z    the list of conditioning variables.
+     * @param _z    the list of conditioning variables.
      * @return True iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node xVar, Node yVar, List<Node> z) {
-        if (z == null) {
+    public IndependenceResult checkIndependence(Node xVar, Node yVar, Set<Node> _z) {
+        if (_z == null) {
             throw new NullPointerException();
         }
 
-        for (Node node : z) {
+        for (Node node : _z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
+
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         int size = z.size();
         int[] zCols = new int[size];
@@ -179,9 +184,9 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
 
         if (Double.isNaN(r)) {
             if (this.verbose) {
-                TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, z, getPValue()));
+                TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, getPValue()));
             }
-            return new IndependenceResult(new IndependenceFact(xVar, yVar, z), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(xVar, yVar, _z), false, Double.NaN, Double.NaN);
         }
 
         if (r > 1) r = 1;
@@ -203,17 +208,17 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         //Two sided
 
         if (this.verbose) {
-            TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, z, getPValue()));
+            TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, getPValue()));
         }
 
         if (this.verbose) {
             if (indFisher) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(xVar, yVar, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(xVar, yVar, _z, getPValue()));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(xVar, yVar, z), indFisher, getPValue());
+        return new IndependenceResult(new IndependenceFact(xVar, yVar, _z), indFisher, getPValue(), getAlpha() - getPValue());
     }
 
     /**
@@ -266,17 +271,6 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      */
     public DataSet getData() {
         return this.dataSet;
-    }
-
-    /**
-     * Returns the score of the data.
-     *
-     * @return A number that's great than zero iff dependent.
-     * @see Fges
-     */
-    @Override
-    public double getScore() {
-        return alpha - getPValue();
     }
 
     /**

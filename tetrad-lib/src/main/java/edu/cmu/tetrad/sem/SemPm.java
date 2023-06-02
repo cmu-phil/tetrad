@@ -288,7 +288,7 @@ public final class SemPm implements Pm, TetradSerializable {
      */
     public Parameter getVarianceParameter(Node node) {
         if (node.getNodeType() == NodeType.ERROR) {
-            node = getGraph().getChildren(node).get(0);
+            node = getGraph().getChildren(node).iterator().next();
         }
 
         for (Parameter parameter : this.parameters) {
@@ -307,13 +307,13 @@ public final class SemPm implements Pm, TetradSerializable {
         if (nodeA.getNodeType() == NodeType.ERROR) {
             List<Node> children = getGraph().getChildren(nodeA);
             if (children == null || children.isEmpty()) return null;
-            nodeA = children.get(0);
+            nodeA = children.iterator().next();
         }
 
         if (nodeB.getNodeType() == NodeType.ERROR) {
             List<Node> children = getGraph().getChildren(nodeB);
             if (children == null || children.isEmpty()) return null;
-            nodeB = children.get(0);
+            nodeB = children.iterator().next();
         }
 
         for (Parameter parameter : this.parameters) {

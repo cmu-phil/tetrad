@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.search.Rfci;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -54,7 +54,7 @@ public final class TestSearchGraph {
      * Tests to see if d separation facts are symmetric.
      */
     @Test
-    public void testDSeparation() {
+    public void testMSeparation() {
         List<Node> nodes1 = new ArrayList<>();
 
         for (int i1 = 0; i1 < 7; i1++) {
@@ -81,14 +81,14 @@ public final class TestSearchGraph {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> z = new LinkedList<>();
+                    Set<Node> z = new HashSet<>();
 
                     for (int value : choice) {
                         z.add(theRest.get(value));
                     }
 
-                    if (graph.isDSeparatedFrom(x, y, z) != graph.isDSeparatedFrom(y, x, z)) {
-                        fail(LogUtilsSearch.independenceFact(x, y, z) + " should have same d-sep result as " +
+                    if (graph.isMSeparatedFrom(x, y, z) != graph.isMSeparatedFrom(y, x, z)) {
+                        fail(LogUtilsSearch.independenceFact(x, y, z) + " should have same m-sep result as " +
                                 LogUtilsSearch.independenceFact(y, x, z));
                     }
                 }
@@ -101,7 +101,7 @@ public final class TestSearchGraph {
      * Tests to see if d separation facts are symmetric.
      */
     @Test
-    public void testDSeparation2() {
+    public void testMSeparation2() {
         List<Node> nodes1 = new ArrayList<>();
 
         for (int i1 = 0; i1 < 7; i1++) {
@@ -126,20 +126,20 @@ public final class TestSearchGraph {
                 int[] choice;
 
                 while ((choice = gen.next()) != null) {
-                    List<Node> z = new LinkedList<>();
+                    Set<Node> z = new HashSet<>();
 
                     for (int value : choice) {
                         z.add(theRest.get(value));
                     }
 
-                    boolean dConnectedTo = graph.paths().isDConnectedTo(x, y, z);
-                    boolean dConnectedTo1 = graph.paths().isDConnectedTo(y, x, z);
+                    boolean mConnectedTo = graph.paths().isMConnectedTo(x, y, z);
+                    boolean mConnectedTo1 = graph.paths().isMConnectedTo(y, x, z);
 
-                    if (dConnectedTo != dConnectedTo1) {
+                    if (mConnectedTo != mConnectedTo1) {
                         System.out.println(x + " d connected to " + y + " given " + z);
                         System.out.println(graph);
-                        System.out.println("dconnectedto = " + dConnectedTo);
-                        System.out.println("dconnecteto1 = " + dConnectedTo1);
+                        System.out.println("mconnectedto = " + mConnectedTo);
+                        System.out.println("mconnecteto1 = " + mConnectedTo1);
                         fail();
                     }
                 }
@@ -149,27 +149,27 @@ public final class TestSearchGraph {
     }
 
     // Trying to trip up the breadth first algorithm.
-    public void testDSeparation3() {
+    public void testMSeparation3() {
         Graph graph = GraphUtils.convert("x-->s1,x-->s2,s1-->s3,s3-->s2,s3&lt;--y");
-        assertTrue(graph.paths().isDSeparatedFrom(graph.getNode("x"), graph.getNode("y"), new ArrayList<>()));
+        assertTrue(graph.paths().isMSeparatedFrom(graph.getNode("x"), graph.getNode("y"), new HashSet<>()));
 
         graph = GraphUtils.convert("1-->2,2&lt;--4,2-->7,2-->3");
-        assertTrue(graph.paths().isDSeparatedFrom(graph.getNode("4"), graph.getNode("1"), new ArrayList<>()));
+        assertTrue(graph.paths().isMSeparatedFrom(graph.getNode("4"), graph.getNode("1"), new HashSet<>()));
 
         graph = GraphUtils.convert("X1-->X5,X1-->X6,X2-->X3,X4-->X6,X5-->X3,X6-->X5,X7-->X3");
-        assertTrue(dConnected(graph, "X2", "X4", "X3", "X6"));
+        assertTrue(mConnected(graph, "X2", "X4", "X3", "X6"));
 
         graph = GraphUtils.convert("X1&lt;--X2,X1&lt;--X3,X2-->X3,X3&lt;--X4");
-        assertTrue(dConnected(graph, "X1", "X4", "X3"));
+        assertTrue(mConnected(graph, "X1", "X4", "X3"));
 
         graph = GraphUtils.convert("X2-->X7,X3-->X2,X5-->X1,X5-->X2,X6-->X1,X7-->X6,X2->X4");
-        assertTrue(dConnected(graph, "X1", "X3"));
+        assertTrue(mConnected(graph, "X1", "X3"));
 
         graph = GraphUtils.convert("1-->3,1-->4,2-->5,4-->5,4-->7,6-->5,7-->3");
-        assertTrue(dConnected(graph, "1", "4"));
+        assertTrue(mConnected(graph, "1", "4"));
     }
 
-    public void rtestDSeparation4() {
+    public void rtestMSeparation4() {
         List<Node> nodes = new ArrayList<>();
 
         for (int i = 0; i < 100; i++) {
@@ -182,7 +182,7 @@ public final class TestSearchGraph {
         long start, stop;
         final int depth = -1;
 
-        IndependenceTest test = new IndTestDSep(graph);
+        IndependenceTest test = new IndTestMSep(graph);
 
         Rfci fci = new Rfci(test);
         Fas fas = new Fas(test);
@@ -192,8 +192,8 @@ public final class TestSearchGraph {
         fci.search(fas, fas.getNodes());
         stop = MillisecondTimes.timeMillis();
 
-        System.out.println("DSEP RFCI");
-        System.out.println("# dsep checks = " + fas.getNumIndependenceTests());
+        System.out.println("MSEP RFCI");
+        System.out.println("# msep checks = " + fas.getNumIndependenceTests());
         System.out.println("Elapsed " + (stop - start));
         System.out.println("Per " + fas.getNumIndependenceTests() / (double) (stop - start));
 
@@ -215,17 +215,17 @@ public final class TestSearchGraph {
         System.out.println("Per " + fas.getNumIndependenceTests() / (double) (stop - start));
     }
 
-    private boolean dConnected(Graph graph, String x, String y, String... z) {
+    private boolean mConnected(Graph graph, String x, String y, String... z) {
         Node _x = graph.getNode(x);
         Node _y = graph.getNode(y);
 
-        List<Node> _z = new ArrayList<>();
+        Set<Node> _z = new HashSet<>();
 
         for (String name : z) {
             _z.add(graph.getNode(name));
         }
 
-        return graph.paths().isDConnectedTo(_x, _y, _z);
+        return graph.paths().isMConnectedTo(_x, _y, _z);
     }
 
     public void testAlternativeGraphs() {

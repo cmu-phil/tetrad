@@ -58,7 +58,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     private double alpha;
     private DataSet dataSet;
     private boolean verbose = true;
-    private double p = Double.NaN;
+//    private double p = Double.NaN;
     private double r = Double.NaN;
 
     //==========================CONSTRUCTORS=============================//
@@ -201,14 +201,14 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         double p = 0.0;
         try {
             p = getPValue(x, y, z);
         } catch (SingularMatrixException e) {
             e.printStackTrace();
             return new IndependenceResult(new IndependenceFact(x, y, z),
-                    false, p);
+                    false, p, alpha - p);
         }
 
         boolean independent = p > this.alpha;
@@ -222,21 +222,21 @@ public final class IndTestFisherZ implements IndependenceTest {
 
         if (Double.isNaN(p)) {
             return new IndependenceResult(new IndependenceFact(x, y, z),
-                    false, p);
+                    false, p, alpha - p);
         } else {
             return new IndependenceResult(new IndependenceFact(x, y, z),
-                    independent, p);
+                    independent, p, alpha - p);
         }
     }
 
-    /**
-     * Returns the probability associated with the most recently computed independence test.
-     *
-     * @return This probability.
-     */
-    public double getPValue() {
-        return this.p;
-    }
+//    /**
+//     * Returns the probability associated with the most recently computed independence test.
+//     *
+//     * @return This probability.
+//     */
+//    public double getPValue() {
+//        return this.p;
+//    }
 
     /**
      * Returns the p-value for x _||_ y | z.
@@ -244,7 +244,7 @@ public final class IndTestFisherZ implements IndependenceTest {
      * @return The p-value.
      * @throws SingularMatrixException If a singularity occurs when invering a matrix.
      */
-    public double getPValue(Node x, Node y, List<Node> z) throws SingularMatrixException {
+    private double getPValue(Node x, Node y, Set<Node> z) throws SingularMatrixException {
         double r;
         int n;
 
@@ -266,7 +266,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         double fisherZ = sqrt(n - 3. - z.size()) * q;
         double p = 2 * (1.0 - this.normal.cumulativeProbability(fisherZ));
 
-        this.p = p;
+//        this.p = p;
         return p;
     }
 
@@ -374,16 +374,6 @@ public final class IndTestFisherZ implements IndependenceTest {
     }
 
     /**
-     * Returns the score for this test, alpha - p. Should be dependent only for positive values.
-     *
-     * @return This score.
-     */
-    @Override
-    public double getScore() {
-        return this.alpha - this.p;//FastMath.abs(fisherZ) - cutoff;
-    }
-
-    /**
      * Returns true iff verbose output should be printed.
      *
      * @return True if so.
@@ -429,7 +419,7 @@ public final class IndTestFisherZ implements IndependenceTest {
             try {
                 Czz.inverse();
             } catch (SingularMatrixException e) {
-                System.out.println(LogUtilsSearch.determinismDetected(z, x));
+                System.out.println(LogUtilsSearch.determinismDetected(new HashSet<>(z), x));
                 return true;
             }
         }
@@ -437,7 +427,10 @@ public final class IndTestFisherZ implements IndependenceTest {
         return false;
     }
 
-    private double partialCorrelation(Node x, Node y, List<Node> z, List<Integer> rows) throws SingularMatrixException {
+    private double partialCorrelation(Node x, Node y, Set<Node> _z, List<Integer> rows) throws SingularMatrixException {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+
         int[] indices = new int[z.size() + 2];
         indices[0] = this.indexMap.get(x.getName());
         indices[1] = this.indexMap.get(y.getName());
@@ -485,7 +478,7 @@ public final class IndTestFisherZ implements IndependenceTest {
         return cov;
     }
 
-    private double getR(Node x, Node y, List<Node> z, List<Integer> rows) {
+    private double getR(Node x, Node y, Set<Node> z, List<Integer> rows) {
         return partialCorrelation(x, y, z, rows);
     }
 

@@ -31,6 +31,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import java.text.NumberFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Checks conditional independence of variable in a continuous data set using a conditional correlation test for the
@@ -113,7 +114,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @return the result.
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
 
         double score = this.cci.isIndependent(x, y, z);
         this.score = score;
@@ -127,7 +128,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
     }
 
     /**
@@ -136,7 +137,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @return The p-value.
      */
     public double getPValue() {
-        return this.cci.getPValue();
+        return this.cci.getPValue(score);
     }
 
     /**
@@ -187,17 +188,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      */
     public DataSet getData() {
         return this.dataSet;
-    }
-
-
-    /**
-     * Returns a number is more positive for stronger judgments of dependence.
-     *
-     * @return This number.
-     */
-    @Override
-    public double getScore() {
-        return this.score;
     }
 
     /**

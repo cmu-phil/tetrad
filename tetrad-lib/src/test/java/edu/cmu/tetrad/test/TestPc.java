@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -164,8 +164,9 @@ public class TestPc {
         Graph graph = GraphUtils.convert(inputGraph);
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
+        IndependenceTest independence = new IndTestMSep(graph);
         Pc pc = new Pc(independence);
+        pc.setVerbose(true);
 
         // Run search
 //        Graph resultGraph = pc.search();
@@ -174,7 +175,8 @@ public class TestPc {
         // Build comparison graph.
         Graph trueGraph = GraphUtils.convert(outputGraph);
 
-        // PrintUtil out problem and graphs.
+        System.out.println("resultGraph = " + resultGraph);
+        System.out.println("trueGraph = " + trueGraph);
 
         resultGraph = GraphUtils.replaceNodes(resultGraph, trueGraph.getNodes());
 
@@ -193,7 +195,7 @@ public class TestPc {
         Graph graph = GraphUtils.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
-        IndependenceTest independence = new IndTestDSep(graph);
+        IndependenceTest independence = new IndTestMSep(graph);
         Pc pc = new Pc(independence);
 
         // Set up search.
@@ -219,7 +221,7 @@ public class TestPc {
         for (int i = 0; i < 2; i++) {
             Graph graph = RandomGraph.randomGraph(100, 0, 100, 100,
                     100, 100, false);
-            IndTestDSep test = new IndTestDSep(graph);
+            IndTestMSep test = new IndTestMSep(graph);
             Pc pc = new Pc(test);
             Graph CPDAG = pc.search();
             Graph CPDAG2 = GraphSearchUtils.cpdagFromDag(graph);
@@ -693,7 +695,7 @@ public class TestPc {
 
 //            Graph comparison = dag;
             Graph comparison = dagToPag(dag);
-//            Graph comparison = new Pc(new IndTestDSep(dag)).search();
+//            Graph comparison = new Pc(new IndTestMSep(dag)).search();
 
             IndTestFisherZ test = new IndTestFisherZ(data, 0.1);
 

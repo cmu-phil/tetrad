@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * A confusion matrix for tails--i.e. TP, FP, TN, FN for counts of arrow endpoints. A true positive arrow is counted for
@@ -45,7 +46,7 @@ public class TailConfusion {
             Edge edge1;
 
             if (edges1.size() == 1) {
-                edge1 = edges1.get(0);
+                edge1 = edges1.iterator().next();
             } else {
                 edge1 = est1.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
@@ -64,7 +65,7 @@ public class TailConfusion {
             Edge edge2;
 
             if (edges2.size() == 1) {
-                edge2 = edges2.get(0);
+                edge2 = edges2.iterator().next();
             } else {
                 edge2 = truth.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
@@ -115,7 +116,7 @@ public class TailConfusion {
             Edge edge1;
 
             if (edges1.size() == 1) {
-                edge1 = edges1.get(0);
+                edge1 = edges1.iterator().next();
             } else {
                 edge1 = est1.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }
@@ -133,7 +134,7 @@ public class TailConfusion {
             Edge edge2;
 
             if (edges2.size() == 1) {
-                edge2 = edges2.get(0);
+                edge2 = edges2.iterator().next();
             } else {
                 edge2 = truth.getDirectedEdge(edge.getNode1(), edge.getNode2());
             }

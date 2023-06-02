@@ -48,7 +48,6 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     private final List<Node> variables;
     private final List<DataSet> dataSets;
     private double alpha;
-    private double pValue = Double.NaN;
     private final int[] rows;
     private final List<Matrix> data;
     private final List<Matrix> ncov;
@@ -94,7 +93,10 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         throw new UnsupportedOperationException();
     }
 
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+
         int[] all = new int[z.size() + 2];
         all[0] = this.variablesMap.get(x);
         all[1] = this.variablesMap.get(y);
@@ -130,25 +132,18 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
 
         Collections.sort(pValues);
         int index = (int) round((1.0 - this.percent) * pValues.size());
-        this.pValue = pValues.get(index);
+        double pValue = pValues.get(index);
 
-        boolean independent = this.pValue > _cutoff;
+        boolean independent = pValue > _cutoff;
 
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
-    }
-
-    /**
-     * @return the probability associated with the most recently computed independence test.
-     */
-    public double getPValue() {
-        return this.pValue;
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, getAlpha() - pValue);
     }
 
     /**
@@ -217,16 +212,11 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         return this.dataSets.get(0).getNumRows();
     }
 
-    @Override
-    public double getScore() {
-        return getPValue();
-    }
-
     /**
      * @return a string representation of this test.
      */
     public String toString() {
-        return "Fisher Z, Percent Independent Percent = " + round(this.pValue * 100);
+        return "Fisher Z, Percent Independent";
     }
 
     public int[] getRows() {

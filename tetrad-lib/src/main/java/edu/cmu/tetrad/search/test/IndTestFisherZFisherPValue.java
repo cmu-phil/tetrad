@@ -101,11 +101,14 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
      *
      * @param x the one variable being compared.
      * @param y the second variable being compared.
-     * @param z the list of conditioning variables.
+     * @param _z the list of conditioning variables.
      * @return True iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        List<Node> z = new ArrayList<>();
+        Collections.sort(z);
+
         int[] all = new int[z.size() + 2];
         all[0] = this.variablesMap.get(x);
         all[1] = this.variablesMap.get(y);
@@ -119,8 +122,8 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
             Matrix _ncov = iCovarianceMatrix.getSelection(all, all);
             Matrix inv = _ncov.inverse();
             double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
-            double _z = sqrt(this.sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
-            double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(_z)));
+            double __z = sqrt(this.sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
+            double pvalue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(__z)));
             pValues.add(pvalue);
         }
 
@@ -140,7 +143,7 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         }
 
         if (numZeros >= pValues.size() / 2)
-            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
 
         if (tf == 0) throw new IllegalArgumentException(
                 "For the Fisher method, all component p values in the calculation may not be zero, " +
@@ -153,28 +156,19 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, this.pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, this.pValue));
             }
         }
 
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
-    }
-
-    /**
-     * Returns the probability associated with the most recently computed independence test.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.pValue;
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, p, getAlpha() - p);
     }
 
     /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      *
-     * @param This alpha.
+     * @param alpha This alpha.
      */
     public void setAlpha(double alpha) {
         if (alpha < 0.0 || alpha > 1.0) {
@@ -232,17 +226,6 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         }
 
         return new CovarianceMatrix(DataUtils.concatenate(_dataSets));
-    }
-
-    /**
-     * Returns a number that is positive when dependence holds and more positive for greater dependence.
-     *
-     * @return This number
-     * @see Fges
-     */
-    @Override
-    public double getScore() {
-        return getPValue();
     }
 
     /**

@@ -1150,7 +1150,7 @@ public final class SemIm implements Im, ISemIm {
 
                 for (Node parent : parents) {
                     if (parent.getNodeType() == NodeType.ERROR) {
-                        Node child = semGraph.getChildren(parent).get(0);
+                        Node child = semGraph.getChildren(parent).iterator().next();
                         double paramValue = getParamValue(child, child);
                         sum += RandomUtil.getInstance().nextNormal(0.0, paramValue);
                     } else {
@@ -1314,7 +1314,7 @@ public final class SemIm implements Im, ISemIm {
 
         for (int i = 0; i < variableNodes.size(); i++) {
             Node node = variableNodes.get(i);
-            List<Node> parents = graph.getParents(node);
+            List<Node> parents = new ArrayList<>(graph.getParents(node));
 
             parents.removeIf(_node -> _node.getNodeType() == NodeType.ERROR);
 

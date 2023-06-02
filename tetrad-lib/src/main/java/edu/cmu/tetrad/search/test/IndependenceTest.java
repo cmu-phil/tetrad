@@ -25,11 +25,13 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Gives an interface that can be implemented by classes that do conditional
@@ -44,7 +46,7 @@ public interface IndependenceTest {
      * @return an IndependenceResult (see).
      * @see IndependenceResult
      */
-    IndependenceResult checkIndependence(Node x, Node y, List<Node> z);
+    IndependenceResult checkIndependence(Node x, Node y, Set<Node> z);
 
     /**
      * @return the list of variables over which this independence checker is capable of determinining independence
@@ -59,13 +61,6 @@ public interface IndependenceTest {
      * @see DataModel
      */
     DataModel getData();
-
-    /**
-     * Return A score that is higher with more likely models.
-     *
-     * @return This score.
-     */
-    double getScore();
 
     /**
      * Sets whether this test will print verbose output.
@@ -106,7 +101,7 @@ public interface IndependenceTest {
      * @see IndependenceResult
      */
     default IndependenceResult checkIndependence(Node x, Node y, Node... z) {
-        List<Node> zList = Arrays.asList(z);
+        Set<Node> zList = GraphUtils.asSet(z);
         return checkIndependence(x, y, zList);
     }
 
@@ -161,7 +156,7 @@ public interface IndependenceTest {
      *
      * @return True if so.
      */
-    default boolean determines(List<Node> z, Node y) {
+    default boolean determines(Set<Node> z, Node y) {
         throw new UnsupportedOperationException("Determines method is not implmeented.");
     }
 

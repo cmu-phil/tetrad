@@ -43,6 +43,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Checks independence of X _||_ Y | Z for variables X and Y and list Z of variables by regressing X on {Y} U Z and
@@ -118,7 +119,7 @@ public final class IndTestRegression implements IndependenceTest {
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node xVar, Node yVar, List<Node> zList) {
+    public IndependenceResult checkIndependence(Node xVar, Node yVar, Set<Node> zList) {
         if (zList == null) {
             throw new NullPointerException();
         }
@@ -143,7 +144,7 @@ public final class IndTestRegression implements IndependenceTest {
             result = regression.regress(xVar, regressors);
         } catch (Exception e) {
             return new IndependenceResult(new IndependenceFact(xVar, yVar, zList),
-                    false, Double.NaN);
+                    false, Double.NaN, Double.NaN);
         }
 
         double p = result.getP()[1];
@@ -166,14 +167,7 @@ public final class IndTestRegression implements IndependenceTest {
         }
 
         return new IndependenceResult(new IndependenceFact(xVar, yVar, zList),
-                independent, p);
-    }
-
-    /**
-     * @return the probability associated with the most recently computed independence test.
-     */
-    public double getPValue() {
-        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(this.fishersZ)));
+                independent, p, getAlpha() - p);
     }
 
     /**
@@ -279,12 +273,6 @@ public final class IndTestRegression implements IndependenceTest {
 
     public DataSet getData() {
         return this.dataSet;
-    }
-
-
-    @Override
-    public double getScore() {
-        return getPValue();
     }
 
     public boolean isVerbose() {

@@ -95,7 +95,7 @@
                 <tocitem text="Conditional Gaussian LRT" target="conditional_gaussian_lrt"/>
                 <tocitem text="Conditional Correlation" target="conditional_correlation"/>
                 <tocitem text="Fisher Z Test" target="fisher_z"/>
-                <tocitem text="D-Separation" target="d_separation"/>
+                <tocitem text="M-Separation" target="d_separation"/>
             </tocitem>
             <tocitem text="Regression" target="regression_box">
                 <tocitem text="Multiple Linear Regression" target="multiple_linear_regression"/>

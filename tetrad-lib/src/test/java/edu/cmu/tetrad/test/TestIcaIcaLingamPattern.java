@@ -126,7 +126,7 @@ public class TestIcaIcaLingamPattern {
 
         for (int i = 0; i < variableNodes.size(); i++) {
             Node node = variableNodes.get(i);
-            List<Node> parents = graph.getParents(node);
+            List<Node> parents = new ArrayList<>(graph.getParents(node));
 
             for (Iterator<Node> j = parents.iterator(); j.hasNext(); ) {
                 Node _node = j.next();

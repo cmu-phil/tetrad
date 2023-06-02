@@ -29,8 +29,10 @@ import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
@@ -83,9 +85,6 @@ public final class GraspFci implements IGraphSearch {
     // True iff verbose output should be printed.
     private boolean verbose;
 
-    // The sample size.
-    int sampleSize;
-
     // The score.
     private final Score score;
     private int numStarts = 1;
@@ -103,7 +102,7 @@ public final class GraspFci implements IGraphSearch {
         if (score == null) {
             throw new NullPointerException();
         }
-        this.sampleSize = score.getSampleSize();
+
         this.score = score;
         this.independenceTest = test;
     }
@@ -127,9 +126,7 @@ public final class GraspFci implements IGraphSearch {
 
         this.graph = new EdgeListGraph(nodes);
 
-//        TeyssierScorer scorer = new TeyssierScorer(independenceTest, score);
-
-        // Run BOSS-tuck to get a CPDAG (like GFCI with FGES)...
+        // Run GRaSP to get a CPDAG (like GFCI with FGES)...
         Grasp alg = new Grasp(independenceTest, score);
         alg.setOrdered(ordered);
         alg.setUseScore(useScore);
@@ -311,7 +308,7 @@ public final class GraspFci implements IGraphSearch {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -328,7 +325,7 @@ public final class GraspFci implements IGraphSearch {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
+                    Set<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);

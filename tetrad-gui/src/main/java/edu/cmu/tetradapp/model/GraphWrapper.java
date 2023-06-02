@@ -25,7 +25,7 @@ import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.expression.VariableExpression;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
@@ -37,10 +37,7 @@ import edu.cmu.tetradapp.util.IonInput;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Holds a tetrad-style graph with all of the constructors necessary for it to
@@ -170,7 +167,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        return new IndTestDSep(getGraph());
+        return new IndTestMSep(getGraph());
     }
 
     public String getName() {
@@ -275,7 +272,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
             List<Edge> edges = imGraph.getEdges(node1, node2);
 
             if (edges.size() == 1) {
-                graph2.addEdge(edges.get(0));
+                graph2.addEdge(edges.iterator().next());
             } else {
                 Expression expression1 = pm.getNodeExpression(node1);
                 Expression expression2 = pm.getNodeExpression(node2);

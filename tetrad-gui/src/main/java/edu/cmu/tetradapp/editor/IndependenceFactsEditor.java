@@ -22,7 +22,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -266,7 +266,7 @@ public class IndependenceFactsEditor extends JPanel {
 
                 for (int i = 0; i < IndependenceFactsEditor.this.indTestProducers.size(); i++) {
                     if (columnIndex == i + 2) {
-                        if (getIndependenceTest(i) instanceof IndTestDSep) {
+                        if (getIndependenceTest(i) instanceof IndTestMSep) {
                             if (independenceResult.getType() == IndependenceResultIndFacts.Type.INDEPENDENT) {
                                 return "D-SEPARATED";
                             } else if (independenceResult.getType() == IndependenceResultIndFacts.Type.DEPENDENT) {
@@ -627,7 +627,7 @@ public class IndependenceFactsEditor extends JPanel {
                         Node x = independenceTest.getVariable(vars4[0]);
                         Node y = independenceTest.getVariable(vars4[1]);
 
-                        List<Node> z = new ArrayList<>();
+                        Set<Node> z = new HashSet<>();
 
                         for (int i = 2; i < vars4.length; i++) {
                             z.add(independenceTest.getVariable(vars4[i]));
@@ -684,7 +684,7 @@ public class IndependenceFactsEditor extends JPanel {
     }
 
 
-    private static String factString(Node x, Node y, List<Node> condSet) {
+    private static String factString(Node x, Node y, Set<Node> condSet) {
         StringBuilder sb = new StringBuilder();
 
         sb.append(x.getName());

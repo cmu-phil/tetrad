@@ -290,12 +290,12 @@ public class FasDci {
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, ppx);
+                        Set<Node> condSet = GraphUtils.asSet(choice, ppx);
 
                         boolean independent = false;
                         boolean known = false;
                         if (this.knownIndependencies != null && this.knownIndependencies.get(x, y) != null) {
-                            for (List<Node> set : this.knownIndependencies.getSet(x, y)) {
+                            for (Set<Node> set : this.knownIndependencies.getSet(x, y)) {
                                 if (set.containsAll(condSet) && set.size() == condSet.size()) {
                                     independent = true;
                                     known = true;
@@ -304,7 +304,7 @@ public class FasDci {
                             }
                         }
                         if (this.knownAssociations != null && this.knownAssociations.get(x, y) != null) {
-                            for (List<Node> set : this.knownAssociations.getSet(x, y)) {
+                            for (Set<Node> set : this.knownAssociations.getSet(x, y)) {
                                 if (set.containsAll(condSet) && set.size() == condSet.size()) {
                                     independent = false;
                                     known = true;
@@ -341,7 +341,7 @@ public class FasDci {
                         if (independent && noEdgeRequired) {
 //                            Edge edge = graph.getEdge(x, y);
                             graph.removeEdge(x, y);
-                            sepset.set(x, y, new LinkedList<>(condSet));
+                            sepset.set(x, y, new HashSet<>(condSet));
                             continue nextEdge;
                         }
                     }

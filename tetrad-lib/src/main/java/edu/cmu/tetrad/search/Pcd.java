@@ -320,7 +320,7 @@ public class Pcd implements IGraphSearch {
         this.unshieldedNoncolliders = new HashSet<>();
 
         for (Node y : this.graph.getNodes()) {
-            List<Node> adj = this.graph.getAdjacentNodes(y);
+            List<Node> adj = new ArrayList<>(this.graph.getAdjacentNodes(y));
 
             if (adj.size() < 2) {
                 continue;
@@ -333,7 +333,7 @@ public class Pcd implements IGraphSearch {
                 Node x = adj.get(choice[0]);
                 Node z = adj.get(choice[1]);
 
-                List<Node> nodes = this.sepsets.get(x, z);
+                Set<Node> nodes = this.sepsets.get(x, z);
 
                 // Note that checking adj(x, z) does not suffice when knowledge
                 // has been specified.

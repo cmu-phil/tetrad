@@ -41,6 +41,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Checks the conditional independence X _||_ Y | S, where S is a set of continuous variable,
@@ -174,10 +175,12 @@ public final class IndTestHsic implements IndependenceTest {
      *
      * @param x the one variable being compared.
      * @param y the second variable being compared.
-     * @param z the list of conditioning variables.
+     * @param _z the list of conditioning variables.
      * @return True iff x _||_ y | z.
      */
-    public IndependenceResult checkIndependence(Node y, Node x, List<Node> z) {
+    public IndependenceResult checkIndependence(Node y, Node x, Set<Node> _z) {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
 
         int m = sampleSize();
 
@@ -334,11 +337,11 @@ public final class IndTestHsic implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, this.pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, this.pValue, alpha - pValue);
     }
 
     /**
@@ -518,15 +521,6 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * Returns the probability associated with the most recently computed independence test.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.pValue;
-    }
-
-    /**
      * Sets the significance level at which independence judgments should be made.
      *
      * @param alpha This alpha.
@@ -610,17 +604,6 @@ public final class IndTestHsic implements IndependenceTest {
      */
     public DataSet getData() {
         return this.dataSet;
-    }
-
-
-    /**
-     * Returns the score for this this test, alpha - p.
-     *
-     * @return This score.
-     */
-    @Override
-    public double getScore() {
-        return alpha - getPValue();
     }
 
     /**

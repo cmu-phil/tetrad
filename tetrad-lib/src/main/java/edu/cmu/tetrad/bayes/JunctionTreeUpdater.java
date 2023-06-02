@@ -25,6 +25,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Jan 21, 2020 11:03:09 AM
@@ -282,9 +283,8 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
                 Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
                 List<Node> parents = updatedGraph.getParents(node);
 
-                for (Object parent1 : parents) {
-                    Node parent = (Node) parent1;
-                    updatedGraph.removeEdge(node, parent);
+                for (Node parent1 : parents) {
+                    updatedGraph.removeEdge(node, parent1);
                 }
             }
         }

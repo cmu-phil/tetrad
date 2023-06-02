@@ -53,8 +53,8 @@ public final class IndTestType implements TetradSerializable {
             new IndTestType("Fisher's Z (Deterministic)", DataType.Continuous);
     public static final IndTestType G_SQUARE = new IndTestType("G Square", DataType.Discrete);
     public static final IndTestType CHI_SQUARE = new IndTestType("Chi Square", DataType.Discrete);
-    public static final IndTestType D_SEPARATION =
-            new IndTestType("D-Separation", DataType.Graph);
+    public static final IndTestType M_SEPARATION =
+            new IndTestType("M-Separation", DataType.Graph);
     public static final IndTestType TIME_SERIES =
             new IndTestType("Time Series", DataType.Continuous);
     public static final IndTestType INDEPENDENCE_FACTS =
@@ -99,7 +99,7 @@ public final class IndTestType implements TetradSerializable {
             IndTestType.LINEAR_REGRESSION, IndTestType.CONDITIONAL_CORRELATION, IndTestType.SEM_BIC, IndTestType.LOGISTIC_REGRESSION,
             IndTestType.MIXED_MLR, IndTestType.FISHER_ZD,
             IndTestType.G_SQUARE, IndTestType.CHI_SQUARE,
-            IndTestType.D_SEPARATION, IndTestType.TIME_SERIES,
+            IndTestType.M_SEPARATION, IndTestType.TIME_SERIES,
 
             IndTestType.INDEPENDENCE_FACTS, IndTestType.POOL_RESIDUALS_FISHER_Z, IndTestType.FISHER, IndTestType.TIPPETT,
 

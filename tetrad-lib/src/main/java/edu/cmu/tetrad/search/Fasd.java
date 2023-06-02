@@ -301,7 +301,7 @@ public class Fasd implements IFas {
     }
 
     private boolean searchAtDepth0(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
-        List<Node> empty = Collections.emptyList();
+        Set<Node> empty = Collections.emptySet();
         for (int i = 0; i < nodes.size(); i++) {
             if (this.verbose) {
                 if ((i + 1) % 100 == 0) this.out.println("Node # " + (i + 1));
@@ -330,7 +330,7 @@ public class Fasd implements IFas {
                     result = test.checkIndependence(x, y, empty);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN);
+                    result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN, Double.NaN);
                 }
 
                 boolean noEdgeRequired =
@@ -423,7 +423,7 @@ public class Fasd implements IFas {
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, ppx);
+                        Set<Node> condSet = GraphUtils.asSet(choice, ppx);
 
                         IndependenceFact fact = new IndependenceFact(x, y, condSet);
                         if (facts.contains(fact)) continue;

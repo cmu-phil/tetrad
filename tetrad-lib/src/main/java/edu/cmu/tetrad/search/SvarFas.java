@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -273,7 +274,7 @@ public class SvarFas implements IFas {
     }
 
     private boolean searchAtDepth0(List<Node> nodes, IndependenceTest test, Map<Node, Set<Node>> adjacencies) {
-        List<Node> empty = Collections.emptyList();
+        Set<Node> empty = Collections.emptySet();
         List<Node> simListX = new ArrayList<>();
         List<Node> simListY = new ArrayList<>();
         for (int i = 0; i < nodes.size(); i++) {
@@ -319,23 +320,23 @@ public class SvarFas implements IFas {
                     }
                 }
 
-                boolean independent;
+                IndependenceResult result;
 
                 try {
                     this.numIndependenceTests++;
-                    independent = test.checkIndependence(x, y, empty).isIndependent();
+                    result = test.checkIndependence(x, y, empty);
                     System.out.println("############# independence given empty set: x,y " + x + ", " +
-                            y + " independence = " + independent);
+                            y + " independence = " + result.isIndependent());
                 } catch (Exception e) {
                     e.printStackTrace();
-                    independent = false;
+                    result = new IndependenceResult(new IndependenceFact(x, y, empty), false, Double.NaN, Double.NaN);
                 }
 
                 boolean noEdgeRequired =
                         this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
 //                getSepsets().setReturnEmptyIfNotSet(false); // added 05.30.2016
-                if (independent && noEdgeRequired) {
+                if (result.isIndependent() && noEdgeRequired) {
 //                    if (!getSepsets().isReturnEmptyIfNotSet()) {
                     getSepsets().set(x, y, empty);
                     System.out.println("$$$$$$$$$$$ look for similar pairs x,y = " + x + ", " + y);
@@ -353,14 +354,13 @@ public class SvarFas implements IFas {
                         System.out.println("$$$$$$$$$$$ found similar pair x,y = " + x1 + ", " + y1);
                         getSepsets().set(x1, y1, empty);
                     }
-//                    }
 
                     TetradLogger.getInstance().log("independencies", LogUtilsSearch.independenceFact(x, y, empty) + " score = " +
-                            this.nf.format(test.getScore()));
+                            this.nf.format(result.getScore()));
 
                     if (this.verbose) {
                         this.out.println(LogUtilsSearch.independenceFact(x, y, empty) + " score = " +
-                                this.nf.format(test.getScore()));
+                                this.nf.format(result.getScore()));
                     }
 
                 } else if (!forbiddenEdge(x, y)) {
@@ -387,7 +387,7 @@ public class SvarFas implements IFas {
 
                     if (this.verbose) {
                         TetradLogger.getInstance().log("dependencies", LogUtilsSearch.independenceFact(x, y, empty) + " score = " +
-                                this.nf.format(test.getScore()));
+                                this.nf.format(result.getScore()));
                     }
                 }
             }
@@ -451,7 +451,7 @@ public class SvarFas implements IFas {
                     int[] choice;
 
                     while ((choice = cg.next()) != null) {
-                        List<Node> condSet = GraphUtils.asList(choice, ppx);
+                        Set<Node> condSet = GraphUtils.asSet(choice, ppx);
 
                         boolean independent;
 
@@ -505,7 +505,7 @@ public class SvarFas implements IFas {
     }
 
     // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
-    private void removeSimilarPairs(Map<Node, Set<Node>> adjacencies, IndependenceTest test, Node x, Node y, List<Node> condSet) {
+    private void removeSimilarPairs(Map<Node, Set<Node>> adjacencies, IndependenceTest test, Node x, Node y, Set<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");
         System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);
         if (x.getName().equals("time") || y.getName().equals("time")) {
@@ -564,7 +564,7 @@ public class SvarFas implements IFas {
                 adjacencies.get(x1).remove(y1);
                 adjacencies.get(y1).remove(x1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
-                List<Node> condSetAB = new ArrayList<>();
+                Set<Node> condSetAB = new HashSet<>();
                 for (Node tempNode : condSet) {
                     int ind_temptier = this.knowledge.isInWhichTier(tempNode);
                     List<String> temptier = this.knowledge.getTier(ind_temptier);
@@ -604,7 +604,7 @@ public class SvarFas implements IFas {
                 adjacencies.get(x1).remove(y1);
                 adjacencies.get(y1).remove(x1);
                 System.out.println("removed edge between " + x1 + " and " + y1 + " because of structure knowledge");
-                List<Node> condSetAB = new ArrayList<>();
+                Set<Node> condSetAB = new HashSet<>();
                 for (Node tempNode : condSet) {
                     int ind_temptier = this.knowledge.isInWhichTier(tempNode);
                     List<String> temptier = this.knowledge.getTier(ind_temptier);

@@ -4047,7 +4047,7 @@ tabs will not appear.</p> -->
 
     <p><a href="#penaltyDiscount">penaltyDiscount</a></p>
 
-    <h3>Kim et al. Scores</h3>
+    <h3>GIC Scores</h3>
 
     <div id="kim-bic-tests"><p>
         This is a set of generalized information criterion (GIC) scores, used as tests,
@@ -4131,16 +4131,19 @@ tabs will not appear.</p> -->
 
     <p><a href="#alpha">alpha</a></p>
 
-    <h3>D-Separation Test</h3>
+    <h3>M-Separation Test</h3>
 
-    <div id="d-sep-test"><p> This is the usual test of d-separation, a
+    <div id="m-sep-test"><p> This is the usual test of m-separation, a
         property of graphs, not distributions. It's not really a test, but it can
         be used in place of a test of the true graph is known. This is a way to
         find out, for constraint-based algorithms, or even for some score-based
         algorithms like FGES, what answer the algorithm would give if all of the
         statistical decisions made are correct. Just draw an edge from the true
-        graph to the algorithm--the d-separation option will appear, and you can
-        then just run the search as usual. </p></div>
+        graph to the algorithm--the m-separation option will appear, and you can
+        then just run the search as usual. Note that D-Separation and M-separation
+        use the same algorithm; we uniformly call the algorithm "M-Separation" for
+        clarity. D-Separation is M-Separation applied to DAGs.
+    </p></div>
 
     <h3>Discrete BIC Test</h3>
 
@@ -4343,9 +4346,9 @@ tabs will not appear.</p> -->
     <!--
     href="#numDependenceSpotChecks">numDependenceSpotChecks</a></p>-->
 
-    <h3>D-separation Score</h3>
+    <h3>M-separation Score</h3>
 
-    <div id="d-sep-score"><p> This uses d-separation to make something
+    <div id="m-sep-score"><p> This uses m-separation to make something
         that acts as a score if you know the true graph. A score in Tetrad, for
         FGES, say, is a function that for X and Y conditional on Z, returns a
         negative number if X _||_ Y | Z and a positive number otherwise. So to
@@ -4394,7 +4397,7 @@ tabs will not appear.</p> -->
         recommended depending on how many variables there are per sample. </p>
     </div>
 
-    <h3>Kim et al. Scores</h3>
+    <h3>GIC Scores</h3>
 
     <div id="kim-scores"><p>
         This is a set of generalized information criterion (GIC) scores based on
@@ -4428,12 +4431,12 @@ tabs will not appear.</p> -->
     </p>
     </div>
 
-    <h3>MAG SEM BIC Score</h3>
+<!--    <h3>MAG SEM BIC Score</h3>-->
 
-    <div id="mag-sem-bic-score"><p>
-        This gives a BIC score for a Mixed Ancestral Graph (MAG).
-    </p>
-    </div>
+<!--    <div id="mag-sem-bic-score"><p>-->
+<!--        This gives a BIC score for a Mixed Ancestral Graph (MAG).-->
+<!--    </p>-->
+<!--    </div>-->
 
     <div id="parameters"><h2>Search Parameters</h2>
 
@@ -7331,25 +7334,25 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="orientTowardDConnections">orientTowardDConnections</h3>
+            id="orientTowardMConnections">orientTowardMConnections</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="orientTowardDConnections_short_desc">Yes if Richardson's step C
+                    id="orientTowardMConnections_short_desc">Yes if Richardson's step C
         (orient toward d-connection) should be used</span></li>
             <li>Long
-                Description: <span id="orientTowardDConnections_long_desc"> Please
+                Description: <span id="orientTowardMConnections_long_desc"> Please
         see the description of this algorithm in Thomas Richardson and Peter
         Spirtes in Chapter 7 of Computation, Causation, & Discovery by
         Glymour and Cooper eds.</span></li>
             <li>Default Value: <span
-                    id="orientTowardDConnections_default_value">true</span></li>
+                    id="orientTowardMConnections_default_value">true</span></li>
             <li>Lower Bound: <span
-                    id="orientTowardDConnections_lower_bound"></span></li>
+                    id="orientTowardMConnections_lower_bound"></span></li>
             <li>Upper
-                Bound: <span id="orientTowardDConnections_upper_bound"></span></li>
+                Bound: <span id="orientTowardMConnections_upper_bound"></span></li>
             <li>Value Type: <span
-                    id="orientTowardDConnections_value_type">Boolean</span></li>
+                    id="orientTowardMConnections_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -7633,24 +7636,24 @@ tabs will not appear.</p> -->
         </ul>
 
         <h3 class="parameter_description"
-            id="possibleDsepDone">possibleDsepDone</h3>
+            id="possibleMsepDone">possibleMsepDone</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="possibleDsepDone_short_desc">Yes if the possible dsep search
+                    id="possibleMsepDone_short_desc">Yes if the possible msep search
         should be done</span></li>
             <li>Long Description: <span
-                    id="possibleDsepDone_long_desc"> This algorithm has a possible d-sep
+                    id="possibleMsepDone_long_desc"> This algorithm has a possible m-sep
         path search, which can be time-consuming. See Spirtes, Glymour, and
         Scheines (2000) for details.</span></li>
             <li>Default Value: <span
-                    id="possibleDsepDone_default_value">true</span></li>
+                    id="possibleMsepDone_default_value">true</span></li>
             <li>Lower Bound:
-                <span id="possibleDsepDone_lower_bound"></span></li>
+                <span id="possibleMsepDone_lower_bound"></span></li>
             <li>Upper Bound:
-                <span id="possibleDsepDone_upper_bound"></span></li>
+                <span id="possibleMsepDone_upper_bound"></span></li>
             <li>Value Type:
-                <span id="possibleDsepDone_value_type">Boolean</span></li>
+                <span id="possibleMsepDone_value_type">Boolean</span></li>
         </ul>
 
         <h3 class="parameter_description" id="probCycle">probCycle</h3>

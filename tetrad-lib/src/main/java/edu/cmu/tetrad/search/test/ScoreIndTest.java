@@ -34,7 +34,9 @@ import edu.cmu.tetrad.util.TetradLogger;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Gives a way of interpreting a score as an independence test. The contract is that
@@ -76,15 +78,12 @@ public class ScoreIndTest implements IndependenceTest {
      * @throws RuntimeException if a matrix singularity is encountered.
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         List<Node> z1 = new ArrayList<>(z);
+        Collections.sort(z1);
 
-        if (determines(z1, x)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());
-        ;
-        if (determines(z1, y)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());
-        ;
-
-        double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y), varIndices(z));
+        double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y),
+                varIndices(z1));
         this.bump = v;
 
         boolean independent = v <= 0;
@@ -97,17 +96,7 @@ public class ScoreIndTest implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, getPValue());
-    }
-
-    /**
-     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for this test.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.bump;
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, bump, bump);
     }
 
     /**
@@ -192,15 +181,6 @@ public class ScoreIndTest implements IndependenceTest {
      */
     public int getSampleSize() {
         return this.score.getSampleSize();
-    }
-
-    /**
-     * Returns A score that is higher with more likely models.
-     *
-     * @return This score.
-     */
-    public double getScore() {
-        return this.bump;
     }
 
     /**

@@ -30,8 +30,10 @@ import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
 
@@ -83,7 +85,7 @@ public final class GFci implements IGraphSearch {
     private boolean faithfulnessAssumed = true;
     private final Score score;
     private boolean doDiscriminatingPathRule = true;
-    private boolean possibleDsepSearchDone = true;
+    private boolean possibleMsepSearchDone = true;
     private int depth = -1;
 
     //============================CONSTRUCTORS============================//
@@ -133,8 +135,8 @@ public final class GFci implements IGraphSearch {
 
         modifiedR0(fgesGraph, sepsets);
 
-        if (this.possibleDsepSearchDone) {
-            graph.paths().removeByPossibleDsep(independenceTest, null);
+        if (this.possibleMsepSearchDone) {
+            graph.paths().removeByPossibleMsep(independenceTest, null);
         }
 
         FciOrient fciOrient = new FciOrient(sepsets);
@@ -259,16 +261,16 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the possible d-sep search should be done.
+     * Sets whether the possible m-sep search should be done.
      *
-     * @param possibleDsepSearchDone True if so.
+     * @param possibleMsepSearchDone True if so.
      */
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
+    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
+        this.possibleMsepSearchDone = possibleMsepSearchDone;
     }
 
     /**
-     * Sets the depth of the search for the possible d-sep search.
+     * Sets the depth of the search for the possible m-sep search.
      *
      * @param depth This depth.
      */
@@ -287,7 +289,7 @@ public final class GFci implements IGraphSearch {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -304,7 +306,7 @@ public final class GFci implements IGraphSearch {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
-                    List<Node> sepset = sepsets.getSepset(a, c);
+                    Set<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);

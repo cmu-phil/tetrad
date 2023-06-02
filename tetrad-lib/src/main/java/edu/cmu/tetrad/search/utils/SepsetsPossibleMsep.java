@@ -32,16 +32,17 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Provides a sepset producer using conditional independence tests to generate
- * the Sepset map, for the case where possible dsep sets are required.</p>
+ * the Sepset map, for the case where possible msep sets are required.</p>
  *
  * @author josephramsey
  * @see SepsetProducer
  * @see SepsetMap
  */
-public class SepsetsPossibleDsep implements SepsetProducer {
+public class SepsetsPossibleMsep implements SepsetProducer {
     private final Graph graph;
     private final int maxPathLength;
     private final Knowledge knowledge;
@@ -50,7 +51,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     private final IndependenceTest test;
     private IndependenceResult result;
 
-    public SepsetsPossibleDsep(Graph graph, IndependenceTest test, Knowledge knowledge,
+    public SepsetsPossibleMsep(Graph graph, IndependenceTest test, Knowledge knowledge,
                                int depth, int maxPathLength) {
         this.graph = graph;
         this.test = test;
@@ -62,8 +63,8 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     /**
      * Pick out the sepset from among adj(i) or adj(k) with the highest p value.
      */
-    public List<Node> getSepset(Node i, Node k) {
-        List<Node> condSet = getCondSet(i, k, this.maxPathLength);
+    public Set<Node> getSepset(Node i, Node k) {
+        Set<Node> condSet = getCondSet(i, k, this.maxPathLength);
 
         if (condSet == null) {
             condSet = getCondSet(k, i, this.maxPathLength);
@@ -73,7 +74,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     }
 
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        List<Node> sepset = getSepset(i, k);
+        Set<Node> sepset = getSepset(i, k);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -96,20 +97,20 @@ public class SepsetsPossibleDsep implements SepsetProducer {
     }
 
     @Override
-    public boolean isIndependent(Node d, Node c, List<Node> path) {
+    public boolean isIndependent(Node d, Node c, Set<Node> path) {
         IndependenceResult result = this.test.checkIndependence(d, c, path);
         return result.isIndependent();
     }
 
-    private List<Node> getCondSet(Node node1, Node node2, int maxPathLength) {
-        List<Node> possibleDsepSet = getPossibleDsep(node1, node2, maxPathLength);
-        List<Node> possibleDsep = new ArrayList<>(possibleDsepSet);
+    private Set<Node> getCondSet(Node node1, Node node2, int maxPathLength) {
+        List<Node> possibleMsepSet = getPossibleMsep(node1, node2, maxPathLength);
+        List<Node> possibleMsep = new ArrayList<>(possibleMsepSet);
         boolean noEdgeRequired = this.knowledge.noEdgeRequired(node1.getName(), node2.getName());
 
         int _depth = this.depth == -1 ? 1000 : this.depth;
-        _depth = FastMath.min(_depth, possibleDsep.size());
+        _depth = FastMath.min(_depth, possibleMsep.size());
 
-        SublistGenerator cg = new SublistGenerator(possibleDsep.size(), _depth);
+        SublistGenerator cg = new SublistGenerator(possibleMsep.size(), _depth);
         int[] choice;
 
         while ((choice = cg.next()) != null) {
@@ -119,7 +120,7 @@ public class SepsetsPossibleDsep implements SepsetProducer {
 
             if (choice.length < 1) continue;
 
-            List<Node> condSet = GraphUtils.asList(choice, possibleDsep);
+            Set<Node> condSet = GraphUtils.asSet(choice, possibleMsep);
 
             // check against bk knowledge added by DMalinsky 07/24/17 **/
             //  if (knowledge.isForbidden(node1.getName(), node2.getName())) continue;
@@ -144,14 +145,14 @@ public class SepsetsPossibleDsep implements SepsetProducer {
         return null;
     }
 
-    private List<Node> getPossibleDsep(Node x, Node y, int maxPathLength) {
-        List<Node> dsep = this.graph.paths().possibleDsep(x, y, maxPathLength);
+    private List<Node> getPossibleMsep(Node x, Node y, int maxPathLength) {
+        List<Node> msep = this.graph.paths().possibleMsep(x, y, maxPathLength);
 
         if (this.verbose) {
-            System.out.println("Possible-D-Sep(" + x + ", " + y + ") = " + dsep);
+            System.out.println("Possible-M-Sep(" + x + ", " + y + ") = " + msep);
         }
 
-        return dsep;
+        return msep;
     }
 }
 

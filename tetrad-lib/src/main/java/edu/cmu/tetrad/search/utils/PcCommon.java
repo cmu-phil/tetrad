@@ -440,7 +440,7 @@ public final class PcCommon implements IGraphSearch {
         List<Node> nodes = this.graph.getNodes();
 
         for (Node y : nodes) {
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(y);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(y));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -461,7 +461,7 @@ public final class PcCommon implements IGraphSearch {
                     continue;
                 }
 
-                List<List<Node>> sepsetsxz = getSepsets(x, z, this.graph);
+                Set<Set<Node>> sepsetsxz = getSepsets(x, z, this.graph);
 
                 if (isColliderSepset(y, sepsetsxz)) {
                     if (colliderAllowed(x, y, z, knowledge)) {
@@ -482,10 +482,10 @@ public final class PcCommon implements IGraphSearch {
         TetradLogger.getInstance().log("info", "Finishing Collider Orientation.");
     }
 
-    private List<List<Node>> getSepsets(Node i, Node k, Graph g) {
-        List<Node> adji = g.getAdjacentNodes(i);
-        List<Node> adjk = g.getAdjacentNodes(k);
-        List<List<Node>> sepsets = new ArrayList<>();
+    private Set<Set<Node>> getSepsets(Node i, Node k, Graph g) {
+        List<Node> adji = new ArrayList<>(g.getAdjacentNodes(i));
+        List<Node> adjk = new ArrayList<>(g.getAdjacentNodes(k));
+        Set<Set<Node>> sepsets = new HashSet<>();
 
         for (int d = 0; d <= FastMath.max(adji.size(), adjk.size()); d++) {
             if (adji.size() >= 2 && d <= adji.size()) {
@@ -497,7 +497,7 @@ public final class PcCommon implements IGraphSearch {
                         break;
                     }
 
-                    List<Node> v = GraphUtils.asList(choice, adji);
+                    Set<Node> v = GraphUtils.asSet(choice, adji);
                     if (getIndependenceTest().checkIndependence(i, k, v).isIndependent()) sepsets.add(v);
                 }
             }
@@ -511,7 +511,7 @@ public final class PcCommon implements IGraphSearch {
                         break;
                     }
 
-                    List<Node> v = GraphUtils.asList(choice, adjk);
+                    Set<Node> v = GraphUtils.asSet(choice, adjk);
                     if (getIndependenceTest().checkIndependence(i, k, v).isIndependent()) sepsets.add(v);
                 }
             }
@@ -520,20 +520,20 @@ public final class PcCommon implements IGraphSearch {
         return sepsets;
     }
 
-    private boolean isColliderSepset(Node j, List<List<Node>> sepsets) {
+    private boolean isColliderSepset(Node j, Set<Set<Node>> sepsets) {
         if (sepsets.isEmpty()) return false;
 
-        for (List<Node> sepset : sepsets) {
+        for (Set<Node> sepset : sepsets) {
             if (sepset.contains(j)) return false;
         }
 
         return true;
     }
 
-    private boolean isNoncolliderSepset(Node j, List<List<Node>> sepsets) {
+    private boolean isNoncolliderSepset(Node j, Set<Set<Node>> sepsets) {
         if (sepsets.isEmpty()) return false;
 
-        for (List<Node> sepset : sepsets) {
+        for (Set<Node> sepset : sepsets) {
             if (!sepset.contains(j)) return false;
         }
 
@@ -569,7 +569,7 @@ public final class PcCommon implements IGraphSearch {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -591,7 +591,7 @@ public final class PcCommon implements IGraphSearch {
                     continue;
                 }
 
-                List<Node> sepset = set.get(a, c);
+                Set<Node> sepset = set.get(a, c);
 
                 List<Node> s2 = new ArrayList<>(sepset);
                 if (!s2.contains(b)) s2.add(b);

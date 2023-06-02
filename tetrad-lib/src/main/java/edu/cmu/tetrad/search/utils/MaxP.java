@@ -63,7 +63,6 @@ public final class MaxP {
      * Adds colliders to the given graph using the max P rule.
      *
      * @param graph The graph to orient.
-     * @see edu.cmu.tetrad.search.PcMax
      */
     public synchronized void orient(Graph graph) {
         addColliders(graph);
@@ -141,7 +140,7 @@ public final class MaxP {
     }
 
     private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+        List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
         if (adjacentNodes.size() < 2) {
             return;
@@ -176,8 +175,8 @@ public final class MaxP {
     }
 
     private void testColliderMaxP(Graph graph, Map<Triple, Double> scores, Node a, Node b, Node c) {
-        List<Node> adja = graph.getAdjacentNodes(a);
-        List<Node> adjc = graph.getAdjacentNodes(c);
+        List<Node> adja = new ArrayList<>(graph.getAdjacentNodes(a));
+        List<Node> adjc = new ArrayList<>(graph.getAdjacentNodes(c));
         adja.remove(c);
         adjc.remove(a);
 
@@ -187,7 +186,7 @@ public final class MaxP {
         }
 
         double p = 0;
-        List<Node> S = null;
+        Set<Node> S = null;
 
         SublistGenerator cg1 = new SublistGenerator(adja.size(), this.depth);
         int[] comb2;
@@ -197,7 +196,7 @@ public final class MaxP {
                 break;
             }
 
-            List<Node> s = GraphUtils.asList(comb2, adja);
+            Set<Node> s = GraphUtils.asSet(comb2, adja);
 
             IndependenceResult result = this.independenceTest.checkIndependence(a, c, s);
             double _p = result.getPValue();
@@ -216,7 +215,7 @@ public final class MaxP {
                 break;
             }
 
-            List<Node> s = GraphUtils.asList(comb3, adjc);
+            Set<Node> s = GraphUtils.asSet(comb3, adjc);
 
             IndependenceResult result = this.independenceTest.checkIndependence(a, c, s);
             double _p = result.getPValue();
@@ -241,10 +240,10 @@ public final class MaxP {
             return;
         }
 
-        this.independenceTest.checkIndependence(a, c);
-        double s1 = this.independenceTest.getScore();
-        this.independenceTest.checkIndependence(a, c, b);
-        double s2 = this.independenceTest.getScore();
+        IndependenceResult result1 =  this.independenceTest.checkIndependence(a, c);
+        double s1 = result1.getScore();
+        IndependenceResult result2 = this.independenceTest.checkIndependence(a, c, b);
+        double s2 = result2.getScore();
 
         boolean mycollider2 = s2 > s1;
 

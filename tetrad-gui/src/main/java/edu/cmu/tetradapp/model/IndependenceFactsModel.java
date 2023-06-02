@@ -103,7 +103,7 @@ public class IndependenceFactsModel implements KnowledgeBoxInput {
                 }
             }
 
-            List<Node> z = new ArrayList<>();
+            Set<Node> z = new HashSet<>();
 
             for (int i = 2; i < tokens.length; i++) {
                 z.add(nodes.get(tokens[i]));

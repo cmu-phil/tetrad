@@ -281,7 +281,7 @@ public class TestPurify {
         List<List<Node>> clustering = new ArrayList<>();
 
         for (Node node : latents) {
-            List<Node> adj = graph.getAdjacentNodes(node);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(node));
             adj.removeAll(latents);
 
             clustering.add(adj);

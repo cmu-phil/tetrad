@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestDSep;
+import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -1156,7 +1156,7 @@ public class PerformanceTests {
         final double penaltyDiscount = 3.0;
         final int depth = 3;
         final int maxPathLength = 3;
-        final boolean possibleDsepDone = true;
+        final boolean possibleMsepDone = true;
         final boolean completeRuleSetUsed = false;
         final boolean faithfulnessAssumed = true;
 
@@ -1168,9 +1168,9 @@ public class PerformanceTests {
         this.out.println("Alpha = " + alpha);
         this.out.println("Penalty discount = " + penaltyDiscount);
         this.out.println("Depth = " + depth);
-        this.out.println("Maximum reachable path length for dsep search and discriminating undirectedPaths = " + maxPathLength);
+        this.out.println("Maximum reachable path length for msep search and discriminating undirectedPaths = " + maxPathLength);
         this.out.println("Num additional latent common causes = " + numLatents);
-        this.out.println("Possible Dsep Done = " + possibleDsepDone);
+        this.out.println("Possible Msep Done = " + possibleMsepDone);
         this.out.println("Complete Rule Set Used = " + completeRuleSetUsed);
         this.out.println();
 
@@ -1241,7 +1241,7 @@ public class PerformanceTests {
             GFci fci = new GFci(independenceTest, score);
             fci.setMaxDegree(depth);
             fci.setMaxPathLength(maxPathLength);
-//            fci.setPossibleDsepSearchDone(possibleDsepDone);
+//            fci.setPossibleNsepSearchDone(possibleMsepDone);
             fci.setCompleteRuleSetUsed(completeRuleSetUsed);
             fci.setFaithfulnessAssumed(faithfulnessAssumed);
             estPag = fci.search();
@@ -1327,7 +1327,7 @@ public class PerformanceTests {
 
         System.out.println("Graph done");
 
-        IndTestDSep test = new IndTestDSep(dag, true);
+        IndTestMSep test = new IndTestMSep(dag, true);
         Graph left = new Pc(test).search();
 
         System.out.println("PC graph = " + left);
@@ -1339,7 +1339,7 @@ public class PerformanceTests {
         top = GraphUtils.replaceNodes(top, left.getNodes());
 
         System.out.println("True DAG = " + dag);
-        System.out.println("FCI DAG with dsep = " + left);
+        System.out.println("FCI DAG with msep = " + left);
         System.out.println("DAG to PAG_of_the_true_DAG = " + top);
 
         System.out.println("Correcting nodes");
@@ -1386,7 +1386,7 @@ public class PerformanceTests {
 
         System.out.println("First FAS graph = " + left);
 
-        Pc pc2 = new Pc(new IndTestDSep(dag));
+        Pc pc2 = new Pc(new IndTestMSep(dag));
         pc2.setStable(true);
         Graph top = pc2.search();
 
@@ -1928,9 +1928,7 @@ public class PerformanceTests {
 
             int degree = adj.size();
 
-            if (degreeCounts.get(degree) == null) {
-                degreeCounts.put(degree, 0);
-            }
+            degreeCounts.putIfAbsent(degree, 0);
 
             degreeCounts.put(degree, degreeCounts.get(degree) + 1);
         }

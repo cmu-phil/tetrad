@@ -6,7 +6,6 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.score.GicScores;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -20,12 +19,12 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "Kim et al. Scores",
-        command = "kim-scores",
+        name = "GIC Scores",
+        command = "gic-scores",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
 @LinearGaussian
-public class KimEtAlScores implements ScoreWrapper {
+public class GicScores implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
     private DataModel dataSet;
@@ -34,37 +33,37 @@ public class KimEtAlScores implements ScoreWrapper {
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
 
-        GicScores score;
+        edu.cmu.tetrad.search.score.GicScores score;
 
         if (dataSet instanceof DataSet) {
-            score = new GicScores((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.GicScores((DataSet) this.dataSet);
         } else if (dataSet instanceof ICovarianceMatrix) {
-            score = new GicScores((ICovarianceMatrix) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.GicScores((ICovarianceMatrix) this.dataSet);
         } else {
             throw new IllegalArgumentException("Expecting either a dataset or a covariance matrix.");
         }
 
         int anInt = parameters.getInt((Params.SEM_GIC_RULE));
-        GicScores.RuleType ruleType;
+        edu.cmu.tetrad.search.score.GicScores.RuleType ruleType;
 
         switch (anInt) {
             case 1:
-                ruleType = GicScores.RuleType.BIC;
+                ruleType = edu.cmu.tetrad.search.score.GicScores.RuleType.BIC;
                 break;
             case 2:
-                ruleType = GicScores.RuleType.GIC2;
+                ruleType = edu.cmu.tetrad.search.score.GicScores.RuleType.GIC2;
                 break;
             case 3:
-                ruleType = GicScores.RuleType.RIC;
+                ruleType = edu.cmu.tetrad.search.score.GicScores.RuleType.RIC;
                 break;
             case 4:
-                ruleType = GicScores.RuleType.RICc;
+                ruleType = edu.cmu.tetrad.search.score.GicScores.RuleType.RICc;
                 break;
             case 5:
-                ruleType = GicScores.RuleType.GIC5;
+                ruleType = edu.cmu.tetrad.search.score.GicScores.RuleType.GIC5;
                 break;
             case 6:
-                ruleType = GicScores.RuleType.GIC6;
+                ruleType = edu.cmu.tetrad.search.score.GicScores.RuleType.GIC6;
                 break;
             default:
                 throw new IllegalArgumentException("Unrecognized rule type: " + anInt);
@@ -78,7 +77,7 @@ public class KimEtAlScores implements ScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "Kim et al. Scores";
+        return "GIC Scores";
     }
 
     @Override

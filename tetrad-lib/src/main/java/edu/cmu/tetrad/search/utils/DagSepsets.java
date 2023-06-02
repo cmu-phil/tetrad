@@ -27,6 +27,7 @@ import edu.cmu.tetrad.graph.Node;
 
 import javax.help.UnsupportedOperationException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Determines sepsets, collider, and noncolliders by examining d-separation facts in a DAG.
@@ -53,7 +54,7 @@ public class DagSepsets implements SepsetProducer {
      * @return The list of sepsets for {a, b}.
      */
     @Override
-    public List<Node> getSepset(Node a, Node b) {
+    public Set<Node> getSepset(Node a, Node b) {
         return this.dag.getSepset(a, b);
     }
 
@@ -67,7 +68,7 @@ public class DagSepsets implements SepsetProducer {
      */
     @Override
     public boolean isUnshieldedCollider(Node i, Node j, Node k) {
-        List<Node> sepset = this.dag.getSepset(i, k);
+        Set<Node> sepset = this.dag.getSepset(i, k);
         return sepset != null && !sepset.contains(j);
     }
 
@@ -83,7 +84,7 @@ public class DagSepsets implements SepsetProducer {
     }
 
     /**
-     * Returns true just in case dsep(a, b | c) in the DAG. Don't let the name isIndependent fool you; this is a
+     * Returns true just in case msep(a, b | c) in the DAG. Don't let the name isIndependent fool you; this is a
      * d-separation method. We only use the name isIndependent so that this can be used in place of an independence
      * check.
      *
@@ -93,8 +94,8 @@ public class DagSepsets implements SepsetProducer {
      * @return True if the condition holds.
      */
     @Override
-    public boolean isIndependent(Node a, Node b, List<Node> c) {
-        return this.dag.paths().isDSeparatedFrom(a, b, c);
+    public boolean isIndependent(Node a, Node b, Set<Node> c) {
+        return this.dag.paths().isMSeparatedFrom(a, b, c);
     }
 
     /**

@@ -13,7 +13,6 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -88,7 +87,7 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             search.setKnowledge(this.knowledge);
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
-            search.setPossibleDsepSearchDone(parameters.getBoolean(Params.POSSIBLE_DSEP_DONE));
+            search.setPossibleMsepSearchDone(parameters.getBoolean(Params.POSSIBLE_MSEP_DONE));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
 //            search.setPcHeuristicType(pcHeuristicType);
@@ -130,7 +129,7 @@ public class Fci implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         parameters.add(Params.DEPTH);
         parameters.add(Params.STABLE_FAS);
         parameters.add(Params.MAX_PATH_LENGTH);
-        parameters.add(Params.POSSIBLE_DSEP_DONE);
+        parameters.add(Params.POSSIBLE_MSEP_DONE);
         parameters.add(Params.DO_DISCRIMINATING_PATH_RULE);
         parameters.add(Params.COMPLETE_RULE_SET_USED);
         parameters.add(Params.TIME_LAG);

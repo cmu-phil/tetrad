@@ -28,6 +28,7 @@ import edu.cmu.tetrad.graph.Node;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Performs updating operations on a BayesIm by summing over cells in the joint probability table for the BayesIm. Quite

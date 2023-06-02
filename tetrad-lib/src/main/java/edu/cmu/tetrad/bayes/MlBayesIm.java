@@ -1193,7 +1193,7 @@ public final class MlBayesIm implements BayesIm {
         // Set up parents array.  Should store the parents of
         // each node as ints in a particular order.
         Graph graph = getBayesPm().getDag();
-        List<Node> parentList = graph.getParents(node);
+        List<Node> parentList = new ArrayList<>(graph.getParents(node));
         int[] parentArray = new int[parentList.size()];
 
         for (int i = 0; i < parentList.size(); i++) {

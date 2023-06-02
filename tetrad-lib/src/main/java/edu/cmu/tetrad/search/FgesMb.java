@@ -209,7 +209,7 @@ public final class FgesMb {
 
         this.mode = Mode.heuristicSpeedup;
 
-        calcDConnections(targets);
+        calcMConnections(targets);
 
         // Do forward search.
         fes();
@@ -431,7 +431,7 @@ public final class FgesMb {
     }
 
 
-    private void calcDConnections(List<Node> targets) {
+    private void calcMConnections(List<Node> targets) {
         this.sortedArrows = new ConcurrentSkipListSet<>();
         this.lookupArrows = new ConcurrentHashMap<>();
         this.neighbors = new ConcurrentHashMap<>();
@@ -926,7 +926,7 @@ public final class FgesMb {
                             adj = new ArrayList<>(g);
                         } else if (FgesMb.this.mode == Mode.allowUnfaithfulness) {
                             HashSet<Node> D = new HashSet<>(
-                                    FgesMb.this.graph.paths().getDconnectedVars(x, new ArrayList<>()));
+                                    FgesMb.this.graph.paths().getMConnectedVars(x, new HashSet<>()));
                             D.remove(x);
                             adj = new ArrayList<>(D);
                         } else {
@@ -1115,7 +1115,7 @@ public final class FgesMb {
 
         for (Node r : toProcess) {
             this.neighbors.put(r, getNeighbors(r));
-            List<Node> adjacentNodes = this.graph.getAdjacentNodes(r);
+            List<Node> adjacentNodes = new ArrayList<>(this.graph.getAdjacentNodes(r));
             this.pool.invoke(new BackwardTask(r, adjacentNodes, getMinChunk(adjacentNodes.size()), 0,
                     adjacentNodes.size(), this.hashIndices));
         }

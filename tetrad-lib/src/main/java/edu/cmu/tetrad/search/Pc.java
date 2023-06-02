@@ -114,7 +114,7 @@ public class Pc implements IGraphSearch {
      */
     @Override
     public Graph search() {
-        return search(this.independenceTest.getVariables());
+        return search(new HashSet<>(this.independenceTest.getVariables()));
     }
 
     /**
@@ -130,8 +130,8 @@ public class Pc implements IGraphSearch {
      * @return The search graph.
      * @see #search()
      */
-    public Graph search(List<Node> nodes) {
-        nodes = new ArrayList<>(nodes);
+    public Graph search(Set<Node> nodes) {
+        nodes = new HashSet<>(nodes);
 
         IFas fas = new Fas(getIndependenceTest());
         fas.setVerbose(this.verbose);
@@ -148,9 +148,9 @@ public class Pc implements IGraphSearch {
      * @see #search()
      * @see IFas
      */
-    public Graph search(IFas fas, List<Node> nodes) {
-        this.logger.log("info", "Starting PC algorithm");
-        this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
+    public Graph search(IFas fas, Set<Node> nodes) {
+        this.logger.forceLogMessage("Starting PC algorithm");
+        this.logger.forceLogMessage("Independence test = " + getIndependenceTest() + ".");
 
         long startTime = MillisecondTimes.timeMillis();
 
@@ -191,12 +191,12 @@ public class Pc implements IGraphSearch {
 
         this.numIndependenceTests = fas.getNumIndependenceTests();
 
-        this.logger.log("graph", "\nReturning this graph: " + this.graph);
+        this.logger.forceLogMessage("Returning this graph: " + this.graph);
 
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
-        this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
-        this.logger.log("info", "Finishing PC Algorithm.");
+        this.logger.forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");
+        this.logger.forceLogMessage("Finishing PC Algorithm.");
         this.logger.flush();
 
         return this.graph;

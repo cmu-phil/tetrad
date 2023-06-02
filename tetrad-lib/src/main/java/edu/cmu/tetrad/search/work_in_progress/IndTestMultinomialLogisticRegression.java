@@ -90,7 +90,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
      * form x _||_ y | z, z = [z1,...,zn], where x, y, z1,...,zn are searchVariables in the list returned by
      * getVariableNames().
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (x instanceof DiscreteVariable) {
             return isIndependentMultinomialLogisticRegression(x, y, z);
         } else if (y instanceof DiscreteVariable) {
@@ -146,7 +146,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         return variables;
     }
 
-    private IndependenceResult isIndependentMultinomialLogisticRegression(Node x, Node y, List<Node> z) {
+    private IndependenceResult isIndependentMultinomialLogisticRegression(Node x, Node y, Set<Node> z) {
         if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
@@ -215,7 +215,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
     }
 
     int[] _rows;
@@ -229,7 +229,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         return this._rows;
     }
 
-    private IndependenceResult isIndependentRegression(Node x, Node y, List<Node> z) {
+    private IndependenceResult isIndependentRegression(Node x, Node y, Set<Node> z) {
         if (!this.variablesPerNode.containsKey(x)) {
             throw new IllegalArgumentException("Unrecogized node: " + x);
         }
@@ -259,7 +259,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
         try {
             result = this.regression.regress(x, regressors);
         } catch (Exception e) {
-            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN);
+            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN, Double.NaN);
         }
 
         double p = result.getP()[1];
@@ -275,7 +275,7 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), indep, p);
+        return new IndependenceResult(new IndependenceFact(x, y, z), indep, p, alpha - p);
     }
 
     /**
@@ -319,12 +319,6 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
     public DataSet getData() {
         return this.originalData;
-    }
-
-
-    @Override
-    public double getScore() {
-        return 0;
     }
 
     /**

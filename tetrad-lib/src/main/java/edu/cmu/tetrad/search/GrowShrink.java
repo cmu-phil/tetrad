@@ -24,8 +24,10 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Implements the Grow-Shrink algorithm of Margaritis and Thrun, a simple yet
@@ -88,8 +90,8 @@ public class GrowShrink implements IMbSearch {
      * @param target the target
      * @return the list of node in the Markov blanket.
      */
-    public List<Node> findMb(Node target) {
-        List<Node> blanket = new LinkedList<>();
+    public Set<Node> findMb(Node target) {
+        Set<Node> blanket = new HashSet<>();
 
         boolean changed = true;
 

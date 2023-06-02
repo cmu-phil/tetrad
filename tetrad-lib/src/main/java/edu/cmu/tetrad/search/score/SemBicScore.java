@@ -163,7 +163,7 @@ public class SemBicScore implements Score {
         Matrix covxx = cov.getSelection(pp, pp);
         Matrix covxy = cov.getSelection(pp, new int[]{0});
         Matrix b = (covxx.inverse().times(covxy));
-        Matrix bStar = SemBicScore.bStar(b);
+        Matrix bStar = bStar(b);
         return (bStar.transpose().times(cov).times(bStar).get(0, 0));
     }
 
@@ -540,6 +540,10 @@ public class SemBicScore implements Score {
         }
         ICovarianceMatrix cov = getCovariances().getSubmatrix(cols);
         return new SemBicScore(cov);
+    }
+
+    public String toString() {
+        return "SEM BIC Score";
     }
 }
 

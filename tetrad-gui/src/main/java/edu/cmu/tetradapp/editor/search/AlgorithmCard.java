@@ -573,6 +573,7 @@ public class AlgorithmCard extends JPanel {
                 }
             }
             this.indTestComboBox.setSelectedItem(testModel);
+            this.indTestComboBox.getSelectedIndex();
         } else {
             this.indTestComboBox.setEnabled(false);
         }

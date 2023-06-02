@@ -549,7 +549,7 @@ public class RfciBsc implements IGraphSearch {
             BCInference.OP op;
             double p = 0.0;
 
-            if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;
@@ -572,7 +572,7 @@ public class RfciBsc implements IGraphSearch {
                         String[] splitParent2 = splitParent[1].trim().split(Pattern.quote("|"));
                         Node _Y = pag.getNode(splitParent2[0].trim());
 
-                        List<Node> _Z = new ArrayList<>();
+                        Set<Node> _Z = new HashSet<>();
                         if (splitParent2.length > 1) {
                             String[] splitParent3 = splitParent2[1].trim().split(Pattern.quote(","));
                             for (String s : splitParent3) {
@@ -580,7 +580,7 @@ public class RfciBsc implements IGraphSearch {
                             }
                         }
                         IndependenceFact parentFact = new IndependenceFact(_X, _Y, _Z);
-                        if (pag.paths().isDSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
+                        if (pag.paths().isMSeparatedFrom(parentFact.getX(), parentFact.getY(), parentFact.getZ())) {
                             parentValues[parentIndex] = 1;
                         } else {
                             parentValues[parentIndex] = 0;
@@ -637,7 +637,7 @@ public class RfciBsc implements IGraphSearch {
         for (IndependenceFact fact : H.keySet()) {
             BCInference.OP op;
 
-            if (pag.paths().isDSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
+            if (pag.paths().isMSeparatedFrom(fact.getX(), fact.getY(), fact.getZ())) {
                 op = BCInference.OP.independent;
             } else {
                 op = BCInference.OP.dependent;

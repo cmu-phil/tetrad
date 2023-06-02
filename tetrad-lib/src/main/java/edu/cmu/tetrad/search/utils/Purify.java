@@ -1309,7 +1309,7 @@ public class Purify {
         } while (this.modifiedGraph);
         boolean[][] impurities = new boolean[this.numObserved][this.numObserved];
         for (int i = 0; i < this.numObserved; i++) {
-            List parents = bestGraph.getParents(
+            List<Node> parents = bestGraph.getParents(
                     bestGraph.getNode(this.measuredNodes.get(i).toString()));
             if (parents.size() > 1) {
                 boolean latent_found = false;

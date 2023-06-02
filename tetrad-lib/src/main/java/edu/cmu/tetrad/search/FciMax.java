@@ -23,11 +23,18 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.PcCommon;
+import edu.cmu.tetrad.search.utils.SepsetMap;
+import edu.cmu.tetrad.search.utils.SepsetsSet;
 import edu.cmu.tetrad.util.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveTask;
 
@@ -68,7 +75,7 @@ public final class FciMax implements IGraphSearch {
     private boolean stable = false;
     private boolean completeRuleSetUsed = true;
     private boolean doDiscriminatingPathRule = false;
-    private boolean possibleDsepSearchDone = true;
+    private boolean possibleMsepSearchDone = true;
     private int maxPathLength = -1;
     private int depth = -1;
     private boolean verbose = false;
@@ -114,10 +121,10 @@ public final class FciMax implements IGraphSearch {
         graph.reorientAllWith(Endpoint.CIRCLE);
 
         // The original FCI, with or without JiJi Zhang's orientation rules
-        // Optional step: Possible Dsep. (Needed for correctness but very time-consuming.)
-        if (this.possibleDsepSearchDone) {
+        // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
+        if (this.possibleMsepSearchDone) {
             new FciOrient(new SepsetsSet(this.sepsets, this.independenceTest)).ruleR0(graph);
-            graph.paths().removeByPossibleDsep(independenceTest, sepsets);
+            graph.paths().removeByPossibleMsep(independenceTest, sepsets);
 
             // Reorient all edges as o-o.
             graph.reorientAllWith(Endpoint.CIRCLE);
@@ -210,12 +217,12 @@ public final class FciMax implements IGraphSearch {
     }
 
     /**
-     * Sets whether the (time-consuming) possible dsep step should be done.
+     * Sets whether the (time-consuming) possible msep step should be done.
      *
-     * @param possibleDsepSearchDone True if so.
+     * @param possibleMsepSearchDone True if so.
      */
-    public void setPossibleDsepSearchDone(boolean possibleDsepSearchDone) {
-        this.possibleDsepSearchDone = possibleDsepSearchDone;
+    public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
+        this.possibleMsepSearchDone = possibleMsepSearchDone;
     }
 
     /**
@@ -338,7 +345,7 @@ public final class FciMax implements IGraphSearch {
     }
 
     private void doNode(Graph graph, Map<Triple, Double> scores, Node b) {
-        List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+        List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
         if (adjacentNodes.size() < 2) {
             return;
@@ -356,17 +363,17 @@ public final class FciMax implements IGraphSearch {
                 continue;
             }
 
-            List<Node> adja = graph.getAdjacentNodes(a);
+            List<Node> adja = new ArrayList<>(graph.getAdjacentNodes(a));
             double score = Double.POSITIVE_INFINITY;
-            List<Node> S = null;
+            Set<Node> S = null;
 
             SublistGenerator cg2 = new SublistGenerator(adja.size(), -1);
             int[] comb2;
 
             while ((comb2 = cg2.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb2, adja);
-                this.independenceTest.checkIndependence(a, c, s);
-                double _score = this.independenceTest.getScore();
+                Set<Node> s = GraphUtils.asSet(comb2, adja);
+                IndependenceResult result = this.independenceTest.checkIndependence(a, c, s);
+                double _score = result.getScore();
 
                 if (_score < score) {
                     score = _score;
@@ -374,15 +381,15 @@ public final class FciMax implements IGraphSearch {
                 }
             }
 
-            List<Node> adjc = graph.getAdjacentNodes(c);
+            List<Node> adjc = new ArrayList<>(graph.getAdjacentNodes(c));
 
             SublistGenerator cg3 = new SublistGenerator(adjc.size(), -1);
             int[] comb3;
 
             while ((comb3 = cg3.next()) != null) {
-                List<Node> s = GraphUtils.asList(comb3, adjc);
-                this.independenceTest.checkIndependence(c, a, s);
-                double _score = this.independenceTest.getScore();
+                Set<Node> s = GraphUtils.asSet(comb3, adjc);
+                IndependenceResult result = this.independenceTest.checkIndependence(c, a, s);
+                double _score = result.getScore();
 
                 if (_score < score) {
                     score = _score;

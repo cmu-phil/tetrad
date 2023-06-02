@@ -34,8 +34,10 @@ import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Checks conditional independence for continuous variables using Cramer's T-test formula (Cramer, Mathematical Methods
@@ -165,20 +167,23 @@ public final class IndTestCramerT implements IndependenceTest {
      *
      * @param x the one variable being compared.
      * @param y the second variable being compared.
-     * @param z the list of conditioning variables.
+     * @param _z the list of conditioning variables.
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
-        if (z == null) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
+        if (_z == null) {
             throw new NullPointerException();
         }
 
-        for (Node node : z) {
+        for (Node node : _z) {
             if (node == null) {
                 throw new NullPointerException();
             }
         }
+
+        List<Node> z = new ArrayList<>();
+        Collections.sort(z);
 
         // Precondition: this.variables, this.corrMatrix properly set up.
         //
@@ -242,7 +247,7 @@ public final class IndTestCramerT implements IndependenceTest {
         }
 
         if (Double.isNaN(this.storedR)) {
-            throw new IllegalArgumentException("Conditional correlation cannot be computed: " + LogUtilsSearch.independenceFact(x, y, z));
+            throw new IllegalArgumentException("Conditional correlation cannot be computed: " + LogUtilsSearch.independenceFact(x, y, _z));
         }
 
         // Determine whether this partial correlation is statistically
@@ -253,11 +258,11 @@ public final class IndTestCramerT implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, z, pValue));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, alpha - pValue);
     }
 
     /**
@@ -340,13 +345,6 @@ public final class IndTestCramerT implements IndependenceTest {
     public DataSet getData() {
         return this.dataSet;
     }
-
-
-    @Override
-    public double getScore() {
-        return -(getPValue() - getAlpha());
-    }
-
 
     /**
      * @return a string representation of this test.

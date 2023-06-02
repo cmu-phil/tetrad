@@ -130,7 +130,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.nodes = new ArrayList<>(graph.nodes);
         this.edgeLists = new HashMap<>();
         for (Node node : nodes) {
-            edgeLists.put(node, Collections.synchronizedSet(new HashSet<>(graph.edgeLists.get(node))));
+            edgeLists.put(node, Collections.synchronizedSet(graph.edgeLists.get(node)));
         }
         this.edgesSet = new HashSet<>(graph.edgesSet);
         this.namesHash = new HashMap<>(graph.namesHash);
@@ -439,16 +439,36 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     @Override
-    public List<Node> getSepset(Node x, Node y) {
+    public Set<Node> getSepset(Node x, Node y) {
         return new Paths(this).getSepset(x, y);
     }
 
-    public boolean isDSeparatedFrom(Node x, Node y, List<Node> z) {
-        return !new Paths(this).isDConnectedTo(x, y, z);
+    /**
+     * Determines whether x and y are d-separated given z.
+     *
+     * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
+     */
+    public boolean isMSeparatedFrom(Node x, Node y, Set<Node> z) {
+        return !new Paths(this).isMConnectedTo(x, y, z);
     }
 
-    public boolean isDSeparatedFrom(List<Node> x, List<Node> y, List<Node> z) {
-        return !new Paths(this).isDConnectedTo(x, y, z);
+    /**
+     * Determines whether two nodes are d-separated given z.
+     *
+     * @return True if the nodes in x are all d-separated from nodes in y given  nodes in z, false if not.
+     */
+    public boolean isMSeparatedFrom(Set<Node> x, Set<Node> y, Set<Node> z) {
+        return !new Paths(this).isMConnectedTo(x, y, z);
+    }
+
+    /**
+     * Determines whether two nodes are d-separated given z.
+     *
+     * @param ancestors A map of ancestors for each node.
+     * @return True if the nodes are d-separated given z, false if not.
+     */
+    public boolean isMSeparatedFrom(Set<Node> x, Set<Node> y, Set<Node> z, Map<Node, Set<Node>> ancestors) {
+        return !new Paths(this).isMConnectedTo(x, y, z, ancestors);
     }
 
     /**
@@ -527,7 +547,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the list of nodes adjacent to the given node. If there are multiple edges between X and Y, Y will show up
+     * @return the set of nodes adjacent to the given node. If there are multiple edges between X and Y, Y will show up
      * twice in the list of adjacencies for X, for optimality; simply create a list an and array from these to eliminate
      * the duplication.
      */
@@ -735,7 +755,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the list of edges connected to a particular node. No particular ordering of the edges in the list is
+     * @return the set of edges connected to a particular node. No particular ordering of the edges in the list is
      * guaranteed.
      */
     @Override

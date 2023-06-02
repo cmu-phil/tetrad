@@ -264,6 +264,8 @@ public class Histogram {
     private double[] getBreakpoints(List<Double> data, int numBins) {
         double[] _data = asDoubleArray(data);
 
+        if (data.isEmpty()) throw new IllegalArgumentException("No data.");
+
         double max = StatUtils.max(_data);
         double min = StatUtils.min(_data);
 

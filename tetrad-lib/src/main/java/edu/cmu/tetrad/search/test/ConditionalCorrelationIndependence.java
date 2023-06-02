@@ -144,7 +144,10 @@ public final class ConditionalCorrelationIndependence {
      *
      * @return This p-value.
      */
-    public double isIndependent(Node x, Node y, List<Node> z) {
+    public double isIndependent(Node x, Node y, Set<Node> _z) {
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+
         try {
             Map<Node, Integer> nodesHash = new HashMap<>();
             for (int i = 0; i < this.variables.size(); i++) {
@@ -330,15 +333,6 @@ public final class ConditionalCorrelationIndependence {
      */
     public void setWidth(double width) {
         this.width = width;
-    }
-
-    /**
-     * Returns the p-value of the score.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return getPValue(this.score);
     }
 
     /**

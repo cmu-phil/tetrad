@@ -18,6 +18,7 @@ public final class IndependenceResult implements TetradSerializable {
     private final IndependenceFact fact;
     private final boolean indep;
     private final double pValue;
+    private final double score;
 
     /**
      * Constructor.
@@ -27,10 +28,11 @@ public final class IndependenceResult implements TetradSerializable {
      * @param pValue The p-values of the independence result, under the null (independence) hypothesis.
      * @see IndependenceFact
      */
-    public IndependenceResult(IndependenceFact fact, boolean indep, double pValue) {
+    public IndependenceResult(IndependenceFact fact, boolean indep, double pValue, double score) {
         this.fact = fact;
         this.indep = indep;
         this.pValue = pValue;
+        this.score = score;
     }
 
     /**
@@ -41,7 +43,7 @@ public final class IndependenceResult implements TetradSerializable {
     public static IndependenceResult serializableInstance() {
         return new IndependenceResult(new IndependenceFact(
                 new ContinuousVariable("X"), new ContinuousVariable("Y")),
-                true, 0.0001);
+                true, 0.0001, 1.0);
     }
 
     /**
@@ -94,5 +96,9 @@ public final class IndependenceResult implements TetradSerializable {
     public String toString() {
         return "Result: " + getFact() + "\t" + isIndependent() + "\t" +
                 NumberFormatUtil.getInstance().getNumberFormat().format(getPValue());
+    }
+
+    public double getScore() {
+        return score;
     }
 }

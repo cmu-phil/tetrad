@@ -41,19 +41,6 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
     private final Node y;
     private final Set<Node> _z;
 
-    /**
-     * Constructs a triple of nodes.
-     */
-    public IndependenceFact(Node x, Node y, List<Node> z) {
-        if (x == null || y == null || z == null) {
-            throw new NullPointerException();
-        }
-
-        this.x = x;
-        this.y = y;
-        this._z = new HashSet<>(z);
-    }
-
     public IndependenceFact(Node x, Node y, Set<Node> z) {
         if (x == null || y == null || z == null) {
             throw new NullPointerException();
@@ -95,8 +82,8 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
         return this.y;
     }
 
-    public List<Node> getZ() {
-        return new LinkedList<>(this._z);
+    public Set<Node> getZ() {
+        return new HashSet<>(this._z);
     }
 
     public int hashCode() {
@@ -170,8 +157,12 @@ public final class IndependenceFact implements Comparable<IndependenceFact>,
 
         if (c != 0) return c;
 
-        List<Node> z = getZ();
-        List<Node> factZ = fact.getZ();
+        Set<Node> _z = getZ();
+        List<Node> z = new ArrayList<>(_z);
+        Collections.sort(z);
+        Set<Node> _factZ = fact.getZ();
+        List<Node> factZ = new ArrayList<>(_factZ);
+        Collections.sort(factZ);
 
         int max = FastMath.max(z.size(), factZ.size());
 

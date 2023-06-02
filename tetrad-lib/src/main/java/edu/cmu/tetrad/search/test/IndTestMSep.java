@@ -30,20 +30,19 @@ import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * <p>Checks independence facts for variables associated with the nodes in a given graph by
- * checking d-separation facts on the underlying nodes. We use the IndependenceTest interface here so that this
- * d-separation test can be used in place of a statistical conditional independence test in algorithms to provide oracle
+ * checking m-separation facts on the underlying nodes. We use the IndependenceTest interface here so that this
+ * m-separation test can be used in place of a statistical conditional independence test in algorithms to provide oracle
  * information.</p>
  *
  * @author josephramsey
  */
-public class IndTestDSep implements IndependenceTest {
+public class IndTestMSep implements IndependenceTest {
 
+    private Map<Node, Set<Node>> ancestorMap;
     private IndependenceFacts independenceFacts;
 
     /**
@@ -62,21 +61,21 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * Constructor.
      *
-     * @param graph The graph for which d-separation facts should be checked. This may be a DAG, CPDAG, or PAG. In the
+     * @param graph The graph for which m-separation facts should be checked. This may be a DAG, CPDAG, or PAG. In the
      *              latter case, m-separation results will be returned (same algorithm).
      */
-    public IndTestDSep(Graph graph) {
+    public IndTestMSep(Graph graph) {
         this(graph, false);
     }
 
     /**
      * Constructor.
      *
-     * @param facts     Independence facts to be used for direct calculations of d-separation.
+     * @param facts     Independence facts to be used for direct calculations of m-separation.
      * @param variables The variables for the facts, if different from those that independenceFacts would return.
      * @see IndependenceFacts
      */
-    public IndTestDSep(IndependenceFacts facts, List<Node> variables) {
+    public IndTestMSep(IndependenceFacts facts, List<Node> variables) {
         this(facts, false);
         facts.setNodes(variables);
     }
@@ -84,28 +83,29 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * Constructor.
      *
-     * @param facts Independence facts to be used for direct calculations of d-separation.
+     * @param facts Independence facts to be used for direct calculations of m-separation.
      * @see IndependenceFacts
      */
-    public IndTestDSep(IndependenceFacts facts) {
+    public IndTestMSep(IndependenceFacts facts) {
         this(facts, false);
     }
 
     /**
      * Constructor.
      *
-     * @param graph       The graph for which d-separation facts should be checked. This may be a DAG, CPDAG, or PAG. In
+     * @param graph       The graph for which m-separation facts should be checked. This may be a DAG, CPDAG, or PAG. In
      *                    the latter case, m-separation results will be returned (same algorithm).
      * @param keepLatents Whether latent in the graph should be used in conditional independence facts. If the graph is
      *                    being marginalized, this should be false.
      */
-    public IndTestDSep(Graph graph, boolean keepLatents) {
+    public IndTestMSep(Graph graph, boolean keepLatents) {
         if (graph == null) {
             throw new NullPointerException();
         }
 
         this.graph = graph;
 
+        this.ancestorMap = graph.paths().getAncestorMap();
         this._observedVars = calcVars(graph.getNodes(), keepLatents);
         this.observedVars = new ArrayList<>(_observedVars);
     }
@@ -113,12 +113,12 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * Constructor.
      *
-     * @param facts       Independence facts to be used for direct calculations of d-separation.
+     * @param facts       Independence facts to be used for direct calculations of m-separation.
      * @param keepLatents Whether latent in the graph should be used in conditional independence facts. If the graph is
      *                    being marginalized, this should be false.
      * @see IndependenceFacts
      */
-    public IndTestDSep(IndependenceFacts facts, boolean keepLatents) {
+    public IndTestMSep(IndependenceFacts facts, boolean keepLatents) {
         if (facts == null) {
             throw new NullPointerException();
         }
@@ -159,7 +159,7 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * Returns the list of observed varialbes in the given graph.
+     * Returns the list of observed variables in the given graph.
      *
      * @return This lsit.
      */
@@ -174,12 +174,12 @@ public class IndTestDSep implements IndependenceTest {
     }
 
     /**
-     * Checks the indicated d-separation fact, dsep(x , y | z).
+     * Checks the indicated m-separation fact, msep(x , y | z).
      *
-     * @return An independence result for dsep(x, y | z).
+     * @return An independence result for msep(x, y | z).
      * @see IndependenceResult
      */
-    public IndependenceResult checkIndependence(Node x, Node y, List<Node> z) {
+    public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
@@ -204,16 +204,16 @@ public class IndTestDSep implements IndependenceTest {
             }
         }
 
-        boolean dSeparated;
+        boolean mSeparated;
 
         if (graph != null) {
-            dSeparated = !getGraph().paths().isDConnectedTo(x, y, z);
+            mSeparated = !getGraph().paths().isMConnectedTo(x, y, z, ancestorMap);
         } else {
-            dSeparated = independenceFacts.isIndependent(x, y, z);
+            mSeparated = independenceFacts.isIndependent(x, y, z);
         }
 
         if (this.verbose) {
-            if (dSeparated) {
+            if (mSeparated) {
                 TetradLogger.getInstance().forceLogMessage(
                         LogUtilsSearch.independenceFactMsg(x, y, z, 1.0));
             }
@@ -221,7 +221,7 @@ public class IndTestDSep implements IndependenceTest {
 
         double pValue;
 
-        if (dSeparated) {
+        if (mSeparated) {
             pValue = 1.0;
         } else {
             pValue = 0.0;
@@ -229,15 +229,15 @@ public class IndTestDSep implements IndependenceTest {
 
         this.pvalue = pValue;
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), dSeparated, pValue);
+        return new IndependenceResult(new IndependenceFact(x, y, z), mSeparated, pValue, pvalue == 1 ? -1 : 1);
     }
 
     /**
-     * Auxiliary method to calculate dsep(x, y | z) directly from nodes instead of from variables.
+     * Auxiliary method to calculate msep(x, y | z) directly from nodes instead of from variables.
      *
      * @return True if so.
      */
-    public boolean isDSeparated(Node x, Node y, List<Node> z) {
+    public boolean isMSeparated(Node x, Node y, Set<Node> z) {
         if (z == null) {
             throw new NullPointerException();
         }
@@ -248,19 +248,8 @@ public class IndTestDSep implements IndependenceTest {
             }
         }
 
-        return getGraph().paths().isDSeparatedFrom(x, y, z);
+        return getGraph().paths().isMSeparatedFrom(x, y, z);
     }
-
-    /**
-     * This obviousy does not return an actual p-value, though it does return a number that is positive for depdendence
-     * and negative for independence, satisfying the contract.
-     *
-     * @return This value.
-     */
-    public double getPValue() {
-        return this.pvalue;
-    }
-
 
     /**
      * Return the list of TetradNodes over which this independence checker is capable of determinine independence
@@ -284,7 +273,6 @@ public class IndTestDSep implements IndependenceTest {
      * by the test represents a dependence or an independence.
      *
      * @return 0.5.
-     * @see #getPValue()
      */
     public double getAlpha() {
         return 0.5;
@@ -327,27 +315,17 @@ public class IndTestDSep implements IndependenceTest {
     /**
      * Returns a string representation of this test.
      *
-     * @return "D-separation".
+     * @return "M-separation".
      */
     public String toString() {
-        return "D-separation";
+        return "M-separation";
     }
 
     /**
      * @throws UnsupportedOperationException Method doesn't make sense here.
      */
     public DataSet getData() {
-        throw new UnsupportedOperationException("This is a d-separation test, no data available.");
-    }
-
-    /**
-     * Returns 1 for d-connections, -1 for d-separations
-     *
-     * @return This number.
-     */
-    @Override
-    public double getScore() {
-        return getPValue() == 1 ? -1 : 1;
+        throw new UnsupportedOperationException("This is a m-separation test, no data available.");
     }
 
     /**

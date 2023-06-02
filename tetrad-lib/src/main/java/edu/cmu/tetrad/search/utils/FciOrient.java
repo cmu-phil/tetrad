@@ -164,7 +164,7 @@ public final class FciOrient {
                 break;
             }
 
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -305,7 +305,7 @@ public final class FciOrient {
                 break;
             }
 
-            List<Node> adj = graph.getAdjacentNodes(B);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
             if (adj.size() < 2) {
                 continue;
@@ -398,7 +398,7 @@ public final class FciOrient {
                 Node a = B.get(0);
                 Node c = B.get(1);
 
-                List<Node> adj = graph.getAdjacentNodes(a);
+                List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(a));
                 adj.retainAll(graph.getAdjacentNodes(c));
 
                 for (Node d : adj) {
@@ -621,7 +621,7 @@ public final class FciOrient {
                 break;
             }
 
-            List<Node> adjacents = graph.getAdjacentNodes(b);
+            List<Node> adjacents = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacents.size() < 2) {
                 continue;
@@ -721,7 +721,7 @@ public final class FciOrient {
             throw new IllegalArgumentException();
         }
 
-        List<Node> sepset = getSepsets().getSepset(d, c);
+        Set<Node> sepset = getSepsets().getSepset(d, c);
 
         if (this.verbose) {
             logger.forceLogMessage("Sepset for d = " + d + " and c = " + c + " = " + sepset);

@@ -162,7 +162,7 @@ public final class SvarFciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacentNodes = graph.getAdjacentNodes(b);
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacentNodes.size() < 2) {
                 continue;
@@ -302,7 +302,7 @@ public final class SvarFciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node B : nodes) {
-            List<Node> adj = graph.getAdjacentNodes(B);
+            List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(B));
 
             if (adj.size() < 2) {
                 continue;
@@ -545,16 +545,16 @@ public final class SvarFciOrient {
 
         List<Node> path = getPath(d, previous);
 
-        boolean ind = getSepsets().isIndependent(d, c, path);
+        boolean ind = getSepsets().isIndependent(d, c, new HashSet<>(path));
 
         List<Node> path2 = new ArrayList<>(path);
 
         path2.remove(b);
 
-        boolean ind2 = getSepsets().isIndependent(d, c, path2);
+        boolean ind2 = getSepsets().isIndependent(d, c, new HashSet<>(path2));
 
         if (!ind && !ind2) {
-            List<Node> sepset = getSepsets().getSepset(d, c);
+            Set<Node> sepset = getSepsets().getSepset(d, c);
 
             if (this.verbose) {
                 System.out.println("Sepset for d = " + d + " and c = " + c + " = " + sepset);
@@ -664,7 +664,7 @@ public final class SvarFciOrient {
         List<Node> nodes = graph.getNodes();
 
         for (Node b : nodes) {
-            List<Node> adjacents = graph.getAdjacentNodes(b);
+            List<Node> adjacents = new ArrayList<>(graph.getAdjacentNodes(b));
 
             if (adjacents.size() < 2) continue;
 

@@ -28,6 +28,7 @@ import edu.cmu.tetrad.util.NumberFormatUtil;
 import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Contains utilities for logging search steps.
@@ -49,17 +50,17 @@ public class LogUtilsSearch {
                 y.getName() + " <-* " + z.getName();
     }
 
-    public static String colliderOrientedMsg(Node x, Node y, Node z, List<Node> sepset) {
+    public static String colliderOrientedMsg(Node x, Node y, Node z, Set<Node> sepset) {
         return "Orienting collider: " + x.getName() + " *-&gt; " +
                 y.getName() + " <-* " + z.getName() + "\t(Sepset = " + sepset +
                 ")";
     }
 
-    public static String determinismDetected(List<Node> sepset, Node x) {
+    public static String determinismDetected(Set<Node> sepset, Node x) {
         return "Determinism detected: " + sepset + " -> " + x.getName();
     }
 
-    public static String independenceFactMsg(Node x, Node y, List<Node> condSet, double pValue) {
+    public static String independenceFactMsg(Node x, Node y, Set<Node> condSet, double pValue) {
         StringBuilder sb = new StringBuilder();
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
@@ -73,7 +74,7 @@ public class LogUtilsSearch {
         return sb.toString();
     }
 
-    public static String dependenceFactMsg(Node x, Node y, List<Node> condSet, double pValue) {
+    public static String dependenceFactMsg(Node x, Node y, Set<Node> condSet, double pValue) {
         StringBuilder sb = new StringBuilder();
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
@@ -88,7 +89,7 @@ public class LogUtilsSearch {
     }
 
 
-    public static String independenceFact(Node x, Node y, List<Node> condSet) {
+    public static String independenceFact(Node x, Node y, Set<Node> condSet) {
         StringBuilder sb = new StringBuilder();
 
         sb.append(x.getName());
