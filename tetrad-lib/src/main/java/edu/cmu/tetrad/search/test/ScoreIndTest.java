@@ -99,7 +99,7 @@ public class ScoreIndTest implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN, bump);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, bump, bump);
     }
 
     /**
