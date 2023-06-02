@@ -161,8 +161,8 @@ public class MarkovCheckEditor extends JPanel {
         box.add(box1);
 
         JTabbedPane pane = new JTabbedPane();
-        pane.addTab("Check Markov", indep);
-        pane.addTab("Check Faithfulness", dep);
+        pane.addTab("Check Local Markov", indep);
+        pane.addTab("Check Local Faithfulness", dep);
         box.add(pane);
 
         add(box);
