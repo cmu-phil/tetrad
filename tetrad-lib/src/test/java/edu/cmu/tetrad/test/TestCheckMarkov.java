@@ -55,7 +55,7 @@ public class TestCheckMarkov {
             List<Node> nondesc = dag.getNodes();
             nondesc.removeAll(desc);
 
-            Set<Node> cond = dag.getParents(x);
+            List<Node> cond = dag.getParents(x);
 
             System.out.println("Node " + x + " parents = " + cond
                     + " non-descendants = " + nondesc);

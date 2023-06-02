@@ -166,7 +166,7 @@ public class ClusterUtils {
 
         for (int i = 0; i < latents.size(); i++) {
             Node _latent = latents.get(i);
-            Set<Node> adj = mim.getAdjacentNodes(_latent);
+            List<Node> adj = mim.getAdjacentNodes(_latent);
             latents.forEach(adj::remove);
 
             clusters.setClusterName(i, _latent.getName());

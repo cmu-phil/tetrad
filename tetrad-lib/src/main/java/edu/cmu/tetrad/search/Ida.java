@@ -187,8 +187,8 @@ public class Ida {
      * @return a list of the possible effects of X on Y.
      */
     private LinkedList<Double> getEffects(Node x, Node y) {
-        Set<Node> parents = this.pattern.getParents(x);
-        Set<Node> children = this.pattern.getChildren(x);
+        List<Node> parents = this.pattern.getParents(x);
+        List<Node> children = this.pattern.getChildren(x);
 
         List<Node> siblings = new ArrayList<>(this.pattern.getAdjacentNodes(x));
         siblings.removeAll(parents);

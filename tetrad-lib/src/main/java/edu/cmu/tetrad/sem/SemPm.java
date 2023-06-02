@@ -305,13 +305,13 @@ public final class SemPm implements Pm, TetradSerializable {
 
     public Parameter getCovarianceParameter(Node nodeA, Node nodeB) {
         if (nodeA.getNodeType() == NodeType.ERROR) {
-            Set<Node> children = getGraph().getChildren(nodeA);
+            List<Node> children = getGraph().getChildren(nodeA);
             if (children == null || children.isEmpty()) return null;
             nodeA = children.iterator().next();
         }
 
         if (nodeB.getNodeType() == NodeType.ERROR) {
-            Set<Node> children = getGraph().getChildren(nodeB);
+            List<Node> children = getGraph().getChildren(nodeB);
             if (children == null || children.isEmpty()) return null;
             nodeB = children.iterator().next();
         }

@@ -45,7 +45,7 @@ public class ReidentifyVariables {
             boolean added = false;
 
             for (Node _latent : trueGraph.getNodes()) {
-                Set<Node> trueChildren = trueGraph.getChildren(_latent);
+                List<Node> trueChildren = trueGraph.getChildren(_latent);
 
                 trueChildren.removeIf(node2 -> node2.getNodeType() == NodeType.LATENT);
 
@@ -119,7 +119,7 @@ public class ReidentifyVariables {
         for (Node node : trueGraph.getNodes()) {
             if (node.getNodeType() != NodeType.LATENT) continue;
 
-            Set<Node> children = trueGraph.getChildren(node);
+            List<Node> children = trueGraph.getChildren(node);
             ReidentifyVariables.getLatents(trueGraph).forEach(children::remove);
 
             List<Node> all = new ArrayList<>();

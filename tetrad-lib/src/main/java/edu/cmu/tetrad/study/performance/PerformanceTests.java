@@ -1924,7 +1924,7 @@ public class PerformanceTests {
         for (int i = 0; i < numVars; i++) {
             Node node = nodes.get(i);
 
-            Set<Node> adj = graph.getAdjacentNodes(node);
+            List<Node> adj = graph.getAdjacentNodes(node);
 
             int degree = adj.size();
 

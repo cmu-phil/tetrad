@@ -470,7 +470,7 @@ public final class LargeScaleSimulation {
             List<Node> lag0 = lagGraph.getLag0Nodes();
 
             for (Node y : lag0) {
-                Set<Node> _parents = lagGraph.getParents(y);
+                List<Node> _parents = lagGraph.getParents(y);
 
                 for (Node x : _parents) {
                     List<List<Node>> similar = returnSimilarPairs(x, y, knowledge);

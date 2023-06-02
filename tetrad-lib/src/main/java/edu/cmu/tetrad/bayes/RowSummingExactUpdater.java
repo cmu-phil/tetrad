@@ -326,7 +326,7 @@ public final class RowSummingExactUpdater implements ManipulatingBayesUpdater {
         for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
             if (this.evidence.isManipulated(i)) {
                 Node node = updatedGraph.getNode(this.evidence.getNode(i).getName());
-                Set<Node> parents = updatedGraph.getParents(node);
+                List<Node> parents = updatedGraph.getParents(node);
 
                 for (Node parent1 : parents) {
                     updatedGraph.removeEdge(node, parent1);

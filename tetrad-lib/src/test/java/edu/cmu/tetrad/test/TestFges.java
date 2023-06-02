@@ -1453,11 +1453,11 @@ public class TestFges {
                     Node x = edge.getNode1();
                     Node y = edge.getNode2();
 
-                    Set<Node> okx = dag.getAdjacentNodes(x);
+                    List<Node> okx = dag.getAdjacentNodes(x);
                     okx.removeAll(dag.getChildren(x));
                     okx.remove(y);
 
-                    Set<Node> oky = dag.getAdjacentNodes(y);
+                    List<Node> oky = dag.getAdjacentNodes(y);
                     oky.removeAll(dag.getChildren(y));
                     oky.remove(x);
 

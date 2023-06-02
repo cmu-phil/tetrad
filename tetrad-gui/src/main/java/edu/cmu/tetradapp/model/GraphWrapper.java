@@ -269,7 +269,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
                 continue;
             }
 
-            Set<Edge> edges = imGraph.getEdges(node1, node2);
+            List<Edge> edges = imGraph.getEdges(node1, node2);
 
             if (edges.size() == 1) {
                 graph2.addEdge(edges.iterator().next());

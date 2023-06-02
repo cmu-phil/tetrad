@@ -387,7 +387,7 @@ public final class Rfci implements IGraphSearch {
 
                 // add new unshielded tuples to rTuples
                 for (Node thisNode : nodes) {
-                    Set<Node> adjacentNodes = this.graph.getAdjacentNodes(thisNode);
+                    List<Node> adjacentNodes = this.graph.getAdjacentNodes(thisNode);
                     if (independent1) // <i, ., j>
                     {
                         if (adjacentNodes.contains(i) && adjacentNodes.contains(j)) {

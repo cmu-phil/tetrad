@@ -491,7 +491,7 @@ public final class FciOrient {
 
         Map<Node, Node> previous = new HashMap<>();
 
-        Set<Node> cParents = graph.getParents(c);
+        List<Node> cParents = graph.getParents(c);
 
         Q.offer(a);
         V.add(a);
@@ -807,7 +807,7 @@ public final class FciOrient {
         LinkedList<Node> soFar = new LinkedList<>();
         soFar.add(n1);
 
-        Set<Node> adjacencies = graph.getAdjacentNodes(n1);
+        List<Node> adjacencies = graph.getAdjacentNodes(n1);
         for (Node curr : adjacencies) {
             getUcPdPsHelper(curr, soFar, n2, ucPdPaths, graph);
         }
@@ -852,7 +852,7 @@ public final class FciOrient {
             ucPdPaths.add(new LinkedList<>(soFar));
         } else {
             // Otherwise, try each node adjacent to the getModel one.
-            Set<Node> adjacents = graph.getAdjacentNodes(curr);
+            List<Node> adjacents = graph.getAdjacentNodes(curr);
             for (Node next : adjacents) {
                 getUcPdPsHelper(next, soFar, end, ucPdPaths, graph);
             }

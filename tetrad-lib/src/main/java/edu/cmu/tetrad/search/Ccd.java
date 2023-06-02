@@ -245,8 +245,8 @@ public final class Ccd implements IGraphSearch {
 
             // x and y are adjacent.
 
-            Set<Node> adjx = psi.getAdjacentNodes(x);
-            Set<Node> adjy = psi.getAdjacentNodes(y);
+            List<Node> adjx = psi.getAdjacentNodes(x);
+            List<Node> adjy = psi.getAdjacentNodes(y);
 
             for (Node node : adjx) {
                 if (psi.getEdge(node, x).getProximalEndpoint(x) == Endpoint.ARROW
@@ -352,7 +352,7 @@ public final class Ccd implements IGraphSearch {
             Node b = triple.getY();
             Node c = triple.getZ();
 
-            Set<Node> aAdj = psi.getAdjacentNodes(a);
+            List<Node> aAdj = psi.getAdjacentNodes(a);
 
             for (Node d : aAdj) {
                 if (d == b) continue;
@@ -377,7 +377,7 @@ public final class Ccd implements IGraphSearch {
                 }
             }
 
-            Set<Node> cAdj = psi.getAdjacentNodes(c);
+            List<Node> cAdj = psi.getAdjacentNodes(c);
 
             for (Node d : cAdj) {
                 if (d == b) continue;

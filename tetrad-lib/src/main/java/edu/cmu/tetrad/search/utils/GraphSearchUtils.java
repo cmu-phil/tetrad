@@ -795,7 +795,7 @@ public final class GraphSearchUtils {
         List<ReachabilityEdge> nextEdges = new LinkedList<>();
 
         for (Node x : initialNodes) {
-            Set<Node> adjX = graph.getAdjacentNodes(x);
+            List<Node> adjX = graph.getAdjacentNodes(x);
 
             for (Node y : adjX) {
                 if (legalPairs.isLegalFirstEdge(x, y)) {
@@ -820,7 +820,7 @@ public final class GraphSearchUtils {
             for (ReachabilityEdge edge : currEdges) {
                 Node x = edge.getFrom();
                 Node y = edge.getTo();
-                Set<Node> adjY = graph.getAdjacentNodes(y);
+                List<Node> adjY = graph.getAdjacentNodes(y);
 
                 for (Node z : adjY) {
                     if ((visited.get(y, z)) == Boolean.TRUE) {

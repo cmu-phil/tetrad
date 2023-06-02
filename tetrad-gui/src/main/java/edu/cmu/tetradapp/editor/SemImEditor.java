@@ -1256,7 +1256,7 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             StringBuilder eqn = new StringBuilder(node.getName() + " = B0_" + node.getName());
 
             SemGraph semGraph = semIm().getSemPm().getGraph();
-            Set<Node> parentNodes = semGraph.getParents(node);
+            List<Node> parentNodes = semGraph.getParents(node);
 
             for (Node parentNodeObj : parentNodes) {
                 Parameter edgeParam = getEdgeParameter(

@@ -522,7 +522,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             List<Node> nodes = new ArrayList<>();
 
             for (Node n : selectedVariables) {
-                Set<Node> h = (getSelectedGraph(k).getParents(n));
+                List<Node> h = (getSelectedGraph(k).getParents(n));
 
                 if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && h.size() <= getN()) {
                     nodes.add(n);
@@ -549,7 +549,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             List<Node> nodes = new ArrayList<>();
 
             for (Node n : selectedVariables) {
-                Set<Node> h = (getSelectedGraph(k).getChildren(n));
+                List<Node> h = (getSelectedGraph(k).getChildren(n));
 
                 if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && h.size() <= getN()) {
                     nodes.add(n);
@@ -576,7 +576,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             List<Node> nodes = new ArrayList<>();
 
             for (Node n : selectedVariables) {
-                Set<Node> h = (getSelectedGraph(k).getAdjacentNodes(n));
+                List<Node> h = (getSelectedGraph(k).getAdjacentNodes(n));
 
                 if (this.params.getString("nType", "atLeast").equals(nType.atMost.toString()) && h.size() <= getN()) {
                     nodes.add(n);
@@ -782,7 +782,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             }
         }
 
-        Set<Node> children = getSelectedGraph(i).getChildren(z);
+        List<Node> children = getSelectedGraph(i).getChildren(z);
 
         if (parents.size() > 1 && children.size() > 0) {
             edges.addAll(parents);
@@ -807,7 +807,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
             }
         }
 
-        Set<Node> children = getSelectedGraph(i).getChildren(z);
+        List<Node> children = getSelectedGraph(i).getChildren(z);
 
         if (parents.size() > 1 && children.size() > 0) {
             edges.addAll(parents);

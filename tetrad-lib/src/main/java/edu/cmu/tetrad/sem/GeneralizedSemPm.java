@@ -216,7 +216,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         this.errorNodes = new ArrayList<>();
 
         for (Node variable : this.variableNodes) {
-            Set<Node> parents = this.graph.getParents(variable);
+            List<Node> parents = this.graph.getParents(variable);
             boolean added = false;
 
             for (Node _node : parents) {
@@ -476,7 +476,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         List<String> parameterNames = parser.getParameters();
 
         // Make a list of parent names.
-        Set<Node> parents = this.graph.getParents(node);
+        List<Node> parents = this.graph.getParents(node);
         List<String> parentNames = new LinkedList<>();
 
         for (Node parent : parents) {
@@ -929,7 +929,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      * @return all parents of the given node, with error node(s?) last.
      */
     public List<Node> getParents(Node node) {
-        Set<Node> parents = this.graph.getParents(node);
+        List<Node> parents = this.graph.getParents(node);
         parents = putErrorNodesLast(parents);
         return new ArrayList<>(parents);
     }
@@ -968,7 +968,7 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      * @return The non-error parents of <code>node</code>.
      */
     private Set<Node> getVariableParents(Node node) {
-        Set<Node> allParents = this.graph.getParents(node);
+        List<Node> allParents = this.graph.getParents(node);
         Set<Node> parents = new HashSet<>();
 
         for (Node _parent : allParents) {
@@ -979,8 +979,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return parents;
     }
 
-    private Set<Node> putErrorNodesLast(Set<Node> parents) {
-        Set<Node> sortedNodes = new HashSet<>();
+    private List<Node> putErrorNodesLast(List<Node> parents) {
+        List<Node> sortedNodes = new ArrayList<>();
 
         for (Node node : parents) {
             if (node.getNodeType() != NodeType.ERROR) {

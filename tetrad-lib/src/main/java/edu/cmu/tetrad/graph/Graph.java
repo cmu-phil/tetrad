@@ -127,12 +127,12 @@ public interface Graph extends TetradSerializable {
     /**
      * @return a mutable list of nodes adjacent to the given node.
      */
-    Set<Node> getAdjacentNodes(Node node);
+    List<Node> getAdjacentNodes(Node node);
 
     /**
      * @return a mutable list of children for a node.
      */
-    Set<Node> getChildren(Node node);
+    List<Node> getChildren(Node node);
 
     /**
      * @return the connectivity of the graph.
@@ -155,12 +155,12 @@ public interface Graph extends TetradSerializable {
      * @return the list of edges connected to a particular node. No particular ordering of the edges in the list is
      * guaranteed.
      */
-    Set<Edge> getEdges(Node node);
+    List<Edge> getEdges(Node node);
 
     /**
      * @return the edges connecting node1 and node2.
      */
-    Set<Edge> getEdges(Node node1, Node node2);
+    List<Edge> getEdges(Node node1, Node node2);
 
     /**
      * @return the set of edges in the graph.  No particular ordering of the edges in the list is guaranteed.
@@ -219,9 +219,9 @@ public interface Graph extends TetradSerializable {
     int getOutdegree(Node node);
 
     /**
-     * @return the set of parents for a node.
+     * @return the list of parents for a node.
      */
-    Set<Node> getParents(Node node);
+    List<Node> getParents(Node node);
 
     /**
      * @return true iff node1 is adjacent to node2 in the graph.

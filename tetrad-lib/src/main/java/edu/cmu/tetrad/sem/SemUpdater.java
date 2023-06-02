@@ -190,7 +190,7 @@ public class SemUpdater implements TetradSerializable {
         for (int i = 0; i < this.evidence.getNumNodes(); ++i) {
             if (this.evidence.isManipulated(i)) {
                 Node node = this.evidence.getNode(i);
-                Set<Node> parents = updatedGraph.getParents(node);
+                List<Node> parents = updatedGraph.getParents(node);
 
                 for (Node parent : parents) {
                     if (parent.getNodeType() == NodeType.ERROR) {

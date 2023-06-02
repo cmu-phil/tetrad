@@ -192,7 +192,7 @@ public class PossibleMConnectingPath {
             return;
         }
         // recurse
-        Set<Node> adjacencies = pag.getAdjacentNodes(current);
+        List<Node> adjacencies = pag.getAdjacentNodes(current);
         for (Node adj : adjacencies) {
             if (previous == null) {
                 List<Node> h = new ArrayList<>(history);
@@ -239,7 +239,7 @@ public class PossibleMConnectingPath {
             return;
         }
         // recurse
-        Set<Node> adjacencies = pag.getAdjacentNodes(current);
+        List<Node> adjacencies = pag.getAdjacentNodes(current);
         for (Node adj : adjacencies) {
             if (previous == null) {
                 List<Node> h = new ArrayList<>(history);

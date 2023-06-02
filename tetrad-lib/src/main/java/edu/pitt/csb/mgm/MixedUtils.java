@@ -250,7 +250,7 @@ public class MixedUtils {
 
             for (Node node : variableNodes) {
 
-                Set<Node> parents = trueGraph.getParents(node);
+                List<Node> parents = trueGraph.getParents(node);
                 //System.out.println("nParents: " + parents.size() );
                 Node eNode = semPm.getErrorNode(node);
 
@@ -325,7 +325,7 @@ public class MixedUtils {
 
             for (Node node : variableNodes) {
 
-                Set<Node> parents = trueGraph.getParents(node);
+                List<Node> parents = trueGraph.getParents(node);
                 //System.out.println("nParents: " + parents.size() );
                 Node eNode = semPm.getErrorNode(node);
 

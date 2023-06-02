@@ -490,7 +490,7 @@ public final class SvarFciOrient {
 
         Map<Node, Node> previous = new HashMap<>();
 
-        Set<Node> cParents = graph.getParents(c);
+        List<Node> cParents = graph.getParents(c);
 
         Q.offer(a);
         V.add(a);

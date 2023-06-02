@@ -538,7 +538,7 @@ class SemPmGraphicalEditor extends JPanel {
         StringBuilder eqn = new StringBuilder(node.getName() + " = B0_" + node.getName());
 
         SemGraph semGraph = semPm().getGraph();
-        Set<Node> parentNodes = semGraph.getParents(node);
+        List<Node> parentNodes = semGraph.getParents(node);
 
         for (Node parentNodeObj : parentNodes) {
             Parameter edgeParam = getEdgeParameter(

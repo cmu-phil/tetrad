@@ -981,7 +981,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
                         Node x = this.nodes.get(_w);
 
-                        Set<Node> adj;
+                        List<Node> adj;
 
                         if (SvarFges.this.mode == Mode.heuristicSpeedup) {
                             adj = SvarFges.this.effectEdgesGraph.getAdjacentNodes(x);
@@ -1002,11 +1002,11 @@ public final class SvarFges implements IGraphSearch, DagScorer {
                                 }
                             }
 
-                            adj = new HashSet<>(g);
+                            adj = new ArrayList<>(g);
                         } else if (SvarFges.this.mode == Mode.allowUnfaithfulness) {
                             HashSet<Node> D = new HashSet<>(SvarFges.this.graph.paths().getMConnectedVars(x, new HashSet<>()));
                             D.remove(x);
-                            adj = new HashSet<>(D);
+                            adj = new ArrayList<>(D);
                         } else {
                             throw new IllegalStateException();
                         }
@@ -1296,7 +1296,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     // Get all adj that are connected to Y by an undirected edge and not adjacent to X.
     private Set<Node> getTNeighbors(Node x, Node y) {
-        Set<Edge> yEdges = this.graph.getEdges(y);
+        List<Edge> yEdges = this.graph.getEdges(y);
         Set<Node> tNeighbors = new HashSet<>();
 
         for (Edge edge : yEdges) {
@@ -1318,7 +1318,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
     // Get all adj that are connected to Y.
     private Set<Node> getNeighbors(Node y) {
-        Set<Edge> yEdges = this.graph.getEdges(y);
+        List<Edge> yEdges = this.graph.getEdges(y);
         Set<Node> neighbors = new HashSet<>();
 
         for (Edge edge : yEdges) {
@@ -1617,7 +1617,7 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     // Find all adj that are connected to Y by an undirected edge that are adjacent to X (that is, by undirected or
     // directed edge).
     private Set<Node> getNaYX(Node x, Node y) {
-        Set<Node> adj = this.graph.getAdjacentNodes(y);
+        List<Node> adj = this.graph.getAdjacentNodes(y);
         Set<Node> nayx = new HashSet<>();
 
         for (Node z : adj) {

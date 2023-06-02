@@ -140,10 +140,10 @@ final class CausalOrder {
         }
 
         Set<Node> keySet = tiers.keySet();
-        Set<Node> parents = graph.getParents(node);
+        List<Node> parents = graph.getParents(node);
         parents.retainAll(keySet);
 
-        Set<Node> children = graph.getChildren(node);
+        List<Node> children = graph.getChildren(node);
         children.retainAll(keySet);
 
         if (parents.isEmpty() && children.isEmpty()) {
@@ -178,14 +178,14 @@ final class CausalOrder {
     private void placeChildren(Node node, Map<Node, Integer> tiers,
                                Graph graph) {
         // Recurse.
-        Set<Node> adj = graph.getAdjacentNodes(node);
+        List<Node> adj = graph.getAdjacentNodes(node);
 
         for (Node _node : adj) {
             placeNodes(_node, tiers, graph);
         }
     }
 
-    private int getPMax(Set<Node> parents, Map<Node, Integer> tiers) {
+    private int getPMax(List<Node> parents, Map<Node, Integer> tiers) {
         int pMax = Integer.MIN_VALUE;
 
         for (Node parent : parents) {
@@ -197,7 +197,7 @@ final class CausalOrder {
         return pMax;
     }
 
-    private int getCMin(Set<Node> children, Map<Node, Integer> tiers) {
+    private int getCMin(List<Node> children, Map<Node, Integer> tiers) {
         int cMin = Integer.MAX_VALUE;
 
         for (Node child : children) {

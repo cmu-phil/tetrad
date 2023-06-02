@@ -130,7 +130,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         this.nodes = new ArrayList<>(graph.nodes);
         this.edgeLists = new HashMap<>();
         for (Node node : nodes) {
-            edgeLists.put(node, Collections.synchronizedSet(new HashSet<>(graph.edgeLists.get(node))));
+            edgeLists.put(node, Collections.synchronizedSet(graph.edgeLists.get(node)));
         }
         this.edgesSet = new HashSet<>(graph.edgesSet);
         this.namesHash = new HashMap<>(graph.namesHash);
@@ -237,7 +237,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     @Override
     public boolean isDefNoncollider(Node node1, Node node2, Node node3) {
         if (node1 == null || node2 == null || node3 == null) return false;
-        Set<Edge> edges = getEdges(node2);
+        List<Edge> edges = getEdges(node2);
         boolean circle12 = false;
         boolean circle32 = false;
 
@@ -282,8 +282,8 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return the list of children for a node.
      */
     @Override
-    public Set<Node> getChildren(Node node) {
-        Set<Node> children = new HashSet<>();
+    public List<Node> getChildren(Node node) {
+        List<Node> children = new ArrayList<>();
 
         for (Edge edge : getEdges(node)) {
             if (Edges.isDirectedEdge(edge)) {
@@ -338,7 +338,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
 
     @Override
     public Edge getDirectedEdge(Node node1, Node node2) {
-        Set<Edge> edges = getEdges(node1, node2);
+        List<Edge> edges = getEdges(node1, node2);
 
         if (edges == null) {
             return null;
@@ -361,12 +361,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return the list of parents for a node.
      */
     @Override
-    public Set<Node> getParents(Node node) {
-        Set<Node> parents = new HashSet<>();
+    public List<Node> getParents(Node node) {
+        List<Node> parents = new ArrayList<>();
         Set<Edge> edges = this.edgeLists.get(node);
 
         if (edges == null) {
-            return new HashSet<>();
+            System.out.println();
         }
 
         for (Edge edge : edges) {
@@ -547,12 +547,12 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the list of nodes adjacent to the given node. If there are multiple edges between X and Y, Y will show up
+     * @return the set of nodes adjacent to the given node. If there are multiple edges between X and Y, Y will show up
      * twice in the list of adjacencies for X, for optimality; simply create a list an and array from these to eliminate
      * the duplication.
      */
     @Override
-    public Set<Node> getAdjacentNodes(Node node) {
+    public List<Node> getAdjacentNodes(Node node) {
         Set<Edge> edges = this.edgeLists.get(node);
         Set<Node> adj = new HashSet<>();
 
@@ -564,7 +564,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
             adj.add(edge.getDistalNode(node));
         }
 
-        return new HashSet<>(adj);
+        return new ArrayList<>(adj);
     }
 
     /**
@@ -572,7 +572,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public boolean removeEdge(Node node1, Node node2) {
-        Set<Edge> edges = getEdges(node1, node2);
+        List<Edge> edges = getEdges(node1, node2);
 
         if (edges.size() > 1) {
             throw new IllegalStateException(
@@ -590,7 +590,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public Endpoint getEndpoint(Node node1, Node node2) {
-        Set<Edge> edges = getEdges(node2);
+        List<Edge> edges = getEdges(node2);
 
         for (Edge edge : edges) {
             if (edge.getDistalNode(node2) == node1) {
@@ -630,7 +630,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     @Override
     public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
         List<Node> nodes = new ArrayList<>(4);
-        Set<Edge> edges = getEdges(node);
+        List<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {
             if (edge.getProximalEndpoint(node) == endpoint) {
@@ -647,7 +647,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     @Override
     public List<Node> getNodesOutTo(Node node, Endpoint endpoint) {
         List<Node> nodes = new ArrayList<>(4);
-        Set<Edge> edges = getEdges(node);
+        List<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {
             if (edge.getDistalEndpoint(node) == endpoint) {
@@ -755,16 +755,16 @@ public class EdgeListGraph implements Graph, TripleClassifier {
     }
 
     /**
-     * @return the list of edges connected to a particular node. No particular ordering of the edges in the list is
+     * @return the set of edges connected to a particular node. No particular ordering of the edges in the list is
      * guaranteed.
      */
     @Override
-    public Set<Edge> getEdges(Node node) {
+    public List<Edge> getEdges(Node node) {
         Set<Edge> list = this.edgeLists.get(node);
         if (list == null) {
-            return new HashSet<>();
+            return new ArrayList<>();
         }
-        return new HashSet<>(list);
+        return new ArrayList<>(list);
     }
 
     @Override
@@ -1057,13 +1057,13 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      * @return the edges connecting node1 and node2.
      */
     @Override
-    public Set<Edge> getEdges(Node node1, Node node2) {
+    public List<Edge> getEdges(Node node1, Node node2) {
         Set<Edge> edges = this.edgeLists.get(node1);
         if (edges == null) {
-            return new HashSet<>();
+            return new ArrayList<>();
         }
 
-        Set<Edge> _edges = new HashSet<>();
+        List<Edge> _edges = new ArrayList<>();
 
         for (Edge edge : edges) {
             if (edge.getDistalNode(node1) == node2) {

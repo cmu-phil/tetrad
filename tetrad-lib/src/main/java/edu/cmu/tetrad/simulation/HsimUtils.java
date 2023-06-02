@@ -45,7 +45,7 @@ public class HsimUtils {
     //this method returns the set of all parents of a provided set of parents, given a provided graph
     public static Set<Node> getAllParents(Graph inputgraph, Set<Node> inputnodes) {
         Set<Node> parents = new HashSet<>();
-        Set<Node> pAdd;
+        List<Node> pAdd;
 
         //loop through inputnodes
         for (Node node : inputnodes) {

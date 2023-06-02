@@ -21,14 +21,19 @@
 
 package edu.cmu.tetrad.sem;
 
+import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.SemGraph;
+import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -60,6 +65,31 @@ public class SemOptimizerRegression implements SemOptimizer {
 
     //============================PUBLIC METHODS==========================//
 
+    private static int[] concat(int i, int[] parents) {
+        int[] all = new int[parents.length + 1];
+        all[0] = i;
+        System.arraycopy(parents, 0, all, 1, parents.length);
+        return all;
+    }
+
+    private static Matrix getCov(int[] _rows, int[] cols, Matrix covarianceMatrix) {
+        return covarianceMatrix.getSelection(_rows, cols);
+    }
+
+    @Override
+    public void setNumRestarts(int numRestarts) {
+        this.numRestarts = numRestarts;
+    }
+
+    @Override
+    public int getNumRestarts() {
+        return this.numRestarts;
+    }
+
+    public String toString() {
+        return "Sem Optimizer Regression";
+    }
+
     /**
      * Fit the freeParameters by doing local regressions.
      */
@@ -75,9 +105,10 @@ public class SemOptimizerRegression implements SemOptimizer {
         }
 
         SemGraph graph = semIm.getSemPm().getGraph();
-        List<Node> nodes = graph.getNodes();
+        graph.setShowErrorTerms(false);
+        List<Node> nodes = semIm.getVariableNodes();
 
-//        TetradLogger.getInstance().log("info", "FML = " + semIm.getScore());
+        TetradLogger.getInstance().log("info", "FML = " + semIm.getScore());
 
         for (Node node : nodes) {
             if (node.getNodeType() != NodeType.MEASURED) {
@@ -128,21 +159,62 @@ public class SemOptimizerRegression implements SemOptimizer {
             semIm.setParamValue(node, node, variance);
         }
 
+        for (Node n : nodes) {
+            int i = nodes.indexOf(n);
+            List<Node> parents = new ArrayList<>(graph.getParents(n));
+
+//            parents.sort(Comparator.comparingInt(nodes::indexOf));
+
+            for (int j = 0; j < parents.size(); j++) {
+                Node nextParent = parents.get(j);
+                if (nextParent.getNodeType() == NodeType.ERROR) {
+//                    errorParent = nextParent;
+                    parents.remove(nextParent);
+                    break;
+                }
+            }
+
+            int[] _parents = new int[parents.size()];
+
+            for (int j = 0; j < parents.size(); j++) {
+                int idx2 = nodes.indexOf(parents.get(j));
+                _parents[j] = idx2;
+            }
+
+            int[] all = concat(i, _parents);
+            Matrix cov = getCov(all, all, covar);
+            int[] pp = indexedParents(_parents);
+            Matrix covxx = cov.getSelection(pp, pp);
+            Matrix covxy = cov.getSelection(pp, new int[]{0});
+            Matrix b = (covxx.inverse().times(covxy));
+
+            for (int j = 0; j < b.getNumRows(); j++) {
+                int idx2 = nodes.indexOf(parents.get(j));
+                semIm.setParamValue(nodes.get(idx2), n, b.get(j, 0));
+            }
+
+            Matrix bStar = SemBicScore.bStar(b);
+            double varry = (bStar.transpose().times(cov).times(bStar).get(0, 0));
+
+            semIm.setParamValue(n, n, varry);
+
+        }
+
         TetradLogger.getInstance().log("optimization", "FML = " + semIm.getScore());
     }
 
-    @Override
-    public void setNumRestarts(int numRestarts) {
-        this.numRestarts = numRestarts;
+    private static int[] indexedParents(int[] parents) {
+        int[] pp = new int[parents.length];
+        for (int j = 0; j < pp.length; j++) pp[j] = j + 1;
+        return pp;
     }
 
-    @Override
-    public int getNumRestarts() {
-        return this.numRestarts;
-    }
-
-    public String toString() {
-        return "Sem Optimizer Regression";
+    @NotNull
+    public static Matrix bStar(Matrix b) {
+        Matrix byx = new Matrix(b.getNumRows() + 1, 1);
+        byx.set(0, 0, 1);
+        for (int j = 0; j < b.getNumRows(); j++) byx.set(j + 1, 0, -b.get(j, 0));
+        return byx;
     }
 }
 

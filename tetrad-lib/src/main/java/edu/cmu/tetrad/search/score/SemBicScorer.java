@@ -47,7 +47,7 @@ public class SemBicScorer {
         double _score = 0.0;
 
         for (Node node : dag.getNodes()) {
-            Set<Node> x = dag.getParents(node);
+            List<Node> x = dag.getParents(node);
 
             int[] parentIndices = new int[x.size()];
 

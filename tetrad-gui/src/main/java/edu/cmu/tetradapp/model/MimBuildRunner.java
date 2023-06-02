@@ -183,7 +183,7 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         Collections.sort(latents);
 
         for (Node latent : latents) {
-            Set<Node> children = graph.getChildren(latent);
+            List<Node> children = graph.getChildren(latent);
             latents.forEach(children::remove);
 //            Collections.sort(children);
 

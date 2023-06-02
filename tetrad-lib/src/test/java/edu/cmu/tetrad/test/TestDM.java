@@ -693,7 +693,7 @@ public class TestDM {
         return (false);
     }
 
-    public boolean cycleExists(Graph graph, Set<Node> adjacentNodes, List<Node> path, Node currentNode) {
+    public boolean cycleExists(Graph graph, List<Node> adjacentNodes, List<Node> path, Node currentNode) {
 
         if (adjacentNodes.isEmpty() && path.isEmpty()) {
             for (Node node : graph.getNodes()) {

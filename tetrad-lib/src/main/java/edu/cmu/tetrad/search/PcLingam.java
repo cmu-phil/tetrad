@@ -229,7 +229,7 @@ public class PcLingam {
 
         for (int i = 0; i < nodes.size(); i++) {
             Node _target = nodes.get(i);
-            Set<Node> _regressors = dag.getParents(_target);
+            List<Node> _regressors = dag.getParents(_target);
             Node target = getVariable(variables, _target.getName());
             List<Node> regressors = new ArrayList<>();
 

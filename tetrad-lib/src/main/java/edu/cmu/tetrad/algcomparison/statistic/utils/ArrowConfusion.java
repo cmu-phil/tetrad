@@ -59,7 +59,7 @@ public class ArrowConfusion {
 
         for (Edge edge : truth1.getEdges()) {
 
-            Set<Edge> edges1 = est1.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> edges1 = est1.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge1;
 
             if (edges1.size() == 1) {
@@ -78,7 +78,7 @@ public class ArrowConfusion {
                 e2Est = edge1.getProximalEndpoint(edge.getNode2());
             }
 
-            Set<Edge> edges2 = truth1.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> edges2 = truth1.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge2;
 
             if (edges2.size() == 1) {
@@ -153,7 +153,7 @@ public class ArrowConfusion {
 
         for (Edge edge : est1.getEdges()) {
 
-            Set<Edge> edges1 = est1.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> edges1 = est1.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge1;
 
             if (edges1.size() == 1) {
@@ -172,7 +172,7 @@ public class ArrowConfusion {
             }
 
 
-            Set<Edge> edges2 = truth1.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> edges2 = truth1.getEdges(edge.getNode1(), edge.getNode2());
             Edge edge2;
 
             if (edges2.size() == 1) {
@@ -228,8 +228,8 @@ public class ArrowConfusion {
         for (Edge edge : truth1.getEdges()) {
 
 
-            Set<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
-            Set<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() == 2 && TwoCycle2.size() == 2) {
                 //              System.out.println("2-cycle correctly inferred " + TwoCycle1);
@@ -244,8 +244,8 @@ public class ArrowConfusion {
 
         for (Edge edge : est1.getEdges()) {
 
-            Set<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
-            Set<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle1 = truth1.getEdges(edge.getNode1(), edge.getNode2());
+            List<Edge> TwoCycle2 = est1.getEdges(edge.getNode1(), edge.getNode2());
 
             if (TwoCycle1.size() != 2 && TwoCycle2.size() == 2) {
                 //              System.out.println("2-cycle falsely inferred" + TwoCycle2);

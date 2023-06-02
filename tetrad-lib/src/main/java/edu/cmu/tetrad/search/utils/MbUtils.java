@@ -45,7 +45,7 @@ public class MbUtils {
     public static void trimToMbNodes(Graph graph, Node target,
                                      boolean includeBidirected) {
         if (includeBidirected) {
-            Set<Node> pc = graph.getAdjacentNodes(target);
+            List<Node> pc = graph.getAdjacentNodes(target);
             List<Node> children = graph.getNodesOutTo(target, Endpoint.ARROW);
 
             Set<Node> parentsOfChildren = new HashSet<>();

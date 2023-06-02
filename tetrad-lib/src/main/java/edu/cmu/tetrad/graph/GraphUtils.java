@@ -52,7 +52,7 @@ public final class GraphUtils {
             throw new IllegalArgumentException("Can only get an associated node " + "for an error node: " + errorNode);
         }
 
-        Set<Node> children = graph.getChildren(errorNode);
+        List<Node> children = graph.getChildren(errorNode);
 
         if (children.size() != 1) {
             System.out.println("children of " + errorNode + " = " + children);
@@ -102,14 +102,14 @@ public final class GraphUtils {
         blanket.addNode(target);
 
         // Add parents of target.
-        Set<Node> parents = dag.getParents(target);
+        List<Node> parents = dag.getParents(target);
         for (Node parent1 : parents) {
             blanket.addNode(parent1);
             blanket.addDirectedEdge(parent1, target);
         }
 
         // Add children of target and parents of children of target.
-        Set<Node> children = dag.getChildren(target);
+        List<Node> children = dag.getChildren(target);
         List<Node> parentsOfChildren = new LinkedList<>();
         for (Node child : children) {
             if (!blanket.containsNode(child)) {
@@ -118,7 +118,7 @@ public final class GraphUtils {
 
             blanket.addDirectedEdge(target, child);
 
-            Set<Node> parentsOfChild = dag.getParents(child);
+            List<Node> parentsOfChild = dag.getParents(child);
             parentsOfChild.remove(target);
             for (Node aParentsOfChild : parentsOfChild) {
                 if (!parentsOfChildren.contains(aParentsOfChild)) {
@@ -169,7 +169,7 @@ public final class GraphUtils {
 
     //all adjancencies are directed <=> there is no uncertainty about whom the parents of 'node' are.
     public static boolean allAdjacenciesAreDirected(Node node, Graph graph) {
-        Set<Edge> nodeEdges = graph.getEdges(node);
+        List<Edge> nodeEdges = graph.getEdges(node);
         for (Edge edge : nodeEdges) {
             if (!edge.isDirected()) {
                 return false;

@@ -263,7 +263,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
                 continue;
             }
 
-            Set<Node> children = searchGraph.getChildren(node);
+            List<Node> children = searchGraph.getChildren(node);
             ReidentifyVariables.getLatents(searchGraph).forEach(children::remove);
 
             for (int i = 0; i < partition.size(); i++) {

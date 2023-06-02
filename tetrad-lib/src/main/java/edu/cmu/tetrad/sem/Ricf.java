@@ -546,7 +546,7 @@ public class Ricf {
         List<List<Node>> cliques = new ArrayList<>();
 
         for (int i = 0; i < nodes.size(); i++) {
-            Set<Node> adj = graph.getAdjacentNodes(nodes.get(i));
+            List<Node> adj = graph.getAdjacentNodes(nodes.get(i));
 
             SortedSet<Integer> L1 = new TreeSet<>();
             L1.add(i);

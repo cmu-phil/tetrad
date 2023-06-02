@@ -40,7 +40,7 @@ import java.util.List;
  *
  * @author josephramsey
  */
-public class SemEstimatorWrapper implements SessionModel, Unmarshallable {
+public class SemEstimatorWrapper implements SessionModel {;//}, Unmarshallable {
 
     static final long serialVersionUID = 23L;
     private final Parameters params;

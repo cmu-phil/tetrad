@@ -1604,7 +1604,7 @@ public class Paths implements TetradSerializable {
 
         component.add(node);
         unsortedNodes.remove(node);
-        Set<Node> adj = graph.getAdjacentNodes(node);
+        List<Node> adj = graph.getAdjacentNodes(node);
 
         for (Node anAdj : adj) {
             if (!component.contains(anAdj)) {
@@ -1863,7 +1863,7 @@ public class Paths implements TetradSerializable {
     }
 
     public boolean isDirectedFromTo(Node node1, Node node2) {
-        Set<Edge> edges = graph.getEdges(node1, node2);
+        List<Edge> edges = graph.getEdges(node1, node2);
         if (edges.size() != 1) {
             return false;
         }

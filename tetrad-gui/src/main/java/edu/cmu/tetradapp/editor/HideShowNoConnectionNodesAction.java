@@ -46,7 +46,7 @@ public class HideShowNoConnectionNodesAction extends AbstractAction implements C
         for (Component comp : this.workbench.getComponents()) {
             if (comp instanceof DisplayNode) {
                 Node node = ((DisplayNode) comp).getModelNode();
-                Set<Edge> edges = graph.getEdges(node);
+                List<Edge> edges = graph.getEdges(node);
                 if (edges == null || edges.isEmpty()) {
                     comp.setVisible(!comp.isVisible());
                 }

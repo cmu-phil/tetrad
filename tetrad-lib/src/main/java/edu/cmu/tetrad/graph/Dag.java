@@ -170,11 +170,11 @@ public final class Dag implements Graph {
         throw new UnsupportedOperationException("Cannot reorient all edges in a DAG with a single endpoint type.");
     }
 
-    public Set<Node> getAdjacentNodes(Node node) {
+    public List<Node> getAdjacentNodes(Node node) {
         return this.graph.getAdjacentNodes(node);
     }
 
-    public Set<Node> getChildren(Node node) {
+    public List<Node> getChildren(Node node) {
         return this.graph.getChildren(node);
     }
 
@@ -190,11 +190,11 @@ public final class Dag implements Graph {
         return this.graph.getDirectedEdge(node1, node2);
     }
 
-    public Set<Edge> getEdges(Node node) {
+    public List<Edge> getEdges(Node node) {
         return this.graph.getEdges(node);
     }
 
-    public Set<Edge> getEdges(Node node1, Node node2) {
+    public List<Edge> getEdges(Node node1, Node node2) {
         return this.graph.getEdges(node1, node2);
     }
 
@@ -242,7 +242,7 @@ public final class Dag implements Graph {
         return this.graph.getOutdegree(node);
     }
 
-    public Set<Node> getParents(Node node) {
+    public List<Node> getParents(Node node) {
         return this.graph.getParents(node);
     }
 

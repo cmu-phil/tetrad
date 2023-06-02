@@ -665,7 +665,7 @@ public final class SemIm implements Im, ISemIm {
         for (int i = 0; i < tierOrdering.size(); i++) {
             Node _node = tierOrdering.get(i);
 
-            Set<Node> parents = semGraph.getParents(_node);
+            List<Node> parents = semGraph.getParents(_node);
 
             double weightedSumOfParentMeans = 0.0;
 
@@ -704,7 +704,7 @@ public final class SemIm implements Im, ISemIm {
         }
 
         SemGraph semGraph = getSemPm().getGraph();
-        Set<Node> parents = semGraph.getParents(node);
+        List<Node> parents = semGraph.getParents(node);
 
         double weightedSumOfParentMeans = 0.0;
 
@@ -1569,7 +1569,7 @@ public final class SemIm implements Im, ISemIm {
 
                     CovarianceMatrix cov = new CovarianceMatrix(this.measuredNodes, sampleCovar, this.sampleSize);
                     Regression regression = new RegressionCovariance(cov);
-                    List<Node> parents = new ArrayList<>(graph.getParents(child));
+                    List<Node> parents = graph.getParents(child);
 
                     parents.removeIf(node -> node.getName().startsWith("E_"));
 

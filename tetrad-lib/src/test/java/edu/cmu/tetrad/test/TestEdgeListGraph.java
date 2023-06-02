@@ -70,11 +70,11 @@ public final class TestEdgeListGraph {
         this.graph.addDirectedEdge(this.x2, this.x3);
         this.graph.addDirectedEdge(this.x3, this.x4);
 
-        Set<Node> children = this.graph.getChildren(this.x1);
-        Set<Node> parents = this.graph.getParents(this.x4);
+        List<Node> children = this.graph.getChildren(this.x1);
+        List<Node> parents = this.graph.getParents(this.x4);
 
-        assertEquals(children, Collections.singleton(this.x2));
-        assertEquals(parents, Collections.singleton(this.x3));
+        assertEquals(children, Collections.singletonList(this.x2));
+        assertEquals(parents, Collections.singletonList(this.x3));
 
         assertTrue(this.graph.paths().isMConnectedTo(this.x1, this.x3, Collections.EMPTY_SET));
         this.graph.removeNode(this.x2);

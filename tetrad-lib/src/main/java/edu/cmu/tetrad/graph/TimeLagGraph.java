@@ -224,7 +224,7 @@ public class TimeLagGraph implements Graph {
             }
 
             for (Node node : lag0Nodes) {
-                Set<Edge> edges = getGraph().getEdges(node);
+                List<Edge> edges = getGraph().getEdges(node);
 
                 for (Edge edge : edges) {
                     boolean b = addEdge(edge);
@@ -233,7 +233,7 @@ public class TimeLagGraph implements Graph {
             }
         } else if (maxLag < this.getMaxLag()) {
             for (Node node : lag0Nodes) {
-                Set<Edge> edges = getGraph().getEdges(node);
+                List<Edge> edges = getGraph().getEdges(node);
 
                 for (Edge edge : edges) {
                     Node tail = Edges.getDirectedEdgeTail(edge);
@@ -264,7 +264,7 @@ public class TimeLagGraph implements Graph {
         boolean changed = false;
 
         for (Node node : lag0Nodes) {
-            Set<Edge> edges = getGraph().getEdges(node);
+            List<Edge> edges = getGraph().getEdges(node);
 
             for (Edge edge : new ArrayList<>(edges)) {
                 Node tail = Edges.getDirectedEdgeTail(edge);
@@ -308,7 +308,7 @@ public class TimeLagGraph implements Graph {
 
         for (Node node : lag0Nodes) {
             for (int lag = 0; lag < numInitialLags; lag++) {
-                Set<Edge> edges = getGraph().getEdges(node);
+                List<Edge> edges = getGraph().getEdges(node);
 
                 for (Edge edge : edges) {
                     boolean b = addEdge(edge);
@@ -425,7 +425,7 @@ public class TimeLagGraph implements Graph {
         return getGraph().isDefCollider(node1, node2, node3);
     }
 
-    public Set<Node> getChildren(Node node) {
+    public List<Node> getChildren(Node node) {
         return getGraph().getChildren(node);
     }
 
@@ -441,7 +441,7 @@ public class TimeLagGraph implements Graph {
         return getGraph().getDirectedEdge(node1, node2);
     }
 
-    public Set<Node> getParents(Node node) {
+    public List<Node> getParents(Node node) {
         return getGraph().getParents(node);
     }
 
@@ -510,7 +510,7 @@ public class TimeLagGraph implements Graph {
         return getGraph().isExogenous(node);
     }
 
-    public Set<Node> getAdjacentNodes(Node node) {
+    public List<Node> getAdjacentNodes(Node node) {
         return getGraph().getAdjacentNodes(node);
     }
 
@@ -548,7 +548,7 @@ public class TimeLagGraph implements Graph {
         return getGraph().containsNode(node);
     }
 
-    public Set<Edge> getEdges(Node node) {
+    public List<Edge> getEdges(Node node) {
         if (getGraph().containsNode(node)) {
             return getGraph().getEdges(node);
         } else {
@@ -556,7 +556,7 @@ public class TimeLagGraph implements Graph {
         }
     }
 
-    public Set<Edge> getEdges(Node node1, Node node2) {
+    public List<Edge> getEdges(Node node1, Node node2) {
         return getGraph().getEdges(node1, node2);
     }
 

@@ -443,7 +443,7 @@ public final class VcPcAlt implements IGraphSearch {
     //    For a node x, adds nodes y such that either y-x or y->x to the boundary of x
     private Set<Node> boundary(Node x, Graph graph) {
         Set<Node> boundary = new HashSet<>();
-        Set<Node> adj = graph.getAdjacentNodes(x);
+        List<Node> adj = graph.getAdjacentNodes(x);
         for (Node y : adj) {
             if (graph.isParentOf(y, x) || Edges.isUndirectedEdge(graph.getEdge(x, y))) {
                 boundary.add(y);
@@ -458,7 +458,7 @@ public final class VcPcAlt implements IGraphSearch {
         LinkedList<Node> path = new LinkedList<>();
         VcPcAlt.futureNodeVisit(graph, x, path, futureNodes);
         futureNodes.remove(x);
-        Set<Node> adj = graph.getAdjacentNodes(x);
+        List<Node> adj = graph.getAdjacentNodes(x);
         for (Node y : adj) {
             if (graph.isParentOf(y, x) || Edges.isUndirectedEdge(graph.getEdge(x, y))) {
                 futureNodes.remove(y);
