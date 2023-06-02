@@ -110,60 +110,60 @@ public class SemOptimizerRegression implements SemOptimizer {
 
         TetradLogger.getInstance().log("info", "FML = " + semIm.getScore());
 
-        for (Node node : nodes) {
-            if (node.getNodeType() != NodeType.MEASURED) {
-                continue;
-            }
-
-            if (!graph.isParameterizable(node)) continue;
-
-            int idx = nodes.indexOf(node);
-            List<Node> parents = new ArrayList<>(graph.getParents(node));
-//            Node errorParent = node;
-
-            for (int i = 0; i < parents.size(); i++) {
-                Node nextParent = parents.get(i);
-                if (nextParent.getNodeType() == NodeType.ERROR) {
-//                    errorParent = nextParent;
-                    parents.remove(nextParent);
-                    break;
-                }
-            }
-
-            double variance = covar.get(idx, idx);
-
-            if (parents.size() > 0) {
-                Vector nodeParentsCov = new Vector(parents.size());
-                Matrix parentsCov = new Matrix(parents.size(), parents.size());
-
-                for (int i = 0; i < parents.size(); i++) {
-                    int idx2 = nodes.indexOf(parents.get(i));
-                    nodeParentsCov.set(i, covar.get(idx, idx2));
-
-                    for (int j = i; j < parents.size(); j++) {
-                        int idx3 = nodes.indexOf(parents.get(j));
-                        parentsCov.set(i, j, covar.get(idx2, idx3));
-                        parentsCov.set(j, i, covar.get(idx2, idx3));
-                    }
-                }
-
-                Vector b = parentsCov.inverse().times(nodeParentsCov);
-                variance -= nodeParentsCov.dotProduct(b);
-
-                for (int i = 0; i < b.size(); i++) {
-                    int idx2 = nodes.indexOf(parents.get(i));
-                    semIm.setParamValue(nodes.get(idx2), node, b.get(i));
-                }
-            }
-
-            semIm.setParamValue(node, node, variance);
-        }
+//        for (Node node : nodes) {
+//            if (node.getNodeType() != NodeType.MEASURED) {
+//                continue;
+//            }
+//
+//            if (!graph.isParameterizable(node)) continue;
+//
+//            int idx = nodes.indexOf(node);
+//            List<Node> parents = new ArrayList<>(graph.getParents(node));
+////            Node errorParent = node;
+//
+//            for (int i = 0; i < parents.size(); i++) {
+//                Node nextParent = parents.get(i);
+//                if (nextParent.getNodeType() == NodeType.ERROR) {
+////                    errorParent = nextParent;
+//                    parents.remove(nextParent);
+//                    break;
+//                }
+//            }
+//
+//            double variance = covar.get(idx, idx);
+//
+//            if (parents.size() > 0) {
+//                Vector nodeParentsCov = new Vector(parents.size());
+//                Matrix parentsCov = new Matrix(parents.size(), parents.size());
+//
+//                for (int i = 0; i < parents.size(); i++) {
+//                    int idx2 = nodes.indexOf(parents.get(i));
+//                    nodeParentsCov.set(i, covar.get(idx, idx2));
+//
+//                    for (int j = i; j < parents.size(); j++) {
+//                        int idx3 = nodes.indexOf(parents.get(j));
+//                        parentsCov.set(i, j, covar.get(idx2, idx3));
+//                        parentsCov.set(j, i, covar.get(idx2, idx3));
+//                    }
+//                }
+//
+//                Vector b = parentsCov.inverse().times(nodeParentsCov);
+//                variance -= nodeParentsCov.dotProduct(b);
+//
+//                for (int i = 0; i < b.size(); i++) {
+//                    int idx2 = nodes.indexOf(parents.get(i));
+//                    semIm.setParamValue(nodes.get(idx2), node, b.get(i));
+//                }
+//            }
+//
+//            semIm.setParamValue(node, node, variance);
+//        }
 
         for (Node n : nodes) {
             int i = nodes.indexOf(n);
             List<Node> parents = new ArrayList<>(graph.getParents(n));
 
-//            parents.sort(Comparator.comparingInt(nodes::indexOf));
+            parents.sort(Comparator.comparingInt(nodes::indexOf));
 
             for (int j = 0; j < parents.size(); j++) {
                 Node nextParent = parents.get(j);
