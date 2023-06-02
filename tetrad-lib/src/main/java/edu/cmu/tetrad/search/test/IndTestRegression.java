@@ -171,13 +171,6 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     /**
-     * @return the probability associated with the most recently computed independence test.
-     */
-    public double getPValue() {
-        return 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, FastMath.abs(this.fishersZ)));
-    }
-
-    /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */

@@ -229,7 +229,7 @@ public class IndTestMSep implements IndependenceTest {
 
         this.pvalue = pValue;
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), mSeparated, pValue, getPValue() == 1 ? -1 : 1);
+        return new IndependenceResult(new IndependenceFact(x, y, z), mSeparated, pValue, pvalue == 1 ? -1 : 1);
     }
 
     /**
@@ -250,17 +250,6 @@ public class IndTestMSep implements IndependenceTest {
 
         return getGraph().paths().isMSeparatedFrom(x, y, z);
     }
-
-    /**
-     * This obviousy does not return an actual p-value, though it does return a number that is positive for depdendence
-     * and negative for independence, satisfying the contract.
-     *
-     * @return This value.
-     */
-    public double getPValue() {
-        return this.pvalue;
-    }
-
 
     /**
      * Return the list of TetradNodes over which this independence checker is capable of determinine independence
@@ -284,7 +273,6 @@ public class IndTestMSep implements IndependenceTest {
      * by the test represents a dependence or an independence.
      *
      * @return 0.5.
-     * @see #getPValue()
      */
     public double getAlpha() {
         return 0.5;

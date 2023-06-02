@@ -338,15 +338,6 @@ public final class ConditionalCorrelationIndependence {
     /**
      * Returns the p-value of the score.
      *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return getPValue(this.score);
-    }
-
-    /**
-     * Returns the p-value of the score.
-     *
      * @param score The score.
      * @return This p-value.
      */

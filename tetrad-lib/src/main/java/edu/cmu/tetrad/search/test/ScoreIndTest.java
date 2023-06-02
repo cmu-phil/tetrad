@@ -82,9 +82,6 @@ public class ScoreIndTest implements IndependenceTest {
         List<Node> z1 = new ArrayList<>(z);
         Collections.sort(z1);
 
-//        if (determines(z1, x)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());
-//        if (determines(z1, y)) new IndependenceResult(new IndependenceFact(x, y, z), false, getPValue());
-
         double v = this.score.localScoreDiff(this.variables.indexOf(x), this.variables.indexOf(y),
                 varIndices(z1));
         this.bump = v;
@@ -100,16 +97,6 @@ public class ScoreIndTest implements IndependenceTest {
         }
 
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, bump, bump);
-    }
-
-    /**
-     * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for this test.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.bump;
     }
 
     /**

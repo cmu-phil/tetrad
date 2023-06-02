@@ -337,7 +337,7 @@ public final class IndTestHsic implements IndependenceTest {
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, _z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
@@ -518,15 +518,6 @@ public final class IndTestHsic implements IndependenceTest {
         empHSIC *= (m / (betaz * (m - 1)));
 
         return empHSIC;
-    }
-
-    /**
-     * Returns the probability associated with the most recently computed independence test.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.pValue;
     }
 
     /**

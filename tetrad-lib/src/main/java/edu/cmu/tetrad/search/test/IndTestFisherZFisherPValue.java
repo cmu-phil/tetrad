@@ -165,15 +165,6 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
-     * Returns the probability associated with the most recently computed independence test.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.pValue;
-    }
-
-    /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      *

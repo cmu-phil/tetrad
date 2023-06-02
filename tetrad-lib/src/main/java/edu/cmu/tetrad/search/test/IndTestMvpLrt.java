@@ -52,10 +52,6 @@ public class IndTestMvpLrt implements IndependenceTest {
     private final MvpLikelihood likelihood;
     private boolean verbose;
 
-
-    // P Values
-    private double pValue = Double.NaN;
-
     /**
      * Constructor.
      *
@@ -143,28 +139,19 @@ public class IndTestMvpLrt implements IndependenceTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        this.pValue = FastMath.min(p_0, p_1);
 
-        boolean independent = this.pValue > this.alpha;
+        double pValue = FastMath.min(p_0, p_1);
+
+        boolean independent = pValue > this.alpha;
 
         if (this.verbose) {
             if (independent) {
                 TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, _z, getPValue()));
+                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
             }
         }
 
         return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, alpha - pValue);
-    }
-
-    /**
-     * Returns The probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for this test.
-     *
-     * @return This p-value.
-     */
-    public double getPValue() {
-        return this.pValue;
     }
 
     /**

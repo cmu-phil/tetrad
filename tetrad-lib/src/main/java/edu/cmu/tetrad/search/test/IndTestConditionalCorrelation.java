@@ -137,7 +137,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
      * @return The p-value.
      */
     public double getPValue() {
-        return this.cci.getPValue();
+        return this.cci.getPValue(score);
     }
 
     /**
