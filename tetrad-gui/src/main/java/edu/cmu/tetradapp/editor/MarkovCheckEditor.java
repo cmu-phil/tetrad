@@ -23,20 +23,19 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
-import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
 import edu.cmu.tetradapp.util.DesktopController;
+import edu.cmu.tetradapp.util.UniformityTest;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import org.apache.commons.math3.util.FastMath;
 
@@ -83,6 +82,8 @@ public class MarkovCheckEditor extends JPanel {
     private double fractionDependentDep = Double.NaN;
     private JLabel fractionDepLabelIndep;
     private JLabel fractionDepLabelDep;
+    private JLabel kgLabelDep;
+    private JLabel kgLabelIndep;
     private final JComboBox<IndependenceTestModel> indTestComboBox = new JComboBox<>();
     boolean updatingTestModels = true;
     private IndependenceTest independenceTest;
@@ -123,12 +124,6 @@ public class MarkovCheckEditor extends JPanel {
 
         sourceGraph = edu.cmu.tetrad.graph.GraphUtils.replaceNodes(sourceGraph, newVars);
 
-//        for (Edge e : sourceGraph.getEdges()) {
-//            if (!e.isDirected()) {
-//                throw new IllegalArgumentException("At least this edge in the source graph is not directed: " + e);
-//            }
-//        }
-
         List<Node> missingVars = new ArrayList<>();
 
         for (Node w : sourceGraph.getNodes()) {
@@ -142,13 +137,6 @@ public class MarkovCheckEditor extends JPanel {
             throw new IllegalArgumentException("At least these variables in the DAG are missing from the data:" +
                     "\n    " + missingVars);
         }
-
-//        if (sourceGraph.paths().existsDirectedCycle()) {
-//            JOptionPane.showMessageDialog(
-//                    JOptionUtils.centeringComp().getTopLevelAncestor(),
-//                    "That graph is not a DAG. For linear models, this is OK, but for nonlinear models," +
-//                            "\nyou would either have to form the “collapsed graph” or use sigma-separation.");
-//        }
 
         msep = new IndTestMSep(this.graph);
         model.setVars(this.graph.getNodeNames());
@@ -233,6 +221,7 @@ public class MarkovCheckEditor extends JPanel {
         b1.add(b2a);
         b1.add(Box.createVerticalStrut(5));
 
+        List<IndependenceResult> results1 = model.getResults(false);
         this.tableModelDep = new AbstractTableModel() {
             public String getColumnName(int column) {
                 if (column == 0) {
@@ -253,17 +242,17 @@ public class MarkovCheckEditor extends JPanel {
             }
 
             public int getRowCount() {
-                return model.getResults(false).size();
+                return results1.size();
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > model.getResults(false).size()) return null;
+                if (rowIndex > results1.size()) return null;
 
                 if (columnIndex == 0) {
                     return rowIndex + 1;
                 }
                 if (columnIndex == 1) {
-                    IndependenceFact fact = model.getResults(false).get(rowIndex).getFact();
+                    IndependenceFact fact = results1.get(rowIndex).getFact();
 
                     List<Node> Z = new ArrayList<>(fact.getZ());
                     Collections.sort(Z);
@@ -273,7 +262,7 @@ public class MarkovCheckEditor extends JPanel {
                     return "mconn(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
                 }
 
-                IndependenceResult result = model.getResults(false).get(rowIndex);
+                IndependenceResult result = results1.get(rowIndex);
 
                 if (columnIndex == 2) {
                     if (getIndependenceTest() instanceof IndTestMSep) {
@@ -378,18 +367,37 @@ public class MarkovCheckEditor extends JPanel {
 
         int dependent = 0;
 
-        for (IndependenceResult result : model.getResults(false)) {
+        for (IndependenceResult result : results1) {
             if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
         }
 
-        fractionDependentDep = dependent / (double) model.getResults(false).size();
+        List<IndependenceResult> results = results1;
+        fractionDependentDep = dependent / (double) results.size();
 
         fractionDepLabelDep = new JLabel("% dependent = "
                 + ((Double.isNaN(fractionDependentDep)
                 ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentDep))));
 
+        List<Double> pValues = getPValues(results1);
+
+        double kgPValue;
+
+        if (pValues.size() < 2) {
+            kgPValue = Double.NaN;
+        } else {
+            kgPValue = UniformityTest.getpValue(pValues);
+        }
+
+        kgLabelDep = new JLabel("KG Uniformity Test p-value = "
+                + NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue));
+
         b5.add(fractionDepLabelDep);
         b1.add(b5);
+
+        Box b6 = Box.createHorizontalBox();
+        b6.add(Box.createHorizontalGlue());
+        b6.add(kgLabelDep);
+        b1.add(b6);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -578,14 +586,33 @@ public class MarkovCheckEditor extends JPanel {
             if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
         }
 
-        fractionDependentIndep = dependent / (double) model.getResults(true).size();
+        List<IndependenceResult> results = model.getResults(true);
+        fractionDependentIndep = dependent / (double) results.size();
 
         fractionDepLabelIndep = new JLabel("% dependent = "
                 + ((Double.isNaN(fractionDependentIndep)
                 ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentIndep))));
 
+        List<Double> pValues = getPValues(results);
+
+        double kgPValue;
+
+        if (pValues.size() < 2) {
+            kgPValue = Double.NaN;
+        } else {
+            kgPValue = UniformityTest.getpValue(pValues);
+        }
+
+        kgLabelIndep = new JLabel("KG Uniformity Test p-value = "
+                + NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue));
+
         b5.add(fractionDepLabelIndep);
         b1.add(b5);
+
+        Box b6 = Box.createHorizontalBox();
+        b6.add(Box.createHorizontalGlue());
+        b6.add(kgLabelIndep);
+        b1.add(b6);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
@@ -617,7 +644,8 @@ public class MarkovCheckEditor extends JPanel {
     private void generateResults(boolean indep) {
         class MyWatchedProcess extends WatchedProcess {
             public void watch() {
-                model.getResults(indep).clear();
+                List<IndependenceResult> results = model.getResults(indep);
+                results.clear();
 
                 invalidate();
                 repaint();
@@ -729,7 +757,7 @@ public class MarkovCheckEditor extends JPanel {
 
                     if (!parallelized) {
                         List<IndependenceResult> _results = task.call();
-                        model.getResults(indep).addAll(_results);
+                        results.addAll(_results);
                     } else {
                         tasks.add(task);
                     }
@@ -740,7 +768,7 @@ public class MarkovCheckEditor extends JPanel {
 
                     for (Future<List<IndependenceResult>> future : theseResults) {
                         try {
-                            model.getResults(indep).addAll(future.get());
+                            results.addAll(future.get());
                         } catch (InterruptedException | ExecutionException e) {
                             throw new RuntimeException(e);
                         }
@@ -749,14 +777,32 @@ public class MarkovCheckEditor extends JPanel {
 
                 int dependent = 0;
 
-                for (IndependenceResult result : model.getResults(indep)) {
+                for (IndependenceResult result : results) {
                     if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
                 }
 
                 if (indep) {
-                    fractionDependentIndep = dependent / (double) model.getResults(indep).size();
+                    fractionDependentIndep = dependent / (double) results.size();
                 } else {
-                    fractionDependentDep = dependent / (double) model.getResults(indep).size();
+                    fractionDependentDep = dependent / (double) results.size();
+                }
+
+                List<Double> pValues = getPValues(results);
+
+                double kgPValue;
+
+                if (pValues.size() < 2) {
+                    kgPValue = Double.NaN;
+                } else {
+                    kgPValue = UniformityTest.getpValue(pValues);
+                }
+
+                if (indep) {
+                    kgLabelIndep.setText("KG Uniformity Test p-value = "
+                            + NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue));
+                } else {
+                    kgLabelDep.setText("KG Uniformity Test p-value = "
+                            + NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue));
                 }
 
                 if (indep) {
@@ -817,18 +863,20 @@ public class MarkovCheckEditor extends JPanel {
     private JPanel createHistogramPanel(boolean indep) {
         JPanel jPanel = new JPanel();
 
-        if (model.getResults(indep).isEmpty()) {
+        List<IndependenceResult> results = model.getResults(indep);
+
+        if (results.isEmpty()) {
             JLabel label = new JLabel("No results available; please click the Check button first.");
             JPanel panel = new JPanel();
             panel.add(label);
             return panel;
         }
 
-        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(model.getResults(indep).size(), 1),
+        DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(results.size(), 1),
                 Collections.singletonList(new ContinuousVariable("P-Value/Bump")));
 
-        for (int i = 0; i < model.getResults(indep).size(); i++) {
-            dataSet.setDouble(i, 0, model.getResults(indep).get(i).getPValue());
+        for (int i = 0; i < results.size(); i++) {
+            dataSet.setDouble(i, 0, results.get(i).getPValue());
         }
 
         Histogram histogram = new Histogram(dataSet);
@@ -848,6 +896,16 @@ public class MarkovCheckEditor extends JPanel {
         jPanel.setLayout(new BorderLayout());
         jPanel.add(vBox, BorderLayout.CENTER);
         return jPanel;
+    }
+
+    public List<Double> getPValues(List<IndependenceResult> results) {
+        List<Double> pValues = new ArrayList<>();
+
+        for (IndependenceResult result : results) {
+            pValues.add(result.getPValue());
+        }
+
+        return pValues;
     }
 
     static class Renderer extends DefaultTableCellRenderer {
