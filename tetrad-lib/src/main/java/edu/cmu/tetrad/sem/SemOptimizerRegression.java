@@ -33,13 +33,10 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Optimizes a DAG SEM with no hidden variables using closed formula regressions. IT SHOULD NOT BE USED WITH SEMs THAT
- * ARE NOT DAGS OR CONTAIN HIDDEN NODES. IT ALSO ASSUMES THAT ALL OBSERVED NODES APPEAR FIRST IN
- * semIm.getSemPm().getDag().getNodes(), I.E., ERROR NODES ARE INSERTED ONLY AFTER MEASURED NODES IN THIS LIST.
+ * Optimizes a DAG SEM by regressing each varaible onto its parents using a linear regression.
  *
- * @author Ricardo Silva
+ * @author josephramsey
  */
-
 public class SemOptimizerRegression implements SemOptimizer {
     static final long serialVersionUID = 23L;
     private int numRestarts = 1;
@@ -61,31 +58,6 @@ public class SemOptimizerRegression implements SemOptimizer {
 
     //============================PUBLIC METHODS==========================//
 
-    private static int[] concat(int i, int[] parents) {
-        int[] all = new int[parents.length + 1];
-        all[0] = i;
-        System.arraycopy(parents, 0, all, 1, parents.length);
-        return all;
-    }
-
-    private static Matrix getCov(int[] _rows, int[] cols, Matrix covarianceMatrix) {
-        return covarianceMatrix.getSelection(_rows, cols);
-    }
-
-    @Override
-    public void setNumRestarts(int numRestarts) {
-        this.numRestarts = numRestarts;
-    }
-
-    @Override
-    public int getNumRestarts() {
-        return this.numRestarts;
-    }
-
-    public String toString() {
-        return "Sem Optimizer Regression";
-    }
-
     /**
      * Fit the freeParameters by doing local regressions.
      */
@@ -105,7 +77,7 @@ public class SemOptimizerRegression implements SemOptimizer {
         List<Node> nodes = new ArrayList<>(semIm.getVariableNodes());
         nodes.removeIf(node -> node.getNodeType() == NodeType.ERROR);
 
-        TetradLogger.getInstance().log("info", "FML = " + semIm.getScore());
+        TetradLogger.getInstance().forceLogMessage("FML = " + semIm.getScore());
 
         for (Node n : nodes) {
             int i = nodes.indexOf(n);
@@ -140,6 +112,20 @@ public class SemOptimizerRegression implements SemOptimizer {
         TetradLogger.getInstance().log("optimization", "FML = " + semIm.getScore());
     }
 
+    @Override
+    public void setNumRestarts(int numRestarts) {
+        this.numRestarts = numRestarts;
+    }
+
+    @Override
+    public int getNumRestarts() {
+        return this.numRestarts;
+    }
+
+    public String toString() {
+        return "Sem Optimizer Regression";
+    }
+
     private static int[] indexedParents(int[] parents) {
         int[] pp = new int[parents.length];
         for (int j = 0; j < pp.length; j++) pp[j] = j + 1;
@@ -147,11 +133,22 @@ public class SemOptimizerRegression implements SemOptimizer {
     }
 
     @NotNull
-    public static Matrix bStar(Matrix b) {
+    private static Matrix bStar(Matrix b) {
         Matrix byx = new Matrix(b.getNumRows() + 1, 1);
         byx.set(0, 0, 1);
         for (int j = 0; j < b.getNumRows(); j++) byx.set(j + 1, 0, -b.get(j, 0));
         return byx;
+    }
+
+    private static int[] concat(int i, int[] parents) {
+        int[] all = new int[parents.length + 1];
+        all[0] = i;
+        System.arraycopy(parents, 0, all, 1, parents.length);
+        return all;
+    }
+
+    private static Matrix getCov(int[] _rows, int[] cols, Matrix covarianceMatrix) {
+        return covarianceMatrix.getSelection(_rows, cols);
     }
 }
 
