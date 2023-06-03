@@ -22,15 +22,14 @@ import edu.pitt.dbmi.data.reader.*;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
 import edu.pitt.dbmi.data.reader.metadata.MetadataFileReader;
 import edu.pitt.dbmi.data.reader.metadata.MetadataReader;
-import org.junit.Assert;
-import org.junit.Test;
-
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Nov 15, 2018 5:22:50 PM
@@ -46,24 +45,24 @@ public class TabularDataFileReaderTest {
     private final boolean hasHeader = true;
 
     private final Path[] continuousDataFiles = {
-            Paths.get(getClass().getResource("/data/tabular/continuous/dos_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/continuous/mac_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/continuous/quotes_sim_test_data.csv").getFile())
+        new File(getClass().getResource("/data/tabular/continuous/dos_sim_test_data.csv").getFile()).toPath(),
+        new File(getClass().getResource("/data/tabular/continuous/mac_sim_test_data.csv").getFile()).toPath(),
+        new File(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile()).toPath(),
+        new File(getClass().getResource("/data/tabular/continuous/quotes_sim_test_data.csv").getFile()).toPath()
     };
 
     private final Path[] discreteDataFiles = {
-            Paths.get(getClass().getResource("/data/tabular/discrete/dos_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/discrete/mac_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/discrete/sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/discrete/quotes_sim_test_data.csv").getFile())
+        new File(getClass().getResource("/data/tabular/discrete/dos_sim_test_data.csv").getFile()).toPath(),
+        new File(getClass().getResource("/data/tabular/discrete/mac_sim_test_data.csv").getFile()).toPath(),
+        new File(getClass().getResource("/data/tabular/discrete/sim_test_data.csv").getFile()).toPath(),
+        new File(getClass().getResource("/data/tabular/discrete/quotes_sim_test_data.csv").getFile()).toPath()
     };
 
     private final Path[] mixedDataFiles = {
-            Paths.get(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()),
-            Paths.get(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile())
+        new File(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()).toPath(),
+        new File(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()).toPath(),
+        new File(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()).toPath(),
+        new File(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile()).toPath()
     };
 
     public TabularDataFileReaderTest() {
@@ -71,8 +70,8 @@ public class TabularDataFileReaderTest {
 
     @Test
     public void testReadInContinuousDataWitMetadata() throws IOException {
-        Path dataFile = Paths.get(getClass().getResource("/data/metadata/sim_continuous_intervention.txt").getFile());
-        Path metadataFile = Paths.get(getClass().getResource("/data/metadata/sim_continuous_intervention_metadata.json").getFile());
+        Path dataFile = new File(getClass().getResource("/data/metadata/sim_continuous_intervention.txt").getFile()).toPath();
+        Path metadataFile = new File(getClass().getResource("/data/metadata/sim_continuous_intervention_metadata.json").getFile()).toPath();
 
         TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, Delimiter.TAB);
         DataColumn[] dataColumns = columnReader.readInDataColumns(false);
@@ -111,8 +110,8 @@ public class TabularDataFileReaderTest {
 
     @Test
     public void testReadInDiscreteDataWitMetadata() throws IOException {
-        Path dataFile = Paths.get(getClass().getResource("/data/metadata/sim_discrete_intervention.txt").getFile());
-        Path metadataFile = Paths.get(getClass().getResource("/data/metadata/sim_discrete_intervention_metadata.json").getFile());
+        Path dataFile = new File(getClass().getResource("/data/metadata/sim_discrete_intervention.txt").getFile()).toPath();
+        Path metadataFile = new File(getClass().getResource("/data/metadata/sim_discrete_intervention_metadata.json").getFile()).toPath();
 
         TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, Delimiter.TAB);
         DataColumn[] dataColumns = columnReader.readInDataColumns(true);
@@ -151,8 +150,8 @@ public class TabularDataFileReaderTest {
 
     @Test
     public void testReadInSampleMixedDataWitMetadata() throws IOException {
-        Path dataFile = Paths.get(getClass().getResource("/data/metadata/sample_dataset.txt").getFile());
-        Path metadataFile = Paths.get(getClass().getResource("/data/metadata/sample_metadata.json").getFile());
+        Path dataFile = new File(getClass().getResource("/data/metadata/sample_dataset.txt").getFile()).toPath();
+        Path metadataFile = new File(getClass().getResource("/data/metadata/sample_metadata.json").getFile()).toPath();
 
         TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, Delimiter.TAB);
         DataColumn[] dataColumns = columnReader.readInDataColumns(true);
@@ -223,8 +222,8 @@ public class TabularDataFileReaderTest {
      */
     @Test
     public void testReadInMixedDataWitMetadata() throws IOException {
-        Path dataFile = Paths.get(getClass().getResource("/data/metadata/sim_mixed_intervention.txt").getFile());
-        Path metadataFile = Paths.get(getClass().getResource("/data/metadata/sim_mixed_intervention_metadata.json").getFile());
+        Path dataFile = new File(getClass().getResource("/data/metadata/sim_mixed_intervention.txt").getFile()).toPath();
+        Path metadataFile = new File(getClass().getResource("/data/metadata/sim_mixed_intervention_metadata.json").getFile()).toPath();
 
         TabularColumnReader columnReader = new TabularColumnFileReader(dataFile, Delimiter.TAB);
         DataColumn[] dataColumns = columnReader.readInDataColumns(true);

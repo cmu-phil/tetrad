@@ -29,14 +29,13 @@ import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularDataReader;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
-import org.junit.Assert;
-import org.junit.Test;
-
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Dec 12, 2018 11:11:32 PM
@@ -51,22 +50,22 @@ public class TabularDataFileValidationTest {
     private final String commentMarker = "//";
     private final boolean hasHeader = true;
 
-    private final Path continuousDataFile = Paths.get(getClass()
-            .getResource("/data/tabular/continuous/bad_data_sim_test_data.csv").getFile());
+    private final Path continuousDataFile = new File(getClass()
+            .getResource("/data/tabular/continuous/bad_data_sim_test_data.csv").getFile()).toPath();
 
-    private final Path discreteDataFile = Paths.get(getClass()
-            .getResource("/data/tabular/discrete/bad_data_sim_test_data.csv").getFile());
+    private final Path discreteDataFile = new File(getClass()
+            .getResource("/data/tabular/discrete/bad_data_sim_test_data.csv").getFile()).toPath();
 
-    private final Path mixedDataFile = Paths.get(getClass()
-            .getResource("/data/tabular/mixed/bad_data_sim_test_data.csv").getFile());
+    private final Path mixedDataFile = new File(getClass()
+            .getResource("/data/tabular/mixed/bad_data_sim_test_data.csv").getFile()).toPath();
 
     public TabularDataFileValidationTest() {
     }
 
     @Test
     public void testValidateForMixedDataWithDateColumn() throws IOException {
-        Path dataFile = Paths.get(getClass().getResource("/data/metadata/mixed_with_dates.csv").getFile());
-        Path metadataFile = Paths.get(getClass().getResource("/data/metadata/mixed_with_dates_metadata.json").getFile());
+        Path dataFile = new File(getClass().getResource("/data/metadata/mixed_with_dates.csv").getFile()).toPath();
+        Path metadataFile = new File(getClass().getResource("/data/metadata/mixed_with_dates_metadata.json").getFile()).toPath();
 
         List<ValidationResult> infos = new LinkedList<>();
         List<ValidationResult> warnings = new LinkedList<>();
