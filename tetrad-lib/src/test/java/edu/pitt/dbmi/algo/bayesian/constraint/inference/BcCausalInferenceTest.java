@@ -5,15 +5,14 @@
  */
 package edu.pitt.dbmi.algo.bayesian.constraint.inference;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.regex.Pattern;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Jan 30, 2019 5:47:01 PM
@@ -32,7 +31,7 @@ public class BcCausalInferenceTest {
      */
     @Test
     public void testProbConstraint() throws IOException {
-        Path casFile = Paths.get(getClass().getResource("/cooper.data/small_data.cas").getFile());
+        Path casFile = new File(getClass().getResource("/cooper.data/small_data.cas").getFile()).toPath();
         int[] nodeDimension = BcCausalInferenceTest.readInNodeDimension(casFile);
         int[][] dataset = BcCausalInferenceTest.readInDataset(casFile);
 

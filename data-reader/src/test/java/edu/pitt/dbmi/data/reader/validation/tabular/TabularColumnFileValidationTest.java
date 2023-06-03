@@ -20,12 +20,11 @@ package edu.pitt.dbmi.data.reader.validation.tabular;
 
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+import java.io.File;
+import java.nio.file.Path;
+import java.util.*;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
 
 /**
  * Dec 12, 2018 4:16:55 PM
@@ -38,7 +37,7 @@ public class TabularColumnFileValidationTest {
     private final char quoteCharacter = '"';
     private final String commentMarker = "//";
 
-    private final Path dataFile = Paths.get(getClass().getResource("/data/tabular/continuous/bad_column_sim_test_data.csv").getFile());
+    private final Path dataFile = new File(getClass().getResource("/data/tabular/continuous/bad_column_sim_test_data.csv").getFile()).toPath();
 
     public TabularColumnFileValidationTest() {
     }
