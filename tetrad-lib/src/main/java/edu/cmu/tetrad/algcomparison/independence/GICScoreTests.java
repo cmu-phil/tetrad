@@ -21,7 +21,7 @@ import java.util.List;
  * @author josephramsey
  */
 @TestOfIndependence(
-        name = "GIC Score Tests",
+        name = "Generalized Information Criterion Score Tests",
         command = "gic-score-tests",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
@@ -77,7 +77,7 @@ public class GICScoreTests implements IndependenceWrapper {
 
     @Override
     public String getDescription() {
-        return "GIC Score Tests";
+        return "Generalized Information Criterion Score Tests";
     }
 
     @Override

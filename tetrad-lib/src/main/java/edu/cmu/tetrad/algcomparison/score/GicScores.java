@@ -19,7 +19,7 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Score(
-        name = "GIC Scores",
+        name = "Generalied Information Criterion Scores",
         command = "gic-scores",
         dataType = {DataType.Continuous, DataType.Covariance}
 )
@@ -77,7 +77,7 @@ public class GicScores implements ScoreWrapper {
 
     @Override
     public String getDescription() {
-        return "GIC Scores";
+        return "Generalized Information Criterion Scores";
     }
 
     @Override
