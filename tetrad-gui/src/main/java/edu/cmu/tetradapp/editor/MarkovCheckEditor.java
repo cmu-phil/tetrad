@@ -38,6 +38,7 @@ import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.UniformityTest;
 import edu.cmu.tetradapp.util.WatchedProcess;
 import org.apache.commons.math3.util.FastMath;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -166,6 +167,12 @@ public class MarkovCheckEditor extends JPanel {
         box.add(pane);
 
         add(box);
+
+        generateResults(true);
+        generateResults(false);
+
+        invalidate();
+        repaint();
     }
 
     private void setTest() {
@@ -205,7 +212,10 @@ public class MarkovCheckEditor extends JPanel {
         JButton list = new JButton("CHECK");
         list.setFont(new Font("Dialog", Font.BOLD, 14));
 
-        list.addActionListener(e -> generateResults(false));
+        list.addActionListener(e -> {
+            generateResults(true);
+            generateResults(false);
+        });
 
         Box b1 = Box.createVerticalBox();
         Box b2 = Box.createHorizontalBox();
@@ -342,7 +352,7 @@ public class MarkovCheckEditor extends JPanel {
         b4.add(Box.createGlue());
         b4.add(Box.createHorizontalStrut(10));
 
-        String title = "Histogram for P-Value or Bump Assuming Local Faithfulness";
+        String title = "P-Value or Bump for Local Faithfulness";
 
         JButton showHistogram = new JButton("Show Histogram for P-Values or Bumps");
         showHistogram.setFont(new Font("Dialog", Font.PLAIN, 14));
@@ -360,6 +370,15 @@ public class MarkovCheckEditor extends JPanel {
         b4.add(Box.createHorizontalGlue());
         b4.add(list);
         b4.add(showHistogram);
+
+        JButton help = new JButton("Help");
+
+        help.addActionListener(e -> {
+            String text = getHelpMessage();
+            JOptionPane.showMessageDialog(help, text, "Help", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        b4.add(help);
 
         b1.add(b4);
         b1.add(Box.createVerticalStrut(10));
@@ -397,6 +416,7 @@ public class MarkovCheckEditor extends JPanel {
 //        ksLabelDep = new JLabel("P-value of Kolmogorov-Smirnov Uniformity Test p-value = "
 //                + NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue));
 
+
         b5.add(fractionDepLabelDep);
         b1.add(b5);
 
@@ -416,7 +436,10 @@ public class MarkovCheckEditor extends JPanel {
         JButton list = new JButton("CHECK");
         list.setFont(new Font("Dialog", Font.BOLD, 14));
 
-        list.addActionListener(e -> generateResults(true));
+        list.addActionListener(e -> {
+            generateResults(true);
+            generateResults(false);
+        });
 
         JButton clear = new JButton("Clear");
         clear.setFont(new Font("Dialog", Font.PLAIN, 14));
@@ -563,7 +586,7 @@ public class MarkovCheckEditor extends JPanel {
         b4.add(Box.createGlue());
         b4.add(Box.createHorizontalStrut(10));
 
-        String title = "Histogram for P-Value or Bump Assuming Local Markov";
+        String title = "P-Value or Bump for Local Markov";
 
         JButton showHistogram = new JButton("Show Histogram for P-Values or Bumps");
         showHistogram.setFont(new Font("Dialog", Font.PLAIN, 14));
@@ -578,9 +601,37 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
+//        JLabel instruction1 = new JLabel( "If this test returns a p-value, this p-value should be distributed");
+//        JLabel instruction2 = new JLabel( "uniformly in [0, 1]. Also, the % of dependent results should be");
+//        JLabel instruction3 = new JLabel( "equal to the significance level.");
+//
+//        Box b5a = Box.createHorizontalBox();
+//        b5a.add(instruction1);
+//        b5a.add(Box.createHorizontalGlue());
+//        b1.add(b5a);
+//
+//        Box b5b = Box.createHorizontalBox();
+//        b5b.add(instruction2);
+//        b5b.add(Box.createHorizontalGlue());
+//        b1.add(b5b);
+//
+//        Box b5c = Box.createHorizontalBox();
+//        b5c.add(instruction3);
+//        b5c.add(Box.createHorizontalGlue());
+//        b1.add(b5c);
+
         b4.add(Box.createHorizontalGlue());
         b4.add(list);
         b4.add(showHistogram);
+
+        JButton help = new JButton("Help");
+
+        help.addActionListener(e -> {
+            String text = getHelpMessage();
+            JOptionPane.showMessageDialog(help, text, "Help", JOptionPane.INFORMATION_MESSAGE);
+        });
+
+        b4.add(help);
 
         b1.add(b4);
         b1.add(Box.createVerticalStrut(10));
@@ -631,6 +682,48 @@ public class MarkovCheckEditor extends JPanel {
         panel.add(b1, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         return panel;
+    }
+
+    @NotNull
+    private static String getHelpMessage() {
+        String text = "\n" +
+                "This tool lets you plot statistics for independence tests of a pair of variables given parents of the one for a given\n" +
+                "graph and dataset. Two tables are made, one in which the independence facts predicted by the graph are tested in the\n" +
+                "data and the other in which the graph's predicted dependence facts are tested. We call the first set of facts \"local\n" +
+                "Markov\"; the second we call \"local Faithfulness.” By \"local,\" we mean that we are only testing independence facts of\n" +
+                "variables given their parents in the graph.\n" +
+                "\n" +
+                "Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is\n" +
+                "either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a\n" +
+                "score bump, where this bump is negative for independent judgments and positive for dependent judgments.\n" +
+                "\n" +
+                "If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or\n" +
+                "else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent\n" +
+                "test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any\n" +
+                "range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the\n" +
+                "nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we have a\n" +
+                "button that lets you display the histogram of the p-values with equally sized bins; the bars in this histogram, for this\n" +
+                "case, should ideally all be of equal height.\n" +
+                "\n" +
+                "If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being\n" +
+                "judged as dependent. For checking Faithfulness, one hopes that this first bar will be especially high, since high\n" +
+                "p-values are for examples where the graph is unfaithful to the distribution. These are likely for for cases where paths\n" +
+                "in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all\n" +
+                "of the other bars.\n" +
+                "\n" +
+                "To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged\n" +
+                "dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for\n" +
+                "the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the\n" +
+                "Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the\n" +
+                "user’s preferred alpha level if the distribution of p-values is Uniform and less then this alpha level if the\n" +
+                "distribution of p-values is non-Uniform.\n" +
+                "\n" +
+                "If the independence test yields a bump in the score, this score should be negative for independence judgments and\n" +
+                "positive for dependence judgments. The histogram will reflect this.\n" +
+                "\n" +
+                "Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let\n" +
+                "you analyze the data yourself.\n";
+        return text;
     }
 
     //=============================PRIVATE METHODS=======================//
@@ -900,8 +993,9 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         Histogram histogram = new Histogram(dataSet);
+        histogram.setNumBins(10);
         histogram.setTarget("P-Value or Bump");
-        HistogramView view = new HistogramView(histogram);
+        HistogramView view = new HistogramView(histogram, false);
 
         Box box = Box.createHorizontalBox();
         box.add(view);

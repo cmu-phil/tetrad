@@ -330,7 +330,7 @@ public class GicScores implements Score {
 
 
     public String toString() {
-        return "GIC Score";
+        return "Generalized Information Criterion Score";
     }
 }
 

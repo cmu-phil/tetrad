@@ -78,7 +78,7 @@ public class Histogram {
         this.target = _target;
         this.continuousIntervals = new HashMap<>();
         this.discreteValues = new HashMap<>();
-        this.numBins = (int) ceil(log(this.dataSet.getNumRows()) / log(2) + 1);
+//        this.numBins = (int) ceil(log(this.dataSet.getNumRows()) / log(2) + 1);
     }
 
     /**

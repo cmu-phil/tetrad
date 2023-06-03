@@ -49,18 +49,26 @@ public class HistogramView extends JPanel {
     private static final String[] tiles = {"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
 
+    public HistogramView(Histogram histogram) {
+        this(histogram, true);
+    }
+
     /**
      * Constructs the view with a given histogram and data set.
      */
-    public HistogramView(Histogram histogram) {
+    public HistogramView(Histogram histogram, boolean showControlPanel) {
         this.histogramPanel = new HistogramPanel(histogram);
         HistogramController controller = new HistogramController(this.histogramPanel);
         controller.addPropertyChangeListener(evt -> HistogramView.this.histogramPanel.updateView());
 
         Box box = Box.createHorizontalBox();
         box.add(this.histogramPanel);
-        box.add(Box.createHorizontalStrut(3));
-        box.add(controller);
+
+        if (showControlPanel) {
+            box.add(Box.createHorizontalStrut(3));
+            box.add(controller);
+        }
+
         box.add(Box.createHorizontalStrut(5));
         box.add(Box.createHorizontalGlue());
 
