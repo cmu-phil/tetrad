@@ -159,10 +159,12 @@ public class MarkovCheckEditor extends JPanel {
         JButton params = new JButton("Params");
 
         params.addActionListener(e -> {
-            setTest();
+//            setTest();
             JOptionPane dialog = new JOptionPane(createParamsPanel(independenceWrapper, parameters), JOptionPane.PLAIN_MESSAGE);
             dialog.createDialog("Set Parameters").setVisible(true);
             setTest();
+            generateResults(true);
+            generateResults(false);
         });
 
         box1.add(params);
@@ -764,11 +766,13 @@ public class MarkovCheckEditor extends JPanel {
                     private final int from;
                     private final int to;
                     private final List<IndependenceFact> facts;
+                    private IndependenceTest independenceTest;
 
-                    IndCheckTask(int from, int to, List<IndependenceFact> facts) {
+                    IndCheckTask(int from, int to, List<IndependenceFact> facts, IndependenceTest test) {
                         this.from = from;
                         this.to = to;
                         this.facts = facts;
+                        this.independenceTest = test;
                     }
 
                     @Override
@@ -819,7 +823,7 @@ public class MarkovCheckEditor extends JPanel {
 
                 for (int i = 0; i < facts.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
                     IndCheckTask task = new IndCheckTask(i, min(facts.size(), i + chunkSize),
-                            facts);
+                            facts, independenceTest);
 
                     if (!parallelized) {
                         List<IndependenceResult> _results = task.call();

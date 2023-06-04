@@ -38,6 +38,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.Math.exp;
+import static org.apache.commons.math3.util.FastMath.log;
+
 /**
  * <p>Gives a way of interpreting a score as an independence test. The contract is that
  * the score returned will be negative for independence and positive for dependence; this simply reports these
@@ -86,6 +89,11 @@ public class ScoreIndTest implements IndependenceTest {
                 varIndices(z1));
         this.bump = v;
 
+        int N = score.getSampleSize();
+
+        // No.
+//        double p = 5 * exp(-2 * v - 2 * log(N)) / ((N) * log(N));
+
         boolean independent = v <= 0;
 
         if (this.verbose) {
@@ -96,7 +104,7 @@ public class ScoreIndTest implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, bump, bump);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, v, v);
     }
 
     /**
