@@ -78,6 +78,7 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
 
             BFci search = new BFci(this.test.getTest(dataModel, parameters), this.score.getScore(dataModel, parameters));
 
+            search.setBossUseBes(parameters.getBoolean(Params.USE_BES));
             search.setMaxPathLength(parameters.getInt(Params.MAX_PATH_LENGTH));
             search.setCompleteRuleSetUsed(parameters.getBoolean(Params.COMPLETE_RULE_SET_USED));
             search.setDoDiscriminatingPathRule(parameters.getBoolean(Params.DO_DISCRIMINATING_PATH_RULE));
@@ -122,6 +123,7 @@ public class Bfci implements Algorithm, UsesScoreWrapper,
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
 
+        params.add(Params.USE_BES);
         params.add(Params.MAX_PATH_LENGTH);
         params.add(Params.COMPLETE_RULE_SET_USED);
         params.add(Params.DO_DISCRIMINATING_PATH_RULE);
