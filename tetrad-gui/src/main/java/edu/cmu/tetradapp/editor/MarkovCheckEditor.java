@@ -110,7 +110,14 @@ public class MarkovCheckEditor extends JPanel {
         refreshTestList();
         setTest();
 
-        indTestComboBox.addActionListener(e -> setTest());
+        indTestComboBox.addActionListener(e -> {
+            setTest();
+
+            if (model.getResults(true).isEmpty() || model.getResults(false).isEmpty()) {
+                generateResults(true);
+                generateResults(false);
+            }
+        });
 
         Graph sourceGraph = model.getGraph();
         List<Node> variables = independenceTest.getVariables();
@@ -209,14 +216,6 @@ public class MarkovCheckEditor extends JPanel {
      * Performs the action of opening a session from a file.
      */
     private JPanel buildGuiDep() {
-        JButton list = new JButton("CHECK");
-        list.setFont(new Font("Dialog", Font.BOLD, 14));
-
-        list.addActionListener(e -> {
-            generateResults(true);
-            generateResults(false);
-        });
-
         Box b1 = Box.createVerticalBox();
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Tests whether X _||_ Y | parents(X) for mconn(X, Y | parents(X))"));
@@ -231,7 +230,7 @@ public class MarkovCheckEditor extends JPanel {
         b1.add(b2a);
         b1.add(Box.createVerticalStrut(5));
 
-        List<IndependenceResult> results1 = model.getResults(false);
+        List<IndependenceResult> results = model.getResults(false);
         this.tableModelDep = new AbstractTableModel() {
             public String getColumnName(int column) {
                 if (column == 0) {
@@ -252,17 +251,17 @@ public class MarkovCheckEditor extends JPanel {
             }
 
             public int getRowCount() {
-                return results1.size();
+                return results.size();
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > results1.size()) return null;
+                if (rowIndex > results.size()) return null;
 
                 if (columnIndex == 0) {
                     return rowIndex + 1;
                 }
                 if (columnIndex == 1) {
-                    IndependenceFact fact = results1.get(rowIndex).getFact();
+                    IndependenceFact fact = results.get(rowIndex).getFact();
 
                     List<Node> Z = new ArrayList<>(fact.getZ());
                     Collections.sort(Z);
@@ -272,7 +271,7 @@ public class MarkovCheckEditor extends JPanel {
                     return "Dep(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
                 }
 
-                IndependenceResult result = results1.get(rowIndex);
+                IndependenceResult result = results.get(rowIndex);
 
                 if (columnIndex == 2) {
                     if (getIndependenceTest() instanceof IndTestMSep) {
@@ -368,7 +367,6 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         b4.add(Box.createHorizontalGlue());
-        b4.add(list);
         b4.add(showHistogram);
 
         JButton help = new JButton("Help");
@@ -388,18 +386,17 @@ public class MarkovCheckEditor extends JPanel {
 
         int dependent = 0;
 
-        for (IndependenceResult result : results1) {
+        for (IndependenceResult result : results) {
             if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
         }
 
-        List<IndependenceResult> results = results1;
         fractionDependentDep = dependent / (double) results.size();
 
         fractionDepLabelDep = new JLabel("% dependent = "
                 + ((Double.isNaN(fractionDependentDep)
                 ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentDep))));
 
-        List<Double> pValues = getPValues(results1);
+        List<Double> pValues = getPValues(results);
 
         double kgPValue;
 
@@ -412,10 +409,6 @@ public class MarkovCheckEditor extends JPanel {
         ksLabelDep = new JLabel("P-value of Kolmogorov-Smirnov Uniformity Test p-value = "
                 + ((Double.isNaN(kgPValue)
                 ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue))));
-
-//        ksLabelDep = new JLabel("P-value of Kolmogorov-Smirnov Uniformity Test p-value = "
-//                + NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue));
-
 
         b5.add(fractionDepLabelDep);
         b1.add(b5);
@@ -433,14 +426,6 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private JPanel buildGuiIndep() {
-        JButton list = new JButton("CHECK");
-        list.setFont(new Font("Dialog", Font.BOLD, 14));
-
-        list.addActionListener(e -> {
-            generateResults(true);
-            generateResults(false);
-        });
-
         JButton clear = new JButton("Clear");
         clear.setFont(new Font("Dialog", Font.PLAIN, 14));
         clear.addActionListener(e -> {
@@ -601,27 +586,7 @@ public class MarkovCheckEditor extends JPanel {
             }
         });
 
-//        JLabel instruction1 = new JLabel( "If this test returns a p-value, this p-value should be distributed");
-//        JLabel instruction2 = new JLabel( "uniformly in [0, 1]. Also, the % of dependent results should be");
-//        JLabel instruction3 = new JLabel( "equal to the significance level.");
-//
-//        Box b5a = Box.createHorizontalBox();
-//        b5a.add(instruction1);
-//        b5a.add(Box.createHorizontalGlue());
-//        b1.add(b5a);
-//
-//        Box b5b = Box.createHorizontalBox();
-//        b5b.add(instruction2);
-//        b5b.add(Box.createHorizontalGlue());
-//        b1.add(b5b);
-//
-//        Box b5c = Box.createHorizontalBox();
-//        b5c.add(instruction3);
-//        b5c.add(Box.createHorizontalGlue());
-//        b1.add(b5c);
-
         b4.add(Box.createHorizontalGlue());
-        b4.add(list);
         b4.add(showHistogram);
 
         JButton help = new JButton("Help");
@@ -666,9 +631,6 @@ public class MarkovCheckEditor extends JPanel {
                 + ((Double.isNaN(ksPValue)
                 ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue))));
 
-//        ksLabelIndep = new JLabel("P-value of Kolmogorov-Smirnov Uniformity Test = "
-//                + NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue));
-
         b5.add(fractionDepLabelIndep);
         b1.add(b5);
 
@@ -686,7 +648,7 @@ public class MarkovCheckEditor extends JPanel {
 
     @NotNull
     private static String getHelpMessage() {
-        String text = "\n" +
+        return "\n" +
                 "This tool lets you plot statistics for independence tests of a pair of variables given parents of the one for a given\n" +
                 "graph and dataset. Two tables are made, one in which the independence facts predicted by the graph are tested in the\n" +
                 "data and the other in which the graph's predicted dependence facts are tested. We call the first set of facts \"local\n" +
@@ -723,7 +685,6 @@ public class MarkovCheckEditor extends JPanel {
                 "\n" +
                 "Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let\n" +
                 "you analyze the data yourself.\n";
-        return text;
     }
 
     //=============================PRIVATE METHODS=======================//
@@ -823,7 +784,7 @@ public class MarkovCheckEditor extends JPanel {
                             Set<Node> z = fact.getZ();
                             boolean verbose = independenceTest.isVerbose();
                             independenceTest.setVerbose(false);
-                            IndependenceResult result = null;
+                            IndependenceResult result;
                             try {
                                 result = independenceTest.checkIndependence(x, y, z);
                             } catch (Exception e) {
@@ -906,16 +867,10 @@ public class MarkovCheckEditor extends JPanel {
                     ksLabelIndep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
                             + ((Double.isNaN(ksPValue)
                             ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue))));
-
-//                    ksLabelIndep.setText("\"P-value of Kolmogorov-Smirnov Uniformity Test = "
-//                            + NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue));
                 } else {
                     ksLabelDep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
                             + ((Double.isNaN(ksPValue)
                             ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue))));
-
-//                    ksLabelDep.setText("\"P-value of Kolmogorov-Smirnov Uniformity Test = "
-//                            + NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue));
                 }
 
                 if (indep) {
