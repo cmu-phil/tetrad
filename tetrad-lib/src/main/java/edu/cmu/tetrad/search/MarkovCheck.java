@@ -1,6 +1,5 @@
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
@@ -109,6 +108,18 @@ public class MarkovCheck {
         } else {
             return ksPValueDep;
         }
+    }
+
+    public List<Node> getVariables() {
+        return independenceTest.getVariables();
+    }
+
+    public Node getVariable(String name) {
+        return independenceTest.getVariable(name);
+    }
+
+    public IndependenceTest getIndependenceTest() {
+        return this.independenceTest;
     }
 
     private void generateResults(boolean indep, Node x, Set<Node> z, Set<Node> ms, Set<Node> mc) {
@@ -255,21 +266,5 @@ public class MarkovCheck {
         int chunk = (int) FastMath.ceil((n / ((double) (5 * Runtime.getRuntime().availableProcessors()))));
         if (chunk < 1) chunk = 1;
         return chunk;
-    }
-
-    public List<Node> getVariables() {
-        return independenceTest.getVariables();
-    }
-
-    public Node getVariable(String name) {
-        return independenceTest.getVariable(name);
-    }
-
-    public IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
-    }
-
-    public DataModel getDataModel() {
-        return this.independenceTest.getData();
     }
 }
