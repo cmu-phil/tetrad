@@ -80,7 +80,6 @@ public class MarkovCheckEditor extends JPanel {
     private final JTextArea testDescTextArea = new JTextArea();
     private final JComboBox<IndependenceTestModel> indTestComboBox = new JComboBox<>();
     boolean updatingTestModels = true;
-//    private final DataModel dataSet;
     private final JLabel faithfulnessTestLabel = new JLabel("(Unspecified Test)");
     private IndependenceWrapper independenceWrapper;
 
@@ -111,7 +110,6 @@ public class MarkovCheckEditor extends JPanel {
 
         setTest();
 
-//        this.dataSet = model.getDataModel();
         Graph _graph = model.getGraph();
         Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables());
 
@@ -123,9 +121,6 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         SwingUtilities.invokeLater(MyWatchedProcess::new);
-
-//        model.getMarkovCheck().generateResults();
-//        setLabelTexts();
 
         JPanel indep = buildGuiIndep();
         JPanel dep = buildGuiDep();
