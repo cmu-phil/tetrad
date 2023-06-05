@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndTestMSep;
@@ -104,7 +105,8 @@ public class MarkovCheckEditor extends JPanel {
         this.model = model;
 
         this.dataSet = model.getDataModel();
-        this.graph = model.getGraph();
+        Graph _graph = model.getGraph();
+        this.graph = GraphUtils.replaceNodes(_graph, this.dataSet.getVariables());
         this.parameters = model.getParameters();
 
         refreshTestList();
@@ -766,7 +768,7 @@ public class MarkovCheckEditor extends JPanel {
                     private final int from;
                     private final int to;
                     private final List<IndependenceFact> facts;
-                    private IndependenceTest independenceTest;
+                    private final IndependenceTest independenceTest;
 
                     IndCheckTask(int from, int to, List<IndependenceFact> facts, IndependenceTest test) {
                         this.from = from;
