@@ -259,7 +259,6 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
         box.add(Box.createVerticalStrut(4));
         box.add(createLabeledComponent(alphaField));
 
-
         box.setBorder(new TitledBorder("Parameters"));
         return box;
     }
@@ -291,7 +290,6 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
 
         return this.workbenchScroll;
     }
-
 
     /**
      * Creates the menubar for the search editor.

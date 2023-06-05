@@ -93,6 +93,7 @@ public final class BFci implements IGraphSearch {
     private int numStarts = 1;
     private int depth = -1;
     private boolean doDiscriminatingPathRule = true;
+    private boolean bossUseBes = false;
 
     //============================CONSTRUCTORS============================//
 
@@ -130,6 +131,7 @@ public final class BFci implements IGraphSearch {
 
         // BOSS CPDAG learning step
         Boss subAlg = new Boss(this.score);
+        subAlg.setUseBes(bossUseBes);
         subAlg.setNumStarts(this.numStarts);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
@@ -308,5 +310,9 @@ public final class BFci implements IGraphSearch {
 
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
+    }
+
+    public void setBossUseBes(boolean useBes) {
+        this.bossUseBes = useBes;
     }
 }
