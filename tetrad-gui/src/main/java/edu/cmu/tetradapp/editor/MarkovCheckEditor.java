@@ -30,16 +30,12 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.util.NumberFormatUtil;
-import edu.cmu.tetrad.util.ParamDescription;
-import edu.cmu.tetrad.util.ParamDescriptions;
-import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.*;
 import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
 import edu.cmu.tetradapp.util.*;
-import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -47,6 +43,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
+import java.awt.Point;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -55,15 +52,10 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
-import static org.apache.commons.math3.util.FastMath.min;
 
 
 /**
@@ -74,26 +66,19 @@ import static org.apache.commons.math3.util.FastMath.min;
 public class MarkovCheckEditor extends JPanel {
     private final MarkovCheckIndTestModel model;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private final IndTestMSep msep;
-    private final Graph graph;
-    private boolean parallelized = false;
     private final JLabel markovTestLabel = new JLabel("(Unspecified Test)");
-    private final Parameters parameters;
     private AbstractTableModel tableModelIndep;
     private AbstractTableModel tableModelDep;
-    private int sortDir;
-    private int lastSortCol;
-    private final JTextArea testDescTextArea = new JTextArea();
-    private double fractionDependentIndep = Double.NaN;
-    private double fractionDependentDep = Double.NaN;
     private JLabel fractionDepLabelIndep;
     private JLabel fractionDepLabelDep;
     private JLabel ksLabelDep;
     private JLabel ksLabelIndep;
+    private int sortDir;
+    private int lastSortCol;
+    private final JTextArea testDescTextArea = new JTextArea();
     private final JComboBox<IndependenceTestModel> indTestComboBox = new JComboBox<>();
     boolean updatingTestModels = true;
-    private IndependenceTest independenceTest;
-    private final DataModel dataSet;
+//    private final DataModel dataSet;
     private final JLabel faithfulnessTestLabel = new JLabel("(Unspecified Test)");
     private IndependenceWrapper independenceWrapper;
 
@@ -106,26 +91,32 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         this.model = model;
-
-        this.dataSet = model.getDataModel();
-        Graph _graph = model.getGraph();
-        this.graph = GraphUtils.replaceNodes(_graph, this.dataSet.getVariables());
-        this.parameters = model.getParameters();
-
         refreshTestList();
-        setTest();
 
         indTestComboBox.addActionListener(e -> {
             setTest();
-
-            if (model.getResults(true).isEmpty() || model.getResults(false).isEmpty()) {
-                generateResults(true);
-                generateResults(false);
-            }
+            model.getMarkovCheck().generateResults();
+            tableModelIndep.fireTableDataChanged();
+            tableModelDep.fireTableDataChanged();
+            setLabelTexts();
         });
 
+        setTest();
+
+//        this.dataSet = model.getDataModel();
+        Graph _graph = model.getGraph();
+        Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables());
+        model.getMarkovCheck().generateResults();
+        setLabelTexts();
+
+        JPanel indep = buildGuiIndep();
+        JPanel dep = buildGuiDep();
+
+        tableModelIndep.fireTableDataChanged();
+        tableModelDep.fireTableDataChanged();
+
         Graph sourceGraph = model.getGraph();
-        List<Node> variables = independenceTest.getVariables();
+        List<Node> variables = model.getMarkovCheck().getVariables();
 
         List<Node> newVars = new ArrayList<>();
 
@@ -140,7 +131,7 @@ public class MarkovCheckEditor extends JPanel {
         List<Node> missingVars = new ArrayList<>();
 
         for (Node w : sourceGraph.getNodes()) {
-            if (independenceTest.getVariable(w.getName()) == null) {
+            if (model.getMarkovCheck().getVariable(w.getName()) == null) {
                 missingVars.add(w);
                 if (missingVars.size() >= 5) break;
             }
@@ -151,11 +142,7 @@ public class MarkovCheckEditor extends JPanel {
                     "\n    " + missingVars);
         }
 
-        msep = new IndTestMSep(this.graph);
-        model.setVars(this.graph.getNodeNames());
-
-        JPanel indep = buildGuiIndep();
-        JPanel dep = buildGuiDep();
+        model.setVars(graph.getNodeNames());
 
         Box box = Box.createVerticalBox();
         Box box1 = Box.createHorizontalBox();
@@ -164,12 +151,13 @@ public class MarkovCheckEditor extends JPanel {
         JButton params = new JButton("Params");
 
         params.addActionListener(e -> {
-//            setTest();
-            JOptionPane dialog = new JOptionPane(createParamsPanel(independenceWrapper, parameters), JOptionPane.PLAIN_MESSAGE);
+            JOptionPane dialog = new JOptionPane(createParamsPanel(independenceWrapper, model.getParameters()), JOptionPane.PLAIN_MESSAGE);
             dialog.createDialog("Set Parameters").setVisible(true);
             setTest();
-            generateResults(true);
-            generateResults(false);
+            model.getMarkovCheck().generateResults();
+            tableModelIndep.fireTableDataChanged();
+            tableModelDep.fireTableDataChanged();
+            setLabelTexts();
         });
 
         box1.add(params);
@@ -181,40 +169,29 @@ public class MarkovCheckEditor extends JPanel {
         box.add(pane);
 
         add(box);
-
-        generateResults(true);
-        generateResults(false);
-
-        invalidate();
-        repaint();
     }
 
     private void setTest() {
         IndependenceTestModel selectedItem = (IndependenceTestModel) indTestComboBox.getSelectedItem();
         Class<IndependenceWrapper> clazz = (selectedItem == null) ? null : selectedItem.getIndependenceTest().getClazz();
+        IndependenceTest independenceTest;
 
         if (clazz != null) {
             try {
                 independenceWrapper = clazz.getDeclaredConstructor(new Class[0]).newInstance();
-                independenceTest = independenceWrapper.getTest(dataSet, parameters);
+                independenceTest = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
+                model.setIndependenceTest(independenceTest);
+                markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+                faithfulnessTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+                invalidate();
+                repaint();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException e1) {
                 throw new RuntimeException(e1);
             }
         }
 
-        if (independenceTest == null) {
-            throw new NullPointerException("Expecting a test");
-        }
 
-        markovTestLabel.setText(independenceTest.toString());
-        faithfulnessTestLabel.setText(independenceTest.toString());
-
-        model.getResults(true).clear();
-        model.getResults(false).clear();
-
-        invalidate();
-        repaint();
     }
 
     //========================PUBLIC METHODS==========================//
@@ -229,15 +206,14 @@ public class MarkovCheckEditor extends JPanel {
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
-        markovTestLabel.setText(independenceTest.toString());
-        faithfulnessTestLabel.setText(independenceTest.toString());
+        markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+        faithfulnessTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
 
         Box b2a = Box.createHorizontalBox();
         b2a.add(Box.createHorizontalGlue());
         b1.add(b2a);
         b1.add(Box.createVerticalStrut(5));
 
-        List<IndependenceResult> results = model.getResults(false);
         this.tableModelDep = new AbstractTableModel() {
             public String getColumnName(int column) {
                 if (column == 0) {
@@ -258,17 +234,17 @@ public class MarkovCheckEditor extends JPanel {
             }
 
             public int getRowCount() {
-                return results.size();
+                return model.getResults(false).size();
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
-                if (rowIndex > results.size()) return null;
+                if (rowIndex > model.getResults(false).size()) return null;
 
                 if (columnIndex == 0) {
                     return rowIndex + 1;
                 }
                 if (columnIndex == 1) {
-                    IndependenceFact fact = results.get(rowIndex).getFact();
+                    IndependenceFact fact = model.getResults(false).get(rowIndex).getFact();
 
                     List<Node> Z = new ArrayList<>(fact.getZ());
                     Collections.sort(Z);
@@ -278,10 +254,10 @@ public class MarkovCheckEditor extends JPanel {
                     return "Dep(" + fact.getX() + ", " + fact.getY() + (Z.isEmpty() ? "" : " | " + z) + ")";
                 }
 
-                IndependenceResult result = results.get(rowIndex);
+                IndependenceResult result = model.getResults(false).get(rowIndex);
 
                 if (columnIndex == 2) {
-                    if (getIndependenceTest() instanceof IndTestMSep) {
+                    if (model.getMarkovCheck().getIndependenceTest() instanceof IndTestMSep) {
                         if (result.isIndependent()) {
                             return "M-SEPARATED";
                         } else {
@@ -391,31 +367,7 @@ public class MarkovCheckEditor extends JPanel {
         Box b5 = Box.createHorizontalBox();
         b5.add(Box.createGlue());
 
-        int dependent = 0;
-
-        for (IndependenceResult result : results) {
-            if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
-        }
-
-        fractionDependentDep = dependent / (double) results.size();
-
-        fractionDepLabelDep = new JLabel("% dependent = "
-                + ((Double.isNaN(fractionDependentDep)
-                ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentDep))));
-
-        List<Double> pValues = getPValues(results);
-
-        double kgPValue;
-
-        if (pValues.size() < 2) {
-            kgPValue = Double.NaN;
-        } else {
-            kgPValue = UniformityTest.getPValue(pValues);
-        }
-
-        ksLabelDep = new JLabel("P-value of Kolmogorov-Smirnov Uniformity Test p-value = "
-                + ((Double.isNaN(kgPValue)
-                ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(kgPValue))));
+        setLabelTexts();
 
         b5.add(fractionDepLabelDep);
         b1.add(b5);
@@ -433,13 +385,6 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private JPanel buildGuiIndep() {
-        JButton clear = new JButton("Clear");
-        clear.setFont(new Font("Dialog", Font.PLAIN, 14));
-        clear.addActionListener(e -> {
-            model.getResults(true).clear();
-            revalidate();
-            repaint();
-        });
 
         Box b1 = Box.createVerticalBox();
 
@@ -448,8 +393,8 @@ public class MarkovCheckEditor extends JPanel {
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
-        markovTestLabel.setText(getIndependenceTest().toString());
-        faithfulnessTestLabel.setText(getIndependenceTest().toString());
+        markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+        faithfulnessTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
 
         Box b2a = Box.createHorizontalBox();
         b2a.add(Box.createHorizontalGlue());
@@ -477,7 +422,8 @@ public class MarkovCheckEditor extends JPanel {
             }
 
             public int getRowCount() {
-                return model.getResults(true).size();
+                List<IndependenceResult> results = model.getResults(true);
+                return results.size();
             }
 
             public Object getValueAt(int rowIndex, int columnIndex) {
@@ -501,7 +447,7 @@ public class MarkovCheckEditor extends JPanel {
                 }
 
                 if (columnIndex == 2) {
-                    if (getIndependenceTest() instanceof IndTestMSep) {
+                    if (model.getMarkovCheck().getIndependenceTest() instanceof IndTestMSep) {
                         if (result.isIndependent()) {
                             return "M-SEPARATED";
                         } else {
@@ -611,32 +557,7 @@ public class MarkovCheckEditor extends JPanel {
         Box b5 = Box.createHorizontalBox();
         b5.add(Box.createGlue());
 
-        int dependent = 0;
-
-        for (IndependenceResult result : model.getResults(true)) {
-            if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
-        }
-
-        List<IndependenceResult> results = model.getResults(true);
-        fractionDependentIndep = dependent / (double) results.size();
-
-        fractionDepLabelIndep = new JLabel("% dependent = "
-                + ((Double.isNaN(fractionDependentIndep)
-                ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentIndep))));
-
-        List<Double> pValues = getPValues(results);
-
-        double ksPValue;
-
-        if (pValues.size() < 2) {
-            ksPValue = Double.NaN;
-        } else {
-            ksPValue = UniformityTest.getPValue(pValues);
-        }
-
-        ksLabelIndep = new JLabel("P-value of Kolmogorov-Smirnov Uniformity Test p-value = "
-                + ((Double.isNaN(ksPValue)
-                ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue))));
+        setLabelTexts();
 
         b5.add(fractionDepLabelIndep);
         b1.add(b5);
@@ -707,211 +628,67 @@ public class MarkovCheckEditor extends JPanel {
         model.getResults(indep).sort(Comparator.comparing(
                 IndependenceResult::getFact));
 
-        if (indep) {
-            tableModelIndep.fireTableDataChanged();
-        } else {
-            tableModelDep.fireTableDataChanged();
-        }
+        tableModelIndep.fireTableDataChanged();
+        tableModelDep.fireTableDataChanged();
+
+        invalidate();
+        repaint();
     }
 
-    private void generateResults(boolean indep) {
-        class MyWatchedProcess extends WatchedProcess {
-            public void watch() {
-                List<IndependenceResult> results = model.getResults(indep);
-                results.clear();
+//    private void generateResults() {
+//        class MyWatchedProcess extends WatchedProcess {
+//            public void watch() {
+//                setTest();
+//
+//                model.getMarkovCheck().generateResults();
+//                setLabelTexts();
+//
+//                tableModelIndep.fireTableDataChanged();
+//                tableModelDep.fireTableDataChanged();
+//
+//                invalidate();
+//                repaint();
+//            }
+//        }
+//
+//        SwingUtilities.invokeLater(MyWatchedProcess::new);
+//    }
 
-                invalidate();
-                repaint();
-
-                if (model.getVars().size() < 2) {
-                    if (indep) {
-                        tableModelIndep.fireTableDataChanged();
-                    } else {
-                        tableModelDep.fireTableDataChanged();
-                    }
-                    return;
-                }
-
-                List<IndependenceFact> facts = new ArrayList<>();
-
-                // Listing all facts before checking any (in preparation for parallelization).
-                for (Node x : graph.getNodes()) {
-                    Set<Node> z = new HashSet<>(graph.getParents(x));
-                    Set<Node> ms = new HashSet<>();
-                    Set<Node> mc = new HashSet<>();
-
-                    List<Node> other = graph.getNodes();
-                    other.removeAll(z);
-
-                    for (Node y : other) {
-                        if (y == x) continue;
-                        if (msep.isMSeparated(x, y, z)) {
-                            ms.add(y);
-                        } else {
-                            mc.add(y);
-                        }
-                    }
-
-                    System.out.println("Node " + x + " parents = " + z
-                            + " m-separated | z = " + ms + " m-connected | z = " + mc);
-
-                    if (indep) {
-                        for (Node y : ms) {
-                            facts.add(new IndependenceFact(x, y, z));
-                        }
-                    } else {
-                        for (Node y : mc) {
-                            facts.add(new IndependenceFact(x, y, z));
-                        }
-                    }
-                }
-
-                class IndCheckTask implements Callable<List<IndependenceResult>> {
-
-                    private final int from;
-                    private final int to;
-                    private final List<IndependenceFact> facts;
-                    private final IndependenceTest independenceTest;
-
-                    IndCheckTask(int from, int to, List<IndependenceFact> facts, IndependenceTest test) {
-                        this.from = from;
-                        this.to = to;
-                        this.facts = facts;
-                        this.independenceTest = test;
-                    }
-
-                    @Override
-                    public List<IndependenceResult> call() {
-                        List<IndependenceResult> results = new ArrayList<>();
-
-                        for (int i = from; i < to; i++) {
-                            if (Thread.interrupted()) break;
-                            IndependenceFact fact = facts.get(i);
-
-                            Node x = fact.getX();
-                            Node y = fact.getY();
-                            Set<Node> z = fact.getZ();
-                            boolean verbose = independenceTest.isVerbose();
-                            independenceTest.setVerbose(false);
-                            IndependenceResult result;
-                            try {
-                                result = independenceTest.checkIndependence(x, y, z);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                JOptionPane.showMessageDialog(MarkovCheckEditor.this,
-                                        "Error while checking independence: " + e.getMessage(),
-                                        "Error", JOptionPane.ERROR_MESSAGE);
-                                throw new RuntimeException(e);
-                            }
-                            boolean indep = result.isIndependent();
-                            double pValue = result.getPValue();
-                            independenceTest.setVerbose(verbose);
-
-                            if (!Double.isNaN(pValue)) {
-                                results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-
-                                if (indep) {
-                                    tableModelIndep.fireTableDataChanged();
-                                } else {
-                                    tableModelDep.fireTableDataChanged();
-                                }
-                            }
-                        }
-
-                        return results;
-                    }
-                }
-
-                List<Callable<List<IndependenceResult>>> tasks = new ArrayList<>();
-
-                int chunkSize = getChunkSize(facts.size());
-
-                for (int i = 0; i < facts.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
-                    IndCheckTask task = new IndCheckTask(i, min(facts.size(), i + chunkSize),
-                            facts, independenceTest);
-
-                    if (!parallelized) {
-                        List<IndependenceResult> _results = task.call();
-                        results.addAll(_results);
-                    } else {
-                        tasks.add(task);
-                    }
-                }
-
-                if (parallelized) {
-                    List<Future<List<IndependenceResult>>> theseResults = ForkJoinPool.commonPool().invokeAll(tasks);
-
-                    for (Future<List<IndependenceResult>> future : theseResults) {
-                        try {
-                            results.addAll(future.get());
-                        } catch (InterruptedException | ExecutionException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-
-                int dependent = 0;
-
-                for (IndependenceResult result : results) {
-                    if (result.isDependent() && !Double.isNaN(result.getPValue())) dependent++;
-                }
-
-                if (indep) {
-                    fractionDependentIndep = dependent / (double) results.size();
-                } else {
-                    fractionDependentDep = dependent / (double) results.size();
-                }
-
-                List<Double> pValues = getPValues(results);
-
-                double ksPValue;
-
-                if (pValues.size() < 2) {
-                    ksPValue = Double.NaN;
-                } else {
-                    ksPValue = UniformityTest.getPValue(pValues);
-                }
-
-                if (indep) {
-                    ksLabelIndep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
-                            + ((Double.isNaN(ksPValue)
-                            ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue))));
-                } else {
-                    ksLabelDep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
-                            + ((Double.isNaN(ksPValue)
-                            ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(ksPValue))));
-                }
-
-                if (indep) {
-                    fractionDepLabelIndep.setText("% dependent = "
-                            + ((Double.isNaN(fractionDependentIndep)
-                            ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentIndep))));
-                } else {
-                    fractionDepLabelDep.setText("% dependent = "
-                            + ((Double.isNaN(fractionDependentDep)
-                            ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentDep))));
-                }
-
-                if (indep) {
-                    tableModelIndep.fireTableDataChanged();
-                } else {
-                    tableModelDep.fireTableDataChanged();
-                }
-            }
+    private void setLabelTexts() {
+        if (ksLabelIndep == null) {
+            ksLabelIndep = new JLabel();
         }
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        if (ksLabelDep == null) {
+            ksLabelDep = new JLabel();
+        }
+
+        if (fractionDepLabelIndep == null) {
+            fractionDepLabelIndep = new JLabel();
+        }
+
+        if (fractionDepLabelDep == null) {
+            fractionDepLabelDep = new JLabel();
+        }
+
+        ksLabelIndep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
+                + ((Double.isNaN(model.getMarkovCheck().getKsPValue(true))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getKsPValue(true)))));
+        ksLabelDep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
+                + ((Double.isNaN(model.getMarkovCheck().getKsPValue(false))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getKsPValue(false)))));
+        fractionDepLabelIndep.setText("% dependent = "
+                + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(true))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(true)))));
+        fractionDepLabelDep.setText("% dependent = "
+                + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(false)))));
     }
 
-    private int getChunkSize(int n) {
-        int chunk = (int) FastMath.ceil((n / ((double) (5 * Runtime.getRuntime().availableProcessors()))));
-        if (chunk < 1) chunk = 1;
-        return chunk;
-    }
-
-    private IndependenceTest getIndependenceTest() {
-        return this.independenceTest;
-    }
 
     private int getLastSortCol() {
         return this.lastSortCol;
@@ -976,16 +753,6 @@ public class MarkovCheckEditor extends JPanel {
         return jPanel;
     }
 
-    public List<Double> getPValues(List<IndependenceResult> results) {
-        List<Double> pValues = new ArrayList<>();
-
-        for (IndependenceResult result : results) {
-            pValues.add(result.getPValue());
-        }
-
-        return pValues;
-    }
-
     static class Renderer extends DefaultTableCellRenderer {
         private JTable table;
         private boolean selected;
@@ -1014,18 +781,16 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private DataType getDataType() {
+        DataModel dataSet = model.getDataModel();
+
         if (dataSet.isContinuous() && !(dataSet instanceof ICovarianceMatrix)) {
             // covariance dataset is continuous at the same time - Zhou
-            parallelized = false;
             return DataType.Continuous;
         } else if (dataSet.isDiscrete()) {
-            parallelized = false;
             return DataType.Discrete;
         } else if (dataSet.isMixed()) {
-            parallelized = false;
             return DataType.Mixed;
         } else if (dataSet instanceof ICovarianceMatrix) { // Better to add an isCovariance() - Zhou
-            parallelized = false;
             return DataType.Covariance;
         } else {
             return null;

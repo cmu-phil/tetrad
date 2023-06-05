@@ -1,6 +1,7 @@
-package edu.cmu.tetradapp.util;
+package edu.cmu.tetrad.util;
 
 import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.exception.NumberIsTooLargeException;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 import java.util.ArrayList;
@@ -15,7 +16,13 @@ public class UniformityTest {
         // Create a uniform distribution with the same range as the data
         double min = points.stream().min(Double::compareTo).orElse(0.0);
         double max = points.stream().max(Double::compareTo).orElse(1.0);
-        UniformRealDistribution distribution = new UniformRealDistribution(min, max);
+        UniformRealDistribution distribution;
+        try {
+            distribution = new UniformRealDistribution(min, max);
+        } catch (NumberIsTooLargeException e) {
+            e.printStackTrace();
+            return Double.NaN;
+        }
 
         // Perform the Kolmogorov-Smirnov test
         KolmogorovSmirnovTest test = new KolmogorovSmirnovTest();

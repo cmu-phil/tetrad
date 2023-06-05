@@ -25,11 +25,12 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,9 +46,8 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
 
     private String name = "";
     private List<String> vars = new LinkedList<>();
-    private final List<IndependenceResult> resultsIndep = new ArrayList<>();
-    private final List<IndependenceResult> resultsDep = new ArrayList<>();
     private final Graph graph;
+    private transient MarkovCheck markovCheck = null;
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -62,6 +62,14 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
         this.dataModel = dataModel.getSelectedDataModel();
         this.graph = graphSource.getGraph();
         this.parameters = parameters;
+    }
+
+    public void setIndependenceTest(IndependenceTest test) {
+        this.markovCheck = new MarkovCheck(this.graph, test);
+    }
+
+    public MarkovCheck getMarkovCheck() {
+        return this.markovCheck;
     }
 
     @Override
@@ -97,11 +105,7 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
     }
 
     public List<IndependenceResult> getResults(boolean indep) {
-        if (indep) {
-            return this.resultsIndep;
-        } else {
-            return this.resultsDep;
-        }
+        return markovCheck.getResults(indep);
     }
 }
 
