@@ -90,7 +90,6 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
         return parameters;
     }
 
-
     @Override
     public String getName() {
         return this.name;

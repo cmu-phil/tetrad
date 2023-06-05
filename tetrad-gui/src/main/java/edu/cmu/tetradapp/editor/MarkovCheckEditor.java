@@ -635,25 +635,6 @@ public class MarkovCheckEditor extends JPanel {
         repaint();
     }
 
-//    private void generateResults() {
-//        class MyWatchedProcess extends WatchedProcess {
-//            public void watch() {
-//                setTest();
-//
-//                model.getMarkovCheck().generateResults();
-//                setLabelTexts();
-//
-//                tableModelIndep.fireTableDataChanged();
-//                tableModelDep.fireTableDataChanged();
-//
-//                invalidate();
-//                repaint();
-//            }
-//        }
-//
-//        SwingUtilities.invokeLater(MyWatchedProcess::new);
-//    }
-
     private void setLabelTexts() {
         if (ksLabelIndep == null) {
             ksLabelIndep = new JLabel();
