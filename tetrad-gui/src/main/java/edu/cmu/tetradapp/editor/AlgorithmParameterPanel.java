@@ -401,5 +401,4 @@ public class AlgorithmParameterPanel extends JPanel {
 
         return field;
     }
-
 }

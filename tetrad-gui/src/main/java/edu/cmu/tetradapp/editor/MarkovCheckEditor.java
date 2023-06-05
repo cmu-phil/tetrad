@@ -31,13 +31,14 @@ import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.ParamDescription;
+import edu.cmu.tetrad.util.ParamDescriptions;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
+import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModels;
-import edu.cmu.tetradapp.util.DesktopController;
-import edu.cmu.tetradapp.util.UniformityTest;
-import edu.cmu.tetradapp.util.WatchedProcess;
+import edu.cmu.tetradapp.util.*;
 import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,6 +51,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
+import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.*;
@@ -57,8 +59,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static edu.cmu.tetradapp.util.ParameterComponents.toArray;
 import static org.apache.commons.math3.util.FastMath.min;
 
 
@@ -92,7 +96,6 @@ public class MarkovCheckEditor extends JPanel {
     private final DataModel dataSet;
     private final JLabel faithfulnessTestLabel = new JLabel("(Unspecified Test)");
     private IndependenceWrapper independenceWrapper;
-    private JTextField textField;
 
     /**
      * Constructs a new editor for the given model.
@@ -1050,35 +1053,230 @@ public class MarkovCheckEditor extends JPanel {
         indTestComboBox.setSelectedItem(IndependenceTestModels.getInstance().getDefaultModel(dataType));
     }
 
+    // Paramter panel code from Kevin Bui.
     private JPanel createParamsPanel(IndependenceWrapper independenceWrapper, Parameters params) {
         Set<String> testParameters = new HashSet<>(independenceWrapper.getParameters());
+        return createParamsPanel("Parameters", testParameters, params);
+    }
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+    protected JPanel createParamsPanel(String title, Set<String> params, Parameters parameters) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createTitledBorder(title));
 
-        for (String parameter : testParameters) {
-            JPanel subPanel = new JPanel();
-            subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.X_AXIS));
-            subPanel.add(new JLabel(parameter));
-            subPanel.add(Box.createHorizontalGlue());
-            textField = new JTextField(params.get(parameter).toString());
-            textField.setMaximumSize(new Dimension(Short.MAX_VALUE, textField.getPreferredSize().height));
+        Box paramsBox = Box.createVerticalBox();
 
-            textField.addActionListener(e -> {
-                try {
-                    params.set(parameter, Double.parseDouble(textField.getText()));
-                } catch (Exception ex) {
-                    // Ignore
-                }
-
-                textField.setText(params.get(parameter).toString());
-            });
-
-            subPanel.add(textField);
-            panel.add(subPanel);
+        Box[] boxes = toArray(createParameterComponents(params, parameters));
+        int lastIndex = boxes.length - 1;
+        for (int i = 0; i < lastIndex; i++) {
+            paramsBox.add(boxes[i]);
+            paramsBox.add(Box.createVerticalStrut(10));
         }
+        paramsBox.add(boxes[lastIndex]);
+
+        panel.add(new PaddingPanel(paramsBox), BorderLayout.CENTER);
 
         return panel;
+    }
+
+    protected Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+        ParamDescriptions paramDescs = ParamDescriptions.getInstance();
+        return params.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        e -> createParameterComponent(e, parameters, paramDescs.get(e)),
+                        (u, v) -> {
+                            throw new IllegalStateException(String.format("Duplicate key %s.", u));
+                        },
+                        TreeMap::new));
+    }
+
+    protected Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+        JComponent component;
+        Object defaultValue = paramDesc.getDefaultValue();
+        if (defaultValue instanceof Double) {
+            double lowerBoundDouble = paramDesc.getLowerBoundDouble();
+            double upperBoundDouble = paramDesc.getUpperBoundDouble();
+            component = getDoubleField(parameter, parameters, (Double) defaultValue, lowerBoundDouble, upperBoundDouble);
+        } else if (defaultValue instanceof Integer) {
+            int lowerBoundInt = paramDesc.getLowerBoundInt();
+            int upperBoundInt = paramDesc.getUpperBoundInt();
+            component = getIntTextField(parameter, parameters, (Integer) defaultValue, lowerBoundInt, upperBoundInt);
+        } else if (defaultValue instanceof Long) {
+            long lowerBoundLong = paramDesc.getLowerBoundLong();
+            long upperBoundLong = paramDesc.getUpperBoundLong();
+            component = getLongTextField(parameter, parameters, (Long) defaultValue, lowerBoundLong, upperBoundLong);
+        } else if (defaultValue instanceof Boolean) {
+            component = getBooleanSelectionBox(parameter, parameters, (Boolean) defaultValue);
+        } else if (defaultValue instanceof String) {
+            component = getStringField(parameter, parameters, (String) defaultValue);
+        } else {
+            throw new IllegalArgumentException("Unexpected type: " + defaultValue.getClass());
+        }
+
+        Box paramRow = Box.createHorizontalBox();
+
+        JLabel paramLabel = new JLabel(paramDesc.getShortDescription());
+        String longDescription = paramDesc.getLongDescription();
+        if (longDescription != null) {
+            paramLabel.setToolTipText(longDescription);
+        }
+        paramRow.add(paramLabel);
+        paramRow.add(Box.createHorizontalGlue());
+        paramRow.add(component);
+
+        return paramRow;
+    }
+
+    protected DoubleTextField getDoubleField(String parameter, Parameters parameters,
+                                             double defaultValue, double lowerBound, double upperBound) {
+        DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
+                8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
+
+        field.setFilter((value, oldValue) -> {
+            if (value == field.getValue()) {
+                return oldValue;
+            }
+
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    protected IntTextField getIntTextField(String parameter, Parameters parameters,
+                                           int defaultValue, double lowerBound, double upperBound) {
+        IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
+
+        field.setFilter((value, oldValue) -> {
+            if (value == field.getValue()) {
+                return oldValue;
+            }
+
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    protected LongTextField getLongTextField(String parameter, Parameters parameters,
+                                             long defaultValue, long lowerBound, long upperBound) {
+        LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
+
+        field.setFilter((value, oldValue) -> {
+            if (value == field.getValue()) {
+                return oldValue;
+            }
+
+            if (value < lowerBound) {
+                return oldValue;
+            }
+
+            if (value > upperBound) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
+    }
+
+    // Zhou's new implementation with yes/no radio buttons
+    protected Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
+        Box selectionBox = Box.createHorizontalBox();
+
+        JRadioButton yesButton = new JRadioButton("Yes");
+        JRadioButton noButton = new JRadioButton("No");
+
+        // Button group to ensure only one option can be selected
+        ButtonGroup selectionBtnGrp = new ButtonGroup();
+        selectionBtnGrp.add(yesButton);
+        selectionBtnGrp.add(noButton);
+
+        boolean aBoolean = parameters.getBoolean(parameter, defaultValue);
+
+        // Set default selection
+        if (aBoolean) {
+            yesButton.setSelected(true);
+        } else {
+            noButton.setSelected(true);
+        }
+
+        // Add to containing box
+        selectionBox.add(yesButton);
+        selectionBox.add(noButton);
+
+        // Event listener
+        yesButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                parameters.set(parameter, true);
+            }
+        });
+
+        // Event listener
+        noButton.addActionListener((e) -> {
+            JRadioButton button = (JRadioButton) e.getSource();
+            if (button.isSelected()) {
+                parameters.set(parameter, false);
+            }
+        });
+
+        return selectionBox;
+    }
+
+    protected StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+        StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
+
+        field.setFilter((value, oldValue) -> {
+            if (value.equals(field.getValue().trim())) {
+                return oldValue;
+            }
+
+            try {
+                parameters.set(parameter, value);
+            } catch (Exception e) {
+                // Ignore.
+            }
+
+            return value;
+        });
+
+        return field;
     }
 }
 
