@@ -30,7 +30,10 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndTestMSep;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.util.*;
+import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.ParamDescription;
+import edu.cmu.tetrad.util.ParamDescriptions;
+import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.model.MarkovCheckIndTestModel;
 import edu.cmu.tetradapp.ui.PaddingPanel;
 import edu.cmu.tetradapp.ui.model.IndependenceTestModel;
@@ -43,7 +46,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
-import java.awt.Point;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -94,11 +96,17 @@ public class MarkovCheckEditor extends JPanel {
         refreshTestList();
 
         indTestComboBox.addActionListener(e -> {
-            setTest();
-            model.getMarkovCheck().generateResults();
-            tableModelIndep.fireTableDataChanged();
-            tableModelDep.fireTableDataChanged();
-            setLabelTexts();
+            class MyWatchedProcess extends WatchedProcess {
+                public void watch() {
+                    setTest();
+                    model.getMarkovCheck().generateResults();
+                    tableModelIndep.fireTableDataChanged();
+                    tableModelDep.fireTableDataChanged();
+                    setLabelTexts();
+                }
+            }
+
+            SwingUtilities.invokeLater(MyWatchedProcess::new);
         });
 
         setTest();
@@ -106,8 +114,18 @@ public class MarkovCheckEditor extends JPanel {
 //        this.dataSet = model.getDataModel();
         Graph _graph = model.getGraph();
         Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables());
-        model.getMarkovCheck().generateResults();
-        setLabelTexts();
+
+        class MyWatchedProcess extends WatchedProcess {
+            public void watch() {
+                model.getMarkovCheck().generateResults();
+                setLabelTexts();
+            }
+        }
+
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
+
+//        model.getMarkovCheck().generateResults();
+//        setLabelTexts();
 
         JPanel indep = buildGuiIndep();
         JPanel dep = buildGuiDep();
@@ -153,11 +171,20 @@ public class MarkovCheckEditor extends JPanel {
         params.addActionListener(e -> {
             JOptionPane dialog = new JOptionPane(createParamsPanel(independenceWrapper, model.getParameters()), JOptionPane.PLAIN_MESSAGE);
             dialog.createDialog("Set Parameters").setVisible(true);
-            setTest();
-            model.getMarkovCheck().generateResults();
-            tableModelIndep.fireTableDataChanged();
-            tableModelDep.fireTableDataChanged();
-            setLabelTexts();
+
+            class MyWatchedProcess2 extends WatchedProcess {
+
+                @Override
+                public void watch() {
+                    setTest();
+                    model.getMarkovCheck().generateResults();
+                    tableModelIndep.fireTableDataChanged();
+                    tableModelDep.fireTableDataChanged();
+                    setLabelTexts();
+                }
+            }
+
+            SwingUtilities.invokeLater(MyWatchedProcess2::new);
         });
 
         box1.add(params);
