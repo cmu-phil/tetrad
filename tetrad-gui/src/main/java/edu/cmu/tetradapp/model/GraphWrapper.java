@@ -25,7 +25,7 @@ import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.expression.VariableExpression;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
@@ -167,7 +167,7 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        return new IndTestMSep(getGraph());
+        return new MsepTest(getGraph());
     }
 
     public String getName() {

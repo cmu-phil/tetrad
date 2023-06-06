@@ -1372,7 +1372,7 @@ public final class TestGrasp {
 
 
 //                    List<Node> variables = facts.getVariables();
-                    IndTestMSep test = new IndTestMSep(facts, variables);
+                    MsepTest test = new MsepTest(facts, variables);
 
                     edu.cmu.tetrad.search.Grasp boss = new edu.cmu.tetrad.search.Grasp(test, new GraphScore(facts));
                     boss.setNonSingularDepth(1);
@@ -1708,7 +1708,7 @@ public final class TestGrasp {
         System.out.println("SP DAG = " + spGraph);
         System.out.println("Failing Estimated DAG = " + failingDag);
 
-        IndTestMSep msep = new IndTestMSep(failingDag);
+        MsepTest msep = new MsepTest(failingDag);
 
         for (IndependenceFact fact : facts.getFacts()) {
             if (msep.isMSeparated(fact.getX(), fact.getY(), fact.getZ())) {
@@ -2881,7 +2881,7 @@ public final class TestGrasp {
             Ret facts = allFacts.get(i);
             count++;
 
-            TeyssierScorer scorer = new TeyssierScorer(new IndTestMSep(facts.getFacts()),
+            TeyssierScorer scorer = new TeyssierScorer(new MsepTest(facts.getFacts()),
                     new GraphScore(facts.getFacts()));
 
             OrderedMap<String, Set<Graph>> graphs = new ListOrderedMap<>();
@@ -2896,7 +2896,7 @@ public final class TestGrasp {
             while ((perm = gen.next()) != null) {
                 List<Node> p = GraphUtils.asList(perm, variables);
 
-                edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new IndTestMSep(facts.getFacts()));
+                edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new MsepTest(facts.getFacts()));
                 search.setDepth(depth);
                 List<Node> order = search.bestOrder(p);
 //                System.out.println(p + " " + order + " truth = " + facts.getTruth() + " found = " + search.getNumEdges());// + " " + search.getGraph(false));
@@ -2952,7 +2952,7 @@ public final class TestGrasp {
             Ret facts = allFacts.get(i);
             count++;
 
-            TeyssierScorer scorer = new TeyssierScorer(new IndTestMSep(facts.getFacts()),
+            TeyssierScorer scorer = new TeyssierScorer(new MsepTest(facts.getFacts()),
                     new GraphScore(facts.getFacts()));
 
             OrderedMap<String, Set<Graph>> graphs = new ListOrderedMap<>();
@@ -2967,7 +2967,7 @@ public final class TestGrasp {
             while ((perm = gen.next()) != null) {
                 List<Node> p = GraphUtils.asList(perm, variables);
 
-                edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new IndTestMSep(facts.getFacts()));
+                edu.cmu.tetrad.search.Grasp search = new edu.cmu.tetrad.search.Grasp(new MsepTest(facts.getFacts()));
                 search.setDepth(depth);
                 search.setUncoveredDepth(depth);
                 search.setNonSingularDepth(depth);
@@ -3037,7 +3037,7 @@ public final class TestGrasp {
                         DataSet dataSet = im.simulateData(s, false);
                         List<Node> V = dataSet.getVariables();
 
-                        IndTestMSep msep = new IndTestMSep(graph);
+                        MsepTest msep = new MsepTest(graph);
 
                         SemBicScore score = new SemBicScore(dataSet);
                         score.setPenaltyDiscount(1);
@@ -3123,7 +3123,7 @@ public final class TestGrasp {
         for (int k = 0; k < 100; k++) {
             Graph g = RandomGraph.randomGraph(10, 0, 15, 100,
                     100, 100, false);
-            IndTestMSep test = new IndTestMSep(g);
+            MsepTest test = new MsepTest(g);
             GraphScore score = new GraphScore(g);
 
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
@@ -3203,7 +3203,7 @@ public final class TestGrasp {
 
         System.out.println("Source = " + graph);//SearchGraphUtils.cpdagForDag(graph));
 
-        IndTestMSep msep = new IndTestMSep(graph);
+        MsepTest msep = new MsepTest(graph);
         IndependenceFacts facts = new IndependenceFacts(graph);
 
         List<Node> nodes = graph.getNodes();
@@ -3262,7 +3262,7 @@ public final class TestGrasp {
 
         if (count >= 2) {
 
-            IndependenceTest test = new IndTestMSep(facts);
+            IndependenceTest test = new MsepTest(facts);
 
             edu.cmu.tetrad.search.Grasp grasp = new edu.cmu.tetrad.search.Grasp(test);
             grasp.bestOrder(test.getVariables());

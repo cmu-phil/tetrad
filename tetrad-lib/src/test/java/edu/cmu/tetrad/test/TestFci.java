@@ -30,7 +30,7 @@ import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -193,7 +193,7 @@ public class TestFci {
         Dag trueGraph = new Dag(RandomGraph.randomGraph(nodes, 10, numEdges,
                 7, 5, 5, false));
 
-        IndependenceTest test = new IndTestMSep(trueGraph);
+        IndependenceTest test = new MsepTest(trueGraph);
 
         Fci fci = new Fci(test);
 
@@ -222,7 +222,7 @@ public class TestFci {
         System.out.println("Graph = " + graph);
 
         // Set up search.
-        IndependenceTest independence = new IndTestMSep(graph);
+        IndependenceTest independence = new MsepTest(graph);
 
         Fci fci = new Fci(independence);
         fci.setPossibleMsepSearchDone(true);

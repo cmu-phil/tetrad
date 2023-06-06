@@ -203,7 +203,7 @@ final class IndTestChooser {
         if (IndTestType.M_SEPARATION != testType) {
             params.set("indTestType", IndTestType.M_SEPARATION);
         }
-        return new IndTestMSep(graph);
+        return new MsepTest(graph);
     }
 
     private IndependenceTest getCovMatrixTest(ICovarianceMatrix covMatrix,

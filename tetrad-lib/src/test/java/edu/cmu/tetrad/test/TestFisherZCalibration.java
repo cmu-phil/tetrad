@@ -8,7 +8,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
@@ -58,7 +58,7 @@ public class TestFisherZCalibration {
         List<Node> variables = data.getVariables();
         graph = GraphUtils.replaceNodes(graph, variables);
 
-        IndependenceTest msep = new IndTestMSep(graph);
+        IndependenceTest msep = new MsepTest(graph);
 
         for (int depth : new int[]{0, 1}) {
             testOneDepth(parameters, test1, test2, variables, msep, depth);

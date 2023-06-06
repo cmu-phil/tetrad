@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -113,15 +113,6 @@ public class MarkovCheckEditor extends JPanel {
         Graph _graph = model.getGraph();
         Graph graph = GraphUtils.replaceNodes(_graph, model.getMarkovCheck().getVariables());
 
-        class MyWatchedProcess extends WatchedProcess {
-            public void watch() {
-                model.getMarkovCheck().generateResults();
-                setLabelTexts();
-            }
-        }
-
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
-
         JPanel indep = buildGuiIndep();
         JPanel dep = buildGuiDep();
 
@@ -189,6 +180,18 @@ public class MarkovCheckEditor extends JPanel {
         pane.addTab("Check Local Markov", indep);
         pane.addTab("Check Local Faithfulness", dep);
         box.add(pane);
+
+        class MyWatchedProcess extends WatchedProcess {
+            public void watch() {
+                setTest();
+                model.getMarkovCheck().generateResults();
+                tableModelIndep.fireTableDataChanged();
+                tableModelDep.fireTableDataChanged();
+                setLabelTexts();
+            }
+        }
+
+        SwingUtilities.invokeLater(MyWatchedProcess::new);
 
         add(box);
     }
@@ -279,7 +282,7 @@ public class MarkovCheckEditor extends JPanel {
                 IndependenceResult result = model.getResults(false).get(rowIndex);
 
                 if (columnIndex == 2) {
-                    if (model.getMarkovCheck().getIndependenceTest() instanceof IndTestMSep) {
+                    if (model.getMarkovCheck().getIndependenceTest() instanceof MsepTest) {
                         if (result.isIndependent()) {
                             return "M-SEPARATED";
                         } else {
@@ -469,7 +472,7 @@ public class MarkovCheckEditor extends JPanel {
                 }
 
                 if (columnIndex == 2) {
-                    if (model.getMarkovCheck().getIndependenceTest() instanceof IndTestMSep) {
+                    if (model.getMarkovCheck().getIndependenceTest() instanceof MsepTest) {
                         if (result.isIndependent()) {
                             return "M-SEPARATED";
                         } else {

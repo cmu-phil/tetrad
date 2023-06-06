@@ -23,7 +23,7 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -856,7 +856,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        return new IndTestMSep(getGraph());
+        return new MsepTest(getGraph());
     }
 }
 

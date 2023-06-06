@@ -26,7 +26,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.search.Rfci;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -182,7 +182,7 @@ public final class TestSearchGraph {
         long start, stop;
         final int depth = -1;
 
-        IndependenceTest test = new IndTestMSep(graph);
+        IndependenceTest test = new MsepTest(graph);
 
         Rfci fci = new Rfci(test);
         Fas fas = new Fas(test);

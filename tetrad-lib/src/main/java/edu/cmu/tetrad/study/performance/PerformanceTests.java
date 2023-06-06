@@ -28,7 +28,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -1327,7 +1327,7 @@ public class PerformanceTests {
 
         System.out.println("Graph done");
 
-        IndTestMSep test = new IndTestMSep(dag, true);
+        MsepTest test = new MsepTest(dag, true);
         Graph left = new Pc(test).search();
 
         System.out.println("PC graph = " + left);
@@ -1386,7 +1386,7 @@ public class PerformanceTests {
 
         System.out.println("First FAS graph = " + left);
 
-        Pc pc2 = new Pc(new IndTestMSep(dag));
+        Pc pc2 = new Pc(new MsepTest(dag));
         pc2.setStable(true);
         Graph top = pc2.search();
 

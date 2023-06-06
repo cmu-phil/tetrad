@@ -22,7 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetrad.util.Parameters;
@@ -477,6 +477,6 @@ public final class DagEditor extends JPanel
 
     @Override
     public IndependenceTest getIndependenceTest() {
-        return new IndTestMSep(this.workbench.getGraph());
+        return new MsepTest(this.workbench.getGraph());
     }
 }

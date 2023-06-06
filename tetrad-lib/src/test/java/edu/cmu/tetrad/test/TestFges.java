@@ -40,7 +40,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.*;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -245,7 +245,7 @@ public class TestFges {
         g.addDirectedEdge(x4, x2);
         g.addDirectedEdge(x4, x3);
 
-        Graph CPDAG1 = new Pc(new IndTestMSep(g)).search();
+        Graph CPDAG1 = new Pc(new MsepTest(g)).search();
         edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(new GraphScore(g));
         fges.setFaithfulnessAssumed(true);
         Graph CPDAG2 = fges.search();
@@ -1584,7 +1584,7 @@ public class TestFges {
         DataSet dataSet = im.simulateData(N, false);
         SemBicScore score = new SemBicScore(dataSet);
 
-        IndTestMSep msep = new IndTestMSep(graph);
+        MsepTest msep = new MsepTest(graph);
         int count = 1;
 
         for (int i = 0; i < 10000; i++) {

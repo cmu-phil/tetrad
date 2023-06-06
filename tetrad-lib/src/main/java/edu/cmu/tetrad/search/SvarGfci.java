@@ -27,7 +27,7 @@ import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -242,8 +242,8 @@ public final class SvarGfci implements IGraphSearch {
         ICovarianceMatrix cov = this.independenceTest.getCov();
         Score score;
 
-        if (this.independenceTest instanceof IndTestMSep) {
-            score = new GraphScore(((IndTestMSep) independenceTest).getGraph());
+        if (this.independenceTest instanceof MsepTest) {
+            score = new GraphScore(((MsepTest) independenceTest).getGraph());
         } else if (cov != null) {
             this.covarianceMatrix = cov;
             SemBicScore score0 = new SemBicScore(cov);

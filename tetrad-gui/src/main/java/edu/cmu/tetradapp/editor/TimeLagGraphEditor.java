@@ -22,7 +22,7 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.TetradSerializable;
 import edu.cmu.tetradapp.model.IndTestProducer;
@@ -433,7 +433,7 @@ public final class TimeLagGraphEditor extends JPanel
     public IndependenceTest getIndependenceTest() {
         Graph graph = getWorkbench().getGraph();
         EdgeListGraph listGraph = new EdgeListGraph(graph);
-        return new IndTestMSep(listGraph);
+        return new MsepTest(listGraph);
     }
 
     private LayoutEditable getLayoutEditable() {
