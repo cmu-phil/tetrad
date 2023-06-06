@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -164,7 +164,7 @@ public class TestPc {
         Graph graph = GraphUtils.convert(inputGraph);
 
         // Set up search.
-        IndependenceTest independence = new IndTestMSep(graph);
+        IndependenceTest independence = new MsepTest(graph);
         Pc pc = new Pc(independence);
         pc.setVerbose(true);
 
@@ -195,7 +195,7 @@ public class TestPc {
         Graph graph = GraphUtils.convert("A-->B,C-->B,B-->D");
 
         // Set up search.
-        IndependenceTest independence = new IndTestMSep(graph);
+        IndependenceTest independence = new MsepTest(graph);
         Pc pc = new Pc(independence);
 
         // Set up search.
@@ -221,7 +221,7 @@ public class TestPc {
         for (int i = 0; i < 2; i++) {
             Graph graph = RandomGraph.randomGraph(100, 0, 100, 100,
                     100, 100, false);
-            IndTestMSep test = new IndTestMSep(graph);
+            MsepTest test = new MsepTest(graph);
             Pc pc = new Pc(test);
             Graph CPDAG = pc.search();
             Graph CPDAG2 = GraphSearchUtils.cpdagFromDag(graph);

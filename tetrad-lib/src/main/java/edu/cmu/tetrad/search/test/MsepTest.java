@@ -40,7 +40,7 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public class IndTestMSep implements IndependenceTest {
+public class MsepTest implements IndependenceTest {
 
     private Map<Node, Set<Node>> ancestorMap;
     private IndependenceFacts independenceFacts;
@@ -64,7 +64,7 @@ public class IndTestMSep implements IndependenceTest {
      * @param graph The graph for which m-separation facts should be checked. This may be a DAG, CPDAG, or PAG. In the
      *              latter case, m-separation results will be returned (same algorithm).
      */
-    public IndTestMSep(Graph graph) {
+    public MsepTest(Graph graph) {
         this(graph, false);
     }
 
@@ -75,7 +75,7 @@ public class IndTestMSep implements IndependenceTest {
      * @param variables The variables for the facts, if different from those that independenceFacts would return.
      * @see IndependenceFacts
      */
-    public IndTestMSep(IndependenceFacts facts, List<Node> variables) {
+    public MsepTest(IndependenceFacts facts, List<Node> variables) {
         this(facts, false);
         facts.setNodes(variables);
     }
@@ -86,7 +86,7 @@ public class IndTestMSep implements IndependenceTest {
      * @param facts Independence facts to be used for direct calculations of m-separation.
      * @see IndependenceFacts
      */
-    public IndTestMSep(IndependenceFacts facts) {
+    public MsepTest(IndependenceFacts facts) {
         this(facts, false);
     }
 
@@ -98,7 +98,7 @@ public class IndTestMSep implements IndependenceTest {
      * @param keepLatents Whether latent in the graph should be used in conditional independence facts. If the graph is
      *                    being marginalized, this should be false.
      */
-    public IndTestMSep(Graph graph, boolean keepLatents) {
+    public MsepTest(Graph graph, boolean keepLatents) {
         if (graph == null) {
             throw new NullPointerException();
         }
@@ -118,7 +118,7 @@ public class IndTestMSep implements IndependenceTest {
      *                    being marginalized, this should be false.
      * @see IndependenceFacts
      */
-    public IndTestMSep(IndependenceFacts facts, boolean keepLatents) {
+    public MsepTest(IndependenceFacts facts, boolean keepLatents) {
         if (facts == null) {
             throw new NullPointerException();
         }

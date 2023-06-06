@@ -26,7 +26,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.GrowShrink;
 import edu.cmu.tetrad.search.IMbSearch;
 import edu.cmu.tetrad.search.PcMb;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.junit.Test;
 
@@ -43,7 +43,7 @@ public class TestMarkovBlanketSearches {
     public void testSubgraph1() {
         Graph graph = GraphUtils.convert("T-->X,X-->Y,W-->X,W-->Y");
 
-        IndTestMSep test = new IndTestMSep(graph);
+        MsepTest test = new MsepTest(graph);
 
         IMbSearch search = new GrowShrink(test);
         Set<Node> blanket = search.findMb(test.getVariable("T"));
@@ -64,7 +64,7 @@ public class TestMarkovBlanketSearches {
                 "T-->C3,PC1a-->C1,PC1b-->C1,PC2a-->C2,PC2b<--C2,PC3a-->C3," +
                 "PC3b-->C3,PC1b-->PC2a,PC1a<--PC3b,U,V");
 
-        IndTestMSep test = new IndTestMSep(graph);
+        MsepTest test = new MsepTest(graph);
         IMbSearch mbSearch = new GrowShrink(test);
         Set<Node> blanket = mbSearch.findMb(test.getVariable("T"));
 
@@ -85,7 +85,7 @@ public class TestMarkovBlanketSearches {
 
         Graph dag = new Dag(RandomGraph.randomGraph(nodes1, 0, 10,
                 5, 5, 5, false));
-        IndependenceTest test = new IndTestMSep(dag);
+        IndependenceTest test = new MsepTest(dag);
         PcMb search = new PcMb(test, -1);
 
         dag = GraphUtils.replaceNodes(dag, nodes1);

@@ -4,7 +4,7 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.Parameters;
 
@@ -40,7 +40,7 @@ public class MSeparationTest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         if (dataSet == null) {
-            return new IndTestMSep(this.graph);
+            return new MsepTest(this.graph);
         } else {
             throw new IllegalArgumentException("Expecting no data for a m-separation test.");
         }

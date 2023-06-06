@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Pc;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import org.junit.Test;
@@ -149,7 +149,7 @@ public class TestPcStableMax {
         Graph graph = GraphUtils.convert(inputGraph);
 
         // Set up search.
-        IndependenceTest independence = new IndTestMSep(graph);
+        IndependenceTest independence = new MsepTest(graph);
         Pc pc = new Pc(independence);
 
         // Run search
@@ -174,7 +174,7 @@ public class TestPcStableMax {
         Graph graph = GraphUtils.convert(input);
 
         // Set up search.
-        IndependenceTest independence = new IndTestMSep(graph);
+        IndependenceTest independence = new MsepTest(graph);
         Pc pc = new Pc(independence);
         pc.setStable(true);
         pc.setUseMaxPHeuristic(true);

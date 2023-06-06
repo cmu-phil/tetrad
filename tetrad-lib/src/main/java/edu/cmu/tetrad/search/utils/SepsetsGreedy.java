@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -96,8 +96,8 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     public Graph getDag() {
-        if (this.independenceTest instanceof IndTestMSep) {
-            return ((IndTestMSep) this.independenceTest).getGraph();
+        if (this.independenceTest instanceof MsepTest) {
+            return ((MsepTest) this.independenceTest).getGraph();
         } else {
             return null;
         }

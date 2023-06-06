@@ -30,7 +30,7 @@ import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -152,7 +152,7 @@ public class TestGFci {
         g1.addDirectedEdge(L, x2);
         g1.addDirectedEdge(L, x3);
 
-        GFci gfci = new GFci(new IndTestMSep(g1), new GraphScore(g1));
+        GFci gfci = new GFci(new MsepTest(g1), new GraphScore(g1));
 
         Graph pag = gfci.search();
 
@@ -183,7 +183,7 @@ public class TestGFci {
             Graph dag = RandomGraph.randomGraph(numNodes, numLatents, numNodes,
                     10, 10, 10, false);
 
-            GFci gfci = new GFci(new IndTestMSep(dag), new GraphScore(dag));
+            GFci gfci = new GFci(new MsepTest(dag), new GraphScore(dag));
             gfci.setCompleteRuleSetUsed(true);
             gfci.setFaithfulnessAssumed(true);
             Graph pag1 = gfci.search();

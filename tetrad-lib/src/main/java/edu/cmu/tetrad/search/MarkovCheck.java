@@ -1,9 +1,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndTestMSep;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.NumberFormatUtil;
@@ -24,7 +25,7 @@ import static org.apache.commons.math3.util.FastMath.min;
 public class MarkovCheck {
     private final Graph graph;
     private final IndependenceTest independenceTest;
-    private final IndTestMSep msep;
+    private final MsepTest msep;
     private final List<IndependenceResult> resultsIndep = new ArrayList<>();
     private final List<IndependenceResult> resultsDep = new ArrayList<>();
     private boolean parallelized = false;
@@ -34,9 +35,9 @@ public class MarkovCheck {
     private double ksPValueDep = Double.NaN;
 
     public MarkovCheck(Graph graph, IndependenceTest independenceTest) {
-        this.graph = graph;
+        this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
         this.independenceTest = independenceTest;
-        this.msep = new IndTestMSep(graph);
+        this.msep = new MsepTest(this.graph);
     }
 
     public void generateResults() {
