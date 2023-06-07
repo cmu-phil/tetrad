@@ -4,10 +4,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
-import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.math3.util.FastMath;
 
@@ -46,27 +45,23 @@ public class MarkovCheck {
 
         for (Node x : independenceTest.getVariables()) {
             Set<Node> z = new HashSet<>(graph.getParents(x));
-            Set<Node> ms = new HashSet<>();
-            Set<Node> mc = new HashSet<>();
+            Set<Node> msep = new HashSet<>();
+            Set<Node> mconn = new HashSet<>();
 
             List<Node> other = graph.getNodes();
             other.removeAll(z);
 
             for (Node y : other) {
                 if (y == x) continue;
-                if (msep.isMSeparated(x, y, z)) {
-                    ms.add(y);
+                if (this.msep.isMSeparated(x, y, z)) {
+                    msep.add(y);
                 } else {
-                    mc.add(y);
+                    mconn.add(y);
                 }
             }
 
-            System.out.println("Node " + x + " parents = " + z
-                    + " m-separated | z = " + ms + " m-connected | z = " + mc);
-
-
-            generateResults(true, x, z, ms, mc);
-            generateResults(false, x, z, ms, mc);
+            generateResults(true, x, z, msep, mconn);
+            generateResults(false, x, z, msep, mconn);
         }
 
         calcStats(true);
@@ -79,9 +74,9 @@ public class MarkovCheck {
 
     public List<IndependenceResult> getResults(boolean indep) {
         if (indep) {
-            return this.resultsIndep;
+            return new ArrayList<>(this.resultsIndep);
         } else {
-            return this.resultsDep;
+            return new ArrayList<>(this.resultsDep);
         }
     }
 
@@ -123,16 +118,16 @@ public class MarkovCheck {
         return this.independenceTest;
     }
 
-    private void generateResults(boolean indep, Node x, Set<Node> z, Set<Node> ms, Set<Node> mc) {
+    private void generateResults(boolean indep, Node x, Set<Node> z, Set<Node> msep, Set<Node> mconn) {
         List<IndependenceFact> facts = new ArrayList<>();
 
         // Listing all facts before checking any (in preparation for parallelization).
         if (indep) {
-            for (Node y : ms) {
+            for (Node y : msep) {
                 facts.add(new IndependenceFact(x, y, z));
             }
         } else {
-            for (Node y : mc) {
+            for (Node y : mconn) {
                 facts.add(new IndependenceFact(x, y, z));
             }
         }
@@ -192,7 +187,7 @@ public class MarkovCheck {
 
             if (!parallelized) {
                 List<IndependenceResult> _results = task.call();
-                getResults(indep).addAll(_results);
+                getResultsLocal(indep).addAll(_results);
             } else {
                 tasks.add(task);
             }
@@ -203,7 +198,7 @@ public class MarkovCheck {
 
             for (Future<List<IndependenceResult>> future : theseResults) {
                 try {
-                    getResults(indep).addAll(future.get());
+                    getResultsLocal(indep).addAll(future.get());
                 } catch (InterruptedException | ExecutionException e) {
                     throw new RuntimeException(e);
                 }
@@ -212,7 +207,7 @@ public class MarkovCheck {
     }
 
     private void calcStats(boolean indep) {
-        List<IndependenceResult> results = getResults(indep);
+        List<IndependenceResult> results = getResultsLocal(indep);
 
         int dependent = 0;
 
@@ -241,31 +236,20 @@ public class MarkovCheck {
                 ksPValueDep = UniformityTest.getPValue(pValues);
             }
         }
-
-        if (indep) {
-            System.out.println("P-value of Kolmogorov-Smirnov Uniformity Test = "
-                    + ((Double.isNaN(ksPValueIndep)
-                    ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(ksPValueIndep))));
-        } else {
-            System.out.println("P-value of Kolmogorov-Smirnov Uniformity Test = "
-                    + ((Double.isNaN(ksPValueDep)
-                    ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(ksPValueDep))));
-        }
-
-        if (indep) {
-            System.out.println("% dependent = "
-                    + ((Double.isNaN(fractionDependentIndep)
-                    ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentIndep))));
-        } else {
-            System.out.println("% dependent = "
-                    + ((Double.isNaN(fractionDependentDep)
-                    ? "-" : NumberFormatUtil.getInstance().getNumberFormat().format(fractionDependentDep))));
-        }
     }
 
     private int getChunkSize(int n) {
         int chunk = (int) FastMath.ceil((n / ((double) (5 * Runtime.getRuntime().availableProcessors()))));
         if (chunk < 1) chunk = 1;
         return chunk;
+    }
+
+
+    private List<IndependenceResult> getResultsLocal(boolean indep) {
+        if (indep) {
+            return this.resultsIndep;
+        } else {
+            return this.resultsDep;
+        }
     }
 }

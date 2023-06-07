@@ -62,7 +62,7 @@ public class ExampleCompareFromFiles {
         statistics.add(new MathewsCorrArrow());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
-        statistics.add(new Shd());
+Ch        statistics.add(new StructuralHammingDistance());
         statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);

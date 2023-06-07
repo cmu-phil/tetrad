@@ -91,7 +91,7 @@ public final class TestGrasp {
 
 //        new TestGrasp().testMsep();
 
-        new TestGrasp().testCgScore();
+        new TestGrasp().testPredictGoodStats();
 
     }
 
@@ -179,6 +179,85 @@ public final class TestGrasp {
 
         System.out.println("GRaSP" + pat3);
 
+    }
+
+    private void testPredictGoodStats() {
+
+        RandomUtil.getInstance().setSeed(12345679889L);
+
+        Parameters params = new Parameters();
+
+        params.set(Params.NUM_MEASURES, 10);
+        params.set(Params.NUM_LATENTS, 0);
+        params.set(Params.AVG_DEGREE, 6);
+
+        params.set(Params.DIFFERENT_GRAPHS, true);
+
+        params.set(Params.RANDOMIZE_COLUMNS, true);
+        params.set(Params.SAMPLE_SIZE, 1000);
+
+        params.set(Params.NUM_RUNS, 1);
+        params.set(Params.PARALLELIZED, false);
+
+        params.set(Params.ALPHA, 0.001, 0.01, 0.05, 0.1);
+        params.set(Params.PENALTY_DISCOUNT, 1.0, 2.0, 4.0);
+        params.set(Params.POISSON_LAMBDA, 1, 2, 4);
+        params.set(Params.ZS_RISK_BOUND, 0.001, 0.01, 0.05, 0.1);
+
+//        params.set(Params.GRASP_DEPTH, 3);
+//        params.set(Params.GRASP_SINGULAR_DEPTH, 1);
+//        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
+//        params.set(Params.GRASP_ORDERED_ALG, false);
+//        params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
+//        params.set(Params.GRASP_USE_DATA_ORDER, true);
+
+        Simulations simulations = new Simulations();
+        simulations.add(new SemSimulation(new RandomForward()));
+
+        Algorithms algorithms = new Algorithms();
+
+        algorithms.add(new Pc(new FisherZ()));
+//        algorithms.add(new Pc(new SemBicDTest()));
+        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+        algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+        algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
+        algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+        algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+
+        Statistics statistics = new Statistics();
+        statistics.add(new ParameterColumn(Params.ALPHA));
+        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
+        statistics.add(new ParameterColumn(Params.POISSON_LAMBDA));
+        statistics.add(new ParameterColumn(Params.ZS_RISK_BOUND));
+        statistics.add(new FractionDependentUnderAlternative());
+//        statistics.add(new FractionDependentUnderNull());
+        statistics.add(new PvalueUniformityUnderNull());
+        statistics.add(new FractionDependentUnderNull());
+        statistics.add(new PvalueSupremacyScore());
+//        statistics.add(new F1Adj());
+        statistics.add(new BicEst());
+        statistics.add(new AdjacencyPrecision());
+        statistics.add(new AdjacencyRecall());
+        statistics.add(new ArrowheadPrecision());
+        statistics.add(new ArrowheadRecall());
+//        statistics.add(new F1Arrow());
+//        statistics.add(new ArrowheadPrecisionCommonEdges());
+//        statistics.add(new ArrowheadRecallCommonEdges());
+//        statistics.add(new StructuralHammingDistance());
+
+//        statistics.setWeight("PDA", 1.0);
+        statistics.setWeight("BicEst", 1.0);
+
+        Comparison comparison = new Comparison();
+        comparison.setParallelized(false);
+        comparison.setComparisonGraph(Comparison.ComparisonGraph.CPDAG_of_the_true_DAG);
+        comparison.setSortByUtility(true);
+        comparison.setShowAlgorithmIndices(true);
+        comparison.compareFromSimulations("pvalue_comparison", simulations, algorithms, statistics, params);
     }
 
     @NotNull
@@ -964,7 +1043,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new Shd());
+        statistics.add(new StructuralHammingDistance());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
         statistics.add(new ElapsedCpuTime());
@@ -1024,7 +1103,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new Shd());
+        statistics.add(new StructuralHammingDistance());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
         statistics.add(new ElapsedCpuTime());
@@ -1931,7 +2010,7 @@ public final class TestGrasp {
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new Shd());
+        statistics.add(new StructuralHammingDistance());
         statistics.add(new ElapsedCpuTime());
 
         Comparison comparison = new Comparison();
@@ -1975,7 +2054,7 @@ public final class TestGrasp {
         statistics.add(new ParameterColumn(Params.AVG_DEGREE));
         statistics.add(new NumberOfEdgesTrue());
         statistics.add(new NumberOfEdgesEst());
-        statistics.add(new Shd());
+        statistics.add(new StructuralHammingDistance());
         statistics.add(new ElapsedCpuTime());
 
         Simulations simulations = new Simulations();

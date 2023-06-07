@@ -68,7 +68,7 @@ public final class TestCopy {
         statistics.add(new MathewsCorrArrow());
         statistics.add(new F1Adj());
         statistics.add(new F1Arrow());
-        statistics.add(new Shd());
+        statistics.add(new StructuralHammingDistance());
         statistics.add(new ElapsedCpuTime());
 
         statistics.setWeight("AP", 1.0);
