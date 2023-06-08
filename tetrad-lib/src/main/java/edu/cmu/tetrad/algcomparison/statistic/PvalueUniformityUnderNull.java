@@ -17,6 +17,10 @@ public class PvalueUniformityUnderNull implements Statistic {
     static final long serialVersionUID = 23L;
     private double alpha = 0.01;
 
+    public PvalueUniformityUnderNull(double alpha) {
+        this.alpha = alpha;
+    }
+
     @Override
     public String getAbbreviation() {
         return "PUN";
@@ -24,7 +28,7 @@ public class PvalueUniformityUnderNull implements Statistic {
 
     @Override
     public String getDescription() {
-        return "P-value Uniformity Under the Null";
+        return "P-value Uniformity Under the Null (depends only on the estimated DAG and the data)";
     }
 
     @Override
@@ -39,7 +43,7 @@ public class PvalueUniformityUnderNull implements Statistic {
         return value;
     }
 
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
-    }
+//    public void setAlpha(double alpha) {
+//        this.alpha = alpha;
+//    }
 }

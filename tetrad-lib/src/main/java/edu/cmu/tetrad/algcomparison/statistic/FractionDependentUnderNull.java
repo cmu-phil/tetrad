@@ -24,7 +24,7 @@ public class FractionDependentUnderNull implements Statistic {
 
     @Override
     public String getDescription() {
-        return "Fraction Dependent Under the Null";
+        return "Fraction Dependent Under the Null (depends only on the estimated DAG and the data)";
     }
 
     @Override

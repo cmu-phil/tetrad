@@ -7,31 +7,31 @@ import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 
 /**
- * Estimates whether the p-values under the null are Uniform usign the Markov Checker. This estimate the fraction of
- * dependent judgements from the local Fraithfulness check, under the alternative hypothesis of dependence. This is only
- * applicable to continuous data and really strictly only for Gaussian data.
+ * Tests whether the p-values under the null distribution are distributed as Uniform, and if so, returns the proportion
+ * of judgements of dependence under the Alternative Hypothesis. If the p-values are not distributed as Uniform, zero is
+ * returned.
  *
  * @author josephramsey
  */
-public class FractionDependentUnderAlternative implements Statistic {
+public class MarkovAdequacyScore implements Statistic {
     static final long serialVersionUID = 23L;
-    private double alpha = 0.01;
+    private double alpha = 0.05;
 
     @Override
     public String getAbbreviation() {
-        return "FDA";
+        return "MAS";
     }
 
     @Override
     public String getDescription() {
-        return "Fraction P-values Dependent Under the Alternative (depends only on the estimated DAG and the data)";
+        return "Markov Adequacy Score (depends only on the estimated DAG and the data)";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha));
+        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, 0.01));
         markovCheck.generateResults();
-        return markovCheck.getFractionDependent(false);
+        return markovCheck.getMarkovAdequacyScore(alpha);
     }
 
     @Override

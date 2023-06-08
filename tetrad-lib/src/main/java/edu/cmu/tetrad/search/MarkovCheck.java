@@ -21,6 +21,24 @@ import java.util.concurrent.Future;
 
 import static org.apache.commons.math3.util.FastMath.min;
 
+/**
+ * <p>Checks whether a graph is locally Markov or locally Faithful given a data set. First a lists of m-separation
+ * predictions are made for each pair of variables in the graph given the parents of one of the variables, one list (for
+ * local Markov) where the m-separation holds and another list (for local Faithfulness) where the m-separation does not
+ * hold. Then the predictions are tested against the data set using the independence test. For the Markov test, since an
+ * independence test yielding p-values should be Uniform under the null hypothesis, these p-values are tested for
+ * Uniformity using the Kolmogorov-Smirnov test. Also, a fraction of dependent judgments is returned, which should equal
+ * the alpha level of the independence test if the test is Uniform under the null hypothesis. For the Faithfulness test,
+ * the p-values are tested for Uniformity using the Kolmogorov-Smirnov test; these should be dependent. Also, a fraction
+ * of dependent judgments is returned, which should be maximal./p>
+ *
+ * <p>A "Markov adequacy score" is also given, which simply returns zero if the Markov p-value Uniformity test
+ * fails and the fraction of dependent judgments for the local Faithfulness check otherwise. Maximizing this score picks
+ * out models for which Markov holds and faithfuless holds to the extend possible; these model should generally have
+ * good accuracy scores.</p>
+ *
+ * @author josephramsey
+ */
 public class MarkovCheck {
     private final Graph graph;
     private final IndependenceTest independenceTest;
@@ -33,12 +51,24 @@ public class MarkovCheck {
     private double ksPValueIndep = Double.NaN;
     private double ksPValueDep = Double.NaN;
 
+    /**
+     * Constructor. Takes a graph and an independence test over the variables of the graph.
+     *
+     * @param graph            The graph.
+     * @param independenceTest The test over the variables of the graph..
+     */
     public MarkovCheck(Graph graph, IndependenceTest independenceTest) {
         this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
         this.independenceTest = independenceTest;
         this.msep = new MsepTest(this.graph);
     }
 
+    /**
+     * Generates all results, for both the local Markov and local Faithfulness checks, for each node in the graph given
+     * the parents of that node. These results are stored in the resultsIndep and resultsDep lists.
+     *
+     * @see #getResults(boolean)
+     */
     public void generateResults() {
         resultsIndep.clear();
         resultsDep.clear();
@@ -68,10 +98,22 @@ public class MarkovCheck {
         calcStats(false);
     }
 
+    /**
+     * True if the checks should be parallelized. (Not always a good idea.)
+     *
+     * @param parallelized True if the checks should be parallelized.
+     */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
 
+    /**
+     * After the generateResults method has been called, this method returns the results for the local Markov or local
+     * Faithfulness check, depending on the value of the indep parameter.
+     *
+     * @param indep True for the local Markov results, false for the local Faithfulness results.
+     * @return The results for the local Markov or local Faithfulness check.
+     */
     public List<IndependenceResult> getResults(boolean indep) {
         if (indep) {
             return new ArrayList<>(this.resultsIndep);
@@ -80,6 +122,12 @@ public class MarkovCheck {
         }
     }
 
+    /**
+     * Returns the list of p-values for the given list of results.
+     *
+     * @param results The results.
+     * @return Their p-values.
+     */
     public List<Double> getPValues(List<IndependenceResult> results) {
         List<Double> pValues = new ArrayList<>();
 
@@ -90,6 +138,12 @@ public class MarkovCheck {
         return pValues;
     }
 
+    /**
+     * Returns the fraction of dependent judgments for the given list of results.
+     *
+     * @param indep True for the local Markov results, false for the local Faithfulness results.
+     * @return The fraction of dependent judgments for this condition.
+     */
     public double getFractionDependent(boolean indep) {
         if (indep) {
             return fractionDependentIndep;
@@ -98,6 +152,12 @@ public class MarkovCheck {
         }
     }
 
+    /**
+     * Returns the Kolmorogov-Smirnov p-value for the given list of results.
+     *
+     * @param indep True for the local Markov results, false for the local Faithfulness results.
+     * @return The Kolmorogov-Smirnov p-value for this condition.
+     */
     public double getKsPValue(boolean indep) {
         if (indep) {
             return ksPValueIndep;
@@ -106,14 +166,47 @@ public class MarkovCheck {
         }
     }
 
+    /**
+     * Returns the Markov Adequacy Score for the graph. This is zero if the p-value of the KS test of Uniformity is less
+     * than alpha, and the fraction of dependent pairs otherwise. This is only for continuous Gaussian data, as it
+     * hard-codes the Fisher Z test for the local Markov and Faithfulness checsk.
+     *
+     * @param alpha The alpha level for the KS test of Uniformity. An alpha level greater than this will be considered
+     *              uniform.
+     * @return The Markov Adequacy Score for this graph given the data.
+     */
+    public double getMarkovAdequacyScore(double alpha) {
+        if (getKsPValue(true) > alpha) {
+            return getFractionDependent(false);
+        } else {
+            return 0.0;
+        }
+    }
+
+    /**
+     * Returns the variables of the independence test.
+     *
+     * @return The variables of the independence test.
+     */
     public List<Node> getVariables() {
         return independenceTest.getVariables();
     }
 
+    /**
+     * Returns the variable with the given name.
+     *
+     * @param name The name of the variables.
+     * @return The variable with the given name.
+     */
     public Node getVariable(String name) {
         return independenceTest.getVariable(name);
     }
 
+    /**
+     * Returns the independence test being used.
+     *
+     * @return This test.
+     */
     public IndependenceTest getIndependenceTest() {
         return this.independenceTest;
     }
@@ -182,8 +275,7 @@ public class MarkovCheck {
         int chunkSize = getChunkSize(facts.size());
 
         for (int i = 0; i < facts.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
-            IndCheckTask task = new IndCheckTask(i, min(facts.size(), i + chunkSize),
-                    facts, independenceTest);
+            IndCheckTask task = new IndCheckTask(i, min(facts.size(), i + chunkSize), facts, independenceTest);
 
             if (!parallelized) {
                 List<IndependenceResult> _results = task.call();

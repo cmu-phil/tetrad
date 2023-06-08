@@ -22,7 +22,7 @@ public class BicEst implements Statistic {
 
     @Override
     public String getDescription() {
-        return "BIC of the estimated CPDAG";
+        return "BIC of the estimated CPDAG (depends only on the estimated DAG and the data)";
     }
 
     @Override

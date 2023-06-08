@@ -75,6 +75,8 @@ public class MarkovCheckEditor extends JPanel {
     private JLabel fractionDepLabelDep;
     private JLabel ksLabelDep;
     private JLabel ksLabelIndep;
+    private JLabel pssLabellDep;
+    private JLabel getPssLabellIndep;
     private int sortDir;
     private int lastSortCol;
     private final JTextArea testDescTextArea = new JTextArea();
@@ -402,6 +404,11 @@ public class MarkovCheckEditor extends JPanel {
         b6.add(ksLabelDep);
         b1.add(b6);
 
+        Box b7 = Box.createHorizontalBox();
+        b7.add(Box.createHorizontalGlue());
+        b7.add(pssLabellDep);
+        b1.add(b7);
+
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b1, BorderLayout.CENTER);
@@ -592,6 +599,11 @@ public class MarkovCheckEditor extends JPanel {
         b6.add(ksLabelIndep);
         b1.add(b6);
 
+        Box b7 = Box.createHorizontalBox();
+        b7.add(Box.createHorizontalGlue());
+        b7.add(getPssLabellIndep);
+        b1.add(b7);
+
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(b1, BorderLayout.CENTER);
@@ -640,8 +652,6 @@ public class MarkovCheckEditor extends JPanel {
                 "you analyze the data yourself.\n";
     }
 
-    //=============================PRIVATE METHODS=======================//
-
     private void sortByColumn(int sortCol, boolean indep) {
         if (sortCol == this.getLastSortCol()) {
             this.setSortDir(-1 * this.getSortDir());
@@ -677,6 +687,14 @@ public class MarkovCheckEditor extends JPanel {
             fractionDepLabelDep = new JLabel();
         }
 
+        if (getPssLabellIndep == null) {
+            getPssLabellIndep = new JLabel();
+        }
+
+        if (pssLabellDep == null) {
+            pssLabellDep = new JLabel();
+        }
+
         ksLabelIndep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
                 + ((Double.isNaN(model.getMarkovCheck().getKsPValue(true))
                 ? "-"
@@ -693,6 +711,15 @@ public class MarkovCheckEditor extends JPanel {
                 + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(false)))));
+        getPssLabellIndep.setText("P-value Supremacy Score = "
+                + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
+        pssLabellDep.setText("P-value Supremacy Score = "
+                + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
+
     }
 
 
@@ -830,7 +857,7 @@ public class MarkovCheckEditor extends JPanel {
         return createParamsPanel("Parameters", testParameters, params);
     }
 
-    protected JPanel createParamsPanel(String title, Set<String> params, Parameters parameters) {
+    private JPanel createParamsPanel(String title, Set<String> params, Parameters parameters) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder(title));
 
@@ -849,7 +876,7 @@ public class MarkovCheckEditor extends JPanel {
         return panel;
     }
 
-    protected Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+    private Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
         ParamDescriptions paramDescs = ParamDescriptions.getInstance();
         return params.stream()
                 .collect(Collectors.toMap(
@@ -861,7 +888,7 @@ public class MarkovCheckEditor extends JPanel {
                         TreeMap::new));
     }
 
-    protected Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+    private Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
         JComponent component;
         Object defaultValue = paramDesc.getDefaultValue();
         if (defaultValue instanceof Double) {
@@ -898,7 +925,7 @@ public class MarkovCheckEditor extends JPanel {
         return paramRow;
     }
 
-    protected DoubleTextField getDoubleField(String parameter, Parameters parameters,
+    private DoubleTextField getDoubleField(String parameter, Parameters parameters,
                                              double defaultValue, double lowerBound, double upperBound) {
         DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
@@ -928,7 +955,7 @@ public class MarkovCheckEditor extends JPanel {
         return field;
     }
 
-    protected IntTextField getIntTextField(String parameter, Parameters parameters,
+    private IntTextField getIntTextField(String parameter, Parameters parameters,
                                            int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
@@ -957,7 +984,7 @@ public class MarkovCheckEditor extends JPanel {
         return field;
     }
 
-    protected LongTextField getLongTextField(String parameter, Parameters parameters,
+    private LongTextField getLongTextField(String parameter, Parameters parameters,
                                              long defaultValue, long lowerBound, long upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
 
@@ -987,7 +1014,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     // Zhou's new implementation with yes/no radio buttons
-    protected Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
+    private Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
         JRadioButton yesButton = new JRadioButton("Yes");
@@ -1030,7 +1057,7 @@ public class MarkovCheckEditor extends JPanel {
         return selectionBox;
     }
 
-    protected StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+    private StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
         StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
         field.setFilter((value, oldValue) -> {

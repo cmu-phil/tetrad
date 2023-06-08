@@ -33,6 +33,7 @@ import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.independence.SemBicDTest;
 import edu.cmu.tetrad.algcomparison.score.MSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.GicScores;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -183,11 +184,11 @@ public final class TestGrasp {
 
     private void testPredictGoodStats() {
 
-        RandomUtil.getInstance().setSeed(12345679889L);
+//        RandomUtil.getInstance().setSeed(12341292889L);
 
         Parameters params = new Parameters();
 
-        params.set(Params.NUM_MEASURES, 10);
+        params.set(Params.NUM_MEASURES, 20);
         params.set(Params.NUM_LATENTS, 0);
         params.set(Params.AVG_DEGREE, 6);
 
@@ -204,6 +205,10 @@ public final class TestGrasp {
         params.set(Params.POISSON_LAMBDA, 1, 2, 4);
         params.set(Params.ZS_RISK_BOUND, 0.001, 0.01, 0.05, 0.1);
 
+        params.set(Params.STABLE_FAS, false, true);
+        params.set(Params.USE_MAX_P_HEURISTIC, false, true);
+        params.set(Params.USE_BES, false, true);
+
 //        params.set(Params.GRASP_DEPTH, 3);
 //        params.set(Params.GRASP_SINGULAR_DEPTH, 1);
 //        params.set(Params.GRASP_NONSINGULAR_DEPTH, 1);
@@ -217,10 +222,10 @@ public final class TestGrasp {
         Algorithms algorithms = new Algorithms();
 
         algorithms.add(new Pc(new FisherZ()));
-//        algorithms.add(new Pc(new SemBicDTest()));
+        algorithms.add(new Pc(new SemBicDTest()));
         algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
-//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
-//        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
+        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
+        algorithms.add(new Fges(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
         algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore()));
         algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.PoissonPriorScore()));
         algorithms.add(new Grasp(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
@@ -229,15 +234,15 @@ public final class TestGrasp {
         algorithms.add(new Boss(new edu.cmu.tetrad.algcomparison.score.ZhangShenBoundScore()));
 
         Statistics statistics = new Statistics();
-        statistics.add(new ParameterColumn(Params.ALPHA));
-        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
-        statistics.add(new ParameterColumn(Params.POISSON_LAMBDA));
-        statistics.add(new ParameterColumn(Params.ZS_RISK_BOUND));
+//        statistics.add(new ParameterColumn(Params.ALPHA));
+//        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
+//        statistics.add(new ParameterColumn(Params.POISSON_LAMBDA));
+//        statistics.add(new ParameterColumn(Params.ZS_RISK_BOUND));
         statistics.add(new FractionDependentUnderAlternative());
 //        statistics.add(new FractionDependentUnderNull());
-        statistics.add(new PvalueUniformityUnderNull());
+        statistics.add(new PvalueUniformityUnderNull(0.01));
         statistics.add(new FractionDependentUnderNull());
-        statistics.add(new PvalueSupremacyScore());
+        statistics.add(new MarkovAdequacyScore());
 //        statistics.add(new F1Adj());
         statistics.add(new BicEst());
         statistics.add(new AdjacencyPrecision());
@@ -249,8 +254,8 @@ public final class TestGrasp {
 //        statistics.add(new ArrowheadRecallCommonEdges());
 //        statistics.add(new StructuralHammingDistance());
 
-//        statistics.setWeight("PDA", 1.0);
-        statistics.setWeight("BicEst", 1.0);
+        statistics.setWeight("PSS", 1.0);
+//        statistics.setWeight("BicEst", 1.0);
 
         Comparison comparison = new Comparison();
         comparison.setParallelized(false);
