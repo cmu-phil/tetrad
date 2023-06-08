@@ -75,8 +75,8 @@ public class MarkovCheckEditor extends JPanel {
     private JLabel fractionDepLabelDep;
     private JLabel ksLabelDep;
     private JLabel ksLabelIndep;
-    private JLabel pssLabellDep;
-    private JLabel getPssLabellIndep;
+    private JLabel masLabellDep;
+    private JLabel masLabellIndep;
     private int sortDir;
     private int lastSortCol;
     private final JTextArea testDescTextArea = new JTextArea();
@@ -406,7 +406,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
-        b7.add(pssLabellDep);
+        b7.add(masLabellDep);
         b1.add(b7);
 
         JPanel panel = new JPanel();
@@ -601,7 +601,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
-        b7.add(getPssLabellIndep);
+        b7.add(masLabellIndep);
         b1.add(b7);
 
         JPanel panel = new JPanel();
@@ -687,12 +687,12 @@ public class MarkovCheckEditor extends JPanel {
             fractionDepLabelDep = new JLabel();
         }
 
-        if (getPssLabellIndep == null) {
-            getPssLabellIndep = new JLabel();
+        if (masLabellIndep == null) {
+            masLabellIndep = new JLabel();
         }
 
-        if (pssLabellDep == null) {
-            pssLabellDep = new JLabel();
+        if (masLabellDep == null) {
+            masLabellDep = new JLabel();
         }
 
         ksLabelIndep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
@@ -711,11 +711,11 @@ public class MarkovCheckEditor extends JPanel {
                 + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(false)))));
-        getPssLabellIndep.setText("P-value Supremacy Score = "
+        masLabellIndep.setText("Markov Adequacy Score = "
                 + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
-        pssLabellDep.setText("P-value Supremacy Score = "
+        masLabellDep.setText("Markov Adequacy Score = "
                 + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
@@ -812,7 +812,6 @@ public class MarkovCheckEditor extends JPanel {
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
-
     private DataType getDataType() {
         DataModel dataSet = model.getDataModel();
 
