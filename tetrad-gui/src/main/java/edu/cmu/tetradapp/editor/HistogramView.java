@@ -80,12 +80,13 @@ public class HistogramView extends JPanel {
         setLayout(new BorderLayout());
         add(vBox, BorderLayout.CENTER);
 
-        JMenuBar bar = new JMenuBar();
-        JMenu menu = new JMenu("File");
-        menu.add(new JMenuItem(new SaveComponentImage(this.histogramPanel, "Save Histogram")));
-        bar.add(menu);
-
-        add(bar, BorderLayout.NORTH);
+        if (showControlPanel) {
+            JMenuBar bar = new JMenuBar();
+            JMenu menu = new JMenu("File");
+            menu.add(new JMenuItem(new SaveComponentImage(this.histogramPanel, "Save Histogram")));
+            bar.add(menu);
+            add(bar, BorderLayout.NORTH);
+        }
     }
 
     //========================== Private Methods ============           ====================//

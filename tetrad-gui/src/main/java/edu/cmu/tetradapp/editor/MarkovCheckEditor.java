@@ -79,11 +79,13 @@ public class MarkovCheckEditor extends JPanel {
     private JLabel masLabellIndep;
     private int sortDir;
     private int lastSortCol;
-    private final JTextArea testDescTextArea = new JTextArea();
+//    private final JTextArea testDescTextArea = new JTextArea();
     private final JComboBox<IndependenceTestModel> indTestComboBox = new JComboBox<>();
     boolean updatingTestModels = true;
     private final JLabel faithfulnessTestLabel = new JLabel("(Unspecified Test)");
     private IndependenceWrapper independenceWrapper;
+    private JPanel histogramPanelIndep;
+    private JPanel histogramPanelDep;
 
     /**
      * Constructs a new editor for the given model.
@@ -103,6 +105,8 @@ public class MarkovCheckEditor extends JPanel {
                     model.getMarkovCheck().generateResults();
                     tableModelIndep.fireTableDataChanged();
                     tableModelDep.fireTableDataChanged();
+                    histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
+                    histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
                     setLabelTexts();
                 }
             }
@@ -168,6 +172,8 @@ public class MarkovCheckEditor extends JPanel {
                     model.getMarkovCheck().generateResults();
                     tableModelIndep.fireTableDataChanged();
                     tableModelDep.fireTableDataChanged();
+                    histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
+                    histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
                     setLabelTexts();
                 }
             }
@@ -178,9 +184,16 @@ public class MarkovCheckEditor extends JPanel {
         box1.add(params);
         box.add(box1);
 
+        JTextArea testDescTextArea = new JTextArea(getHelpMessage());
+        testDescTextArea.setEditable(true);
+        JScrollPane scroll = new JScrollPane(testDescTextArea);
+        scroll.setPreferredSize(new Dimension(600, 400));
+
+
         JTabbedPane pane = new JTabbedPane();
         pane.addTab("Check Local Markov", indep);
         pane.addTab("Check Local Faithfulness", dep);
+        pane.addTab("Help", scroll);
         box.add(pane);
 
         class MyWatchedProcess extends WatchedProcess {
@@ -189,6 +202,8 @@ public class MarkovCheckEditor extends JPanel {
                 model.getMarkovCheck().generateResults();
                 tableModelIndep.fireTableDataChanged();
                 tableModelDep.fireTableDataChanged();
+                histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
+                histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
                 setLabelTexts();
             }
         }
@@ -227,6 +242,7 @@ public class MarkovCheckEditor extends JPanel {
      * Performs the action of opening a session from a file.
      */
     private JPanel buildGuiDep() {
+
         Box b1 = Box.createVerticalBox();
         Box b2 = Box.createHorizontalBox();
         b2.add(new JLabel("Tests whether X _||_ Y | parents(X) for mconn(X, Y | parents(X))"));
@@ -363,55 +379,83 @@ public class MarkovCheckEditor extends JPanel {
 
         String title = "P-Value or Bump for Local Faithfulness";
 
-        JButton showHistogram = new JButton("Show Histogram for P-Values or Bumps");
-        showHistogram.setFont(new Font("Dialog", Font.PLAIN, 14));
-        showHistogram.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JPanel component = createHistogramPanel(false);
-                EditorWindow editorWindow = new EditorWindow(component, title, "Close", false, MarkovCheckEditor.this);
-                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-                editorWindow.pack();
-                editorWindow.setVisible(true);
-            }
-        });
+//        JButton showHistogram = new JButton("Show Histogram for P-Values or Bumps");
+//        showHistogram.setFont(new Font("Dialog", Font.PLAIN, 14));
+//        showHistogram.addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                JPanel component = createHistogramPanel(false);
+//                EditorWindow editorWindow = new EditorWindow(component, title, "Close", false, MarkovCheckEditor.this);
+//                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+//                editorWindow.pack();
+//                editorWindow.setVisible(true);
+//            }
+//        });
 
         b4.add(Box.createHorizontalGlue());
-        b4.add(showHistogram);
-
-        JButton help = new JButton("Help");
-
-        help.addActionListener(e -> {
-            String text = getHelpMessage();
-            JOptionPane.showMessageDialog(help, text, "Help", JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        b4.add(help);
-
-        b1.add(b4);
-        b1.add(Box.createVerticalStrut(10));
+//        b4.add(showHistogram);
+//
+//        JButton help = new JButton("Help");
+//
+//        help.addActionListener(e -> {
+//            String text = getHelpMessage();
+//            JOptionPane.showMessageDialog(help, text, "Help", JOptionPane.INFORMATION_MESSAGE);
+//        });
+//
+//        b4.add(help);
+//
+//        b1.add(b4);
+//        b1.add(Box.createVerticalStrut(10));
 
         Box b5 = Box.createHorizontalBox();
         b5.add(Box.createGlue());
 
         setLabelTexts();
 
+//        b5.add(fractionDepLabelDep);
+//        b1.add(b5);
+//
+//        Box b6 = Box.createHorizontalBox();
+//        b6.add(Box.createHorizontalGlue());
+//        b6.add(ksLabelDep);
+//        b1.add(b6);
+//
+//        Box b7 = Box.createHorizontalBox();
+//        b7.add(Box.createHorizontalGlue());
+//        b7.add(masLabellDep);
+//        b1.add(b7);
+
+        Box b0 = Box.createHorizontalBox();
+        b0.add(b1);
+        b0.add(Box.createHorizontalStrut(10));
+
+        Box b0b1 = Box.createVerticalBox();
+        b0b1.add(Box.createVerticalGlue());
+        histogramPanelDep = new JPanel();
+        histogramPanelDep.setLayout(new BorderLayout());
+        histogramPanelDep.setBorder(new EmptyBorder(10, 10, 10, 10));
+        histogramPanelIndep.add(createHistogramPanel(false), BorderLayout.CENTER);
+
+        b0b1.add(histogramPanelDep);
         b5.add(fractionDepLabelDep);
-        b1.add(b5);
+        b0b1.add(b5);
 
         Box b6 = Box.createHorizontalBox();
         b6.add(Box.createHorizontalGlue());
         b6.add(ksLabelDep);
-        b1.add(b6);
+        b0b1.add(b6);
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(masLabellDep);
-        b1.add(b7);
+        b0b1.add(b7);
+
+        b0b1.add(Box.createVerticalGlue());
+        b0.add(b0b1);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        panel.add(b1, BorderLayout.CENTER);
+        panel.add(b0, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         return panel;
     }
@@ -557,67 +601,98 @@ public class MarkovCheckEditor extends JPanel {
         b4.add(Box.createHorizontalStrut(10));
 
         String title = "P-Value or Bump for Local Markov";
-
-        JButton showHistogram = new JButton("Show Histogram for P-Values or Bumps");
-        showHistogram.setFont(new Font("Dialog", Font.PLAIN, 14));
-        showHistogram.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JPanel component = createHistogramPanel(true);
-                EditorWindow editorWindow = new EditorWindow(component, title, "Close", false, MarkovCheckEditor.this);
-                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-                editorWindow.pack();
-                editorWindow.setVisible(true);
-            }
-        });
+//
+//        JButton showHistogram = new JButton("Show Histogram for P-Values or Bumps");
+//        showHistogram.setFont(new Font("Dialog", Font.PLAIN, 14));
+//        showHistogram.addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                JPanel component = createHistogramPanel(true);
+//                EditorWindow editorWindow = new EditorWindow(component, title, "Close", false, MarkovCheckEditor.this);
+//                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
+//                editorWindow.pack();
+//                editorWindow.setVisible(true);
+//            }
+//        });
 
         b4.add(Box.createHorizontalGlue());
-        b4.add(showHistogram);
+//        b4.add(showHistogram);
 
-        JButton help = new JButton("Help");
-
-        help.addActionListener(e -> {
-            String text = getHelpMessage();
-            JOptionPane.showMessageDialog(help, text, "Help", JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        b4.add(help);
-
-        b1.add(b4);
-        b1.add(Box.createVerticalStrut(10));
+//        JButton help = new JButton("Help");
+//
+//        help.addActionListener(e -> {
+//            String text = getHelpMessage();
+//            JOptionPane.showMessageDialog(help, text, "Help", JOptionPane.INFORMATION_MESSAGE);
+//        });
+//
+//        b4.add(help);
+//
+//        b1.add(b4);
+//        b1.add(Box.createVerticalStrut(10));
 
         Box b5 = Box.createHorizontalBox();
         b5.add(Box.createGlue());
 
         setLabelTexts();
 
+//        b5.add(fractionDepLabelIndep);
+//        b1.add(b5);
+//
+//        Box b6 = Box.createHorizontalBox();
+//        b6.add(Box.createHorizontalGlue());
+//        b6.add(ksLabelIndep);
+//        b1.add(b6);
+//
+//        Box b7 = Box.createHorizontalBox();
+//        b7.add(Box.createHorizontalGlue());
+//        b7.add(masLabellIndep);
+//        b1.add(b7);
+
+        Box b0 = Box.createHorizontalBox();
+        b0.add(b1);
+        b0.add(Box.createHorizontalStrut(10));
+
+        Box b0b1 = Box.createVerticalBox();
+        b0b1.add(Box.createVerticalGlue());
+        histogramPanelIndep = new JPanel();
+        histogramPanelIndep.setLayout(new BorderLayout());
+        histogramPanelIndep.setBorder(new EmptyBorder(10, 10, 10, 10));
+        histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+        b0b1.add(histogramPanelIndep);
+        b0b1.add(Box.createVerticalGlue());
+
         b5.add(fractionDepLabelIndep);
-        b1.add(b5);
+        b0b1.add(b5);
 
         Box b6 = Box.createHorizontalBox();
         b6.add(Box.createHorizontalGlue());
         b6.add(ksLabelIndep);
-        b1.add(b6);
+        b0b1.add(b6);
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
         b7.add(masLabellIndep);
-        b1.add(b7);
+        b0b1.add(b7);
+
+        b0.add(b0b1);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        panel.add(b1, BorderLayout.CENTER);
+        panel.add(b0, BorderLayout.CENTER);
+
+//        JPanel panel = new JPanel();
+//        panel.setLayout(new BorderLayout());
+//        panel.add(b1, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         return panel;
     }
 
     @NotNull
     private static String getHelpMessage() {
-        return "\n" +
-                "This tool lets you plot statistics for independence tests of a pair of variables given parents of the one for a given\n" +
-                "graph and dataset. Two tables are made, one in which the independence facts predicted by the graph are tested in the\n" +
-                "data and the other in which the graph's predicted dependence facts are tested. We call the first set of facts \"local\n" +
-                "Markov\"; the second we call \"local Faithfulness.” By \"local,\" we mean that we are only testing independence facts of\n" +
+        return "This tool lets you plot statistics for independence tests of a pair of variables given parents of the one for a given" +
+                "graph and dataset. Two tables are made, one in which the independence facts predicted by the graph are tested in the" +
+                "data and the other in which the graph's predicted dependence facts are tested. We call the first set of facts \"local" +
+                "Markov\"; the second we call \"local Faithfulness.” By \"local,\" we mean that we are only testing independence facts of" +
                 "variables given their parents in the graph.\n" +
                 "\n" +
                 "Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is\n" +
@@ -649,7 +724,7 @@ public class MarkovCheckEditor extends JPanel {
                 "positive for dependence judgments. The histogram will reflect this.\n" +
                 "\n" +
                 "Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let\n" +
-                "you analyze the data yourself.\n";
+                "you analyze the data yourself.";
     }
 
     private void sortByColumn(int sortCol, boolean indep) {
@@ -747,15 +822,15 @@ public class MarkovCheckEditor extends JPanel {
         this.sortDir = sortDir;
     }
 
-    private JPanel createHistogramPanel(boolean indep) {
-        JPanel jPanel = new JPanel();
+    private Box createHistogramPanel(boolean indep) {
+//        JPanel jPanel = new JPanel();
 
         List<IndependenceResult> results = model.getResults(indep);
 
         if (results.isEmpty()) {
-            JLabel label = new JLabel("No results available; please click the Check button first.");
-            JPanel panel = new JPanel();
-            panel.add(label);
+//            JLabel label = new JLabel("No results available; please click the Check button first.");
+            Box panel = Box.createVerticalBox();
+//            panel.add(label);
             return panel;
         }
 
@@ -781,9 +856,11 @@ public class MarkovCheckEditor extends JPanel {
         vBox.add(box);
         vBox.add(Box.createVerticalStrut(5));
 
-        jPanel.setLayout(new BorderLayout());
-        jPanel.add(vBox, BorderLayout.CENTER);
-        return jPanel;
+        return vBox;
+
+//        jPanel.setLayout(new BorderLayout());
+//        jPanel.add(vBox, BorderLayout.CENTER);
+//        return jPanel;
     }
 
     static class Renderer extends DefaultTableCellRenderer {
@@ -843,9 +920,9 @@ public class MarkovCheckEditor extends JPanel {
         this.updatingTestModels = false;
         this.indTestComboBox.setEnabled(this.indTestComboBox.getItemCount() > 0);
 
-        if (this.indTestComboBox.getSelectedIndex() == -1) {
-            this.testDescTextArea.setText("");
-        }
+//        if (this.indTestComboBox.getSelectedIndex() == -1) {
+//            this.testDescTextArea.setText("");
+//        }
 
         indTestComboBox.setSelectedItem(IndependenceTestModels.getInstance().getDefaultModel(dataType));
     }

@@ -19,7 +19,7 @@ public class FractionDependentUnderNull implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "FDN";
+        return "DN";
     }
 
     @Override

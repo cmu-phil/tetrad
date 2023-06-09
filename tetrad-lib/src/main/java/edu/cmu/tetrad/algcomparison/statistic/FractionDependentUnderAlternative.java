@@ -19,7 +19,7 @@ public class FractionDependentUnderAlternative implements Statistic {
 
     @Override
     public String getAbbreviation() {
-        return "FDA";
+        return "DA";
     }
 
     @Override
