@@ -338,7 +338,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
         params.set(Params.GRASP_USE_DATA_ORDER, true);
-        params.set(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM, false);
+        params.set(Params.ALLOW_INTERNAL_RANDOMNESS, false);
         params.set(Params.CACHE_SCORES, true);
         params.set(Params.VERBOSE, true);
 
@@ -575,7 +575,7 @@ public final class TestGrasp {
         params.set(Params.GRASP_USE_SCORE, true);
         params.set(Params.GRASP_USE_RASKUTTI_UHLER, false);
         params.set(Params.GRASP_USE_DATA_ORDER, true);
-        params.set(Params.GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM, false);
+        params.set(Params.ALLOW_INTERNAL_RANDOMNESS, false);
         params.set(Params.CACHE_SCORES, true);
         params.set(Params.VERBOSE, true);
 

@@ -105,8 +105,15 @@ public class MarkovCheckEditor extends JPanel {
                     model.getMarkovCheck().generateResults();
                     tableModelIndep.fireTableDataChanged();
                     tableModelDep.fireTableDataChanged();
+
+                    histogramPanelDep.removeAll();
+                    histogramPanelIndep.removeAll();
                     histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
                     histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+                    histogramPanelDep.validate();
+                    histogramPanelIndep.validate();
+                    histogramPanelDep.repaint();
+                    histogramPanelIndep.repaint();
                     setLabelTexts();
                 }
             }
@@ -172,8 +179,14 @@ public class MarkovCheckEditor extends JPanel {
                     model.getMarkovCheck().generateResults();
                     tableModelIndep.fireTableDataChanged();
                     tableModelDep.fireTableDataChanged();
+                    histogramPanelDep.removeAll();
+                    histogramPanelIndep.removeAll();
                     histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
                     histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+                    histogramPanelDep.validate();
+                    histogramPanelIndep.validate();
+                    histogramPanelDep.repaint();
+                    histogramPanelIndep.repaint();
                     setLabelTexts();
                 }
             }
@@ -186,6 +199,8 @@ public class MarkovCheckEditor extends JPanel {
 
         JTextArea testDescTextArea = new JTextArea(getHelpMessage());
         testDescTextArea.setEditable(true);
+        testDescTextArea.setLineWrap(true);
+        testDescTextArea.setWrapStyleWord(true);
         JScrollPane scroll = new JScrollPane(testDescTextArea);
         scroll.setPreferredSize(new Dimension(600, 400));
 
@@ -202,8 +217,14 @@ public class MarkovCheckEditor extends JPanel {
                 model.getMarkovCheck().generateResults();
                 tableModelIndep.fireTableDataChanged();
                 tableModelDep.fireTableDataChanged();
+                histogramPanelDep.removeAll();
+                histogramPanelIndep.removeAll();
                 histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
                 histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+                histogramPanelDep.validate();
+                histogramPanelIndep.validate();
+                histogramPanelDep.repaint();
+                histogramPanelIndep.repaint();
                 setLabelTexts();
             }
         }
@@ -245,7 +266,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box b1 = Box.createVerticalBox();
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Tests whether X _||_ Y | parents(X) for mconn(X, Y | parents(X))"));
+        b2.add(new JLabel("Tests whether graphical predictions of Dep(X, Y | parents(X)) are correct"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
@@ -424,7 +445,7 @@ public class MarkovCheckEditor extends JPanel {
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Tests whether X _||_ Y | parents(X) for msep(X, Y | parents(X))"));
+        b2.add(new JLabel("Tests whether graphical predictions of Indep(X, Y | parents(X)) are correct"));
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
@@ -604,41 +625,41 @@ public class MarkovCheckEditor extends JPanel {
 
     @NotNull
     private static String getHelpMessage() {
-        return "This tool lets you plot statistics for independence tests of a pair of variables given parents of the one for a given" +
-                "graph and dataset. Two tables are made, one in which the independence facts predicted by the graph are tested in the" +
-                "data and the other in which the graph's predicted dependence facts are tested. We call the first set of facts \"local" +
-                "Markov\"; the second we call \"local Faithfulness.” By \"local,\" we mean that we are only testing independence facts of" +
+        return "This tool lets you plot statistics for independence tests of a pair of variables given parents of the one for a given " +
+                "graph and dataset. Two tables are made, one in which the independence facts predicted by the graph are tested in the " +
+                "data and the other in which the graph's predicted dependence facts are tested. We call the first set of facts \"local " +
+                "Markov\"; the second we call \"local Faithfulness.” By \"local,\" we mean that we are only testing independence facts of " +
                 "variables given their parents in the graph.\n" +
                 "\n" +
-                "Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is\n" +
-                "either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a\n" +
+                "Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is " +
+                "either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a " +
                 "score bump, where this bump is negative for independent judgments and positive for dependent judgments.\n" +
                 "\n" +
-                "If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or\n" +
-                "else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent\n" +
-                "test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any\n" +
-                "range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the\n" +
-                "nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we have a\n" +
-                "button that lets you display the histogram of the p-values with equally sized bins; the bars in this histogram, for this\n" +
+                "If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or " +
+                "else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent " +
+                "test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any " +
+                "range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the " +
+                "nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we have a " +
+                "button that lets you display the histogram of the p-values with equally sized bins; the bars in this histogram, for this " +
                 "case, should ideally all be of equal height.\n" +
                 "\n" +
-                "If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being\n" +
-                "judged as dependent. For checking Faithfulness, one hopes that this first bar will be especially high, since high\n" +
-                "p-values are for examples where the graph is unfaithful to the distribution. These are likely for for cases where paths\n" +
-                "in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all\n" +
+                "If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being " +
+                "judged as dependent. For checking Faithfulness, one hopes that this first bar will be especially high, since high " +
+                "p-values are for examples where the graph is unfaithful to the distribution. These are likely for for cases where paths " +
+                "in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all " +
                 "of the other bars.\n" +
                 "\n" +
-                "To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged\n" +
-                "dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for\n" +
-                "the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the\n" +
-                "Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the\n" +
-                "user’s preferred alpha level if the distribution of p-values is Uniform and less then this alpha level if the\n" +
+                "To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged " +
+                "dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for " +
+                "the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the " +
+                "Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the " +
+                "user’s preferred alpha level if the distribution of p-values is Uniform and less then this alpha level if the " +
                 "distribution of p-values is non-Uniform.\n" +
                 "\n" +
-                "If the independence test yields a bump in the score, this score should be negative for independence judgments and\n" +
+                "If the independence test yields a bump in the score, this score should be negative for independence judgments and " +
                 "positive for dependence judgments. The histogram will reflect this.\n" +
                 "\n" +
-                "Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let\n" +
+                "Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let " +
                 "you analyze the data yourself.";
     }
 
