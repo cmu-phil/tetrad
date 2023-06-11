@@ -44,6 +44,7 @@ import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.session.ParamsResettable;
 import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.Unmarshallable;
 
@@ -382,6 +383,10 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
 
                         if (this.algorithm instanceof HasKnowledge) {
                             ((HasKnowledge) this.algorithm).setKnowledge(this.knowledge.copy());
+                        }
+
+                        if (data instanceof ICovarianceMatrix && parameters.getInt(Params.NUMBER_RESAMPLING) > 0) {
+                            throw new IllegalArgumentException("Sorry, you need a tabular dataset in order to do bootstrapping.");
                         }
 
                         if (data.isContinuous() && (algDataType == DataType.Continuous || algDataType == DataType.Mixed)) {
