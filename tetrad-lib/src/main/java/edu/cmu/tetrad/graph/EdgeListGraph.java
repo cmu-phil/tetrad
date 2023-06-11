@@ -629,7 +629,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public List<Node> getNodesInTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new ArrayList<>(4);
+        List<Node> nodes = new ArrayList<>();
         List<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {
@@ -646,7 +646,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
      */
     @Override
     public List<Node> getNodesOutTo(Node node, Endpoint endpoint) {
-        List<Node> nodes = new ArrayList<>(4);
+        List<Node> nodes = new ArrayList<>();
         List<Edge> edges = getEdges(node);
 
         for (Edge edge : edges) {

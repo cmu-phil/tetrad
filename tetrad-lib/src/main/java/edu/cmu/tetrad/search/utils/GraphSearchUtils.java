@@ -521,18 +521,18 @@ public final class GraphSearchUtils {
 
                 if (!e.equals(e2)) {
                     edgeMismatch = "For example, the original PAG has edge " + e
-                            + " whereas the reconstituted PAG has edge " + e2;
+                            + " whereas the reconstituted graph has edge " + e2;
                 }
             }
 
             String reason;
 
             if (legalMag.isLegalMag()) {
-                reason = "This is a Mag but not a PAG; cannot recover the original graph by finding " +
+                reason = "This is a MAG but not a PAG; one cannot recover the original graph by finding " +
                         "the PAG of an implied MAG";
 
             } else {
-                reason = "Could be between a MAG and a PAG; cannot recover the original graph by finding " +
+                reason = "Could be between a MAG and a PAG; one cannot recover the original graph by finding " +
                         "the PAG of an implied MAG";
             }
 
@@ -613,13 +613,13 @@ public final class GraphSearchUtils {
                 if (mag.paths().existsDirectedPathFromTo(x, y)) {
                     List<Node> path = mag.paths().directedPathsFromTo(x, y, 100).get(0);
                     return new LegalMagRet(false,
-                            "Bidirected edge semantics violated: there is a directed path for " + e + " from " + x + " to " + y
+                            "Bidirected edge semantics is violated: there is a directed path for " + e + " from " + x + " to " + y
                                     + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
                                     + "An example path is " + GraphUtils.pathString(mag, path));
                 } else if (mag.paths().existsDirectedPathFromTo(y, x)) {
                     List<Node> path = mag.paths().directedPathsFromTo(y, x, 100).get(0);
                     return new LegalMagRet(false,
-                            "Bidirected edge semantics violated: There is an a directed path for " + e + " from " + y + " to " + x +
+                            "Bidirected edge semantics is violated: There is an a directed path for " + e + " from " + y + " to " + x +
                                     ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
                                     + "An example path is " + GraphUtils.pathString(mag, path));
                 }

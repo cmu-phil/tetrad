@@ -78,21 +78,14 @@ public class MarkovCheck {
         resultsDep.clear();
 
         for (Node x : independenceTest.getVariables()) {
-
             Set<Node> z;
 
             switch (setType) {
                 case PARENTS:
                     z = new HashSet<>(graph.getParents(x));
                     break;
-                case DAG_MB:
-                    z = GraphUtils.markovBlanketForDag(x, graph);
-                    break;
-                case CPDAG_MB:
-                    z = GraphUtils.markovBlanketForCpdag(x, graph);
-                    break;
-                case PAG_MB:
-                    z = GraphUtils.markovBlanketForPag(x, graph);
+                case MARKOV_BLANKET:
+                    z = GraphUtils.markovBlanket(x, graph);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown separation set type: " + setType);
@@ -129,8 +122,6 @@ public class MarkovCheck {
      * @see ConditioningSetType
      */
     public void setSetType(ConditioningSetType setType) {
-        System.out.println("Set Set type = " + setType);
-
         this.setType = setType;
     }
 
@@ -150,7 +141,7 @@ public class MarkovCheck {
      * setting, and PAG_MB uses a Markov blanket of the target variable in a PAG setting.
      */
     public enum ConditioningSetType {
-        PARENTS, DAG_MB, CPDAG_MB, PAG_MB
+        PARENTS, MARKOV_BLANKET
     }
 
     /**
@@ -267,9 +258,6 @@ public class MarkovCheck {
     }
 
     private void generateResults(boolean indep, Node x, Set<Node> z, Set<Node> msep, Set<Node> mconn) {
-        System.out.println("GenerateResults Set type = " + setType);
-
-
         List<IndependenceFact> facts = new ArrayList<>();
 
         // Listing all facts before checking any (in preparation for parallelization).

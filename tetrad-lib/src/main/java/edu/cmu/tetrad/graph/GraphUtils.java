@@ -1902,122 +1902,49 @@ public final class GraphUtils {
     }
 
     /**
-     * Returns the Markov blanket of a node in a DAG--i.e., the node's parents, children, and parents of children,
-     * excluding the node itself.
-     *
-     * @param target The _target node.
-     * @param dag    The DAG.
-     * @return The Markov blanket of the _target node.
-     */
-    public static Set<Node> markovBlanketForDag(Node target, Graph dag) {
-        Node _target = dag.getNode(target.getName());
-//        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
-
-        if (_target == null) {
-            throw new NullPointerException("Target node not in graph: " + target);
-        }
-
-        Set<Node> blanket = new HashSet<>();
-        blanket.add(_target);
-
-        // Add parents of _target.
-        List<Node> parents = dag.getParents(_target);
-        blanket.addAll(parents);
-
-        // Add children of _target and parents of children of _target.
-        List<Node> children = dag.getChildren(_target);
-        blanket.addAll(children);
-
-        for (Node child : children) {
-            List<Node> parentsOfChild = dag.getParents(child);
-            blanket.addAll(parentsOfChild);
-        }
-
-        blanket.remove(_target);
-        return blanket;
-    }
-
-    /**
-     * Returns the Markov blanket of a node in a CPDAG--i.e., the node's possible parents (given the possibilithy of
-     * undirected edges), children (given the possibility of undireccted edges_), and parents of children (given the
-     * possibility of undirected edges), excluding the node itself.
-     *
-     * @param target The target node.
-     * @param dag    The DAG.
-     * @return The Markov blanket of the _target node.
-     */
-    public static Set<Node> markovBlanketForCpdag(Node target, Graph dag) {
-        Node _target = dag.getNode(target.getName());
-
-        if (_target == null) {
-            throw new NullPointerException("Target node not in graph: " + target);
-        }
-
-        Set<Node> blanket = new HashSet<>();
-        blanket.add(_target);
-
-        // Add adjacents of target.
-        List<Node> adjacents = dag.getAdjacentNodes(_target);
-        blanket.addAll(adjacents);
-
-        // Add children of target and adjacents of children of _target.
-        List<Node> children = dag.getChildren(_target);
-
-        for (Node child : children) {
-            List<Node> parentsOfChild = dag.getParents(child);
-            blanket.addAll(parentsOfChild);
-        }
-
-        blanket.remove(_target);
-        return blanket;
-    }
-
-    /**
-     * Returns a Markov blanket of a node in a PAG. This is not necessarily minimal (i.e. not necessarily a Markov
-     * Boundary.
+     * Returns a Markov blanket of a node for a DAG, CPDAG, MAG, or PAG. This is not necessarily minimal (i.e. not
+     * necessarily a Markov Boundary).
      *
      * @param x The target node.
      * @param G The PAG.
      * @return A Markov blanket of the target node.
      */
-    public static Set<Node> markovBlanketForPag(Node x, Graph G) {
+    public static Set<Node> markovBlanket(Node x, Graph G) {
         Set<Node> mb = new HashSet<>();
 
         LinkedList<Node> path = new LinkedList<>();
-        path.add(x);
-        mb.add(x);
 
-        for (Node d : G.getAdjacentNodes(x)) {
-            markovBlanketForPag(d, path, G, mb);
-        }
-
+        // Follow all the colliders.
+        markovBlanketFollowColliders(null, x, path, G, mb);
+        mb.addAll(G.getAdjacentNodes(x));
         mb.remove(x);
-
         return mb;
     }
 
-    private static void markovBlanketForPag(Node c, LinkedList<Node> path, Graph G, Set<Node> mb) {
-        if (path.contains(c)) return;
-        if (mb.contains(c)) return;
-        path.add(c);
+    private static void markovBlanketFollowColliders(Node d, Node a, LinkedList<Node> path, Graph G, Set<Node> mb) {
+        if (path.contains(a)) return;
+        path.add(a);
 
-        if (path.size() >= 3) {
-            Node w1 = path.get(path.size() - 3);
-            Node w2 = path.get(path.size() - 2);
+        for (Node b : G.getNodesOutTo(a, Endpoint.ARROW)) {
+            if (path.contains(b)) continue;
 
-            if (!G.isDefCollider(w1, w2, c)) {
-                path.remove(c);
-                return;
+            // Make sure that d*->a<-* b is a collider.
+            if (d != null && !G.isDefCollider(d, a, b)) continue;
+
+            for (Node c : G.getNodesInTo(b, Endpoint.ARROW)) {
+                if (path.contains(c)) continue;
+
+                if (!G.isDefCollider(a, b, c)) continue;
+
+                // a *-> b <-* c
+                mb.add(b);
+                mb.add(c);
+
+                markovBlanketFollowColliders(a, b, path, G, mb);
             }
         }
 
-        mb.add(c);
-
-        for (Node d : G.getAdjacentNodes(c)) {
-            markovBlanketForPag(d, path, G, mb);
-        }
-
-        path.remove(c);
+        path.remove(a);
     }
 
     public static Set<Node> district(Node x, Graph G) {

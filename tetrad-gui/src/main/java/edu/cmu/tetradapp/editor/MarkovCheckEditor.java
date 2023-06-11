@@ -100,23 +100,15 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         conditioningSetTypeJComboBox.addItem("Parents(x)");
-        conditioningSetTypeJComboBox.addItem("DAG-MB(x)");
-        conditioningSetTypeJComboBox.addItem("CPDAG-MB(x)");
-        conditioningSetTypeJComboBox.addItem("PAG-MB(x)");
+        conditioningSetTypeJComboBox.addItem("MarkovBlanket(x)");
 
         conditioningSetTypeJComboBox.addActionListener(e -> {
             switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
                 case "Parents(x)":
                     model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.PARENTS);
                     break;
-                case "DAG-MB(x)":
-                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.DAG_MB);
-                    break;
-                case "CPDAG-MB(x)":
-                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.CPDAG_MB);
-                    break;
-                case "PAG-MB(x)":
-                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.PAG_MB);
+                case "MarkovBlanket(x)":
+                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.MARKOV_BLANKET);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown conditioning set type: " +
@@ -210,16 +202,9 @@ public class MarkovCheckEditor extends JPanel {
         box1.add(Box.createHorizontalStrut(20));
         box1.add(new JLabel("Test:"));
         box1.add(indTestJComboBox);
-        box1.add(Box.createHorizontalStrut(10));
         JButton params = new JButton("Params");
         box1.add(params);
         box1.add(Box.createHorizontalGlue());
-
-        Box box2 = Box.createHorizontalBox();
-        box2.add(Box.createHorizontalStrut(20));
-        box2.add(new JLabel("Conditioning Set:"));
-        box2.add(conditioningSetTypeJComboBox);
-        box2.add(Box.createHorizontalGlue());
 
         params.addActionListener(e -> {
             JOptionPane dialog = new JOptionPane(createParamsPanel(independenceWrapper, model.getParameters()), JOptionPane.PLAIN_MESSAGE);
@@ -249,6 +234,13 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         box.add(box1);
+
+        Box box2 = Box.createHorizontalBox();
+        box2.add(Box.createHorizontalStrut(20));
+        box2.add(new JLabel("Conditioning Set:"));
+        box2.add(conditioningSetTypeJComboBox);
+        box2.add(Box.createHorizontalGlue());
+
         box.add(box2);
 
         JTextArea testDescTextArea = new JTextArea(getHelpMessage());
