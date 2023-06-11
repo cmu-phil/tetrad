@@ -99,15 +99,15 @@ public class MarkovCheckEditor extends JPanel {
             throw new NullPointerException("Expecting a model");
         }
 
-        conditioningSetTypeJComboBox.addItem("Parents(x)");
-        conditioningSetTypeJComboBox.addItem("MarkovBlanket(x)");
+        conditioningSetTypeJComboBox.addItem("Parents(X)");
+        conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
 
         conditioningSetTypeJComboBox.addActionListener(e -> {
             switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
-                case "Parents(x)":
+                case "Parents(X)":
                     model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.PARENTS);
                     break;
-                case "MarkovBlanket(x)":
+                case "MarkovBlanket(X)":
                     model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.MARKOV_BLANKET);
                     break;
                 default:
