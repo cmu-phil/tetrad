@@ -200,7 +200,7 @@ public final class TestGrasp {
         params.set(Params.NUM_RUNS, 1);
         params.set(Params.PARALLELIZED, false);
 
-        params.set(Params.ALPHA, 0.001, 0.01, 0.05, 0.1);
+        params.set(Params.ALPHA, 0.05);
         params.set(Params.PENALTY_DISCOUNT, 1.0, 2.0, 4.0);
         params.set(Params.POISSON_LAMBDA, 1, 2, 4);
         params.set(Params.ZS_RISK_BOUND, 0.001, 0.01, 0.05, 0.1);
@@ -238,21 +238,21 @@ public final class TestGrasp {
 //        statistics.add(new ParameterColumn(Params.PENALTY_DISCOUNT));
 //        statistics.add(new ParameterColumn(Params.POISSON_LAMBDA));
 //        statistics.add(new ParameterColumn(Params.ZS_RISK_BOUND));
-        statistics.add(new FractionDependentUnderAlternative());
-        statistics.add(new FractionDependentUnderNull());
+//        statistics.add(new FractionDependentUnderNull(0.01));
+//        statistics.add(new FractionDependentUnderNull());
         statistics.add(new PvalueUniformityUnderNull(0.01));
+//        statistics.add(new PvalueDistanceToAlpha(0.01));
         statistics.add(new MarkovAdequacyScore());
         statistics.add(new BicEst(2));
-        statistics.add(new AdjacencyPrecision());
+//        statistics.add(new AdjacencyPrecision());
         statistics.add(new AdjacencyRecall());
         statistics.add(new ArrowheadPrecision());
-        statistics.add(new ArrowheadRecall());
-        statistics.add(new ArrowheadPrecisionCommonEdges());
-        statistics.add(new ArrowheadRecallCommonEdges());
-        statistics.add(new StructuralHammingDistance());
+//        statistics.add(new ArrowheadRecall());
+//        statistics.add(new ArrowheadPrecisionCommonEdges());
+//        statistics.add(new ArrowheadRecallCommonEdges());
+//        statistics.add(new StructuralHammingDistance());
 
         statistics.setWeight("MAS", 1.0);
-//        statistics.setWeight("BicEst", 1.0);
 
         Comparison comparison = new Comparison();
         comparison.setParallelized(false);

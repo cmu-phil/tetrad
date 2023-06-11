@@ -6,47 +6,42 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 
+import static org.apache.commons.math3.util.FastMath.abs;
+
 /**
- * Estimates whether the p-values under the null are Uniform usign the Markov Checker. This estimate the fraction of
- * dependent judgements from the local Fraithfulness check, under the alternative hypothesis of dependence. This is only
- * applicable to continuous data and really strictly only for Gaussian data.
+ * Estimates whether the p-values under the null are Uniform usign the Markov Checker. This estimates whether the
+ * p-value of the Kolmogorov-Smirnov test for distribution of p-values under the null using the Fisher Z test for the
+ * local Markov check is uniform, so is only applicable to continuous data and really strictly only for Gaussian data.
  *
  * @author josephramsey
  */
-public class FractionDependentUnderNull implements Statistic {
+public class PvalueDistanceToAlpha implements Statistic {
     static final long serialVersionUID = 23L;
     private double alpha = 0.01;
 
-    public FractionDependentUnderNull() {
-    }
-
-    public FractionDependentUnderNull(double alpha) {
+    public PvalueDistanceToAlpha(double alpha) {
         this.alpha = alpha;
     }
 
     @Override
     public String getAbbreviation() {
-        return "DN";
+        return "DistAlpha";
     }
 
     @Override
     public String getDescription() {
-        return "Fraction Dependent Under the Null (depends only on the estimated DAG and the data)";
+        return "P-value Distance for Alpha";
     }
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
         MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), MarkovCheck.ConditioningSetType.PARENTS);
         markovCheck.generateResults();
-        return markovCheck.getFractionDependent(true);
+        return abs(alpha - markovCheck.getKsPValue(true));
     }
 
     @Override
     public double getNormValue(double value) {
-        return 1.0 - value;
-    }
-
-    public void setAlpha(double alpha) {
-        this.alpha = alpha;
+        return value;
     }
 }

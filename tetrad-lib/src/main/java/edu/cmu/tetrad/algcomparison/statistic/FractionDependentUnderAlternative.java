@@ -17,6 +17,13 @@ public class FractionDependentUnderAlternative implements Statistic {
     static final long serialVersionUID = 23L;
     private double alpha = 0.01;
 
+    public FractionDependentUnderAlternative() {
+    }
+
+    public FractionDependentUnderAlternative(double alpha) {
+        this.alpha = alpha;
+    }
+
     @Override
     public String getAbbreviation() {
         return "DA";
@@ -29,7 +36,7 @@ public class FractionDependentUnderAlternative implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha));
+        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), MarkovCheck.ConditioningSetType.PARENTS);
         markovCheck.generateResults();
         return markovCheck.getFractionDependent(false);
     }

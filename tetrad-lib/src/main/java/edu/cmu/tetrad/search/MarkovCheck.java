@@ -40,6 +40,22 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @author josephramsey
  */
 public class MarkovCheck {
+
+    private ConditioningSetType setType = ConditioningSetType.PARENTS;
+
+    /**
+     * Constructor. Takes a graph and an independence test over the variables of the graph.
+     *
+     * @param graph            The graph.
+     * @param independenceTest The test over the variables of the graph.
+     */
+    public MarkovCheck(Graph graph, IndependenceTest independenceTest, ConditioningSetType setType) {
+        this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
+        this.independenceTest = independenceTest;
+        this.msep = new MsepTest(this.graph);
+        this.setType = setType;
+    }
+
     private final Graph graph;
     private final IndependenceTest independenceTest;
     private final MsepTest msep;
@@ -52,18 +68,6 @@ public class MarkovCheck {
     private double ksPValueDep = Double.NaN;
 
     /**
-     * Constructor. Takes a graph and an independence test over the variables of the graph.
-     *
-     * @param graph            The graph.
-     * @param independenceTest The test over the variables of the graph..
-     */
-    public MarkovCheck(Graph graph, IndependenceTest independenceTest) {
-        this.graph = GraphUtils.replaceNodes(graph, independenceTest.getVariables());
-        this.independenceTest = independenceTest;
-        this.msep = new MsepTest(this.graph);
-    }
-
-    /**
      * Generates all results, for both the local Markov and local Faithfulness checks, for each node in the graph given
      * the parents of that node. These results are stored in the resultsIndep and resultsDep lists.
      *
@@ -74,7 +78,26 @@ public class MarkovCheck {
         resultsDep.clear();
 
         for (Node x : independenceTest.getVariables()) {
-            Set<Node> z = new HashSet<>(graph.getParents(x));
+
+            Set<Node> z;
+
+            switch (setType) {
+                case PARENTS:
+                    z = new HashSet<>(graph.getParents(x));
+                    break;
+                case DAG_MB:
+                    z = GraphUtils.markovBlanketForDag(x, graph);
+                    break;
+                case CPDAG_MB:
+                    z = GraphUtils.markovBlanketForCpdag(x, graph);
+                    break;
+                case PAG_MB:
+                    z = GraphUtils.markovBlanketForPag(x, graph);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown separation set type: " + setType);
+            }
+
             Set<Node> msep = new HashSet<>();
             Set<Node> mconn = new HashSet<>();
 
@@ -83,6 +106,7 @@ public class MarkovCheck {
 
             for (Node y : other) {
                 if (y == x) continue;
+                if (z.contains(x) || z.contains(y)) continue;
                 if (this.msep.isMSeparated(x, y, z)) {
                     msep.add(y);
                 } else {
@@ -96,6 +120,37 @@ public class MarkovCheck {
 
         calcStats(true);
         calcStats(false);
+    }
+
+    /**
+     * Sets the type of conditioning sets to use in the Markov check.
+     *
+     * @param setType The type of conditioning sets to use in the Markov check.
+     * @see ConditioningSetType
+     */
+    public void setSetType(ConditioningSetType setType) {
+        System.out.println("Set Set type = " + setType);
+
+        this.setType = setType;
+    }
+
+    /**
+     * Returns type of conditioning sets to use in the Markov check.
+     *
+     * @return The type of conditioning sets to use in the Markov check.
+     * @see ConditioningSetType
+     */
+    public ConditioningSetType getSetType() {
+        return this.setType;
+    }
+
+    /**
+     * The type of conditioning set to use for the Markov check. The default is PARENTS, which uses the parents of the
+     * target variable to predict the separation set. DAG_MB uses the Markov blanket of the target variable in a DAG
+     * setting, and PAG_MB uses a Markov blanket of the target variable in a PAG setting.
+     */
+    public enum ConditioningSetType {
+        PARENTS, DAG_MB, CPDAG_MB, PAG_MB
     }
 
     /**
@@ -212,6 +267,9 @@ public class MarkovCheck {
     }
 
     private void generateResults(boolean indep, Node x, Set<Node> z, Set<Node> msep, Set<Node> mconn) {
+        System.out.println("GenerateResults Set type = " + setType);
+
+
         List<IndependenceFact> facts = new ArrayList<>();
 
         // Listing all facts before checking any (in preparation for parallelization).

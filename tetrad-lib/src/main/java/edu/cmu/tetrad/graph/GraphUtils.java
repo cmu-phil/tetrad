@@ -81,10 +81,10 @@ public final class GraphUtils {
 
 
     /**
-     * Calculates the Markov blanket of a target in a DAG. This includes the target, the parents of the target, the
-     * children of the target, the parents of the children of the target, edges from parents to target, target to
-     * children, parents of children to children, and parent to parents of children. (Edges among children are implied
-     * by the inclusion of edges from parents of children to children.) Edges among parents and among parents of
+     * Calculates the subgraph over the Markov blanket of a target in a DAG. This includes the target, the parents of
+     * the target, the children of the target, the parents of the children of the target, edges from parents to target,
+     * target to children, parents of children to children, and parent to parents of children. (Edges among children are
+     * implied by the inclusion of edges from parents of children to children.) Edges among parents and among parents of
      * children not explicitly included above are not included. (Joseph Ramsey 8/6/04)
      *
      * @param target a node in the given DAG.
@@ -1901,7 +1901,86 @@ public final class GraphUtils {
         return (ex1 == Endpoint.CIRCLE || (ex1 == ex2 || ex2 == Endpoint.CIRCLE)) && (ey1 == Endpoint.CIRCLE || (ey1 == ey2 || ey2 == Endpoint.CIRCLE));
     }
 
-    public static Set<Node> pagMb(Node x, Graph G) {
+    /**
+     * Returns the Markov blanket of a node in a DAG--i.e., the node's parents, children, and parents of children,
+     * excluding the node itself.
+     *
+     * @param target The _target node.
+     * @param dag    The DAG.
+     * @return The Markov blanket of the _target node.
+     */
+    public static Set<Node> markovBlanketForDag(Node target, Graph dag) {
+        Node _target = dag.getNode(target.getName());
+//        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
+
+        if (_target == null) {
+            throw new NullPointerException("Target node not in graph: " + target);
+        }
+
+        Set<Node> blanket = new HashSet<>();
+        blanket.add(_target);
+
+        // Add parents of _target.
+        List<Node> parents = dag.getParents(_target);
+        blanket.addAll(parents);
+
+        // Add children of _target and parents of children of _target.
+        List<Node> children = dag.getChildren(_target);
+        blanket.addAll(children);
+
+        for (Node child : children) {
+            List<Node> parentsOfChild = dag.getParents(child);
+            blanket.addAll(parentsOfChild);
+        }
+
+        blanket.remove(_target);
+        return blanket;
+    }
+
+    /**
+     * Returns the Markov blanket of a node in a CPDAG--i.e., the node's possible parents (given the possibilithy of
+     * undirected edges), children (given the possibility of undireccted edges_), and parents of children (given the
+     * possibility of undirected edges), excluding the node itself.
+     *
+     * @param target The target node.
+     * @param dag    The DAG.
+     * @return The Markov blanket of the _target node.
+     */
+    public static Set<Node> markovBlanketForCpdag(Node target, Graph dag) {
+        Node _target = dag.getNode(target.getName());
+
+        if (_target == null) {
+            throw new NullPointerException("Target node not in graph: " + target);
+        }
+
+        Set<Node> blanket = new HashSet<>();
+        blanket.add(_target);
+
+        // Add adjacents of target.
+        List<Node> adjacents = dag.getAdjacentNodes(_target);
+        blanket.addAll(adjacents);
+
+        // Add children of target and adjacents of children of _target.
+        List<Node> children = dag.getChildren(_target);
+
+        for (Node child : children) {
+            List<Node> parentsOfChild = dag.getParents(child);
+            blanket.addAll(parentsOfChild);
+        }
+
+        blanket.remove(_target);
+        return blanket;
+    }
+
+    /**
+     * Returns a Markov blanket of a node in a PAG. This is not necessarily minimal (i.e. not necessarily a Markov
+     * Boundary.
+     *
+     * @param x The target node.
+     * @param G The PAG.
+     * @return A Markov blanket of the target node.
+     */
+    public static Set<Node> markovBlanketForPag(Node x, Graph G) {
         Set<Node> mb = new HashSet<>();
 
         LinkedList<Node> path = new LinkedList<>();
@@ -1909,7 +1988,7 @@ public final class GraphUtils {
         mb.add(x);
 
         for (Node d : G.getAdjacentNodes(x)) {
-            pagMbVisit(d, path, G, mb);
+            markovBlanketForPag(d, path, G, mb);
         }
 
         mb.remove(x);
@@ -1917,7 +1996,7 @@ public final class GraphUtils {
         return mb;
     }
 
-    private static void pagMbVisit(Node c, LinkedList<Node> path, Graph G, Set<Node> mb) {
+    private static void markovBlanketForPag(Node c, LinkedList<Node> path, Graph G, Set<Node> mb) {
         if (path.contains(c)) return;
         if (mb.contains(c)) return;
         path.add(c);
@@ -1935,7 +2014,7 @@ public final class GraphUtils {
         mb.add(c);
 
         for (Node d : G.getAdjacentNodes(c)) {
-            pagMbVisit(d, path, G, mb);
+            markovBlanketForPag(d, path, G, mb);
         }
 
         path.remove(c);

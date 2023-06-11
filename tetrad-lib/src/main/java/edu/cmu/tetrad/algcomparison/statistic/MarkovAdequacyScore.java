@@ -29,7 +29,7 @@ public class MarkovAdequacyScore implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, 0.01));
+        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, 0.01), MarkovCheck.ConditioningSetType.PARENTS);
         markovCheck.generateResults();
         return markovCheck.getMarkovAdequacyScore(alpha);
     }

@@ -366,7 +366,7 @@ public class EdgeListGraph implements Graph, TripleClassifier {
         Set<Edge> edges = this.edgeLists.get(node);
 
         if (edges == null) {
-            System.out.println();
+            throw new IllegalArgumentException("Node " + node + " is not in the graph.");
         }
 
         for (Edge edge : edges) {

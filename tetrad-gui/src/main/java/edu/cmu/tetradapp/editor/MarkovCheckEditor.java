@@ -27,9 +27,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
@@ -79,13 +80,16 @@ public class MarkovCheckEditor extends JPanel {
     private JLabel masLabellIndep;
     private int sortDir;
     private int lastSortCol;
-//    private final JTextArea testDescTextArea = new JTextArea();
-    private final JComboBox<IndependenceTestModel> indTestComboBox = new JComboBox<>();
+    //    private final JTextArea testDescTextArea = new JTextArea();
+    private final JComboBox<IndependenceTestModel> indTestJComboBox = new JComboBox<>();
+    private final JComboBox<String> conditioningSetTypeJComboBox = new JComboBox<>();
     boolean updatingTestModels = true;
-    private final JLabel faithfulnessTestLabel = new JLabel("(Unspecified Test)");
+    private final JLabel testLabel = new JLabel("(Unspecified Test)");
     private IndependenceWrapper independenceWrapper;
     private JPanel histogramPanelIndep;
     private JPanel histogramPanelDep;
+    private final JLabel conditioningLabelDep = new JLabel("(Unspecified)");
+    private final JLabel conditioningLabelIndep = new JLabel("(Unspecified)");
 
     /**
      * Constructs a new editor for the given model.
@@ -95,10 +99,50 @@ public class MarkovCheckEditor extends JPanel {
             throw new NullPointerException("Expecting a model");
         }
 
+        conditioningSetTypeJComboBox.addItem("Parents(x)");
+        conditioningSetTypeJComboBox.addItem("DAG-MB(x)");
+        conditioningSetTypeJComboBox.addItem("CPDAG-MB(x)");
+        conditioningSetTypeJComboBox.addItem("PAG-MB(x)");
+
+        conditioningSetTypeJComboBox.addActionListener(e -> {
+            switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
+                case "Parents(x)":
+                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.PARENTS);
+                    break;
+                case "DAG-MB(x)":
+                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.DAG_MB);
+                    break;
+                case "CPDAG-MB(x)":
+                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.CPDAG_MB);
+                    break;
+                case "PAG-MB(x)":
+                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.PAG_MB);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown conditioning set type: " +
+                            conditioningSetTypeJComboBox.getSelectedItem());
+            }
+
+            setTest();
+            model.getMarkovCheck().generateResults();
+            tableModelIndep.fireTableDataChanged();
+            tableModelDep.fireTableDataChanged();
+
+            histogramPanelDep.removeAll();
+            histogramPanelIndep.removeAll();
+            histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
+            histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+            histogramPanelDep.validate();
+            histogramPanelIndep.validate();
+            histogramPanelDep.repaint();
+            histogramPanelIndep.repaint();
+            setLabelTexts();
+        });
+
         this.model = model;
         refreshTestList();
 
-        indTestComboBox.addActionListener(e -> {
+        indTestJComboBox.addActionListener(e -> {
             class MyWatchedProcess extends WatchedProcess {
                 public void watch() {
                     setTest();
@@ -163,9 +207,19 @@ public class MarkovCheckEditor extends JPanel {
 
         Box box = Box.createVerticalBox();
         Box box1 = Box.createHorizontalBox();
-        box1.add(indTestComboBox);
+        box1.add(Box.createHorizontalStrut(20));
+        box1.add(new JLabel("Test:"));
+        box1.add(indTestJComboBox);
         box1.add(Box.createHorizontalStrut(10));
         JButton params = new JButton("Params");
+        box1.add(params);
+        box1.add(Box.createHorizontalGlue());
+
+        Box box2 = Box.createHorizontalBox();
+        box2.add(Box.createHorizontalStrut(20));
+        box2.add(new JLabel("Conditioning Set:"));
+        box2.add(conditioningSetTypeJComboBox);
+        box2.add(Box.createHorizontalGlue());
 
         params.addActionListener(e -> {
             JOptionPane dialog = new JOptionPane(createParamsPanel(independenceWrapper, model.getParameters()), JOptionPane.PLAIN_MESSAGE);
@@ -194,8 +248,8 @@ public class MarkovCheckEditor extends JPanel {
             SwingUtilities.invokeLater(MyWatchedProcess2::new);
         });
 
-        box1.add(params);
         box.add(box1);
+        box.add(box2);
 
         JTextArea testDescTextArea = new JTextArea(getHelpMessage());
         testDescTextArea.setEditable(true);
@@ -235,7 +289,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private void setTest() {
-        IndependenceTestModel selectedItem = (IndependenceTestModel) indTestComboBox.getSelectedItem();
+        IndependenceTestModel selectedItem = (IndependenceTestModel) indTestJComboBox.getSelectedItem();
         Class<IndependenceWrapper> clazz = (selectedItem == null) ? null : selectedItem.getIndependenceTest().getClazz();
         IndependenceTest independenceTest;
 
@@ -245,11 +299,12 @@ public class MarkovCheckEditor extends JPanel {
                 independenceTest = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
                 model.setIndependenceTest(independenceTest);
                 markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-                faithfulnessTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+                testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
                 invalidate();
                 repaint();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException e1) {
+                e1.printStackTrace();
                 throw new RuntimeException(e1);
             }
         }
@@ -266,12 +321,15 @@ public class MarkovCheckEditor extends JPanel {
 
         Box b1 = Box.createVerticalBox();
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Tests whether graphical predictions of Dep(X, Y | parents(X)) are correct"));
+        String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
+
+        conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + setType + ")");
+        b2.add(conditioningLabelDep);
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-        faithfulnessTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+        testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
 
         Box b2a = Box.createHorizontalBox();
         b2a.add(Box.createHorizontalGlue());
@@ -445,12 +503,16 @@ public class MarkovCheckEditor extends JPanel {
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Tests whether graphical predictions of Indep(X, Y | parents(X)) are correct"));
+
+        String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
+
+        conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + setType + ")");
+        b2.add(conditioningLabelIndep);
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-        faithfulnessTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+        testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
 
         Box b2a = Box.createHorizontalBox();
         b2a.add(Box.createHorizontalGlue());
@@ -731,6 +793,9 @@ public class MarkovCheckEditor extends JPanel {
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
 
+
+        conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + conditioningSetTypeJComboBox.getSelectedItem() + ")");
+        conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + conditioningSetTypeJComboBox.getSelectedItem() + ")");
     }
 
 
@@ -836,18 +901,18 @@ public class MarkovCheckEditor extends JPanel {
     private void refreshTestList() {
         DataType dataType = getDataType();
 
-        this.indTestComboBox.removeAllItems();
+        this.indTestJComboBox.removeAllItems();
 
         List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(dataType);
 
         for (IndependenceTestModel model : models) {
-            this.indTestComboBox.addItem(model);
+            this.indTestJComboBox.addItem(model);
         }
 
         this.updatingTestModels = false;
-        this.indTestComboBox.setEnabled(this.indTestComboBox.getItemCount() > 0);
+        this.indTestJComboBox.setEnabled(this.indTestJComboBox.getItemCount() > 0);
 
-        indTestComboBox.setSelectedItem(IndependenceTestModels.getInstance().getDefaultModel(dataType));
+        indTestJComboBox.setSelectedItem(IndependenceTestModels.getInstance().getDefaultModel(dataType));
     }
 
     // Paramter panel code from Kevin Bui.

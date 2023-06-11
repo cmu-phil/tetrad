@@ -6,6 +6,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 
+import static org.apache.commons.math3.util.FastMath.abs;
+
 /**
  * Estimates whether the p-values under the null are Uniform usign the Markov Checker. This estimates whether the
  * p-value of the Kolmogorov-Smirnov test for distribution of p-values under the null using the Fisher Z test for the
@@ -33,9 +35,9 @@ public class PvalueUniformityUnderNull implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha));
+        MarkovCheck markovCheck = new MarkovCheck(estGraph, new IndTestFisherZ((DataSet) dataModel, alpha), MarkovCheck.ConditioningSetType.PARENTS);
         markovCheck.generateResults();
-        return markovCheck.getKsPValue(true);// > alpha ? 1 : 0;
+        return markovCheck.getKsPValue(true);
     }
 
     @Override
