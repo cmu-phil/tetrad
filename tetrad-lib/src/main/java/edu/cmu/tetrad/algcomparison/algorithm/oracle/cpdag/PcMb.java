@@ -91,7 +91,7 @@ public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     @Override
     public Graph getComparisonGraph(Graph graph) {
-        return GraphUtils.markovBlanketDag(targets.get(0), new EdgeListGraph(graph));
+        return GraphUtils.markovBlanketGraph(targets.get(0), new EdgeListGraph(graph));
     }
 
     @Override

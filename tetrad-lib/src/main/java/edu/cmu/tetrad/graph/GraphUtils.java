@@ -81,90 +81,32 @@ public final class GraphUtils {
 
 
     /**
-     * Calculates the subgraph over the Markov blanket of a target in a DAG. This includes the target, the parents of
-     * the target, the children of the target, the parents of the children of the target, edges from parents to target,
-     * target to children, parents of children to children, and parent to parents of children. (Edges among children are
-     * implied by the inclusion of edges from parents of children to children.) Edges among parents and among parents of
-     * children not explicitly included above are not included. (Joseph Ramsey 8/6/04)
+     * Calculates the subgraph over the Markov blanket of a target node in a given DAG, CPDAG, MAG, or PAG.
      *
-     * @param target a node in the given DAG.
-     * @param dag    the DAG with respect to which a Markov blanket DAG is to be calculated. All the nodes and edges of
-     *               the Markov Blanket DAG are in this DAG.
+     * @param target a node in the given graph.
+     * @param graph  a DAG, CPDAG, MAG, or PAG.
      */
-    public static Graph markovBlanketDag(Node target, Graph dag) {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
+    public static Graph markovBlanketGraph(Node target, Graph graph) {
+        Set<Node> mb = markovBlanket(target, graph);
 
-        if (dag.getNode(target.getName()) == null) {
-            throw new NullPointerException("Target node not in graph: " + target);
+        Graph mbGraph = new EdgeListGraph();
+
+        for (Node node : mb) {
+            mbGraph.addNode(node);
         }
 
-        Graph blanket = new EdgeListGraph();
-        blanket.addNode(target);
+        List<Node> mbList = new ArrayList<>(mb);
+        mbList.add(target);
 
-        // Add parents of target.
-        List<Node> parents = dag.getParents(target);
-        for (Node parent1 : parents) {
-            blanket.addNode(parent1);
-            blanket.addDirectedEdge(parent1, target);
-        }
-
-        // Add children of target and parents of children of target.
-        List<Node> children = dag.getChildren(target);
-        List<Node> parentsOfChildren = new LinkedList<>();
-        for (Node child : children) {
-            if (!blanket.containsNode(child)) {
-                blanket.addNode(child);
-            }
-
-            blanket.addDirectedEdge(target, child);
-
-            List<Node> parentsOfChild = dag.getParents(child);
-            parentsOfChild.remove(target);
-            for (Node aParentsOfChild : parentsOfChild) {
-                if (!parentsOfChildren.contains(aParentsOfChild)) {
-                    parentsOfChildren.add(aParentsOfChild);
-                }
-
-                if (!blanket.containsNode(aParentsOfChild)) {
-                    blanket.addNode(aParentsOfChild);
-                }
-
-                blanket.addDirectedEdge(aParentsOfChild, child);
-            }
-        }
-
-        // Add in edges connecting parents and parents of children.
-        parentsOfChildren.removeAll(parents);
-
-        for (Node parent2 : parents) {
-            for (Node aParentsOfChildren : parentsOfChildren) {
-                Edge edge1 = dag.getEdge(parent2, aParentsOfChildren);
-                Edge edge2 = blanket.getEdge(parent2, aParentsOfChildren);
-
-                if (edge1 != null && edge2 == null) {
-                    Edge newEdge = new Edge(parent2, aParentsOfChildren, edge1.getProximalEndpoint(parent2), edge1.getProximalEndpoint(aParentsOfChildren));
-
-                    blanket.addEdge(newEdge);
+        for (int i = 0; i < mbList.size(); i++) {
+            for (int j = i + 1; j < mbList.size(); j++) {
+                for (Edge e : graph.getEdges(mbList.get(i), mbList.get(j))) {
+                    mbGraph.addEdge(e);
                 }
             }
         }
 
-        // Add in edges connecting children and parents of children.
-        for (Node aChildren1 : children) {
-
-            for (Node aParentsOfChildren : parentsOfChildren) {
-                Edge edge1 = dag.getEdge(aChildren1, aParentsOfChildren);
-                Edge edge2 = blanket.getEdge(aChildren1, aParentsOfChildren);
-
-                if (edge1 != null && edge2 == null) {
-                    Edge newEdge = new Edge(aChildren1, aParentsOfChildren, edge1.getProximalEndpoint(aChildren1), edge1.getProximalEndpoint(aParentsOfChildren));
-
-                    blanket.addEdge(newEdge);
-                }
-            }
-        }
-
-        return blanket;
+        return mbGraph;
     }
 
     //all adjancencies are directed <=> there is no uncertainty about whom the parents of 'node' are.

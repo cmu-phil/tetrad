@@ -528,12 +528,13 @@ public final class GraphSearchUtils {
             String reason;
 
             if (legalMag.isLegalMag()) {
-                reason = "This is a MAG but not a PAG; one cannot recover the original graph by finding " +
-                        "the PAG of an implied MAG";
+                reason = "The MAG implied by this graph was a legal MAG, but still one cannot recover the original graph " +
+                        "by finding the PAG of an implied MAG, so this is between a MAG and PAG";
 
             } else {
-                reason = "Could be between a MAG and a PAG; one cannot recover the original graph by finding " +
-                        "the PAG of an implied MAG";
+                reason = "The MAG implied by this graph was not legal MAG, but in any case one cannot recover " +
+                        "the original graph by finding the PAG of an implied MAG, so this is could be between " +
+                        "a MAG and PAG";
             }
 
             if (!edgeMismatch.equals("")) {
@@ -594,7 +595,8 @@ public final class GraphSearchUtils {
 
                 if (!(Edges.isDirectedEdge(e) || Edges.isBidirectedEdge(e) || Edges.isUndirectedEdge(e))) {
                     return new LegalMagRet(false,
-                            "Edge " + e + " should be directed, bidirected, or undirected.");
+                            "Edge " + e + " should be dir" +
+                                    "ected, bidirected, or undirected.");
                 }
             }
         }
