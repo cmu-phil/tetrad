@@ -66,9 +66,6 @@ public abstract class WatchedProcess {
                 return;
             }
 
-            // Process completed successfully
-            System.out.println("Process completed successfully.");
-
             if (dialog != null) {
                 dialog.dispose();
                 dialog = null;
