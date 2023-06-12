@@ -68,7 +68,7 @@ public class TestMarkovBlanketSearches {
         IMbSearch mbSearch = new GrowShrink(test);
         Set<Node> blanket = mbSearch.findMb(test.getVariable("T"));
 
-        List<Node> mbd = GraphUtils.markovBlanketGraph(graph.getNode("T"), graph).getNodes();
+        List<Node> mbd = GraphUtils.markovBlanketSubgraph(graph.getNode("T"), graph).getNodes();
         mbd.remove(graph.getNode("T"));
 
         assertEquals(new HashSet<>(mbd), new HashSet<>(blanket));
@@ -97,7 +97,7 @@ public class TestMarkovBlanketSearches {
         for (Node node : nodes) {
             Set<Node> resultNodes = search.findMb(node);
 
-            Graph trueMb = GraphUtils.markovBlanketGraph(node, dag);
+            Graph trueMb = GraphUtils.markovBlanketSubgraph(node, dag);
             Set<Node> trueNodes = new HashSet<>(trueMb.getNodes());
             trueNodes.remove(node);
 

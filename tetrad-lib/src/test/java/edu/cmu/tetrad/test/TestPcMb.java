@@ -82,7 +82,7 @@ public class TestPcMb {
         for (Node node : nodes) {
             Graph resultMb = search.search(Collections.singletonList(node));
             if (dag.containsNode(node)) {
-                Graph trueMb = GraphUtils.markovBlanketGraph(node, dag);
+                Graph trueMb = GraphUtils.markovBlanketSubgraph(node, dag);
 
                 List<Node> resultNodes = resultMb.getNodes();
                 List<Node> trueNodes = trueMb.getNodes();

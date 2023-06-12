@@ -1199,8 +1199,7 @@ public final class GraphSearchUtils {
                 adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
                 adjPrec, adjRec, arrowptPrec, arrowptRec, shd,
                 twoCycleCorrect, twoCycleFn, twoCycleFp,
-                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo,
-                correctAdjacency,
+                edgesAdded, edgesRemoved,
                 counts);
     }
 
@@ -1356,8 +1355,7 @@ public final class GraphSearchUtils {
                 adjPrec, adjRec, arrowptPrec, arrowptRec,
                 shd,
                 twoCycleErrors.twoCycCor, twoCycleErrors.twoCycFn, twoCycleErrors.twoCycFp,
-                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo,
-                correctAdjacency,
+                edgesAdded, edgesRemoved,
                 counts);
     }
 
