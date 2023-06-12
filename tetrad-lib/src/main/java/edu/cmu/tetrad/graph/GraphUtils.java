@@ -1028,10 +1028,7 @@ public final class GraphUtils {
         }
     }
 
-
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
-//        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
-
         class CountTask extends RecursiveTask<Counts> {
 
             private final List<Edge> edges;
@@ -1100,7 +1097,6 @@ public final class GraphUtils {
         edgeSet.addAll(topGraph.getEdges());
         edgeSet.addAll(leftGraph.getEdges());
 
-//        System.out.println("Union formed");
         if (print) {
             System.out.println("Top graph " + topGraph.getEdges().size());
             System.out.println("Left graph " + leftGraph.getEdges().size());
@@ -1109,14 +1105,11 @@ public final class GraphUtils {
 
         List<Edge> edges = new ArrayList<>(edgeSet);
 
-//        System.out.println("Finding pool");
         ForkJoinPoolInstance pool = ForkJoinPoolInstance.getInstance();
 
-//        System.out.println("Starting count task");
         CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph, new int[1]);
         Counts counts = pool.getPool().invoke(task);
 
-//        System.out.println("Finishing count task");
         return counts.countArray();
     }
 
@@ -1146,8 +1139,6 @@ public final class GraphUtils {
         }
 
         return 5;
-
-//        throw new IllegalArgumentException("Unsupported edge type : " + edgeTop);
     }
 
     private static int getTypeLeft(Edge edgeLeft, Edge edgeTop) {
@@ -1786,7 +1777,6 @@ public final class GraphUtils {
         return graph;
     }
 
-
     private static class Counts {
 
         private final int[][] counts;
@@ -1832,17 +1822,14 @@ public final class GraphUtils {
         private final double arrowptRec;
 
         private final int shd;
-        private final int twoCycleFn;
-        private final int twoCycleFp;
-        private final int twoCycleCorrect;
 
         private final List<Edge> edgesAdded;
         private final List<Edge> edgesRemoved;
 
         public GraphComparison(int adjFn, int adjFp, int adjCorrect, int arrowptFn, int arrowptFp,
                                int arrowptCorrect, double adjPrec, double adjRec, double arrowptPrec,
-                               double arrowptRec, int shd, int twoCycleCorrect, int twoCycleFn,
-                               int twoCycleFp, List<Edge> edgesAdded, List<Edge> edgesRemoved,
+                               double arrowptRec, int shd,
+                               List<Edge> edgesAdded, List<Edge> edgesRemoved,
                                int[][] counts) {
             this.adjFn = adjFn;
             this.adjFp = adjFp;
@@ -1857,9 +1844,6 @@ public final class GraphUtils {
             this.arrowptRec = arrowptRec;
 
             this.shd = shd;
-            this.twoCycleCorrect = twoCycleCorrect;
-            this.twoCycleFn = twoCycleFn;
-            this.twoCycleFp = twoCycleFp;
             this.edgesAdded = edgesAdded;
             this.edgesRemoved = edgesRemoved;
 
@@ -1894,18 +1878,6 @@ public final class GraphUtils {
             return this.shd;
         }
 
-        public int getTwoCycleFn() {
-            return this.twoCycleFn;
-        }
-
-        public int getTwoCycleFp() {
-            return this.twoCycleFp;
-        }
-
-        public int getTwoCycleCorrect() {
-            return this.twoCycleCorrect;
-        }
-
         public List<Edge> getEdgesAdded() {
             return this.edgesAdded;
         }
@@ -1936,7 +1908,6 @@ public final class GraphUtils {
     }
 
     public static class TwoCycleErrors {
-
         public int twoCycCor;
         public int twoCycFn;
         public int twoCycFp;
@@ -1950,7 +1921,5 @@ public final class GraphUtils {
         public String toString() {
             return "2c cor = " + this.twoCycCor + "\t" + "2c fn = " + this.twoCycFn + "\t" + "2c fp = " + this.twoCycFp;
         }
-
     }
-
 }

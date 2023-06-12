@@ -1261,7 +1261,7 @@ public class PerformanceTests {
             ffciArrowStats.add(printCorrectArrows(dag, estPag, truePag));
             ffciTailStats.add(printCorrectTails(dag, estPag, truePag));
 
-            ffciCounts.add(GraphSearchUtils.getGraphComparison2(estPag, truePag));
+            ffciCounts.add(GraphSearchUtils.getGraphComparison(estPag, truePag));
 
             elapsed = ta2 - ta1;
             ffciElapsedTimes.add(elapsed);

@@ -261,7 +261,7 @@ public class Comparison {
             Graph correctGraph = _result.getCorrectResult();
             Graph resultGraph = _result.getResultGraph();
 
-            GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison2(correctGraph, resultGraph);
+            GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(correctGraph, resultGraph);
 
             int newRow = dataSet.getNumRows();
 

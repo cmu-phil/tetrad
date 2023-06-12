@@ -1150,6 +1150,9 @@ public final class SemIm implements Im, ISemIm {
 
                 for (Node parent : parents) {
                     if (parent.getNodeType() == NodeType.ERROR) {
+                        if (semGraph.getChildren(parent).size() != 1) {
+                            continue;
+                        }
                         Node child = semGraph.getChildren(parent).iterator().next();
                         double paramValue = getParamValue(child, child);
                         sum += RandomUtil.getInstance().nextNormal(0.0, paramValue);

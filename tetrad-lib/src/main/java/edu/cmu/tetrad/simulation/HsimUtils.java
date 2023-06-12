@@ -63,7 +63,7 @@ public class HsimUtils {
 
     //this method returns an array of doubles, which are standard error metrics for graph learning
     public static double[] errorEval(Graph estCPDAG, Graph truePattern) {
-        GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison2(estCPDAG, truePattern);
+        GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(estCPDAG, truePattern);
 
         int adjTp = comparison.getAdjCor();
         int adjFp = comparison.getAdjFp();
