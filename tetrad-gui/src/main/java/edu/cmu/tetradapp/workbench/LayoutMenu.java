@@ -123,6 +123,7 @@ public class LayoutMenu extends JMenu {
             LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
         });
 
+
         JMenuItem fruchtermanReingold = new JMenuItem("Fruchterman-Reingold");
         this.add(fruchtermanReingold);
 
@@ -177,7 +178,19 @@ public class LayoutMenu extends JMenu {
             getCopyLayoutAction().actionPerformed(null);
         });
 
-        JMenuItem knowledgeLayout = new JMenuItem("Layout by Knowledge");
+        if (this.getLayoutEditable().getKnowledge() != null) {
+            JMenuItem knowledgeTiersLayout = new JMenuItem("Layout by Knowledge");
+            this.add(knowledgeTiersLayout);
+
+            knowledgeTiersLayout.addActionListener(e -> {
+                LayoutUtils.knowledgeLayout(LayoutMenu.this.getLayoutEditable());
+
+                // Copy the laid out graph to the clipboard.
+                LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);
+            });
+        }
+
+        JMenuItem knowledgeLayout = new JMenuItem("Layout by Knowledge Indices");
         this.add(knowledgeLayout);
 
         knowledgeLayout.addActionListener(e -> {
