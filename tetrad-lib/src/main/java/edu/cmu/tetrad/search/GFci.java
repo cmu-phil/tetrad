@@ -130,7 +130,7 @@ public final class GFci implements IGraphSearch {
 
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
+        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth, knowledge);
         gfciExtraEdgeRemovalStep(this.graph, fgesGraph, nodes, sepsets);
 
         modifiedR0(fgesGraph, sepsets);

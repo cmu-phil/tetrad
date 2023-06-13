@@ -146,7 +146,7 @@ public final class SvarGfci implements IGraphSearch {
         this.graph = fges.search();
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxIndegree);
+        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxIndegree, knowledge);
 
         for (Node b : independenceTest.getVariables()) {
             List<Node> adjacentNodes = new ArrayList<>(fgesGraph.getAdjacentNodes(b));

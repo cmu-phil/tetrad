@@ -94,6 +94,7 @@ public final class BFci implements IGraphSearch {
     private int depth = -1;
     private boolean doDiscriminatingPathRule = true;
     private boolean bossUseBes = false;
+    private boolean allowInternalRandomness = false;
 
     //============================CONSTRUCTORS============================//
 
@@ -133,6 +134,7 @@ public final class BFci implements IGraphSearch {
         Boss subAlg = new Boss(this.score);
         subAlg.setUseBes(bossUseBes);
         subAlg.setNumStarts(this.numStarts);
+        subAlg.setAllowInternalRandomness(this.allowInternalRandomness);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
         alg.setVerbose(this.verbose);
@@ -141,7 +143,7 @@ public final class BFci implements IGraphSearch {
 
         Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(this.graph);
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
+        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth, knowledge);
 
         // FCI extra edge removal step
         gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
@@ -236,13 +238,18 @@ public final class BFci implements IGraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (fgesGraph.isDefCollider(a, b, c)) {
+                if (fgesGraph.isDefCollider(a, b, c)
+                        && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                        && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
                 } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
 
-                    if (sepset != null && !sepset.contains(b)) {
+                    if (sepset != null && !sepset.contains(b)
+                        && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                        && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+
                         this.graph.setEndpoint(a, b, Endpoint.ARROW);
                         this.graph.setEndpoint(c, b, Endpoint.ARROW);
                     }
@@ -314,5 +321,9 @@ public final class BFci implements IGraphSearch {
 
     public void setBossUseBes(boolean useBes) {
         this.bossUseBes = useBes;
+    }
+
+    public void setAllowInternalRandomness(boolean allowInternalRandomness) {
+        this.allowInternalRandomness = allowInternalRandomness;
     }
 }

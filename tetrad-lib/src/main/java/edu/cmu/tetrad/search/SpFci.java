@@ -160,7 +160,7 @@ public final class SpFci implements IGraphSearch {
         // Keep a copy of this CPDAG.
         Graph referenceDag = new EdgeListGraph(this.graph);
 
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
+        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth, knowledge);
 
         // GFCI extra edge removal step...
         gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);

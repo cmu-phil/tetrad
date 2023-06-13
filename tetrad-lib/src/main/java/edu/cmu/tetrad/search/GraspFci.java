@@ -148,7 +148,7 @@ public final class GraspFci implements IGraphSearch {
         Knowledge knowledge2 = new Knowledge(knowledge);
         Graph referenceDag = new EdgeListGraph(this.graph);
 
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth);
+        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth, knowledge);
 
         // GFCI extra edge removal step...
         gfciExtraEdgeRemovalStep(this.graph, referenceDag, nodes, sepsets);
@@ -299,7 +299,7 @@ public final class GraspFci implements IGraphSearch {
         this.ordered = ordered;
     }
 
-    // Due to Spirtes.
+    // Due t Spirtes.
     public void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {
         this.graph = new EdgeListGraph(graph);
         this.graph.reorientAllWith(Endpoint.CIRCLE);
@@ -321,10 +321,14 @@ public final class GraspFci implements IGraphSearch {
                 Node a = adjacentNodes.get(combination[0]);
                 Node c = adjacentNodes.get(combination[1]);
 
-                if (fgesGraph.isDefCollider(a, b, c)) {
+                if (fgesGraph.isDefCollider(a, b, c)
+                        && FciOrient.isArrowheadAllowed(a, b, this.graph, knowledge)
+                        && FciOrient.isArrowheadAllowed(c, b, this.graph, knowledge)) {
                     this.graph.setEndpoint(a, b, Endpoint.ARROW);
                     this.graph.setEndpoint(c, b, Endpoint.ARROW);
-                } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)) {
+                } else if (fgesGraph.isAdjacentTo(a, c) && !this.graph.isAdjacentTo(a, c)
+                        && FciOrient.isArrowheadAllowed(a, b, this.graph, knowledge)
+                        && FciOrient.isArrowheadAllowed(c, b, this.graph, knowledge)) {
                     Set<Node> sepset = sepsets.getSepset(a, c);
 
                     if (sepset != null && !sepset.contains(b)) {

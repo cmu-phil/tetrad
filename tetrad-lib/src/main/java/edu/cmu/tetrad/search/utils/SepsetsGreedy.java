@@ -21,6 +21,7 @@
 
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
@@ -30,9 +31,7 @@ import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <p>Provides a SepsetProcuder that selects the first sepset it comes to from
@@ -49,12 +48,14 @@ public class SepsetsGreedy implements SepsetProducer {
     private int depth;
     private boolean verbose;
     private IndependenceResult result;
+    private Knowledge knowledge;
 
-    public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth) {
+    public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth, Knowledge knowledge) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.extraSepsets = extraSepsets;
         this.depth = depth;
+        this.knowledge = knowledge;
     }
 
     /**
@@ -129,6 +130,8 @@ public class SepsetsGreedy implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adji);
 
+                    v = possibleParents(i, v, this.knowledge, k);
+
                     if (this.independenceTest.checkIndependence(i, k, v).isIndependent()) {
                         return v;
                     }
@@ -142,6 +145,9 @@ public class SepsetsGreedy implements SepsetProducer {
                 while ((choice = gen.next()) != null) {
                     Set<Node> v = GraphUtils.asSet(choice, adjk);
 
+                    v = possibleParents(k, v, this.knowledge, i);
+
+
                     if (this.independenceTest.checkIndependence(i, k, v).isIndependent()) {
                         return v;
                     }
@@ -150,6 +156,28 @@ public class SepsetsGreedy implements SepsetProducer {
         }
 
         return null;
+    }
+
+    private Set<Node> possibleParents(Node x, Set<Node> adjx,
+                                       Knowledge knowledge, Node y) {
+        Set<Node> possibleParents = new HashSet<>();
+        String _x = x.getName();
+
+        for (Node z : adjx) {
+            if (z == x) continue;
+            if (z == y) continue;
+            String _z = z.getName();
+
+            if (possibleParentOf(_z, _x, knowledge)) {
+                possibleParents.add(z);
+            }
+        }
+
+        return possibleParents;
+    }
+
+    private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
+        return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
 }
