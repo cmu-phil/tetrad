@@ -115,20 +115,26 @@ public class MarkovCheckEditor extends JPanel {
                             conditioningSetTypeJComboBox.getSelectedItem());
             }
 
-            setTest();
-            model.getMarkovCheck().generateResults();
-            tableModelIndep.fireTableDataChanged();
-            tableModelDep.fireTableDataChanged();
+            class MyWatchedProcess extends WatchedProcess {
+                public void watch() {
+                    setTest();
+                    model.getMarkovCheck().generateResults();
+                    tableModelIndep.fireTableDataChanged();
+                    tableModelDep.fireTableDataChanged();
 
-            histogramPanelDep.removeAll();
-            histogramPanelIndep.removeAll();
-            histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
-            histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
-            histogramPanelDep.validate();
-            histogramPanelIndep.validate();
-            histogramPanelDep.repaint();
-            histogramPanelIndep.repaint();
-            setLabelTexts();
+                    histogramPanelDep.removeAll();
+                    histogramPanelIndep.removeAll();
+                    histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
+                    histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+                    histogramPanelDep.validate();
+                    histogramPanelIndep.validate();
+                    histogramPanelDep.repaint();
+                    histogramPanelIndep.repaint();
+                    setLabelTexts();
+                }
+            }
+
+            SwingUtilities.invokeLater(MyWatchedProcess::new);
         });
 
         this.model = model;
