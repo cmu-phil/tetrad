@@ -188,7 +188,7 @@ public class PoissonPriorScore implements Score {
     }
 
     public void setLambda(double lambda) {
-        if (lambda < 1.0) throw new IllegalArgumentException("Structure prior can't be < 1: " + lambda);
+        if (lambda < 1.0) throw new IllegalArgumentException("Poisso lambda can't be < 1: " + lambda);
         this.lambda = lambda;
     }
 

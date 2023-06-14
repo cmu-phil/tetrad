@@ -22,6 +22,7 @@ package edu.cmu.tetradapp.workbench;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
@@ -209,9 +210,11 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     private Graph samplingGraph;
 
+    private Knowledge knowledge = new Knowledge();
+
     // ==============================CONSTRUCTOR============================//
     /**
-     * Constructs a new workbench workbench.
+     * Constructs a new workbench.
      *
      * @param graph The graph that this workbench will display.
      */
@@ -848,7 +851,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
     }
 
     public Knowledge getKnowledge() {
-        return null;
+        return this.knowledge;
     }
 
     public Graph getSourceGraph() {
@@ -859,7 +862,9 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
      * Not implemented for the workbench.
      */
     public void layoutByKnowledge() {
-        // Do nothing.
+        GraphSearchUtils.arrangeByKnowledgeTiers(this.graph, getKnowledge());
+        revalidate();
+        repaint();
     }
 
     public Rectangle getVisibleRect() {
@@ -1869,7 +1874,7 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
         Object source = e.getSource();
         Point loc = e.getPoint();
 
-        if (isRightClickPopupAllowed() && source == this && (SwingUtilities.isRightMouseButton(e))) {
+        if (isRightClickPopupAllowed() && source == this && (SwingUtilities.isRightMouseButton(e) || e.isControlDown())) {
             launchPopup(e);
             return;
         }
@@ -2427,6 +2432,10 @@ public abstract class AbstractWorkbench extends JComponent implements WorkbenchM
 
     public boolean isDoPagColoring() {
         return this.doPagColoring;
+    }
+
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
     }
 
     /**

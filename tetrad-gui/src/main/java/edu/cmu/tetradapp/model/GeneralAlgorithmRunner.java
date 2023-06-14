@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.MultiDataSetAlgorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.cluster.ClusterAlgorithm;
-import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.TakesGraph;
 import edu.cmu.tetrad.algcomparison.score.MSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
@@ -37,8 +37,8 @@ import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -409,32 +409,15 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
             }
         }
 
-        if (algo instanceof HasKnowledge && ((HasKnowledge) algo).getKnowledge().getNumTiers() > 0) {
-//                && ((HasKnowledge) algo).getKnowledge().getVariablesNotInTiers().size()
-//                < ((HasKnowledge) algo).getKnowledge().getVariables().size()) {
-            Knowledge _knowledge = ((HasKnowledge) algo).getKnowledge();
-            if (_knowledge.getVariablesNotInTiers().size()
-                    < _knowledge.getVariables().size()) {
-                for (Graph graph : graphList) {
-                    GraphSearchUtils.arrangeByKnowledgeTiers(graph, _knowledge);
-                }
+        if (knowledge != null && knowledge.getNumTiers() > 0) {
+            for (Graph graph : graphList) {
+                GraphSearchUtils.arrangeByKnowledgeTiers(graph, knowledge);
             }
         } else {
             for (Graph graph : graphList) {
                 LayoutUtil.circleLayout(graph, 225, 200, 150);
             }
         }
-
-//        if (algo.getKnowledge().getVariablesNotInTiers().size()
-//                < algo.getKnowledge().getVariables().size()) {
-//            for (Graph graph : graphList) {
-//                SearchGraphUtils.arrangeByKnowledgeTiers(graph, algo.getKnowledge());
-//            }
-//        } else {
-//            for (Graph graph : graphList) {
-//                GraphUtils.circleLayout(graph, 225, 200, 150);
-//            }
-//        }
 
         this.graphList = graphList;
     }
@@ -664,9 +647,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         if (this.graphList == null || this.graphList.isEmpty()) {
             return null;
         } else {
-            Graph graph = this.graphList.get(0);
-            LayoutUtil.circleLayout(graph, 225, 225, 180);
-            return graph;
+            return this.graphList.get(0);
         }
     }
 

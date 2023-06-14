@@ -24,6 +24,7 @@ package edu.cmu.tetradapp.workbench;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
+import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetradapp.util.CopyLayoutAction;
 import edu.cmu.tetradapp.util.LayoutEditable;
 import edu.cmu.tetradapp.util.PasteLayoutAction;
@@ -183,7 +184,8 @@ public class LayoutMenu extends JMenu {
             this.add(knowledgeTiersLayout);
 
             knowledgeTiersLayout.addActionListener(e -> {
-                LayoutUtils.knowledgeLayout(LayoutMenu.this.getLayoutEditable());
+                GraphSearchUtils.arrangeByKnowledgeTiers(getLayoutEditable().getGraph(), getLayoutEditable().getKnowledge());
+                getLayoutEditable().layoutByGraph(getLayoutEditable().getGraph());
 
                 // Copy the laid out graph to the clipboard.
                 LayoutMenu.this.getCopyLayoutAction().actionPerformed(null);

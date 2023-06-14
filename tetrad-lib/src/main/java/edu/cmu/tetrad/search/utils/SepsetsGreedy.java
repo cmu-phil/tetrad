@@ -48,14 +48,17 @@ public class SepsetsGreedy implements SepsetProducer {
     private int depth;
     private boolean verbose;
     private IndependenceResult result;
-    private Knowledge knowledge;
+    private Knowledge knowledge = new Knowledge();
 
     public SepsetsGreedy(Graph graph, IndependenceTest independenceTest, SepsetMap extraSepsets, int depth, Knowledge knowledge) {
         this.graph = graph;
         this.independenceTest = independenceTest;
         this.extraSepsets = extraSepsets;
         this.depth = depth;
-        this.knowledge = knowledge;
+
+        if (knowledge != null) {
+            this.knowledge = knowledge;
+        }
     }
 
     /**

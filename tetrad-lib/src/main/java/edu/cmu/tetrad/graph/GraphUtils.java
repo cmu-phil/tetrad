@@ -21,7 +21,9 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
+import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.SepsetProducer;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -1775,6 +1777,89 @@ public final class GraphUtils {
         }
 
         return graph;
+    }
+
+    // Due to Spirtes.
+    public static void gfciR0(Graph graph, Graph referenceCpdag, SepsetProducer sepsets, Knowledge knowledge) {
+        graph.reorientAllWith(Endpoint.CIRCLE);
+        fciOrientbk(knowledge, graph, graph.getNodes());
+
+        List<Node> nodes = graph.getNodes();
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (referenceCpdag.isDefCollider(a, b, c)
+                        && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                        && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                    graph.setEndpoint(a, b, Endpoint.ARROW);
+                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                } else if (referenceCpdag.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+                    Set<Node> sepset = sepsets.getSepset(a, c);
+
+                    if (sepset != null && !sepset.contains(b)
+                            && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                            && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Orients according to background knowledge
+     */
+    public static void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
+        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*->from
+            graph.setEndpoint(to, from, Endpoint.ARROW);
+        }
+
+        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in this graph
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            graph.setEndpoint(to, from, Endpoint.TAIL);
+            graph.setEndpoint(from, to, Endpoint.ARROW);
+        }
     }
 
     private static class Counts {

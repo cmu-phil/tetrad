@@ -103,7 +103,7 @@ class BayesImNodeEditingTable extends JTable {
 
         addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                if (SwingUtilities.isRightMouseButton(e)) {
+                if (SwingUtilities.isRightMouseButton(e) || e.isControlDown()) {
                     showPopup(e);
                 }
             }
