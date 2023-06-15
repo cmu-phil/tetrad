@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 import static edu.cmu.tetrad.util.RandomUtil.shuffle;
-import static java.util.Collections.sort;
 import static org.apache.commons.math3.util.FastMath.floor;
 
 
@@ -55,7 +54,7 @@ public class TeyssierScorer {
      */
     public TeyssierScorer(IndependenceTest test, Score score) {
         if (test == null && score == null) throw new IllegalArgumentException("Required: test or score");
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
+//        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
         this.variables = score.getVariables();
         this.pi = new ArrayList<>(this.variables);

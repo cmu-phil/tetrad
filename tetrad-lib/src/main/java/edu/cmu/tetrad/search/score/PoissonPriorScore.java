@@ -193,7 +193,7 @@ public class PoissonPriorScore implements Score {
     }
 
     private void setCovariances(ICovarianceMatrix covariances) {
-        CorrelationMatrixOnTheFly correlations = new CorrelationMatrixOnTheFly(covariances);
+        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
         this.covariances = covariances;
 
         boolean exists = false;

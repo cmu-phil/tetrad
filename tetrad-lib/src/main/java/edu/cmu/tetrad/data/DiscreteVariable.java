@@ -287,7 +287,10 @@ public final class DiscreteVariable extends AbstractVariable {
      */
     public boolean equals(Object o) {
 
-        //AJ
+        if (o == null) {
+            return false;
+        }
+
         if (!(o instanceof DiscreteVariable)) {
             return false;
         }
