@@ -92,8 +92,6 @@ public class TestMarkovBlanketSearches {
 
         List<Node> nodes = dag.getNodes();
 
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
-
         for (Node node : nodes) {
             Set<Node> resultNodes = search.findMb(node);
 

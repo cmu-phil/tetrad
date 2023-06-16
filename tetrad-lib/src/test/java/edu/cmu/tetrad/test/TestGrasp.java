@@ -1226,8 +1226,6 @@ public final class TestGrasp {
 
     //    @Test
     public void bryanCheckDensityClaims() {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
-
         long start = MillisecondTimes.timeMillis();
         boolean usePearl = true;
         int numVars = 5; // Will change this in OtherParams.sp() too

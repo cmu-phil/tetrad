@@ -159,7 +159,6 @@ public final class TestCptInvariantUpdater {
 
     @Test
     public void testUpdate4() {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
         Node x0Node = new GraphNode("X0");
         Node x1Node = new GraphNode("X1");

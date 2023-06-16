@@ -612,7 +612,6 @@ public class TestFges {
      * graph.
      */
     private void checkSearch(String inputGraph, String outputGraph) {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
         // Set up graph and node objects.
         Graph graph = GraphUtils.convert(inputGraph);
