@@ -122,8 +122,7 @@ public final class Tetrad implements PropertyChangeListener {
         SplashScreen.show("Loading Tetrad...", 1000);
         EventQueue.invokeLater(() -> new Tetrad().launchFrame());
 
-        boolean enableExperimental = Preferences.userRoot().getBoolean("enableExperimental", false);
-        Tetrad.enableExperimental = enableExperimental;
+        Tetrad.enableExperimental = Preferences.userRoot().getBoolean("enableExperimental", false);
     }
 
     //===============================PRIVATE METHODS=======================//
@@ -133,10 +132,10 @@ public final class Tetrad implements PropertyChangeListener {
             if (os.equals("Windows XP")) {
                 // The only system look and feel that seems to work well is the
                 // one for Windows XP. When running on Mac the mac look and
-                // feel is forced. The new look (synth or whatever its called)
+                // feel is forced. The new look (synth or whatever it's called)
                 // and feel for linux on 1.5 looks
-                // pretty bad so it shouldn't be used.
-                // By default linux will use the metal look and feel.
+                // pretty bad, so it shouldn't be used.
+                // By default, linux will use the metal look and feel.
                 UIManager.setLookAndFeel(
                         UIManager.getSystemLookAndFeelClassName());
             }
@@ -160,7 +159,7 @@ public final class Tetrad implements PropertyChangeListener {
 
         // Set up the frame. Note the order in which the next few steps
         // happen. First, the frame is given a preferred size, so that if
-        // someone unmaximizes it it doesn't shrivel up to the top left
+        // someone unmaximizes it, it doesn't shrivel up to the top left
         // corner. Next, the content pane is set. Next, it is packed. Finally,
         // it is maximized. For some reason, most of the details of this
         // order are important. jdramsey 12/14/02
