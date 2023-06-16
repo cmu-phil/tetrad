@@ -289,6 +289,10 @@ public final class GraphUtils {
                 convertedGraph.addNode(node1);
             }
 
+//            if (!convertedGraph.containsNode(node1)) {
+//                convertedGraph.addNode(node1);
+//            }
+
             if (node2 == null) {
                 node2 = edge.getNode2();
             }
@@ -297,13 +301,13 @@ public final class GraphUtils {
                 convertedGraph.addNode(node2);
             }
 
-            if (!convertedGraph.containsNode(node1)) {
-                convertedGraph.addNode(node1);
-            }
+//            if (!convertedGraph.containsNode(node1)) {
+//                convertedGraph.addNode(node1);
+//            }
 
-            if (!convertedGraph.containsNode(node2)) {
-                convertedGraph.addNode(node2);
-            }
+//            if (!convertedGraph.containsNode(node2)) {
+//                convertedGraph.addNode(node2);
+//            }
 
             Endpoint endpoint1 = edge.getEndpoint1();
             Endpoint endpoint2 = edge.getEndpoint2();

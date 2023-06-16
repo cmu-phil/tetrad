@@ -281,29 +281,20 @@ public final class DiscreteVariable extends AbstractVariable {
         this.categoryNamesDisplayed = categoryNamesDisplayed;
     }
 
+    public int hashCode() {
+        return this.getName().hashCode();
+    }
+
     /**
      * @return true iff the given object is a discrete variable with the same number of categories and the same
      * categories.
      */
     public boolean equals(Object o) {
+        if (o == null) return false;
+        if (!(o instanceof DiscreteVariable)) return false;
+        if (!getName().equals(((Node) o).getName())) return false;
 
-        if (o == null) {
-            return false;
-        }
-
-        if (!(o instanceof DiscreteVariable)) {
-            return false;
-        }
-
-        // Updating needs the slow node equality. jdramsey 6/7/2015
-//        if (equalityType == NodeEqualityMode.Type.OBJECT) {
-//            return o == this;
-//        } else if (equalityType == NodeEqualityMode.Type.NAME) {
         DiscreteVariable variable = (DiscreteVariable) o;
-
-        if (!(getName().equals(variable.getName()))) {
-            return false;
-        }
 
         if (!(getNumCategories() == variable.getNumCategories())) {
             return false;
@@ -316,12 +307,6 @@ public final class DiscreteVariable extends AbstractVariable {
         }
 
         return getNodeType() == variable.getNodeType();
-//        }
-//        else {
-//            throw new IllegalStateException();
-//        }
-//        }
-
     }
 
     public NodeType getNodeType() {
