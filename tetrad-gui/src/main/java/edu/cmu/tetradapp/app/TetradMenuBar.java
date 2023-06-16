@@ -30,9 +30,11 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.prefs.Preferences;
+
+import static java.awt.Desktop.getDesktop;
 
 /**
  * The main menubar for Tetrad.
@@ -73,7 +75,21 @@ final class TetradMenuBar extends JMenuBar {
         add(loggingMenu);
         add(templateMenu);
         add(windowMenu);
-        add(helpMenu);
+
+
+        JMenu suggestionBox = new JMenu("Suggestion_Box");
+        JMenuItem suggestionBoxItem = new JMenuItem("Submit a Suggestion");
+        add(suggestionBox);
+
+        suggestionBox.add(suggestionBoxItem);
+
+        suggestionBoxItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SuggestionDialog dialog = new SuggestionDialog(desktop, "https://github.com/cmu-phil/tetrad/issues");
+                dialog.setVisible(true);
+            }
+        });
 
         buildFileMenu(fileMenu);
         buildEditMenu(editMenu);
@@ -81,6 +97,43 @@ final class TetradMenuBar extends JMenuBar {
         buildTemplateMenu(templateMenu);
         buildWindowMenu(windowMenu);
         buildHelpMenu(helpMenu);
+    }
+
+    public static class SuggestionDialog extends JDialog {
+        public SuggestionDialog(JComponent parent, String url) {
+            super((Frame) SwingUtilities.getAncestorOfClass(Frame.class, parent), "Message", true);
+
+            JPanel panel = new JPanel(new BorderLayout());
+
+            // Create a clickable link
+            JLabel label = new JLabel("<html>" +
+                    "<p>Please submit any issues you may have,</p>" +
+                    "<p>whether bug reports, general encouragement,</p>" +
+                    "<p>or feature requests, to our issues list. We'd</p>" +
+                    "<p>love to hear from you as we continue to</p>" +
+                    "<p>improve the Tetrad tools!</p>" +
+                    "<p><center><a href=\"" + url + "\">" + url + "</a></center>" +
+                    "</html>");
+            label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            label.setFont(label.getFont().deriveFont(Font.PLAIN, 14));
+            label.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        getDesktop().browse(new java.net.URI(url));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+
+            panel.add(label, BorderLayout.CENTER);
+            panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            getContentPane().add(panel);
+
+            pack();
+            setLocationRelativeTo(parent);
+        }
     }
 
     //================================ Private Method ===============================//
