@@ -75,21 +75,8 @@ final class TetradMenuBar extends JMenuBar {
         add(loggingMenu);
         add(templateMenu);
         add(windowMenu);
+        add(helpMenu);
 
-
-        JMenu suggestionBox = new JMenu("Suggestion_Box");
-        JMenuItem suggestionBoxItem = new JMenuItem("Submit a Suggestion");
-        add(suggestionBox);
-
-        suggestionBox.add(suggestionBoxItem);
-
-        suggestionBoxItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                SuggestionDialog dialog = new SuggestionDialog(desktop, "https://github.com/cmu-phil/tetrad/issues");
-                dialog.setVisible(true);
-            }
-        });
 
         buildFileMenu(fileMenu);
         buildEditMenu(editMenu);
@@ -99,9 +86,26 @@ final class TetradMenuBar extends JMenuBar {
         buildHelpMenu(helpMenu);
     }
 
+    private JMenuItem getSuggestionBoxItem(TetradDesktop desktop, JMenu helpMenu) {
+        JMenuItem suggestionBoxItem = new JMenuItem("Suggestion Box!");
+
+        helpMenu.add(suggestionBoxItem);
+
+        suggestionBoxItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SuggestionDialog dialog = new SuggestionDialog(desktop, "https://github.com/cmu-phil/tetrad/issues");
+                dialog.setVisible(true);
+            }
+        });
+
+        return suggestionBoxItem;
+    }
+
     public static class SuggestionDialog extends JDialog {
         public SuggestionDialog(JComponent parent, String url) {
             super((Frame) SwingUtilities.getAncestorOfClass(Frame.class, parent), "Message", true);
+            setResizable(false);
 
             JPanel panel = new JPanel(new BorderLayout());
 
@@ -279,6 +283,7 @@ final class TetradMenuBar extends JMenuBar {
         helpMenu.addSeparator();
         helpMenu.add(new LaunchManualAction());
         helpMenu.add(new LaunchFlowchartAction());
+        helpMenu.add(getSuggestionBoxItem(desktop, helpMenu));
     }
 
     //========================= Inner Classes ==========================================//

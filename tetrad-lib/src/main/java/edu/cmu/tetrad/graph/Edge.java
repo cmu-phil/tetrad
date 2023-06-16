@@ -336,8 +336,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
      * Two edges are equal just in case they connect the same nodes and have the same endpoints proximal to each node.
      */
     public final boolean equals(Object o) {
-        if (o == this)
-            return true;
+        if (o == null)
+            return false;
         if (!(o instanceof Edge))
             return false;
 
