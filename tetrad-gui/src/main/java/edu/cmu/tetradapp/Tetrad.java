@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp;
 
-import edu.cmu.tetrad.graph.NodeEqualityMode;
 import edu.cmu.tetrad.util.JOptionUtils;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Version;
@@ -152,7 +151,6 @@ public final class Tetrad implements PropertyChangeListener {
      */
     private void launchFrame() {
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
         // Set up the desktop.
         this.desktop = new TetradDesktop();

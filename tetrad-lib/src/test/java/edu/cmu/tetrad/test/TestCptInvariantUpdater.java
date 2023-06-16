@@ -25,7 +25,6 @@ import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeEqualityMode;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

@@ -1940,7 +1940,6 @@ public class PerformanceTests {
 
 
     public static void main(String... args) {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
         System.out.println("Start ");
 
         PerformanceTests performanceTests = new PerformanceTests();
