@@ -1401,7 +1401,7 @@ public final class DataUtils {
 
                 double std1 = StatUtils.sd(x1);
                 double mu1 = StatUtils.mean(x1);
-                double[] xTransformed = DataUtils.ranks(data, x1);
+                double[] xTransformed = DataUtils.ranks(x1);
 
                 for (int i = 0; i < xTransformed.length; i++) {
                     xTransformed[i] /= n;
@@ -1458,15 +1458,16 @@ public final class DataUtils {
         }
     }
 
-    private static double[] ranks(Matrix data, double[] x) {
-        double[] ranks = new double[x.length];
+    public static double[] ranks(double[] x) {
+        int numRows = x.length;
+        double[] ranks = new double[numRows];
 
-        for (int i = 0; i < data.getNumRows(); i++) {
+        for (int i = 0; i < numRows; i++) {
             double d = x[i];
             int count = 0;
 
-            for (int k = 0; k < data.getNumRows(); k++) {
-                if (x[k] <= d) {
+            for (double v : x) {
+                if (v <= d) {
                     count++;
                 }
             }

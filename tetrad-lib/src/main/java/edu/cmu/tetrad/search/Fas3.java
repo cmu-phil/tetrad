@@ -63,7 +63,7 @@ import java.util.*;
  * @see Fci
  * @see Knowledge
  */
-public class Fas implements IFas {
+public class Fas3 implements IFas {
     private final IndependenceTest test;
     private final TetradLogger logger = TetradLogger.getInstance();
     private Knowledge knowledge = new Knowledge();
@@ -83,7 +83,7 @@ public class Fas implements IFas {
      *
      * @param test The test to use for oracle conditional independence test results.
      */
-    public Fas(IndependenceTest test) {
+    public Fas3(IndependenceTest test) {
         this.test = test;
     }
 

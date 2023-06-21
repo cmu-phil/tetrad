@@ -41,7 +41,7 @@ import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.*;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;

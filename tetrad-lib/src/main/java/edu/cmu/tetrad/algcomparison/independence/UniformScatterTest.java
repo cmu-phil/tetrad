@@ -5,10 +5,9 @@ import edu.cmu.tetrad.annotation.TestOfIndependence;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataType;
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.test.ScoreIndTest;
-import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
+import edu.cmu.tetrad.search.work_in_progress.IndTestCramerT;
+import edu.cmu.tetrad.search.work_in_progress.IndTestUniformScatter;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 
@@ -21,32 +20,26 @@ import java.util.List;
  * @author josephramsey
  */
 @TestOfIndependence(
-        name = "MAG SEM BIC Test",
-        command = "mag-sem-bic-test",
-        dataType = {DataType.Continuous, DataType.Covariance}
+        name = "Uniform Scatter Test",
+        command = "uniform-scatter-test",
+        dataType = {DataType.Continuous}
 )
 @LinearGaussian
-public class MagSemBicTest implements IndependenceWrapper {
+public class UniformScatterTest implements IndependenceWrapper {
 
     static final long serialVersionUID = 23L;
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
-        MagSemBicScore score;
-
-        if (dataSet instanceof ICovarianceMatrix) {
-            score = new MagSemBicScore((ICovarianceMatrix) dataSet);
-        } else {
-            score = new MagSemBicScore((DataSet) dataSet);
-        }
-        score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
-
-        return new ScoreIndTest(score, dataSet);
+        double alpha = parameters.getDouble(Params.ALPHA);
+        double avg = parameters.getDouble(Params.AVG_DEGREE);
+        int numCondCategories = parameters.getInt(Params.GRASP_DEPTH);
+        return new IndTestUniformScatter((DataSet) dataSet, alpha, avg, numCondCategories);
     }
 
     @Override
     public String getDescription() {
-        return "SEM BIC Test";
+        return "Uniform Scatter Test";
     }
 
     @Override
@@ -57,8 +50,10 @@ public class MagSemBicTest implements IndependenceWrapper {
     @Override
     public List<String> getParameters() {
         List<String> params = new ArrayList<>();
-        params.add(Params.PENALTY_DISCOUNT);
-        params.add(Params.STRUCTURE_PRIOR);
+        params.add(Params.ALPHA);
+        params.add(Params.DEPTH);
+        params.add(Params.AVG_DEGREE);
+        params.add(Params.GRASP_DEPTH);
         return params;
     }
 }

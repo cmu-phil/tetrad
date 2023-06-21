@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IMbSearch;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;

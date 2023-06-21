@@ -7,7 +7,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.File;

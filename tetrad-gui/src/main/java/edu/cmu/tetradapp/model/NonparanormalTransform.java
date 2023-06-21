@@ -20,10 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.DataUtils;
-import edu.cmu.tetrad.data.LogDataUtils;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
@@ -39,6 +36,11 @@ public class NonparanormalTransform extends DataWrapper {
     //=============================CONSTRUCTORS==============================//
     public NonparanormalTransform(DataWrapper wrapper, Parameters params) {
         DataModel dataModel = wrapper.getSelectedDataModel();
+
+        if (dataModel instanceof ICovarianceMatrix) {
+            throw new IllegalArgumentException("Data model must be a tabular continuous data set, not a covariance matrix.");
+        }
+
         DataSet nonparanormalTransformed = DataUtils.getNonparanormalTransformed((DataSet) dataModel);
         nonparanormalTransformed.setKnowledge(dataModel.getKnowledge().copy());
 
