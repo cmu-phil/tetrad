@@ -19,14 +19,19 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA //
 ///////////////////////////////////////////////////////////////////////////////
 
-package edu.cmu.tetrad.search;
+package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
+import edu.cmu.tetrad.search.Grasp;
+import edu.cmu.tetrad.search.IGraphSearch;
+import edu.cmu.tetrad.search.Lofs;
+import edu.cmu.tetrad.search.score.ConditionalGaussianScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
@@ -134,16 +139,50 @@ import static org.apache.commons.math3.util.FastMath.*;
  * @see Knowledge
  * @see Lofs
  */
-public final class Fask implements IGraphSearch {
+public final class ExperimentalGraspWithNonlinearChecks implements IGraphSearch {
 
+    private final Score score;
+    // The data sets being analyzed. They must all have the same variables and the same
+    // number of records.
+    private final DataSet dataSet;
+    // Used for calculating coefficient values.
+    private final RegressionDataset regressionDataset;
+    private double[][] D;
+    // An initial graph to constrain the adjacency step.
+    private Graph externalGraph;
+    // Elapsed time of the search, in milliseconds.
+    private long elapsed;
+    // For the Fast Adjacency Search, the maximum number of edges in a conditioning set.
+    private int depth = -1;
+    // Knowledge the the search will obey, of forbidden and required edges.
+    private Knowledge knowledge = new Knowledge();
+    // A threshold for including extra adjacencies due to skewness. Default is 0.3. For more edges, lower
+    // this threshold.
+    private double skewEdgeThreshold;
+    // A theshold for making 2-cycles. Default is 0 (no 2-cycles.) Note that the 2-cycle rule will only work
+    // with the FASK left-right rule. Default is 0; a good value for finding a decent set of 2-cycles is 0.1.
+    private double twoCycleScreeningCutoff;
+    // At the end of the procedure, two cycles marked in the graph (for having small LR differences) are then
+    // tested statistically to see if they are two-cycles, using this cutoff. To adjust this cutoff, set the
+    // two cycle alpha to a number in [0, 1]. The default alpha  is 0.01.
+    private double orientationCutoff;
+    // The corresponding alpha.
+    private double orientationAlpha;
+    // Bias for orienting with negative coefficients.
+    private double delta;
+    // Whether X and Y should be adjusted for skewness. (Otherwise, they are assumed to have positive skewness.
+    private boolean empirical = true;
+    // The left right rule to use, default FASK.
+    private LeftRight leftRight = LeftRight.RSKEW;
+    // The graph resulting from search.
+    private Graph graph;
 
     /**
      * Constructor.
      *
      * @param dataSet A continuous dataset over variables V.
-     * @param test    An independence test over variables V. (Used for FAS.)
      */
-    public Fask(DataSet dataSet, Score score, IndependenceTest test) {
+    public ExperimentalGraspWithNonlinearChecks(DataSet dataSet, Knowledge knowledge) {
         if (dataSet == null) {
             throw new NullPointerException("Data set not provided.");
         }
@@ -152,13 +191,54 @@ public final class Fask implements IGraphSearch {
             throw new IllegalArgumentException("For FASK, the dataset must be entirely continuous");
         }
 
+        // Experimental variables should be discrete, non-exp variables should be continuous.
         this.dataSet = dataSet;
-        this.test = test;
-        this.score = score;
+        this.score = new ConditionalGaussianScore(dataSet, 2, false);
+
+        // Knowledge should have experimental variables in tier 1 and nonexperimental varibles in tier 2.
+        this.knowledge = knowledge;
 
         this.regressionDataset = new RegressionDataset(dataSet);
         this.orientationCutoff = getZForAlpha(0.01);
         this.orientationAlpha = 0.01;
+    }
+
+    private static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    // Returns E(XY | Z > 0); Z is typically either X or Y.
+    private static double E(double[] x, double[] y, double[] z) {
+        double exy = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (z[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+
+    //======================================== PUBLIC METHODS ====================================//
+
+    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
+    private static double correxp(double[] x, double[] y, double[] z) {
+        return ExperimentalGraspWithNonlinearChecks.E(x, y, z) / sqrt(ExperimentalGraspWithNonlinearChecks.E(x, x, z) * ExperimentalGraspWithNonlinearChecks.E(y, y, z));
     }
 
     /**
@@ -194,54 +274,29 @@ public final class Fask implements IGraphSearch {
 
         Graph G;
 
-        if (this.adjacencyMethod == AdjacencyMethod.BOSS) {
-            PermutationSearch fas = new PermutationSearch(new Boss(this.score));
-            fas.setKnowledge(this.knowledge);
-            G = fas.search();
-        } else if (this.adjacencyMethod == AdjacencyMethod.GRASP) {
-            Grasp fas = new Grasp(this.score);
-            fas.setDepth(5);
-            fas.setNonSingularDepth(1);
-            fas.setUncoveredDepth(1);
-            fas.setNumStarts(5);
-            fas.setAllowInternalRandomness(true);
-            fas.setUseDataOrder(false);
-            fas.setKnowledge(this.knowledge);
-            fas.bestOrder(dataSet.getVariables());
-            G = fas.getGraph(true);
-        } else if (this.adjacencyMethod == AdjacencyMethod.FAS_STABLE) {
-            Fas fas = new Fas(this.test);
-            fas.setStable(true);
-            fas.setVerbose(false);
-            fas.setKnowledge(this.knowledge);
-            G = fas.search();
-        } else if (this.adjacencyMethod == AdjacencyMethod.FGES) {
-            Fges fas = new Fges(this.score);
-            fas.setVerbose(false);
-            fas.setKnowledge(this.knowledge);
-            G = fas.search();
-        } else if (this.adjacencyMethod == AdjacencyMethod.EXTERNAL_GRAPH) {
-            if (this.externalGraph == null) throw new IllegalStateException("An external graph was not supplied.");
+        Grasp fas = new Grasp(this.score);
+        fas.setDepth(5);
+        fas.setNonSingularDepth(1);
+        fas.setUncoveredDepth(1);
+        fas.setNumStarts(5);
+        fas.setAllowInternalRandomness(true);
+        fas.setUseDataOrder(false);
+        fas.setKnowledge(this.knowledge);
+        fas.bestOrder(dataSet.getVariables());
+        Graph G0 = fas.getGraph(true);
 
-            Graph g1 = new EdgeListGraph(this.externalGraph.getNodes());
+        List<Node> nodes = G0.getNodes();
+        G0 = GraphUtils.replaceNodes(G0, dataSet.getVariables());
 
-            for (Edge edge : this.externalGraph.getEdges()) {
-                Node x = edge.getNode1();
-                Node y = edge.getNode2();
-
-                if (!g1.isAdjacentTo(x, y)) g1.addUndirectedEdge(x, y);
+        for (int i = 0; i < nodes.size(); i++) {
+            Node node = nodes.get(i);
+            if (node instanceof DiscreteVariable) {
+                DiscreteVariable experimentalVariable = (DiscreteVariable) node;
+                G0.removeNode(node);
             }
-
-            g1 = GraphUtils.replaceNodes(g1, dataSet.getVariables());
-
-            G = g1;
-        } else if (this.adjacencyMethod == AdjacencyMethod.NONE) {
-            G = new EdgeListGraph(variables);
-        } else {
-            throw new IllegalStateException("That method was not configured: " + this.adjacencyMethod);
         }
 
-        G = GraphUtils.replaceNodes(G, dataSet.getVariables());
+        G = G0;
 
         TetradLogger.getInstance().forceLogMessage("");
 
@@ -264,8 +319,8 @@ public final class Fask implements IGraphSearch {
                 double[] x = this.D[i];
                 double[] y = this.D[j];
 
-                double cx = Fask.correxp(x, y, x);
-                double cy = Fask.correxp(x, y, y);
+                double cx = ExperimentalGraspWithNonlinearChecks.correxp(x, y, x);
+                double cy = ExperimentalGraspWithNonlinearChecks.correxp(x, y, y);
 
                 if (G.isAdjacentTo(X, Y) || (abs(cx - cy) > this.skewEdgeThreshold)) {
                     double lr = lrs[i][j];// leftRight(x, y);
@@ -363,72 +418,6 @@ public final class Fask implements IGraphSearch {
 
         return graph;
     }
-
-    /**
-     * Enumerates the options left-right rules to use for FASK. Options include the FASK left-right rule and three
-     * left-right rules from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
-     * paper, "empirical" versions were given in which the variables are multiplied through by the signs of the
-     * skewnesses; we follow this advice here (with good results). These others are provided for those who prefer them.
-     */
-    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
-
-    // The score to be used for the FAS adjacency search.
-    private final IndependenceTest test;
-    private final Score score;
-    // The data sets being analyzed. They must all have the same variables and the same
-    // number of records.
-    private final DataSet dataSet;
-    // Used for calculating coefficient values.
-    private final RegressionDataset regressionDataset;
-    private double[][] D;
-    // An initial graph to constrain the adjacency step.
-    private Graph externalGraph;
-    // Elapsed time of the search, in milliseconds.
-    private long elapsed;
-    // For the Fast Adjacency Search, the maximum number of edges in a conditioning set.
-    private int depth = -1;
-
-    // Knowledge the the search will obey, of forbidden and required edges.
-    private Knowledge knowledge = new Knowledge();
-
-    // A threshold for including extra adjacencies due to skewness. Default is 0.3. For more edges, lower
-    // this threshold.
-    private double skewEdgeThreshold;
-
-    // A theshold for making 2-cycles. Default is 0 (no 2-cycles.) Note that the 2-cycle rule will only work
-    // with the FASK left-right rule. Default is 0; a good value for finding a decent set of 2-cycles is 0.1.
-    private double twoCycleScreeningCutoff;
-
-    // At the end of the procedure, two cycles marked in the graph (for having small LR differences) are then
-    // tested statistically to see if they are two-cycles, using this cutoff. To adjust this cutoff, set the
-    // two cycle alpha to a number in [0, 1]. The default alpha  is 0.01.
-    private double orientationCutoff;
-
-    // The corresponding alpha.
-    private double orientationAlpha;
-
-    // Bias for orienting with negative coefficients.
-    private double delta;
-
-    // Whether X and Y should be adjusted for skewness. (Otherwise, they are assumed to have positive skewness.
-    private boolean empirical = true;
-
-    // By default, FAS Stable will be used for adjacencies, though this can be set.
-    private AdjacencyMethod adjacencyMethod = AdjacencyMethod.GRASP;
-
-    // The left right rule to use, default FASK.
-    private LeftRight leftRight = LeftRight.RSKEW;
-
-    // The graph resulting from search.
-    private Graph graph;
-
-
-    //======================================== PUBLIC METHODS ====================================//
-
-    /**
-     * Enumerates the alternatives to use for finding the initial adjacencies for FASK.
-     */
-    public enum AdjacencyMethod {FAS_STABLE, FGES, BOSS, GRASP, EXTERNAL_GRAPH, NONE}
 
     /**
      * Returns the coefficient matrix for the search. If the search has not yet run, runs it, then estimates
@@ -625,7 +614,7 @@ public final class Fask implements IGraphSearch {
         double sx = skewness(x);
         double sy = skewness(y);
         double r = correlation(x, y);
-        double lr = Fask.correxp(x, y, x) - Fask.correxp(x, y, y);
+        double lr = ExperimentalGraspWithNonlinearChecks.correxp(x, y, x) - ExperimentalGraspWithNonlinearChecks.correxp(x, y, y);
 
         if (this.empirical) {
             lr *= signum(sx) * signum(sy);
@@ -639,8 +628,8 @@ public final class Fask implements IGraphSearch {
     }
 
     private double faskLeftRightV1(double[] x, double[] y) {
-        double left = Fask.cu(x, y, x) / (sqrt(Fask.cu(x, x, x) * Fask.cu(y, y, x)));
-        double right = Fask.cu(x, y, y) / (sqrt(Fask.cu(x, x, y) * Fask.cu(y, y, y)));
+        double left = ExperimentalGraspWithNonlinearChecks.cu(x, y, x) / (sqrt(ExperimentalGraspWithNonlinearChecks.cu(x, x, x) * ExperimentalGraspWithNonlinearChecks.cu(y, y, x)));
+        double right = ExperimentalGraspWithNonlinearChecks.cu(x, y, y) / (sqrt(ExperimentalGraspWithNonlinearChecks.cu(x, x, y) * ExperimentalGraspWithNonlinearChecks.cu(y, y, y)));
         double lr = left - right;
 
         double r = correlation(x, y);
@@ -841,40 +830,18 @@ public final class Fask implements IGraphSearch {
         );
     }
 
-    private static double cu(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
+    /**
+     * Enumerates the options left-right rules to use for FASK. Options include the FASK left-right rule and three
+     * left-right rules from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
+     * paper, "empirical" versions were given in which the variables are multiplied through by the signs of the
+     * skewnesses; we follow this advice here (with good results). These others are provided for those who prefer them.
+     */
+    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
 
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-    // Returns E(XY | Z > 0); Z is typically either X or Y.
-    private static double E(double[] x, double[] y, double[] z) {
-        double exy = 0.0;
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (z[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
-    private static double correxp(double[] x, double[] y, double[] z) {
-        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
-    }
+    /**
+     * Enumerates the alternatives to use for finding the initial adjacencies for FASK.
+     */
+    public enum AdjacencyMethod {FAS_STABLE, FGES, BOSS, GRASP, EXTERNAL_GRAPH, NONE}
 }
 
 
