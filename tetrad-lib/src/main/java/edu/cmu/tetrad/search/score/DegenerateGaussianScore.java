@@ -54,9 +54,6 @@ public class DegenerateGaussianScore implements Score {
     // The mixed variables of the original dataset.
     private final List<Node> variables;
 
-    // The structure prior.
-    private double structurePrior;
-
     // The embedding map.
     private final Map<Integer, List<Integer>> embedding;
 
@@ -162,7 +159,6 @@ public class DegenerateGaussianScore implements Score {
             score += this.bic.localScore(i_, parents_);
         }
 
-
         return score;
     }
 
@@ -207,14 +203,5 @@ public class DegenerateGaussianScore implements Score {
 
     public void setPenaltyDiscount(double penaltyDiscount) {
         this.bic.setPenaltyDiscount(penaltyDiscount);
-    }
-
-    public double getStructurePrior() {
-        return structurePrior;
-    }
-
-    public void setStructurePrior(double structurePrior) {
-        System.out.println("STRUCTURE PRIOR IS NOT IMPLEMENTED!");
-        this.structurePrior = structurePrior;
     }
 }
