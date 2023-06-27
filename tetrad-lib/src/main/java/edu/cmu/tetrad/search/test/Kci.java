@@ -7,16 +7,14 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.Vector;
 import edu.pitt.csb.mgm.EigenDecomposition;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.linear.BlockRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.linear.SingularValueDecomposition;
+import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.random.SynchronizedRandomGenerator;
 import org.apache.commons.math3.random.Well44497b;
 import org.apache.commons.math3.util.FastMath;
@@ -136,103 +134,109 @@ public class Kci implements IndependenceTest {
      * @see IndependenceResult
      */
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> z) {
-        if (Thread.currentThread().isInterrupted()) {
-            return new IndependenceResult(new IndependenceFact(x, y, z),
-                    true, Double.NaN, Double.NaN);
-        }
+        try {
 
-        List<Node> allVars = new ArrayList<>();
-        allVars.add(x);
-        allVars.add(y);
-        allVars.addAll(z);
+            if (Thread.currentThread().isInterrupted()) {
+                return new IndependenceResult(new IndependenceFact(x, y, z),
+                        true, Double.NaN, Double.NaN);
+            }
 
-        IndependenceFact fact = new IndependenceFact(x, y, z);
+            List<Node> allVars = new ArrayList<>();
+            allVars.add(x);
+            allVars.add(y);
+            allVars.addAll(z);
+
+            IndependenceFact fact = new IndependenceFact(x, y, z);
 //        this.latestFact = fact;
 
-        if (facts.containsKey(fact)) {
-            IndependenceResult result = facts.get(fact);
+            if (facts.containsKey(fact)) {
+                IndependenceResult result = facts.get(fact);
 
-            if (verbose) {
-                double p = result.getPValue();
+                if (verbose) {
+                    double p = result.getPValue();
 
-                if (result.isIndependent()) {
-                    TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
-                } else {
-                    TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
+                    if (result.isIndependent()) {
+                        TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
+                    } else {
+                        TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
+                    }
                 }
-            }
 
-            return new IndependenceResult(fact, result.isIndependent(), result.getPValue(), getAlpha() - result.getPValue());
-        } else {
-            List<Integer> rows = getRows(this.data);
-
-            int[] _cols = new int[allVars.size()];
-
-            for (int i = 0; i < allVars.size(); i++) {
-                Node key = allVars.get(i);
-                _cols[i] = this.hash.get(key);
-            }
-
-            int[] _rows = new int[rows.size()];
-            for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
-
-            DataSet data = this.data.subsetRowsColumns(_rows, _cols);
-            double[][] _data = data.getDoubleData().transpose().toArray();
-
-            Map<Node, Integer> hash = new HashMap<>();
-            for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
-
-            int N = data.getNumRows();
-
-            Matrix ones = new Matrix(N, 1);
-            for (int j = 0; j < N; j++) ones.set(j, 0, 1);
-
-            Matrix I = Matrix.identity(N);
-            Matrix H = I.minus(ones.times(ones.transpose()).scalarMult(1.0 / N));
-
-            double[] h = new double[allVars.size()];
-            int count = 0;
-
-            double sum = 0.0;
-            for (int i = 0; i < allVars.size(); i++) {
-                h[i] = this.h[this.hash.get(allVars.get(i))];
-
-                if (h[i] != 0) {
-                    sum += h[i];
-                    count++;
-                }
-            }
-
-            double avg = sum / count;
-
-            for (int i = 0; i < h.length; i++) {
-                if (h[i] == 0) h[i] = avg;
-            }
-
-            IndependenceResult result = facts.get(fact);
-
-            if (this.facts.get(fact) != null) {
                 return new IndependenceResult(fact, result.isIndependent(), result.getPValue(), getAlpha() - result.getPValue());
             } else {
-                if (z.isEmpty()) {
-                    result = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
-                } else {
-                    result = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
+                List<Integer> rows = getRows(this.data);
+
+                int[] _cols = new int[allVars.size()];
+
+                for (int i = 0; i < allVars.size(); i++) {
+                    Node key = allVars.get(i);
+                    _cols[i] = this.hash.get(key);
                 }
-            }
 
-            if (verbose) {
-                double p = result.getPValue();
+                int[] _rows = new int[rows.size()];
+                for (int i = 0; i < rows.size(); i++) _rows[i] = rows.get(i);
 
-                if (result.isIndependent()) {
-                    TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
+                DataSet data = this.data.subsetRowsColumns(_rows, _cols);
+                double[][] _data = data.getDoubleData().transpose().toArray();
 
-                } else {
-                    TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
+                Map<Node, Integer> hash = new HashMap<>();
+                for (int i = 0; i < allVars.size(); i++) hash.put(allVars.get(i), i);
+
+                int N = data.getNumRows();
+
+                Matrix ones = new Matrix(N, 1);
+                for (int j = 0; j < N; j++) ones.set(j, 0, 1);
+
+                Matrix I = Matrix.identity(N);
+                Matrix H = I.minus(ones.times(ones.transpose()).scalarMult(1.0 / N));
+
+                double[] h = new double[allVars.size()];
+                int count = 0;
+
+                double sum = 0.0;
+                for (int i = 0; i < allVars.size(); i++) {
+                    h[i] = this.h[this.hash.get(allVars.get(i))];
+
+                    if (h[i] != 0) {
+                        sum += h[i];
+                        count++;
+                    }
                 }
-            }
 
-            return new IndependenceResult(fact, result.isIndependent(), result.getPValue(), getAlpha() - result.getPValue());
+                double avg = sum / count;
+
+                for (int i = 0; i < h.length; i++) {
+                    if (h[i] == 0) h[i] = avg;
+                }
+
+                IndependenceResult result = facts.get(fact);
+
+                if (this.facts.get(fact) != null) {
+                    return new IndependenceResult(fact, result.isIndependent(), result.getPValue(), getAlpha() - result.getPValue());
+                } else {
+                    if (z.isEmpty()) {
+                        result = isIndependentUnconditional(x, y, fact, _data, h, N, hash);
+                    } else {
+                        result = isIndependentConditional(x, y, z, fact, _data, N, H, I, h, hash);
+                    }
+                }
+
+                if (verbose) {
+                    double p = result.getPValue();
+
+                    if (result.isIndependent()) {
+                        TetradLogger.getInstance().forceLogMessage(fact + " INDEPENDENT p = " + p);
+
+                    } else {
+                        TetradLogger.getInstance().forceLogMessage(fact + " dependent p = " + p);
+                    }
+                }
+
+                return new IndependenceResult(fact, result.isIndependent(), result.getPValue(), getAlpha() - result.getPValue());
+            }
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException("Singularity encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, z));
         }
     }
 

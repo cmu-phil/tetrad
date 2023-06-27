@@ -27,10 +27,11 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.*;
+import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
 
 import java.text.NumberFormat;
@@ -225,17 +226,12 @@ public final class IndTestCramerT implements IndependenceTest {
                     "Please remove or impute missing values first.");
         }
 
-        // Invert submatrix.
-        if (submatrix.rank() != submatrix.getNumRows()) {
-//            if (TetradAlgebra.rank(submatrix) != submatrix.rows()) {
-            throw new IllegalArgumentException(
-                    "Matrix singularity detected while using correlations " +
-                            "\nto check for independence; probably due to collinearity " +
-                            "\nin the data. The independence fact being checked was " +
-                            "\n" + x + " _||_ " + y + " | " + z + ".");
+        try {
+            submatrix = submatrix.inverse();
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException("Singularity encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, _z));
         }
-
-        submatrix = submatrix.inverse();
 
         double a = -1.0 * submatrix.get(0, 1);
         double b = FastMath.sqrt(submatrix.get(0, 0) * submatrix.get(1, 1));

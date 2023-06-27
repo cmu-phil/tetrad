@@ -27,13 +27,14 @@ import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetrad.util.TetradLogger;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.*;
 
@@ -94,56 +95,61 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     public IndependenceResult checkIndependence(Node x, Node y, Set<Node> _z) {
-        List<Node> z = new ArrayList<>(_z);
-        Collections.sort(z);
+        try {
+            List<Node> z = new ArrayList<>(_z);
+            Collections.sort(z);
 
-        int[] all = new int[z.size() + 2];
-        all[0] = this.variablesMap.get(x);
-        all[1] = this.variablesMap.get(y);
-        for (int i = 0; i < z.size(); i++) {
-            all[i + 2] = this.variablesMap.get(z.get(i));
-        }
-
-        int sampleSize = this.data.get(0).getNumRows();
-        List<Double> pValues = new ArrayList<>();
-
-        for (Matrix matrix : this.ncov) {
-            Matrix _ncov = matrix.getSelection(all, all);
-            Matrix inv = _ncov.inverse();
-            double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
-
-            double fisherZ = sqrt(sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
-            double pValue;
-
-            if (Double.isInfinite(fisherZ)) {
-                pValue = 0;
-            } else {
-                pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
+            int[] all = new int[z.size() + 2];
+            all[0] = this.variablesMap.get(x);
+            all[1] = this.variablesMap.get(y);
+            for (int i = 0; i < z.size(); i++) {
+                all[i + 2] = this.variablesMap.get(z.get(i));
             }
 
-            pValues.add(pValue);
-        }
+            int sampleSize = this.data.get(0).getNumRows();
+            List<Double> pValues = new ArrayList<>();
 
-        double _cutoff = this.alpha;
+            for (Matrix matrix : this.ncov) {
+                Matrix _ncov = matrix.getSelection(all, all);
+                Matrix inv = _ncov.inverse();
+                double r = -inv.get(0, 1) / sqrt(inv.get(0, 0) * inv.get(1, 1));
 
-        if (this.fdr) {
-            _cutoff = StatUtils.fdrCutoff(this.alpha, pValues, false);
-        }
+                double fisherZ = sqrt(sampleSize - z.size() - 3.0) * 0.5 * (log(1.0 + r) - log(1.0 - r));
+                double pValue;
 
-        Collections.sort(pValues);
-        int index = (int) round((1.0 - this.percent) * pValues.size());
-        double pValue = pValues.get(index);
+                if (Double.isInfinite(fisherZ)) {
+                    pValue = 0;
+                } else {
+                    pValue = 2.0 * (1.0 - RandomUtil.getInstance().normalCdf(0, 1, abs(fisherZ)));
+                }
 
-        boolean independent = pValue > _cutoff;
-
-        if (this.verbose) {
-            if (independent) {
-                TetradLogger.getInstance().forceLogMessage(
-                        LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
+                pValues.add(pValue);
             }
-        }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, getAlpha() - pValue);
+            double _cutoff = this.alpha;
+
+            if (this.fdr) {
+                _cutoff = StatUtils.fdrCutoff(this.alpha, pValues, false);
+            }
+
+            Collections.sort(pValues);
+            int index = (int) round((1.0 - this.percent) * pValues.size());
+            double pValue = pValues.get(index);
+
+            boolean independent = pValue > _cutoff;
+
+            if (this.verbose) {
+                if (independent) {
+                    TetradLogger.getInstance().forceLogMessage(
+                            LogUtilsSearch.independenceFactMsg(x, y, _z, pValue));
+                }
+            }
+
+            return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, getAlpha() - pValue);
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException("Singularity encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, _z));
+        }
     }
 
     /**
