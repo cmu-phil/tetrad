@@ -26,8 +26,10 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
@@ -293,7 +295,8 @@ public class SemBicScore implements Score {
             double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
             lik = -(double) (this.sampleSize / 2.0) * log(varey);
         } catch (SingularMatrixException e) {
-            lik = NaN;
+            throw new RuntimeException("Singularity encountered when scoring " +
+                    LogUtilsSearch.getScoreFact(i, parents, variables));
         }
 
 
@@ -397,9 +400,14 @@ public class SemBicScore implements Score {
             k[t] = this.variables.indexOf(z.get(t));
         }
 
-        double v = localScore(i, k);
+        try {
+            double v = localScore(i, k);
+        } catch (RuntimeException e) {
+            TetradLogger.getInstance().forceLogMessage(e.getMessage());
+            return true;
+        }
 
-        return Double.isNaN(v);
+        return false;
     }
 
     //    @Override

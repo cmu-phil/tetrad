@@ -187,11 +187,6 @@ public class DegenerateGaussianScore implements Score {
     }
 
     @Override
-    public boolean determines(List<Node> z, Node y) {
-        return false;
-    }
-
-    @Override
     public String toString() {
         NumberFormat nf = new DecimalFormat("0.00");
         return "Degenerate Gaussian Score Penalty " + nf.format(this.bic.getPenaltyDiscount());

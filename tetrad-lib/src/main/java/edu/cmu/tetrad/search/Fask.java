@@ -759,7 +759,7 @@ public final class Fask implements IGraphSearch {
                 pc2 = partialCorrelation(x, y, _Z, y, 0);
             } catch (SingularMatrixException e) {
                 System.out.println("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
-                TetradLogger.getInstance().log("info", "Singularity X = " + X + " Y = " + Y + " adj = " + adj);
+                TetradLogger.getInstance().forceLogMessage("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
                 continue;
             }
 
@@ -806,7 +806,9 @@ public final class Fask implements IGraphSearch {
             pc1 = partialCorrelation(x, y, new double[0][], x, 0);
             pc2 = partialCorrelation(x, y, new double[0][], y, 0);
         } catch (SingularMatrixException e) {
-            throw new RuntimeException(e);
+            List<Node> nodes = dataSet.getVariables();
+            throw new RuntimeException("Singularity encountered (conditioning on X > 0, Y > 0) for variables "
+                    + nodes.get(i) + ", " + nodes.get(j));
         }
 
         int nc1 = getRows(x, x, 0, +1).size();

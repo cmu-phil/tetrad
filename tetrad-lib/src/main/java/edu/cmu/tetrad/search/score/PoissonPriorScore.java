@@ -23,6 +23,7 @@ package edu.cmu.tetrad.search.score;
 
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.special.Gamma;
@@ -133,7 +134,8 @@ public class PoissonPriorScore implements Score {
         try {
             varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
         } catch (SingularMatrixException e) {
-            return Double.NaN;
+            throw new RuntimeException("Singularity encountered when scoring " +
+                    LogUtilsSearch.getScoreFact(i, parents, variables));
         }
 
         double r = k * log(lambda);

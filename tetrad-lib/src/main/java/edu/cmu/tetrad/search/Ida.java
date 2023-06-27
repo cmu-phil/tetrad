@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -273,7 +274,8 @@ public class Ida {
 
             return bStar.get(0, 0);
         } catch (SingularMatrixException e) {
-            return 0.0;
+            throw new RuntimeException("Singularity encountered when regressing " +
+                    LogUtilsSearch.getScoreFact(child, regressors));
         }
     }
 }

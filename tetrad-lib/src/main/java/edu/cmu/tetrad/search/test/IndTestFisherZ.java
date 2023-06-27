@@ -207,9 +207,10 @@ public final class IndTestFisherZ implements IndependenceTest {
         try {
             p = getPValue(x, y, z);
         } catch (SingularMatrixException e) {
-            e.printStackTrace();
-            return new IndependenceResult(new IndependenceFact(x, y, z),
-                    false, p, alpha - p);
+            throw new RuntimeException("Singularity encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, z));
+//            return new IndependenceResult(new IndependenceFact(x, y, z),
+//                    false, p, alpha - p);
         }
 
         boolean independent = p > this.alpha;

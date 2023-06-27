@@ -110,6 +110,34 @@ public class LogUtilsSearch {
 
         return sb.toString();
     }
+
+    public static String getScoreFact(int i, int[] parents, List<Node> variables) {
+        StringBuilder fact = new StringBuilder(variables.get(i) + " | ");
+
+        for (int p : parents) {
+            fact.append(variables.get(p));
+
+            if (p < parents.length - 1) {
+                fact.append(", ");
+            }
+        }
+
+        return fact.toString();
+    }
+
+    public static String getScoreFact(Node i, List<Node> parents) {
+        StringBuilder fact = new StringBuilder(i + " | ");
+
+        for (int p = 0; p < parents.size(); p++) {
+            fact.append(parents.get(p));
+
+            if (p < parents.size() - 1) {
+                fact.append(", ");
+            }
+        }
+
+        return fact.toString();
+    }
 }
 
 

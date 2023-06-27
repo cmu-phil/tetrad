@@ -176,17 +176,6 @@ public class ConditionalGaussianScore implements Score {
     }
 
     /**
-     * This score does not implement a method to decide whether a given set of parents determines a given child, so an
-     * exception is thrown.
-     *
-     * @throws UnsupportedOperationException Since this method is not supported.
-     */
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        throw new UnsupportedOperationException("The 'determines' method is not supported for this score.");
-    }
-
-    /**
      * Returns the penalty discount for this score, which is a multiplier on the penatly term of the BIC score.
      *
      * @return This penalty discount.

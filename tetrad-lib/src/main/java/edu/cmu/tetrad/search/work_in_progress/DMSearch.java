@@ -5,9 +5,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.IndependenceTest;
 import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.File;
@@ -661,7 +661,7 @@ public class DMSearch {
         try {
             testResult = test.checkIndependence(outputsLatent.first(), outputsLatentEffect.first(), latentList).isIndependent();
         } catch (SingularMatrixException error) {
-            System.out.println(error);
+            error.printStackTrace();
             System.out.println("SingularMatrixException Error!!!!!! Evaluated as:");
             System.out.println(testResult);
             System.out.println("outputsLatent.first()");

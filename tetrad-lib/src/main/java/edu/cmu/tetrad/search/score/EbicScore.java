@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.score;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.work_in_progress.MagSemBicScore;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
@@ -31,7 +32,8 @@ import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.List;
 
-import static org.apache.commons.math3.util.FastMath.*;
+import static org.apache.commons.math3.util.FastMath.ceil;
+import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * <p>Implements the extended BIC (EBIC) score. The reference is here:</p>
@@ -123,7 +125,8 @@ public class EbicScore implements Score {
         try {
             varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
         } catch (SingularMatrixException e) {
-            return Double.NaN;
+            throw new RuntimeException("Singularity encountered when scoring " +
+                    LogUtilsSearch.getScoreFact(i, parents, variables));
         }
 
         double gamma = this.gamma;//  1.0 - riskBound;

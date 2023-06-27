@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Vector;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -86,6 +87,7 @@ public class SemBicScoreDeterministic implements Score {
         try {
             s2 -= covxx.inverse().times(covxy).dotProduct(covxy);
         } catch (SingularMatrixException e) {
+            System.out.println(LogUtilsSearch.getScoreFact(i, parents, variables));
             s2 = 0;
         }
 
@@ -214,7 +216,9 @@ public class SemBicScoreDeterministic implements Score {
                 return true;
             }
         } catch (SingularMatrixException ignored) {
-            throw new RuntimeException("Singular");
+            System.out.println("Singularity encountered when scoring " +
+                    LogUtilsSearch.getScoreFact(y, z));
+            return true;
         }
 
         return false;
