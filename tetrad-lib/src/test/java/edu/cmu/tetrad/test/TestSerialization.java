@@ -127,11 +127,11 @@ public class TestSerialization {
         }
     }
 
-    @Test
+//    @Test
     public void doArchive() {
         final String serializableScope = "build/tetrad/serializable";
-        final String currentDirectory = "tetrad-lib/build/tetrad/serializable/model";
-        final String archiveDirectory = "tetrad-lib/archives";
+        final String currentDirectory = "build/tetrad/serializable/model";
+        final String archiveDirectory = "archives";
 
         TetradSerializableUtils utils = new TetradSerializableUtils(
                 serializableScope, currentDirectory, archiveDirectory);

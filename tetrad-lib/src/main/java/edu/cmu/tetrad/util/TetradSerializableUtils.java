@@ -37,6 +37,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -122,7 +124,7 @@ public class TetradSerializableUtils {
      * @see #safelySerializableTypes
      */
     public void checkNestingOfFields() {
-        List classes =  getAssignableClasses(new File(getSerializableScope()),
+        List classes = getAssignableClasses(new File(getSerializableScope()),
                 TetradSerializable.class);
 
         boolean foundUnsafeField = false;
@@ -511,10 +513,12 @@ public class TetradSerializableUtils {
         byte[] buf = new byte[1024];
 
         try {
-            String version = Version.currentRepositoryVersion().toString();
+            LocalDate today = LocalDate.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String date = today.format(formatter);
 
             // Create the ZIP file
-            String outFilename = "serializedclasses-" + version + ".zip";
+            String outFilename = "serializedclasses-" + date + ".zip";
             File _file = new File(getArchiveDirectory(), outFilename);
             FileOutputStream fileOut = new FileOutputStream(_file);
             ZipOutputStream out = new ZipOutputStream(fileOut);
@@ -717,11 +721,8 @@ public class TetradSerializableUtils {
                 String packagePath = file.getPath();
                 packagePath = packagePath.replace('\\', '.');
                 packagePath = packagePath.replace('/', '.');
-                try {
-                    packagePath = packagePath.substring(packagePath.indexOf("edu.cmu"));
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                if (!packagePath.contains("edu.cmu")) continue;
+                packagePath = packagePath.substring(packagePath.indexOf("edu.cmu"));
                 int index = packagePath.indexOf(".ser");
 
                 if (index == -1) {
