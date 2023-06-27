@@ -72,7 +72,7 @@ public class TetradSerializableUtils {
     };
 
     /**
-     * The highest directory inside build/tetrad/classes that contains all of the TetradSerializable classes.
+     * The highest directory inside build/tetrad/classes that contains all the TetradSerializable classes.
      */
     private final String serializableScope;
 
@@ -122,7 +122,7 @@ public class TetradSerializableUtils {
      * @see #safelySerializableTypes
      */
     public void checkNestingOfFields() {
-        List classes = getAssignableClasses(new File(getSerializableScope()),
+        List classes =  getAssignableClasses(new File(getSerializableScope()),
                 TetradSerializable.class);
 
         boolean foundUnsafeField = false;
@@ -700,7 +700,7 @@ public class TetradSerializableUtils {
      */
     private List<Class> getAssignableClasses(File path, Class<TetradSerializable> clazz) {
         if (!path.isDirectory()) {
-            throw new IllegalArgumentException("Not a directory: " + path);
+            throw new IllegalArgumentException("Not a directory: " + path.getAbsolutePath());
         }
 
         @SuppressWarnings("Convert2Diamond") List<Class> classes = new LinkedList<>();
@@ -717,9 +717,12 @@ public class TetradSerializableUtils {
                 String packagePath = file.getPath();
                 packagePath = packagePath.replace('\\', '.');
                 packagePath = packagePath.replace('/', '.');
-                packagePath = packagePath.substring(
-                        packagePath.indexOf("edu.cmu"));
-                int index = packagePath.indexOf(".class");
+                try {
+                    packagePath = packagePath.substring(packagePath.indexOf("edu.cmu"));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                int index = packagePath.indexOf(".ser");
 
                 if (index == -1) {
                     continue;
