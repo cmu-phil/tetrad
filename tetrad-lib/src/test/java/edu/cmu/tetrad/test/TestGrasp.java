@@ -152,7 +152,6 @@ public final class TestGrasp {
         boolean discretize = true;
 
         DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data);
-        score.setStructurePrior(structurePrior);
 
         IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt((DataSet) data);
         test.setAlpha(0.01);
