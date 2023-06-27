@@ -81,10 +81,10 @@ public final class TestGraph {
             nodes.put(node.getName(), node);
         }
 
-        Element element = GraphPersistence.convertToXml(graph);
+        Element element = GraphSaveLoadUtils.convertToXml(graph);
 
         try {
-            Graph _graph = GraphPersistence.parseGraphXml(element, nodes);
+            Graph _graph = GraphSaveLoadUtils.parseGraphXml(element, nodes);
 
             assertEquals(graph, new Dag(_graph));
         } catch (ParsingException e) {

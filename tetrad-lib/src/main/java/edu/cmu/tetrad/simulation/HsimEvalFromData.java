@@ -5,7 +5,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphPersistence;
+import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -63,7 +63,7 @@ public class HsimEvalFromData {
                 System.out.println("iteration " + iterate);
                 //@#$%@$%^@$^@$^@%$%@$#^ LOADING THE DATA AND GRAPH @$#%%*#^##*^$#@%$
                 DataSet data1;
-                Graph graph1 = GraphPersistence.loadGraphTxt(new File("graph/graph.1.txt"));
+                Graph graph1 = GraphSaveLoadUtils.loadGraphTxt(new File("graph/graph.1.txt"));
                 Dag odag = new Dag(graph1);
 
                 Set<String> eVars = new HashSet<>();

@@ -24,7 +24,7 @@ package edu.cmu.tetradapp.editor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphPersistence;
+import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetradapp.model.EditorUtils;
 
 import javax.swing.*;
@@ -88,7 +88,7 @@ public class SaveGraph extends AbstractAction {
                 return;
             }
 
-            PrintWriter out = GraphPersistence.saveGraph(graph, file, true);
+            PrintWriter out = GraphSaveLoadUtils.saveGraph(graph, file, true);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
             out.close();
         } else if (this.type == Type.text) {
@@ -99,7 +99,7 @@ public class SaveGraph extends AbstractAction {
                 return;
             }
 
-            PrintWriter out = GraphPersistence.saveGraph(graph, file, false);
+            PrintWriter out = GraphSaveLoadUtils.saveGraph(graph, file, false);
             Preferences.userRoot().put("fileSaveLocation", file.getParent());
             out.close();
         } else if (this.type == Type.r) {
@@ -111,7 +111,7 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                String text = GraphPersistence.graphRMatrixTxt(graph);
+                String text = GraphSaveLoadUtils.graphRMatrixTxt(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
@@ -158,7 +158,7 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                String text = GraphPersistence.graphToDot(graph);
+                String text = GraphSaveLoadUtils.graphToDot(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
@@ -181,7 +181,7 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                String text = GraphPersistence.graphToPcalg(graph);
+                String text = GraphSaveLoadUtils.graphToPcalg(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);
@@ -204,7 +204,7 @@ public class SaveGraph extends AbstractAction {
             }
 
             try {
-                String text = GraphPersistence.graphToLavaan(graph);
+                String text = GraphSaveLoadUtils.graphToLavaan(graph);
 
                 PrintWriter out = new PrintWriter(file);
                 out.println(text);

@@ -250,7 +250,7 @@ public class Cstar {
 
                     if (dir != null && new File(dir, "pattern." + (this.k + 1) + ".txt").exists() && new File(dir, "effects." + (this.k + 1) + ".txt").exists()) {
                         try {
-                            pattern = GraphPersistence.loadGraphTxt(new File(dir, "pattern." + (this.k + 1) + ".txt"));
+                            pattern = GraphSaveLoadUtils.loadGraphTxt(new File(dir, "pattern." + (this.k + 1) + ".txt"));
                             effects = loadMatrix(new File(dir, "effects." + (this.k + 1) + ".txt"));
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -272,7 +272,7 @@ public class Cstar {
                         edgesCount[0]++;
 
                         if (dir != null) {
-                            GraphPersistence.saveGraph(pattern, new File(dir, "pattern." + (this.k + 1) + ".txt"), false);
+                            GraphSaveLoadUtils.saveGraph(pattern, new File(dir, "pattern." + (this.k + 1) + ".txt"), false);
                         }
 
                         Ida ida = new Ida(sample, pattern, this.possibleCauses);

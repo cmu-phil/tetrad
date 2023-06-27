@@ -146,7 +146,7 @@ public class TestPc {
 
 
         try {
-            trueGraph = GraphPersistence.readerToGraphTxt(trueString);
+            trueGraph = GraphSaveLoadUtils.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {

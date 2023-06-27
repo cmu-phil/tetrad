@@ -74,7 +74,7 @@ public class Comparison2 {
                 if (file.getName().startsWith("graph") && file.getName().contains(String.valueOf(params.getGraphNum()))
                         && file.getName().endsWith(".g.txt")) {
                     params.setGraphFile(file.getName());
-                    trueDag = GraphPersistence.loadGraphTxt(file);
+                    trueDag = GraphSaveLoadUtils.loadGraphTxt(file);
                     break;
                 }
 
