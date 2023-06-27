@@ -25,6 +25,7 @@ import edu.cmu.tetradapp.model.SessionWrapper;
 import edu.cmu.tetradapp.model.TetradMetadata;
 import edu.cmu.tetradapp.util.DesktopController;
 import edu.cmu.tetradapp.util.SessionEditorIndirectRef;
+import edu.cmu.tetradapp.util.WatchedProcess;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -85,21 +86,29 @@ final class SaveSessionAction extends AbstractAction {
             }
         }
 
-        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile))) {
-            sessionWrapper.setNewSession(false);
-            objOut.writeObject(metadata);
-            objOut.writeObject(sessionWrapper);
-        } catch (IOException exception) {
-            exception.printStackTrace(System.err);
-            JOptionPane.showMessageDialog(
-                    JOptionUtils.centeringComp(),
-                    String.format(
-                            "An error occurred while attempting to save the session as %s.",
-                            outputFile.toAbsolutePath()));
+        class MyWatchedProceess extends WatchedProcess {
+
+            @Override
+            public void watch() throws InterruptedException {
+                try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(outputFile))) {
+                    sessionWrapper.setNewSession(false);
+                    objOut.writeObject(metadata);
+                    objOut.writeObject(sessionWrapper);
+                } catch (IOException exception) {
+                    exception.printStackTrace(System.err);
+                    JOptionPane.showMessageDialog(
+                            JOptionUtils.centeringComp(),
+                            String.format(
+                                    "An error occurred while attempting to save the session as %s.",
+                                    outputFile.toAbsolutePath()));
+                }
+
+                sessionWrapper.setSessionChanged(false);
+                DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
+            }
         }
 
-        sessionWrapper.setSessionChanged(false);
-        DesktopController.getInstance().putMetadata(sessionWrapper, metadata);
+        SwingUtilities.invokeLater(MyWatchedProceess::new);
     }
 
     public boolean isSaved() {
