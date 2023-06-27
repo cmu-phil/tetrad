@@ -148,7 +148,7 @@ public class TestSerialization {
     /**
      * Run this "test" only when you want to create a new serialization archive to check against.
      */
-    @Test
+//    @Test
     public void doArchive() {
         final String serializableScope = "target/classes/edu/cmu";
         final String currentDirectory = "build/tetrad/serializable/model";
