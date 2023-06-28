@@ -66,11 +66,11 @@ public class CompareTwoGraphs {
 
         List<String> abbr = new ArrayList<>();
         List<String> desc = new ArrayList<>();
-        List<Double> vals = new ArrayList<>();
+        List<Double> values = new ArrayList<>();
 
         for (Statistic statistic : statistics) {
             try {
-                vals.add(statistic.getValue(this.referenceGraph, _targetGraph, this.dataModel));
+                values.add(statistic.getValue(this.referenceGraph, _targetGraph, this.dataModel));
                 abbr.add(statistic.getAbbreviation());
                 desc.add(statistic.getDescription());
             } catch (Exception ignored) {
@@ -78,7 +78,7 @@ public class CompareTwoGraphs {
         }
 
         for (int i = 0; i < abbr.size(); i++) {
-            double value = vals.get(i);
+            double value = values.get(i);
             table.setToken(i, 1, Double.isNaN(value) ? "-" : "" + nf.format(value));
             table.setToken(i, 0, abbr.get(i));
             table.setToken(i, 2, desc.get(i));
@@ -140,20 +140,6 @@ public class CompareTwoGraphs {
         statistics.add(new TrueDagPrecisionTails());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new BidirectedLatentPrecision());
-
-
-        // Greg table
-//        statistics.add(new AncestorPrecision());
-//        statistics.add(new AncestorRecall());
-//        statistics.add(new AncestorF1());
-//        statistics.add(new SemidirectedPrecision());
-//        statistics.add(new SemidirectedRecall());
-//        statistics.add(new SemidirectedPathF1());
-//        statistics.add(new NoSemidirectedPrecision());
-//        statistics.add(new NoSemidirectedRecall());
-//        statistics.add(new NoSemidirectedF1());
-
-//        statistics.add(new LegalPag());
 
         return statistics;
     }
