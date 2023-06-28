@@ -15,7 +15,9 @@ import java.util.List;
 import static java.util.Collections.sort;
 
 /**
- * Compares two graphs, returning a table of statistics.
+ * Gives the comparison of a target graph to a reference graph that is implemented in the interface. Three methods are
+ * given, one to return the edgewise comparison, one to return the stats list comparison, and one to return the
+ * misclassification comparison. Each returns a String, which can be printed.
  *
  * @author josephramsey
  */
