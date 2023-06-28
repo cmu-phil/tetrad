@@ -22,17 +22,34 @@ public class CompareTwoGraphs {
     private final Graph referenceGraph;
     private final DataModel dataModel;
 
+    /**
+     * Constructor
+     * @param targetGraph The target graph.
+     * @param referenceGraph The reference graph.
+     */
     public CompareTwoGraphs(Graph targetGraph, Graph referenceGraph) {
         this(targetGraph, referenceGraph, null);
     }
 
+    /**
+     * Constructor
+     * @param targetGraph The target graph.
+     * @param referenceGraph The reference graph.
+     * @param dataModel A data model, used for some statistics. May be null.
+     */
     public CompareTwoGraphs(Graph targetGraph, Graph referenceGraph, DataModel dataModel) {
+        if (targetGraph == null) throw new IllegalArgumentException("Target graph can't be null.");
+        if (referenceGraph == null) throw new IllegalArgumentException("Reference graph can't be null.");
+
         this.targetGraph = targetGraph;
         this.referenceGraph = referenceGraph;
         this.dataModel = dataModel;
     }
 
-    @NotNull
+    /**
+     * Returns a string representing a table of statistics that can be printed.
+     * @return This string.
+     */
     public String toString() {
         if (this.targetGraph == this.referenceGraph) {
             throw new IllegalArgumentException();
