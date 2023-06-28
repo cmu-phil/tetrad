@@ -20,35 +20,6 @@ import static java.util.Collections.sort;
  * @author josephramsey
  */
 public class CompareTwoGraphs {
-    private final Graph targetGraph;
-    private final Graph referenceGraph;
-    private final DataModel dataModel;
-
-    /**
-     * Constructor
-     *
-     * @param targetGraph    The target graph.
-     * @param referenceGraph The reference graph.
-     */
-    public CompareTwoGraphs(Graph targetGraph, Graph referenceGraph) {
-        this(targetGraph, referenceGraph, null);
-    }
-
-    /**
-     * Constructor
-     *
-     * @param targetGraph    The target graph.
-     * @param referenceGraph The reference graph.
-     * @param dataModel      A data model, used for some statistics. May be null.
-     */
-    public CompareTwoGraphs(Graph targetGraph, Graph referenceGraph, DataModel dataModel) {
-        if (targetGraph == null) throw new IllegalArgumentException("Target graph can't be null.");
-        if (referenceGraph == null) throw new IllegalArgumentException("Reference graph can't be null.");
-
-        this.targetGraph = targetGraph;
-        this.referenceGraph = referenceGraph;
-        this.dataModel = dataModel;
-    }
 
     @NotNull
     public static String getEdgewiseComparisonString(Graph trueGraph, Graph targetGraph, boolean printStars) {
@@ -225,17 +196,17 @@ public class CompareTwoGraphs {
         return builder.toString();
     }
 
+    public static String getStatsListTable(Graph trueGraph, Graph targetGraph) {
+        return getStatsListTable(trueGraph, targetGraph, null);
+    }
+
     /**
      * Returns a string representing a table of statistics that can be printed.
      *
      * @return This string.
      */
-    public String getStatsListTable() {
-        if (this.targetGraph == this.referenceGraph) {
-            throw new IllegalArgumentException();
-        }
-
-        Graph _targetGraph = GraphUtils.replaceNodes(this.targetGraph, this.referenceGraph.getNodes());
+    public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel) {
+        Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
 
         List<Statistic> statistics = statistics();
 
@@ -248,7 +219,7 @@ public class CompareTwoGraphs {
 
         for (Statistic statistic : statistics) {
             try {
-                values.add(statistic.getValue(this.referenceGraph, _targetGraph, this.dataModel));
+                values.add(statistic.getValue(trueGraph, _targetGraph, dataModel));
                 abbr.add(statistic.getAbbreviation());
                 desc.add(statistic.getDescription());
             } catch (Exception ignored) {
@@ -267,7 +238,7 @@ public class CompareTwoGraphs {
         return table.toString();
     }
 
-    private List<Statistic> statistics() {
+    private static List<Statistic> statistics() {
         List<Statistic> statistics = new ArrayList<>();
 
         // Others
