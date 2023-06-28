@@ -113,7 +113,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
         Graph comparisonGraph = getComparisonGraph(referenceGraph, params);
 
         return GraphSearchUtils.getEdgewiseComparisonString(refName, comparisonGraph,
-                targetName, this.targetGraph, false);
+                targetName, this.targetGraph);
     }
 
     /**

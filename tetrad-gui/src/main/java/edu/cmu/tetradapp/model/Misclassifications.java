@@ -112,7 +112,7 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
         Graph comparisonGraph = getComparisonGraph(referenceGraph, params);
 
-        String table = CompareTwoGraphs.getMisclassificationTable(targetGraph, comparisonGraph);
+        String table = CompareTwoGraphs.getMisclassificationTable(comparisonGraph, targetGraph);
         return "True graph from " + refName + "\nTarget graph from " + targetName +
                 "\n\n\n" + table;
     }

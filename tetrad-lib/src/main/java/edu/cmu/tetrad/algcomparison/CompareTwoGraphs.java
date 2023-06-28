@@ -23,8 +23,18 @@ import static java.util.Collections.sort;
  */
 public class CompareTwoGraphs {
 
+    /**
+     * Returns an edgewise comparison of two graphs. This says, edge by edge, what the differences and similarities
+     * are between the two graphs.
+     *
+     * @param trueGraph   The true graph.
+     * @param targetGraph The target graph.
+     * @return The comparison string.
+     */
     @NotNull
-    public static String getEdgewiseComparisonString(Graph trueGraph, Graph targetGraph, boolean printStars) {
+    public static String getEdgewiseComparisonString(Graph trueGraph, Graph targetGraph) {
+        boolean printStars = false;
+
         StringBuilder builder = new StringBuilder();
         GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(trueGraph, targetGraph);
 
@@ -198,6 +208,13 @@ public class CompareTwoGraphs {
         return builder.toString();
     }
 
+    /**
+     * Returns a string representing a table of statistics that can be printed.
+     *
+     * @param trueGraph   The true graph.
+     * @param targetGraph The target graph.
+     * @return The comparison string.
+     */
     public static String getStatsListTable(Graph trueGraph, Graph targetGraph) {
         return getStatsListTable(trueGraph, targetGraph, null);
     }
@@ -205,7 +222,10 @@ public class CompareTwoGraphs {
     /**
      * Returns a string representing a table of statistics that can be printed.
      *
-     * @return This string.
+     * @param trueGraph   The true graph.
+     * @param targetGraph The target graph.
+     * @param dataModel   The data model; some statistics (like BIC) may use this.
+     * @return The comparison string.
      */
     public static String getStatsListTable(Graph trueGraph, Graph targetGraph, DataModel dataModel) {
         Graph _targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
@@ -306,14 +326,23 @@ public class CompareTwoGraphs {
         return statistics;
     }
 
+
+    /**
+     * Returns a misclassification comparison of two graphs. This includes both an edge misclassiifcation matrix
+     * as well as an endpoint misclassification matrix.
+     *
+     * @param trueGraph   The true graph.
+     * @param targetGraph The target graph.
+     * @return The comparison string.
+     */
     @NotNull
-    public static String getMisclassificationTable(Graph targetGraph, Graph comparisonGraph) {
+    public static String getMisclassificationTable(Graph trueGraph, Graph targetGraph) {
         return "Edge Misclassification Table:" +
                 "\n" +
-                MisclassificationUtils.edgeMisclassifications(targetGraph, comparisonGraph) +
+                MisclassificationUtils.edgeMisclassifications(targetGraph, trueGraph) +
                 "\n\n" +
                 "Endpoint Misclassification Table:" +
                 "\n\n" +
-                MisclassificationUtils.endpointMisclassification(targetGraph, comparisonGraph);
+                MisclassificationUtils.endpointMisclassification(targetGraph, trueGraph);
     }
 }

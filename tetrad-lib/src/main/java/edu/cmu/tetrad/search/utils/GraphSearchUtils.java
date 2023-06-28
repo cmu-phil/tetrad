@@ -1257,7 +1257,7 @@ public final class GraphSearchUtils {
     }
 
     public static String getEdgewiseComparisonString(String trueGraphName, Graph trueGraph,
-                                                     String targetGraphName, Graph targetGraph, boolean printStars) {
+                                                     String targetGraphName, Graph targetGraph) {
         targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
         trueGraph = new EdgeListGraph(trueGraph);
         targetGraph = new EdgeListGraph(targetGraph);
@@ -1268,7 +1268,7 @@ public final class GraphSearchUtils {
         String trueGraphAndTarget = "True graph from " + trueGraphName + "\nTarget graph from " + targetGraphName;
         builder0.append(trueGraphAndTarget).append("\n");
 
-        String builder = CompareTwoGraphs.getEdgewiseComparisonString(trueGraph, targetGraph, printStars);
+        String builder = CompareTwoGraphs.getEdgewiseComparisonString(trueGraph, targetGraph);
 
         builder0.append(builder);
         return builder0.toString();
