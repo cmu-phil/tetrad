@@ -5,7 +5,6 @@ import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.util.TextTable;
-import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -24,7 +23,8 @@ public class CompareTwoGraphs {
 
     /**
      * Constructor
-     * @param targetGraph The target graph.
+     *
+     * @param targetGraph    The target graph.
      * @param referenceGraph The reference graph.
      */
     public CompareTwoGraphs(Graph targetGraph, Graph referenceGraph) {
@@ -33,9 +33,10 @@ public class CompareTwoGraphs {
 
     /**
      * Constructor
-     * @param targetGraph The target graph.
+     *
+     * @param targetGraph    The target graph.
      * @param referenceGraph The reference graph.
-     * @param dataModel A data model, used for some statistics. May be null.
+     * @param dataModel      A data model, used for some statistics. May be null.
      */
     public CompareTwoGraphs(Graph targetGraph, Graph referenceGraph, DataModel dataModel) {
         if (targetGraph == null) throw new IllegalArgumentException("Target graph can't be null.");
@@ -48,6 +49,7 @@ public class CompareTwoGraphs {
 
     /**
      * Returns a string representing a table of statistics that can be printed.
+     *
      * @return This string.
      */
     public String toString() {
@@ -87,7 +89,6 @@ public class CompareTwoGraphs {
         return table.toString();
     }
 
-    @NotNull
     private List<Statistic> statistics() {
         List<Statistic> statistics = new ArrayList<>();
 
@@ -139,7 +140,6 @@ public class CompareTwoGraphs {
         statistics.add(new TrueDagPrecisionTails());
         statistics.add(new TrueDagPrecisionArrow());
         statistics.add(new BidirectedLatentPrecision());
-
 
 
         // Greg table
