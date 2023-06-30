@@ -63,30 +63,7 @@ public class CompareTwoGraphs {
             for (int i = 0; i < edgesAdded2.size(); i++) {
                 Edge _edge = edgesAdded2.get(i);
 
-//                if (targetGraph.getEdge(_edge.getNode1(), _edge.getNode2()) == null) {
-//                    continue;
-//                }
-
-//                Node node1 = targetGraph.getNode(targetGraph.getEdge(_edge.getNode1(), _edge.getNode2()).getNode1().getName());
-//                Node node2 = targetGraph.getNode(targetGraph.getEdge(_edge.getNode1(), _edge.getNode2()).getNode2().getName());
-
                 builder.append("\n").append(i + 1).append(". ").append(_edge.toString());
-
-//                if (printStars) {
-//                    boolean directedInGraph2 = false;
-//
-//                    if (Edges.isDirectedEdge(targetGraph.getEdge(_edge.getNode1(), _edge.getNode2())) && targetGraph.paths().existsSemidirectedPath(node1, node2)) {
-//                        directedInGraph2 = true;
-//                    } else if ((Edges.isUndirectedEdge(targetGraph.getEdge(_edge.getNode1(), _edge.getNode2())) || Edges.isBidirectedEdge(targetGraph.getEdge(_edge.getNode1(), _edge.getNode2())))
-//                            && (targetGraph.paths().existsSemidirectedPath(node1, node2)
-//                            || targetGraph.paths().existsSemidirectedPath(node2, node1))) {
-//                        directedInGraph2 = true;
-//                    }
-//
-//                    if (directedInGraph2) {
-//                        builder.append(" *");
-//                    }
-//                }
             }
         }
 
