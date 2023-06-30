@@ -56,6 +56,11 @@ class DescriptiveStatsAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        if (!(this.dataEditor.getSelectedDataModel() instanceof DataSet)) {
+            JOptionPane.showMessageDialog(findOwner(), "Need a tabular dataset to generate descriptive statistics.");
+            return;
+        }
+
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
         if (dataSet == null || dataSet.getNumColumns() == 0) {
             JOptionPane.showMessageDialog(findOwner(), "Cannot generate descriptive statistics on an empty data set.");
@@ -119,9 +124,11 @@ class DescriptiveStatsAction extends AbstractAction {
         vBox.add(box);
         vBox.add(Box.createVerticalStrut(5));
 
+        JScrollPane scrollable = new JScrollPane(vBox);
+
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        panel.add(vBox, BorderLayout.CENTER);
+        panel.add(scrollable, BorderLayout.CENTER);
 
         return panel;
     }
