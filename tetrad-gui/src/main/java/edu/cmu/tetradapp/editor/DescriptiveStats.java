@@ -70,6 +70,8 @@ class DescriptiveStats {
             }
         }
 
+        int numVars = dataSet.getNumRows();
+
         StringBuilder b = new StringBuilder();
 
         b.append("Descriptive Statistics for: ").append(variable.getName()).append("\n\n");
@@ -78,7 +80,7 @@ class DescriptiveStats {
         TextTable table;
 
         int numRows = continuous ? 13 : 9;
-        table = new TextTable(numRows, 2);
+        table = new TextTable(numVars, numRows);
 
         int rowindex = 0;
 
