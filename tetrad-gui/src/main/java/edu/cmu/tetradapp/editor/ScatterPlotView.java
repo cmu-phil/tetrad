@@ -27,15 +27,15 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.StatUtils;
 import edu.cmu.tetradapp.util.DoubleTextField;
-import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.geom.Point2D;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
@@ -51,6 +51,7 @@ import java.util.*;
 public class ScatterPlotView extends JPanel {
     private final ScatterPlot scatterPlot;
     private final ScatterPlotChart scatterPlotChart;
+    private final DataSet dataSet;
     private String x;
     private String y;
     private static final String[] tiles = {"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
@@ -61,6 +62,7 @@ public class ScatterPlotView extends JPanel {
         // This is annoying. jdramsey 5/14/2014
 //        if (!dataSet.isContinuous()) throw new IllegalArgumentException("Data set not continuous.");
         if (!(dataSet.getNumColumns() >= 2)) throw new IllegalArgumentException("Need at least two columns.");
+        this.dataSet = dataSet;
 
         this.x = dataSet.getVariable(0).getName();
         this.y = dataSet.getVariable(1).getName();
@@ -72,9 +74,9 @@ public class ScatterPlotView extends JPanel {
         this.scatterPlotChart = ScatterPlotChart;
 
         add(ScatterPlotChart, BorderLayout.CENTER);
-        add(new ScatterPlotController(this), BorderLayout.EAST);
+        add(new ScatterPlotController(this, dataSet), BorderLayout.EAST);
 
-        setPreferredSize(new Dimension(750, 450));
+//        setPreferredSize(new Dimension(750, 450));
     }
 
     private void setX(String x) {
@@ -91,8 +93,8 @@ public class ScatterPlotView extends JPanel {
 
     public static class ScatterPlotController extends JPanel {
         private final ScatterPlot scatterPlot;
-        private final JComboBox xSelector;
-        private final JComboBox ySelector;
+        private final JList<Node> xSelector;
+        private final JList<Node> ySelector;
         private final JComboBox newConditioningVariableSelector;
         private final JButton newConditioningVariableButton;
         private final JButton removeConditioningVariableButton;
@@ -105,52 +107,71 @@ public class ScatterPlotView extends JPanel {
         /**
          * Constructs the editor panel given the initial ScatterPlot and the dataset.
          */
-        public ScatterPlotController(ScatterPlotView ScatterPlotView) {
+        public ScatterPlotController(ScatterPlotView ScatterPlotView, DataSet dataSet) {
+
+            List<Node> vars = dataSet.getVariables();
+            Node[] _vars = new Node[vars.size()];
+            for (int i = 0; i < vars.size(); i++) _vars[i] = vars.get(i);
+
+
             this.setLayout(new BorderLayout());
             this.scatterPlot = ScatterPlotView.getScatterPlot();
             Node xNode = getXNode();
             Node yNode = getYNode();
-            this.xSelector = new JComboBox();
-            this.ySelector = new JComboBox();
-            ListCellRenderer renderer = new VariableBoxRenderer();
-            this.xSelector.setRenderer(renderer);
-            this.ySelector.setRenderer(renderer);
+            this.xSelector = new JList<>(_vars);
+            this.ySelector = new JList<>(_vars);
+
+            xSelector.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+            ySelector.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+//            ListCellRenderer renderer = new VariableBoxRenderer();
+//            this.xSelector.setRenderer(renderer);
+//            this.ySelector.setRenderer(renderer);
 
             this.includeLineCheckbox = new JCheckBox("Show Regression Line");
             List<Node> variables = this.scatterPlot.getDataSet().getVariables();
 
             Collections.sort(variables);
 
-            for (Node node : variables) {
-                this.xSelector.addItem(node);
+//            for (Node node : variables) {
+//                this.xSelector.add(node);
+//
+////                if (node == xNode) {
+////                    this.xSelector.add(node);
+////                }
+//            }
+//
+//            for (Node node : variables) {
+//                this.ySelector.add(node);
+//
+////                if (node == yNode) {
+////                    this.ySelector.setSelectedItem(node);
+////                }
+//            }
 
-                if (node == xNode) {
-                    this.xSelector.setSelectedItem(node);
+            this.xSelector.addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+
                 }
-            }
 
-            for (Node node : variables) {
-                this.ySelector.addItem(node);
-
-                if (node == yNode) {
-                    this.ySelector.setSelectedItem(node);
-                }
-            }
-
-            this.xSelector.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    String node = ((Node) ScatterPlotController.this.xSelector.getSelectedItem()).getName();
-                    ScatterPlotView.setX(node);
-                    refreshChart(ScatterPlotView);
-                }
+//                public void actionPerformed(ActionEvent e) {
+//                    String node = ((Node) ScatterPlotController.this.xSelector.getSelectedItem()).getName();
+//                    ScatterPlotView.setX(node);
+//                    refreshChart(ScatterPlotView);
+//                }
             });
 
-            this.ySelector.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    String node = ((Node) ySelector.getSelectedItem()).getName();
-                    ScatterPlotView.setY(node);
-                    refreshChart(ScatterPlotView);
+            this.ySelector.addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+
                 }
+
+//                public void actionPerformed(ActionEvent e) {
+//                    String node = ((Node) ySelector.getSelectedItem()).getName();
+//                    ScatterPlotView.setY(node);
+//                    refreshChart(ScatterPlotView);
+//                }
             });
 
             this.includeLineCheckbox.addActionListener(e -> refreshChart(ScatterPlotView));
@@ -231,7 +252,7 @@ public class ScatterPlotView extends JPanel {
             });
 
             // build the gui.
-            ScatterPlotController.restrictSize(this.xSelector);
+            ScatterPlotController.restrictSize(new JScrollPane(this.xSelector));
             ScatterPlotController.restrictSize(this.newConditioningVariableSelector);
             ScatterPlotController.restrictSize(this.newConditioningVariableButton);
             ScatterPlotController.restrictSize(this.removeConditioningVariableButton);
@@ -285,20 +306,20 @@ public class ScatterPlotView extends JPanel {
             Box b1a = Box.createHorizontalBox();
             b1a.add(new JLabel("X-axis = "));
             b1a.add(Box.createHorizontalGlue());
-            b1a.add(this.xSelector);
+            b1a.add(new JScrollPane(this.xSelector));
             main.add(b1a);
 
             Box b1b = Box.createHorizontalBox();
             b1b.add(new JLabel("Y-axis = "));
             b1b.add(Box.createHorizontalGlue());
-            b1b.add(this.ySelector);
+            b1b.add(new JScrollPane(this.ySelector));
             main.add(b1b);
 
             Box b1c = Box.createHorizontalBox();
             b1c.add(this.includeLineCheckbox);
             main.add(b1c);
 
-            main.add(Box.createVerticalStrut(20));
+//            main.add(Box.createVerticalStrut(20));
 
             Box b3 = Box.createHorizontalBox();
             JLabel l1 = new JLabel("Conditioning on: ");
@@ -307,14 +328,14 @@ public class ScatterPlotView extends JPanel {
             b3.add(Box.createHorizontalGlue());
             main.add(b3);
 
-            main.add(Box.createVerticalStrut(20));
+//            main.add(Box.createVerticalStrut(20));
 
             for (ConditioningPanel panel : this.conditioningPanels) {
                 main.add(panel.getBox());
-                main.add(Box.createVerticalStrut(10));
+//                main.add(Box.createVerticalStrut(10));
             }
 
-            main.add(Box.createVerticalStrut(10));
+//            main.add(Box.createVerticalStrut(10));
             main.add(Box.createVerticalGlue());
             main.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
@@ -776,162 +797,6 @@ public class ScatterPlotView extends JPanel {
         }
     }
 
-    /**
-     * This view draws the ScatterPlot using the information from the ScatterPlot
-     * class. It draws the ScatterPlot line, axes, labels and the statistical values.
-     *
-     * @author Adrian Tang
-     */
-    private static class ScatterPlotChart extends JPanel {
-        private ScatterPlot scatterPlot;
-
-        private final NumberFormat nf;
-
-        /**
-         * Constructor.
-         */
-        public ScatterPlotChart(ScatterPlot ScatterPlot) {
-            this.scatterPlot = ScatterPlot;
-
-            setPreferredSize(new Dimension(600, 600));
-
-            setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
-
-            this.nf = NumberFormat.getNumberInstance();
-            this.nf.setMinimumFractionDigits(2);
-            this.nf.setMaximumFractionDigits(2);
-        }
-
-        public void setScatterPlot(ScatterPlot ScatterPlot) {
-            this.scatterPlot = ScatterPlot;
-        }
-
-        /**
-         * Renders the view.
-         */
-        public void paintComponent(Graphics graphics) {
-            double xmin = this.scatterPlot.getXmin();
-            double xmax = this.scatterPlot.getXmax();
-            double ymin = this.scatterPlot.getYmin();
-            double ymax = this.scatterPlot.getYmax();
-
-
-            Graphics2D g = (Graphics2D) graphics;
-
-            g.setColor(Color.white);
-            g.setFont(new Font("Dialog", Font.PLAIN, 11));
-            g.fillRect(0, 0, getPreferredSize().width, getPreferredSize().height);
-
-            int chartWidth = getPreferredSize().width * 8 / 10;
-            int chartHeight = getPreferredSize().height * 7 / 10;
-
-            final int xStringMin = 10;
-            final int xMin = 60;
-            int xMax = chartWidth - 10;
-            int xRange = xMax - xMin;
-            final int yMin = 35;
-            int yMax = chartHeight - 18;
-            int yRange = yMax - yMin;
-
-            /* draws axis lines */
-            g.setStroke(new BasicStroke());
-            g.setPaint(Color.black);
-            g.drawLine(xMin, yMax, xMax, yMax);
-            g.drawLine(xMin, yMin, xMin, yMax);
-
-            /* draws the labels for the corresponding experiment and sample names */
-            g.setFont(g.getFont().deriveFont(11f));
-
-            /* draws the labels for the corresponding experiment and sample names */
-            String name = this.scatterPlot.getDataSet().getName();
-            if (name != null) {
-                g.setFont(g.getFont().deriveFont(11f));
-                g.drawString(name, 5, 10);
-            }
-
-            /* draws axis labels and scale */
-            g.drawString(this.nf.format(ymax), 2 + xStringMin, yMin + 7);
-            g.drawString(this.nf.format(ymin), 2 + xStringMin, yMax);
-            g.drawString(this.nf.format(xmax), xMax - 20, yMax + 14);
-            g.drawString(this.nf.format(xmin), 20 + 30, yMax + 14);
-            g.drawString(this.scatterPlot.getXvar(), xMin + (xRange / 2) - 10, yMax + 14);
-            g.translate(xMin - 7, yMin + (yRange / 2) + 10);
-            g.rotate(-FastMath.PI / 2.0);
-            g.drawString(this.scatterPlot.getYvar(), xStringMin, 0);
-            g.rotate(FastMath.PI / 2.0);
-            g.translate(-(xMin - 7), -(yMin + (yRange / 2) + 10));
-
-            /* draws ScatterPlot of the values */
-            Vector<Point2D.Double> pts = this.scatterPlot.getSievedValues();
-            double _xRange = xmax - xmin;
-            double _yRange = ymax - ymin;
-            int x, y;
-
-            g.setColor(Color.red);
-            for (Point2D.Double _pt : pts) {
-                x = (int) (((_pt.getX() - xmin) / _xRange) * xRange + xMin);
-                y = (int) (((ymax - _pt.getY()) / _yRange) * yRange + yMin);
-                g.fillOval(x - 2, y - 2, 5, 5);
-            }
-
-            /* draws best-fit line */
-            if (this.scatterPlot.isIncludeLine()) {
-                double a = this.scatterPlot.getRegressionCoeff();
-                double b = this.scatterPlot.getRegressionIntercept();
-
-                double x1, y1 = 0;
-
-                for (x1 = xmin; x1 <= xmax; x1 += 0.01) {
-                    y1 = a * x1 + b;
-                    if (y1 >= ymin && y1 <= ymax) {
-                        break;
-                    }
-                }
-
-                double x2, y2 = 0;
-
-                for (x2 = xmax; x2 >= xmin; x2 -= 0.01) {
-                    y2 = a * x2 + b;
-                    if (y2 >= ymin && y2 <= ymax) {
-                        break;
-                    }
-                }
-
-                int xa = (int) (((x1 - xmin) / _xRange) * xRange + xMin);
-                int ya = (int) (((ymax - y1) / _yRange) * yRange + yMin);
-
-                int xb = (int) (((x2 - xmin) / _xRange) * xRange + xMin);
-                int yb = (int) (((ymax - y2) / _yRange) * yRange + yMin);
-
-                g.setColor(Color.BLUE);
-                g.drawLine(xa, ya, xb, yb);
-            }
-
-            /* draws statistical values */
-            if (this.scatterPlot.isIncludeLine()) {
-                g.setColor(Color.black);
-                this.nf.setMinimumFractionDigits(3);
-                this.nf.setMaximumFractionDigits(3);
-                double r = this.scatterPlot.getCorrelationCoeff();
-                double p = this.scatterPlot.getCorrelationPValue();
-                g.drawString("correlation coef = " + this.nf.format(r) + "  (p=" + this.nf.format(p) + ")", 100, 21);
-            }
-        }
-
-        /**
-         * @return the minimum dimension of the ScatterPlot.
-         */
-        public Dimension getMinimumSize() {
-            return getPreferredSize();
-        }
-
-        /**
-         * @return the maximum dimension of the ScatterPlot.
-         */
-        public Dimension getMaximumSize() {
-            return getPreferredSize();
-        }
-    }
 }
 
 
