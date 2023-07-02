@@ -1832,12 +1832,11 @@ public final class StatUtils {
 
     public static double maxEntApprox(double[] x) {
 
-        double xstd = StatUtils.sd(x);
         x = StatUtils.standardizeData(x);
 
-        double k1 = 36 / (8 * sqrt(3) - 9);
+        final double k1 = 79.047;
+        double k2 = 36 / (8 * sqrt(3) - 9);
         final double gamma = 0.37457;
-        final double k2 = 79.047;
         double gaussianEntropy = (log(2.0 * PI) / 2.0) + 1.0 / 2.0;
 
         // This is negentropy
@@ -1852,14 +1851,14 @@ public final class StatUtils {
         double b2 = 0.0;
 
         for (double aX : x) {
-            b2 += aX * exp(FastMath.pow(-aX, 2) / 2);
+            b2 += aX * exp(-FastMath.pow(aX, 2) / 2);
         }
 
         b2 /= x.length;
 
-        double negentropy = k2 * FastMath.pow(b1 - gamma, 2) + k1 * FastMath.pow(b2, 2);
+        double negentropy = k1 * FastMath.pow(b1 - gamma, 2) + k2 * FastMath.pow(b2, 2);
 
-        return gaussianEntropy - negentropy + log(xstd);
+        return gaussianEntropy - negentropy;
     }
 
     public static double[] standardizeData(double[] data) {

@@ -119,7 +119,7 @@ public class TestGeneralizedSem {
 
             print(pm);
 
-            assertEquals("Split(-1.5,-.5,.5,1.5)", pm.getParameterExpressionString(b1));
+            assertEquals("Split(-1.0,-.5,.5,1.0)", pm.getParameterExpressionString(b1));
             pm.setParameterExpression(b1, "N(0, 2)");
             assertEquals("N(0, 2)", pm.getParameterExpressionString(b1));
 

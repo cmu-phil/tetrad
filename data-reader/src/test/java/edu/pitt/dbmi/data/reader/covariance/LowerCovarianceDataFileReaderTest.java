@@ -19,13 +19,12 @@
 package edu.pitt.dbmi.data.reader.covariance;
 
 import edu.pitt.dbmi.data.reader.Delimiter;
-import org.junit.Assert;
-import org.junit.Test;
-
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * Dec 7, 2018 4:39:33 PM
@@ -37,8 +36,8 @@ public class LowerCovarianceDataFileReaderTest {
     private final Delimiter delimiter = Delimiter.SPACE;
 
     private final Path[] dataFiles = {
-            Paths.get(getClass().getResource("/data/covariance/spartina.txt").getFile()),
-            Paths.get(getClass().getResource("/data/covariance/quotes_spartina.txt").getFile())
+        new File(getClass().getResource("/data/covariance/spartina.txt").getFile()).toPath(),
+        new File(getClass().getResource("/data/covariance/quotes_spartina.txt").getFile()).toPath()
     };
 
     public LowerCovarianceDataFileReaderTest() {
