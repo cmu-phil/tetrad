@@ -12,7 +12,7 @@ import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.TsDagToPag;
 import edu.cmu.tetrad.search.utils.TsUtils;
@@ -74,7 +74,7 @@ public class Comparison2 {
                 if (file.getName().startsWith("graph") && file.getName().contains(String.valueOf(params.getGraphNum()))
                         && file.getName().endsWith(".g.txt")) {
                     params.setGraphFile(file.getName());
-                    trueDag = GraphPersistence.loadGraphTxt(file);
+                    trueDag = GraphSaveLoadUtils.loadGraphTxt(file);
                     break;
                 }
 
@@ -465,7 +465,7 @@ public class Comparison2 {
             Graph correctGraph = _result.getCorrectResult();
             Graph resultGraph = _result.getResultGraph();
 
-            GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison2(correctGraph, resultGraph);
+            GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(correctGraph, resultGraph);
 
             int newRow = dataSet.getNumRows();
 

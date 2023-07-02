@@ -32,7 +32,7 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.PcMb;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MbUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;

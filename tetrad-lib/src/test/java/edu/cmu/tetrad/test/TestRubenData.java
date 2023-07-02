@@ -10,7 +10,7 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphPersistence;
+import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.search.Boss;
 import edu.cmu.tetrad.search.PermutationSearch;
@@ -50,7 +50,7 @@ public class TestRubenData {
                         "//",
                         '\"', "*", true, Delimiter.COMMA);
 
-                Graph graph = GraphPersistence.loadGraphTxt(new File(path2));
+                Graph graph = GraphSaveLoadUtils.loadGraphTxt(new File(path2));
 
                 graph = GraphSearchUtils.cpdagForDag(graph);
 

@@ -162,7 +162,7 @@ public final class SemEstimatorEditor extends JPanel {
                 }
             };
 
-            SwingUtilities.invokeLater(MyWatchedProcess::new);
+            new MyWatchedProcess();
         });
 
         JButton report = new JButton("Report");

@@ -27,9 +27,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ParamDescription;
 import edu.cmu.tetrad.util.ParamDescriptions;
@@ -75,13 +76,20 @@ public class MarkovCheckEditor extends JPanel {
     private JLabel fractionDepLabelDep;
     private JLabel ksLabelDep;
     private JLabel ksLabelIndep;
+    private JLabel masLabellDep;
+    private JLabel masLabellIndep;
     private int sortDir;
     private int lastSortCol;
-    private final JTextArea testDescTextArea = new JTextArea();
-    private final JComboBox<IndependenceTestModel> indTestComboBox = new JComboBox<>();
+    //    private final JTextArea testDescTextArea = new JTextArea();
+    private final JComboBox<IndependenceTestModel> indTestJComboBox = new JComboBox<>();
+    private final JComboBox<String> conditioningSetTypeJComboBox = new JComboBox<>();
     boolean updatingTestModels = true;
-    private final JLabel faithfulnessTestLabel = new JLabel("(Unspecified Test)");
+    private final JLabel testLabel = new JLabel("(Unspecified Test)");
     private IndependenceWrapper independenceWrapper;
+    private JPanel histogramPanelIndep;
+    private JPanel histogramPanelDep;
+    private final JLabel conditioningLabelDep = new JLabel("(Unspecified)");
+    private final JLabel conditioningLabelIndep = new JLabel("(Unspecified)");
 
     /**
      * Constructs a new editor for the given model.
@@ -91,21 +99,68 @@ public class MarkovCheckEditor extends JPanel {
             throw new NullPointerException("Expecting a model");
         }
 
-        this.model = model;
-        refreshTestList();
+        conditioningSetTypeJComboBox.addItem("Parents(X)");
+        conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
 
-        indTestComboBox.addActionListener(e -> {
+        conditioningSetTypeJComboBox.addActionListener(e -> {
+            switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
+                case "Parents(X)":
+                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.PARENTS);
+                    break;
+                case "MarkovBlanket(X)":
+                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.MARKOV_BLANKET);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown conditioning set type: " +
+                            conditioningSetTypeJComboBox.getSelectedItem());
+            }
+
             class MyWatchedProcess extends WatchedProcess {
                 public void watch() {
                     setTest();
                     model.getMarkovCheck().generateResults();
                     tableModelIndep.fireTableDataChanged();
                     tableModelDep.fireTableDataChanged();
+
+                    histogramPanelDep.removeAll();
+                    histogramPanelIndep.removeAll();
+                    histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
+                    histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+                    histogramPanelDep.validate();
+                    histogramPanelIndep.validate();
+                    histogramPanelDep.repaint();
+                    histogramPanelIndep.repaint();
                     setLabelTexts();
                 }
             }
 
-            SwingUtilities.invokeLater(MyWatchedProcess::new);
+            new MyWatchedProcess();
+        });
+
+        this.model = model;
+        refreshTestList();
+
+        indTestJComboBox.addActionListener(e -> {
+            class MyWatchedProcess extends WatchedProcess {
+                public void watch() {
+                    setTest();
+                    model.getMarkovCheck().generateResults();
+                    tableModelIndep.fireTableDataChanged();
+                    tableModelDep.fireTableDataChanged();
+
+                    histogramPanelDep.removeAll();
+                    histogramPanelIndep.removeAll();
+                    histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
+                    histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+                    histogramPanelDep.validate();
+                    histogramPanelIndep.validate();
+                    histogramPanelDep.repaint();
+                    histogramPanelIndep.repaint();
+                    setLabelTexts();
+                }
+            }
+
+            new MyWatchedProcess();
         });
 
         setTest();
@@ -150,9 +205,12 @@ public class MarkovCheckEditor extends JPanel {
 
         Box box = Box.createVerticalBox();
         Box box1 = Box.createHorizontalBox();
-        box1.add(indTestComboBox);
-        box1.add(Box.createHorizontalStrut(10));
+        box1.add(Box.createHorizontalStrut(20));
+        box1.add(new JLabel("Test:"));
+        box1.add(indTestJComboBox);
         JButton params = new JButton("Params");
+        box1.add(params);
+        box1.add(Box.createHorizontalGlue());
 
         params.addActionListener(e -> {
             JOptionPane dialog = new JOptionPane(createParamsPanel(independenceWrapper, model.getParameters()), JOptionPane.PLAIN_MESSAGE);
@@ -166,19 +224,43 @@ public class MarkovCheckEditor extends JPanel {
                     model.getMarkovCheck().generateResults();
                     tableModelIndep.fireTableDataChanged();
                     tableModelDep.fireTableDataChanged();
+                    histogramPanelDep.removeAll();
+                    histogramPanelIndep.removeAll();
+                    histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
+                    histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+                    histogramPanelDep.validate();
+                    histogramPanelIndep.validate();
+                    histogramPanelDep.repaint();
+                    histogramPanelIndep.repaint();
                     setLabelTexts();
                 }
             }
 
-            SwingUtilities.invokeLater(MyWatchedProcess2::new);
+            new MyWatchedProcess2();
         });
 
-        box1.add(params);
         box.add(box1);
 
+        Box box2 = Box.createHorizontalBox();
+        box2.add(Box.createHorizontalStrut(20));
+        box2.add(new JLabel("Conditioning Sets:"));
+        box2.add(conditioningSetTypeJComboBox);
+        box2.add(Box.createHorizontalGlue());
+
+        box.add(box2);
+
+        JTextArea testDescTextArea = new JTextArea(getHelpMessage());
+        testDescTextArea.setEditable(true);
+        testDescTextArea.setLineWrap(true);
+        testDescTextArea.setWrapStyleWord(true);
+        JScrollPane scroll = new JScrollPane(testDescTextArea);
+        scroll.setPreferredSize(new Dimension(600, 400));
+
+
         JTabbedPane pane = new JTabbedPane();
-        pane.addTab("Check Local Markov", indep);
-        pane.addTab("Check Local Faithfulness", dep);
+        pane.addTab("Check Markov", indep);
+        pane.addTab("Check Faithfulness", dep);
+        pane.addTab("Help", scroll);
         box.add(pane);
 
         class MyWatchedProcess extends WatchedProcess {
@@ -187,17 +269,25 @@ public class MarkovCheckEditor extends JPanel {
                 model.getMarkovCheck().generateResults();
                 tableModelIndep.fireTableDataChanged();
                 tableModelDep.fireTableDataChanged();
+                histogramPanelDep.removeAll();
+                histogramPanelIndep.removeAll();
+                histogramPanelDep.add(createHistogramPanel(false), BorderLayout.CENTER);
+                histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+                histogramPanelDep.validate();
+                histogramPanelIndep.validate();
+                histogramPanelDep.repaint();
+                histogramPanelIndep.repaint();
                 setLabelTexts();
             }
         }
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
 
         add(box);
     }
 
     private void setTest() {
-        IndependenceTestModel selectedItem = (IndependenceTestModel) indTestComboBox.getSelectedItem();
+        IndependenceTestModel selectedItem = (IndependenceTestModel) indTestJComboBox.getSelectedItem();
         Class<IndependenceWrapper> clazz = (selectedItem == null) ? null : selectedItem.getIndependenceTest().getClazz();
         IndependenceTest independenceTest;
 
@@ -207,11 +297,12 @@ public class MarkovCheckEditor extends JPanel {
                 independenceTest = independenceWrapper.getTest(model.getDataModel(), model.getParameters());
                 model.setIndependenceTest(independenceTest);
                 markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-                faithfulnessTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+                testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
                 invalidate();
                 repaint();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                      NoSuchMethodException e1) {
+                e1.printStackTrace();
                 throw new RuntimeException(e1);
             }
         }
@@ -225,14 +316,18 @@ public class MarkovCheckEditor extends JPanel {
      * Performs the action of opening a session from a file.
      */
     private JPanel buildGuiDep() {
+
         Box b1 = Box.createVerticalBox();
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Tests whether X _||_ Y | parents(X) for mconn(X, Y | parents(X))"));
+        String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
+
+        conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + setType + ")");
+        b2.add(conditioningLabelDep);
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-        faithfulnessTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+        testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
 
         Box b2a = Box.createHorizontalBox();
         b2a.add(Box.createHorizontalGlue());
@@ -359,52 +454,44 @@ public class MarkovCheckEditor extends JPanel {
         b4.add(Box.createGlue());
         b4.add(Box.createHorizontalStrut(10));
 
-        String title = "P-Value or Bump for Local Faithfulness";
-
-        JButton showHistogram = new JButton("Show Histogram for P-Values or Bumps");
-        showHistogram.setFont(new Font("Dialog", Font.PLAIN, 14));
-        showHistogram.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JPanel component = createHistogramPanel(false);
-                EditorWindow editorWindow = new EditorWindow(component, title, "Close", false, MarkovCheckEditor.this);
-                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-                editorWindow.pack();
-                editorWindow.setVisible(true);
-            }
-        });
-
         b4.add(Box.createHorizontalGlue());
-        b4.add(showHistogram);
-
-        JButton help = new JButton("Help");
-
-        help.addActionListener(e -> {
-            String text = getHelpMessage();
-            JOptionPane.showMessageDialog(help, text, "Help", JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        b4.add(help);
-
-        b1.add(b4);
-        b1.add(Box.createVerticalStrut(10));
 
         Box b5 = Box.createHorizontalBox();
         b5.add(Box.createGlue());
 
         setLabelTexts();
 
+        Box b0 = Box.createHorizontalBox();
+        b0.add(b1);
+        b0.add(Box.createHorizontalStrut(10));
+
+        Box b0b1 = Box.createVerticalBox();
+        b0b1.add(Box.createVerticalGlue());
+        histogramPanelDep = new JPanel();
+        histogramPanelDep.setLayout(new BorderLayout());
+        histogramPanelDep.setBorder(new EmptyBorder(10, 10, 10, 10));
+        histogramPanelIndep.add(createHistogramPanel(false), BorderLayout.CENTER);
+
+        b0b1.add(histogramPanelDep);
         b5.add(fractionDepLabelDep);
-        b1.add(b5);
+        b0b1.add(b5);
 
         Box b6 = Box.createHorizontalBox();
         b6.add(Box.createHorizontalGlue());
         b6.add(ksLabelDep);
-        b1.add(b6);
+        b0b1.add(b6);
+
+        Box b7 = Box.createHorizontalBox();
+        b7.add(Box.createHorizontalGlue());
+        b7.add(masLabellDep);
+        b0b1.add(b7);
+
+        b0b1.add(Box.createVerticalGlue());
+        b0.add(b0b1);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        panel.add(b1, BorderLayout.CENTER);
+        panel.add(b0, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         return panel;
     }
@@ -414,12 +501,16 @@ public class MarkovCheckEditor extends JPanel {
         Box b1 = Box.createVerticalBox();
 
         Box b2 = Box.createHorizontalBox();
-        b2.add(new JLabel("Tests whether X _||_ Y | parents(X) for msep(X, Y | parents(X))"));
+
+        String setType = (String) conditioningSetTypeJComboBox.getSelectedItem();
+
+        conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + setType + ")");
+        b2.add(conditioningLabelIndep);
         b2.add(Box.createHorizontalGlue());
         b1.add(b2);
 
         markovTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
-        faithfulnessTestLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
+        testLabel.setText(model.getMarkovCheck().getIndependenceTest().toString());
 
         Box b2a = Box.createHorizontalBox();
         b2a.add(Box.createHorizontalGlue());
@@ -549,99 +640,67 @@ public class MarkovCheckEditor extends JPanel {
         b4.add(Box.createGlue());
         b4.add(Box.createHorizontalStrut(10));
 
-        String title = "P-Value or Bump for Local Markov";
-
-        JButton showHistogram = new JButton("Show Histogram for P-Values or Bumps");
-        showHistogram.setFont(new Font("Dialog", Font.PLAIN, 14));
-        showHistogram.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                JPanel component = createHistogramPanel(true);
-                EditorWindow editorWindow = new EditorWindow(component, title, "Close", false, MarkovCheckEditor.this);
-                DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
-                editorWindow.pack();
-                editorWindow.setVisible(true);
-            }
-        });
-
         b4.add(Box.createHorizontalGlue());
-        b4.add(showHistogram);
-
-        JButton help = new JButton("Help");
-
-        help.addActionListener(e -> {
-            String text = getHelpMessage();
-            JOptionPane.showMessageDialog(help, text, "Help", JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        b4.add(help);
-
-        b1.add(b4);
-        b1.add(Box.createVerticalStrut(10));
 
         Box b5 = Box.createHorizontalBox();
         b5.add(Box.createGlue());
 
         setLabelTexts();
 
+        Box b0 = Box.createHorizontalBox();
+        b0.add(b1);
+        b0.add(Box.createHorizontalStrut(10));
+
+        Box b0b1 = Box.createVerticalBox();
+        b0b1.add(Box.createVerticalGlue());
+        histogramPanelIndep = new JPanel();
+        histogramPanelIndep.setLayout(new BorderLayout());
+        histogramPanelIndep.setBorder(new EmptyBorder(10, 10, 10, 10));
+        histogramPanelIndep.add(createHistogramPanel(true), BorderLayout.CENTER);
+        b0b1.add(histogramPanelIndep);
+        b0b1.add(Box.createVerticalGlue());
+
         b5.add(fractionDepLabelIndep);
-        b1.add(b5);
+        b0b1.add(b5);
 
         Box b6 = Box.createHorizontalBox();
         b6.add(Box.createHorizontalGlue());
         b6.add(ksLabelIndep);
-        b1.add(b6);
+        b0b1.add(b6);
+
+        Box b7 = Box.createHorizontalBox();
+        b7.add(Box.createHorizontalGlue());
+        b7.add(masLabellIndep);
+        b0b1.add(b7);
+
+        b0.add(b0b1);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        panel.add(b1, BorderLayout.CENTER);
+        panel.add(b0, BorderLayout.CENTER);
+
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         return panel;
     }
 
     @NotNull
     private static String getHelpMessage() {
-        return "\n" +
-                "This tool lets you plot statistics for independence tests of a pair of variables given parents of the one for a given\n" +
-                "graph and dataset. Two tables are made, one in which the independence facts predicted by the graph are tested in the\n" +
-                "data and the other in which the graph's predicted dependence facts are tested. We call the first set of facts \"local\n" +
-                "Markov\"; the second we call \"local Faithfulness.” By \"local,\" we mean that we are only testing independence facts of\n" +
-                "variables given their parents in the graph.\n" +
+        return "This tool lets you plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables, for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a test for \"Markov\" for the relevant conditioning sets; the is a test for \"Faithfulness.”\n" +
                 "\n" +
-                "Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is\n" +
-                "either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a\n" +
-                "score bump, where this bump is negative for independent judgments and positive for dependent judgments.\n" +
+                "Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a score bump, where this bump is negative for independent judgments and positive for dependent judgments.\n" +
                 "\n" +
-                "If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or\n" +
-                "else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent\n" +
-                "test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any\n" +
-                "range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the\n" +
-                "nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we have a\n" +
-                "button that lets you display the histogram of the p-values with equally sized bins; the bars in this histogram, for this\n" +
-                "case, should ideally all be of equal height.\n" +
+                "If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we have a button that lets you display the histogram of the p-values with equally sized bins; the bars in this histogram, for this case, should ideally all be of equal height.\n" +
                 "\n" +
-                "If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being\n" +
-                "judged as dependent. For checking Faithfulness, one hopes that this first bar will be especially high, since high\n" +
-                "p-values are for examples where the graph is unfaithful to the distribution. These are likely for for cases where paths\n" +
-                "in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all\n" +
-                "of the other bars.\n" +
+                "If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being judged as dependent. For checking Faithfulness, one hopes that this list is non-empty, then this first bar will be especially high, since high p-values are for examples where the graph is unfaithful to the distribution. These are likely for for cases where paths in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all of the other bars.\n" +
                 "\n" +
-                "To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged\n" +
-                "dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for\n" +
-                "the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the\n" +
-                "Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the\n" +
-                "user’s preferred alpha level if the distribution of p-values is Uniform and less then this alpha level if the\n" +
-                "distribution of p-values is non-Uniform.\n" +
+                "To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the user’s preferred alpha level if the distribution of p-values is Uniform and less then this alpha level if the distribution of p-values is non-Uniform.\n" +
                 "\n" +
-                "If the independence test yields a bump in the score, this score should be negative for independence judgments and\n" +
-                "positive for dependence judgments. The histogram will reflect this.\n" +
+                "If the independence test yields a bump in the score, this score should be negative for independence judgments and positive for dependence judgments. The histogram will reflect this.\n" +
                 "\n" +
-                "Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let\n" +
-                "you analyze the data yourself.\n";
+                "Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let you analyze the data yourself.\n" +
+                "\n" +
+                "A note about Markov Blankets: The \"Markov Blanket\" conditioning set choice implements the Markov blanket calculation in a way that is correct for DAGs, CPDAGs, MAGs, and PAGs. For all of these graph types, the list of m-connecting facts in the Faithfulness tab should be empty, since the Markov blanket should screen off the target from any other variables in the dataset. It's possible that for some other graph types this list may not be empty (i.e., the Markov blanket calculation may not be correct).";
     }
-
-    //=============================PRIVATE METHODS=======================//
-
     private void sortByColumn(int sortCol, boolean indep) {
         if (sortCol == this.getLastSortCol()) {
             this.setSortDir(-1 * this.getSortDir());
@@ -677,6 +736,14 @@ public class MarkovCheckEditor extends JPanel {
             fractionDepLabelDep = new JLabel();
         }
 
+        if (masLabellIndep == null) {
+            masLabellIndep = new JLabel();
+        }
+
+        if (masLabellDep == null) {
+            masLabellDep = new JLabel();
+        }
+
         ksLabelIndep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
                 + ((Double.isNaN(model.getMarkovCheck().getKsPValue(true))
                 ? "-"
@@ -693,6 +760,18 @@ public class MarkovCheckEditor extends JPanel {
                 + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(false)))));
+        masLabellIndep.setText("Markov Adequacy Score = "
+                + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
+        masLabellDep.setText("Markov Adequacy Score = "
+                + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
+                ? "-"
+                : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
+
+
+        conditioningLabelIndep.setText("Tests graphical predictions of Indep(X, Y | " + conditioningSetTypeJComboBox.getSelectedItem() + ")");
+        conditioningLabelDep.setText("Tests graphical predictions of Dep(X, Y | " + conditioningSetTypeJComboBox.getSelectedItem() + ")");
     }
 
 
@@ -720,16 +799,11 @@ public class MarkovCheckEditor extends JPanel {
         this.sortDir = sortDir;
     }
 
-    private JPanel createHistogramPanel(boolean indep) {
-        JPanel jPanel = new JPanel();
-
+    private Box createHistogramPanel(boolean indep) {
         List<IndependenceResult> results = model.getResults(indep);
 
         if (results.isEmpty()) {
-            JLabel label = new JLabel("No results available; please click the Check button first.");
-            JPanel panel = new JPanel();
-            panel.add(label);
-            return panel;
+            return Box.createVerticalBox();
         }
 
         DataSet dataSet = new BoxDataSet(new VerticalDoubleDataBox(results.size(), 1),
@@ -754,9 +828,7 @@ public class MarkovCheckEditor extends JPanel {
         vBox.add(box);
         vBox.add(Box.createVerticalStrut(5));
 
-        jPanel.setLayout(new BorderLayout());
-        jPanel.add(vBox, BorderLayout.CENTER);
-        return jPanel;
+        return vBox;
     }
 
     static class Renderer extends DefaultTableCellRenderer {
@@ -785,7 +857,6 @@ public class MarkovCheckEditor extends JPanel {
             return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         }
     }
-
     private DataType getDataType() {
         DataModel dataSet = model.getDataModel();
 
@@ -806,22 +877,18 @@ public class MarkovCheckEditor extends JPanel {
     private void refreshTestList() {
         DataType dataType = getDataType();
 
-        this.indTestComboBox.removeAllItems();
+        this.indTestJComboBox.removeAllItems();
 
         List<IndependenceTestModel> models = IndependenceTestModels.getInstance().getModels(dataType);
 
         for (IndependenceTestModel model : models) {
-            this.indTestComboBox.addItem(model);
+            this.indTestJComboBox.addItem(model);
         }
 
         this.updatingTestModels = false;
-        this.indTestComboBox.setEnabled(this.indTestComboBox.getItemCount() > 0);
+        this.indTestJComboBox.setEnabled(this.indTestJComboBox.getItemCount() > 0);
 
-        if (this.indTestComboBox.getSelectedIndex() == -1) {
-            this.testDescTextArea.setText("");
-        }
-
-        indTestComboBox.setSelectedItem(IndependenceTestModels.getInstance().getDefaultModel(dataType));
+        indTestJComboBox.setSelectedItem(IndependenceTestModels.getInstance().getDefaultModel(dataType));
     }
 
     // Paramter panel code from Kevin Bui.
@@ -830,7 +897,7 @@ public class MarkovCheckEditor extends JPanel {
         return createParamsPanel("Parameters", testParameters, params);
     }
 
-    protected JPanel createParamsPanel(String title, Set<String> params, Parameters parameters) {
+    private JPanel createParamsPanel(String title, Set<String> params, Parameters parameters) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder(title));
 
@@ -849,7 +916,7 @@ public class MarkovCheckEditor extends JPanel {
         return panel;
     }
 
-    protected Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
+    private Map<String, Box> createParameterComponents(Set<String> params, Parameters parameters) {
         ParamDescriptions paramDescs = ParamDescriptions.getInstance();
         return params.stream()
                 .collect(Collectors.toMap(
@@ -861,7 +928,7 @@ public class MarkovCheckEditor extends JPanel {
                         TreeMap::new));
     }
 
-    protected Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
+    private Box createParameterComponent(String parameter, Parameters parameters, ParamDescription paramDesc) {
         JComponent component;
         Object defaultValue = paramDesc.getDefaultValue();
         if (defaultValue instanceof Double) {
@@ -898,7 +965,7 @@ public class MarkovCheckEditor extends JPanel {
         return paramRow;
     }
 
-    protected DoubleTextField getDoubleField(String parameter, Parameters parameters,
+    private DoubleTextField getDoubleField(String parameter, Parameters parameters,
                                              double defaultValue, double lowerBound, double upperBound) {
         DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
@@ -928,7 +995,7 @@ public class MarkovCheckEditor extends JPanel {
         return field;
     }
 
-    protected IntTextField getIntTextField(String parameter, Parameters parameters,
+    private IntTextField getIntTextField(String parameter, Parameters parameters,
                                            int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
@@ -957,7 +1024,7 @@ public class MarkovCheckEditor extends JPanel {
         return field;
     }
 
-    protected LongTextField getLongTextField(String parameter, Parameters parameters,
+    private LongTextField getLongTextField(String parameter, Parameters parameters,
                                              long defaultValue, long lowerBound, long upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
 
@@ -987,7 +1054,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     // Zhou's new implementation with yes/no radio buttons
-    protected Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
+    private Box getBooleanSelectionBox(String parameter, Parameters parameters, boolean defaultValue) {
         Box selectionBox = Box.createHorizontalBox();
 
         JRadioButton yesButton = new JRadioButton("Yes");
@@ -1030,7 +1097,7 @@ public class MarkovCheckEditor extends JPanel {
         return selectionBox;
     }
 
-    protected StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
+    private StringTextField getStringField(String parameter, Parameters parameters, String defaultValue) {
         StringTextField field = new StringTextField(parameters.getString(parameter, defaultValue), 20);
 
         field.setFilter((value, oldValue) -> {

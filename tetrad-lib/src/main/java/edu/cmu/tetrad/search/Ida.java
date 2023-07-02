@@ -7,6 +7,7 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -268,12 +269,19 @@ public class Ida {
 
             Matrix rX = this.allCovariances.getSelection(xIndices, xIndices);
             Matrix rY = this.allCovariances.getSelection(xIndices, new int[]{yIndex});
+            Matrix bStar;
 
-            Matrix bStar = rX.inverse().times(rY);
+            try {
+                bStar = rX.inverse().times(rY);
+            } catch (SingularMatrixException e) {
+                throw new RuntimeException("Singularity encountered when regressing " +
+                        LogUtilsSearch.getScoreFact(child, regressors));
+            }
 
             return bStar.get(0, 0);
         } catch (SingularMatrixException e) {
-            return 0.0;
+            throw new RuntimeException("Singularity encountered when regressing " +
+                    LogUtilsSearch.getScoreFact(child, regressors));
         }
     }
 }

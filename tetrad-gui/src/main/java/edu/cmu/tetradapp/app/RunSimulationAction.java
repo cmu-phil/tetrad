@@ -115,7 +115,7 @@ class RunSimulationAction extends AbstractAction {
         }
         ;
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
 }

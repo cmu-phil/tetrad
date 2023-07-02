@@ -79,7 +79,7 @@ public class PagColorer extends JCheckBoxMenuItem {
                         }
                     }
 
-                    SwingUtilities.invokeLater(MyWatchedProcess::new);
+                    new MyWatchedProcess();
 //                    GraphSearchUtils.LegalPagRet legalPag = GraphSearchUtils.isLegalPag(graph);
 //                    String reason = breakDown(legalPag.getReason(), 60);
 //

@@ -24,11 +24,9 @@ package edu.cmu.tetrad.search;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.PcCommon;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
-import edu.cmu.tetrad.util.LogUtils;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
 
@@ -183,15 +181,15 @@ public class Fas implements IFas {
 
             boolean more;
 
-//            if (this.stable) {
-//                Map<Node, Set<Node>> adjacenciesCopy = new HashMap<>();
-//
-//                for (Node node : adjacencies.keySet()) {
-//                    adjacenciesCopy.put(node, new LinkedHashSet<>(adjacencies.get(node)));
-//                }
-//
-//                adjacencies = adjacenciesCopy;
-//            }
+            if (this.stable) {
+                Map<Node, Set<Node>> adjacenciesCopy = new HashMap<>();
+
+                for (Node node : adjacencies.keySet()) {
+                    adjacenciesCopy.put(node, new LinkedHashSet<>(adjacencies.get(node)));
+                }
+
+                adjacencies = adjacenciesCopy;
+            }
 
             more = searchAtDepth(scores, edges, this.test, adjacencies, d);
 
@@ -414,17 +412,9 @@ public class Fas implements IFas {
 
                 this.numIndependenceTests++;
 
-//                System.out.println("Checking independence of " + x.getName() + " and " + y.getName() + " given " + Z);
-
-                if (x.getName().equals("X2") && y.getName().equals("X3") && Z.contains(g0.getNode("X1"))) {
-                    System.out.println("here");
-                    test.checkIndependence(x, y, Z).isIndependent();
-                }
-
                 boolean independent = test.checkIndependence(x, y, Z).isIndependent();
 
-                boolean noEdgeRequired =
-                        this.knowledge.noEdgeRequired(x.getName(), y.getName());
+                boolean noEdgeRequired = this.knowledge.noEdgeRequired(x.getName(), y.getName());
 
                 if (independent && noEdgeRequired) {
                     adjacencies.get(x).remove(y);
@@ -434,7 +424,6 @@ public class Fas implements IFas {
 
                     return true;
                 }
-
             }
         }
 

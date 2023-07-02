@@ -24,9 +24,11 @@ package edu.cmu.tetrad.regression;
 import edu.cmu.tetrad.data.CorrelationMatrix;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.Vector;
+import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
@@ -145,100 +147,106 @@ public class RegressionCovariance implements Regression {
      * @return the regression plane.
      */
     public RegressionResult regress(Node target, List<Node> regressors) {
-        Matrix allCorrelations = this.correlations.getMatrix();
+        try {
 
-        List<Node> variables = this.correlations.getVariables();
+            Matrix allCorrelations = this.correlations.getMatrix();
 
-        int yIndex = variables.indexOf(target);
+            List<Node> variables = this.correlations.getVariables();
 
-        int[] xIndices = new int[regressors.size()];
+            int yIndex = variables.indexOf(target);
 
-        for (int i = 0; i < regressors.size(); i++) {
-            xIndices[i] = variables.indexOf(regressors.get(i));
+            int[] xIndices = new int[regressors.size()];
 
-            if (xIndices[i] == -1) {
-                throw new NullPointerException("Can't find variable " + regressors.get(i) + " in this list: " + variables);
-            }
-        }
+            for (int i = 0; i < regressors.size(); i++) {
+                xIndices[i] = variables.indexOf(regressors.get(i));
 
-        Matrix rX = allCorrelations.getSelection(xIndices, xIndices);
-        Matrix rY = allCorrelations.getSelection(xIndices, new int[]{yIndex});
-
-        Matrix bStar = rX.inverse().times(rY);
-
-        Vector b = new Vector(bStar.getNumRows() + 1);
-
-        for (int k = 1; k < b.size(); k++) {
-            double sdY = this.sd.get(yIndex);
-            double sdK = this.sd.get(xIndices[k - 1]);
-            b.set(k, bStar.get(k - 1, 0) * (sdY / sdK));
-        }
-
-        b.set(0, Double.NaN);
-
-        if (this.means != null) {
-            double b0 = this.means.get(yIndex);
-
-            for (int i = 0; i < xIndices.length; i++) {
-                b0 -= b.get(i + 1) * this.means.get(xIndices[i]);
+                if (xIndices[i] == -1) {
+                    throw new NullPointerException("Can't find variable " + regressors.get(i) + " in this list: " + variables);
+                }
             }
 
-            b.set(0, b0);
+            Matrix rX = allCorrelations.getSelection(xIndices, xIndices);
+            Matrix rY = allCorrelations.getSelection(xIndices, new int[]{yIndex});
+
+            Matrix bStar = rX.inverse().times(rY);
+
+            Vector b = new Vector(bStar.getNumRows() + 1);
+
+            for (int k = 1; k < b.size(); k++) {
+                double sdY = this.sd.get(yIndex);
+                double sdK = this.sd.get(xIndices[k - 1]);
+                b.set(k, bStar.get(k - 1, 0) * (sdY / sdK));
+            }
+
+            b.set(0, Double.NaN);
+
+            if (this.means != null) {
+                double b0 = this.means.get(yIndex);
+
+                for (int i = 0; i < xIndices.length; i++) {
+                    b0 -= b.get(i + 1) * this.means.get(xIndices[i]);
+                }
+
+                b.set(0, b0);
+            }
+
+            int[] allIndices = new int[1 + regressors.size()];
+            allIndices[0] = yIndex;
+
+            for (int i = 1; i < allIndices.length; i++) {
+                allIndices[i] = variables.indexOf(regressors.get(i - 1));
+            }
+
+            Matrix r = allCorrelations.getSelection(allIndices, allIndices);
+            Matrix rInv = r.inverse();
+
+            int n = this.correlations.getSampleSize();
+            int k = regressors.size() + 1;
+
+            double vY = rInv.get(0, 0);
+            double r2 = 1.0 - (1.0 / vY);
+            double tss = n * this.sd.get(yIndex) * this.sd.get(yIndex); // Book says n - 1.
+            double rss = tss * (1.0 - r2);
+            double seY = FastMath.sqrt(rss / (double) (n - k));
+
+            Vector sqErr = new Vector(allIndices.length);
+            Vector t = new Vector(allIndices.length);
+            Vector p = new Vector(allIndices.length);
+
+            sqErr.set(0, Double.NaN);
+            t.set(0, Double.NaN);
+            p.set(0, Double.NaN);
+
+            Matrix rxInv = rX.inverse();
+
+            for (int i = 0; i < regressors.size(); i++) {
+                double _r2 = 1.0 - (1.0 / rxInv.get(i, i));
+                double _tss = n * this.sd.get(xIndices[i]) * this.sd.get(xIndices[i]);
+                double _se = seY / FastMath.sqrt(_tss * (1.0 - _r2));
+
+                double _t = b.get(i + 1) / _se;
+                double _p = (1.0 - ProbUtils.tCdf(FastMath.abs(_t), n - k));
+
+                sqErr.set(i + 1, _se);
+                t.set(i + 1, _t);
+                p.set(i + 1, _p);
+            }
+
+            // Graph
+            this.graph = createGraph(target, allIndices, regressors, p);
+
+            String[] vNames = createVarNamesArray(regressors);
+            double[] bArray = b.toArray();
+            double[] tArray = t.toArray();
+            double[] pArray = p.toArray();
+            double[] seArray = sqErr.toArray();
+
+            return new RegressionResult(false, vNames, n,
+                    bArray, tArray, pArray, seArray, r2, rss, this.alpha, null);
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException("Singularity encountered when regressing " +
+                    LogUtilsSearch.getScoreFact(target, regressors));
         }
-
-        int[] allIndices = new int[1 + regressors.size()];
-        allIndices[0] = yIndex;
-
-        for (int i = 1; i < allIndices.length; i++) {
-            allIndices[i] = variables.indexOf(regressors.get(i - 1));
-        }
-
-        Matrix r = allCorrelations.getSelection(allIndices, allIndices);
-        Matrix rInv = r.inverse();
-
-        int n = this.correlations.getSampleSize();
-        int k = regressors.size() + 1;
-
-        double vY = rInv.get(0, 0);
-        double r2 = 1.0 - (1.0 / vY);
-        double tss = n * this.sd.get(yIndex) * this.sd.get(yIndex); // Book says n - 1.
-        double rss = tss * (1.0 - r2);
-        double seY = FastMath.sqrt(rss / (double) (n - k));
-
-        Vector sqErr = new Vector(allIndices.length);
-        Vector t = new Vector(allIndices.length);
-        Vector p = new Vector(allIndices.length);
-
-        sqErr.set(0, Double.NaN);
-        t.set(0, Double.NaN);
-        p.set(0, Double.NaN);
-
-        Matrix rxInv = rX.inverse();
-
-        for (int i = 0; i < regressors.size(); i++) {
-            double _r2 = 1.0 - (1.0 / rxInv.get(i, i));
-            double _tss = n * this.sd.get(xIndices[i]) * this.sd.get(xIndices[i]);
-            double _se = seY / FastMath.sqrt(_tss * (1.0 - _r2));
-
-            double _t = b.get(i + 1) / _se;
-            double _p = (1.0 - ProbUtils.tCdf(FastMath.abs(_t), n - k));
-
-            sqErr.set(i + 1, _se);
-            t.set(i + 1, _t);
-            p.set(i + 1, _p);
-        }
-
-        // Graph
-        this.graph = createGraph(target, allIndices, regressors, p);
-
-        String[] vNames = createVarNamesArray(regressors);
-        double[] bArray = b.toArray();
-        double[] tArray = t.toArray();
-        double[] pArray = p.toArray();
-        double[] seArray = sqErr.toArray();
-
-        return new RegressionResult(false, vNames, n,
-                bArray, tArray, pArray, seArray, r2, rss, this.alpha, null);
     }
 
     public RegressionResult regress(Node target, Node... regressors) {

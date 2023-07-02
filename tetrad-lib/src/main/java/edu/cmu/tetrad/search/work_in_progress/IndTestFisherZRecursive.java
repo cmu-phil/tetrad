@@ -24,9 +24,9 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.PartialCorrelation;
 import edu.cmu.tetrad.util.Matrix;
@@ -192,9 +192,10 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         try {
             r = partialCorrelation(x, y, z);
         } catch (SingularMatrixException e) {
-            System.out.println(LogUtilsSearch.determinismDetected(z, x));
-            this.fisherZ = Double.POSITIVE_INFINITY;
-            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN, Double.NaN);
+            throw new RuntimeException("Singularity encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, z));
+//            this.fisherZ = Double.POSITIVE_INFINITY;
+//            return new IndependenceResult(new IndependenceFact(x, y, z), false, Double.NaN, Double.NaN);
         }
 
         double q = 0.5 * (log(1.0 + r) - FastMath.log(1.0 - r));

@@ -10,7 +10,6 @@ import edu.cmu.tetrad.graph.Node;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Scores an entire DAG using the SemBicScore.
@@ -28,9 +27,21 @@ public class SemBicScorer {
      * @return The BIC score of the DAG.
      */
     public static double scoreDag(Graph dag, DataModel data) {
+        return scoreDag(dag, data, 1.0);
+    }
+
+    /**
+     * Scores the given DAG using the given data model, usimg a BIC score.
+     *
+     * @param dag             The DAG.
+     * @param data            a continuous dataset or a covariance matrix.
+     * @param penaltyDiscount The penalty discount.
+     * @return The BIC score of the DAG.
+     */
+    public static double scoreDag(Graph dag, DataModel data, double penaltyDiscount) {
         if (dag == null) throw new NullPointerException("DAG not specified.");
 
-        Score score;
+        SemBicScore score;
 
         if (data instanceof ICovarianceMatrix) {
             score = new SemBicScore((ICovarianceMatrix) dag);
@@ -39,6 +50,8 @@ public class SemBicScorer {
         } else {
             throw new IllegalArgumentException("Expecting a covariance matrix of a dataset.");
         }
+
+        score.setPenaltyDiscount(penaltyDiscount);
 
         dag = GraphUtils.replaceNodes(dag, data.getVariables());
 

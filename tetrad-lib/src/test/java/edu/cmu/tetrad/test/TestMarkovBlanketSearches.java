@@ -27,7 +27,7 @@ import edu.cmu.tetrad.search.GrowShrink;
 import edu.cmu.tetrad.search.IMbSearch;
 import edu.cmu.tetrad.search.PcMb;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import org.junit.Test;
 
 import java.util.*;
@@ -68,7 +68,7 @@ public class TestMarkovBlanketSearches {
         IMbSearch mbSearch = new GrowShrink(test);
         Set<Node> blanket = mbSearch.findMb(test.getVariable("T"));
 
-        List<Node> mbd = GraphUtils.markovBlanketDag(graph.getNode("T"), graph).getNodes();
+        List<Node> mbd = GraphUtils.markovBlanketSubgraph(graph.getNode("T"), graph).getNodes();
         mbd.remove(graph.getNode("T"));
 
         assertEquals(new HashSet<>(mbd), new HashSet<>(blanket));
@@ -92,12 +92,10 @@ public class TestMarkovBlanketSearches {
 
         List<Node> nodes = dag.getNodes();
 
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
-
         for (Node node : nodes) {
             Set<Node> resultNodes = search.findMb(node);
 
-            Graph trueMb = GraphUtils.markovBlanketDag(node, dag);
+            Graph trueMb = GraphUtils.markovBlanketSubgraph(node, dag);
             Set<Node> trueNodes = new HashSet<>(trueMb.getNodes());
             trueNodes.remove(node);
 

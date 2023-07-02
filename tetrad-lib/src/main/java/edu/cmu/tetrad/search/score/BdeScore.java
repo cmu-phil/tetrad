@@ -247,20 +247,6 @@ public class BdeScore implements DiscreteScore {
     }
 
     /**
-     * A judgment of whether a node given its parents is determined is not available for this score.
-     *
-     * @param z The parents.
-     * @param y The node.
-     * @return The judgment
-     * @throws UnsupportedOperationException Since this method is not implemented for this score.
-     */
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        throw new UnsupportedOperationException("The BDe score does not make judgments of " +
-                "determinacy of a node given its parents.");
-    }
-
-    /**
      * Returns "BDe Score".
      *
      * @return This string.

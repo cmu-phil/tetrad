@@ -430,7 +430,7 @@ public final class UpdatedBayesImWizard extends JPanel {
             }
         }
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     private void setCurrentNodeSub(Node node) {

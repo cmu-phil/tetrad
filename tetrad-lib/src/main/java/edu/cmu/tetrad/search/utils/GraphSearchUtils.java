@@ -20,12 +20,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search.utils;
 
+import edu.cmu.tetrad.algcomparison.CompareTwoGraphs;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.graph.GraphUtils.TwoCycleErrors;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.CombinationGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -521,19 +521,20 @@ public final class GraphSearchUtils {
 
                 if (!e.equals(e2)) {
                     edgeMismatch = "For example, the original PAG has edge " + e
-                            + " whereas the reconstituted PAG has edge " + e2;
+                            + " whereas the reconstituted graph has edge " + e2;
                 }
             }
 
             String reason;
 
             if (legalMag.isLegalMag()) {
-                reason = "This is a Mag but not a PAG; cannot recover the original graph by finding " +
-                        "the PAG of an implied MAG";
+                reason = "The MAG implied by this graph was a legal MAG, but still one cannot recover the original graph " +
+                        "by finding the PAG of an implied MAG, so this is between a MAG and PAG";
 
             } else {
-                reason = "Could be between a MAG and a PAG; cannot recover the original graph by finding " +
-                        "the PAG of an implied MAG";
+                reason = "The MAG implied by this graph was not legal MAG, but in any case one cannot recover " +
+                        "the original graph by finding the PAG of an implied MAG, so this is could be between " +
+                        "a MAG and PAG";
             }
 
             if (!edgeMismatch.equals("")) {
@@ -594,7 +595,8 @@ public final class GraphSearchUtils {
 
                 if (!(Edges.isDirectedEdge(e) || Edges.isBidirectedEdge(e) || Edges.isUndirectedEdge(e))) {
                     return new LegalMagRet(false,
-                            "Edge " + e + " should be directed, bidirected, or undirected.");
+                            "Edge " + e + " should be dir" +
+                                    "ected, bidirected, or undirected.");
                 }
             }
         }
@@ -613,13 +615,13 @@ public final class GraphSearchUtils {
                 if (mag.paths().existsDirectedPathFromTo(x, y)) {
                     List<Node> path = mag.paths().directedPathsFromTo(x, y, 100).get(0);
                     return new LegalMagRet(false,
-                            "Bidirected edge semantics violated: there is a directed path for " + e + " from " + x + " to " + y
+                            "Bidirected edge semantics is violated: there is a directed path for " + e + " from " + x + " to " + y
                                     + ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
                                     + "An example path is " + GraphUtils.pathString(mag, path));
                 } else if (mag.paths().existsDirectedPathFromTo(y, x)) {
                     List<Node> path = mag.paths().directedPathsFromTo(y, x, 100).get(0);
                     return new LegalMagRet(false,
-                            "Bidirected edge semantics violated: There is an a directed path for " + e + " from " + y + " to " + x +
+                            "Bidirected edge semantics is violated: There is an a directed path for " + e + " from " + y + " to " + x +
                                     ". This is \"almost cyclic\"; for <-> edges there should not be a path from either endpoint to the other. "
                                     + "An example path is " + GraphUtils.pathString(mag, path));
                 }
@@ -1115,38 +1117,28 @@ public final class GraphSearchUtils {
         return error;
     }
 
+    /**
+     * Just counts arrowhead errors--for cyclic edges counts an arrowhead at each node.
+     */
     public static GraphUtils.GraphComparison getGraphComparison(Graph trueGraph, Graph targetGraph) {
         targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
 
         int adjFn = GraphUtils.countAdjErrors(trueGraph, targetGraph);
         int adjFp = GraphUtils.countAdjErrors(targetGraph, trueGraph);
-        int adjCorrect = trueGraph.getNumEdges() - adjFn;
 
-        int arrowptFn = GraphUtils.countArrowptErrors(trueGraph, targetGraph);
-        int arrowptFp = GraphUtils.countArrowptErrors(targetGraph, trueGraph);
-        int arrowptCorrect = GraphUtils.getNumCorrectArrowpts(trueGraph, targetGraph);
-
-        double adjPrec = (double) adjCorrect / (adjCorrect + adjFp);
-        double adjRec = (double) adjCorrect / (adjCorrect + adjFn);
-        double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
-        double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
-
-        final int twoCycleCorrect = 0;
-        final int twoCycleFn = 0;
-        final int twoCycleFp = 0;
+        Graph undirectedGraph = GraphUtils.undirectedGraph(targetGraph);
+        int adjCorrect = undirectedGraph.getNumEdges() - adjFp;
 
         List<Edge> edgesAdded = new ArrayList<>();
         List<Edge> edgesRemoved = new ArrayList<>();
-        List<Edge> edgesReorientedFrom = new ArrayList<>();
-        List<Edge> edgesReorientedTo = new ArrayList<>();
-        List<Edge> correctAdjacency = new ArrayList<>();
 
         for (Edge edge : trueGraph.getEdges()) {
             Node n1 = edge.getNode1();
             Node n2 = edge.getNode2();
             if (!targetGraph.isAdjacentTo(n1, n2)) {
                 Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
-                edgesRemoved.add(trueGraphEdge);
+                Edge graphEdge = targetGraph.getEdge(n1, n2);
+                edgesRemoved.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
         }
 
@@ -1154,89 +1146,8 @@ public final class GraphSearchUtils {
             Node n1 = edge.getNode1();
             Node n2 = edge.getNode2();
             if (!trueGraph.isAdjacentTo(n1, n2)) {
+                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
                 Edge graphEdge = targetGraph.getEdge(n1, n2);
-                edgesAdded.add(graphEdge);
-            }
-        }
-
-        for (Edge edge : trueGraph.getEdges()) {
-            if (targetGraph.containsEdge(edge)) {
-                continue;
-            }
-
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
-
-            for (Edge _edge : targetGraph.getEdges(node1, node2)) {
-                Endpoint e1a = edge.getProximalEndpoint(node1);
-                Endpoint e1b = edge.getProximalEndpoint(node2);
-                Endpoint e2a = _edge.getProximalEndpoint(node1);
-                Endpoint e2b = _edge.getProximalEndpoint(node2);
-
-                if (!((e1a != Endpoint.CIRCLE && e2a != Endpoint.CIRCLE && e1a != e2a)
-                        || (e1b != Endpoint.CIRCLE && e2b != Endpoint.CIRCLE && e1b != e2b))) {
-                    continue;
-                }
-
-                edgesReorientedFrom.add(edge);
-                edgesReorientedTo.add(_edge);
-            }
-        }
-
-        for (Edge edge : trueGraph.getEdges()) {
-            if (targetGraph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                correctAdjacency.add(edge);
-            }
-        }
-
-        int shd = structuralHammingDistance(trueGraph, targetGraph);
-
-        int[][] counts = graphComparison(trueGraph, targetGraph, null);
-
-        return new GraphUtils.GraphComparison(
-                adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
-                adjPrec, adjRec, arrowptPrec, arrowptRec, shd,
-                twoCycleCorrect, twoCycleFn, twoCycleFp,
-                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo,
-                correctAdjacency,
-                counts);
-    }
-
-    /**
-     * Just counts arrowhead errors--for cyclic edges counts an arrowhead at each node.
-     */
-    public static GraphUtils.GraphComparison getGraphComparison2(Graph graph, Graph trueGraph) {
-        graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
-        TwoCycleErrors twoCycleErrors = GraphUtils.getTwoCycleErrors(trueGraph, graph);
-
-        int adjFn = GraphUtils.countAdjErrors(trueGraph, graph);
-        int adjFp = GraphUtils.countAdjErrors(graph, trueGraph);
-
-        Graph undirectedGraph = GraphUtils.undirectedGraph(graph);
-        int adjCorrect = undirectedGraph.getNumEdges() - adjFp;
-
-        List<Edge> edgesAdded = new ArrayList<>();
-        List<Edge> edgesRemoved = new ArrayList<>();
-        List<Edge> edgesReorientedFrom = new ArrayList<>();
-        List<Edge> edgesReorientedTo = new ArrayList<>();
-        List<Edge> correctAdjacency = new ArrayList<>();
-
-        for (Edge edge : trueGraph.getEdges()) {
-            Node n1 = edge.getNode1();
-            Node n2 = edge.getNode2();
-            if (!graph.isAdjacentTo(n1, n2)) {
-                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
-                Edge graphEdge = graph.getEdge(n1, n2);
-                edgesRemoved.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
-            }
-        }
-
-        for (Edge edge : graph.getEdges()) {
-            Node n1 = edge.getNode1();
-            Node n2 = edge.getNode2();
-            if (!trueGraph.isAdjacentTo(n1, n2)) {
-                Edge trueGraphEdge = trueGraph.getEdge(n1, n2);
-                Edge graphEdge = graph.getEdge(n1, n2);
                 edgesAdded.add((trueGraphEdge == null) ? graphEdge : trueGraphEdge);
             }
         }
@@ -1257,7 +1168,7 @@ public final class GraphSearchUtils {
                 Node y = nodes.get(j);
 
                 Edge edge = trueGraph.getEdge(x, y);
-                Edge _edge = graph.getEdge(x, y);
+                Edge _edge = targetGraph.getEdge(x, y);
 
                 boolean existsArrow = edge != null && edge.getProximalEndpoint(y) == Endpoint.ARROW;
                 boolean _existsArrow = _edge != null && _edge.getProximalEndpoint(y) == Endpoint.ARROW;
@@ -1285,11 +1196,11 @@ public final class GraphSearchUtils {
                 Node x = nodes.get(i);
                 Node y = nodes.get(j);
 
-                Node _x = graph.getNode(x.getName());
-                Node _y = graph.getNode(y.getName());
+                Node _x = targetGraph.getNode(x.getName());
+                Node _y = targetGraph.getNode(y.getName());
 
                 Edge edge = trueGraph.getEdge(x, y);
-                Edge _edge = graph.getEdge(_x, _y);
+                Edge _edge = targetGraph.getEdge(_x, _y);
 
                 boolean existsArrow = edge != null && edge.getDistalEndpoint(y) == Endpoint.ARROW;
                 boolean _existsArrow = _edge != null && _edge.getDistalEndpoint(_y) == Endpoint.ARROW;
@@ -1309,14 +1220,14 @@ public final class GraphSearchUtils {
         }
 
         for (Edge edge : trueGraph.getEdges()) {
-            if (graph.containsEdge(edge)) {
+            if (targetGraph.containsEdge(edge)) {
                 continue;
             }
 
             Node node1 = edge.getNode1();
             Node node2 = edge.getNode2();
 
-            for (Edge _edge : graph.getEdges(node1, node2)) {
+            for (Edge _edge : targetGraph.getEdges(node1, node2)) {
                 Endpoint e1a = edge.getProximalEndpoint(node1);
                 Endpoint e1b = edge.getProximalEndpoint(node2);
                 Endpoint e2a = _edge.getProximalEndpoint(node1);
@@ -1326,15 +1237,6 @@ public final class GraphSearchUtils {
                         || (e1b != Endpoint.CIRCLE && e2b != Endpoint.CIRCLE && e1b != e2b))) {
                     continue;
                 }
-
-                edgesReorientedFrom.add(edge);
-                edgesReorientedTo.add(_edge);
-            }
-        }
-
-        for (Edge edge : trueGraph.getEdges()) {
-            if (graph.isAdjacentTo(edge.getNode1(), edge.getNode2())) {
-                correctAdjacency.add(edge);
             }
         }
 
@@ -1343,205 +1245,37 @@ public final class GraphSearchUtils {
         double arrowptPrec = (double) arrowptCorrect / (arrowptCorrect + arrowptFp);
         double arrowptRec = (double) arrowptCorrect / (arrowptCorrect + arrowptFn);
 
-        int shd = structuralHammingDistance(trueGraph, graph);
+        int shd = structuralHammingDistance(trueGraph, targetGraph);
 
-        graph = GraphUtils.replaceNodes(graph, trueGraph.getNodes());
+        targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
 
-        int[][] counts = GraphUtils.edgeMisclassificationCounts(trueGraph, graph, false);
+        int[][] counts = GraphUtils.edgeMisclassificationCounts(trueGraph, targetGraph, false);
 
         return new GraphUtils.GraphComparison(
                 adjFn, adjFp, adjCorrect, arrowptFn, arrowptFp, arrowptCorrect,
-                adjPrec, adjRec, arrowptPrec, arrowptRec,
-                shd,
-                twoCycleErrors.twoCycCor, twoCycleErrors.twoCycFn, twoCycleErrors.twoCycFp,
-                edgesAdded, edgesRemoved, edgesReorientedFrom, edgesReorientedTo,
-                correctAdjacency,
-                counts);
+                adjPrec, adjRec, arrowptPrec, arrowptRec, shd, edgesAdded, edgesRemoved, counts);
     }
 
-    public static String graphComparisonString(String trueGraphName, Graph trueGraph,
-                                               String targetGraphName, Graph targetGraph, boolean printStars) {
+    public static String getEdgewiseComparisonString(String trueGraphName, Graph trueGraph,
+                                                     String targetGraphName, Graph targetGraph) {
+        targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
         trueGraph = new EdgeListGraph(trueGraph);
         targetGraph = new EdgeListGraph(targetGraph);
 
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder0 = new StringBuilder();
         targetGraph = GraphUtils.replaceNodes(targetGraph, trueGraph.getNodes());
 
         String trueGraphAndTarget = "True graph from " + trueGraphName + "\nTarget graph from " + targetGraphName;
-        builder.append(trueGraphAndTarget).append("\n");
+        builder0.append(trueGraphAndTarget).append("\n");
 
-        GraphUtils.GraphComparison comparison = getGraphComparison(trueGraph, targetGraph);
+        String builder = CompareTwoGraphs.getEdgewiseComparisonString(trueGraph, targetGraph);
 
-        List<Edge> edgesAdded = comparison.getEdgesAdded();
-        List<Edge> edgesAdded2 = new ArrayList<>();
-
-        for (Edge e1 : edgesAdded) {
-            Node n1 = e1.getNode1();
-            Node n2 = e1.getNode2();
-
-            boolean twoCycle1 = trueGraph.getDirectedEdge(n1, n2) != null && trueGraph.getDirectedEdge(n2, n1) != null;
-            boolean twoCycle2 = targetGraph.getDirectedEdge(n1, n2) != null && targetGraph.getDirectedEdge(n2, n1) != null;
-
-            if (!(twoCycle1 || twoCycle2)) {
-                edgesAdded2.add(e1);
-            }
-        }
-
-        sort(edgesAdded2);
-
-        builder.append("\nAdjacencies added (not involving 2-cycles and not reoriented):");
-
-        if (edgesAdded2.isEmpty()) {
-            builder.append("\n  --NONE--");
-        } else {
-            for (int i = 0; i < edgesAdded2.size(); i++) {
-                Edge _edge = edgesAdded2.get(i);
-                Edge edge1 = targetGraph.getEdge(_edge.getNode1(), _edge.getNode2());
-
-                Node node1 = targetGraph.getNode(edge1.getNode1().getName());
-                Node node2 = targetGraph.getNode(edge1.getNode2().getName());
-
-                builder.append("\n").append(i + 1).append(". ").append(edge1);
-
-                if (printStars) {
-                    boolean directedInGraph2 = false;
-
-                    if (Edges.isDirectedEdge(edge1) && targetGraph.paths().existsSemidirectedPath(node1, node2)) {
-                        directedInGraph2 = true;
-                    } else if ((Edges.isUndirectedEdge(edge1) || Edges.isBidirectedEdge(edge1))
-                            && (targetGraph.paths().existsSemidirectedPath(node1, node2)
-                            || targetGraph.paths().existsSemidirectedPath(node2, node1))) {
-                        directedInGraph2 = true;
-                    }
-
-                    if (directedInGraph2) {
-                        builder.append(" *");
-                    }
-                }
-            }
-        }
-
-        builder.append("\n\nAdjacencies removed:");
-        List<Edge> edgesRemoved = comparison.getEdgesRemoved();
-        sort(edgesRemoved);
-
-        if (edgesRemoved.isEmpty()) {
-            builder.append("\n  --NONE--");
-        } else {
-            for (int i = 0; i < edgesRemoved.size(); i++) {
-                Edge edge = edgesRemoved.get(i);
-
-                Node node1 = trueGraph.getNode(edge.getNode1().getName());
-                Node node2 = trueGraph.getNode(edge.getNode2().getName());
-
-                builder.append("\n").append(i + 1).append(". ").append(edge);
-
-                if (printStars) {
-                    boolean directedInGraph1 = false;
-
-                    if (Edges.isDirectedEdge(edge) && trueGraph.paths().existsSemidirectedPath(node1, node2)) {
-                        directedInGraph1 = true;
-                    } else if ((Edges.isUndirectedEdge(edge) || Edges.isBidirectedEdge(edge))
-                            && (trueGraph.paths().existsSemidirectedPath(node1, node2)
-                            || trueGraph.paths().existsSemidirectedPath(node2, node1))) {
-                        directedInGraph1 = true;
-                    }
-
-                    if (directedInGraph1) {
-                        builder.append(" *");
-                    }
-                }
-            }
-        }
-
-        List<Edge> edges1 = new ArrayList<>(trueGraph.getEdges());
-
-        List<Edge> twoCycles = new ArrayList<>();
-        List<Edge> allSingleEdges = new ArrayList<>();
-
-        for (Edge edge : edges1) {
-            if (edge.isDirected() && targetGraph.containsEdge(edge) && targetGraph.containsEdge(edge.reverse())) {
-                twoCycles.add(edge);
-            } else if (trueGraph.containsEdge(edge)) {
-                allSingleEdges.add(edge);
-            }
-        }
-
-        builder.append("\n\n"
-                + "Two-cycles in true correctly adjacent in estimated");
-
-        sort(allSingleEdges);
-
-        if (twoCycles.isEmpty()) {
-            builder.append("\n  --NONE--");
-        } else {
-            for (int i = 0; i < twoCycles.size(); i++) {
-                Edge adj = edges1.get(i);
-                builder.append("\n").append(i + 1).append(". ").append(adj).append(" ").append(adj.reverse())
-                        .append(" ====> ").append(trueGraph.getEdge(twoCycles.get(i).getNode1(), twoCycles.get(i).getNode2()));
-            }
-        }
-
-        List<Edge> incorrect = new ArrayList<>();
-
-        for (Edge adj : allSingleEdges) {
-            Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
-            Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
-
-            if (!edge1.equals(edge2)) {
-                incorrect.add(adj);
-            }
-        }
-
-        {
-            builder.append("\n\n" + "Edges incorrectly oriented");
-
-            if (incorrect.isEmpty()) {
-                builder.append("\n  --NONE--");
-            } else {
-                int j1 = 0;
-                sort(incorrect);
-
-                for (Edge adj : incorrect) {
-                    Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
-                    Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
-                    if (edge1 == null || edge2 == null) continue;
-                    builder.append("\n").append(++j1).append(". ").append(edge1).append(" ====> ").append(edge2);
-                }
-            }
-        }
-
-        {
-            builder.append("\n\n" + "Edges correctly oriented");
-
-            List<Edge> correct = new ArrayList<>();
-
-            for (Edge adj : allSingleEdges) {
-                Edge edge1 = trueGraph.getEdge(adj.getNode1(), adj.getNode2());
-                Edge edge2 = targetGraph.getEdge(adj.getNode1(), adj.getNode2());
-                if (edge1.equals(edge2)) {
-                    correct.add(edge1);
-                }
-            }
-
-            if (correct.isEmpty()) {
-                builder.append("\n  --NONE--");
-            } else {
-                sort(correct);
-
-                int j2 = 0;
-
-                for (Edge edge : correct) {
-                    builder.append("\n").append(++j2).append(". ").append(edge);
-                }
-            }
-        }
-
-        return builder.toString();
+        builder0.append(builder);
+        return builder0.toString();
     }
 
     public static int[][] graphComparison(Graph trueCpdag, Graph estCpdag, PrintStream out) {
-        GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison2(estCpdag, trueCpdag);
+        GraphUtils.GraphComparison comparison = GraphSearchUtils.getGraphComparison(estCpdag, trueCpdag);
 
         if (out != null) {
             out.println("Adjacencies:");

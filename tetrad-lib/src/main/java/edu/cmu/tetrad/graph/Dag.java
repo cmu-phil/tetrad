@@ -34,15 +34,10 @@ import java.util.*;
  */
 public final class Dag implements Graph {
     static final long serialVersionUID = 23L;
-
-    /**
-     * The wrapped graph.
-     */
     private final Graph graph;
-
-    private Set<Triple> underLineTriples = new HashSet<>();
-    private Set<Triple> dottedUnderLineTriples = new HashSet<>();
-    private Set<Triple> ambiguousTriples = new HashSet<>();
+    private final Set<Triple> underLineTriples = new HashSet<>();
+    private final Set<Triple> dottedUnderLineTriples = new HashSet<>();
+    private final Set<Triple> ambiguousTriples = new HashSet<>();
 
     //===============================CONSTRUCTORS=======================//
 

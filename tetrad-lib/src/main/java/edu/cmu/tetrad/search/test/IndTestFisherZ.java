@@ -24,6 +24,7 @@ package edu.cmu.tetrad.search.test;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.MatrixUtils;
@@ -206,9 +207,10 @@ public final class IndTestFisherZ implements IndependenceTest {
         try {
             p = getPValue(x, y, z);
         } catch (SingularMatrixException e) {
-            e.printStackTrace();
-            return new IndependenceResult(new IndependenceFact(x, y, z),
-                    false, p, alpha - p);
+            throw new RuntimeException("Singularity encountered when testing " +
+                    LogUtilsSearch.independenceFact(x, y, z));
+//            return new IndependenceResult(new IndependenceFact(x, y, z),
+//                    false, p, alpha - p);
         }
 
         boolean independent = p > this.alpha;

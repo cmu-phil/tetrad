@@ -208,26 +208,16 @@ public class GraphNode implements Node {
     }
 
     public int hashCode() {
-        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
-            return super.hashCode();
-        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            return this.getName().hashCode();
-        }
-
-        throw new IllegalArgumentException();
+        return this.getName().hashCode();
     }
 
     /**
      * Two continuous variables are equal if they have the same name and the same missing value marker.
      */
     public boolean equals(Object o) {
-        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
-            return o == this;
-        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            return o instanceof GraphNode && getName().equals(((Node) o).getName());
-        }
-
-        throw new IllegalStateException();
+        if (o == null) return false;
+        if (!(o instanceof GraphNode)) return false;
+        return getName().equals(((Node) o).getName());
     }
 
     public Node like(String name) {

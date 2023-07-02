@@ -37,6 +37,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -72,7 +74,7 @@ public class TetradSerializableUtils {
     };
 
     /**
-     * The highest directory inside build/tetrad/classes that contains all of the TetradSerializable classes.
+     * The highest directory inside build/tetrad/classes that contains all the TetradSerializable classes.
      */
     private final String serializableScope;
 
@@ -511,10 +513,12 @@ public class TetradSerializableUtils {
         byte[] buf = new byte[1024];
 
         try {
-            String version = Version.currentRepositoryVersion().toString();
+            LocalDate today = LocalDate.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String date = today.format(formatter);
 
             // Create the ZIP file
-            String outFilename = "serializedclasses-" + version + ".zip";
+            String outFilename = "serializedclasses-" + date + ".zip";
             File _file = new File(getArchiveDirectory(), outFilename);
             FileOutputStream fileOut = new FileOutputStream(_file);
             ZipOutputStream out = new ZipOutputStream(fileOut);
@@ -700,7 +704,7 @@ public class TetradSerializableUtils {
      */
     private List<Class> getAssignableClasses(File path, Class<TetradSerializable> clazz) {
         if (!path.isDirectory()) {
-            throw new IllegalArgumentException("Not a directory: " + path);
+            throw new IllegalArgumentException("Not a directory: " + path.getAbsolutePath());
         }
 
         @SuppressWarnings("Convert2Diamond") List<Class> classes = new LinkedList<>();
@@ -717,9 +721,9 @@ public class TetradSerializableUtils {
                 String packagePath = file.getPath();
                 packagePath = packagePath.replace('\\', '.');
                 packagePath = packagePath.replace('/', '.');
-                packagePath = packagePath.substring(
-                        packagePath.indexOf("edu.cmu"));
-                int index = packagePath.indexOf(".class");
+                if (!packagePath.contains("edu.cmu")) continue;
+                packagePath = packagePath.substring(packagePath.indexOf("edu.cmu"));
+                int index = packagePath.indexOf(".ser");
 
                 if (index == -1) {
                     continue;

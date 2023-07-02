@@ -22,6 +22,7 @@
 package edu.cmu.tetrad.data;
 
 import cern.colt.list.DoubleArrayList;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.util.Vector;
@@ -1401,7 +1402,7 @@ public final class DataUtils {
 
                 double std1 = StatUtils.sd(x1);
                 double mu1 = StatUtils.mean(x1);
-                double[] xTransformed = DataUtils.ranks(data, x1);
+                double[] xTransformed = DataUtils.ranks(x1);
 
                 for (int i = 0; i < xTransformed.length; i++) {
                     xTransformed[i] /= n;
@@ -1458,15 +1459,16 @@ public final class DataUtils {
         }
     }
 
-    private static double[] ranks(Matrix data, double[] x) {
-        double[] ranks = new double[x.length];
+    public static double[] ranks(double[] x) {
+        int numRows = x.length;
+        double[] ranks = new double[numRows];
 
-        for (int i = 0; i < data.getNumRows(); i++) {
+        for (int i = 0; i < numRows; i++) {
             double d = x[i];
             int count = 0;
 
-            for (int k = 0; k < data.getNumRows(); k++) {
-                if (x[k] <= d) {
+            for (double v : x) {
+                if (v <= d) {
                     count++;
                 }
             }
@@ -1514,6 +1516,56 @@ public final class DataUtils {
         for (int j = 0; j < keepCols.size(); j++) newCols[j] = keepCols.get(j);
 
         return dataSet.subsetColumns(newCols);
+    }
+
+    public static List<Node> getConstantColumns(DataSet dataSet) {
+        List<Node> constantColumns = new ArrayList<>();
+        int rows = dataSet.getNumRows();
+
+        for (int j = 0; j < dataSet.getNumColumns(); j++) {
+            Object first = dataSet.getObject(0, j);
+            boolean constant = true;
+
+            for (int row = 1; row < rows; row++) {
+                Object current = dataSet.getObject(row, j);
+                if (!first.equals(current)) {
+                    constant = false;
+                    break;
+                }
+            }
+
+            if (constant) {
+                constantColumns.add(dataSet.getVariable(j));
+            }
+        }
+
+        return constantColumns;
+    }
+
+    public static List<Node> getExampleNonsingular(CovarianceMatrix covarianceMatrix, int depth) {
+        List<Node> variables = covarianceMatrix.getVariables();
+
+        SublistGenerator generator = new SublistGenerator(variables.size(), depth);
+        int[] choice;
+
+        while ((choice = generator.next()) != null) {
+            if (choice.length < 2) continue;
+            List<Node> _choice = GraphUtils.asList(choice, variables);
+
+            List<String> names = new ArrayList<>();
+
+            for (Node node : _choice) {
+                names.add(node.getName());
+            }
+
+            ICovarianceMatrix _dataSet = covarianceMatrix.getSubmatrix(names);
+
+            if (new CovarianceMatrix(_dataSet).isSingular()) {
+                return _choice;
+            }
+        }
+
+        return null;
     }
 
     /**

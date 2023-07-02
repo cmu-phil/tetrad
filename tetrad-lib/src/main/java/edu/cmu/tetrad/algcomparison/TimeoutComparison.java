@@ -493,7 +493,7 @@ public class TimeoutComparison {
                     File file2 = new File(dir1, "graph." + (j + 1) + ".txt");
                     Graph graph = simulationWrapper.getTrueGraph(j);
 
-                    GraphPersistence.saveGraph(graph, file2, false);
+                    GraphSaveLoadUtils.saveGraph(graph, file2, false);
 
                     File file = new File(dir2, "data." + (j + 1) + ".txt");
                     Writer out = new FileWriter(file);
@@ -503,12 +503,12 @@ public class TimeoutComparison {
 
                     if (isSaveCPDAGs()) {
                         File file3 = new File(dir3, "pattern." + (j + 1) + ".txt");
-                        GraphPersistence.saveGraph(GraphSearchUtils.cpdagForDag(graph), file3, false);
+                        GraphSaveLoadUtils.saveGraph(GraphSearchUtils.cpdagForDag(graph), file3, false);
                     }
 
                     if (isSavePags()) {
                         File file4 = new File(dir4, "pag." + (j + 1) + ".txt");
-                        GraphPersistence.saveGraph(dagToPag(graph), file4, false);
+                        GraphSaveLoadUtils.saveGraph(dagToPag(graph), file4, false);
                     }
                 }
 

@@ -92,8 +92,8 @@ public final class ExploreAutisticsNeurotypicals {
                 Fges search = new Fges(score);
                 search.setVerbose(false);
                 Graph graph = search.search();
-                GraphPersistence.saveGraph(graph, file, false);
-                graphs.add(GraphUtils.undirectedGraph(GraphPersistence.loadGraphTxt(file)));
+                GraphSaveLoadUtils.saveGraph(graph, file, false);
+                graphs.add(GraphUtils.undirectedGraph(GraphSaveLoadUtils.loadGraphTxt(file)));
             }
 
             allGraphs.add(graphs);

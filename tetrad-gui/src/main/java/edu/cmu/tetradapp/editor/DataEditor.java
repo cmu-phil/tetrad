@@ -128,7 +128,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
-                if (SwingUtilities.isRightMouseButton(e)) {
+                if (SwingUtilities.isRightMouseButton(e) || e.isControlDown()) {
                     Point point = e.getPoint();
                     int index = tabbedPane().indexAtLocation(point.x, point.y);
 

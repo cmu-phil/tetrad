@@ -195,14 +195,6 @@ public class GraphScore implements Score {
     }
 
     /**
-     * @throws UnsupportedOperationException Since this method doesn't make sense here.
-     */
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        throw new UnsupportedOperationException("The 'determines' method is not implemented for this score.");
-    }
-
-    /**
      * @throws UnsupportedOperationException Since this "score" does not use data.
      */
     public DataModel getData() {

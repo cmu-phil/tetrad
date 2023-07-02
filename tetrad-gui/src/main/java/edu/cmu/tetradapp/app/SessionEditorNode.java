@@ -111,7 +111,7 @@ public final class SessionEditorNode extends DisplayNode {
             this.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mousePressed(MouseEvent e) {
-                    if (SwingUtilities.isRightMouseButton(e)) {
+                    if (SwingUtilities.isRightMouseButton(e) || e.isControlDown()) {
                         ToolTipManager toolTipManager
                                 = ToolTipManager.sharedInstance();
                         toolTipManager.setInitialDelay(750);
@@ -254,7 +254,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
         ;
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     private void launchEditorVisit() {
@@ -362,7 +362,7 @@ public final class SessionEditorNode extends DisplayNode {
         sessionEditorNode.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (SwingUtilities.isRightMouseButton(e)) {
+                if (SwingUtilities.isRightMouseButton(e) || e.isControlDown()) {
                     ToolTipManager toolTipManager
                             = ToolTipManager.sharedInstance();
                     toolTipManager.setInitialDelay(750);
@@ -819,7 +819,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
         ;
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     private void createDescendantModels() {
@@ -840,7 +840,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
         ;
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     /**

@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -593,8 +593,7 @@ public final class PcCommon implements IGraphSearch {
 
                 Set<Node> sepset = set.get(a, c);
 
-                List<Node> s2 = new ArrayList<>(sepset);
-                if (!s2.contains(b)) s2.add(b);
+                if (sepset == null) continue;
 
                 if (!sepset.contains(b)) {
                     boolean result1 = true;

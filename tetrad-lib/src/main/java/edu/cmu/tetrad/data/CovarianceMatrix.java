@@ -23,6 +23,7 @@ package edu.cmu.tetrad.data;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -501,5 +502,15 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         if (this.selectedVariables == null) {
             this.selectedVariables = new HashSet<>();
         }
+    }
+
+    public boolean isSingular() {
+        try {
+            _covariancesMatrix.inverse();
+        } catch (SingularMatrixException e) {
+            return true;
+        }
+
+        return false;
     }
 }

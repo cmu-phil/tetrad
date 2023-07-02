@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  *
  * @author josephramsey
  */
-public class GraphPersistence {
+public class GraphSaveLoadUtils {
 
     public static Graph loadGraph(File file) {
 
@@ -140,7 +140,7 @@ public class GraphPersistence {
     }
 
     public static String graphRMatrixTxt(Graph graph) throws IllegalArgumentException {
-        int[][] m = GraphPersistence.incidenceMatrix(graph);
+        int[][] m = GraphSaveLoadUtils.incidenceMatrix(graph);
 
         TextTable table = new TextTable(m[0].length + 1, m.length + 1);
 
@@ -267,7 +267,7 @@ public class GraphPersistence {
     }
 
     public static String loadGraphRMatrix(Graph graph) throws IllegalArgumentException {
-        int[][] m = GraphPersistence.incidenceMatrix(graph);
+        int[][] m = GraphSaveLoadUtils.incidenceMatrix(graph);
 
         TextTable table = new TextTable(m[0].length + 1, m.length + 1);
 

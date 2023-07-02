@@ -220,7 +220,7 @@ public final class LoadDataDialog extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
-                if (SwingUtilities.isRightMouseButton(e)) {
+                if (SwingUtilities.isRightMouseButton(e) || e.isControlDown()) {
                     int index = LoadDataDialog.this.fileList.getSelectedIndex();
 
                     JPopupMenu menu = new JPopupMenu();

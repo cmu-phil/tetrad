@@ -120,8 +120,7 @@ public class ChiSquareTest {
         int numRows = this.getCellTable().getNumValues(0);
         int numCols = this.getCellTable().getNumValues(1);
 
-        CombinationIterator combinationIterator =
-                new CombinationIterator(condDims);
+        CombinationIterator combinationIterator = new CombinationIterator(condDims);
 
         // Make a chi square table for each condition combination, strike zero rows and columns and calculate
         // chi square and degrees of freedom for the remaining rows and columns in the table. See Friedman.

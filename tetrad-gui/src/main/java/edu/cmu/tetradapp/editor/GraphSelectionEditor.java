@@ -149,7 +149,7 @@ public class GraphSelectionEditor extends JPanel implements GraphEditable, Tripl
                 }
             };
 
-            SwingUtilities.invokeLater(MyWatchedProcess::new);
+            new MyWatchedProcess();
         });
 
         workbenchScrollsPanel.validate();

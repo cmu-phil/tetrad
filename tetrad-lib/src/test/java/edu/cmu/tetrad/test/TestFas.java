@@ -29,7 +29,7 @@ import edu.cmu.tetrad.graph.RandomGraph;
 import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import org.junit.Test;
 
 import java.util.ArrayList;

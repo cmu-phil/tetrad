@@ -250,7 +250,7 @@ public class JunctionTreeAlgorithmTest {
 
     private Graph readInGraph(Path file) throws IOException {
         try (Reader reader = Files.newBufferedReader(file)) {
-            return GraphPersistence.readerToGraphTxt(reader);
+            return GraphSaveLoadUtils.readerToGraphTxt(reader);
         }
     }
 
