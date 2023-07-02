@@ -114,7 +114,7 @@ final class SaveSessionAsAction extends AbstractAction {
             }
         }
 
-        SwingUtilities.invokeLater(MyWatchedProceess::new);
+        new MyWatchedProceess();
 
 //        try (ObjectOutputStream objOut = new ObjectOutputStream(Files.newOutputStream(file.toPath()))) {
 //            objOut.writeObject(metadata);

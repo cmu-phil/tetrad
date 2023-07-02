@@ -236,7 +236,7 @@ public class MarkovCheckEditor extends JPanel {
                 }
             }
 
-            SwingUtilities.invokeLater(MyWatchedProcess2::new);
+            new MyWatchedProcess2();
         });
 
         box.add(box1);

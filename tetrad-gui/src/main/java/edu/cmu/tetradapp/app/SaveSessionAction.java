@@ -108,7 +108,7 @@ final class SaveSessionAction extends AbstractAction {
             }
         }
 
-        SwingUtilities.invokeLater(MyWatchedProceess::new);
+        new MyWatchedProceess();
     }
 
     public boolean isSaved() {
