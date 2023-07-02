@@ -169,9 +169,8 @@ final class LoadSessionAction extends AbstractAction {
                 }
             }
         }
-        ;
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
 

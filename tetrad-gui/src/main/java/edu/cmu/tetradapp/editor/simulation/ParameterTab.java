@@ -328,7 +328,7 @@ public class ParameterTab extends JPanel {
             }
         }
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     private Box createLabeledComponent(String text, Component comp) {

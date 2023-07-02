@@ -155,7 +155,7 @@ public class BayesUpdaterClassifierEditor extends JPanel {
                 }
                 ;
 
-                SwingUtilities.invokeLater(MyWatchedProcess::new);
+                new MyWatchedProcess();
             }
         });
 

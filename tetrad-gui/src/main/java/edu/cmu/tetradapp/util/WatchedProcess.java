@@ -23,7 +23,7 @@ import java.awt.*;
  *     }
  * };
  *
- * SwingUtilities.invokeLater(MyWatchedProcess::new);
+ * new MyWatchedProcess();
  * </pre>
  *
  * @author josephramsey

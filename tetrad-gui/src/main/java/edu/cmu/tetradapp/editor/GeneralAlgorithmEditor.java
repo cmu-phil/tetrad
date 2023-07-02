@@ -198,7 +198,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
             }
         }
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     @Override

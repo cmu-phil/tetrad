@@ -316,7 +316,7 @@ public class BayesUpdaterEditorObs extends JPanel implements DelegatesEditing {
             }
         }
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     private void resetSingleResultPanelSub() {

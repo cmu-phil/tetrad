@@ -95,7 +95,7 @@ class AllPathsAction extends AbstractAction implements ClipboardOwner {
         }
         ;
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     private void addTreks(Node node1, Node node2, Graph graph, JTextArea textArea) {

@@ -254,7 +254,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
         ;
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     private void launchEditorVisit() {
@@ -819,7 +819,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
         ;
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     private void createDescendantModels() {
@@ -840,7 +840,7 @@ public final class SessionEditorNode extends DisplayNode {
         }
         ;
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     /**

@@ -134,7 +134,7 @@ public class MarkovCheckEditor extends JPanel {
                 }
             }
 
-            SwingUtilities.invokeLater(MyWatchedProcess::new);
+            new MyWatchedProcess();
         });
 
         this.model = model;
@@ -160,7 +160,7 @@ public class MarkovCheckEditor extends JPanel {
                 }
             }
 
-            SwingUtilities.invokeLater(MyWatchedProcess::new);
+            new MyWatchedProcess();
         });
 
         setTest();
@@ -281,7 +281,7 @@ public class MarkovCheckEditor extends JPanel {
             }
         }
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
 
         add(box);
     }
