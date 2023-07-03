@@ -93,8 +93,8 @@ public class ScatterPlotView extends JPanel {
 
     public static class ScatterPlotController extends JPanel {
         private final ScatterPlot scatterPlot;
-        private final JList<Node> xSelector;
-        private final JList<Node> ySelector;
+        private final JList<Node> leftSelector;
+        private final JList<Node> topSelector;
         private final JComboBox newConditioningVariableSelector;
         private final JButton newConditioningVariableButton;
         private final JButton removeConditioningVariableButton;
@@ -108,70 +108,38 @@ public class ScatterPlotView extends JPanel {
          * Constructs the editor panel given the initial ScatterPlot and the dataset.
          */
         public ScatterPlotController(ScatterPlotView ScatterPlotView, DataSet dataSet) {
-
             List<Node> vars = dataSet.getVariables();
+            Collections.sort(vars);
             Node[] _vars = new Node[vars.size()];
             for (int i = 0; i < vars.size(); i++) _vars[i] = vars.get(i);
 
-
             this.setLayout(new BorderLayout());
             this.scatterPlot = ScatterPlotView.getScatterPlot();
-            Node xNode = getXNode();
-            Node yNode = getYNode();
-            this.xSelector = new JList<>(_vars);
-            this.ySelector = new JList<>(_vars);
+            this.leftSelector = new JList<>(_vars);
+            this.topSelector = new JList<>(_vars);
 
-            xSelector.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-            ySelector.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-//            ListCellRenderer renderer = new VariableBoxRenderer();
-//            this.xSelector.setRenderer(renderer);
-//            this.ySelector.setRenderer(renderer);
+            leftSelector.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+            topSelector.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
             this.includeLineCheckbox = new JCheckBox("Show Regression Line");
             List<Node> variables = this.scatterPlot.getDataSet().getVariables();
 
             Collections.sort(variables);
 
-//            for (Node node : variables) {
-//                this.xSelector.add(node);
-//
-////                if (node == xNode) {
-////                    this.xSelector.add(node);
-////                }
-//            }
-//
-//            for (Node node : variables) {
-//                this.ySelector.add(node);
-//
-////                if (node == yNode) {
-////                    this.ySelector.setSelectedItem(node);
-////                }
-//            }
-
-            this.xSelector.addListSelectionListener(new ListSelectionListener() {
+            this.leftSelector.addListSelectionListener(new ListSelectionListener() {
                 @Override
                 public void valueChanged(ListSelectionEvent e) {
-
+                    revalidate();
+                    repaint();
                 }
-
-//                public void actionPerformed(ActionEvent e) {
-//                    String node = ((Node) ScatterPlotController.this.xSelector.getSelectedItem()).getName();
-//                    ScatterPlotView.setX(node);
-//                    refreshChart(ScatterPlotView);
-//                }
             });
 
-            this.ySelector.addListSelectionListener(new ListSelectionListener() {
+            this.topSelector.addListSelectionListener(new ListSelectionListener() {
                 @Override
                 public void valueChanged(ListSelectionEvent e) {
-
+                    revalidate();
+                    repaint();
                 }
-
-//                public void actionPerformed(ActionEvent e) {
-//                    String node = ((Node) ySelector.getSelectedItem()).getName();
-//                    ScatterPlotView.setY(node);
-//                    refreshChart(ScatterPlotView);
-//                }
             });
 
             this.includeLineCheckbox.addActionListener(e -> refreshChart(ScatterPlotView));
@@ -252,7 +220,7 @@ public class ScatterPlotView extends JPanel {
             });
 
             // build the gui.
-            ScatterPlotController.restrictSize(new JScrollPane(this.xSelector));
+            ScatterPlotController.restrictSize(new JScrollPane(this.leftSelector));
             ScatterPlotController.restrictSize(this.newConditioningVariableSelector);
             ScatterPlotController.restrictSize(this.newConditioningVariableButton);
             ScatterPlotController.restrictSize(this.removeConditioningVariableButton);
@@ -294,8 +262,8 @@ public class ScatterPlotView extends JPanel {
         }
 
         private void buildEditArea() {
-            ScatterPlotController.restrictSize(this.xSelector);
-            ScatterPlotController.restrictSize(this.ySelector);
+            ScatterPlotController.restrictSize(this.leftSelector);
+            ScatterPlotController.restrictSize(this.topSelector);
 
             Box main = Box.createVerticalBox();
             Box b1 = Box.createHorizontalBox();
@@ -304,15 +272,15 @@ public class ScatterPlotView extends JPanel {
             main.add(b1);
 
             Box b1a = Box.createHorizontalBox();
-            b1a.add(new JLabel("X-axis = "));
+            b1a.add(new JLabel("Left: "));
             b1a.add(Box.createHorizontalGlue());
-            b1a.add(new JScrollPane(this.xSelector));
+            b1a.add(new JScrollPane(this.leftSelector));
             main.add(b1a);
 
             Box b1b = Box.createHorizontalBox();
-            b1b.add(new JLabel("Y-axis = "));
+            b1b.add(new JLabel("Top: = "));
             b1b.add(Box.createHorizontalGlue());
-            b1b.add(new JScrollPane(this.ySelector));
+            b1b.add(new JScrollPane(this.topSelector));
             main.add(b1b);
 
             Box b1c = Box.createHorizontalBox();
