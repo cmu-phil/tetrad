@@ -23,8 +23,10 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.IndependenceFact;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndependenceResult;
@@ -814,8 +816,7 @@ public class MarkovCheckEditor extends JPanel {
         Histogram histogram = new Histogram(dataSet);
         histogram.setNumBins(10);
         histogram.setTarget("P-Value or Bump");
-        HistogramPanel view = new HistogramPanel(histogram, false,
-                new GraphNode("P-value or Bump"));
+        HistogramPanel view = new HistogramPanel(histogram, false);
 
         Box box = Box.createHorizontalBox();
         box.add(view);

@@ -29,9 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.math3.util.FastMath.ceil;
-import static org.apache.commons.math3.util.FastMath.log;
-
 /**
  * Model for a conditional histogram for mixed continuous and discrete variables.
  *

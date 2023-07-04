@@ -45,24 +45,12 @@ import java.util.*;
  * @author josephramsey
  */
 public class HistogramPanel extends JPanel {
-    private Node node;
     private boolean showControlPanel = true;
     public static final String[] tiles = {"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
 
-    public HistogramPanel(Histogram histogram, Node node) {
-        this(histogram, true, node);
-    }
-
-    /**
-     * Constructs the view with a given histogram and data set.
-     */
-    public HistogramPanel(Histogram histogram, boolean showControlPanel, Node node) {
-        this.node = node;
+    public HistogramPanel(Histogram histogram) {
         this.histogram = histogram;
-
-        this.showControlPanel = showControlPanel;
-
         setLayout(new BorderLayout());
     }
 
@@ -1076,7 +1064,7 @@ class ContinuousInquiryPanel extends JPanel {
 
     /**
      * Represents a chunk of data in a sorted array of data.  If low == high then
-     * then the chunk only contains one member.
+     * the chunk only contains one member.
      */
     private static class Chunk {
 
@@ -1096,10 +1084,10 @@ class ContinuousInquiryPanel extends JPanel {
 }
 
 class DiscreteInquiryPanel extends JPanel {
-    private final JComboBox valuesDropdown;
+    private final JComboBox<String> valuesDropdown;
 
     public DiscreteInquiryPanel(DiscreteVariable var, edu.cmu.tetradapp.editor.HistogramController.DiscreteConditioningPanel panel) {
-        this.valuesDropdown = new JComboBox();
+        this.valuesDropdown = new JComboBox<>();
 
         for (String category : var.getCategories()) {
             getValuesDropdown().addItem(category);
