@@ -36,7 +36,6 @@ import java.awt.geom.Point2D;
 import java.util.*;
 
 import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * This is the scatterplot model class holding the necessary information to
@@ -56,16 +55,11 @@ public class ScatterPlot {
     /**
      * Constructor.
      *
-     * @param includeLine whether or not to include the regression line in the
-     *                    plot.
-     * @param x           y-axis variable name.
-     * @param y           x-axis variable name.
+     * @param includeLine whether to include the regression line in the plot.
+     * @param x y-axis variable name.
+     * @param y x-axis variable name.
      */
-    public ScatterPlot(
-            DataSet dataSet,
-            boolean includeLine,
-            String x,
-            String y) {
+    public ScatterPlot(DataSet dataSet, boolean includeLine, String x, String y) {
         this.dataSet = dataSet;
         this.x = x;
         this.y = y;
@@ -363,7 +357,6 @@ public class ScatterPlot {
 
         return cleanedVals;
     }
-
 }
 
 

@@ -1,6 +1,5 @@
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
@@ -15,10 +14,9 @@ import java.util.Vector;
  * class. It draws the ScatterPlot line, axes, labels and the statistical values.
  *
  * @author Adrian Tang
+ * @author josephramsey
  */
 class ScatterplotPanel extends JPanel {
-    private final Node left;
-    private final Node top;
     private ScatterPlot scatterPlot;
 
     private final NumberFormat nf;
@@ -27,10 +25,8 @@ class ScatterplotPanel extends JPanel {
     /**
      * Constructor.
      */
-    public ScatterplotPanel(ScatterPlot ScatterPlot, Node left, Node top) {
+    public ScatterplotPanel(ScatterPlot ScatterPlot) {
         this.scatterPlot = ScatterPlot;
-        this.left = left;
-        this.top = top;
 
         setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
@@ -49,7 +45,6 @@ class ScatterplotPanel extends JPanel {
         double xmax = this.scatterPlot.getXmax();
         double ymin = this.scatterPlot.getYmin();
         double ymax = this.scatterPlot.getYmax();
-
 
         Graphics2D g = (Graphics2D) graphics;
 
@@ -77,13 +72,6 @@ class ScatterplotPanel extends JPanel {
 
             /* draws the labels for the corresponding experiment and sample names */
             g.setFont(g.getFont().deriveFont(11f));
-
-//            /* draws the labels for the corresponding experiment and sample names */
-//            String name = this.scatterPlot.getDataSet().getName();
-//            if (name != null) {
-//                g.setFont(g.getFont().deriveFont(11f));
-//                g.drawString(name, 5, 10);
-//            }
 
             /* draws axis labels and scale */
             g.drawString(this.nf.format(ymax), 2 + xStringMin, yMin + 7);
@@ -140,8 +128,8 @@ class ScatterplotPanel extends JPanel {
             int xb = (int) (((x2 - xmin) / _xRange) * xRange + xMin);
             int yb = (int) (((ymax - y2) / _yRange) * yRange + yMin);
 
-            g.setColor(Color.BLACK);
-            g.setStroke(new BasicStroke(3));
+            g.setColor(Color.DARK_GRAY);
+            g.setStroke(new BasicStroke(2));
             g.drawLine(xa, ya, xb, yb);
         }
 
@@ -152,7 +140,11 @@ class ScatterplotPanel extends JPanel {
             this.nf.setMaximumFractionDigits(3);
             double r = this.scatterPlot.getCorrelationCoeff();
             double p = this.scatterPlot.getCorrelationPValue();
-            g.drawString("correlation coef = " + this.nf.format(r) + "  (p=" + this.nf.format(p) + ")", 100, 21);
+
+            if (drawAxes) {
+                g.drawString("correlation coef = " + this.nf.format(r)
+                        + "  (p=" + this.nf.format(p) + ")", 100, 21);
+            }
         }
     }
 

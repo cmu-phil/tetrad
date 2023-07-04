@@ -172,8 +172,8 @@ public class PlotMatrix extends JPanel {
                 } else {
                     ScatterPlot scatterPlot = new ScatterPlot(dataSet, addRegressionLines, nodes.get(topIndex).getName(),
                             nodes.get(leftIndex).getName());
-                    ScatterplotPanel panel = new ScatterplotPanel(scatterPlot,
-                            nodes.get(leftIndex), nodes.get(topIndex));
+                    ScatterplotPanel panel = new ScatterplotPanel(scatterPlot
+                    );
                     panel.setDrawAxes(leftIndices.length == 1 && topIndices.length == 1);
 
                     addPenelListener(charts, dataSet, nodes, leftIndex, topIndex, panel);
