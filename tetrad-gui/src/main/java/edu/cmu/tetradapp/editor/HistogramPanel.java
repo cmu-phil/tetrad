@@ -44,41 +44,30 @@ import java.util.*;
  *
  * @author josephramsey
  */
-public class HistogramView extends JPanel {
-    private final HistogramPanel histogramPanel;
+public class HistogramPanel extends JPanel {
+    private final MyPanel histogramPanel;
     private static final String[] tiles = {"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
+    private boolean showControlPanel = true;
 
-    public HistogramView(Histogram histogram) {
+    public HistogramPanel(Histogram histogram) {
         this(histogram, true);
     }
 
     /**
      * Constructs the view with a given histogram and data set.
      */
-    public HistogramView(Histogram histogram, boolean showControlPanel) {
-        this.histogramPanel = new HistogramPanel(histogram);
+    public HistogramPanel(Histogram histogram, boolean showControlPanel) {
+        this.histogramPanel = new MyPanel(histogram, showControlPanel);
         HistogramController controller = new HistogramController(this.histogramPanel);
-        controller.addPropertyChangeListener(evt -> HistogramView.this.histogramPanel.updateView());
+        controller.addPropertyChangeListener(evt -> edu.cmu.tetradapp.editor.HistogramPanel.this.histogramPanel.updateView());
 
         Box box = Box.createHorizontalBox();
         box.add(this.histogramPanel);
-
-        if (showControlPanel) {
-            box.add(Box.createHorizontalStrut(3));
-            box.add(controller);
-        }
-
-        box.add(Box.createHorizontalStrut(5));
-        box.add(Box.createHorizontalGlue());
-
-        Box vBox = Box.createVerticalBox();
-        vBox.add(Box.createVerticalStrut(15));
-        vBox.add(box);
-        vBox.add(Box.createVerticalStrut(5));
+        this.showControlPanel = showControlPanel;
 
         setLayout(new BorderLayout());
-        add(vBox, BorderLayout.CENTER);
+        add(box, BorderLayout.CENTER);
 
         if (showControlPanel) {
             JMenuBar bar = new JMenuBar();
@@ -96,7 +85,7 @@ public class HistogramView extends JPanel {
      *
      * @author Tyler Gibson
      */
-    public static class HistogramPanel extends JPanel {
+    public static class MyPanel extends JPanel {
 
         /**
          * The line color around the histogram.
@@ -113,27 +102,14 @@ public class HistogramView extends JPanel {
                 new Color(204, 204, 153), new Color(153, 204, 204), new Color(255, 204, 204), new Color(204, 204, 255),
                 new Color(204, 255, 204)
         };
+        private boolean showControlPanel;
 
-        /**
-         * Variables that control the size of the drawing area.
-         */
-        private static final int PADDINGX = 40;
-        private static final int PADDINGY = 15;
-        private static final int HEIGHT = 250 + HistogramPanel.PADDINGY;
-        private static final int DISPLAYED_HEIGHT = (int) ((HistogramPanel.HEIGHT - HistogramPanel.PADDINGY) - HistogramPanel.HEIGHT * .10);
-        private static final int WIDTH = 290 + HistogramPanel.PADDINGX;
-        private static final int SPACE = 2;
-        private static final int DASH = 10;
+        private int paddingX;
 
         /**
          * The histogram to display.
          */
         private final Histogram histogram;
-
-        /**
-         * The default size of the component.
-         */
-        private final Dimension size = new Dimension(HistogramPanel.WIDTH + 2 * HistogramPanel.SPACE, HistogramPanel.HEIGHT);
 
         /**
          * Format for continuous data.
@@ -150,7 +126,11 @@ public class HistogramView extends JPanel {
          *
          * @param histogram The histogram to display.
          */
-        public HistogramPanel(Histogram histogram) {
+        public MyPanel(Histogram histogram, boolean showControlPanel) {
+            this.showControlPanel = showControlPanel;
+
+            paddingX = showControlPanel ? 40 : 0;
+
             if (histogram == null) {
                 throw new NullPointerException("Given histogram must be null");
             }
@@ -192,6 +172,12 @@ public class HistogramView extends JPanel {
          * Paints the histogram and related items.
          */
         public void paintComponent(Graphics graphics) {
+            int paddingY = 15;
+            int height = getHeight();
+            int width = getWidth();
+            int displayedHeight = (int) (height - paddingY);
+            int space = 2;
+            int dash = 10;
 
             // set up variables.
             this.rectMap.clear();
@@ -199,32 +185,30 @@ public class HistogramView extends JPanel {
             Histogram histogram = this.getHistogram();
             int[] freqs = histogram.getFrequencies();
             int categories = freqs.length;
-//            int barWidth = FastMath.max((WIDTH - PADDINGX) / categories, 12) - SPACE;
-            int barWidth = FastMath.max((HistogramPanel.WIDTH - HistogramPanel.PADDINGX) / categories, 2) - HistogramPanel.SPACE;
-            final int height = HistogramPanel.HEIGHT - HistogramPanel.PADDINGY;
-            int topFreq = HistogramPanel.getMax(freqs);
-            double scale = HistogramPanel.DISPLAYED_HEIGHT / (double) topFreq;
+            int barWidth = FastMath.max((width - paddingX) / categories, 2) - space;
+            int topFreq = MyPanel.getMax(freqs);
+            double scale = displayedHeight / (double) topFreq;
             FontMetrics fontMetrics = g2d.getFontMetrics();
             // draw background/surrounding box.
             g2d.setColor(this.getBackground());
-            g2d.fillRect(0, 0, HistogramPanel.WIDTH + 2 * HistogramPanel.SPACE, HistogramPanel.HEIGHT);
+            g2d.fillRect(0, 0, width + 2 * space, height);
             g2d.setColor(Color.WHITE);
-            g2d.fillRect(HistogramPanel.PADDINGX, 0, (HistogramPanel.WIDTH + HistogramPanel.SPACE) - HistogramPanel.PADDINGX, height);
+            g2d.fillRect(0, 0, width, height);
             // draw the histogram
             for (int i = 0; i < categories; i++) {
                 int freq = freqs[i];
                 int y = (int) FastMath.ceil(scale * freq);
-                int x = HistogramPanel.SPACE * (i + 1) + barWidth * i + HistogramPanel.PADDINGX;
-                g2d.setColor(HistogramPanel.getBarColor(i));
-                Rectangle rect = new Rectangle(x, (height - y), barWidth, y);
+                int x = space * (i + 1) + barWidth * i + paddingX;
+                g2d.setColor(MyPanel.getBarColor(i));
+                Rectangle rect = new Rectangle(x, (height - y - space), barWidth, y);
                 g2d.fill(rect);
                 this.rectMap.put(rect, freq);
             }
             //border
-            g2d.setColor(HistogramPanel.LINE_COLOR);
-            g2d.drawRect(HistogramPanel.PADDINGX, 0, (HistogramPanel.WIDTH + HistogramPanel.SPACE) - HistogramPanel.PADDINGX, height);
+            g2d.setColor(MyPanel.LINE_COLOR);
+            g2d.drawRect(paddingX, 0, width - paddingX, height);
             // draw the buttom line
-            g2d.setColor(HistogramPanel.LINE_COLOR);
+            g2d.setColor(MyPanel.LINE_COLOR);
 
             Node target = histogram.getTargetNode();
 
@@ -232,53 +216,44 @@ public class HistogramView extends JPanel {
                 Map<Integer, Double> pointsAndValues = pickGoodPointsAndValues(histogram.getMin(),
                         histogram.getMax());
 
-                for (int point : pointsAndValues.keySet()) {
-                    double value = pointsAndValues.get(point);
-                    if (point < HistogramPanel.WIDTH + HistogramPanel.SPACE - 10) {
-                        g2d.drawString(this.format.format(value), point + 2, height + 15);
+                if (showControlPanel) {
+                    for (int point : pointsAndValues.keySet()) {
+                        double value = pointsAndValues.get(point);
+                        if (point < width + space - 10) {
+                            g2d.drawString(this.format.format(value), point + 2, height);
+                        }
+                        g2d.drawLine(point, height + dash, point, height);
                     }
-                    g2d.drawLine(point, height + HistogramPanel.DASH, point, height);
                 }
             } else if (target instanceof DiscreteVariable) {
                 DiscreteVariable var = (DiscreteVariable) target;
                 java.util.List<String> _categories = var.getCategories();
                 int i = -1;
 
-                for (Rectangle rect : this.rectMap.keySet()) {
-                    int x = (int) rect.getX();
-                    g2d.drawString(_categories.get(++i), x, height + 15);
+                if (showControlPanel) {
+                    for (Rectangle rect : this.rectMap.keySet()) {
+                        int x = (int) rect.getX();
+                        g2d.drawString(_categories.get(++i), x, height);
+                    }
                 }
             }
 
-            // draw the side line
-            g2d.setColor(HistogramPanel.LINE_COLOR);
-            int topY = height - (int) FastMath.ceil(scale * topFreq);
-            String top = String.valueOf(topFreq);
-            g2d.drawString(top, HistogramPanel.PADDINGX - fontMetrics.stringWidth(top), topY - 2);
-            g2d.drawLine(HistogramPanel.PADDINGX - HistogramPanel.DASH, topY, HistogramPanel.PADDINGX, topY);
-            g2d.drawString("0", HistogramPanel.PADDINGX - fontMetrics.stringWidth("0"), height - 2);
-            g2d.drawLine(HistogramPanel.PADDINGX - HistogramPanel.DASH, height, HistogramPanel.PADDINGX, height);
-            int hSize = (height - topY) / 4;
-            for (int i = 1; i < 4; i++) {
-                int topHeight = height - hSize * i;
-                g2d.drawLine(HistogramPanel.PADDINGX - HistogramPanel.DASH, topHeight, HistogramPanel.PADDINGX, topHeight);
+            if (showControlPanel) {
+                // draw the side line
+                g2d.setColor(MyPanel.LINE_COLOR);
+                int topY = height - (int) FastMath.ceil(scale * topFreq);
+                String top = String.valueOf(topFreq);
+                g2d.drawString(top, paddingX - fontMetrics.stringWidth(top), topY - 2);
+                g2d.drawLine(paddingX - dash, topY, paddingX, topY);
+                g2d.drawString("0", paddingX - fontMetrics.stringWidth("0"), height - 2);
+                g2d.drawLine(paddingX - dash, height, paddingX, height);
+                int hSize = (height - topY) / 4;
+                for (int i = 1; i < 4; i++) {
+                    int topHeight = height - hSize * i;
+                    g2d.drawLine(paddingX - dash, topHeight, paddingX, topHeight);
+                }
             }
 
-        }
-
-
-        public Dimension getPreferredSize() {
-            return this.size;
-        }
-
-
-        public Dimension getMaximumSize() {
-            return this.size;
-        }
-
-
-        public Dimension getMinimumSize() {
-            return this.size;
         }
 
         //========================== private methods ==========================//
@@ -309,15 +284,15 @@ public class HistogramView extends JPanel {
             if (minValue >= maxValue) {
                 throw new IllegalArgumentException();
             }
-            if (HistogramPanel.PADDINGX >= 332) {
+            if (paddingX >= 332) {
                 throw new IllegalArgumentException();
             }
 
             double ratio = (value - minValue) / (maxValue - minValue);
 
-            int intValue = (int) (FastMath.round(HistogramPanel.PADDINGX + ratio * (double) (332 - HistogramPanel.PADDINGX)));
+            int intValue = (int) (FastMath.round(paddingX + ratio * (double) (332 - paddingX)));
 
-            if (intValue < HistogramPanel.PADDINGX || intValue > 332) {
+            if (intValue < paddingX || intValue > 332) {
                 return null;
             }
 
@@ -325,7 +300,8 @@ public class HistogramView extends JPanel {
         }
 
         private static Color getBarColor(int i) {
-            return HistogramPanel.BAR_COLORS[i % HistogramPanel.BAR_COLORS.length];
+            return Color.RED.darker();
+//            return HistogramPanel.BAR_COLORS[i % HistogramPanel.BAR_COLORS.length];
         }
 
         private static int getMax(int[] freqs) {
@@ -375,7 +351,7 @@ public class HistogramView extends JPanel {
         /**
          * Constructs the editor panel given the initial histogram and the dataset.
          */
-        public HistogramController(HistogramPanel histogramPanel) {
+        public HistogramController(MyPanel histogramPanel) {
             this.setLayout(new BorderLayout());
             this.histogram = histogramPanel.getHistogram();
             Node target = this.histogram.getTargetNode();
@@ -558,15 +534,15 @@ public class HistogramView extends JPanel {
             this.histogram.removeConditioningVariables();
 
             for (ConditioningPanel panel : this.conditioningPanels) {
-                if (panel instanceof HistogramView.HistogramController.ContinuousConditioningPanel) {
+                if (panel instanceof edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel) {
                     Node node = panel.getVariable();
-                    double low = ((HistogramView.HistogramController.ContinuousConditioningPanel) panel).getLow();
-                    double high = ((HistogramView.HistogramController.ContinuousConditioningPanel) panel).getHigh();
+                    double low = ((edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel) panel).getLow();
+                    double high = ((edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel) panel).getHigh();
                     this.histogram.addConditioningVariable(node.getName(), low, high);
 
-                } else if (panel instanceof HistogramView.HistogramController.DiscreteConditioningPanel) {
+                } else if (panel instanceof edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.DiscreteConditioningPanel) {
                     Node node = panel.getVariable();
-                    int index = ((HistogramView.HistogramController.DiscreteConditioningPanel) panel).getIndex();
+                    int index = ((edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.DiscreteConditioningPanel) panel).getIndex();
                     this.histogram.addConditioningVariable(node.getName(), index);
                 }
             }
@@ -731,8 +707,8 @@ public class HistogramView extends JPanel {
                 this.box = b4;
             }
 
-            public static HistogramView.HistogramController.DiscreteConditioningPanel getDefault(DiscreteVariable var) {
-                return new HistogramView.HistogramController.DiscreteConditioningPanel(var, 0);
+            public static edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.DiscreteConditioningPanel getDefault(DiscreteVariable var) {
+                return new edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.DiscreteConditioningPanel(var, 0);
             }
 
             public DiscreteVariable getVariable() {
@@ -776,7 +752,7 @@ public class HistogramView extends JPanel {
             private final ContinuousVariable variable;
             private final Box box;
 
-            private final HistogramView.HistogramController.ContinuousConditioningPanel.Type type;
+            private final edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type type;
             private final double low;
             private final double high;
             private final int ntile;
@@ -785,7 +761,7 @@ public class HistogramView extends JPanel {
             // Mark selected if this panel is to be removed.
             private final JCheckBox checkBox;
 
-            public ContinuousConditioningPanel(ContinuousVariable variable, double low, double high, int ntile, int ntileIndex, HistogramView.HistogramController.ContinuousConditioningPanel.Type type) {
+            public ContinuousConditioningPanel(ContinuousVariable variable, double low, double high, int ntile, int ntileIndex, edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type type) {
                 if (variable == null) throw new NullPointerException();
                 if (low >= high) {
                     throw new IllegalArgumentException("Low >= high.");
@@ -806,14 +782,14 @@ public class HistogramView extends JPanel {
                 Box b4 = Box.createHorizontalBox();
                 b4.add(Box.createRigidArea(new Dimension(10, 0)));
 
-                if (type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.Range) {
+                if (type == edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type.Range) {
                     b4.add(new JLabel(variable + " = (" + nf.format(low) + ", " + nf.format(high) + ")"));
-                } else if (type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.AboveAverage) {
+                } else if (type == edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type.AboveAverage) {
                     b4.add(new JLabel(variable + " = Above Average"));
-                } else if (type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.BelowAverage) {
+                } else if (type == edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type.BelowAverage) {
                     b4.add(new JLabel(variable + " = Below Average"));
-                } else if (type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.Ntile) {
-                    b4.add(new JLabel(variable + " = " + HistogramView.tiles[ntile - 1] + " " + ntileIndex));
+                } else if (type == edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type.Ntile) {
+                    b4.add(new JLabel(variable + " = " + edu.cmu.tetradapp.editor.HistogramPanel.tiles[ntile - 1] + " " + ntileIndex));
                 }
 
                 b4.add(Box.createHorizontalGlue());
@@ -824,18 +800,18 @@ public class HistogramView extends JPanel {
 
             }
 
-            public static HistogramView.HistogramController.ContinuousConditioningPanel getDefault(ContinuousVariable variable, Histogram histogram) {
+            public static edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel getDefault(ContinuousVariable variable, Histogram histogram) {
                 double[] data = histogram.getContinuousData(variable.getName());
                 double max = StatUtils.max(data);
                 double avg = StatUtils.mean(data);
-                return new HistogramView.HistogramController.ContinuousConditioningPanel(variable, avg, max, 2, 1, HistogramView.HistogramController.ContinuousConditioningPanel.Type.AboveAverage);
+                return new edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel(variable, avg, max, 2, 1, edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type.AboveAverage);
             }
 
             public ContinuousVariable getVariable() {
                 return this.variable;
             }
 
-            public HistogramView.HistogramController.ContinuousConditioningPanel.Type getType() {
+            public edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type getType() {
                 return this.type;
             }
 
@@ -866,7 +842,7 @@ public class HistogramView extends JPanel {
         private final JComboBox ntileIndexCombo;
         private final DoubleTextField field1;
         private final DoubleTextField field2;
-        private HistogramView.HistogramController.ContinuousConditioningPanel.Type type;
+        private edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type type;
         private final Map<String, Integer> ntileMap = new HashMap<>();
         private final double[] data;
 
@@ -878,7 +854,7 @@ public class HistogramView extends JPanel {
          *                          panel. This must be for the same variable as variable.
          */
         public ContinuousInquiryPanel(ContinuousVariable variable, Histogram histogram,
-                                      HistogramView.HistogramController.ContinuousConditioningPanel conditioningPanel) {
+                                      edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel conditioningPanel) {
             this.data = histogram.getContinuousData(variable.getName());
 
             if (conditioningPanel == null)
@@ -935,15 +911,15 @@ public class HistogramView extends JPanel {
             int ntileIndex = conditioningPanel.getNtileIndex();
 
             for (int n = 2; n <= 10; n++) {
-                this.ntileCombo.addItem(HistogramView.tiles[n - 1]);
-                this.ntileMap.put(HistogramView.tiles[n - 1], n);
+                this.ntileCombo.addItem(edu.cmu.tetradapp.editor.HistogramPanel.tiles[n - 1]);
+                this.ntileMap.put(edu.cmu.tetradapp.editor.HistogramPanel.tiles[n - 1], n);
             }
 
             for (int n = 1; n <= ntile; n++) {
                 this.ntileIndexCombo.addItem(n);
             }
 
-            this.ntileCombo.setSelectedItem(HistogramView.tiles[ntile - 1]);
+            this.ntileCombo.setSelectedItem(edu.cmu.tetradapp.editor.HistogramPanel.tiles[ntile - 1]);
             this.ntileIndexCombo.setSelectedItem(ntileIndex);
 
             this.ntileCombo.addItemListener(e -> {
@@ -976,22 +952,22 @@ public class HistogramView extends JPanel {
             });
 
 
-            if (this.type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.AboveAverage) {
+            if (this.type == edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type.AboveAverage) {
                 radio1.setSelected(true);
                 this.field1.setValue(StatUtils.mean(this.data));
                 this.field2.setValue(StatUtils.max(this.data));
-            } else if (this.type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.BelowAverage) {
+            } else if (this.type == edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type.BelowAverage) {
                 radio2.setSelected(true);
                 this.field1.setValue(StatUtils.min(this.data));
                 this.field2.setValue(StatUtils.mean(this.data));
-            } else if (this.type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.Ntile) {
+            } else if (this.type == edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type.Ntile) {
                 radio3.setSelected(true);
                 double[] breakpoints = ContinuousInquiryPanel.getNtileBreakpoints(this.data, getNtile());
                 double breakpoint1 = breakpoints[getNtileIndex() - 1];
                 double breakpoint2 = breakpoints[getNtileIndex()];
                 this.field1.setValue(breakpoint1);
                 this.field2.setValue(breakpoint2);
-            } else if (this.type == HistogramView.HistogramController.ContinuousConditioningPanel.Type.Range) {
+            } else if (this.type == edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type.Range) {
                 radio4.setSelected(true);
             }
 
@@ -1036,7 +1012,7 @@ public class HistogramView extends JPanel {
             add(main, BorderLayout.CENTER);
         }
 
-        public HistogramView.HistogramController.ContinuousConditioningPanel.Type getType() {
+        public edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.ContinuousConditioningPanel.Type getType() {
             return this.type;
         }
 
@@ -1142,7 +1118,7 @@ public class HistogramView extends JPanel {
     private static class DiscreteInquiryPanel extends JPanel {
         private final JComboBox valuesDropdown;
 
-        public DiscreteInquiryPanel(DiscreteVariable var, HistogramView.HistogramController.DiscreteConditioningPanel panel) {
+        public DiscreteInquiryPanel(DiscreteVariable var, edu.cmu.tetradapp.editor.HistogramPanel.HistogramController.DiscreteConditioningPanel panel) {
             this.valuesDropdown = new JComboBox();
 
             for (String category : var.getCategories()) {

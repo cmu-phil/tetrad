@@ -40,7 +40,7 @@ import java.beans.PropertyChangeListener;
  * @author Michael Freenor
  */
 
-class ScatterPlotAction extends AbstractAction {
+class PlotMatrixAction extends AbstractAction {
 
 
     /**
@@ -53,8 +53,8 @@ class ScatterPlotAction extends AbstractAction {
      * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code>
      * that its attached to.
      */
-    public ScatterPlotAction(DataEditor editor) {
-        super("Scatter Plots...");
+    public PlotMatrixAction(DataEditor editor) {
+        super("Plot Matrix...");
         this.dataEditor = editor;
     }
 
@@ -66,8 +66,8 @@ class ScatterPlotAction extends AbstractAction {
             return;
         }
 
-        JPanel panel = new ScatterPlotView(dataSet);
-        EditorWindow editorWindow = new EditorWindow(panel, "Scatter Plots", "Save", true, this.dataEditor);
+        JPanel panel = new PlotMatrix(dataSet);
+        EditorWindow editorWindow = new EditorWindow(panel, "Plot Matrix", "Save", true, this.dataEditor);
 
         DesktopController.getInstance().addEditorWindow(editorWindow, JLayeredPane.PALETTE_LAYER);
         editorWindow.pack();
@@ -103,7 +103,7 @@ class ScatterPlotAction extends AbstractAction {
      * one is selected for you)
      */
     private JPanel createScatterPlotDialog(ContinuousVariable yVariable, ContinuousVariable xVariable) {
-        final String dialogTitle = "Scatter Plots";
+        final String dialogTitle = "Plot Matrix";
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 

@@ -128,7 +128,7 @@ class HistogramAction extends AbstractAction {
         assert dataSet != null;
         Histogram histogram = new Histogram(dataSet);
         histogram.setTarget(selected == null ? null : selected.getName());
-        HistogramView view = new HistogramView(histogram);
+        HistogramPanel view = new HistogramPanel(histogram);
 
         Box box = Box.createHorizontalBox();
         box.add(view);

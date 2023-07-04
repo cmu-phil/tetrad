@@ -27,9 +27,9 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.ParamDescription;
@@ -816,7 +816,7 @@ public class MarkovCheckEditor extends JPanel {
         Histogram histogram = new Histogram(dataSet);
         histogram.setNumBins(10);
         histogram.setTarget("P-Value or Bump");
-        HistogramView view = new HistogramView(histogram, false);
+        HistogramPanel view = new HistogramPanel(histogram, false);
 
         Box box = Box.createHorizontalBox();
         box.add(view);

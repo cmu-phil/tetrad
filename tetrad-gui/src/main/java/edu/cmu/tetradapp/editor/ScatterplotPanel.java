@@ -15,7 +15,7 @@ import java.util.Vector;
  *
  * @author Adrian Tang
  */
-class ScatterPlotChart extends JPanel {
+class ScatterplotPanel extends JPanel {
     private ScatterPlot scatterPlot;
 
     private final NumberFormat nf;
@@ -24,10 +24,8 @@ class ScatterPlotChart extends JPanel {
     /**
      * Constructor.
      */
-    public ScatterPlotChart(ScatterPlot ScatterPlot) {
+    public ScatterplotPanel(ScatterPlot ScatterPlot) {
         this.scatterPlot = ScatterPlot;
-
-        setPreferredSize(new Dimension(200, 200));
 
         setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
@@ -35,7 +33,7 @@ class ScatterPlotChart extends JPanel {
         this.nf.setMinimumFractionDigits(2);
         this.nf.setMaximumFractionDigits(2);
 
-        setBorder(new LineBorder(Color.BLUE));
+        setBorder(new LineBorder(Color.BLACK));
     }
 
     public void setScatterPlot(ScatterPlot ScatterPlot) {
@@ -56,17 +54,17 @@ class ScatterPlotChart extends JPanel {
 
         g.setColor(Color.white);
         g.setFont(new Font("Dialog", Font.PLAIN, 11));
-        g.fillRect(0, 0, getPreferredSize().width, getPreferredSize().height);
+        g.fillRect(0, 0, getSize().width, getSize().height);
 
-        int chartWidth = getPreferredSize().width - 10;// * 8 / 10;
-        int chartHeight = getPreferredSize().height - 10;// * 7 / 10;
+        int chartWidth = getSize().width;
+        int chartHeight = getSize().height;
 
         final int xStringMin = 10;
-        final int xMin = drawAxes ? 50 : 0;
-        int xMax = drawAxes ? chartWidth : chartWidth;
+        int xMin = drawAxes ? 50 : 0;
+        int xMax = drawAxes ? chartWidth - 20 : chartWidth;
         int xRange = xMax - xMin;
-        final int yMin = drawAxes ? 30 : 0;
-        int yMax = drawAxes ? chartHeight - 10 : chartHeight;
+        int yMin = drawAxes ? 30 : 0;
+        int yMax = drawAxes ? chartHeight - 20 : chartHeight;
         int yRange = yMax - yMin;
 
         /* draws axis lines */
@@ -105,7 +103,7 @@ class ScatterPlotChart extends JPanel {
         double _yRange = ymax - ymin;
         int x, y;
 
-        g.setColor(Color.red);
+        g.setColor(Color.RED.darker());
         for (Point2D.Double _pt : pts) {
             x = (int) (((_pt.getX() - xmin) / _xRange) * xRange + xMin);
             y = (int) (((ymax - _pt.getY()) / _yRange) * yRange + yMin);
@@ -156,17 +154,7 @@ class ScatterPlotChart extends JPanel {
         }
     }
 
-    /**
-     * @return the minimum dimension of the ScatterPlot.
-     */
-    public Dimension getMinimumSize() {
-        return getPreferredSize();
-    }
-
-    /**
-     * @return the maximum dimension of the ScatterPlot.
-     */
-    public Dimension getMaximumSize() {
-        return getPreferredSize();
+    public void setDrawAxes(boolean drawAxes) {
+        this.drawAxes = drawAxes;
     }
 }
