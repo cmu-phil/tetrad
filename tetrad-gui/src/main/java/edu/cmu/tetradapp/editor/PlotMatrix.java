@@ -23,6 +23,7 @@ package edu.cmu.tetradapp.editor;
 
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.data.Histogram;
 import edu.cmu.tetrad.graph.Node;
 
@@ -30,6 +31,10 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.List;
 
@@ -43,11 +48,14 @@ public class PlotMatrix extends JPanel {
     private JPanel charts;
     private JList<Node> rowSelector;
     private JList<Node> colSelector;
+    private int numBins = 9;
+    private boolean addRegressionLines = false;
+
+    private int[] lastRows = new int[]{0};
+    private int[] lastCols = new int[]{0};
 
     public PlotMatrix(DataSet dataSet) {
         setLayout(new BorderLayout());
-
-        removeAll();
 
         List<Node> nodes = dataSet.getVariables();
         Collections.sort(nodes);
@@ -60,7 +68,7 @@ public class PlotMatrix extends JPanel {
         this.colSelector = new JList<>(_vars);
 
         this.rowSelector.setSelectedIndex(0);
-        this.colSelector.setSelectedIndex(1);
+        this.colSelector.setSelectedIndex(0);
 
         charts = new JPanel();
 
@@ -68,8 +76,6 @@ public class PlotMatrix extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
-                revalidate();
-                repaint();
             }
         });
 
@@ -77,12 +83,48 @@ public class PlotMatrix extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
-                revalidate();
-                repaint();
             }
         });
 
         constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+
+        JMenuBar menuBar = new JMenuBar();
+        JMenu settings = new JMenu("Settings");
+        menuBar.add(settings);
+        JMenuItem numBins = new JMenu("Num Bins for Histograms");
+        ButtonGroup group = new ButtonGroup();
+
+        for (int i = 2; i <= 20; i++) {
+            int _i = i;
+            JMenuItem comp = new JCheckBoxMenuItem(i + "");
+            numBins.add(comp);
+            group.add(comp);
+            if (i == getNumBins()) comp.setSelected(true);
+
+            comp.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setNumBins(_i);
+                    constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+                }
+            });
+        }
+
+        settings.add(numBins);
+
+        JMenuItem addRegressionLines = new JCheckBoxMenuItem("Add Regression Lines to Histograms");
+        addRegressionLines.setSelected(false);
+        settings.add(addRegressionLines);
+
+        addRegressionLines.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setAddRegressionLines(!isAddRegressionLines());
+                constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+            }
+        });
+
+        add(menuBar, BorderLayout.NORTH);
 
         Box b1 = Box.createHorizontalBox();
         JScrollPane comp2 = new JScrollPane(charts);
@@ -101,8 +143,6 @@ public class PlotMatrix extends JPanel {
         b1.add(b4);
 
         add(b1, BorderLayout.CENTER);
-
-
         setPreferredSize(new Dimension(750, 450));
     }
 
@@ -113,23 +153,78 @@ public class PlotMatrix extends JPanel {
 
         charts.setLayout(new GridLayout(leftIndices.length, topIndices.length));
 
-        for (int i = 0; i < leftIndices.length; i++) {
-            for (int j = 0; j < topIndices.length; j++) {
-                if (leftIndices[i] == topIndices[j]) {
+        for (int leftIndex : leftIndices) {
+            for (int topIndex : topIndices) {
+                if (leftIndex == topIndex) {
                     Histogram histogram = new Histogram(dataSet);
-                    histogram.setTarget(nodes.get(leftIndices[i]).getName());
-                    HistogramPanel view = new HistogramPanel(histogram,
+                    histogram.setTarget(nodes.get(leftIndex).getName());
+
+                    if (!(nodes.get(leftIndex) instanceof DiscreteVariable)) {
+                        histogram.setNumBins(numBins);
+                    }
+
+                    HistogramPanel panel = new HistogramPanel(histogram,
                             leftIndices.length == 1 && topIndices.length == 1);
-                    charts.add(view);
+
+                    addPenelListener(charts, dataSet, nodes, leftIndex, topIndex, panel);
+
+                    charts.add(panel);
                 } else {
-                    ScatterPlot ScatterPlot = new ScatterPlot(dataSet, false, nodes.get(topIndices[j]).getName(),
-                            nodes.get(leftIndices[i]).getName());
-                    ScatterplotPanel scatterPlotChart = new ScatterplotPanel(ScatterPlot);
-                    scatterPlotChart.setDrawAxes(leftIndices.length == 1 && topIndices.length == 1);
-                    charts.add(scatterPlotChart);
+                    ScatterPlot scatterPlot = new ScatterPlot(dataSet, addRegressionLines, nodes.get(topIndex).getName(),
+                            nodes.get(leftIndex).getName());
+                    ScatterplotPanel panel = new ScatterplotPanel(scatterPlot,
+                            nodes.get(leftIndex), nodes.get(topIndex));
+                    panel.setDrawAxes(leftIndices.length == 1 && topIndices.length == 1);
+
+                    addPenelListener(charts, dataSet, nodes, leftIndex, topIndex, panel);
+
+                    charts.add(panel);
                 }
             }
         }
+
+        revalidate();
+        repaint();
+    }
+
+    private void addPenelListener(JPanel charts, DataSet dataSet, List<Node> nodes, int leftIndex, int topIndex, JPanel panel) {
+        panel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    if (rowSelector.getSelectedIndices().length == 1
+                            && colSelector.getSelectedIndices().length == 1) {
+                        rowSelector.setSelectedIndices(lastRows);
+                        colSelector.setSelectedIndices(lastCols);
+                        lastRows = new int[]{leftIndex};
+                        lastCols = new int[]{topIndex};
+                        constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+                    } else {
+                        lastRows = rowSelector.getSelectedIndices();
+                        lastCols = colSelector.getSelectedIndices();
+                        rowSelector.setSelectedIndex(leftIndex);
+                        colSelector.setSelectedIndex(topIndex);
+                        constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+                    }
+                }
+            }
+        });
+    }
+
+    public int getNumBins() {
+        return numBins;
+    }
+
+    public void setNumBins(int numBins) {
+        this.numBins = numBins;
+    }
+
+    public boolean isAddRegressionLines() {
+        return addRegressionLines;
+    }
+
+    public void setAddRegressionLines(boolean addRegressionLines) {
+        this.addRegressionLines = addRegressionLines;
     }
 
 //    public static class ScatterPlotController extends JPanel {

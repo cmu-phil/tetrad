@@ -1,5 +1,6 @@
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.graph.Node;
 import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
@@ -16,6 +17,8 @@ import java.util.Vector;
  * @author Adrian Tang
  */
 class ScatterplotPanel extends JPanel {
+    private final Node left;
+    private final Node top;
     private ScatterPlot scatterPlot;
 
     private final NumberFormat nf;
@@ -24,8 +27,10 @@ class ScatterplotPanel extends JPanel {
     /**
      * Constructor.
      */
-    public ScatterplotPanel(ScatterPlot ScatterPlot) {
+    public ScatterplotPanel(ScatterPlot ScatterPlot, Node left, Node top) {
         this.scatterPlot = ScatterPlot;
+        this.left = left;
+        this.top = top;
 
         setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY));
 
@@ -34,10 +39,6 @@ class ScatterplotPanel extends JPanel {
         this.nf.setMaximumFractionDigits(2);
 
         setBorder(new LineBorder(Color.BLACK));
-    }
-
-    public void setScatterPlot(ScatterPlot ScatterPlot) {
-        this.scatterPlot = ScatterPlot;
     }
 
     /**
@@ -140,6 +141,7 @@ class ScatterplotPanel extends JPanel {
             int yb = (int) (((ymax - y2) / _yRange) * yRange + yMin);
 
             g.setColor(Color.BLACK);
+            g.setStroke(new BasicStroke(3));
             g.drawLine(xa, ya, xb, yb);
         }
 
