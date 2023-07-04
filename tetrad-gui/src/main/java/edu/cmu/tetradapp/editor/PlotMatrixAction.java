@@ -21,16 +21,11 @@
 
 package edu.cmu.tetradapp.editor;
 
-import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetradapp.util.DesktopController;
-import org.apache.commons.math3.util.FastMath;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * Displays a Q-Q plot for a random variable.
@@ -44,14 +39,14 @@ class PlotMatrixAction extends AbstractAction {
 
 
     /**
-     * The data edtitor that action is attached to.
+     * The data editor that action is attached to.
      */
     private final DataEditor dataEditor;
 
 
     /**
      * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code>
-     * that its attached to.
+     * that It's attached to.
      */
     public PlotMatrixAction(DataEditor editor) {
         super("Plot Matrix...");
@@ -76,98 +71,10 @@ class PlotMatrixAction extends AbstractAction {
 
     //============================== Private methods ============================//
 
-
-    /**
-     * Sets the location on the given dialog for the given index.
-     */
-    private void setLocation(JDialog dialog, int index) {
-        Rectangle bounds = dialog.getBounds();
-        JFrame frame = findOwner();
-        Dimension dim;
-        if (frame == null) {
-            dim = Toolkit.getDefaultToolkit().getScreenSize();
-        } else {
-            dim = frame.getSize();
-        }
-
-        int x = (int) (150 * FastMath.cos(index * 15 * (FastMath.PI / 180)));
-        int y = (int) (150 * FastMath.sin(index * 15 * (FastMath.PI / 180)));
-        x += (dim.width - bounds.width) / 2;
-        y += (dim.height - bounds.height) / 2;
-        dialog.setLocation(x, y);
-    }
-
-
-    /**
-     * Creates a dialog that is showing the histogram for the given node (if null
-     * one is selected for you)
-     */
-    private JPanel createScatterPlotDialog(ContinuousVariable yVariable, ContinuousVariable xVariable) {
-        final String dialogTitle = "Plot Matrix";
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
-
-        ScatterPlotOld scatterPlot = new ScatterPlotOld(dataSet, yVariable, xVariable);
-        ScatterPlotEditorPanel editorPanel = new ScatterPlotEditorPanel(scatterPlot, dataSet);
-        ScatterPlotDisplayPanel display = new ScatterPlotDisplayPanel(scatterPlot);
-        editorPanel.addPropertyChangeListener(new ScatterPlotListener(display));
-
-        JMenuBar bar = new JMenuBar();
-        JMenu menu = new JMenu("File");
-        menu.add(new JMenuItem(new SaveComponentImage(display, "Save Scatter Plot")));
-        bar.add(menu);
-
-        Box box = Box.createHorizontalBox();
-        box.add(display);
-
-        box.add(Box.createHorizontalStrut(3));
-        box.add(editorPanel);
-        box.add(Box.createHorizontalStrut(5));
-        box.add(Box.createHorizontalGlue());
-
-        Box vBox = Box.createVerticalBox();
-        vBox.add(Box.createVerticalStrut(15));
-        vBox.add(box);
-        vBox.add(Box.createVerticalStrut(5));
-
-        panel.add(bar, BorderLayout.NORTH);
-        panel.add(vBox, BorderLayout.CENTER);
-
-        return panel;
-    }
-
-
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
                 JFrame.class, this.dataEditor);
     }
-
-    //================================= Inner Class ======================================//
-
-
-    /**
-     * Glue between the editor and the display.
-     */
-    private static class ScatterPlotListener implements PropertyChangeListener {
-
-        private final ScatterPlotDisplayPanel display;
-
-
-        public ScatterPlotListener(ScatterPlotDisplayPanel display) {
-            this.display = display;
-        }
-
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            if ("histogramChange".equals(evt.getPropertyName())) {
-                this.display.updateScatterPlot((ScatterPlotOld) evt.getNewValue());
-            }
-        }
-    }
-
-
 }
 
 

@@ -196,15 +196,14 @@ public class ScatterPlot {
     }
 
     /**
-     * @return whether or not to include the regression line.
+     * @return whether to include the regression line.
      */
     public boolean isIncludeLine() {
         return this.includeLine;
     }
 
     /**
-     * Calculates the regression coefficient for the variables
-     * return a regression coeff
+     * Calculates the regression coefficient for the variables return a regression coefficient.
      */
     public double getRegressionCoeff() {
         return getRegressionResult().getCoef()[1];
@@ -220,9 +219,6 @@ public class ScatterPlot {
     public DataSet getDataSet() {
         return this.dataSet;
     }
-
-
-    //========================================PUBLIC METHODS=================================//
 
     /**
      * Adds a continuous conditioning variables, conditioning on a range of values.
