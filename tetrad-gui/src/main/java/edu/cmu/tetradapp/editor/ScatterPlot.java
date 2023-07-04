@@ -238,56 +238,7 @@ public class ScatterPlot {
         this.continuousIntervals.put(node, new double[]{low, high});
     }
 
-    /**
-     * Removes a conditioning variable.
-     *
-     * @param variable The name of the conditioning variable to remove.
-     */
-    public void removeConditioningVariable(String variable) {
-        Node node = this.dataSet.getVariable(variable);
-        if (!(this.continuousIntervals.containsKey(node))) {
-            throw new IllegalArgumentException("Not a conditioning node: " + variable);
-        }
-        this.continuousIntervals.remove(node);
-    }
-
-    public void removeConditioningVariables() {
-        this.continuousIntervals = new HashMap<>();
-    }
-
-    /**
-     * For a continuous target, returns the number of values histogrammed. This may be
-     * less than the sample size of the data set because of conditioning.
-     */
-    public int getN(String target) {
-        List<Double> conditionedDataContinuous = getConditionedDataContinuous(target);
-        return conditionedDataContinuous.size();
-    }
-
-    /**
-     * A convenience method to return the data for a particular named continuous
-     * variable.
-     *
-     * @param variable The name of the variable.
-     */
-    public double[] getContinuousData(String variable) {
-        int index = this.dataSet.getColumn(this.dataSet.getVariable(variable));
-        List<Double> _data = new ArrayList<>();
-
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-            _data.add(this.dataSet.getDouble(i, index));
-        }
-
-        return asDoubleArray(_data);
-    }
-
     //======================================PRIVATE METHODS=======================================//
-
-    private double[] asDoubleArray(List<Double> data) {
-        double[] _data = new double[data.size()];
-        for (int i = 0; i < data.size(); i++) _data[i] = data.get(i);
-        return _data;
-    }
 
     private List<Double> getUnconditionedDataContinuous(String target) {
         int index = this.dataSet.getColumn(this.dataSet.getVariable(target));
