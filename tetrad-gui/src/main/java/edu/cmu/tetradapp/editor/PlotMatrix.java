@@ -83,6 +83,16 @@ public class PlotMatrix extends JPanel {
         JMenuBar menuBar = new JMenuBar();
         JMenu settings = new JMenu("Settings");
         menuBar.add(settings);
+
+        JMenuItem addRegressionLines = new JCheckBoxMenuItem("Add Regression Lines to Scatterplots");
+        addRegressionLines.setSelected(false);
+        settings.add(addRegressionLines);
+
+        addRegressionLines.addActionListener(e -> {
+            setAddRegressionLines(!isAddRegressionLines());
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+        });
+
         JMenuItem numBins = new JMenu("Num Bins for Histograms");
         ButtonGroup group = new ButtonGroup();
 
@@ -101,14 +111,6 @@ public class PlotMatrix extends JPanel {
 
         settings.add(numBins);
 
-        JMenuItem addRegressionLines = new JCheckBoxMenuItem("Add Regression Lines to Histograms");
-        addRegressionLines.setSelected(false);
-        settings.add(addRegressionLines);
-
-        addRegressionLines.addActionListener(e -> {
-            setAddRegressionLines(!isAddRegressionLines());
-            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
-        });
 
         JMenuItem editConditioning = new JMenuItem("Edit Conditioning Variables and Ranges");
 

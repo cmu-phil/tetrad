@@ -89,7 +89,6 @@ public class Histogram {
         if (!(low < high)) throw new IllegalArgumentException("Low must be less than high: " + low + " >= " + high);
 
         Node node = this.dataSet.getVariable(variable);
-//        if (node == this.target) return;// throw new IllegalArgumentException("Conditioning node may not be the target.");
         if (!(node instanceof ContinuousVariable)) throw new IllegalArgumentException("Variable must be continuous.");
         if (this.continuousIntervals.containsKey(node))
             throw new IllegalArgumentException("Please remove conditioning variable first.");
