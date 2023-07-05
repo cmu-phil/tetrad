@@ -90,6 +90,7 @@ public class MarkovCheckEditor extends JPanel {
     private JPanel histogramPanelDep;
     private final JLabel conditioningLabelDep = new JLabel("(Unspecified)");
     private final JLabel conditioningLabelIndep = new JLabel("(Unspecified)");
+    private int numBins = 10;
 
     /**
      * Constructs a new editor for the given model.
@@ -494,6 +495,31 @@ public class MarkovCheckEditor extends JPanel {
         panel.setLayout(new BorderLayout());
         panel.add(b0, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+//        JMenuItem numBins = new JMenu("Set number of Bins for Histograms");
+//        ButtonGroup group = new ButtonGroup();
+//
+//        for (int i = 2; i <= 20; i++) {
+//            int _i = i;
+//            JMenuItem comp = new JCheckBoxMenuItem(String.valueOf(i));
+//            numBins.add(comp);
+//            group.add(comp);
+//            if (i == getNumBins()) comp.setSelected(true);
+//
+//            comp.addActionListener(e -> {
+//                setNumBins(_i);
+//                revalidate();
+//                repaint();
+//            });
+//        }
+//
+//        JMenuBar menuBar = new JMenuBar();
+//        JMenu menu = new JMenu("Settings");
+//        menu.add(numBins);
+//        menuBar.add(menu);
+//
+//        add(menuBar, BorderLayout.NORTH);
+
         return panel;
     }
 
@@ -815,7 +841,7 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         Histogram histogram = new Histogram(dataSet);
-        histogram.setNumBins(10);
+        histogram.setNumBins(numBins);
         histogram.setTarget("P-Value or Bump");
         HistogramPanel view = new HistogramPanel(histogram, true);
 
@@ -835,6 +861,14 @@ public class MarkovCheckEditor extends JPanel {
         vBox.add(Box.createVerticalGlue());
 
         return vBox;
+    }
+
+    public int getNumBins() {
+        return numBins;
+    }
+
+    public void setNumBins(int numBins) {
+        this.numBins = numBins;
     }
 
     static class Renderer extends DefaultTableCellRenderer {
