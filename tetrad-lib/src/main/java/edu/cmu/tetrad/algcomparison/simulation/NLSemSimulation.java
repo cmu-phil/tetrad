@@ -5,15 +5,19 @@ import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import org.apache.commons.math3.distribution.MultivariateNormalDistribution;
+import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static org.apache.commons.math3.util.FastMath.sqrt;
+import static org.apache.commons.math3.util.FastMath.*;
 
 /**
  * @author bryanandrews
@@ -51,50 +55,99 @@ public class NLSemSimulation implements Simulation {
                 graph = this.randomGraph.createGraph(parameters);
             }
 
+            Map<Node, Integer> indices = new HashMap<>();
+            for (int j = 0; j < numVars; j++) {
+                indices.put(variables.get(j), j);
+            }
+
             this.graphs.add(graph);
-            Matrix data = new Matrix(sampleSize, numVars);
+            RealMatrix data = new BlockRealMatrix(sampleSize, numVars);
+
             int errorType = parameters.getInt(Params.SIMULATION_ERROR_TYPE);
 
             for (int k = 0; k < numVars; k++) {
+                Node x = variables.get(k);
+                List<Node> Pa = graph.getParents(x);
 
-//                Node x = variables.get(j);
-//                List<Node> = variables.get
+                // Additive Error
 
                 if (errorType == 1) {
-                    double varLow = parameters.getDouble(Params.VAR_LOW);
-                    double varHigh = parameters.getDouble(Params.VAR_HIGH);
-                    double std = sqrt(RandomUtil.getInstance().nextUniform(varLow, varHigh));
+                    double low = parameters.getDouble(Params.VAR_LOW);
+                    double high = parameters.getDouble(Params.VAR_HIGH);
+                    double std = sqrt(RandomUtil.getInstance().nextUniform(low, high));
                     for (int j = 0; j < sampleSize; j++) {
-                        data.set(j, k, RandomUtil.getInstance().nextNormal(0, std));
+                        data.setEntry(j, k, RandomUtil.getInstance().nextNormal(0, std));
                     }
                 } else if (errorType == 2) {
                     double low = parameters.getDouble(Params.SIMULATION_PARAM1);
                     double high = parameters.getDouble(Params.SIMULATION_PARAM1);
                     for (int j = 0; j < sampleSize; j++) {
-                        data.set(j, k, RandomUtil.getInstance().nextUniform(low, high));
+                        data.setEntry(j, k, RandomUtil.getInstance().nextUniform(low, high));
                     }
                 } else if (errorType == 3) {
                     double lambda = parameters.getDouble(Params.SIMULATION_PARAM1);
                     for (int j = 0; j < sampleSize; j++) {
-                        data.set(j, k, RandomUtil.getInstance().nextExponential(lambda));
+                        data.setEntry(j, k, RandomUtil.getInstance().nextExponential(lambda));
                     }
                 } else if (errorType == 4) {
                     double mu = parameters.getDouble(Params.SIMULATION_PARAM1);
                     double beta = parameters.getDouble(Params.SIMULATION_PARAM2);
                     for (int j = 0; j < sampleSize; j++) {
-                        data.set(j, k, RandomUtil.getInstance().nextGumbel(mu, beta));
+                        data.setEntry(j, k, RandomUtil.getInstance().nextGumbel(mu, beta));
                     }
+                }
+
+                // Linear Component
+
+                for (Node z : Pa) {
+                    double low = parameters.getDouble(Params.COEF_LOW);
+                    double high = parameters.getDouble(Params.COEF_HIGH);
+                    double beta = RandomUtil.getInstance().nextUniform(low, high);
+
+                    int w = indices.get(z);
+                    for (int j = 0; j < sampleSize; j++) {
+                        data.addToEntry(j, k, beta * data.getEntry(j, w));
+                    }
+                }
+
+                // Non-Linear Component
+
+                if (Pa.isEmpty()) continue;
+
+                RealMatrix kernel = new BlockRealMatrix(sampleSize, sampleSize);
+                double[] mu = new double[sampleSize];
+                double[][] cov = new double[sampleSize][sampleSize];
+                for (Node z : Pa) {
+                    int w = indices.get(z);
+                    for (int j = 0; j < sampleSize; j++) {
+                        for (int l = 0; l < sampleSize; l++) {
+                            kernel.addToEntry(j, l, pow(data.getEntry(j, w) - data.getEntry(l, w), 2));
+                        }
+                    }
+                }
+
+                for (int j = 0; j < sampleSize; j++) {
+                    mu[j] = 0.0;
+                    for (int l = 0; l < sampleSize; l++) {
+                        cov[j][l] = exp(-200.0 * kernel.getEntry(j, l));
+                    }
+                }
+
+                MultivariateNormalDistribution N = new MultivariateNormalDistribution(mu, cov);
+                double[] X = N.sample();
+                for (int j = 0; j < sampleSize; j++) {
+                    data.addToEntry(j, k, X[j]);
                 }
             }
 
             List<Node> continuousVars = new ArrayList<>();
-            for (Node node : variables) {
-                ContinuousVariable var = new ContinuousVariable(node.getName());
-                var.setNodeType(node.getNodeType());
+            for (Node x : variables) {
+                ContinuousVariable var = new ContinuousVariable(x.getName());
+                var.setNodeType(x.getNodeType());
                 continuousVars.add(var);
             }
 
-            DataSet dataSet = new BoxDataSet(new DoubleDataBox(data.toArray()), variables);
+            DataSet dataSet = new BoxDataSet(new DoubleDataBox(data.getData()), continuousVars);
 
             if (parameters.getBoolean(Params.RANDOMIZE_COLUMNS)) {
                 dataSet = DataUtils.shuffleColumns(dataSet);
