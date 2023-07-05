@@ -55,6 +55,7 @@ public class ParameterTab extends JPanel {
     private static final String[] SOURCE_GRAPH_ITEMS = {
             SimulationTypes.BAYS_NET,
             SimulationTypes.STRUCTURAL_EQUATION_MODEL,
+            SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL,
             SimulationTypes.LINEAR_FISHER_MODEL,
             SimulationTypes.LEE_AND_HASTIE,
             SimulationTypes.CONDITIONAL_GAUSSIAN,
@@ -163,6 +164,9 @@ public class ParameterTab extends JPanel {
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
                         break;
+                    case SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL:
+                        this.simulation.setSimulation(new NLSemSimulation(randomGraph), this.simulation.getParams());
+                        break;
                     case SimulationTypes.LINEAR_FISHER_MODEL:
                         this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());
                         break;
@@ -191,6 +195,9 @@ public class ParameterTab extends JPanel {
                         break;
                     case SimulationTypes.STRUCTURAL_EQUATION_MODEL:
                         this.simulation.setSimulation(new SemSimulation(randomGraph), this.simulation.getParams());
+                        break;
+                    case SimulationTypes.NON_LINEAR_STRUCTURAL_EQUATION_MODEL:
+                        this.simulation.setSimulation(new NLSemSimulation(randomGraph), this.simulation.getParams());
                         break;
                     case SimulationTypes.LINEAR_FISHER_MODEL:
                         this.simulation.setSimulation(new LinearFisherModel(randomGraph), this.simulation.getParams());

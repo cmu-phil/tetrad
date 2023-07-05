@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -75,9 +74,7 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
-    }
+    public Graph getComparisonGraph(Graph graph) { return new EdgeListGraph(graph); }
 
     public String getDescription() {
         return "Direct-LiNGAM (Direct Linear Non-Gaussian Acyclic Model";
