@@ -21,6 +21,7 @@ class ScatterplotPanel extends JPanel {
 
     private final NumberFormat nf;
     private boolean drawAxes = false;
+    private int pointSize = 5;
 
     /**
      * Constructor.
@@ -63,7 +64,7 @@ class ScatterplotPanel extends JPanel {
         int yMax = drawAxes ? chartHeight - 20 : chartHeight;
         int yRange = yMax - yMin;
 
-        /* draws axis lines */
+        // Draw axis lines.
         if (drawAxes) {
             g.setStroke(new BasicStroke());
             g.setPaint(Color.black);
@@ -86,17 +87,19 @@ class ScatterplotPanel extends JPanel {
             g.translate(-(xMin - 7), -(yMin + (yRange / 2) + 10));
         }
 
-        /* draws ScatterPlot of the values */
+        // Draw ScatterPlot of the values.
         Vector<Point2D.Double> pts = this.scatterPlot.getSievedValues();
         double _xRange = xmax - xmin;
         double _yRange = ymax - ymin;
         int x, y;
 
+//        pointSize = drawAxes ? 6 : 2;
+
         g.setColor(Color.RED.darker());
         for (Point2D.Double _pt : pts) {
             x = (int) (((_pt.getX() - xmin) / _xRange) * xRange + xMin);
             y = (int) (((ymax - _pt.getY()) / _yRange) * yRange + yMin);
-            g.fillOval(x - 2, y - 2, 5, 5);
+            g.fillOval(x - pointSize / 2, y - pointSize / 2, pointSize, pointSize);
         }
 
         /* draws best-fit line */
@@ -150,5 +153,9 @@ class ScatterplotPanel extends JPanel {
 
     public void setDrawAxes(boolean drawAxes) {
         this.drawAxes = drawAxes;
+    }
+
+    public void setPointSize(int pointSize) {
+        this.pointSize = pointSize;
     }
 }

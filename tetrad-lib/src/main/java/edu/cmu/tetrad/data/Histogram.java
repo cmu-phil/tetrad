@@ -316,7 +316,7 @@ public class Histogram {
                 double[] range = this.continuousIntervals.get(node);
                 int index = this.dataSet.getColumn(node);
                 double value = this.dataSet.getDouble(i, index);
-                if (!(value > range[0] && value < range[1])) {
+                if (!(value >= range[0] && value <= range[1])) {
                     continue I;
                 }
             }

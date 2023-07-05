@@ -149,18 +149,18 @@ public class PlotMatrix extends JPanel {
         setPreferredSize(new Dimension(750, 450));
     }
 
-    private void constructPlotMatrix(JPanel charts, DataSet dataSet, List<Node> nodes, JList<Node> leftSelector, JList<Node> topSelector) {
-        int[] leftIndices = leftSelector.getSelectedIndices();
-        int[] topIndices = topSelector.getSelectedIndices();
+    private void constructPlotMatrix(JPanel charts, DataSet dataSet, List<Node> nodes, JList<Node> rowSelector, JList<Node> colSelector) {
+        int[] rowIndices = rowSelector.getSelectedIndices();
+        int[] colIndices = colSelector.getSelectedIndices();
         charts.removeAll();
 
-        charts.setLayout(new GridLayout(leftIndices.length, topIndices.length));
+        charts.setLayout(new GridLayout(rowIndices.length, colIndices.length));
 
-        for (int leftIndex : leftIndices) {
-            for (int topIndex : topIndices) {
-                if (leftIndex == topIndex) {
+        for (int rowIndex : rowIndices) {
+            for (int colIndex : colIndices) {
+                if (rowIndex == colIndex) {
                     Histogram histogram = new Histogram(dataSet);
-                    histogram.setTarget(nodes.get(leftIndex).getName());
+                    histogram.setTarget(nodes.get(rowIndex).getName());
 
                     for (Node node : conditioningPanelMap.keySet()) {
                         if (node instanceof ContinuousVariable) {
@@ -178,19 +178,19 @@ public class PlotMatrix extends JPanel {
                         }
                     }
 
-                    if (!(nodes.get(leftIndex) instanceof DiscreteVariable)) {
+                    if (!(nodes.get(rowIndex) instanceof DiscreteVariable)) {
                         histogram.setNumBins(numBins);
                     }
 
                     HistogramPanel panel = new HistogramPanel(histogram,
-                            leftIndices.length == 1 && topIndices.length == 1);
+                            rowIndices.length == 1 && colIndices.length == 1);
 
-                    addPanelListener(charts, dataSet, nodes, leftIndex, topIndex, panel);
+                    addPanelListener(charts, dataSet, nodes, rowIndex, colIndex, panel);
 
                     charts.add(panel);
                 } else {
-                    ScatterPlot scatterPlot = new ScatterPlot(dataSet, addRegressionLines, nodes.get(topIndex).getName(),
-                            nodes.get(leftIndex).getName());
+                    ScatterPlot scatterPlot = new ScatterPlot(dataSet, addRegressionLines, nodes.get(colIndex).getName(),
+                            nodes.get(rowIndex).getName());
 
                     for (Node node : conditioningPanelMap.keySet()) {
                         if (node instanceof ContinuousVariable) {
@@ -203,8 +203,15 @@ public class PlotMatrix extends JPanel {
                     }
 
                     ScatterplotPanel panel = new ScatterplotPanel(scatterPlot);
-                    panel.setDrawAxes(leftIndices.length == 1 && topIndices.length == 1);
-                    addPanelListener(charts, dataSet, nodes, leftIndex, topIndex, panel);
+                    panel.setDrawAxes(rowIndices.length == 1 && colIndices.length == 1);
+
+                    int pointSize = 5;
+                    if (rowIndices.length > 2 || colIndices.length > 2) pointSize = 4;
+                    if (rowIndices.length > 3 || colIndices.length > 3) pointSize = 3;
+                    if (rowIndices.length > 5 || colIndices.length > 5) pointSize = 2;
+                    panel.setPointSize(pointSize);
+
+                    addPanelListener(charts, dataSet, nodes, rowIndex, colIndex, panel);
                     charts.add(panel);
                 }
             }
@@ -214,7 +221,7 @@ public class PlotMatrix extends JPanel {
         repaint();
     }
 
-    private void addPanelListener(JPanel charts, DataSet dataSet, List<Node> nodes, int leftIndex, int topIndex, JPanel panel) {
+    private void addPanelListener(JPanel charts, DataSet dataSet, List<Node> nodes, int rowIndex, int colIndex, JPanel panel) {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -223,14 +230,14 @@ public class PlotMatrix extends JPanel {
                             && colSelector.getSelectedIndices().length == 1) {
                         rowSelector.setSelectedIndices(lastRows);
                         colSelector.setSelectedIndices(lastCols);
-                        lastRows = new int[]{leftIndex};
-                        lastCols = new int[]{topIndex};
+                        lastRows = new int[]{rowIndex};
+                        lastCols = new int[]{colIndex};
                         constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
                     } else {
                         lastRows = rowSelector.getSelectedIndices();
                         lastCols = colSelector.getSelectedIndices();
-                        rowSelector.setSelectedIndex(leftIndex);
-                        colSelector.setSelectedIndex(topIndex);
+                        rowSelector.setSelectedIndex(rowIndex);
+                        colSelector.setSelectedIndex(colIndex);
                         constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
                     }
                 }
