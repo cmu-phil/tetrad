@@ -48,6 +48,7 @@ public class HistogramPanel extends JPanel {
     private final Histogram histogram;
     private final NumberFormat format = new DecimalFormat("0.#");// NumberFormatUtil.getInstance().getNumberFormat();
     private final Map<Rectangle, Integer> rectMap = new LinkedHashMap<>();
+    private Color barColor = Color.RED.darker();
 
     /**
      * Constructs the histogram display panel given the initial histogram to display.
@@ -90,7 +91,7 @@ public class HistogramPanel extends JPanel {
         int height = drawAxes ? getHeight() - 10 : getHeight();
         int width = getWidth() - paddingX;
         int displayedHeight = (int) (height - paddingY);
-        int space = 2;
+        int space = drawAxes ? 2 : 1;
         int dash = 10;
 
         // set up variables.
@@ -113,7 +114,7 @@ public class HistogramPanel extends JPanel {
             int freq = freqs[i];
             int y = (int) FastMath.ceil(scale * freq);
             int x = space * (i + 1) + barWidth * i + paddingX;
-            g2d.setColor(HistogramPanel.getBarColor());
+            g2d.setColor(barColor);
             Rectangle rect = new Rectangle(x, (height - y - space), barWidth, y);
             g2d.fill(rect);
             this.rectMap.put(rect, freq);
@@ -191,10 +192,6 @@ public class HistogramPanel extends JPanel {
         return intValue;
     }
 
-    private static Color getBarColor() {
-        return Color.RED.darker();
-    }
-
     private static int getMax(int[] freqs) {
         int max = freqs[0];
         for (int i = 1; i < freqs.length; i++) {
@@ -204,6 +201,10 @@ public class HistogramPanel extends JPanel {
             }
         }
         return max;
+    }
+
+    public void setBarColor(Color barColor) {
+        this.barColor = barColor;
     }
 }
 

@@ -816,17 +816,22 @@ public class MarkovCheckEditor extends JPanel {
         Histogram histogram = new Histogram(dataSet);
         histogram.setNumBins(10);
         histogram.setTarget("P-Value or Bump");
-        HistogramPanel view = new HistogramPanel(histogram, false);
+        HistogramPanel view = new HistogramPanel(histogram, true);
+
+        Color fillColor = new Color(113, 165, 210);
+        view.setBarColor(fillColor);
+
+        view.setPreferredSize(new Dimension(400, 200));
 
         Box box = Box.createHorizontalBox();
+        box.add(Box.createHorizontalGlue());
         box.add(view);
-        box.add(Box.createHorizontalStrut(5));
         box.add(Box.createHorizontalGlue());
 
         Box vBox = Box.createVerticalBox();
-        vBox.add(Box.createVerticalStrut(15));
+        vBox.add(Box.createVerticalGlue());
         vBox.add(box);
-        vBox.add(Box.createVerticalStrut(5));
+        vBox.add(Box.createVerticalGlue());
 
         return vBox;
     }
