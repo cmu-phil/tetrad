@@ -111,7 +111,6 @@ public class PlotMatrix extends JPanel {
 
         settings.add(numBins);
 
-
         JMenuItem editConditioning = new JMenuItem("Edit Conditioning Variables and Ranges");
 
         editConditioning.addActionListener(new ActionListener() {
