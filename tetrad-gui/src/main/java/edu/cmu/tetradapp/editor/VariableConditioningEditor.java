@@ -22,11 +22,9 @@ import java.util.*;
  * @author josephramsey
  */
 public class VariableConditioningEditor extends JPanel {
-    //    private final JComboBox<Node> targetSelector;
     private final JComboBox<Node> newConditioningVariableSelector;
     private final JButton newConditioningVariableButton;
     private final JButton removeConditioningVariableButton;
-    //    private final List<ConditioningPanel> conditioningPanels = new ArrayList<>();
     private final Map<Node, ConditioningPanel> conditioningPanelMap = new HashMap<>();
 
     /**
@@ -81,8 +79,6 @@ public class VariableConditioningEditor extends JPanel {
                 int ntileIndex = panel2.getNtileIndex();
 
                 ContinuousConditioningPanel panel3 = new ContinuousConditioningPanel(_var, low, high, ntile, ntileIndex, type);
-
-//                VariableConditioningEditor.this.conditioningPanels.add(panel3);
                 VariableConditioningEditor.this.conditioningPanelMap.put(_var, panel3);
             } else if (selected instanceof DiscreteVariable) {
                 DiscreteVariable _var = (DiscreteVariable) selected;

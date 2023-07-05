@@ -93,8 +93,6 @@ class ScatterplotPanel extends JPanel {
         double _yRange = ymax - ymin;
         int x, y;
 
-//        pointSize = drawAxes ? 6 : 2;
-
         g.setColor(Color.RED.darker());
         for (Point2D.Double _pt : pts) {
             x = (int) (((_pt.getX() - xmin) / _xRange) * xRange + xMin);

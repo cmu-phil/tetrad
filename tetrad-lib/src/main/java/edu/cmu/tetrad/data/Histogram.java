@@ -239,7 +239,9 @@ public class Histogram {
         return this.target.getName();
     }
 
-    //======================================PRIVATE METHODS=======================================//
+    public Node getTargetNode() {
+        return this.target;
+    }
 
     private double[] getBreakpoints(List<Double> data, int numBins) {
         double[] _data = asDoubleArray(data);
@@ -334,10 +336,6 @@ public class Histogram {
         }
 
         return rows;
-    }
-
-    public Node getTargetNode() {
-        return this.target;
     }
 }
 
