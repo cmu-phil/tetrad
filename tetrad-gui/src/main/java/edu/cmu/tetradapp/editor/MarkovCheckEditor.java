@@ -264,6 +264,8 @@ public class MarkovCheckEditor extends JPanel {
         pane.addTab("Help", scroll);
         box.add(pane);
 
+        box.setPreferredSize(new Dimension(700, 500));
+
         class MyWatchedProcess extends WatchedProcess {
             public void watch() {
                 setTest();
@@ -849,6 +851,7 @@ public class MarkovCheckEditor extends JPanel {
         view.setBarColor(fillColor);
 
         view.setPreferredSize(new Dimension(400, 200));
+        view.setMaximumSize(new Dimension(400, 200));
 
         Box box = Box.createHorizontalBox();
         box.add(Box.createHorizontalGlue());
