@@ -57,11 +57,11 @@ class ScatterplotPanel extends JPanel {
         int chartHeight = getSize().height;
 
         final int xStringMin = 10;
-        int xMin = drawAxes ? 50 : 0;
-        int xMax = drawAxes ? chartWidth - 20 : chartWidth;
+        int xMin = drawAxes ? 50 : 2;
+        int xMax = drawAxes ? chartWidth - 20 : chartWidth - 4;
         int xRange = xMax - xMin;
-        int yMin = drawAxes ? 30 : 0;
-        int yMax = drawAxes ? chartHeight - 20 : chartHeight;
+        int yMin = drawAxes ? 30 : 2;
+        int yMax = drawAxes ? chartHeight - 20 : chartHeight - 4;
         int yRange = yMax - yMin;
 
         // Draw axis lines.

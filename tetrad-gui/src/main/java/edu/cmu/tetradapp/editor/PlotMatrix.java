@@ -84,7 +84,7 @@ public class PlotMatrix extends JPanel {
         JMenu settings = new JMenu("Settings");
         menuBar.add(settings);
 
-        JMenuItem addRegressionLines = new JCheckBoxMenuItem("Add Regression Lines to Scatterplots");
+        JMenuItem addRegressionLines = new JCheckBoxMenuItem("Add Trend Lines");
         addRegressionLines.setSelected(false);
         settings.add(addRegressionLines);
 
@@ -93,7 +93,7 @@ public class PlotMatrix extends JPanel {
             constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
         });
 
-        JMenuItem numBins = new JMenu("Num Bins for Histograms");
+        JMenuItem numBins = new JMenu("Set number of Bins for Histograms");
         ButtonGroup group = new ButtonGroup();
 
         for (int i = 2; i <= 20; i++) {
@@ -111,7 +111,7 @@ public class PlotMatrix extends JPanel {
 
         settings.add(numBins);
 
-        JMenuItem editConditioning = new JMenuItem("Edit Conditioning Variables and Ranges");
+        JMenuItem editConditioning = new JMenuItem("Edit Conditioning Variables");
 
         editConditioning.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -183,6 +183,7 @@ public class PlotMatrix extends JPanel {
 
                     HistogramPanel panel = new HistogramPanel(histogram,
                             rowIndices.length == 1 && colIndices.length == 1);
+                    panel.setMinimumSize(new Dimension(10, 10));
 
                     addPanelListener(charts, dataSet, nodes, rowIndex, colIndex, panel);
 
@@ -203,6 +204,7 @@ public class PlotMatrix extends JPanel {
 
                     ScatterplotPanel panel = new ScatterplotPanel(scatterPlot);
                     panel.setDrawAxes(rowIndices.length == 1 && colIndices.length == 1);
+                    panel.setMinimumSize(new Dimension(10, 10));
 
                     int pointSize = 5;
                     if (rowIndices.length > 2 || colIndices.length > 2) pointSize = 4;

@@ -105,7 +105,7 @@ public class HistogramPanel extends JPanel {
     public void paintComponent(Graphics graphics) {
         int paddingY = drawAxes ? 15 : 5;
         int height = drawAxes ? getHeight() - 10 : getHeight();
-        int width = getWidth() - paddingX;
+        int width = getWidth() - (drawAxes ? paddingX : 2);
         int displayedHeight = (int) (height - paddingY);
         int space = drawAxes ? 2 : 1;
         int dash = 10;
@@ -126,7 +126,8 @@ public class HistogramPanel extends JPanel {
         g2d.fillRect(0, 0, width + 2 * space, height);
         g2d.setColor(Color.WHITE);
         g2d.fillRect(0, 0, width, height);
-        // draw the histogram
+
+        // Draw the histogram
         for (int i = 0; i < categories; i++) {
             int freq = freqs[i];
             int y = (int) FastMath.ceil(scale * freq);
