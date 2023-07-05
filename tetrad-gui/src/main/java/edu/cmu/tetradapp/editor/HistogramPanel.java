@@ -40,14 +40,14 @@ import java.util.Map;
  * @author josephramsey
  */
 public class HistogramPanel extends JPanel {
-    private boolean drawAxes = true;
     public static final String[] tiles = {"1-tile", "2-tile", "tertile", "quartile", "quintile", "sextile",
             "septile", "octile", "nontile", "decile"};
     private static final Color LINE_COLOR = Color.GRAY.darker();
-    private int paddingX;
     private final Histogram histogram;
     private final NumberFormat format = new DecimalFormat("0.#");// NumberFormatUtil.getInstance().getNumberFormat();
     private final Map<Rectangle, Integer> rectMap = new LinkedHashMap<>();
+    private boolean drawAxes = true;
+    private int paddingX;
     private Color barColor = Color.RED.darker();
 
     /**
@@ -63,9 +63,23 @@ public class HistogramPanel extends JPanel {
         if (histogram == null) {
             throw new NullPointerException("Given histogram must be null");
         }
+
         this.histogram = histogram;
 
         this.setToolTipText(" ");
+    }
+
+    private static int getMax(int[] freqs) {
+        int max = freqs[0];
+
+        for (int i = 1; i < freqs.length; i++) {
+            int current = freqs[i];
+            if (current > max) {
+                max = current;
+            }
+        }
+
+        return max;
     }
 
     public String getToolTipText(MouseEvent evt) {
@@ -77,9 +91,11 @@ public class HistogramPanel extends JPanel {
                 if (i != null) {
                     return i.toString();
                 }
+
                 break;
             }
         }
+
         return null;
     }
 
@@ -94,7 +110,7 @@ public class HistogramPanel extends JPanel {
         int space = drawAxes ? 2 : 1;
         int dash = 10;
 
-        // set up variables.
+        // Set up variables.
         this.rectMap.clear();
         Graphics2D g2d = (Graphics2D) graphics;
         Histogram histogram = this.getHistogram();
@@ -104,7 +120,8 @@ public class HistogramPanel extends JPanel {
         int topFreq = HistogramPanel.getMax(freqs);
         double scale = displayedHeight / (double) topFreq;
         FontMetrics fontMetrics = g2d.getFontMetrics();
-        // draw background/surrounding box.
+
+        // Draw background/surrounding box.
         g2d.setColor(this.getBackground());
         g2d.fillRect(0, 0, width + 2 * space, height);
         g2d.setColor(Color.WHITE);
@@ -119,7 +136,8 @@ public class HistogramPanel extends JPanel {
             g2d.fill(rect);
             this.rectMap.put(rect, freq);
         }
-        //border
+
+        // Draw border.
         g2d.setColor(HistogramPanel.LINE_COLOR);
         g2d.drawRect(paddingX, 0, width - paddingX, height);
         // draw the buttom line
@@ -127,6 +145,7 @@ public class HistogramPanel extends JPanel {
 
         Node target = histogram.getTargetNode();
 
+        // Draw axes.
         if (drawAxes) {
             // draw the side line
             g2d.setColor(HistogramPanel.LINE_COLOR);
@@ -149,6 +168,10 @@ public class HistogramPanel extends JPanel {
      */
     public Histogram getHistogram() {
         return this.histogram;
+    }
+
+    public void setBarColor(Color barColor) {
+        this.barColor = barColor;
     }
 
     private Map<Integer, Double> pickGoodPointsAndValues(double minValue, double maxValue) {
@@ -190,21 +213,6 @@ public class HistogramPanel extends JPanel {
         }
 
         return intValue;
-    }
-
-    private static int getMax(int[] freqs) {
-        int max = freqs[0];
-        for (int i = 1; i < freqs.length; i++) {
-            int current = freqs[i];
-            if (current > max) {
-                max = current;
-            }
-        }
-        return max;
-    }
-
-    public void setBarColor(Color barColor) {
-        this.barColor = barColor;
     }
 }
 
