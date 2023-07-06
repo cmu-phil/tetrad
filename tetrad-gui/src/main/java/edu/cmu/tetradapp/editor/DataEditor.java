@@ -643,8 +643,8 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         menuBar.add(tools);
 
 //        tools.add(new CalculatorAction(this));
-        tools.add(new HistogramAction(this));
-        tools.add(new ScatterPlotAction(this));
+//        tools.add(new HistogramAction(this));
+        tools.add(new PlotMatrixAction(this));
         tools.add(new QQPlotAction(this));
         tools.add(new NormalityTestAction(this));
         tools.add(new DescriptiveStatsAction(this));

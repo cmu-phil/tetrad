@@ -1639,49 +1639,41 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
 
     <h2>Data Information</h2>
 
-    <p>Under the Tools tab, there are options to view information about
-        your data in several different formats.</p>
+    <p>Under the Tools tab, there are options to view information about your data in several
+        formats.</p>
 
-    <p>The Histograms tool shows histograms of the variables in the data
-        set.</p>
+    <p>The Plot Matrix tool shows a grid of scatterplots and histograms for selected variables.
+        This may be used for continuous, discrete, or mixtures of continuous and discrete data.
+        To select which variables to include in the rows and columns of the grid, click the variable
+        lists to the right of the tool. To select multiple variables in these lists, use the shift
+        or control keys when clicking; shift-click select ranges, whereas control-click will select
+        additional single variables.</p>
 
+    <p>Histograms show the data distribution for a variable, with the width of each bar
+        representing a range of values and the height of each bar representing how many data
+        points fall into that range.</p>
 
-    <img alt="" src="images/data_box_8.png" width="650">
+    <p>Scatter plots show a plot of variables taken two at a time. They plot values of one
+        variable's values against another variable's values, point by point, and allow one
+        to see the distribution of points for the pair of variables.</p>
 
+    <p>If viewing a grid of plots, one wishes to view a single plot in this grid, double-click on
+        the desired plot, and it will be magnified so that it is in the only plot viewed.
+        Double-click on the magnified plot to return to the grid.</p>
 
-    <p>These show the distribution of data for each variable, with the
-        width of each bar representing a range of values, and height of each bar
-        representing how many data points fall into that range. Using histograms,
-        you can determine whether each variable has a distribution that is
-        approximately Normal. To select a variable to view, choose it from the
-        drop-down menu on the right. You can increase or decrease the number of
-        bars in the histogram (and therefore decrease or increase the range of
-        each bar, and increase or decrease the accuracy of the histogram) using
-        the menu on the right. You can also view only ranges with a certain
-        amount of the data using the “cull bins” menu.</p>
+    <p>The “Settings” menu contains some tools to control the output. One may add regression lines
+        to the scatterplots or select the number of bins to include in the histograms.</p>
 
-    <p>The Scatter Plots tool allows you to view scatter plots of two
-        variables plotted against each other.</p>
+    <p>Finally, one may condition on ranges of variables or particular discrete values by
+    selecting “Edit Conditioning Variables and Ranges.” This brings up a dialog that lets one
+    add conditioning variables with particular ranges for continuous variables or values for
+    discrete values. For continuous ranges, one may pick “Above Average,” “Below Average,” or
+    “In n-tile” (where n is specified) or give a particular range manually. One may add as many
+    conditions as one prefers; when one clicks “OK,” all plots will be updated to reflect these
+    conditioning choices.</p>
 
-    <img alt="" src="images/data_box_9.png" width="650">
-
-    <p>To view a variable as the x- or y-axis of the graph, select it
-        from one the drop-down menus to the right. To view the regression line of
-        the graph, check the box on the right.</p>
-
-    <p>You can see the correlation of two variables conditional on a
-        third variable by using the Add New Conditional Variable button at the
-        bottom of the window. This will open up a slider and a box in which you
-        can set the granularity of the slider. By moving the slider to the left
-        or right, you can change the range of values of the conditional variable
-        for which the scatter plot shows the correlation of the variables on the
-        x- and y- axes. You can increase and decrease the width of the ranges by
-        changing the granularity of the slider. A slider with granularity 1 will
-        break the values of the conditional variable into sections one unit long,
-        etc. The granularity cannot be set lower than one.</p>
-
-    <p>In a well-formed model, the scatter plot of a variable plotted
-        against itself should appear as a straight line along the line y = x.</p>
+    <img alt="" src="images/data_box_8b.png" width="650">
+    <img alt="" src="images/data_box_8a.png" width="650">
 
     <p>The Q-Q Plot tool is a test for normality of distribution. </p>
 

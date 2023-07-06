@@ -36,7 +36,6 @@ import java.awt.geom.Point2D;
 import java.util.*;
 
 import static org.apache.commons.math3.util.FastMath.abs;
-import static org.apache.commons.math3.util.FastMath.log;
 
 /**
  * This is the scatterplot model class holding the necessary information to
@@ -56,16 +55,11 @@ public class ScatterPlot {
     /**
      * Constructor.
      *
-     * @param includeLine whether or not to include the regression line in the
-     *                    plot.
-     * @param x           y-axis variable name.
-     * @param y           x-axis variable name.
+     * @param includeLine whether to include the regression line in the plot.
+     * @param x y-axis variable name.
+     * @param y x-axis variable name.
      */
-    public ScatterPlot(
-            DataSet dataSet,
-            boolean includeLine,
-            String x,
-            String y) {
+    public ScatterPlot(DataSet dataSet, boolean includeLine, String x, String y) {
         this.dataSet = dataSet;
         this.x = x;
         this.y = y;
@@ -78,9 +72,7 @@ public class ScatterPlot {
         regressors.add(this.dataSet.getVariable(this.x));
         Node target = this.dataSet.getVariable(this.y);
         Regression regression = new RegressionDataset(this.dataSet);
-        RegressionResult result = regression.regress(target, regressors);
-        System.out.println(result);
-        return result;
+        return regression.regress(target, regressors);
     }
 
     public double getCorrelationCoeff() {
@@ -202,15 +194,14 @@ public class ScatterPlot {
     }
 
     /**
-     * @return whether or not to include the regression line.
+     * @return whether to include the regression line.
      */
     public boolean isIncludeLine() {
         return this.includeLine;
     }
 
     /**
-     * Calculates the regression coefficient for the variables
-     * return a regression coeff
+     * Calculates the regression coefficient for the variables return a regression coefficient.
      */
     public double getRegressionCoeff() {
         return getRegressionResult().getCoef()[1];
@@ -226,9 +217,6 @@ public class ScatterPlot {
     public DataSet getDataSet() {
         return this.dataSet;
     }
-
-
-    //========================================PUBLIC METHODS=================================//
 
     /**
      * Adds a continuous conditioning variables, conditioning on a range of values.
@@ -248,56 +236,7 @@ public class ScatterPlot {
         this.continuousIntervals.put(node, new double[]{low, high});
     }
 
-    /**
-     * Removes a conditioning variable.
-     *
-     * @param variable The name of the conditioning variable to remove.
-     */
-    public void removeConditioningVariable(String variable) {
-        Node node = this.dataSet.getVariable(variable);
-        if (!(this.continuousIntervals.containsKey(node))) {
-            throw new IllegalArgumentException("Not a conditioning node: " + variable);
-        }
-        this.continuousIntervals.remove(node);
-    }
-
-    public void removeConditioningVariables() {
-        this.continuousIntervals = new HashMap<>();
-    }
-
-    /**
-     * For a continuous target, returns the number of values histogrammed. This may be
-     * less than the sample size of the data set because of conditioning.
-     */
-    public int getN(String target) {
-        List<Double> conditionedDataContinuous = getConditionedDataContinuous(target);
-        return conditionedDataContinuous.size();
-    }
-
-    /**
-     * A convenience method to return the data for a particular named continuous
-     * variable.
-     *
-     * @param variable The name of the variable.
-     */
-    public double[] getContinuousData(String variable) {
-        int index = this.dataSet.getColumn(this.dataSet.getVariable(variable));
-        List<Double> _data = new ArrayList<>();
-
-        for (int i = 0; i < this.dataSet.getNumRows(); i++) {
-            _data.add(this.dataSet.getDouble(i, index));
-        }
-
-        return asDoubleArray(_data);
-    }
-
     //======================================PRIVATE METHODS=======================================//
-
-    private double[] asDoubleArray(List<Double> data) {
-        double[] _data = new double[data.size()];
-        for (int i = 0; i < data.size(); i++) _data[i] = data.get(i);
-        return _data;
-    }
 
     private List<Double> getUnconditionedDataContinuous(String target) {
         int index = this.dataSet.getColumn(this.dataSet.getVariable(target));
@@ -363,7 +302,6 @@ public class ScatterPlot {
 
         return cleanedVals;
     }
-
 }
 
 
