@@ -90,7 +90,7 @@ public abstract class WatchedProcess {
         dialog.setSize(100, 50);
         dialog.setResizable(false);
 
-        JButton stopButton = new JButton("Stop");
+        JButton stopButton = new JButton("Processing...");
 
         stopButton.addActionListener(e -> {
             stopLongRunningThread();
