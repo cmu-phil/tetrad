@@ -5,12 +5,10 @@ import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.Parameters;
-import edu.cmu.tetrad.util.Params;
-import edu.cmu.tetrad.util.RandomUtil;
-import edu.cmu.tetrad.util.StatUtils;
+import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.distribution.MultivariateNormalDistribution;
 import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
 
@@ -101,6 +99,28 @@ public class NLSemSimulation implements Simulation {
 
                 if (Pa.isEmpty()) continue;
 
+//                RealMatrix cov = new BlockRealMatrix(sampleSize, sampleSize);
+//
+//                for (int j = 0; j < sampleSize; j++) {
+//                    for (int l = 0; l <= j; l++) {
+//                        double d = 0;
+//                        for (Node z : Pa) {
+//                            int w = indices.get(z);
+//                            d +=  pow(data.getEntry(j, w) - data.getEntry(l, w), 2);
+//                        }
+//                        cov.setEntry(j, l, exp(- d / Pa.size() / sampleSize));
+//                        cov.setEntry(l, j, cov.getEntry(j, l));
+//                    }
+//                    RealMatrix XX = cov.getSubMatrix(j, j, j, j);
+//                    if (j > 0) {
+//                        RealMatrix XY = cov.getSubMatrix(j, j, 0, j - 1);
+//                        RealMatrix YY = cov.getSubMatrix(0, j - 1, 0, j - 1);
+//                        RealMatrix B = XY.multiply(MatrixUtils.inverse(YY));
+//                        XX = XX.subtract(B.multiply(XY.transpose()));
+//                    }
+//                    System.out.println(XX);
+//                }
+
                 double low = parameters.getDouble(Params.COEF_LOW);
                 double high = parameters.getDouble(Params.COEF_HIGH);
                 double beta = RandomUtil.getInstance().nextUniform(low, high);
@@ -114,17 +134,14 @@ public class NLSemSimulation implements Simulation {
                     for (int j = 0; j < sampleSize; j++) {
                         mu[j] = beta * data.getEntry(j, w);
                         for (int l = 0; l < sampleSize; l++) {
-                            kernel.addToEntry(j, l, -0.5 * pow(data.getEntry(j, w) - data.getEntry(l, w), 2) / Pa.size());
+                            kernel.addToEntry(j, l, abs(data.getEntry(j, w) - data.getEntry(l, w)) / Pa.size());
                         }
                     }
                 }
 
                 for (int j = 0; j < sampleSize; j++) {
                     for (int l = 0; l < sampleSize; l++) {
-                        cov[j][l] = exp(kernel.getEntry(j, l));
-                        if (j != l) {
-                            cov[j][l] /= log(sampleSize);
-                        }
+                        cov[j][l] = exp(-kernel.getEntry(j, l));
                     }
                 }
 
@@ -152,7 +169,6 @@ public class NLSemSimulation implements Simulation {
 
             dataSet.setName("" + (i + 1));
             this.dataSets.add(dataSet);
-
         }
     }
 
