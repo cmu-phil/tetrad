@@ -90,7 +90,6 @@ public class MarkovCheckEditor extends JPanel {
     private JPanel histogramPanelDep;
     private final JLabel conditioningLabelDep = new JLabel("(Unspecified)");
     private final JLabel conditioningLabelIndep = new JLabel("(Unspecified)");
-    private int numBins = 10;
 
     /**
      * Constructs a new editor for the given model.
@@ -213,6 +212,8 @@ public class MarkovCheckEditor extends JPanel {
         box1.add(params);
         box1.add(Box.createHorizontalGlue());
 
+        setLabelTexts();
+
         params.addActionListener(e -> {
             JOptionPane dialog = new JOptionPane(createParamsPanel(independenceWrapper, model.getParameters()), JOptionPane.PLAIN_MESSAGE);
             dialog.createDialog("Set Parameters").setVisible(true);
@@ -264,7 +265,7 @@ public class MarkovCheckEditor extends JPanel {
         pane.addTab("Help", scroll);
         box.add(pane);
 
-        box.setPreferredSize(new Dimension(700, 500));
+//        setPreferredSize(new Dimension(750, 550));
 
         class MyWatchedProcess extends WatchedProcess {
             public void watch() {
@@ -285,6 +286,8 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         new MyWatchedProcess();
+
+//        box.setPreferredSize(new Dimension(750, 550));
 
         add(box);
     }
@@ -451,7 +454,7 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setPreferredSize(new Dimension(400, 400));
+//        scroll.setPreferredSize(new Dimension(400, 400));
         b1.add(scroll);
 
         Box b4 = Box.createHorizontalBox();
@@ -497,31 +500,6 @@ public class MarkovCheckEditor extends JPanel {
         panel.setLayout(new BorderLayout());
         panel.add(b0, BorderLayout.CENTER);
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
-//        JMenuItem numBins = new JMenu("Set number of Bins for Histograms");
-//        ButtonGroup group = new ButtonGroup();
-//
-//        for (int i = 2; i <= 20; i++) {
-//            int _i = i;
-//            JMenuItem comp = new JCheckBoxMenuItem(String.valueOf(i));
-//            numBins.add(comp);
-//            group.add(comp);
-//            if (i == getNumBins()) comp.setSelected(true);
-//
-//            comp.addActionListener(e -> {
-//                setNumBins(_i);
-//                revalidate();
-//                repaint();
-//            });
-//        }
-//
-//        JMenuBar menuBar = new JMenuBar();
-//        JMenu menu = new JMenu("Settings");
-//        menu.add(numBins);
-//        menuBar.add(menu);
-//
-//        add(menuBar, BorderLayout.NORTH);
-
         return panel;
     }
 
@@ -662,7 +640,7 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         JScrollPane scroll = new JScrollPane(table);
-        scroll.setPreferredSize(new Dimension(400, 400));
+//        scroll.setPreferredSize(new Dimension(400, 400));
         b1.add(scroll);
 
         Box b4 = Box.createHorizontalBox();
@@ -718,7 +696,7 @@ public class MarkovCheckEditor extends JPanel {
                 "\n" +
                 "Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a score bump, where this bump is negative for independent judgments and positive for dependent judgments.\n" +
                 "\n" +
-                "If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we have a button that lets you display the histogram of the p-values with equally sized bins; the bars in this histogram, for this case, should ideally all be of equal height.\n" +
+                "If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we display the histogram of the p-values with equally sized bins; the bars in this histogram, for this case, should ideally all be of equal height.\n" +
                 "\n" +
                 "If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being judged as dependent. For checking Faithfulness, one hopes that this list is non-empty, then this first bar will be especially high, since high p-values are for examples where the graph is unfaithful to the distribution. These are likely for for cases where paths in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all of the other bars.\n" +
                 "\n" +
@@ -843,15 +821,13 @@ public class MarkovCheckEditor extends JPanel {
         }
 
         Histogram histogram = new Histogram(dataSet);
-        histogram.setNumBins(numBins);
         histogram.setTarget("P-Value or Bump");
         HistogramPanel view = new HistogramPanel(histogram, true);
 
         Color fillColor = new Color(113, 165, 210);
         view.setBarColor(fillColor);
 
-        view.setPreferredSize(new Dimension(400, 200));
-        view.setMaximumSize(new Dimension(400, 200));
+        view.setPreferredSize(new Dimension(350, 200));
 
         Box box = Box.createHorizontalBox();
         box.add(Box.createHorizontalGlue());
@@ -864,14 +840,6 @@ public class MarkovCheckEditor extends JPanel {
         vBox.add(Box.createVerticalGlue());
 
         return vBox;
-    }
-
-    public int getNumBins() {
-        return numBins;
-    }
-
-    public void setNumBins(int numBins) {
-        this.numBins = numBins;
     }
 
     static class Renderer extends DefaultTableCellRenderer {

@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class Histogram {
     private Node target;
-    private int numBins = 8;
+    private int numBins = 10;
     private final DataSet dataSet;
     private Map<Node, double[]> continuousIntervals;
     private Map<Node, Integer> discreteValues;
