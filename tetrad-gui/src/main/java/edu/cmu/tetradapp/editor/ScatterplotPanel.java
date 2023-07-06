@@ -66,13 +66,12 @@ class ScatterplotPanel extends JPanel {
 
         // Draw axis lines.
         if (drawAxes) {
-            g.setStroke(new BasicStroke());
             g.setPaint(Color.black);
             g.drawLine(xMin, yMax, xMax, yMax);
             g.drawLine(xMin, yMin, xMin, yMax);
 
             /* draws the labels for the corresponding experiment and sample names */
-            g.setFont(g.getFont().deriveFont(11f));
+            g.setFont(g.getFont().deriveFont(11f).deriveFont(Font.BOLD));
 
             /* draws axis labels and scale */
             g.drawString(this.nf.format(ymax), 2 + xStringMin, yMin + 7);
@@ -143,8 +142,9 @@ class ScatterplotPanel extends JPanel {
             double p = this.scatterPlot.getCorrelationPValue();
 
             if (drawAxes) {
-                g.drawString("correlation coef = " + this.nf.format(r)
-                        + "  (p=" + this.nf.format(p) + ")", 100, 21);
+                g.setStroke(new BasicStroke(3));
+                g.drawString("Correlation coef = " + this.nf.format(r)
+                        + "  (p=" + this.nf.format(p) + ")", 70, 21);
             }
         }
     }

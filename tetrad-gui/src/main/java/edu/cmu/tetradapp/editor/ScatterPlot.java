@@ -72,9 +72,7 @@ public class ScatterPlot {
         regressors.add(this.dataSet.getVariable(this.x));
         Node target = this.dataSet.getVariable(this.y);
         Regression regression = new RegressionDataset(this.dataSet);
-        RegressionResult result = regression.regress(target, regressors);
-        System.out.println(result);
-        return result;
+        return regression.regress(target, regressors);
     }
 
     public double getCorrelationCoeff() {
