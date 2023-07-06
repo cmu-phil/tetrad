@@ -8,9 +8,11 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.StatUtils;
 import org.apache.commons.math3.distribution.MultivariateNormalDistribution;
 import org.apache.commons.math3.linear.BlockRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.MatrixUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,39 +99,32 @@ public class NLSemSimulation implements Simulation {
                     }
                 }
 
-                // Linear Component
-
-                for (Node z : Pa) {
-                    double low = parameters.getDouble(Params.COEF_LOW);
-                    double high = parameters.getDouble(Params.COEF_HIGH);
-                    double beta = RandomUtil.getInstance().nextUniform(low, high);
-
-                    int w = indices.get(z);
-                    for (int j = 0; j < sampleSize; j++) {
-                        data.addToEntry(j, k, beta * data.getEntry(j, w));
-                    }
-                }
-
-                // Non-Linear Component
-
                 if (Pa.isEmpty()) continue;
 
-                RealMatrix kernel = new BlockRealMatrix(sampleSize, sampleSize);
+                double low = parameters.getDouble(Params.COEF_LOW);
+                double high = parameters.getDouble(Params.COEF_HIGH);
+                double beta = RandomUtil.getInstance().nextUniform(low, high);
                 double[] mu = new double[sampleSize];
+
+                RealMatrix kernel = new BlockRealMatrix(sampleSize, sampleSize);
                 double[][] cov = new double[sampleSize][sampleSize];
+
                 for (Node z : Pa) {
                     int w = indices.get(z);
                     for (int j = 0; j < sampleSize; j++) {
+                        mu[j] = beta * data.getEntry(j, w);
                         for (int l = 0; l < sampleSize; l++) {
-                            kernel.addToEntry(j, l, pow(data.getEntry(j, w) - data.getEntry(l, w), 2));
+                            kernel.addToEntry(j, l, -0.5 * pow(data.getEntry(j, w) - data.getEntry(l, w), 2) / Pa.size());
                         }
                     }
                 }
 
                 for (int j = 0; j < sampleSize; j++) {
-                    mu[j] = 0.0;
                     for (int l = 0; l < sampleSize; l++) {
-                        cov[j][l] = exp(-200.0 * kernel.getEntry(j, l));
+                        cov[j][l] = exp(kernel.getEntry(j, l));
+                        if (j != l) {
+                            cov[j][l] /= log(sampleSize);
+                        }
                     }
                 }
 
@@ -138,6 +133,8 @@ public class NLSemSimulation implements Simulation {
                 for (int j = 0; j < sampleSize; j++) {
                     data.addToEntry(j, k, X[j]);
                 }
+
+                data.setColumn(k, StatUtils.standardizeData(data.getColumn(k)));
             }
 
             List<Node> continuousVars = new ArrayList<>();
@@ -155,6 +152,7 @@ public class NLSemSimulation implements Simulation {
 
             dataSet.setName("" + (i + 1));
             this.dataSets.add(dataSet);
+
         }
     }
 
