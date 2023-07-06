@@ -1,8 +1,7 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.GraphPersistence;
-import edu.cmu.tetrad.graph.LayoutUtil;
+import edu.cmu.tetrad.graph.GraphSaveLoadUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,7 +48,7 @@ public class LoadGraphJson extends AbstractAction {
 
         Preferences.userRoot().put("fileSaveLocation", file.getParent());
 
-        Graph graph = GraphPersistence.loadGraphJson(file);
+        Graph graph = GraphSaveLoadUtils.loadGraphJson(file);
 
         // The saved node positions should be used instead of just arranging the
         // nodes in a circle.

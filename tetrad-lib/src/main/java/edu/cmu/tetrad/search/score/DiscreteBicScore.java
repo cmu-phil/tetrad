@@ -294,17 +294,6 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * This method is not used; a method for calculating whether nodes Z determind node y has not been implemented
-     * here.
-     *
-     * @throws UnsupportedOperationException Since this method is not used.
-     */
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        throw new UnsupportedOperationException("This method is not used.");
-    }
-
-    /**
      * Returns a string representation of this score.
      *
      * @return This string.

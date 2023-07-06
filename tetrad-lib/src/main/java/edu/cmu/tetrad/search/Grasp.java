@@ -5,10 +5,10 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TeyssierScorer;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.NumberFormatUtil;
+import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,7 +16,6 @@ import java.text.NumberFormat;
 import java.util.*;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
-import static java.util.Collections.shuffle;
 
 
 /**
@@ -73,6 +72,7 @@ public class Grasp {
     private boolean useDataOrder = true;
     private int depth = 3;
     private int numStarts = 1;
+    private boolean allowInternalRandomness = false;
 
     /**
      * Constructor for a score.
@@ -105,7 +105,7 @@ public class Grasp {
     public Grasp(@NotNull IndependenceTest test, Score score) {
         this.test = test;
         this.score = score;
-        this.variables = new ArrayList<>(test.getVariables());
+        this.variables = new ArrayList<>(score.getVariables());
     }
 
     /**
@@ -141,7 +141,7 @@ public class Grasp {
             if (Thread.interrupted()) break;
 
             if ((r == 0 && !this.useDataOrder) || r > 0) {
-                shuffle(order);
+                RandomUtil.shuffle(order);
             }
 
             this.start = MillisecondTimes.timeMillis();
@@ -317,6 +317,18 @@ public class Grasp {
         }
     }
 
+    /**
+     * Sets whether to allow internal randomness in the algorithm. Some steps in the algorithm do shuffling of variables
+     * if this is set to true, to help avoid local optima. However, this randomness can lead to different results on
+     * different runs of the algorithm, which may be undesirable.
+     *
+     * @param allowInternalRandomness True if internal randomness should be allowed, false otherwise. This is false by
+     *                                default.
+     */
+    public void setAllowInternalRandomness(boolean allowInternalRandomness) {
+        this.allowInternalRandomness = allowInternalRandomness;
+    }
+
     private boolean violatesKnowledge(List<Node> order) {
         if (this.knowledge.isEmpty()) return false;
 
@@ -386,10 +398,20 @@ public class Grasp {
 
     private void graspDfs(@NotNull TeyssierScorer scorer, double sOld, int[] depth, int currentDepth,
                           Set<Set<Node>> tucks, Set<Set<Set<Node>>> dfsHistory) {
-        for (Node y : scorer.getShuffledVariables()) {
+        List<Node> vars = scorer.getPi();
+
+        if (allowInternalRandomness) {
+            RandomUtil.shuffle(vars);
+        }
+
+        for (Node y : vars) {
             Set<Node> ancestors = scorer.getAncestors(y);
             List<Node> parents = new ArrayList<>(scorer.getParents(y));
-            shuffle(parents);
+
+            if (allowInternalRandomness) {
+                RandomUtil.shuffle(parents);
+            }
+
             for (Node x : parents) {
 
                 boolean covered = scorer.coveredEdge(x, y);

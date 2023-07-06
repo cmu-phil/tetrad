@@ -25,7 +25,9 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.util.FastMath;
 
 import java.util.List;
@@ -132,8 +134,14 @@ public class GicScores implements Score {
         double pn = variables.size();
         pn = min(pn, sn);
         double n = N;
+        double varry;
 
-        double varry = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets);
+        try {
+            varry = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets);
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException("Singularity encountered when scoring " +
+                    LogUtilsSearch.getScoreFact(i, parents, variables));
+        }
 
         double lambda;
 

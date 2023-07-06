@@ -21,6 +21,7 @@
 package edu.cmu.tetrad.graph;
 
 import edu.cmu.tetrad.data.Knowledge;
+import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Edge.Property;
 import edu.cmu.tetrad.search.utils.FciOrient;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
@@ -79,103 +80,33 @@ public final class GraphUtils {
         return true;
     }
 
-
     /**
-     * Calculates the Markov blanket of a target in a DAG. This includes the target, the parents of the target, the
-     * children of the target, the parents of the children of the target, edges from parents to target, target to
-     * children, parents of children to children, and parent to parents of children. (Edges among children are implied
-     * by the inclusion of edges from parents of children to children.) Edges among parents and among parents of
-     * children not explicitly included above are not included. (Joseph Ramsey 8/6/04)
+     * Calculates the subgraph over the Markov blanket of a target node in a given DAG, CPDAG, MAG, or PAG.
      *
-     * @param target a node in the given DAG.
-     * @param dag    the DAG with respect to which a Markov blanket DAG is to be calculated. All the nodes and edges of
-     *               the Markov Blanket DAG are in this DAG.
+     * @param target a node in the given graph.
+     * @param graph  a DAG, CPDAG, MAG, or PAG.
      */
-    public static Graph markovBlanketDag(Node target, Graph dag) {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
+    public static Graph markovBlanketSubgraph(Node target, Graph graph) {
+        Set<Node> mb = markovBlanket(target, graph);
 
-        if (dag.getNode(target.getName()) == null) {
-            throw new NullPointerException("Target node not in graph: " + target);
+        Graph mbGraph = new EdgeListGraph();
+
+        for (Node node : mb) {
+            mbGraph.addNode(node);
         }
 
-        Graph blanket = new EdgeListGraph();
-        blanket.addNode(target);
+        List<Node> mbList = new ArrayList<>(mb);
+        mbList.add(target);
 
-        // Add parents of target.
-        List<Node> parents = dag.getParents(target);
-        for (Node parent1 : parents) {
-            blanket.addNode(parent1);
-            blanket.addDirectedEdge(parent1, target);
-        }
-
-        // Add children of target and parents of children of target.
-        List<Node> children = dag.getChildren(target);
-        List<Node> parentsOfChildren = new LinkedList<>();
-        for (Node child : children) {
-            if (!blanket.containsNode(child)) {
-                blanket.addNode(child);
-            }
-
-            blanket.addDirectedEdge(target, child);
-
-            List<Node> parentsOfChild = dag.getParents(child);
-            parentsOfChild.remove(target);
-            for (Node aParentsOfChild : parentsOfChild) {
-                if (!parentsOfChildren.contains(aParentsOfChild)) {
-                    parentsOfChildren.add(aParentsOfChild);
-                }
-
-                if (!blanket.containsNode(aParentsOfChild)) {
-                    blanket.addNode(aParentsOfChild);
-                }
-
-                blanket.addDirectedEdge(aParentsOfChild, child);
-            }
-        }
-
-        // Add in edges connecting parents and parents of children.
-        parentsOfChildren.removeAll(parents);
-
-        for (Node parent2 : parents) {
-            for (Node aParentsOfChildren : parentsOfChildren) {
-                Edge edge1 = dag.getEdge(parent2, aParentsOfChildren);
-                Edge edge2 = blanket.getEdge(parent2, aParentsOfChildren);
-
-                if (edge1 != null && edge2 == null) {
-                    Edge newEdge = new Edge(parent2, aParentsOfChildren, edge1.getProximalEndpoint(parent2), edge1.getProximalEndpoint(aParentsOfChildren));
-
-                    blanket.addEdge(newEdge);
+        for (int i = 0; i < mbList.size(); i++) {
+            for (int j = i + 1; j < mbList.size(); j++) {
+                for (Edge e : graph.getEdges(mbList.get(i), mbList.get(j))) {
+                    mbGraph.addEdge(e);
                 }
             }
         }
 
-        // Add in edges connecting children and parents of children.
-        for (Node aChildren1 : children) {
-
-            for (Node aParentsOfChildren : parentsOfChildren) {
-                Edge edge1 = dag.getEdge(aChildren1, aParentsOfChildren);
-                Edge edge2 = blanket.getEdge(aChildren1, aParentsOfChildren);
-
-                if (edge1 != null && edge2 == null) {
-                    Edge newEdge = new Edge(aChildren1, aParentsOfChildren, edge1.getProximalEndpoint(aChildren1), edge1.getProximalEndpoint(aParentsOfChildren));
-
-                    blanket.addEdge(newEdge);
-                }
-            }
-        }
-
-        return blanket;
-    }
-
-    //all adjancencies are directed <=> there is no uncertainty about whom the parents of 'node' are.
-    public static boolean allAdjacenciesAreDirected(Node node, Graph graph) {
-        List<Edge> nodeEdges = graph.getEdges(node);
-        for (Edge edge : nodeEdges) {
-            if (!edge.isDirected()) {
-                return false;
-            }
-        }
-        return true;
+        return mbGraph;
     }
 
     public static Graph removeBidirectedOrientations(Graph estCpdag) {
@@ -186,19 +117,6 @@ public final class GraphUtils {
             if (Edges.isBidirectedEdge(edge)) {
                 estCpdag.removeEdge(edge);
                 estCpdag.addUndirectedEdge(edge.getNode1(), edge.getNode2());
-            }
-        }
-
-        return estCpdag;
-    }
-
-    public static Graph removeBidirectedEdges(Graph estCpdag) {
-        estCpdag = new EdgeListGraph(estCpdag);
-
-        // Remove bidirected edges altogether.
-        for (Edge edge : new ArrayList<>(estCpdag.getEdges())) {
-            if (Edges.isBidirectedEdge(edge)) {
-                estCpdag.removeEdge(edge);
             }
         }
 
@@ -233,28 +151,6 @@ public final class GraphUtils {
         }
 
         return graph2;
-    }
-
-    /**
-     * @return the edges that are in <code>graph1</code> but not in
-     * <code>graph2</code>, as a list of undirected edges..
-     */
-    public static List<Edge> adjacenciesComplement(Graph graph1, Graph graph2) {
-        List<Edge> edges = new ArrayList<>();
-
-        for (Edge edge1 : graph1.getEdges()) {
-            String name1 = edge1.getNode1().getName();
-            String name2 = edge1.getNode2().getName();
-
-            Node node21 = graph2.getNode(name1);
-            Node node22 = graph2.getNode(name2);
-
-            if (node21 == null || node22 == null || !graph2.isAdjacentTo(node21, node22)) {
-                edges.add(Edges.nondirectedEdge(edge1.getNode1(), edge1.getNode2()));
-            }
-        }
-
-        return edges;
     }
 
     /**
@@ -393,6 +289,10 @@ public final class GraphUtils {
                 convertedGraph.addNode(node1);
             }
 
+//            if (!convertedGraph.containsNode(node1)) {
+//                convertedGraph.addNode(node1);
+//            }
+
             if (node2 == null) {
                 node2 = edge.getNode2();
             }
@@ -401,13 +301,13 @@ public final class GraphUtils {
                 convertedGraph.addNode(node2);
             }
 
-            if (!convertedGraph.containsNode(node1)) {
-                convertedGraph.addNode(node1);
-            }
+//            if (!convertedGraph.containsNode(node1)) {
+//                convertedGraph.addNode(node1);
+//            }
 
-            if (!convertedGraph.containsNode(node2)) {
-                convertedGraph.addNode(node2);
-            }
+//            if (!convertedGraph.containsNode(node2)) {
+//                convertedGraph.addNode(node2);
+//            }
 
             Endpoint endpoint1 = edge.getEndpoint1();
             Endpoint endpoint2 = edge.getEndpoint2();
@@ -624,47 +524,6 @@ public final class GraphUtils {
         return new EdgeListGraph(nodes);
     }
 
-
-    private static Node getNode(List<Node> nodes, String x) {
-        for (Node node : nodes) {
-            if (x.equals(node.getName())) {
-                return node;
-            }
-        }
-
-        return null;
-    }
-
-
-    /**
-     * @return A list of triples of the form X, Y, Z, where X, Y, Z is a definite noncollider in the given graph.
-     */
-    public static List<Triple> getNoncollidersFromGraph(Node node, Graph graph) {
-        List<Triple> noncolliders = new ArrayList<>();
-
-        List<Node> adj = new ArrayList<>(graph.getAdjacentNodes(node));
-        if (adj.size() < 2) {
-            return new LinkedList<>();
-        }
-
-        ChoiceGenerator gen = new ChoiceGenerator(adj.size(), 2);
-        int[] choice;
-
-        while ((choice = gen.next()) != null) {
-            Node x = adj.get(choice[0]);
-            Node z = adj.get(choice[1]);
-
-            Endpoint endpt1 = graph.getEdge(x, node).getProximalEndpoint(node);
-            Endpoint endpt2 = graph.getEdge(z, node).getProximalEndpoint(node);
-
-            if (endpt1 == Endpoint.ARROW && endpt2 == Endpoint.TAIL || endpt1 == Endpoint.TAIL && endpt2 == Endpoint.ARROW || endpt1 == Endpoint.TAIL && endpt2 == Endpoint.TAIL) {
-                noncolliders.add(new Triple(x, node, z));
-            }
-        }
-
-        return noncolliders;
-    }
-
     /**
      * @return A list of triples of the form &lt;X, Y, Z&gt;, where &lt;X, Y, Z&gt; is a definite noncollider in the
      * given graph.
@@ -816,46 +675,6 @@ public final class GraphUtils {
         Set<Node> set = new HashSet<>();
         Collections.addAll(set, nodes);
         return set;
-    }
-
-    public static int numDirectionalErrors(Graph result, Graph cpdag) {
-        int count = 0;
-
-        for (Edge edge : result.getEdges()) {
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
-
-            Node _node1 = cpdag.getNode(node1.getName());
-            Node _node2 = cpdag.getNode(node2.getName());
-
-            Edge _edge = cpdag.getEdge(_node1, _node2);
-
-            if (_edge == null) {
-                continue;
-            }
-
-            if (Edges.isDirectedEdge(edge)) {
-                if (_edge.pointsTowards(_node1)) {
-                    count++;
-                } else if (Edges.isUndirectedEdge(_edge)) {
-                    count++;
-                }
-            }
-        }
-
-        return count;
-    }
-
-    public static int numBidirected(Graph result) {
-        int numBidirected = 0;
-
-        for (Edge edge : result.getEdges()) {
-            if (Edges.isBidirectedEdge(edge)) {
-                numBidirected++;
-            }
-        }
-
-        return numBidirected;
     }
 
     public static int degree(Graph graph) {
@@ -1072,23 +891,10 @@ public final class GraphUtils {
         int index = 1;
 
         for (Edge edge : contradicted) {
-            b.append("\n").append(index++).append(". ").append(Edges.undirectedEdge(edge.getNode1(), edge.getNode2())).append(" (--> ").append(directionCounts.get(edge)).append(" &lt;-- ").append(directionCounts.get(edge.reverse())).append(")");
+            b.append("\n").append(index++).append(". ").append(Edges.undirectedEdge(edge.getNode1(), edge.getNode2())).append(" (--> ").append(directionCounts.get(edge)).append(" <-- ").append(directionCounts.get(edge.reverse())).append(")");
         }
 
         return b;
-    }
-
-    private static boolean uncontradicted(Edge edge1, Edge edge2) {
-        if (edge1 == null || edge2 == null) {
-            return true;
-        }
-
-        Node x = edge1.getNode1();
-        Node y = edge1.getNode2();
-
-        if (edge1.pointsTowards(x) && edge2.pointsTowards(y)) {
-            return false;
-        } else return !edge1.pointsTowards(y) || !edge2.pointsTowards(x);
     }
 
     public static String edgeMisclassifications(double[][] counts, NumberFormat nf) {
@@ -1099,16 +905,16 @@ public final class GraphUtils {
         table2.setToken(1, 0, "---");
         table2.setToken(2, 0, "o-o");
         table2.setToken(3, 0, "o->");
-        table2.setToken(4, 0, "&lt;-o");
+        table2.setToken(4, 0, "<-o");
         table2.setToken(5, 0, "-->");
-        table2.setToken(6, 0, "&lt;--");
-        table2.setToken(7, 0, "&lt;->");
+        table2.setToken(6, 0, "<--");
+        table2.setToken(7, 0, "<->");
         table2.setToken(8, 0, "No Edge");
         table2.setToken(0, 1, "---");
         table2.setToken(0, 2, "o-o");
         table2.setToken(0, 3, "o->");
         table2.setToken(0, 4, "-->");
-        table2.setToken(0, 5, "&lt;->");
+        table2.setToken(0, 5, "<->");
         table2.setToken(0, 6, "No Edge");
 
         for (int i = 0; i < 8; i++) {
@@ -1228,10 +1034,7 @@ public final class GraphUtils {
         }
     }
 
-
     public static int[][] edgeMisclassificationCounts(Graph leftGraph, Graph topGraph, boolean print) {
-//        topGraph = GraphUtils.replaceNodes(topGraph, leftGraph.getNodes());
-
         class CountTask extends RecursiveTask<Counts> {
 
             private final List<Edge> edges;
@@ -1260,7 +1063,7 @@ public final class GraphUtils {
 
                 if (range <= this.chunk) {
                     for (int i = this.from; i < this.to; i++) {
-                        int j = ++this.count[0];
+                        ++this.count[0];
 
                         Edge edge = this.edges.get(i);
 
@@ -1300,7 +1103,6 @@ public final class GraphUtils {
         edgeSet.addAll(topGraph.getEdges());
         edgeSet.addAll(leftGraph.getEdges());
 
-//        System.out.println("Union formed");
         if (print) {
             System.out.println("Top graph " + topGraph.getEdges().size());
             System.out.println("Left graph " + leftGraph.getEdges().size());
@@ -1309,21 +1111,12 @@ public final class GraphUtils {
 
         List<Edge> edges = new ArrayList<>(edgeSet);
 
-//        System.out.println("Finding pool");
         ForkJoinPoolInstance pool = ForkJoinPoolInstance.getInstance();
 
-//        System.out.println("Starting count task");
         CountTask task = new CountTask(500, 0, edges.size(), edges, leftGraph, topGraph, new int[1]);
         Counts counts = pool.getPool().invoke(task);
 
-//        System.out.println("Finishing count task");
         return counts.countArray();
-    }
-
-    private static Set<Edge> complement(Set<Edge> edgeSet, Graph topGraph) {
-        Set<Edge> complement = new HashSet<>(edgeSet);
-        complement.removeAll(topGraph.getEdges());
-        return complement;
     }
 
     private static int getTypeTop(Edge edgeTop) {
@@ -1352,8 +1145,6 @@ public final class GraphUtils {
         }
 
         return 5;
-
-//        throw new IllegalArgumentException("Unsupported edge type : " + edgeTop);
     }
 
     private static int getTypeLeft(Edge edgeLeft, Edge edgeTop) {
@@ -1390,34 +1181,6 @@ public final class GraphUtils {
             } else {
                 return 4;
             }
-        }
-
-        if (Edges.isBidirectedEdge(edgeLeft)) {
-            return 6;
-        }
-
-        throw new IllegalArgumentException("Unsupported edge type : " + edgeLeft);
-    }
-
-    private static int getTypeLeft2(Edge edgeLeft) {
-        if (edgeLeft == null) {
-            return 7;
-        }
-
-        if (Edges.isUndirectedEdge(edgeLeft)) {
-            return 0;
-        }
-
-        if (Edges.isNondirectedEdge(edgeLeft)) {
-            return 1;
-        }
-
-        if (Edges.isPartiallyOrientedEdge(edgeLeft)) {
-            return 2;
-        }
-
-        if (Edges.isDirectedEdge(edgeLeft)) {
-            return 4;
         }
 
         if (Edges.isBidirectedEdge(edgeLeft)) {
@@ -1700,19 +1463,6 @@ public final class GraphUtils {
         return new TwoCycleErrors(adjCorrect, adjFn, adjFp);
     }
 
-    private static Set<Triple> colliders(Node b, Graph graph, Set<Triple> colliders) {
-        Set<Triple> _colliders = new HashSet<>();
-
-        for (Triple collider : colliders) {
-            if (graph.paths().isAncestorOf(collider.getY(), b)) {
-                _colliders.add(collider);
-            }
-        }
-
-        return _colliders;
-    }
-
-
     public static int getDegree(Graph graph) {
         int max = 0;
 
@@ -1812,41 +1562,6 @@ public final class GraphUtils {
         }
     }
 
-    /**
-     * Retains only the unshielded colliders of the given graph.
-     *
-     * @param graph The graph to retain unshielded colliders in.
-     */
-    public static void retainUnshieldedColliders(Graph graph, Knowledge knowledge) {
-        Graph orig = new EdgeListGraph(graph);
-        graph.reorientAllWith(Endpoint.CIRCLE);
-        List<Node> nodes = graph.getNodes();
-
-        for (Node b : nodes) {
-            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
-
-            if (adjacentNodes.size() < 2) {
-                continue;
-            }
-
-            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
-            int[] combination;
-
-            while ((combination = cg.next()) != null) {
-                Node a = adjacentNodes.get(combination[0]);
-                Node c = adjacentNodes.get(combination[1]);
-
-                if (orig.isDefCollider(a, b, c) && !orig.isAdjacentTo(a, c)) {
-                    if (FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
-                            && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
-                        graph.setEndpoint(a, b, Endpoint.ARROW);
-                        graph.setEndpoint(c, b, Endpoint.ARROW);
-                    }
-                }
-            }
-        }
-    }
-
     public static void addForbiddenReverseEdgesForDirectedEdges(Graph graph, Knowledge knowledge) {
         List<Node> nodes = graph.getNodes();
 
@@ -1901,44 +1616,50 @@ public final class GraphUtils {
         return (ex1 == Endpoint.CIRCLE || (ex1 == ex2 || ex2 == Endpoint.CIRCLE)) && (ey1 == Endpoint.CIRCLE || (ey1 == ey2 || ey2 == Endpoint.CIRCLE));
     }
 
-    public static Set<Node> pagMb(Node x, Graph G) {
+    /**
+     * Returns a Markov blanket of a node for a DAG, CPDAG, MAG, or PAG. This is not necessarily minimal (i.e. not
+     * necessarily a Markov Boundary).
+     *
+     * @param x The target node.
+     * @param G The PAG.
+     * @return A Markov blanket of the target node.
+     */
+    public static Set<Node> markovBlanket(Node x, Graph G) {
         Set<Node> mb = new HashSet<>();
 
         LinkedList<Node> path = new LinkedList<>();
-        path.add(x);
-        mb.add(x);
 
-        for (Node d : G.getAdjacentNodes(x)) {
-            pagMbVisit(d, path, G, mb);
-        }
-
+        // Follow all the colliders.
+        markovBlanketFollowColliders(null, x, path, G, mb);
+        mb.addAll(G.getAdjacentNodes(x));
         mb.remove(x);
-
         return mb;
     }
 
-    private static void pagMbVisit(Node c, LinkedList<Node> path, Graph G, Set<Node> mb) {
-        if (path.contains(c)) return;
-        if (mb.contains(c)) return;
-        path.add(c);
+    private static void markovBlanketFollowColliders(Node d, Node a, LinkedList<Node> path, Graph G, Set<Node> mb) {
+        if (path.contains(a)) return;
+        path.add(a);
 
-        if (path.size() >= 3) {
-            Node w1 = path.get(path.size() - 3);
-            Node w2 = path.get(path.size() - 2);
+        for (Node b : G.getNodesOutTo(a, Endpoint.ARROW)) {
+            if (path.contains(b)) continue;
 
-            if (!G.isDefCollider(w1, w2, c)) {
-                path.remove(c);
-                return;
+            // Make sure that d*->a<-* b is a collider.
+            if (d != null && !G.isDefCollider(d, a, b)) continue;
+
+            for (Node c : G.getNodesInTo(b, Endpoint.ARROW)) {
+                if (path.contains(c)) continue;
+
+                if (!G.isDefCollider(a, b, c)) continue;
+
+                // a *-> b <-* c
+                mb.add(b);
+                mb.add(c);
+
+                markovBlanketFollowColliders(a, b, path, G, mb);
             }
         }
 
-        mb.add(c);
-
-        for (Node d : G.getAdjacentNodes(c)) {
-            pagMbVisit(d, path, G, mb);
-        }
-
-        path.remove(c);
+        path.remove(a);
     }
 
     public static Set<Node> district(Node x, Graph G) {
@@ -2062,6 +1783,88 @@ public final class GraphUtils {
         return graph;
     }
 
+    // Due to Spirtes.
+    public static void gfciR0(Graph graph, Graph referenceCpdag, SepsetProducer sepsets, Knowledge knowledge) {
+        graph.reorientAllWith(Endpoint.CIRCLE);
+        fciOrientbk(knowledge, graph, graph.getNodes());
+
+        List<Node> nodes = graph.getNodes();
+
+        for (Node b : nodes) {
+            List<Node> adjacentNodes = new ArrayList<>(graph.getAdjacentNodes(b));
+
+            if (adjacentNodes.size() < 2) {
+                continue;
+            }
+
+            ChoiceGenerator cg = new ChoiceGenerator(adjacentNodes.size(), 2);
+            int[] combination;
+
+            while ((combination = cg.next()) != null) {
+                Node a = adjacentNodes.get(combination[0]);
+                Node c = adjacentNodes.get(combination[1]);
+
+                if (referenceCpdag.isDefCollider(a, b, c)
+                        && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                        && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                    graph.setEndpoint(a, b, Endpoint.ARROW);
+                    graph.setEndpoint(c, b, Endpoint.ARROW);
+                } else if (referenceCpdag.isAdjacentTo(a, c) && !graph.isAdjacentTo(a, c)) {
+                    Set<Node> sepset = sepsets.getSepset(a, c);
+
+                    if (sepset != null && !sepset.contains(b)
+                            && FciOrient.isArrowheadAllowed(a, b, graph, knowledge)
+                            && FciOrient.isArrowheadAllowed(c, b, graph, knowledge)) {
+                        graph.setEndpoint(a, b, Endpoint.ARROW);
+                        graph.setEndpoint(c, b, Endpoint.ARROW);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Orients according to background knowledge
+     */
+    public static void fciOrientbk(Knowledge knowledge, Graph graph, List<Node> variables) {
+        for (Iterator<KnowledgeEdge> it = knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in the graph.
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            // Orient to*->from
+            graph.setEndpoint(to, from, Endpoint.ARROW);
+        }
+
+        for (Iterator<KnowledgeEdge> it = knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge edge = it.next();
+
+            //match strings to variables in this graph
+            Node from = GraphSearchUtils.translate(edge.getFrom(), variables);
+            Node to = GraphSearchUtils.translate(edge.getTo(), variables);
+
+            if (from == null || to == null) {
+                continue;
+            }
+
+            if (graph.getEdge(from, to) == null) {
+                continue;
+            }
+
+            graph.setEndpoint(to, from, Endpoint.TAIL);
+            graph.setEndpoint(from, to, Endpoint.ARROW);
+        }
+    }
 
     private static class Counts {
 
@@ -2108,22 +1911,15 @@ public final class GraphUtils {
         private final double arrowptRec;
 
         private final int shd;
-        private final int twoCycleFn;
-        private final int twoCycleFp;
-        private final int twoCycleCorrect;
 
         private final List<Edge> edgesAdded;
         private final List<Edge> edgesRemoved;
-        private final List<Edge> edgesReorientedFrom;
-        private final List<Edge> edgesReorientedTo;
-        private final List<Edge> edgesAdjacencies;
 
         public GraphComparison(int adjFn, int adjFp, int adjCorrect, int arrowptFn, int arrowptFp,
                                int arrowptCorrect, double adjPrec, double adjRec, double arrowptPrec,
-                               double arrowptRec, int shd, int twoCycleCorrect, int twoCycleFn,
-                               int twoCycleFp, List<Edge> edgesAdded, List<Edge> edgesRemoved,
-                               List<Edge> edgesReorientedFrom, List<Edge> edgesReorientedTo,
-                               List<Edge> edgesAdjacencies, int[][] counts) {
+                               double arrowptRec, int shd,
+                               List<Edge> edgesAdded, List<Edge> edgesRemoved,
+                               int[][] counts) {
             this.adjFn = adjFn;
             this.adjFp = adjFp;
             this.adjCorrect = adjCorrect;
@@ -2137,14 +1933,8 @@ public final class GraphUtils {
             this.arrowptRec = arrowptRec;
 
             this.shd = shd;
-            this.twoCycleCorrect = twoCycleCorrect;
-            this.twoCycleFn = twoCycleFn;
-            this.twoCycleFp = twoCycleFp;
             this.edgesAdded = edgesAdded;
             this.edgesRemoved = edgesRemoved;
-            this.edgesReorientedFrom = edgesReorientedFrom;
-            this.edgesReorientedTo = edgesReorientedTo;
-            this.edgesAdjacencies = edgesAdjacencies;
 
             this.counts = counts;
         }
@@ -2177,18 +1967,6 @@ public final class GraphUtils {
             return this.shd;
         }
 
-        public int getTwoCycleFn() {
-            return this.twoCycleFn;
-        }
-
-        public int getTwoCycleFp() {
-            return this.twoCycleFp;
-        }
-
-        public int getTwoCycleCorrect() {
-            return this.twoCycleCorrect;
-        }
-
         public List<Edge> getEdgesAdded() {
             return this.edgesAdded;
         }
@@ -2219,7 +1997,6 @@ public final class GraphUtils {
     }
 
     public static class TwoCycleErrors {
-
         public int twoCycCor;
         public int twoCycFn;
         public int twoCycFp;
@@ -2233,7 +2010,5 @@ public final class GraphUtils {
         public String toString() {
             return "2c cor = " + this.twoCycCor + "\t" + "2c fn = " + this.twoCycFn + "\t" + "2c fp = " + this.twoCycFp;
         }
-
     }
-
 }

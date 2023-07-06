@@ -22,6 +22,7 @@
 package edu.cmu.tetradapp.test;
 
 import edu.cmu.tetrad.util.TetradSerializableUtils;
+import org.junit.Test;
 
 import static org.junit.Assert.fail;
 
@@ -122,7 +123,7 @@ public class TestSerialization {
      * archived serialized class examplars can be loaded using the model
      * version.
      */
-//    @Test
+    @Test
     public void testLoadabilility() {
         final String serializableScope = "target/classes/edu/cmu";
         final String currentDirectory = "build/tetrad/serializable/model";
@@ -144,8 +145,12 @@ public class TestSerialization {
         }
     }
 
+    /**
+     * Run this "test" only when you want to create a new serialization archive to check against.
+     */
+//    @Test
     public void doArchive() {
-        final String serializableScope = "build/tetrad/classes/edu/cmu";
+        final String serializableScope = "target/classes/edu/cmu";
         final String currentDirectory = "build/tetrad/serializable/model";
         final String archiveDirectory = "archives";
 

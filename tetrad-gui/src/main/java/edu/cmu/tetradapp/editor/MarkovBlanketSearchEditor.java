@@ -171,7 +171,7 @@ public class MarkovBlanketSearchEditor extends JPanel implements GraphEditable, 
             }
         }
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     private void setLabel() {

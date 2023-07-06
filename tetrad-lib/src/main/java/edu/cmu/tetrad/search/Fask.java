@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.linear.SingularMatrixException;
@@ -137,68 +136,6 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public final class Fask implements IGraphSearch {
 
-    /**
-     * Enumerates the alternatives to use for finding the initial adjacencies for FASK.
-     */
-    public enum AdjacencyMethod {FAS_STABLE, FGES, EXTERNAL_GRAPH, NONE}
-
-    /**
-     * Enumerates the options left-right rules to use for FASK. Options include the FASK left-right rule and three
-     * left-right rules from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
-     * paper, "empirical" versions were given in which the variables are multiplied through by the signs of the
-     * skewnesses; we follow this advice here (with good results). These others are provided for those who prefer them.
-     */
-    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
-
-    // The score to be used for the FAS adjacency search.
-    private final IndependenceTest test;
-    private final Score score;
-    // The data sets being analyzed. They must all have the same variables and the same
-    // number of records.
-    private final DataSet dataSet;
-    // Used for calculating coefficient values.
-    private final RegressionDataset regressionDataset;
-    private double[][] D;
-    // An initial graph to constrain the adjacency step.
-    private Graph externalGraph;
-    // Elapsed time of the search, in milliseconds.
-    private long elapsed;
-    // For the Fast Adjacency Search, the maximum number of edges in a conditioning set.
-    private int depth = -1;
-
-    // Knowledge the the search will obey, of forbidden and required edges.
-    private Knowledge knowledge = new Knowledge();
-
-    // A threshold for including extra adjacencies due to skewness. Default is 0.3. For more edges, lower
-    // this threshold.
-    private double skewEdgeThreshold;
-
-    // A theshold for making 2-cycles. Default is 0 (no 2-cycles.) Note that the 2-cycle rule will only work
-    // with the FASK left-right rule. Default is 0; a good value for finding a decent set of 2-cycles is 0.1.
-    private double twoCycleScreeningCutoff;
-
-    // At the end of the procedure, two cycles marked in the graph (for having small LR differences) are then
-    // tested statisstically to see if they are two-cycles, using this cutoff. To adjust this cutoff, set the
-    // two cycle alpha to a number in [0, 1]. The default alpha  is 0.01.
-    private double orientationCutoff;
-
-    // The corresponding alpha.
-    private double orientationAlpha;
-
-    // Bias for orienting with negative coefficients.
-    private double delta;
-
-    // Whether X and Y should be adjusted for skewness. (Otherwise, they are assumed to have positive skewness.
-    private boolean empirical = true;
-
-    // By default, FAS Stable will be used for adjacencies, though this can be set.
-    private AdjacencyMethod adjacencyMethod = AdjacencyMethod.FAS_STABLE;
-
-    // The left right rule to use, default FASK.
-    private LeftRight leftRight = LeftRight.RSKEW;
-
-    // The graph resulting from search.
-    private Graph graph;
 
     /**
      * Constructor.
@@ -223,8 +160,6 @@ public final class Fask implements IGraphSearch {
         this.orientationCutoff = getZForAlpha(0.01);
         this.orientationAlpha = 0.01;
     }
-
-    //======================================== PUBLIC METHODS ====================================//
 
     /**
      * Runs the search on the concatenated data, returning a graph, possibly cyclic, possibly with two-cycles. Runs the
@@ -259,7 +194,22 @@ public final class Fask implements IGraphSearch {
 
         Graph G;
 
-        if (this.adjacencyMethod == AdjacencyMethod.FAS_STABLE) {
+        if (this.adjacencyMethod == AdjacencyMethod.BOSS) {
+            PermutationSearch fas = new PermutationSearch(new Boss(this.score));
+            fas.setKnowledge(this.knowledge);
+            G = fas.search();
+        } else if (this.adjacencyMethod == AdjacencyMethod.GRASP) {
+            Grasp fas = new Grasp(this.score);
+            fas.setDepth(5);
+            fas.setNonSingularDepth(1);
+            fas.setUncoveredDepth(1);
+            fas.setNumStarts(5);
+            fas.setAllowInternalRandomness(true);
+            fas.setUseDataOrder(false);
+            fas.setKnowledge(this.knowledge);
+            fas.bestOrder(dataSet.getVariables());
+            G = fas.getGraph(true);
+        } else if (this.adjacencyMethod == AdjacencyMethod.FAS_STABLE) {
             Fas fas = new Fas(this.test);
             fas.setStable(true);
             fas.setVerbose(false);
@@ -415,6 +365,72 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
+     * Enumerates the options left-right rules to use for FASK. Options include the FASK left-right rule and three
+     * left-right rules from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
+     * paper, "empirical" versions were given in which the variables are multiplied through by the signs of the
+     * skewnesses; we follow this advice here (with good results). These others are provided for those who prefer them.
+     */
+    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
+
+    // The score to be used for the FAS adjacency search.
+    private final IndependenceTest test;
+    private final Score score;
+    // The data sets being analyzed. They must all have the same variables and the same
+    // number of records.
+    private final DataSet dataSet;
+    // Used for calculating coefficient values.
+    private final RegressionDataset regressionDataset;
+    private double[][] D;
+    // An initial graph to constrain the adjacency step.
+    private Graph externalGraph;
+    // Elapsed time of the search, in milliseconds.
+    private long elapsed;
+    // For the Fast Adjacency Search, the maximum number of edges in a conditioning set.
+    private int depth = -1;
+
+    // Knowledge the the search will obey, of forbidden and required edges.
+    private Knowledge knowledge = new Knowledge();
+
+    // A threshold for including extra adjacencies due to skewness. Default is 0.3. For more edges, lower
+    // this threshold.
+    private double skewEdgeThreshold;
+
+    // A theshold for making 2-cycles. Default is 0 (no 2-cycles.) Note that the 2-cycle rule will only work
+    // with the FASK left-right rule. Default is 0; a good value for finding a decent set of 2-cycles is 0.1.
+    private double twoCycleScreeningCutoff;
+
+    // At the end of the procedure, two cycles marked in the graph (for having small LR differences) are then
+    // tested statistically to see if they are two-cycles, using this cutoff. To adjust this cutoff, set the
+    // two cycle alpha to a number in [0, 1]. The default alpha  is 0.01.
+    private double orientationCutoff;
+
+    // The corresponding alpha.
+    private double orientationAlpha;
+
+    // Bias for orienting with negative coefficients.
+    private double delta;
+
+    // Whether X and Y should be adjusted for skewness. (Otherwise, they are assumed to have positive skewness.
+    private boolean empirical = true;
+
+    // By default, FAS Stable will be used for adjacencies, though this can be set.
+    private AdjacencyMethod adjacencyMethod = AdjacencyMethod.GRASP;
+
+    // The left right rule to use, default FASK.
+    private LeftRight leftRight = LeftRight.RSKEW;
+
+    // The graph resulting from search.
+    private Graph graph;
+
+
+    //======================================== PUBLIC METHODS ====================================//
+
+    /**
+     * Enumerates the alternatives to use for finding the initial adjacencies for FASK.
+     */
+    public enum AdjacencyMethod {FAS_STABLE, FGES, BOSS, GRASP, EXTERNAL_GRAPH, NONE}
+
+    /**
      * Returns the coefficient matrix for the search. If the search has not yet run, runs it, then estimates
      * coefficients of each node given its parents using linear regression and forms the B matrix of coefficients from
      * these estimates. B[i][j] != 0 means i-&gt;j with that coefficient.
@@ -561,7 +577,7 @@ public final class Fask implements IGraphSearch {
      * @see AdjacencyMethod
      */
     public void setAdjacencyMethod(AdjacencyMethod adjacencyMethod) {
-        this.adjacencyMethod = adjacencyMethod;
+//        this.adjacencyMethod = adjacencyMethod;
     }
 
     /**
@@ -743,7 +759,7 @@ public final class Fask implements IGraphSearch {
                 pc2 = partialCorrelation(x, y, _Z, y, 0);
             } catch (SingularMatrixException e) {
                 System.out.println("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
-                TetradLogger.getInstance().log("info", "Singularity X = " + X + " Y = " + Y + " adj = " + adj);
+                TetradLogger.getInstance().forceLogMessage("Singularity X = " + X + " Y = " + Y + " adj = " + adj);
                 continue;
             }
 
@@ -790,7 +806,9 @@ public final class Fask implements IGraphSearch {
             pc1 = partialCorrelation(x, y, new double[0][], x, 0);
             pc2 = partialCorrelation(x, y, new double[0][], y, 0);
         } catch (SingularMatrixException e) {
-            throw new RuntimeException(e);
+            List<Node> nodes = dataSet.getVariables();
+            throw new RuntimeException("Singularity encountered (conditioning on X > 0, Y > 0) for variables "
+                    + nodes.get(i) + ", " + nodes.get(j));
         }
 
         int nc1 = getRows(x, x, 0, +1).size();

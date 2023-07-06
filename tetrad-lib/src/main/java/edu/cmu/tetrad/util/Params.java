@@ -219,7 +219,7 @@ public final class Params {
     public static final String GRASP_USE_SCORE = "graspUseScore";
     public static final String GRASP_USE_RASKUTTI_UHLER = "graspUseRaskuttiUhler";
     public static final String GRASP_USE_DATA_ORDER = "graspUseDataOrder";
-    public static final String GRASP_ALLOW_RANDOMNESS_INSIDE_ALGORITHM = "graspAllowRandomnessIndideAlgorithm";
+    public static final String ALLOW_INTERNAL_RANDOMNESS = "allowInternalRandomness";
     public static final String GRASP_DEPTH = "graspDepth";
     public static final String GRASP_SINGULAR_DEPTH = "graspSingularDepth";
     public static final String GRASP_NONSINGULAR_DEPTH = "graspNonSingularDepth";

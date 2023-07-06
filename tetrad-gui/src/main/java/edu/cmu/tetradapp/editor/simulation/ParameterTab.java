@@ -325,6 +325,7 @@ public class ParameterTab extends JPanel {
                     }
 
                     if (cause.getMessage() == null || cause.getMessage().trim().isEmpty()) {
+                        exception.printStackTrace();
                         throw new IllegalArgumentException(
                                 "Exception in creating data. Check model setup or parameter settings.");
                     } else {
@@ -334,7 +335,7 @@ public class ParameterTab extends JPanel {
             }
         }
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     private Box createLabeledComponent(String text, Component comp) {

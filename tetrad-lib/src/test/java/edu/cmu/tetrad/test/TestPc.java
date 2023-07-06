@@ -28,7 +28,7 @@ import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -146,7 +146,7 @@ public class TestPc {
 
 
         try {
-            trueGraph = GraphPersistence.readerToGraphTxt(trueString);
+            trueGraph = GraphSaveLoadUtils.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {
@@ -189,7 +189,6 @@ public class TestPc {
      * graph.
      */
     private void checkWithKnowledge(Knowledge knowledge) {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
         // Set up graph and node objects.
         Graph graph = GraphUtils.convert("A-->B,C-->B,B-->D");

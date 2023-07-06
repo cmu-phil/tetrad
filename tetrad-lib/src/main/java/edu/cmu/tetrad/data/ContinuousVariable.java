@@ -21,7 +21,6 @@
 package edu.cmu.tetrad.data;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeEqualityMode;
 import edu.cmu.tetrad.graph.NodeType;
 import edu.cmu.tetrad.graph.NodeVariableType;
 
@@ -178,13 +177,7 @@ public final class ContinuousVariable extends AbstractVariable {
     }
 
     public int hashCode() {
-        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
-            return super.hashCode();
-        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            return this.getName().hashCode();
-        }
-
-        throw new IllegalArgumentException();
+        return this.getName().hashCode();
     }
 
     /**
@@ -192,21 +185,9 @@ public final class ContinuousVariable extends AbstractVariable {
      */
     // The identity of a node can't be changed by changing its name.
     public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
-
-        // Worried this will slow things down.
-        if (!(o instanceof ContinuousVariable)) {
-            return false;
-        }
-        if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.OBJECT) {
-            return o == this;
-        } else if (NodeEqualityMode.getEqualityType() == NodeEqualityMode.Type.NAME) {
-            return getName().equals(((Node) o).getName());
-        }
-
-        throw new IllegalStateException();
+        if (o == null) return false;
+        if (!(o instanceof ContinuousVariable)) return false;
+        return getName().equals(((Node) o).getName());
     }
 
     public NodeType getNodeType() {

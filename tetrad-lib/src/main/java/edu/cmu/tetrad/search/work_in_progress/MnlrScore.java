@@ -133,15 +133,6 @@ public class MnlrScore implements Score {
     public int getMaxDegree() {
         return (int) FastMath.ceil(FastMath.log(this.dataSet.getNumRows()));
     }
-
-    /**
-     * @throws UnsupportedOperationException Method not implemented.
-     */
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
-
 }
 
 

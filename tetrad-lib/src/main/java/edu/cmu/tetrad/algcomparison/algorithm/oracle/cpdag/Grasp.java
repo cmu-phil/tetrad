@@ -16,7 +16,7 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
@@ -81,6 +81,7 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             grasp.setUseScore(parameters.getBoolean(Params.GRASP_USE_SCORE));
             grasp.setUseRaskuttiUhler(parameters.getBoolean(Params.GRASP_USE_RASKUTTI_UHLER));
             grasp.setUseDataOrder(parameters.getBoolean(Params.GRASP_USE_DATA_ORDER));
+            grasp.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
             grasp.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             grasp.setNumStarts(parameters.getInt(Params.NUM_STARTS));
@@ -130,6 +131,7 @@ public class Grasp implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         params.add(Params.GRASP_ORDERED_ALG);
         params.add(Params.GRASP_USE_RASKUTTI_UHLER);
         params.add(Params.GRASP_USE_DATA_ORDER);
+        params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
         params.add(Params.TIME_LAG);
         params.add(Params.VERBOSE);
 

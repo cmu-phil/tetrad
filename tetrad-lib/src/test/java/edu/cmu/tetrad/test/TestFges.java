@@ -41,7 +41,7 @@ import edu.cmu.tetrad.search.FgesMb;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.score.*;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
@@ -598,7 +598,7 @@ public class TestFges {
 
 
         try {
-            trueGraph = GraphPersistence.readerToGraphTxt(trueString);
+            trueGraph = GraphSaveLoadUtils.readerToGraphTxt(trueString);
             CPDAG = GraphUtils.replaceNodes(CPDAG, trueGraph.getNodes());
             assertEquals(trueGraph, CPDAG);
         } catch (IOException e) {
@@ -612,7 +612,6 @@ public class TestFges {
      * graph.
      */
     private void checkSearch(String inputGraph, String outputGraph) {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
         // Set up graph and node objects.
         Graph graph = GraphUtils.convert(inputGraph);

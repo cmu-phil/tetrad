@@ -28,7 +28,6 @@ import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.test.IndependenceTest;
 import edu.cmu.tetrad.search.utils.*;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -146,7 +145,7 @@ public final class SvarGfci implements IGraphSearch {
         this.graph = fges.search();
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxIndegree);
+        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxIndegree, knowledge);
 
         for (Node b : independenceTest.getVariables()) {
             List<Node> adjacentNodes = new ArrayList<>(fgesGraph.getAdjacentNodes(b));

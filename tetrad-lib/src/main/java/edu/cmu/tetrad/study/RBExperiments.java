@@ -62,7 +62,6 @@ public class RBExperiments {
     }
 
     public static void main(String[] args) throws IOException {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
 
         // read and process input arguments
         double alpha = 0.05, lower = 0.3, upper = 0.7;

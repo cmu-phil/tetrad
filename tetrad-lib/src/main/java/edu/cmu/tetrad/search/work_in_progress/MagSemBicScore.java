@@ -32,7 +32,6 @@ import edu.cmu.tetrad.search.Fges;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 
-import javax.help.UnsupportedOperationException;
 import java.util.*;
 
 /**
@@ -263,14 +262,6 @@ public class MagSemBicScore implements Score {
     @Override
     public int getMaxDegree() {
         return this.score.getMaxDegree();
-    }
-
-    /**
-     * @throws UnsupportedOperationException Not implemented.
-     */
-    @Override
-    public boolean determines(List<Node> z, Node y) {
-        throw new UnsupportedOperationException();
     }
 
     private void constructHeadsTails(List<List<Node>> heads, List<Set<Node>> tails, List<Node> mbo, List<Node> head, List<Node> in, Set<Node> an, Node v1) {

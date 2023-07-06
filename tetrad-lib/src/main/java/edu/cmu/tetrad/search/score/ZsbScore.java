@@ -27,7 +27,9 @@ import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.SimpleDataLoader;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Fges;
+import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.Matrix;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +134,14 @@ public class ZsbScore implements Score {
         }
 
         final int pi = parents.length;
-        double varRy = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets);
+        double varRy;
+
+        try {
+            varRy = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets);
+        } catch (SingularMatrixException e) {
+            throw new RuntimeException("Singularity encountered when scoring " +
+                    LogUtilsSearch.getScoreFact(i, parents, variables));
+        }
 
         int m0 = estMaxParents[i];
 

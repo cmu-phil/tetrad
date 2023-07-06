@@ -73,7 +73,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
         this.desktop = (TetradDesktop) DesktopController.getInstance();
         this.algorithmCard = new AlgorithmCard(algorithmRunner);
         this.parameterCard = new ParameterCard(algorithmRunner);
-        this.graphCard = new GraphCard(algorithmRunner);
+        this.graphCard = new GraphCard(algorithmRunner );
 
         initComponents();
         initListeners();
@@ -198,7 +198,7 @@ public class GeneralAlgorithmEditor extends JPanel implements PropertyChangeList
             }
         }
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
     }
 
     @Override

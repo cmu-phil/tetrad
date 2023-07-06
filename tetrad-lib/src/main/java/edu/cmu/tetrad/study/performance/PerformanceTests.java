@@ -30,7 +30,7 @@ import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -1261,7 +1261,7 @@ public class PerformanceTests {
             ffciArrowStats.add(printCorrectArrows(dag, estPag, truePag));
             ffciTailStats.add(printCorrectTails(dag, estPag, truePag));
 
-            ffciCounts.add(GraphSearchUtils.getGraphComparison2(estPag, truePag));
+            ffciCounts.add(GraphSearchUtils.getGraphComparison(estPag, truePag));
 
             elapsed = ta2 - ta1;
             ffciElapsedTimes.add(elapsed);
@@ -1940,7 +1940,6 @@ public class PerformanceTests {
 
 
     public static void main(String... args) {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.OBJECT);
         System.out.println("Start ");
 
         PerformanceTests performanceTests = new PerformanceTests();

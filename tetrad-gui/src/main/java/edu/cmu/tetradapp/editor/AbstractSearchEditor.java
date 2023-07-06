@@ -273,7 +273,7 @@ public abstract class AbstractSearchEditor extends JPanel implements GraphEditab
         }
         ;
 
-        SwingUtilities.invokeLater(MyWatchedProcess::new);
+        new MyWatchedProcess();
 
 //        Thread watcher = new Thread(() -> {
 //            while (true) {

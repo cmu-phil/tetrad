@@ -81,7 +81,7 @@ public class ExampleCompareSimulationDiscrete {
         statistics.add(new ArrowheadPrecision());
         statistics.add(new ArrowheadPrecisionCommonEdges());
         statistics.add(new ArrowheadRecall());
-        statistics.add(new Shd());
+        statistics.add(new StructuralHammingDistance());
 
         statistics.setWeight("SHD", 1.0);
 

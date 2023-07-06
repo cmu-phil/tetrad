@@ -114,6 +114,8 @@ public class KnowledgeBoxEditor extends JPanel {
         });
 
         initComponents();
+
+        setNumDisplayTiers(this.knowledge.getNumTiers());
     }
 
     private void initComponents() {

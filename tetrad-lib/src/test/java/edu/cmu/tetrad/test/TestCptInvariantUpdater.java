@@ -25,7 +25,6 @@ import edu.cmu.tetrad.bayes.*;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.GraphNode;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.NodeEqualityMode;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -159,7 +158,6 @@ public final class TestCptInvariantUpdater {
 
     @Test
     public void testUpdate4() {
-        NodeEqualityMode.setEqualityMode(NodeEqualityMode.Type.NAME);
 
         Node x0Node = new GraphNode("X0");
         Node x1Node = new GraphNode("X1");

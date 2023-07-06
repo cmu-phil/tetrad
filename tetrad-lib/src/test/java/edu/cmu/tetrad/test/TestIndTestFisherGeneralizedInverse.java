@@ -24,7 +24,7 @@ package edu.cmu.tetrad.test;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZGeneralizedInverse;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;

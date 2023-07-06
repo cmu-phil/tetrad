@@ -21,7 +21,7 @@
 
 package edu.cmu.tetradapp.model;
 
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 
 /**
  * Specifies the methods that all algorithm runners must implement. All

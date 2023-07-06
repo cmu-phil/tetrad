@@ -25,6 +25,7 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.EstimateRank;
 import edu.cmu.tetrad.util.Matrix;
 import edu.cmu.tetrad.util.NumberFormatUtil;

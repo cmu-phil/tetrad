@@ -138,6 +138,13 @@ public class Vector implements TetradSerializable {
         return new Vector(0);
     }
 
+    public double dot(Vector v2) {
+        double sum = 0;
+        for (int i = 0; i < size(); i++) {
+            sum += get(i) * v2.get(i);
+        }
+        return sum;
+    }
 }
 
 

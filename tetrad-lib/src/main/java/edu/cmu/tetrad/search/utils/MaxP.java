@@ -24,7 +24,7 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import org.apache.commons.math3.util.FastMath;

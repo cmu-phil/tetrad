@@ -89,7 +89,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
     @Override
     public Graph getComparisonGraph(Graph graph) {
         Node target = graph.getNode(this.targetName);
-        return GraphUtils.markovBlanketDag(target, new EdgeListGraph(graph));
+        return GraphUtils.markovBlanketSubgraph(target, new EdgeListGraph(graph));
     }
 
     @Override

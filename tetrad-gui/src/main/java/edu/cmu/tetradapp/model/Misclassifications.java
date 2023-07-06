@@ -21,10 +21,10 @@
 
 package edu.cmu.tetradapp.model;
 
+import edu.cmu.tetrad.algcomparison.CompareTwoGraphs;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.MisclassificationUtils;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.session.DoNotAddOldModel;
 import edu.cmu.tetrad.session.SessionModel;
@@ -112,15 +112,9 @@ public final class Misclassifications implements SessionModel, DoNotAddOldModel 
 
         Graph comparisonGraph = getComparisonGraph(referenceGraph, params);
 
+        String table = CompareTwoGraphs.getMisclassificationTable(comparisonGraph, targetGraph);
         return "True graph from " + refName + "\nTarget graph from " + targetName +
-                "\n\n\n" +
-                "Edge Misclassification Table:" +
-                "\n" +
-                MisclassificationUtils.edgeMisclassifications(targetGraph, comparisonGraph) +
-                "\n\n" +
-                "Endpoint Misclassification Table:" +
-                "\n\n" +
-                MisclassificationUtils.endpointMisclassification(targetGraph, comparisonGraph);
+                "\n\n\n" + table;
     }
 
     /**

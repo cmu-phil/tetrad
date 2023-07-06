@@ -15,6 +15,15 @@ import static org.apache.commons.math3.util.FastMath.tanh;
 public class BicEst implements Statistic {
     static final long serialVersionUID = 23L;
 
+    private double penaltyDiscount = 1.0;
+
+    public BicEst() {
+    }
+
+    public BicEst(double penaltyDiscount) {
+        this.penaltyDiscount = penaltyDiscount;
+    }
+
     @Override
     public String getAbbreviation() {
         return "BicEst";
@@ -22,7 +31,7 @@ public class BicEst implements Statistic {
 
     @Override
     public String getDescription() {
-        return "BIC of the estimated CPDAG";
+        return "BIC of the estimated CPDAG (depends only on the estimated DAG and the data)";
     }
 
     @Override

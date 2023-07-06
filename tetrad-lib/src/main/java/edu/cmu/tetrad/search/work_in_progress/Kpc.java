@@ -27,7 +27,7 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.search.IGraphSearch;
 import edu.cmu.tetrad.search.test.IndTestHsic;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;

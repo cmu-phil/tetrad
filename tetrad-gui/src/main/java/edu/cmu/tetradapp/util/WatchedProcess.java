@@ -23,7 +23,7 @@ import java.awt.*;
  *     }
  * };
  *
- * SwingUtilities.invokeLater(MyWatchedProcess::new);
+ * new MyWatchedProcess();
  * </pre>
  *
  * @author josephramsey
@@ -65,9 +65,6 @@ public abstract class WatchedProcess {
                 System.out.println("Thread was interrupted while watching. Stopping...");
                 return;
             }
-
-            // Process completed successfully
-            System.out.println("Process completed successfully.");
 
             if (dialog != null) {
                 dialog.dispose();

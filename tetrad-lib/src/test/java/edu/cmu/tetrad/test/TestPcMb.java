@@ -25,7 +25,7 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.PcMb;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import org.junit.Test;
@@ -82,7 +82,7 @@ public class TestPcMb {
         for (Node node : nodes) {
             Graph resultMb = search.search(Collections.singletonList(node));
             if (dag.containsNode(node)) {
-                Graph trueMb = GraphUtils.markovBlanketDag(node, dag);
+                Graph trueMb = GraphUtils.markovBlanketSubgraph(node, dag);
 
                 List<Node> resultNodes = resultMb.getNodes();
                 List<Node> trueNodes = trueMb.getNodes();

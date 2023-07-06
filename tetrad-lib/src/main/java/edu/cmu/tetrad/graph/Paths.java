@@ -1,6 +1,6 @@
 package edu.cmu.tetrad.graph;
 
-import edu.cmu.tetrad.search.test.IndependenceTest;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TaskManager;
