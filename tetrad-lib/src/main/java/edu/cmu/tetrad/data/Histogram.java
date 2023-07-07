@@ -46,13 +46,13 @@ public class Histogram {
     /**
      * This histogram is for variables in a particular data set. These may be continuous or discrete.
      */
-    public Histogram(DataSet dataSet) {
+    public Histogram(DataSet dataSet, String target) {
         if (dataSet.getVariables().size() < 1) {
             throw new IllegalArgumentException("Can't do histograms for an empty data sets.");
         }
 
         this.dataSet = dataSet;
-        setTarget(dataSet.getVariable(0).getName());
+        setTarget(target);
     }
 
     //========================================PUBLIC METHODS=================================//
@@ -63,7 +63,7 @@ public class Histogram {
      *
      * @param target The name of the target in the data set.
      */
-    public void setTarget(String target) {
+    private void setTarget(String target) {
         Node _target;
 
         if (target == null) {
@@ -104,7 +104,7 @@ public class Histogram {
      */
     public void addConditioningVariable(String variable, int value) {
         Node node = this.dataSet.getVariable(variable);
-        if (node == this.target) throw new IllegalArgumentException("Conditioning node may not be the target.");
+//        if (node == this.target) throw new IllegalArgumentException("Conditioning node may not be the target.");
         if (!(node instanceof DiscreteVariable)) throw new IllegalArgumentException("Variable must be discrete.");
         this.discreteValues.put(node, value);
     }
@@ -116,7 +116,7 @@ public class Histogram {
      */
     public void removeConditioningVariable(String variable) {
         Node node = this.dataSet.getVariable(variable);
-        if (node == this.target) throw new IllegalArgumentException("The target cannot be a conditioning node.");
+//        if (node == this.target) throw new IllegalArgumentException("The target cannot be a conditioning node.");
         if (!(this.continuousIntervals.containsKey(node) || this.discreteValues.containsKey(node))) {
             throw new IllegalArgumentException("Not a conditioning node: " + variable);
         }

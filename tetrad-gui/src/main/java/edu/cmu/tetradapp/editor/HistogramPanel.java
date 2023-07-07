@@ -150,7 +150,7 @@ public class HistogramPanel extends JPanel {
         if (drawAxes) {
             // draw the side line
             g2d.setColor(HistogramPanel.LINE_COLOR);
-            int topY = height - (int) FastMath.ceil(scale * topFreq);
+            int topY = height - (int) FastMath.ceil(scale * topFreq) + 1;
             String top = String.valueOf(topFreq);
             g2d.drawString(top, paddingX - fontMetrics.stringWidth(top), topY - 2);
             g2d.drawLine(paddingX - dash, topY, paddingX, topY);
