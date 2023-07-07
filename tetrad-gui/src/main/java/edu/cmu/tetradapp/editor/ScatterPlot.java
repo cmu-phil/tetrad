@@ -25,7 +25,6 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.regression.Regression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
 import edu.cmu.tetrad.util.Matrix;
@@ -83,7 +82,11 @@ public class ScatterPlot {
         List<Node> regressors = new ArrayList<>();
         regressors.add(_x);
         Node target = _y;
-        Regression regression = new RegressionDataset(this.dataSet);
+        RegressionDataset regression = new RegressionDataset(this.dataSet);
+        final List<Integer> conditionedRows = getConditionedRows();
+        final int[] _conditionedRows = new int[conditionedRows.size()];
+        for (int i = 0; i < conditionedRows.size(); i++) _conditionedRows[i] = conditionedRows.get(i);
+        regression.setRows(_conditionedRows);
         return regression.regress(target, regressors);
     }
 

@@ -136,6 +136,19 @@ public class VariableConditioningEditor extends JPanel {
         Box main = Box.createVerticalBox();
         main.add(Box.createVerticalStrut(20));
 
+        Box b6 = Box.createHorizontalBox();
+        b6.add(this.newConditioningVariableSelector);
+        b6.add(this.newConditioningVariableButton);
+        b6.add(Box.createHorizontalGlue());
+        main.add(b6);
+
+        Box b7 = Box.createHorizontalBox();
+        b7.add(this.removeConditioningVariableButton);
+        b7.add(Box.createHorizontalGlue());
+        main.add(b7);
+
+        main.add(Box.createVerticalStrut(20));
+
         Box b3 = Box.createHorizontalBox();
         JLabel l1 = new JLabel("Conditioning on: ");
         l1.setFont(l1.getFont().deriveFont(Font.ITALIC));
@@ -143,17 +156,15 @@ public class VariableConditioningEditor extends JPanel {
         b3.add(Box.createHorizontalGlue());
         main.add(b3);
 
-        main.add(Box.createVerticalStrut(20));
+        main.add(Box.createVerticalStrut(10));
 
         for (Node node : conditioningPanelMap.keySet()) {
             ConditioningPanel panel = conditioningPanelMap.get(node);
             main.add(panel.getBox());
-            main.add(Box.createVerticalStrut(10));
+            main.add(Box.createVerticalStrut(5));
         }
 
         main.add(Box.createVerticalStrut(10));
-
-        main.add(Box.createVerticalGlue());
 
         for (int i = this.newConditioningVariableSelector.getItemCount() - 1; i >= 0; i--) {
             this.newConditioningVariableSelector.removeItemAt(i);
@@ -167,17 +178,6 @@ public class VariableConditioningEditor extends JPanel {
             if (panel != null && node == panel.getVariable()) continue;
             this.newConditioningVariableSelector.addItem(node);
         }
-
-        Box b6 = Box.createHorizontalBox();
-        b6.add(this.newConditioningVariableSelector);
-        b6.add(this.newConditioningVariableButton);
-        b6.add(Box.createHorizontalGlue());
-        main.add(b6);
-
-        Box b7 = Box.createHorizontalBox();
-        b7.add(this.removeConditioningVariableButton);
-        b7.add(Box.createHorizontalGlue());
-        main.add(b7);
 
         this.removeAll();
         this.setLayout(new BorderLayout());

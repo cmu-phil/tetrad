@@ -61,6 +61,9 @@ public class RegressionDataset implements Regression {
     private int[] rows;
     private Vector res2;
 
+
+
+
     //============================CONSTRUCTORS==========================//
 
     /**
