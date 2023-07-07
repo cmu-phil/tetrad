@@ -10,7 +10,6 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
@@ -47,12 +46,6 @@ public class VariableConditioningEditor extends JPanel {
         for (Node node : variables) {
             this.newConditioningVariableSelector.addItem(node);
         }
-
-        this.newConditioningVariableSelector.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                System.out.println("New conditioning varible " + e.getItem());
-            }
-        });
 
         this.newConditioningVariableButton = new JButton("Add");
 
