@@ -18,7 +18,6 @@ import java.util.Vector;
  */
 class ScatterplotPanel extends JPanel {
     private ScatterPlot scatterPlot;
-
     private final NumberFormat nf;
     private boolean drawAxes = false;
     private int pointSize = 5;
@@ -42,10 +41,10 @@ class ScatterplotPanel extends JPanel {
      * Renders the view.
      */
     public void paintComponent(Graphics graphics) {
-        double xmin = this.scatterPlot.getXmin();
-        double xmax = this.scatterPlot.getXmax();
-        double ymin = this.scatterPlot.getYmin();
-        double ymax = this.scatterPlot.getYmax();
+        double xmin = this.scatterPlot.getXmin() - 0.000001;
+        double xmax = this.scatterPlot.getXmax() + 0.000001;
+        double ymin = this.scatterPlot.getYmin() - 0.000001;
+        double ymax = this.scatterPlot.getYmax() + 0.000001;
 
         Graphics2D g = (Graphics2D) graphics;
 
@@ -57,10 +56,10 @@ class ScatterplotPanel extends JPanel {
         int chartHeight = getSize().height;
 
         final int xStringMin = 10;
-        int xMin = drawAxes ? 50 : 2;
+        int xMin = drawAxes ? 50 : 4;
         int xMax = drawAxes ? chartWidth - 20 : chartWidth - 4;
         int xRange = xMax - xMin;
-        int yMin = drawAxes ? 30 : 2;
+        int yMin = drawAxes ? 30 : 4;
         int yMax = drawAxes ? chartHeight - 20 : chartHeight - 4;
         int yRange = yMax - yMin;
 

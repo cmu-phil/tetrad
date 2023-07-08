@@ -820,8 +820,8 @@ public class MarkovCheckEditor extends JPanel {
             dataSet.setDouble(i, 0, results.get(i).getPValue());
         }
 
-        Histogram histogram = new Histogram(dataSet);
-        histogram.setTarget("P-Value or Bump");
+        Histogram histogram = new Histogram(dataSet, "P-Value or Bump");
+//        histogram.setTarget("P-Value or Bump");
         HistogramPanel view = new HistogramPanel(histogram, true);
 
         Color fillColor = new Color(113, 165, 210);

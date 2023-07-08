@@ -54,6 +54,7 @@ public class PlotMatrix extends JPanel {
     private int[] lastRows = new int[]{0};
     private int[] lastCols = new int[]{0};
     private Map<Node, VariableConditioningEditor.ConditioningPanel> conditioningPanelMap = new HashMap<>();
+    private ScatterPlot.JitterStyle jitterStyle = ScatterPlot.JitterStyle.None;
 
     public PlotMatrix(DataSet dataSet) {
         setLayout(new BorderLayout());
@@ -96,7 +97,7 @@ public class PlotMatrix extends JPanel {
         JMenuItem numBins = new JMenu("Set number of Bins for Histograms");
         ButtonGroup group = new ButtonGroup();
 
-        for (int i = 2; i <= 20; i++) {
+        for (int i = 2; i <= 30; i++) {
             int _i = i;
             JMenuItem comp = new JCheckBoxMenuItem(String.valueOf(i));
             numBins.add(comp);
@@ -110,6 +111,40 @@ public class PlotMatrix extends JPanel {
         }
 
         settings.add(numBins);
+
+        JMenu jitterDiscrete = new JMenu("Discrete Jitter Style");
+
+        final JMenuItem menuItem1 = new JCheckBoxMenuItem(ScatterPlot.JitterStyle.None.toString());
+        final JMenuItem menuItem2 = new JCheckBoxMenuItem(ScatterPlot.JitterStyle. Normal.toString());
+        final JMenuItem menuItem3 = new JCheckBoxMenuItem(ScatterPlot.JitterStyle.Uniform.toString());
+
+        ButtonGroup group1 = new ButtonGroup();
+        group1.add(menuItem1);
+        group1.add(menuItem2);
+        group1.add(menuItem3);
+
+        menuItem1.setSelected(true);
+
+        jitterDiscrete.add(menuItem1);
+        jitterDiscrete.add(menuItem2);
+        jitterDiscrete.add(menuItem3);
+
+        menuItem1.addActionListener(e -> {
+            this.jitterStyle = ScatterPlot.JitterStyle.None;
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+        });
+
+        menuItem2.addActionListener(e -> {
+            this.jitterStyle = ScatterPlot.JitterStyle.Normal;
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+        });
+
+        menuItem3.addActionListener(e -> {
+            this.jitterStyle = ScatterPlot.JitterStyle.Uniform;
+            constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
+        });
+
+        settings.add(jitterDiscrete);
 
         JMenuItem editConditioning = new JMenuItem("Edit Conditioning Variables...");
 
@@ -158,8 +193,8 @@ public class PlotMatrix extends JPanel {
         for (int rowIndex : rowIndices) {
             for (int colIndex : colIndices) {
                 if (rowIndex == colIndex) {
-                    Histogram histogram = new Histogram(dataSet);
-                    histogram.setTarget(nodes.get(rowIndex).getName());
+                    Histogram histogram = new Histogram(dataSet, nodes.get(rowIndex).getName());
+//                    histogram.setTarget(nodes.get(rowIndex).getName());
 
                     for (Node node : conditioningPanelMap.keySet()) {
                         if (node instanceof ContinuousVariable) {
@@ -199,8 +234,16 @@ public class PlotMatrix extends JPanel {
                                     = (VariableConditioningEditor.ContinuousConditioningPanel)
                                     conditioningPanelMap.get(var);
                             scatterPlot.addConditioningVariable(var.getName(), panel.getLow(), panel.getHigh());
+                        } else if (node instanceof DiscreteVariable) {
+                            DiscreteVariable var = (DiscreteVariable) node;
+                            VariableConditioningEditor.DiscreteConditioningPanel panel
+                                    = (VariableConditioningEditor.DiscreteConditioningPanel)
+                                    conditioningPanelMap.get(var);
+                            scatterPlot.addConditioningVariable(var.getName(), panel.getIndex());
                         }
                     }
+
+                    scatterPlot.setJitterStyle(jitterStyle);
 
                     ScatterplotPanel panel = new ScatterplotPanel(scatterPlot);
                     panel.setDrawAxes(rowIndices.length == 1 && colIndices.length == 1);

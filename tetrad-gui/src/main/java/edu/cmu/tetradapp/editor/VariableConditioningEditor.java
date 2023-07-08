@@ -10,7 +10,6 @@ import edu.cmu.tetradapp.util.DoubleTextField;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.List;
@@ -47,12 +46,6 @@ public class VariableConditioningEditor extends JPanel {
         for (Node node : variables) {
             this.newConditioningVariableSelector.addItem(node);
         }
-
-        this.newConditioningVariableSelector.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                System.out.println("New conditioning varible " + e.getItem());
-            }
-        });
 
         this.newConditioningVariableButton = new JButton("Add");
 
@@ -136,6 +129,14 @@ public class VariableConditioningEditor extends JPanel {
         Box main = Box.createVerticalBox();
         main.add(Box.createVerticalStrut(20));
 
+        Box b6 = Box.createHorizontalBox();
+        b6.add(this.newConditioningVariableSelector);
+        b6.add(this.newConditioningVariableButton);
+        b6.add(Box.createHorizontalGlue());
+        main.add(b6);
+
+        main.add(Box.createVerticalStrut(20));
+
         Box b3 = Box.createHorizontalBox();
         JLabel l1 = new JLabel("Conditioning on: ");
         l1.setFont(l1.getFont().deriveFont(Font.ITALIC));
@@ -143,17 +144,15 @@ public class VariableConditioningEditor extends JPanel {
         b3.add(Box.createHorizontalGlue());
         main.add(b3);
 
-        main.add(Box.createVerticalStrut(20));
+        main.add(Box.createVerticalStrut(10));
 
         for (Node node : conditioningPanelMap.keySet()) {
             ConditioningPanel panel = conditioningPanelMap.get(node);
             main.add(panel.getBox());
-            main.add(Box.createVerticalStrut(10));
+            main.add(Box.createVerticalStrut(5));
         }
 
         main.add(Box.createVerticalStrut(10));
-
-        main.add(Box.createVerticalGlue());
 
         for (int i = this.newConditioningVariableSelector.getItemCount() - 1; i >= 0; i--) {
             this.newConditioningVariableSelector.removeItemAt(i);
@@ -168,16 +167,12 @@ public class VariableConditioningEditor extends JPanel {
             this.newConditioningVariableSelector.addItem(node);
         }
 
-        Box b6 = Box.createHorizontalBox();
-        b6.add(this.newConditioningVariableSelector);
-        b6.add(this.newConditioningVariableButton);
-        b6.add(Box.createHorizontalGlue());
-        main.add(b6);
-
-        Box b7 = Box.createHorizontalBox();
-        b7.add(this.removeConditioningVariableButton);
-        b7.add(Box.createHorizontalGlue());
-        main.add(b7);
+        if (!conditioningPanelMap.isEmpty()) {
+            Box b7 = Box.createHorizontalBox();
+            b7.add(this.removeConditioningVariableButton);
+            b7.add(Box.createHorizontalGlue());
+            main.add(b7);
+        }
 
         this.removeAll();
         this.setLayout(new BorderLayout());
@@ -219,12 +214,12 @@ public class VariableConditioningEditor extends JPanel {
             this.index = valueIndex;
 
             Box b4 = Box.createHorizontalBox();
-            b4.add(Box.createRigidArea(new Dimension(10, 0)));
-            b4.add(new JLabel(variable + " = " + variable.getCategory(valueIndex)));
-            b4.add(Box.createHorizontalGlue());
             this.checkBox = new JCheckBox();
             VariableConditioningEditor.restrictSize(this.checkBox);
             b4.add(this.checkBox);
+            b4.add(new JLabel(variable + " = " + variable.getCategory(valueIndex)));
+            b4.add(Box.createHorizontalGlue());
+            b4.add(Box.createHorizontalGlue());
             this.box = b4;
         }
 
@@ -284,7 +279,8 @@ public class VariableConditioningEditor extends JPanel {
             this.ntileIndex = ntileIndex;
 
             Box b4 = Box.createHorizontalBox();
-            b4.add(Box.createRigidArea(new Dimension(10, 0)));
+            this.checkBox = new JCheckBox();
+            b4.add(this.checkBox);
 
             if (type == VariableConditioningEditor.ContinuousConditioningPanel.Type.Range) {
                 b4.add(new JLabel(variable + " = (" + nf.format(low) + ", " + nf.format(high) + ")"));
@@ -297,11 +293,7 @@ public class VariableConditioningEditor extends JPanel {
             }
 
             b4.add(Box.createHorizontalGlue());
-            this.checkBox = new JCheckBox();
-            VariableConditioningEditor.restrictSize(this.checkBox);
-            b4.add(this.checkBox);
             this.box = b4;
-
         }
 
         public static VariableConditioningEditor.ContinuousConditioningPanel getDefault(ContinuousVariable variable, DataSet dataSet) {
