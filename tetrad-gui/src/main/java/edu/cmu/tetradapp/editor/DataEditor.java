@@ -645,7 +645,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 //        tools.add(new HistogramAction(this));
         tools.add(new PlotMatrixAction(this));
         tools.add(new QQPlotAction(this));
-        tools.add(new NormalityTestAction(this));
+//        tools.add(new NormalityTestAction(this));
         tools.add(new DescriptiveStatsAction(this));
 
         final int vkBackSpace = KeyEvent.VK_BACK_SPACE;

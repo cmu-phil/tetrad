@@ -20,6 +20,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.data.AndersonDarlingTest;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DiscreteVariable;
@@ -30,6 +31,7 @@ import edu.cmu.tetrad.util.StatUtils;
 import javax.swing.table.AbstractTableModel;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -60,58 +62,9 @@ class DescriptiveStatsModel extends AbstractTableModel {
         }
     }
 
-    /**
-     * Note that returning null here has two effects. First, it
-     */
-    public String getColumnName(int col) {
-        if (col == 0) return  "Variable";
-        return stats.get(0).names.get(col - 1);
-    }
-
-    /**
-     * @return the number of rows in the wrapper table model. Guarantees that
-     * this number will be at least 100.
-     */
-    public int getRowCount() {
-        return vars.size();
-    }
-
-    /**
-     * @return the number of columns in the wrapper table model. Guarantees that
-     * this number will be at least 30.
-     */
-    public int getColumnCount() {
-        return stats.get(0).stats.size() + 1;
-    }
-
-    public Object getValueAt(int row, int col) {
-        if (col == 0) return vars.get(row).getName();
-        else {
-            final Number number = stats.get(row).stats.get(col - 1);
-            NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-            if (number instanceof Double) {
-                return nf.format(number);
-            } else {
-                return number;
-            }
-        }
-    }
-
-    public DataSet getDataSet() {
-        return dataSet;
-    }
-
-    private static class Ret {
-        List<String> names;
-        List<Number> stats;
-    }
-
     public static Ret generateDescriptiveStats(DataSet dataSet, Node variable) {
         List<String> names = new ArrayList<>();
-        List<Number> stats = new ArrayList<>();
-
-        NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        List<Object> stats = new ArrayList<>();
 
         int col = dataSet.getColumn(variable);
 
@@ -159,7 +112,6 @@ class DescriptiveStatsModel extends AbstractTableModel {
         stats.add(StatUtils.skewness(data));
 
 
-
         if (continuous) {
             double[] median = DescriptiveStats.median(data);
 
@@ -174,25 +126,105 @@ class DescriptiveStatsModel extends AbstractTableModel {
 
             names.add("Maximum");
             stats.add(median[2]);
+
+            double[] ksResults = NormalityTests.kolmogorovSmirnov(dataSet, (ContinuousVariable) variable);
+
+            AndersonDarlingTest andersonDarlingTest = new AndersonDarlingTest(data);
+            double a2 = andersonDarlingTest.getASquared();
+            double a2Star = andersonDarlingTest.getASquaredStar();
+            double adP = andersonDarlingTest.getP();
+
+            names.add("a2");
+            stats.add(a2);
+
+            names.add("a2*");
+            stats.add(a2Star);
+
+            names.add("ad-p");
+            stats.add(adP);
+
+            String[] pass = new String[5];
+            Arrays.fill(pass, "FAIL");
+            if (ksResults[0] < ksResults[1]) pass[0] = "ACCEPT";
+            if (ksResults[0] < ksResults[2]) pass[1] = "ACCEPT";
+            if (ksResults[0] < ksResults[3]) pass[2] = "ACCEPT";
+            if (ksResults[0] < ksResults[4]) pass[3] = "ACCEPT";
+            if (ksResults[0] < ksResults[5]) pass[4] = "ACCEPT";
+
+            names.add("ks.2");
+            stats.add(pass[0]);
+
+            names.add("ks.15");
+            stats.add(pass[2]);
+
+            names.add("ks.1]");
+            stats.add(pass[2]);
+
+            names.add("ks.05");
+            stats.add(pass[3]);
+
+            names.add("ks.01");
+            stats.add(pass[4]);
         }
-
-//        table.setToken(rowindex, 0, "Constant Columns:");
-//        java.util.List<Node> constantColumns = DataUtils.getConstantColumns(dataSet);
-//        table.setToken(rowindex++, 1, constantColumns.isEmpty() ? "None" : constantColumns.toString());
-//
-//        table.setToken(rowindex, 0, "Example Nonsingular (2 - 3 vars):");
-//
-//        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
-//        List<Node> exampleNonsingular = DataUtils.getExampleNonsingular(covarianceMatrix, 3);
-//        table.setToken(rowindex, 1, exampleNonsingular == null ? "None" : exampleNonsingular.toString());
-
-//        b.append(table);
 
         Ret ret = new Ret();
         ret.names = names;
         ret.stats = stats;
 
         return ret;
+    }
+
+    /**
+     * Note that returning null here has two effects. First, it
+     */
+    public String getColumnName(int col) {
+        if (col == 0) return "Variable";
+        return stats.get(0).names.get(col - 1);
+    }
+
+    /**
+     * @return the number of rows in the wrapper table model. Guarantees that
+     * this number will be at least 100.
+     */
+    public int getRowCount() {
+        return vars.size();
+    }
+
+    /**
+     * @return the number of columns in the wrapper table model. Guarantees that
+     * this number will be at least 30.
+     */
+    public int getColumnCount() {
+        return stats.get(0).stats.size() + 1;
+    }
+
+    public Object getValueAt(int row, int col) {
+        if (col == 0) return vars.get(row).getName();
+        else {
+            final Object o = stats.get(row).stats.get(col - 1);
+
+            if (o instanceof Double) {
+                final Double number = (Double) o;
+                NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+                return nf.format(number);
+            } else if (o instanceof Integer) {
+                final Integer number = (Integer) o;
+                return Integer.toString(number);
+            } else if (o instanceof String) {
+                return o.toString();
+            } else {
+                throw new IllegalArgumentException("Unexpected value type.");
+            }
+        }
+    }
+
+    public DataSet getDataSet() {
+        return dataSet;
+    }
+
+    private static class Ret {
+        List<String> names;
+        List<Object> stats;
     }
 
 }

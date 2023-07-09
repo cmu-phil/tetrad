@@ -43,14 +43,14 @@ import java.util.List;
 class DescriptiveStatsAction extends AbstractAction {
 
     /**
-     * The data edtitor that action is attached to.
+     * The data editor that action is attached to.
      */
     private final DataEditor dataEditor;
 
 
     /**
      * Constructs the <code>DescriptiveStatsAction</code> given the <code>DataEditor</code>
-     * that its attached to.
+     * that it's attached to.
      */
     public DescriptiveStatsAction(DataEditor editor) {
         super("Descriptive Statistics...");
@@ -88,6 +88,7 @@ class DescriptiveStatsAction extends AbstractAction {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
 
         String coonstantColumnsString = "Constant Columns: ";
+        assert dataSet != null;
         java.util.List<Node> constantColumns = DataUtils.getConstantColumns(dataSet);
         coonstantColumnsString += constantColumns.isEmpty() ? "None" : constantColumns.toString();
 
@@ -135,18 +136,6 @@ class DescriptiveStatsAction extends AbstractAction {
 
         return box;
     }
-
-//    private JTable getSelectedJTable() {
-//        Object display = tabbedPane().getSelectedComponent();
-//
-//        if (display instanceof DataDisplay) {
-//            return ((DataDisplay) display).getDataDisplayJTable();
-//        } else if (display instanceof CovMatrixDisplay) {
-//            return ((CovMatrixDisplay) display).getCovMatrixJTable();
-//        }
-//
-//        return null;
-//    }
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
