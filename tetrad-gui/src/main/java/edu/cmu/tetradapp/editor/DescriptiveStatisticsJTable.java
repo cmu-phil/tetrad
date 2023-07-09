@@ -163,13 +163,13 @@ public class DescriptiveStatisticsJTable extends JTable implements DataModelCont
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
     }
 
-    public class RightAlignRenderer extends DefaultTableCellRenderer {
+    public static class RightAlignRenderer extends DefaultTableCellRenderer {
         public RightAlignRenderer() {
             setHorizontalAlignment(JLabel.RIGHT);
         }
     }
 
-    public class LeftAlignRenderer extends DefaultTableCellRenderer {
+    public static class LeftAlignRenderer extends DefaultTableCellRenderer {
         public LeftAlignRenderer() {
             setHorizontalAlignment(JLabel.LEFT);
         }
