@@ -136,7 +136,7 @@ class DescriptiveStats {
     /*
         Returns the median in index 0, but also returns the min and max in 1 and 2 respectively.
      */
-    private static double[] median(double[] data) {
+    public static double[] median(double[] data) {
         Arrays.sort(data);
 
         double[] result = new double[3];
@@ -156,7 +156,7 @@ class DescriptiveStats {
         return result;
     }
 
-    private static double standardErrorMean(double stdDev, double sampleSize) {
+    public static double standardErrorMean(double stdDev, double sampleSize) {
         return stdDev / (FastMath.sqrt(sampleSize));
     }
 
@@ -166,7 +166,7 @@ class DescriptiveStats {
      * @return [0] -&gt; mean, [1] -&gt; standard deviation, [2] -&gt; variance
      */
 
-    private static double[] normalParams(double[] data) {
+    public static double[] normalParams(double[] data) {
         double mean = 0.0;
         double sd = 0.0;
 

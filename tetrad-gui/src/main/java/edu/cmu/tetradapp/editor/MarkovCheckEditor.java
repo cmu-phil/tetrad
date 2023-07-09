@@ -70,6 +70,13 @@ public class MarkovCheckEditor extends JPanel {
     private final MarkovCheckIndTestModel model;
     private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final JLabel markovTestLabel = new JLabel("(Unspecified Test)");
+    //    private final JTextArea testDescTextArea = new JTextArea();
+    private final JComboBox<IndependenceTestModel> indTestJComboBox = new JComboBox<>();
+    private final JComboBox<String> conditioningSetTypeJComboBox = new JComboBox<>();
+    private final JLabel testLabel = new JLabel("(Unspecified Test)");
+    private final JLabel conditioningLabelDep = new JLabel("(Unspecified)");
+    private final JLabel conditioningLabelIndep = new JLabel("(Unspecified)");
+    boolean updatingTestModels = true;
     private AbstractTableModel tableModelIndep;
     private AbstractTableModel tableModelDep;
     private JLabel fractionDepLabelIndep;
@@ -80,16 +87,9 @@ public class MarkovCheckEditor extends JPanel {
     private JLabel masLabellIndep;
     private int sortDir;
     private int lastSortCol;
-    //    private final JTextArea testDescTextArea = new JTextArea();
-    private final JComboBox<IndependenceTestModel> indTestJComboBox = new JComboBox<>();
-    private final JComboBox<String> conditioningSetTypeJComboBox = new JComboBox<>();
-    boolean updatingTestModels = true;
-    private final JLabel testLabel = new JLabel("(Unspecified Test)");
     private IndependenceWrapper independenceWrapper;
     private JPanel histogramPanelIndep;
     private JPanel histogramPanelDep;
-    private final JLabel conditioningLabelDep = new JLabel("(Unspecified)");
-    private final JLabel conditioningLabelIndep = new JLabel("(Unspecified)");
 
     /**
      * Constructs a new editor for the given model.
@@ -101,6 +101,7 @@ public class MarkovCheckEditor extends JPanel {
 
         conditioningSetTypeJComboBox.addItem("Parents(X)");
         conditioningSetTypeJComboBox.addItem("MarkovBlanket(X)");
+        conditioningSetTypeJComboBox.addItem("All Subsets");
 
         conditioningSetTypeJComboBox.addActionListener(e -> {
             switch ((String) Objects.requireNonNull(conditioningSetTypeJComboBox.getSelectedItem())) {
@@ -110,6 +111,9 @@ public class MarkovCheckEditor extends JPanel {
                 case "MarkovBlanket(X)":
                     model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.MARKOV_BLANKET);
                     break;
+                case "All Subsets":
+                    model.getMarkovCheck().setSetType(MarkovCheck.ConditioningSetType.ALL_SUBSETS);
+                    break;
                 default:
                     throw new IllegalArgumentException("Unknown conditioning set type: " +
                             conditioningSetTypeJComboBox.getSelectedItem());
@@ -117,6 +121,18 @@ public class MarkovCheckEditor extends JPanel {
 
             class MyWatchedProcess extends WatchedProcess {
                 public void watch() {
+                    if (model.getMarkovCheck().getSetType() == MarkovCheck.ConditioningSetType.ALL_SUBSETS && model.getVars().size() > 12) {
+                        int ret = JOptionPane.showOptionDialog(MarkovCheckEditor.this,
+                                "The all subsets option is exponential and can become extremely slow beyond 12" +
+                                        "\nvariables. You may possibly be required to force quit Tetrad. Continue?", "Warning",
+                                JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, null, null
+                        );
+
+                        if (ret == JOptionPane.NO_OPTION) {
+                            return;
+                        }
+                    }
+
                     setTest();
                     model.getMarkovCheck().generateResults();
                     tableModelIndep.fireTableDataChanged();
@@ -292,6 +308,27 @@ public class MarkovCheckEditor extends JPanel {
         add(box);
     }
 
+    @NotNull
+    private static String getHelpMessage() {
+        return "This tool lets you plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables, for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a test for \"Markov\" for the relevant conditioning sets; the is a test for \"Faithfulness.”\n" +
+                "\n" +
+                "Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a score bump, where this bump is negative for independent judgments and positive for dependent judgments.\n" +
+                "\n" +
+                "If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we display the histogram of the p-values with equally sized bins; the bars in this histogram, for this case, should ideally all be of equal height.\n" +
+                "\n" +
+                "If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being judged as dependent. For checking Faithfulness, one hopes that this list is non-empty, then this first bar will be especially high, since high p-values are for examples where the graph is unfaithful to the distribution. These are likely for for cases where paths in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all of the other bars.\n" +
+                "\n" +
+                "To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the user’s preferred alpha level if the distribution of p-values is Uniform and less then this alpha level if the distribution of p-values is non-Uniform.\n" +
+                "\n" +
+                "If the independence test yields a bump in the score, this score should be negative for independence judgments and positive for dependence judgments. The histogram will reflect this.\n" +
+                "\n" +
+                "Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let you analyze the data yourself.\n" +
+                "\n" +
+                "A note about Markov Blankets: The \"Markov Blanket\" conditioning set choice implements the Markov blanket calculation in a way that is correct for DAGs, CPDAGs, MAGs, and PAGs. For all of these graph types, the list of m-connecting facts in the Faithfulness tab should be empty, since the Markov blanket should screen off the target from any other variables in the dataset. It's possible that for some other graph types this list may not be empty (i.e., the Markov blanket calculation may not be correct).";
+    }
+
+    //========================PUBLIC METHODS==========================//
+
     private void setTest() {
         IndependenceTestModel selectedItem = (IndependenceTestModel) indTestJComboBox.getSelectedItem();
         Class<IndependenceWrapper> clazz = (selectedItem == null) ? null
@@ -316,8 +353,6 @@ public class MarkovCheckEditor extends JPanel {
 
 
     }
-
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Performs the action of opening a session from a file.
@@ -690,24 +725,6 @@ public class MarkovCheckEditor extends JPanel {
         return panel;
     }
 
-    @NotNull
-    private static String getHelpMessage() {
-        return "This tool lets you plot statistics for independence tests of a pair of variables given some conditioning calculated for one of those variables, for a given graph and dataset. Two tables are made, one in which the independence facts predicted by the graph using these conditioning sets are tested in the data and the other in which the graph's predicted dependence facts are tested. The first of these sets is a test for \"Markov\" for the relevant conditioning sets; the is a test for \"Faithfulness.”\n" +
-                "\n" +
-                "Each table gives columns for the independence fact being checked, its test result, and its statistic. This statistic is either a p-value, ranging from 0 to 1, where p-values above the alpha level of the test are judged as independent, or a score bump, where this bump is negative for independent judgments and positive for dependent judgments.\n" +
-                "\n" +
-                "If the independence test yields a p-value, as for instance, for the Fisher Z test (for the linear, Gaussian case) or else the Chi-Square test (for the multinomial case), then under the null hypothesis of independence and for a consistent test, these p-values should be distributed as Uniform(0, 1). That is, it should be just as likely to see p-values in any range of equal width. If the test is inconsistent or the graph is incorrect (i.e., the parents of some or all of the nodes in the graph are incorrect), then this distribution of p-values will not be Uniform. To visualize this, we display the histogram of the p-values with equally sized bins; the bars in this histogram, for this case, should ideally all be of equal height.\n" +
-                "\n" +
-                "If the first bar in this histogram is especially high (for the p-value case), that means that many tests are being judged as dependent. For checking Faithfulness, one hopes that this list is non-empty, then this first bar will be especially high, since high p-values are for examples where the graph is unfaithful to the distribution. These are likely for for cases where paths in the graph cancel unfaithfully. But for checking Markov, one hopes that this first bar will be the same height as all of the other bars.\n" +
-                "\n" +
-                "To make it especially clear, we give two statistics in the interface. The first is the percentage of p-values judged dependent on the test. If an alpha level is used in the test, this number should be very close to the alpha level for the Local Markov check since the distribution of p-values under this condition is Uniform. For the second, we test the Uniformity of the p-values using a Kolmogorov-Smirnov test. The p-value returned by this test should be greater than the user’s preferred alpha level if the distribution of p-values is Uniform and less then this alpha level if the distribution of p-values is non-Uniform.\n" +
-                "\n" +
-                "If the independence test yields a bump in the score, this score should be negative for independence judgments and positive for dependence judgments. The histogram will reflect this.\n" +
-                "\n" +
-                "Feel free to select all of the data in the tables, copy it, and paste it into a text file or into Excel. This will let you analyze the data yourself.\n" +
-                "\n" +
-                "A note about Markov Blankets: The \"Markov Blanket\" conditioning set choice implements the Markov blanket calculation in a way that is correct for DAGs, CPDAGs, MAGs, and PAGs. For all of these graph types, the list of m-connecting facts in the Faithfulness tab should be empty, since the Markov blanket should screen off the target from any other variables in the dataset. It's possible that for some other graph types this list may not be empty (i.e., the Markov blanket calculation may not be correct).";
-    }
     private void sortByColumn(int sortCol, boolean indep) {
         if (sortCol == this.getLastSortCol()) {
             this.setSortDir(-1 * this.getSortDir());
@@ -842,32 +859,6 @@ public class MarkovCheckEditor extends JPanel {
         return vBox;
     }
 
-    static class Renderer extends DefaultTableCellRenderer {
-        private JTable table;
-        private boolean selected;
-
-        public Renderer() {
-        }
-
-        public void setValue(Object value) {
-            if (selected) {
-                setForeground(table.getSelectionForeground());
-                setBackground(table.getSelectionBackground());
-            } else {
-                this.setForeground(table.getForeground());
-                this.setBackground(table.getBackground());
-            }
-
-            this.setText(value.toString());
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            this.table = table;
-            selected = isSelected;
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
-    }
     private DataType getDataType() {
         DataModel dataSet = model.getDataModel();
 
@@ -977,7 +968,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private DoubleTextField getDoubleField(String parameter, Parameters parameters,
-                                             double defaultValue, double lowerBound, double upperBound) {
+                                           double defaultValue, double lowerBound, double upperBound) {
         DoubleTextField field = new DoubleTextField(parameters.getDouble(parameter, defaultValue),
                 8, new DecimalFormat("0.####"), new DecimalFormat("0.0#E0"), 0.001);
 
@@ -1007,7 +998,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private IntTextField getIntTextField(String parameter, Parameters parameters,
-                                           int defaultValue, double lowerBound, double upperBound) {
+                                         int defaultValue, double lowerBound, double upperBound) {
         IntTextField field = new IntTextField(parameters.getInt(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
@@ -1036,7 +1027,7 @@ public class MarkovCheckEditor extends JPanel {
     }
 
     private LongTextField getLongTextField(String parameter, Parameters parameters,
-                                             long defaultValue, long lowerBound, long upperBound) {
+                                           long defaultValue, long lowerBound, long upperBound) {
         LongTextField field = new LongTextField(parameters.getLong(parameter, defaultValue), 8);
 
         field.setFilter((value, oldValue) -> {
@@ -1126,6 +1117,33 @@ public class MarkovCheckEditor extends JPanel {
         });
 
         return field;
+    }
+
+    static class Renderer extends DefaultTableCellRenderer {
+        private JTable table;
+        private boolean selected;
+
+        public Renderer() {
+        }
+
+        public void setValue(Object value) {
+            if (selected) {
+                setForeground(table.getSelectionForeground());
+                setBackground(table.getSelectionBackground());
+            } else {
+                this.setForeground(table.getForeground());
+                this.setBackground(table.getBackground());
+            }
+
+            this.setText(value.toString());
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            this.table = table;
+            selected = isSelected;
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
     }
 }
 
