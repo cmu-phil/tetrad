@@ -61,7 +61,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     private boolean showMenus = true;
     private final Parameters parameters;
 
-    //==========================CONSTUCTORS===============================//
+    //==========================CONSTRUCTORS===============================//
 
     /**
      * Constructs the data editor with an empty list of data displays.
@@ -160,7 +160,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     //==========================PUBLIC METHODS=============================//
 
     /**
-     * Replaces the getModel Datamodels with the given one. Note, that by
+     * Replaces the Data models with the given one. Note, that by
      * calling this you are removing ALL the getModel data-models, they will be
      * lost forever!
      *
@@ -457,8 +457,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
                 KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK));
 
         clearCells.addActionListener(e -> {
-            TabularDataJTable table
-                    = (TabularDataJTable) getSelectedJTable();
+            TabularDataJTable table = (TabularDataJTable) getSelectedJTable();
             assert table != null;
             table.clearSelected();
         });
@@ -642,12 +641,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         JMenu tools = new JMenu("Tools");
         menuBar.add(tools);
 
-//        tools.add(new CalculatorAction(this));
-//        tools.add(new HistogramAction(this));
         tools.add(new PlotMatrixAction(this));
-        tools.add(new QQPlotAction(this));
-        tools.add(new NormalityTestAction(this));
         tools.add(new DescriptiveStatsAction(this));
+        tools.add(new QQPlotAction(this));
 
         final int vkBackSpace = KeyEvent.VK_BACK_SPACE;
         final int vkDelete = KeyEvent.VK_DELETE;

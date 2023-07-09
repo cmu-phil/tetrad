@@ -118,7 +118,7 @@ public class Cpc implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
-            this.bootstrapGraphs = search.getGraphs();
+            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return graph;
         }
     }

@@ -68,7 +68,7 @@ public class IcaLingam implements Algorithm, ReturnsBootstrapGraphs {
 
             search.setParameters(parameters);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            this.bootstrapGraphs = search.getGraphs();
+            if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return search.search();
         }
     }

@@ -6,13 +6,11 @@ import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.test.MsepTest;
+import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.UniformityTest;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
@@ -40,7 +38,17 @@ import static org.apache.commons.math3.util.FastMath.min;
  */
 public class MarkovCheck {
 
+    private final Graph graph;
+    private final IndependenceTest independenceTest;
+    private final MsepTest msep;
+    private final List<IndependenceResult> resultsIndep = new ArrayList<>();
+    private final List<IndependenceResult> resultsDep = new ArrayList<>();
     private ConditioningSetType setType = ConditioningSetType.PARENTS;
+    private boolean parallelized = false;
+    private double fractionDependentIndep = Double.NaN;
+    private double fractionDependentDep = Double.NaN;
+    private double ksPValueIndep = Double.NaN;
+    private double ksPValueDep = Double.NaN;
 
     /**
      * Constructor. Takes a graph and an independence test over the variables of the graph.
@@ -55,17 +63,6 @@ public class MarkovCheck {
         this.setType = setType;
     }
 
-    private final Graph graph;
-    private final IndependenceTest independenceTest;
-    private final MsepTest msep;
-    private final List<IndependenceResult> resultsIndep = new ArrayList<>();
-    private final List<IndependenceResult> resultsDep = new ArrayList<>();
-    private boolean parallelized = false;
-    private double fractionDependentIndep = Double.NaN;
-    private double fractionDependentDep = Double.NaN;
-    private double ksPValueIndep = Double.NaN;
-    private double ksPValueDep = Double.NaN;
-
     /**
      * Generates all results, for both the local Markov and local Faithfulness checks, for each node in the graph given
      * the parents of that node. These results are stored in the resultsIndep and resultsDep lists.
@@ -76,52 +73,83 @@ public class MarkovCheck {
         resultsIndep.clear();
         resultsDep.clear();
 
-        for (Node x : independenceTest.getVariables()) {
-            Set<Node> z;
+        if (setType == ConditioningSetType.ALL_SUBSETS) {
+            final List<Node> variables = independenceTest.getVariables();
+            List<Node> nodes = new ArrayList<>(variables);
+            Collections.sort(nodes);
 
-            switch (setType) {
-                case PARENTS:
-                    z = new HashSet<>(graph.getParents(x));
-                    break;
-                case MARKOV_BLANKET:
-                    z = GraphUtils.markovBlanket(x, graph);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown separation set type: " + setType);
-            }
+            for (Node x : nodes) {
+                List<Node> other = new ArrayList<>(graph.getNodes());
+                Collections.sort(other);
+                other.remove(x);
 
-            Set<Node> msep = new HashSet<>();
-            Set<Node> mconn = new HashSet<>();
+                List<IndependenceFact> msep = new ArrayList<>();
+                List<IndependenceFact> mconn = new ArrayList<>();
 
-            List<Node> other = graph.getNodes();
-            other.removeAll(z);
+                for (Node y : other) {
+                    List<Node> _other = new ArrayList<>(other);
+                    _other.remove(y);
 
-            for (Node y : other) {
-                if (y == x) continue;
-                if (z.contains(x) || z.contains(y)) continue;
-                if (this.msep.isMSeparated(x, y, z)) {
-                    msep.add(y);
-                } else {
-                    mconn.add(y);
+                    SublistGenerator generator = new SublistGenerator(_other.size(), _other.size());
+                    int[] list;
+
+                    while ((list = generator.next()) != null) {
+                        Set<Node> z = GraphUtils.asSet(list, _other);
+
+                        if (this.msep.isMSeparated(x, y, z)) {
+                            msep.add(new IndependenceFact(x, y, z));
+                        } else {
+                            mconn.add(new IndependenceFact(x, y, z));
+                        }
+                    }
                 }
-            }
 
-            generateResults(true, x, z, msep, mconn);
-            generateResults(false, x, z, msep, mconn);
+                generateResultsAllSubsets(true, msep, mconn);
+                generateResultsAllSubsets(false, msep, mconn);
+            }
+        } else {
+            final List<Node> variables = independenceTest.getVariables();
+            List<Node> nodes = new ArrayList<>(variables);
+            Collections.sort(nodes);
+
+            for (Node x : nodes) {
+                Set<Node> z;
+
+                switch (setType) {
+                    case PARENTS:
+                        z = new HashSet<>(graph.getParents(x));
+                        break;
+                    case MARKOV_BLANKET:
+                        z = GraphUtils.markovBlanket(x, graph);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Unknown separation set type: " + setType);
+                }
+
+                Set<Node> msep = new HashSet<>();
+                Set<Node> mconn = new HashSet<>();
+
+                List<Node> other = new ArrayList<>(graph.getNodes());
+                Collections.sort(other);
+                other.removeAll(z);
+
+                for (Node y : other) {
+                    if (y == x) continue;
+                    if (z.contains(x) || z.contains(y)) continue;
+                    if (this.msep.isMSeparated(x, y, z)) {
+                        msep.add(y);
+                    } else {
+                        mconn.add(y);
+                    }
+                }
+
+                generateResults(true, x, z, msep, mconn);
+                generateResults(false, x, z, msep, mconn);
+            }
         }
 
         calcStats(true);
         calcStats(false);
-    }
-
-    /**
-     * Sets the type of conditioning sets to use in the Markov check.
-     *
-     * @param setType The type of conditioning sets to use in the Markov check.
-     * @see ConditioningSetType
-     */
-    public void setSetType(ConditioningSetType setType) {
-        this.setType = setType;
     }
 
     /**
@@ -135,12 +163,13 @@ public class MarkovCheck {
     }
 
     /**
-     * The type of conditioning set to use for the Markov check. The default is PARENTS, which uses the parents of the
-     * target variable to predict the separation set. DAG_MB uses the Markov blanket of the target variable in a DAG
-     * setting, and PAG_MB uses a Markov blanket of the target variable in a PAG setting.
+     * Sets the type of conditioning sets to use in the Markov check.
+     *
+     * @param setType The type of conditioning sets to use in the Markov check.
+     * @see ConditioningSetType
      */
-    public enum ConditioningSetType {
-        PARENTS, MARKOV_BLANKET
+    public void setSetType(ConditioningSetType setType) {
+        this.setType = setType;
     }
 
     /**
@@ -234,7 +263,7 @@ public class MarkovCheck {
      * @return The variables of the independence test.
      */
     public List<Node> getVariables() {
-        return independenceTest.getVariables();
+        return new ArrayList<>(independenceTest.getVariables());
     }
 
     /**
@@ -262,11 +291,183 @@ public class MarkovCheck {
         // Listing all facts before checking any (in preparation for parallelization).
         if (indep) {
             for (Node y : msep) {
+                if (z.contains(y)) continue;
                 facts.add(new IndependenceFact(x, y, z));
             }
         } else {
             for (Node y : mconn) {
+                if (z.contains(y)) continue;
                 facts.add(new IndependenceFact(x, y, z));
+            }
+        }
+
+        class IndCheckTask implements Callable<List<IndependenceResult>> {
+            private final int from;
+            private final int to;
+            private final List<IndependenceFact> facts;
+            private final IndependenceTest independenceTest;
+
+            IndCheckTask(int from, int to, List<IndependenceFact> facts, IndependenceTest test) {
+                this.from = from;
+                this.to = to;
+                this.facts = facts;
+                this.independenceTest = test;
+            }
+
+            @Override
+            public List<IndependenceResult> call() {
+                List<IndependenceResult> results = new ArrayList<>();
+
+                for (int i = from; i < to; i++) {
+                    if (Thread.interrupted()) break;
+                    IndependenceFact fact = facts.get(i);
+
+                    Node x = fact.getX();
+                    Node y = fact.getY();
+                    Set<Node> z = fact.getZ();
+                    boolean verbose = independenceTest.isVerbose();
+                    independenceTest.setVerbose(false);
+                    IndependenceResult result;
+                    try {
+                        result = independenceTest.checkIndependence(x, y, z);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    boolean indep = result.isIndependent();
+                    double pValue = result.getPValue();
+                    independenceTest.setVerbose(verbose);
+
+                    if (!Double.isNaN(pValue)) {
+                        results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+                    }
+                }
+
+                return results;
+            }
+        }
+
+        List<Callable<List<IndependenceResult>>> tasks = new ArrayList<>();
+
+        int chunkSize = getChunkSize(facts.size());
+
+        for (int i = 0; i < facts.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+            IndCheckTask task = new IndCheckTask(i, min(facts.size(), i + chunkSize), facts, independenceTest);
+
+            if (!parallelized) {
+                List<IndependenceResult> _results = task.call();
+                getResultsLocal(indep).addAll(_results);
+            } else {
+                tasks.add(task);
+            }
+        }
+
+        if (parallelized) {
+            List<Future<List<IndependenceResult>>> theseResults = ForkJoinPool.commonPool().invokeAll(tasks);
+
+            for (Future<List<IndependenceResult>> future : theseResults) {
+                try {
+                    getResultsLocal(indep).addAll(future.get());
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    private void generateResultsAllSubsets(boolean indep, List<IndependenceFact> msep, List<IndependenceFact> mconn) {
+        List<IndependenceFact> facts = indep ? msep : mconn;
+
+        class IndCheckTask implements Callable<List<IndependenceResult>> {
+            private final int from;
+            private final int to;
+            private final List<IndependenceFact> facts;
+            private final IndependenceTest independenceTest;
+
+            IndCheckTask(int from, int to, List<IndependenceFact> facts, IndependenceTest test) {
+                this.from = from;
+                this.to = to;
+                this.facts = facts;
+                this.independenceTest = test;
+            }
+
+            @Override
+            public List<IndependenceResult> call() {
+                List<IndependenceResult> results = new ArrayList<>();
+
+                for (int i = from; i < to; i++) {
+                    if (Thread.interrupted()) break;
+                    IndependenceFact fact = facts.get(i);
+
+                    Node x = fact.getX();
+                    Node y = fact.getY();
+                    Set<Node> z = fact.getZ();
+                    boolean verbose = independenceTest.isVerbose();
+                    independenceTest.setVerbose(false);
+                    IndependenceResult result;
+                    try {
+                        result = independenceTest.checkIndependence(x, y, z);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    boolean indep = result.isIndependent();
+                    double pValue = result.getPValue();
+                    independenceTest.setVerbose(verbose);
+
+                    if (!Double.isNaN(pValue)) {
+                        results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
+                    }
+                }
+
+                return results;
+            }
+        }
+
+        List<Callable<List<IndependenceResult>>> tasks = new ArrayList<>();
+
+        int chunkSize = getChunkSize(facts.size());
+
+        for (int i = 0; i < facts.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
+            IndCheckTask task = new IndCheckTask(i, min(facts.size(), i + chunkSize), facts, independenceTest);
+
+            if (!parallelized) {
+                List<IndependenceResult> _results = task.call();
+                getResultsLocal(indep).addAll(_results);
+            } else {
+                tasks.add(task);
+            }
+        }
+
+        if (parallelized) {
+            List<Future<List<IndependenceResult>>> theseResults = ForkJoinPool.commonPool().invokeAll(tasks);
+
+            for (Future<List<IndependenceResult>> future : theseResults) {
+                try {
+                    getResultsLocal(indep).addAll(future.get());
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
+    private void generateResultsAllSubsets(boolean indep, Node x, List<Node> other) {
+        List<IndependenceFact> facts = new ArrayList<>();
+
+        for (Node y : other) {
+            List<Node> _other = new ArrayList<>(other);
+            _other.remove(y);
+
+            SublistGenerator generator = new SublistGenerator(_other.size(), _other.size());
+            int[] list;
+
+            while ((list = generator.next()) != null) {
+                Set<Node> z = GraphUtils.asSet(list, _other);
+
+                if (indep && this.msep.isMSeparated(x, y, z)) {
+                    facts.add(new IndependenceFact(x, y, z));
+                } else if (!indep) {
+                    facts.add(new IndependenceFact(x, y, z));
+                }
             }
         }
 
@@ -381,12 +582,21 @@ public class MarkovCheck {
         return chunk;
     }
 
-
     private List<IndependenceResult> getResultsLocal(boolean indep) {
         if (indep) {
             return this.resultsIndep;
         } else {
             return this.resultsDep;
         }
+    }
+
+
+    /**
+     * The type of conditioning set to use for the Markov check. The default is PARENTS, which uses the parents of the
+     * target variable to predict the separation set. DAG_MB uses the Markov blanket of the target variable in a DAG
+     * setting, and PAG_MB uses a Markov blanket of the target variable in a PAG setting.
+     */
+    public enum ConditioningSetType {
+        PARENTS, MARKOV_BLANKET, ALL_SUBSETS
     }
 }
