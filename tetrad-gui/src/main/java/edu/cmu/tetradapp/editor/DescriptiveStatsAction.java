@@ -21,15 +21,18 @@
 
 package edu.cmu.tetradapp.editor;
 
+import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.DesktopController;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.util.List;
 
 /**
  * Displays descriptive statistics for a random variable.
@@ -38,7 +41,6 @@ import java.beans.PropertyChangeListener;
  */
 
 class DescriptiveStatsAction extends AbstractAction {
-
 
     /**
      * The data edtitor that action is attached to.
@@ -66,18 +68,8 @@ class DescriptiveStatsAction extends AbstractAction {
             JOptionPane.showMessageDialog(findOwner(), "Cannot generate descriptive statistics on an empty data set.");
             return;
         }
-        // if there are missing values warn and don't display descriptive statistics.
 
-        Node selected = null;
-
-        for (Node node : dataSet.getVariables()) {
-            if (dataSet.isSelected(node)) {
-                selected = node;
-                break;
-            }
-        }
-
-        JPanel panel = createDescriptiveStatsDialog(selected);
+        Box panel = createDescriptiveStatsDialog();
 
         EditorWindow window = new EditorWindow(panel,
                 "Descriptive Statistics", "Close", false, this.dataEditor);
@@ -92,77 +84,74 @@ class DescriptiveStatsAction extends AbstractAction {
      * Creates a dialog that is showing the histogram for the given node (if null
      * one is selected for you)
      */
-    private JPanel createDescriptiveStatsDialog(Node selected) {
+    private Box createDescriptiveStatsDialog() {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
 
-        //if nothing is selected, select something by default
-        if (selected == null) {
-            assert dataSet != null;
-            if (dataSet.getNumColumns() != 0) {
-                selected = dataSet.getVariable(0);
-            }
-        }
-        assert dataSet != null;
-        DescriptiveStatsEditorPanel editorPanel = new DescriptiveStatsEditorPanel(selected, dataSet);
+        String coonstantColumnsString = "Constant Columns: ";
+        java.util.List<Node> constantColumns = DataUtils.getConstantColumns(dataSet);
+        coonstantColumnsString += constantColumns.isEmpty() ? "None" : constantColumns.toString();
 
-        JTextArea display = new JTextArea(DescriptiveStats.generateDescriptiveStats(dataSet,
-                selected), 20, 65);
-        display.setEditable(false);
-        display.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        editorPanel.addPropertyChangeListener(new DescriptiveStatsListener(display));
+        String nonsingularString = "Example Nonsingular (2 - 3 vars): ";
+        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
+        List<Node> exampleNonsingular = DataUtils.getExampleNonsingular(covarianceMatrix, 3);
+        nonsingularString += exampleNonsingular == null ? "None" : exampleNonsingular.toString();
 
-        Box box = Box.createHorizontalBox();
-        box.add(display);
+        Box box = Box.createVerticalBox();
 
-        box.add(Box.createHorizontalStrut(3));
-        box.add(editorPanel);
-        box.add(Box.createHorizontalStrut(5));
-        box.add(Box.createHorizontalGlue());
+        DescriptiveStatisticsJTable jTable = new DescriptiveStatisticsJTable(dataSet);
+        jTable.setTransferHandler(new DescriptiveStatisticsTransferHandler());
 
-        Box vBox = Box.createVerticalBox();
-        vBox.add(Box.createVerticalStrut(15));
-        vBox.add(box);
-        vBox.add(Box.createVerticalStrut(5));
+        JMenuBar bar = new JMenuBar();
+        JMenuItem copyCells = new JMenuItem("Copy Cells");
+        copyCells.setAccelerator(
+                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
+        copyCells.addActionListener(e -> {
+            Action copyAction = TransferHandler.getCopyAction();
+            ActionEvent actionEvent = new ActionEvent(jTable,
+                    ActionEvent.ACTION_PERFORMED, "copy");
+            copyAction.actionPerformed(actionEvent);
+        });
 
-        JScrollPane scrollable = new JScrollPane(vBox);
+        JMenu editMenu = new JMenu("Edit");
+        editMenu.add(copyCells);
+        bar.add(editMenu);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        panel.add(scrollable, BorderLayout.CENTER);
+        panel.add(bar, BorderLayout.NORTH);
+        panel.add(new JScrollPane(jTable), BorderLayout.CENTER);
 
-        return panel;
+        box.add(panel);
+
+        Box b1 = Box.createHorizontalBox();
+        b1.add(new JLabel(coonstantColumnsString));
+        b1.add(Box.createHorizontalGlue());
+        box.add(b1);
+
+        Box b2 = Box.createHorizontalBox();
+        b2.add(new JLabel(nonsingularString));
+        b2.add(Box.createHorizontalGlue());
+        box.add(b2);
+
+        return box;
     }
 
+//    private JTable getSelectedJTable() {
+//        Object display = tabbedPane().getSelectedComponent();
+//
+//        if (display instanceof DataDisplay) {
+//            return ((DataDisplay) display).getDataDisplayJTable();
+//        } else if (display instanceof CovMatrixDisplay) {
+//            return ((CovMatrixDisplay) display).getCovMatrixJTable();
+//        }
+//
+//        return null;
+//    }
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
                 JFrame.class, this.dataEditor);
     }
-
-    //================================= Inner Class ======================================//
-
-
-    /**
-     * Glue between the editor and the display.
-     */
-    private static class DescriptiveStatsListener implements PropertyChangeListener {
-
-        private final JTextArea display;
-
-
-        public DescriptiveStatsListener(JTextArea display) {
-            this.display = display;
-        }
-
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            if ("histogramChange".equals(evt.getPropertyName())) {
-                this.display.setText((String) evt.getNewValue());
-            }
-        }
-    }
-
-
 }
 
 

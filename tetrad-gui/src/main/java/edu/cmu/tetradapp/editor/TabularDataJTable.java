@@ -87,6 +87,7 @@ public class TabularDataJTable extends JTable implements DataModelContainer,
             rowCount /= 10;
             max++;
         }
+
         // add cell renderer for columns 2-7
         // int vColIndex = 2;
         // TableColumn col = this.getColumnModel().getColumn(vColIndex);

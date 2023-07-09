@@ -22,13 +22,14 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetradapp.util.DesktopController;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * Displays descriptive statistics for a random variable.
@@ -36,7 +37,7 @@ import java.awt.event.KeyEvent;
  * @author Michael Freenor
  */
 
-class DescriptiveStatsAction2 extends AbstractAction {
+class DescriptiveStatsActionSingleVAr extends AbstractAction {
 
 
     /**
@@ -49,7 +50,7 @@ class DescriptiveStatsAction2 extends AbstractAction {
      * Constructs the <code>DescriptiveStatsAction</code> given the <code>DataEditor</code>
      * that its attached to.
      */
-    public DescriptiveStatsAction2(DataEditor editor) {
+    public DescriptiveStatsActionSingleVAr(DataEditor editor) {
         super("Descriptive Statistics...");
         this.dataEditor = editor;
     }
@@ -65,8 +66,18 @@ class DescriptiveStatsAction2 extends AbstractAction {
             JOptionPane.showMessageDialog(findOwner(), "Cannot generate descriptive statistics on an empty data set.");
             return;
         }
+        // if there are missing values warn and don't display descriptive statistics.
 
-        JPanel panel = createDescriptiveStatsDialog();
+        Node selected = null;
+
+        for (Node node : dataSet.getVariables()) {
+            if (dataSet.isSelected(node)) {
+                selected = node;
+                break;
+            }
+        }
+
+        JPanel panel = createDescriptiveStatsDialog(selected);
 
         EditorWindow window = new EditorWindow(panel,
                 "Descriptive Statistics", "Close", false, this.dataEditor);
@@ -81,51 +92,77 @@ class DescriptiveStatsAction2 extends AbstractAction {
      * Creates a dialog that is showing the histogram for the given node (if null
      * one is selected for you)
      */
-    private JPanel createDescriptiveStatsDialog() {
+    private JPanel createDescriptiveStatsDialog(Node selected) {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();
 
-        DescriptiveStatisticsJTable jTable = new DescriptiveStatisticsJTable(dataSet);
-        jTable.setTransferHandler(new DescriptiveStatisticsTransferHandler());
+        //if nothing is selected, select something by default
+        if (selected == null) {
+            assert dataSet != null;
+            if (dataSet.getNumColumns() != 0) {
+                selected = dataSet.getVariable(0);
+            }
+        }
+        assert dataSet != null;
+        DescriptiveStatsEditorPanel editorPanel = new DescriptiveStatsEditorPanel(selected, dataSet);
 
-        JMenuBar bar = new JMenuBar();
-        JMenuItem copyCells = new JMenuItem("Copy Cells");
-        copyCells.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK));
-        copyCells.addActionListener(e -> {
-            Action copyAction = TransferHandler.getCopyAction();
-            ActionEvent actionEvent = new ActionEvent(jTable,
-                    ActionEvent.ACTION_PERFORMED, "copy");
-            copyAction.actionPerformed(actionEvent);
-        });
+        JTextArea display = new JTextArea(DescriptiveStats.generateDescriptiveStats(dataSet,
+                selected), 20, 65);
+        display.setEditable(false);
+        display.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        editorPanel.addPropertyChangeListener(new DescriptiveStatsListener(display));
 
-        JMenu editMenu = new JMenu("Edit");
-        editMenu.add(copyCells);
-        bar.add(editMenu);
+        Box box = Box.createHorizontalBox();
+        box.add(display);
+
+        box.add(Box.createHorizontalStrut(3));
+        box.add(editorPanel);
+        box.add(Box.createHorizontalStrut(5));
+        box.add(Box.createHorizontalGlue());
+
+        Box vBox = Box.createVerticalBox();
+        vBox.add(Box.createVerticalStrut(15));
+        vBox.add(box);
+        vBox.add(Box.createVerticalStrut(5));
+
+        JScrollPane scrollable = new JScrollPane(vBox);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
-        panel.add(bar, BorderLayout.NORTH);
-        panel.add(new JScrollPane(jTable), BorderLayout.CENTER);
+        panel.add(scrollable, BorderLayout.CENTER);
 
         return panel;
     }
 
-//    private JTable getSelectedJTable() {
-//        Object display = tabbedPane().getSelectedComponent();
-//
-//        if (display instanceof DataDisplay) {
-//            return ((DataDisplay) display).getDataDisplayJTable();
-//        } else if (display instanceof CovMatrixDisplay) {
-//            return ((CovMatrixDisplay) display).getCovMatrixJTable();
-//        }
-//
-//        return null;
-//    }
 
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
                 JFrame.class, this.dataEditor);
     }
+
+    //================================= Inner Class ======================================//
+
+
+    /**
+     * Glue between the editor and the display.
+     */
+    private static class DescriptiveStatsListener implements PropertyChangeListener {
+
+        private final JTextArea display;
+
+
+        public DescriptiveStatsListener(JTextArea display) {
+            this.display = display;
+        }
+
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ("histogramChange".equals(evt.getPropertyName())) {
+                this.display.setText((String) evt.getNewValue());
+            }
+        }
+    }
+
+
 }
 
 
