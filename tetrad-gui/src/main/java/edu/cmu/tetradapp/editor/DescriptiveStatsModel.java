@@ -115,7 +115,7 @@ class DescriptiveStatsModel extends AbstractTableModel {
         if (continuous) {
             double[] median = DescriptiveStats.median(data);
 
-            names.add("SE Mean");
+            names.add("SE_Mean");
             stats.add(StatUtils.skewness(data));
 
             names.add("Median");
@@ -134,13 +134,13 @@ class DescriptiveStatsModel extends AbstractTableModel {
             double a2Star = andersonDarlingTest.getASquaredStar();
             double adP = andersonDarlingTest.getP();
 
-            names.add("a2");
+            names.add("A2");
             stats.add(a2);
 
-            names.add("a2*");
+            names.add("A2*");
             stats.add(a2Star);
 
-            names.add("ad-p");
+            names.add("AD-p");
             stats.add(adP);
 
             String[] pass = new String[5];
@@ -151,19 +151,19 @@ class DescriptiveStatsModel extends AbstractTableModel {
             if (ksResults[0] < ksResults[4]) pass[3] = "ACCEPT";
             if (ksResults[0] < ksResults[5]) pass[4] = "ACCEPT";
 
-            names.add("ks.2");
+            names.add("KS.2");
             stats.add(pass[0]);
 
-            names.add("ks.15");
+            names.add("KS.15");
             stats.add(pass[2]);
 
-            names.add("ks.1]");
+            names.add("KS.1");
             stats.add(pass[2]);
 
-            names.add("ks.05");
+            names.add("KS.05");
             stats.add(pass[3]);
 
-            names.add("ks.01");
+            names.add("KS.01");
             stats.add(pass[4]);
         }
 
