@@ -242,6 +242,7 @@ public final class Params {
     public static final String SEED = "seed";
     public static final String SIGNIFICANCE_CHECKED = "significanceChecked";
     public static final String PROB_REMOVE_COLUMN = "probRemoveColumn";
+    public static final String SAVE_BOOTSTRAP_GRAPHS = "saveBootstrapGraphs";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
@@ -287,6 +288,7 @@ public final class Params {
             Params.PERCENT_RESAMPLE_SIZE,
 //            Params.RESAMPLING_ENSEMBLE,
             Params.RESAMPLING_WITH_REPLACEMENT,
+            Params.SAVE_BOOTSTRAP_GRAPHS,
             Params.SEED
     ));
 
