@@ -53,25 +53,20 @@ public class DescriptiveStatisticsJTable extends JTable implements DataModelCont
         DescriptiveStatsModel dataModel = new DescriptiveStatsModel(model);
         setModel(dataModel);
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-//		System.out.println("dataModel: "+model.getColumnToTooltip());
         int rowCount = this.dataModel.getRowCount();
-        int max = 0;
 
         while (rowCount > 0) {
             rowCount /= 10;
-            max++;
         }
 
         FontMetrics metrics = getFontMetrics(getFont());
-
-//        getColumnModel().getColumn(0).setMaxWidth(60);
         setRowHeight(metrics.getHeight() + 3);
 
         setRowSelectionAllowed(true);
         getColumnModel().setColumnSelectionAllowed(true);
 
         for (int i = 0; i < getColumnModel().getColumnCount(); i++) {
-            final TableColumnModel columnModel1 = getColumnModel();
+            TableColumnModel columnModel1 = getColumnModel();
 
             if (i == 0) {
                 columnModel1.getColumn(i).setCellRenderer(new LeftAlignRenderer());
@@ -80,7 +75,6 @@ public class DescriptiveStatisticsJTable extends JTable implements DataModelCont
             }
 
             setRowSelectionAllowed(true);
-//            addColumnSelectionInterval(i + 1, i + 1);
         }
 
         getColumnModel().addColumnModelListener(new TableColumnModelListener() {
