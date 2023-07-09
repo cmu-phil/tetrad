@@ -642,9 +642,9 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
         menuBar.add(tools);
 
         tools.add(new PlotMatrixAction(this));
-        tools.add(new QQPlotAction(this));
         tools.add(new DescriptiveStatsAction(this));
-
+        tools.add(new QQPlotAction(this));
+o
         final int vkBackSpace = KeyEvent.VK_BACK_SPACE;
         final int vkDelete = KeyEvent.VK_DELETE;
 
