@@ -64,7 +64,7 @@ public class DescriptiveStatisticsJTable extends JTable implements DataModelCont
 
         FontMetrics metrics = getFontMetrics(getFont());
 
-        getColumnModel().getColumn(0).setMaxWidth(60);
+//        getColumnModel().getColumn(0).setMaxWidth(60);
         setRowHeight(metrics.getHeight() + 3);
 
         setRowSelectionAllowed(true);
@@ -72,7 +72,13 @@ public class DescriptiveStatisticsJTable extends JTable implements DataModelCont
 
         for (int i = 0; i < getColumnModel().getColumnCount(); i++) {
             final TableColumnModel columnModel1 = getColumnModel();
-            columnModel1.getColumn(i).setCellRenderer(new RightAlignRenderer());
+
+            if (i == 0) {
+                columnModel1.getColumn(i).setCellRenderer(new LeftAlignRenderer());
+            } else {
+                columnModel1.getColumn(i).setCellRenderer(new RightAlignRenderer());
+            }
+
             setRowSelectionAllowed(true);
 //            addColumnSelectionInterval(i + 1, i + 1);
         }
@@ -160,6 +166,12 @@ public class DescriptiveStatisticsJTable extends JTable implements DataModelCont
     public class RightAlignRenderer extends DefaultTableCellRenderer {
         public RightAlignRenderer() {
             setHorizontalAlignment(JLabel.RIGHT);
+        }
+    }
+
+    public class LeftAlignRenderer extends DefaultTableCellRenderer {
+        public LeftAlignRenderer() {
+            setHorizontalAlignment(JLabel.LEFT);
         }
     }
 }
