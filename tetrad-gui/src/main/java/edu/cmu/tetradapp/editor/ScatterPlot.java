@@ -50,10 +50,10 @@ public class ScatterPlot {
     private final String y;
     private final boolean includeLine;
     private final DataSet dataSet;
-    private Map<Node, double[]> continuousIntervals;
-    private Map<Node, Integer> discreteValues;
-    private Node _x;
-    private Node _y;
+    private final Map<Node, double[]> continuousIntervals;
+    private final Map<Node, Integer> discreteValues;
+    private final Node _x;
+    private final Node _y;
     private JitterStyle jitterStyle = JitterStyle.None;
 
     /**
@@ -81,13 +81,12 @@ public class ScatterPlot {
     private RegressionResult getRegressionResult() {
         List<Node> regressors = new ArrayList<>();
         regressors.add(_x);
-        Node target = _y;
         RegressionDataset regression = new RegressionDataset(this.dataSet);
         final List<Integer> conditionedRows = getConditionedRows();
         final int[] _conditionedRows = new int[conditionedRows.size()];
         for (int i = 0; i < conditionedRows.size(); i++) _conditionedRows[i] = conditionedRows.get(i);
         regression.setRows(_conditionedRows);
-        return regression.regress(target, regressors);
+        return regression.regress(_y, regressors);
     }
 
     public double getCorrelationCoeff() {
@@ -324,7 +323,6 @@ public class ScatterPlot {
         return rows;
     }
 
-
     private Vector<Point2D.Double> pairs(String x, String y) {
         Point2D.Double pt;
         Vector<Point2D.Double> cleanedVals = new Vector<>();
@@ -332,26 +330,31 @@ public class ScatterPlot {
         List<Double> _x = getConditionedDataContinuous(x);
         List<Double> _y = getConditionedDataContinuous(y);
 
+        double spreadx = getRange(_x);
+        double spready = getRange(_y);
+
         for (int row = 0; row < _x.size(); row++) {
             pt = new Point2D.Double();
             double x1 = _x.get(row);
             double y1 = _y.get(row);
 
-            if (this._x instanceof DiscreteVariable) {
-                if (jitterStyle == JitterStyle.Normal) {
-                    x1 += RandomUtil.getInstance().nextNormal(0, 0.1);
-                } else if (jitterStyle == JitterStyle.Uniform) {
-                    x1 += RandomUtil.getInstance().nextUniform(-0.3, 0.3);
-                }
-            }
+//            if (this._x instanceof DiscreteVariable) {
+            double v = 0.03;
 
-            if (this._y instanceof DiscreteVariable) {
-                if (jitterStyle == JitterStyle.Normal) {
-                    y1 += RandomUtil.getInstance().nextNormal(0, 0.1);
-                } else if (jitterStyle == JitterStyle.Uniform) {
-                    y1 += RandomUtil.getInstance().nextUniform(-0.3, 0.3);
-                }
+            if (jitterStyle == JitterStyle.Gaussian) {
+                x1 += RandomUtil.getInstance().nextNormal(0, spreadx * v);
+            } else if (jitterStyle == JitterStyle.Uniform) {
+                x1 += RandomUtil.getInstance().nextUniform(-2 * spreadx * v, 2 * spreadx * v);
             }
+//            }
+
+//            if (this._y instanceof DiscreteVariable) {
+            if (jitterStyle == JitterStyle.Gaussian) {
+                y1 += RandomUtil.getInstance().nextNormal(0, spready * v);
+            } else if (jitterStyle == JitterStyle.Uniform) {
+                y1 += RandomUtil.getInstance().nextUniform(-2 * spready * v, 2 * spready * v);
+            }
+//            }
 
             pt.setLocation(x1, y1);
             cleanedVals.add(pt);
@@ -360,7 +363,19 @@ public class ScatterPlot {
         return cleanedVals;
     }
 
-    public enum JitterStyle {None, Normal, Uniform}
+    private double getRange(List<Double> x) {
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+
+        for (Double d : x) {
+            if (d < min) min = d;
+            if (d > max) max = d;
+        }
+
+        return max - min;
+    }
+
+    public enum JitterStyle {None, Gaussian, Uniform}
 }
 
 

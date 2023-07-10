@@ -30,10 +30,7 @@ import edu.cmu.tetrad.graph.Node;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -85,11 +82,12 @@ public class PlotMatrix extends JPanel {
         JMenu settings = new JMenu("Settings");
         menuBar.add(settings);
 
-        JMenuItem addRegressionLines = new JCheckBoxMenuItem("Add Trend Lines");
-        addRegressionLines.setSelected(false);
-        settings.add(addRegressionLines);
+        JMenuItem addTrendLines = new JCheckBoxMenuItem("Add Trend Lines");
+        addTrendLines.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, InputEvent.CTRL_DOWN_MASK));
+        addTrendLines.setSelected(false);
+        settings.add(addTrendLines);
 
-        addRegressionLines.addActionListener(e -> {
+        addTrendLines.addActionListener(e -> {
             setAddRegressionLines(!isAddRegressionLines());
             constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
         });
@@ -112,41 +110,46 @@ public class PlotMatrix extends JPanel {
 
         settings.add(numBins);
 
-        JMenu jitterDiscrete = new JMenu("Discrete Jitter Style");
+        JMenu jitterDiscrete = new JMenu("Jitter Style (Display Only)");
 
-        final JMenuItem menuItem1 = new JCheckBoxMenuItem(ScatterPlot.JitterStyle.None.toString());
-        final JMenuItem menuItem2 = new JCheckBoxMenuItem(ScatterPlot.JitterStyle. Normal.toString());
-        final JMenuItem menuItem3 = new JCheckBoxMenuItem(ScatterPlot.JitterStyle.Uniform.toString());
+        final JMenuItem menuItem1 = new JCheckBoxMenuItem(ScatterPlot.JitterStyle.Gaussian.toString());
+        final JMenuItem menuItem2 = new JCheckBoxMenuItem(ScatterPlot.JitterStyle.Uniform.toString());
+        final JMenuItem menuItem3 = new JCheckBoxMenuItem(ScatterPlot.JitterStyle.None.toString());
+
+        menuItem1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_DOWN_MASK));
+        menuItem2.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_DOWN_MASK));
+        menuItem3.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
 
         ButtonGroup group1 = new ButtonGroup();
         group1.add(menuItem1);
         group1.add(menuItem2);
         group1.add(menuItem3);
 
-        menuItem1.setSelected(true);
+        menuItem3.setSelected(true);
 
         jitterDiscrete.add(menuItem1);
         jitterDiscrete.add(menuItem2);
         jitterDiscrete.add(menuItem3);
 
         menuItem1.addActionListener(e -> {
-            this.jitterStyle = ScatterPlot.JitterStyle.None;
+            this.jitterStyle = ScatterPlot.JitterStyle.Gaussian;
             constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
         });
 
         menuItem2.addActionListener(e -> {
-            this.jitterStyle = ScatterPlot.JitterStyle.Normal;
+            this.jitterStyle = ScatterPlot.JitterStyle.Uniform;
             constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
         });
 
         menuItem3.addActionListener(e -> {
-            this.jitterStyle = ScatterPlot.JitterStyle.Uniform;
+            this.jitterStyle = ScatterPlot.JitterStyle.None;
             constructPlotMatrix(charts, dataSet, nodes, rowSelector, colSelector);
         });
 
         settings.add(jitterDiscrete);
 
         JMenuItem editConditioning = new JMenuItem("Edit Conditioning Variables...");
+        editConditioning.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK));
 
         editConditioning.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
