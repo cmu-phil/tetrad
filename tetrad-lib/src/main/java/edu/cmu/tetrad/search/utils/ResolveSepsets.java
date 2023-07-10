@@ -23,9 +23,9 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -44,14 +44,6 @@ import java.util.*;
  * @author roberttillman
  */
 public final class ResolveSepsets {
-
-    /**
-     * Gives the method to be used to resolve sepsets when they conflict.
-     */
-    public enum Method {
-        fisher, fisher2, tippett, worsleyfriston, stouffer, mudholkergeorge,
-        mudholkergeorge2, average, averagetest, random, fdr, majority
-    }
 
     /**
      * Tests for independence using one of the pooled methods
@@ -341,7 +333,7 @@ public final class ResolveSepsets {
      */
     public static boolean isIndependentPooledAverageTest(List<IndependenceTest> independenceTests, Node x, Node y,
                                                          Set<Node> condSet) {
-        double alpha = independenceTests.iterator(). next().getAlpha();
+        double alpha = independenceTests.iterator().next().getAlpha();
         double ts = 0.0;
         int df = 0;
         for (IndependenceTest independenceTest : independenceTests) {
@@ -457,6 +449,14 @@ public final class ResolveSepsets {
         TetradLogger.getInstance().log("independence", "c = " + c);
 
         return independent;
+    }
+
+    /**
+     * Gives the method to be used to resolve sepsets when they conflict.
+     */
+    public enum Method {
+        fisher, fisher2, tippett, worsleyfriston, stouffer, mudholkergeorge,
+        mudholkergeorge2, average, averagetest, random, fdr, majority
     }
 }
 

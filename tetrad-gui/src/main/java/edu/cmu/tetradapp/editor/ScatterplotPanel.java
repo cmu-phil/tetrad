@@ -10,15 +10,15 @@ import java.text.NumberFormat;
 import java.util.Vector;
 
 /**
- * This view draws the ScatterPlot using the information from the ScatterPlot
- * class. It draws the ScatterPlot line, axes, labels and the statistical values.
+ * This view draws the ScatterPlot using the information from the ScatterPlot class. It draws the ScatterPlot line,
+ * axes, labels and the statistical values.
  *
  * @author Adrian Tang
  * @author josephramsey
  */
 class ScatterplotPanel extends JPanel {
-    private ScatterPlot scatterPlot;
     private final NumberFormat nf;
+    private ScatterPlot scatterPlot;
     private boolean drawAxes = false;
     private int pointSize = 5;
 

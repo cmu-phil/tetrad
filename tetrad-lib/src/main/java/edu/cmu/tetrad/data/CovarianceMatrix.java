@@ -41,48 +41,40 @@ import java.util.*;
  */
 public class CovarianceMatrix implements ICovarianceMatrix {
     static final long serialVersionUID = 23L;
-
+    /**
+     * The wrapped covariance matrix data.
+     */
+    private final Matrix _covariancesMatrix;
     /**
      * The name of the covariance matrix.
      *
      * @serial May be null.
      */
     private String name;
-
     /**
      * The variables (in order) for this covariance matrix.
      *
      * @serial Cannot be null.
      */
     private List<Node> variables;
-
     /**
      * The size of the sample from which this covariance matrix was calculated.
      *
      * @serial Range &gt; 0.
      */
     private int sampleSize;
-
     /**
      * The list of selected variables.
      *
      * @serial Cannot be null.
      */
     private Set<Node> selectedVariables = new HashSet<>();
-
     /**
      * The knowledge for this data.
      *
      * @serial Cannot be null.
      */
     private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The wrapped covariance matrix data.
-     */
-    private final Matrix _covariancesMatrix;
-
-    //=============================CONSTRUCTORS=========================//
 
     /**
      * Constructs a new covariance matrix from the given data set.
@@ -161,13 +153,24 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return new CovarianceMatrix(variables, matrix, 100);
     }
 
-    //============================PUBLIC METHODS=========================//
-
     /**
      * @return the list of variables (unmodifiable).
      */
     public final List<Node> getVariables() {
         return this.variables;
+    }
+
+    public void setVariables(List<Node> variables) {
+        if (variables.size() != this.variables.size()) {
+            throw new IllegalArgumentException("Wrong # of variables.");
+        }
+        for (int i = 0; i < variables.size(); i++) {
+            if (!variables.get(i).getName().equals(variables.get(i).getName())) {
+                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name "
+                        + "as the variable being substituted for it.");
+            }
+            this.variables = variables;
+        }
     }
 
     /**
@@ -210,6 +213,14 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      */
     public final int getSampleSize() {
         return this.sampleSize;
+    }
+
+    public final void setSampleSize(int sampleSize) {
+        if (sampleSize <= 0) {
+            throw new IllegalArgumentException("Sample size must be > 0.");
+        }
+
+        this.sampleSize = sampleSize;
     }
 
     /**
@@ -324,18 +335,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return this._covariancesMatrix.get(i, j);
     }
 
-    public void setMatrix(Matrix matrix) {
-        throw new IllegalStateException();
-    }
-
-    public final void setSampleSize(int sampleSize) {
-        if (sampleSize <= 0) {
-            throw new IllegalArgumentException("Sample size must be > 0.");
-        }
-
-        this.sampleSize = sampleSize;
-    }
-
     /**
      * @return the size of the square matrix.
      */
@@ -348,6 +347,10 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      */
     public final Matrix getMatrix() {
         return this._covariancesMatrix;
+    }
+
+    public void setMatrix(Matrix matrix) {
+        throw new IllegalStateException();
     }
 
     public final void select(Node variable) {
@@ -424,19 +427,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         return false;
     }
 
-    public void setVariables(List<Node> variables) {
-        if (variables.size() != this.variables.size()) {
-            throw new IllegalArgumentException("Wrong # of variables.");
-        }
-        for (int i = 0; i < variables.size(); i++) {
-            if (!variables.get(i).getName().equals(variables.get(i).getName())) {
-                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name "
-                        + "as the variable being substituted for it.");
-            }
-            this.variables = variables;
-        }
-    }
-
     @Override
     public Matrix getSelection(int[] rows, int[] cols) {
         return getMatrix().getSelection(rows, cols);
@@ -468,8 +458,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     public void removeVariables(List<String> remaining) {
         throw new IllegalStateException();
     }
-
-    //========================PRIVATE METHODS============================//
 
     private Set<Node> getSelectedVariables() {
         return this.selectedVariables;

@@ -74,6 +74,23 @@ public class Matrix implements TetradSerializable {
         this(m.apacheData.copy());
     }
 
+    public static Matrix identity(int rows) {
+        Matrix m = new Matrix(rows, rows);
+        for (int i = 0; i < rows; i++) m.set(i, i, 1);
+        return m;
+    }
+
+    public static Matrix sparseMatrix(int m, int n) {
+        return new Matrix(new OpenMapRealMatrix(m, n).getData());
+    }
+
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     */
+    public static Matrix serializableInstance() {
+        return new Matrix(0, 0);
+    }
+
     public void assign(Matrix matrix) {
         if (this.apacheData.getRowDimension() != matrix.getNumRows() || this.apacheData.getColumnDimension() != matrix.getNumColumns()) {
             throw new IllegalArgumentException("Mismatched matrix size.");
@@ -219,12 +236,6 @@ public class Matrix implements TetradSerializable {
         return new Matrix(MatrixUtils.pseudoInverse(data));
     }
 
-    public static Matrix identity(int rows) {
-        Matrix m = new Matrix(rows, rows);
-        for (int i = 0; i < rows; i++) m.set(i, i, 1);
-        return m;
-    }
-
     public void assignRow(int row, Vector doubles) {
         this.apacheData.setRow(row, doubles.toArray());
     }
@@ -246,7 +257,6 @@ public class Matrix implements TetradSerializable {
         return new Matrix(this.apacheData.transpose());
     }
 
-
     public boolean equals(Matrix m, double tolerance) {
         for (int i = 0; i < this.apacheData.getRowDimension(); i++) {
             for (int j = 0; j < this.apacheData.getColumnDimension(); j++) {
@@ -266,7 +276,6 @@ public class Matrix implements TetradSerializable {
     public boolean isSymmetric(double tolerance) {
         return edu.cmu.tetrad.util.MatrixUtils.isSymmetric(this.apacheData.getData(), tolerance);
     }
-
 
     public Matrix minus(Matrix mb) {
         if (mb.getNumRows() == 0 || mb.getNumColumns() == 0) return this;
@@ -312,11 +321,6 @@ public class Matrix implements TetradSerializable {
         for (int i = 0; i < s.length; i++) S.setEntry(i, i, s[i]);
         RealMatrix sqrt = U.multiply(S).multiply(V);
         return new Matrix(sqrt);
-    }
-
-
-    public static Matrix sparseMatrix(int m, int n) {
-        return new Matrix(new OpenMapRealMatrix(m, n).getData());
     }
 
     public Vector sum(int direction) {
@@ -383,13 +387,6 @@ public class Matrix implements TetradSerializable {
 
         if (this.m == 0) this.m = this.apacheData.getRowDimension();
         if (this.n == 0) this.n = this.apacheData.getColumnDimension();
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static Matrix serializableInstance() {
-        return new Matrix(0, 0);
     }
 
 

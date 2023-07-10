@@ -49,16 +49,13 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class PoissonPriorScore implements Score {
 
+    // The variables of the covariance matrix.
+    private final List<Node> variables;
+    // The sample size of the covariance matrix.
+    private final int sampleSize;
     private DataSet dataSet;
     // The covariance matrix.
     private ICovarianceMatrix covariances;
-
-    // The variables of the covariance matrix.
-    private final List<Node> variables;
-
-    // The sample size of the covariance matrix.
-    private final int sampleSize;
-
     // True if verbose output should be sent to out.
     private boolean verbose;
 
@@ -116,6 +113,10 @@ public class PoissonPriorScore implements Score {
 
     }
 
+    private static double getP(int pn, int m0, double lambda) {
+        return 2 - pow(1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda), (double) pn - m0);
+    }
+
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);
@@ -152,6 +153,33 @@ public class PoissonPriorScore implements Score {
 
     public ICovarianceMatrix getCovariances() {
         return this.covariances;
+    }
+
+    private void setCovariances(ICovarianceMatrix covariances) {
+        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
+        this.covariances = covariances;
+
+        boolean exists = false;
+
+        double correlationThreshold = 1.0;
+        for (int i = 0; i < correlations.getSize(); i++) {
+            for (int j = 0; j < correlations.getSize(); j++) {
+                if (i == j) continue;
+                double r = correlations.getValue(i, j);
+                if (abs(r) > correlationThreshold) {
+                    System.out.println("Absolute correlation too high: " + r);
+                    exists = true;
+                }
+            }
+        }
+
+        if (exists) {
+            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
+                    + ") in absolute value.");
+        }
+
+
+        this.N = covariances.getSampleSize();
     }
 
     public int getSampleSize() {
@@ -192,37 +220,6 @@ public class PoissonPriorScore implements Score {
     public void setLambda(double lambda) {
         if (lambda < 1.0) throw new IllegalArgumentException("Poisso lambda can't be < 1: " + lambda);
         this.lambda = lambda;
-    }
-
-    private void setCovariances(ICovarianceMatrix covariances) {
-        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
-        this.covariances = covariances;
-
-        boolean exists = false;
-
-        double correlationThreshold = 1.0;
-        for (int i = 0; i < correlations.getSize(); i++) {
-            for (int j = 0; j < correlations.getSize(); j++) {
-                if (i == j) continue;
-                double r = correlations.getValue(i, j);
-                if (abs(r) > correlationThreshold) {
-                    System.out.println("Absolute correlation too high: " + r);
-                    exists = true;
-                }
-            }
-        }
-
-        if (exists) {
-            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
-                    + ") in absolute value.");
-        }
-
-
-        this.N = covariances.getSampleSize();
-    }
-
-    private static double getP(int pn, int m0, double lambda) {
-        return 2 - pow(1 + (exp(-(lambda - 1) / 2.)) * sqrt(lambda), (double) pn - m0);
     }
 
     private int[] indices(List<Node> __adj) {

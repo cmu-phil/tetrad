@@ -47,8 +47,7 @@ class DescriptiveStatsActionSingleVAr extends AbstractAction {
 
 
     /**
-     * Constructs the <code>DescriptiveStatsAction</code> given the <code>DataEditor</code>
-     * that its attached to.
+     * Constructs the <code>DescriptiveStatsAction</code> given the <code>DataEditor</code> that its attached to.
      */
     public DescriptiveStatsActionSingleVAr(DataEditor editor) {
         super("Descriptive Statistics...");
@@ -89,8 +88,7 @@ class DescriptiveStatsActionSingleVAr extends AbstractAction {
     //============================== Private methods ============================//
 
     /**
-     * Creates a dialog that is showing the histogram for the given node (if null
-     * one is selected for you)
+     * Creates a dialog that is showing the histogram for the given node (if null one is selected for you)
      */
     private JPanel createDescriptiveStatsDialog(Node selected) {
         DataSet dataSet = (DataSet) this.dataEditor.getSelectedDataModel();

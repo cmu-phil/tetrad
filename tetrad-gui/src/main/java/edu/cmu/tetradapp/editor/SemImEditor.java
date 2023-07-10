@@ -62,7 +62,6 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Edits a SEM instantiated model.
@@ -73,9 +72,9 @@ import java.util.Set;
 public final class SemImEditor extends JPanel implements LayoutEditable, DoNotScroll {
 
     private static final long serialVersionUID = -1856607070184945405L;
-
-    private OneEditor oneEditorPanel;
     private final JPanel targetPanel;
+    private OneEditor oneEditorPanel;
+    private SemImWrapper wrapper;
 
     /**
      * Constructs a new SemImEditor from the given OldSemEstimateAdapter.
@@ -196,58 +195,446 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         this.oneEditorPanel.displaySemIm(updatedSem, tabSelectionIndex, matrixSelection);
     }
 
+    private Component getComp() {
+        EditorWindow editorWindow =
+                (EditorWindow) SwingUtilities.getAncestorOfClass(
+                        EditorWindow.class, this);
+
+        if (editorWindow != null) {
+            return editorWindow.getRootPane().getContentPane();
+        } else {
+            return null;
+        }
+    }
+
     public enum TabbedPaneDefault {
         GRAPHICAL, TABULAR, COVMATRIX, tabbedPanedDefault, STATS
     }
 
-    private SemImWrapper wrapper;
+    /**
+     * Dispays the implied covariance and correlation matrices for the given SemIm.
+     */
+    static class ImpliedMatricesPanel extends JPanel {
+
+        private static final long serialVersionUID = 2462316724126834072L;
+
+        private final SemImWrapper wrapper;
+        private JTable impliedJTable;
+        private JComboBox<String> selector;
+
+        public ImpliedMatricesPanel(SemImWrapper wrapper, int matrixSelection) {
+            this.wrapper = wrapper;
+
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+            add(selector());
+            add(Box.createVerticalStrut(10));
+            add(new JScrollPane(impliedJTable()));
+            add(Box.createVerticalGlue());
+            setBorder(new TitledBorder("Select Implied Matrix to View"));
+
+            setMatrixSelection(matrixSelection);
+        }
+
+        /**
+         * @return the matrix in tab delimited form.
+         */
+        public String getMatrixInTabDelimitedForm() {
+            StringBuilder builder = new StringBuilder();
+            TableModel model = impliedJTable().getModel();
+            for (int row = 0; row < model.getRowCount(); row++) {
+                for (int col = 0; col < model.getColumnCount(); col++) {
+                    Object o = model.getValueAt(row, col);
+                    if (o != null) {
+                        builder.append(o);
+                    }
+                    builder.append('\t');
+                }
+                builder.append('\n');
+            }
+            return builder.toString();
+        }
+
+        private JTable impliedJTable() {
+            if (this.impliedJTable == null) {
+                this.impliedJTable = new JTable();
+                this.impliedJTable.setTableHeader(null);
+            }
+            return this.impliedJTable;
+        }
+
+        private JComboBox<String> selector() {
+            if (this.selector == null) {
+                this.selector = new JComboBox<>();
+                List<String> selections = getImpliedSelections();
+
+                for (String selection : selections) {
+                    this.selector.addItem(selection);
+                }
+
+                this.selector.addItemListener((e) -> {
+                    String item = (String) e.getItem();
+                    setMatrixSelection(getImpliedSelections().indexOf(item));
+                });
+            }
+            return this.selector;
+        }
+
+        public void setMatrixSelection(int index) {
+            selector().setSelectedIndex(index);
+            switchView(index);
+        }
+
+        private void switchView(int index) {
+            if (index < 0 || index > 3) {
+                throw new IllegalArgumentException(
+                        "Matrix selection must be 0, 1, 2, or 3.");
+            }
+
+            switch (index) {
+                case 0:
+                    switchView(false, false);
+                    break;
+                case 1:
+                    switchView(true, false);
+                    break;
+                case 2:
+                    switchView(false, true);
+                    break;
+                case 3:
+                    switchView(true, true);
+                    break;
+            }
+        }
+
+        private void switchView(boolean a, boolean b) {
+            impliedJTable().setModel(new ImpliedCovTable(this.wrapper, a, b));
+            //     impliedJTable().getTableHeader().setReorderingAllowed(false);
+            impliedJTable().setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            impliedJTable().setRowSelectionAllowed(false);
+            impliedJTable().setCellSelectionEnabled(false);
+            impliedJTable().doLayout();
+        }
+
+        private List<String> getImpliedSelections() {
+            List<String> list = new ArrayList<>();
+            list.add("Implied covariance matrix (all variables)");
+            list.add("Implied covariance matrix (measured variables only)");
+            list.add("Implied correlation matrix (all variables)");
+            list.add("Implied correlation matrix (measured variables only)");
+            return list;
+        }
+
+    }
+
+    /**
+     * Presents a covariance matrix as a table model for the SemImEditor.
+     *
+     * @author Donald Crimbchin
+     */
+    static final class ImpliedCovTable extends AbstractTableModel {
+
+        private static final long serialVersionUID = -8269181589527893805L;
+
+        /**
+         * True iff the matrices for the observed variables ony should be displayed.
+         */
+        private final boolean measured;
+
+        /**
+         * True iff correlations (rather than covariances) should be displayed.
+         */
+        private final boolean correlations;
+
+        /**
+         * Formats numbers so that they have 4 digits after the decimal place.
+         */
+        private final NumberFormat nf;
+        private final SemImWrapper wrapper;
+
+        /**
+         * The matrix being displayed. (This varies.)
+         */
+        private final double[][] matrix;
+
+        /**
+         * Constructs a new table for the given covariance matrix, the nodes for which are as specified (in the order
+         * they appear in the matrix).
+         */
+        public ImpliedCovTable(SemImWrapper wrapper, boolean measured,
+                               boolean correlations) {
+            this.wrapper = wrapper;
+            this.measured = measured;
+            this.correlations = correlations;
+
+            this.nf = NumberFormatUtil.getInstance().getNumberFormat();
+
+            if (measured() && covariances()) {
+                this.matrix = getSemIm().getImplCovarMeas().toArray();
+            } else if (measured()
+            ) {
+                this.matrix = corr(getSemIm().getImplCovarMeas().toArray());
+            } else if (covariances()) {
+                Matrix implCovarC = getSemIm().getImplCovar(false);
+                this.matrix = implCovarC.toArray();
+            } else {
+                Matrix implCovarC = getSemIm().getImplCovar(false);
+                this.matrix = corr(implCovarC.toArray());
+            }
+        }
+
+        /**
+         * @return the number of rows being displayed--one more than the size of the matrix, which may be different
+         * depending on whether only the observed variables are being displayed or all the variables are being
+         * displayed.
+         */
+        @Override
+        public int getRowCount() {
+            if (measured()) {
+                return this.getSemIm().getMeasuredNodes().size() + 1;
+            } else {
+                return this.getSemIm().getVariableNodes().size() + 1;
+            }
+        }
+
+        /**
+         * @return the number of columns displayed--one more than the size of the matrix, which may be different
+         * depending on whether only the observed variables are being displayed or all the variables are being
+         * displayed.
+         */
+        @Override
+        public int getColumnCount() {
+            if (measured()) {
+                return this.getSemIm().getMeasuredNodes().size() + 1;
+            } else {
+                return this.getSemIm().getVariableNodes().size() + 1;
+            }
+        }
+
+        /**
+         * @return the name of the column at columnIndex, which is "" for column 0 and the name of the variable for the
+         * other columns.
+         */
+        @Override
+        public String getColumnName(int columnIndex) {
+            if (columnIndex == 0) {
+                return "";
+            } else {
+                if (measured()) {
+                    List<Node> nodes = getSemIm().getMeasuredNodes();
+                    Node node = (nodes.get(columnIndex - 1));
+                    return node.getName();
+                } else {
+                    List<Node> nodes = getSemIm().getVariableNodes();
+                    Node node = (nodes.get(columnIndex - 1));
+                    return node.getName();
+                }
+            }
+        }
+
+        /**
+         * @return the value being displayed in a cell, either a variable name or a Double.
+         */
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            if (rowIndex == 0) {
+                return getColumnName(columnIndex);
+            }
+            if (columnIndex == 0) {
+                return getColumnName(rowIndex);
+            } else if (rowIndex < columnIndex) {
+                return null;
+            } else {
+                return this.nf.format(this.matrix[rowIndex - 1][columnIndex - 1]);
+            }
+        }
+
+        private boolean covariances() {
+            return !correlations();
+        }
+
+        private double[][] corr(double[][] implCovar) {
+            int length = implCovar.length;
+            double[][] corr = new double[length][length];
+
+            for (int i = 1; i < length; i++) {
+                for (int j = 0; j < i; j++) {
+                    double d1 = implCovar[i][j];
+                    double d2 = implCovar[i][i];
+                    double d3 = implCovar[j][j];
+                    double d4 = d1 / FastMath.pow(d2 * d3, 0.5);
+
+                    if (d4 <= 1.0 || Double.isNaN(d4)) {
+                        corr[i][j] = d4;
+                    } else {
+                        throw new IllegalArgumentException(
+                                "Off-diagonal element at (" + i + ", " + j
+                                        + ") cannot be converted to correlation: "
+                                        + d1 + " <= FastMath.pow(" + d2 + " * " + d3
+                                        + ", 0.5)");
+                    }
+                }
+            }
+
+            for (int i = 0; i < length; i++) {
+                corr[i][i] = 1.0;
+            }
+
+            return corr;
+        }
+
+        /**
+         * @return true iff only observed variables are displayed.
+         */
+        private boolean measured() {
+            return this.measured;
+        }
+
+        /**
+         * @return true iff correlations (rather than covariances) are displayed.
+         */
+        private boolean correlations() {
+            return this.correlations;
+        }
+
+        private ISemIm getSemIm() {
+            return this.wrapper.getSemIm();
+        }
+    }
+
+    static final class ModelStatisticsPanel extends JTextArea {
+
+        private static final long serialVersionUID = -9096723049787232471L;
+
+        private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+        private final SemImWrapper wrapper;
+
+        public ModelStatisticsPanel(SemImWrapper wrapper) {
+            this.wrapper = wrapper;
+            reset();
+
+            addComponentListener(new ComponentAdapter() {
+                @Override
+                public void componentShown(ComponentEvent e) {
+                    reset();
+                }
+            });
+        }
+
+        private void reset() {
+            setText("");
+            setLineWrap(true);
+            setWrapStyleWord(true);
+
+            double modelChiSquare;
+            double modelDof;
+            double modelPValue;
+
+            SemPm semPm = semIm().getSemPm();
+            List<Node> variables = semPm.getVariableNodes();
+            boolean containsLatent = false;
+            for (Node node : variables) {
+                if (node.getNodeType() == NodeType.LATENT) {
+                    containsLatent = true;
+                    break;
+                }
+            }
+
+            try {
+                modelChiSquare = semIm().getChiSquare();
+                modelDof = semIm().getSemPm().getDof();
+                modelPValue = semIm().getPValue();
+            } catch (Exception exception) {
+                append("Model statistics not available.");
+                return;
+            }
+
+            if (containsLatent) {
+                append("\nEstimated degrees of Freedom = " + (int) modelDof);
+            } else {
+                append("\nDegrees of Freedom = " + (int) modelDof);
+            }
+//        append("\n(If the model is latent, this is the estimated degrees of freedom.)");
+
+            append("\nChi Square = " + this.nf.format(modelChiSquare));
+
+            if (modelDof >= 0) {
+                String pValueString = modelPValue > 0.001 ? this.nf.format(modelPValue)
+                        : new DecimalFormat("0.0000E0").format(modelPValue);
+                append("\nP Value = " + (Double.isNaN(modelPValue) || modelDof == 0 ? "undefined" : pValueString));
+                append("\nBIC Score = " + this.nf.format(semIm().getBicScore()));
+                append("\nCFI = " + this.nf.format(semIm().getCfi()));
+                append("\nRMSEA = " + this.nf.format(semIm().getRmsea()));
+
+            } else {
+                int numToFix = (int) FastMath.abs(modelDof);
+                append("\n\nA SEM with negative degrees of freedom is underidentified, "
+                        + "\nand other model statistics are meaningless.  Please increase "
+                        + "\nthe degrees of freedom to 0 or above by fixing at least "
+                        + numToFix + " parameter" + (numToFix == 1 ? "." : "s."));
+            }
+
+            append("\n\nThe above chi square test assumes that the maximum "
+                    + "likelihood function over the measured variables has been "
+                    + "minimized. Under that assumption, the null hypothesis for "
+                    + "the test is that the population covariance matrix over all "
+                    + "of the measured variables is equal to the estimated covariance "
+                    + "matrix over all of the measured variables written as a function "
+                    + "of the free model parameters--that is, the unfixed parameters "
+                    + "for each directed edge (the linear coefficient for that edge), "
+                    + "each exogenous variable (the variance for the error term for "
+                    + "that variable), and each bidirected edge (the covariance for "
+                    + "the exogenous variables it connects).  The model is explained "
+                    + "in Bollen, Structural Equations with Latent Variable, 110. "
+                    + "Degrees of freedom are calculated as m (m + 1) / 2 - d, where d "
+                    + "is the number of linear coefficients, variance terms, and error "
+                    + "covariance terms that are not fixed in the model. For latent models, "
+                    + "the degrees of freedom are termed 'estimated' since extra contraints "
+                    + "(e.g. pentad constraints) are not taken into account.");
+
+        }
+
+        private ISemIm semIm() {
+            return this.wrapper.getSemIm();
+        }
+    }
 
     private class OneEditor extends JPanel implements LayoutEditable {
 
         private static final long serialVersionUID = 6622060253747442717L;
 
         private final SemImWrapper semImWrapper;
-
+        /**
+         * Maximum number of free parameters for which statistics will be calculated. (Calculating standard errors is
+         * high complexity.) Set this to zero to turn off statistics calculations (which can be problematic sometimes).
+         */
+        private final int maxFreeParamsForStatistics = 1000;
+        private final String graphicalEditorTitle;
+        private final String tabularEditorTitle;
         /**
          * The graphical editor for the SemIm.
          */
         private SemImGraphicalEditor semImGraphicalEditor;
-
         /**
          * Edits the parameters in a simple list.
          */
         private SemImTabularEditor semImTabularEditor;
-
         /**
          * Displays one of four possible implied covariance matrices.
          */
         private ImpliedMatricesPanel impliedMatricesPanel;
-
         /**
          * Displays the model statistics.
          */
         private ModelStatisticsPanel modelStatisticsPanel;
-
-        /**
-         * Maximum number of free parameters for which statistics will be
-         * calculated. (Calculating standard errors is high complexity.) Set
-         * this to zero to turn off statistics calculations (which can be
-         * problematic sometimes).
-         */
-        private final int maxFreeParamsForStatistics = 1000;
-
         /**
          * True iff covariance parameters are edited as correlations.
          */
         private boolean editCovariancesAsCorrelations;
-
         /**
          * True iff covariance parameters are edited as correlations.
          */
         private boolean editIntercepts;
         private JTabbedPane tabbedPane;
-        private final String graphicalEditorTitle;
-        private final String tabularEditorTitle;
         private boolean editable = true;
         private int matrixSelection;
         private JCheckBoxMenuItem meansItem;
@@ -448,8 +835,8 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         /**
-         * @return the index of the currently selected tab. Used to construct a
-         * new SemImEditor in the same state as a previous one.
+         * @return the index of the currently selected tab. Used to construct a new SemImEditor in the same state as a
+         * previous one.
          */
         public int getTabSelectionIndex() {
             return this.tabbedPane.getSelectedIndex();
@@ -650,35 +1037,27 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
          */
         private final Font SMALL_FONT = new Font("Dialog", Font.PLAIN, 10);
         private final SemImWrapper wrapper;
-
         /**
-         * w
-         * Workbench for the graphical editor.
+         * The editor that sits inside the SemImEditor that allows the user to edit the SemIm graphically.
+         */
+        private final OneEditor editor;
+        /**
+         * Maximum number of free parameters for which model statistics will be calculated. The algorithm for
+         * calculating these is expensive.
+         */
+        private final int maxFreeParamsForStatistics;
+        /**
+         * w Workbench for the graphical editor.
          */
         private GraphWorkbench workbench;
-
         /**
          * Stores the last active edge so that it can be reset properly.
          */
         private Object lastEditedObject;
-
         /**
          * This delay needs to be restored when the component is hidden.
          */
         private int savedTooltipDelay;
-
-        /**
-         * The editor that sits inside the SemImEditor that allows the user to
-         * edit the SemIm graphically.
-         */
-        private final OneEditor editor;
-
-        /**
-         * Maximum number of free parameters for which model statistics will be
-         * calculated. The algorithm for calculating these is expensive.
-         */
-        private final int maxFreeParamsForStatistics;
-
         /**
          * True iff this graphical display is editable.
          */
@@ -1125,13 +1504,11 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
         }
 
         /**
-         * @return the parameter for the given edge, or null if the edge does
-         * not have a parameter associated with it in the model. The edge must
-         * be either directed or bidirected, since it has to come from a
-         * SemGraph. For directed edges, this method automatically adjusts if
-         * the user has changed the endpoints of an edge X1 --> X2 to X1 &lt;-- X2
-         * and returns the correct parameter. @throws IllegalArgumentException
-         * if the edge is neither directed nor bidirected.
+         * @return the parameter for the given edge, or null if the edge does not have a parameter associated with it in
+         * the model. The edge must be either directed or bidirected, since it has to come from a SemGraph. For directed
+         * edges, this method automatically adjusts if the user has changed the endpoints of an edge X1 --> X2 to X1
+         * &lt;-- X2 and returns the correct parameter. @throws IllegalArgumentException if the edge is neither directed
+         * nor bidirected.
          */
         private Parameter getEdgeParameter(Edge edge) {
             if (Edges.isDirectedEdge(edge)) {
@@ -1385,14 +1762,14 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             return this.tableModel;
         }
 
+        public boolean isEditable() {
+            return this.editable;
+        }
+
         public void setEditable(boolean editable) {
             this.tableModel.setEditable(editable);
             this.editable = editable;
             this.tableModel.fireTableStructureChanged();
-        }
-
-        public boolean isEditable() {
-            return this.editable;
         }
     }
 
@@ -1570,6 +1947,10 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
             return this.editable;
         }
 
+        public void setEditable(boolean editable) {
+            this.editable = editable;
+        }
+
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 
@@ -1659,415 +2040,6 @@ public final class SemImEditor extends JPanel implements LayoutEditable, DoNotSc
 
         private ISemIm semIm() {
             return this.wrapper.getSemIm();
-        }
-
-        public void setEditable(boolean editable) {
-            this.editable = editable;
-        }
-    }
-
-    /**
-     * Dispays the implied covariance and correlation matrices for the given
-     * SemIm.
-     */
-    static class ImpliedMatricesPanel extends JPanel {
-
-        private static final long serialVersionUID = 2462316724126834072L;
-
-        private final SemImWrapper wrapper;
-        private JTable impliedJTable;
-        private JComboBox<String> selector;
-
-        public ImpliedMatricesPanel(SemImWrapper wrapper, int matrixSelection) {
-            this.wrapper = wrapper;
-
-            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-            add(selector());
-            add(Box.createVerticalStrut(10));
-            add(new JScrollPane(impliedJTable()));
-            add(Box.createVerticalGlue());
-            setBorder(new TitledBorder("Select Implied Matrix to View"));
-
-            setMatrixSelection(matrixSelection);
-        }
-
-        /**
-         * @return the matrix in tab delimited form.
-         */
-        public String getMatrixInTabDelimitedForm() {
-            StringBuilder builder = new StringBuilder();
-            TableModel model = impliedJTable().getModel();
-            for (int row = 0; row < model.getRowCount(); row++) {
-                for (int col = 0; col < model.getColumnCount(); col++) {
-                    Object o = model.getValueAt(row, col);
-                    if (o != null) {
-                        builder.append(o);
-                    }
-                    builder.append('\t');
-                }
-                builder.append('\n');
-            }
-            return builder.toString();
-        }
-
-        private JTable impliedJTable() {
-            if (this.impliedJTable == null) {
-                this.impliedJTable = new JTable();
-                this.impliedJTable.setTableHeader(null);
-            }
-            return this.impliedJTable;
-        }
-
-        private JComboBox<String> selector() {
-            if (this.selector == null) {
-                this.selector = new JComboBox<>();
-                List<String> selections = getImpliedSelections();
-
-                for (String selection : selections) {
-                    this.selector.addItem(selection);
-                }
-
-                this.selector.addItemListener((e) -> {
-                    String item = (String) e.getItem();
-                    setMatrixSelection(getImpliedSelections().indexOf(item));
-                });
-            }
-            return this.selector;
-        }
-
-        public void setMatrixSelection(int index) {
-            selector().setSelectedIndex(index);
-            switchView(index);
-        }
-
-        private void switchView(int index) {
-            if (index < 0 || index > 3) {
-                throw new IllegalArgumentException(
-                        "Matrix selection must be 0, 1, 2, or 3.");
-            }
-
-            switch (index) {
-                case 0:
-                    switchView(false, false);
-                    break;
-                case 1:
-                    switchView(true, false);
-                    break;
-                case 2:
-                    switchView(false, true);
-                    break;
-                case 3:
-                    switchView(true, true);
-                    break;
-            }
-        }
-
-        private void switchView(boolean a, boolean b) {
-            impliedJTable().setModel(new ImpliedCovTable(this.wrapper, a, b));
-            //     impliedJTable().getTableHeader().setReorderingAllowed(false);
-            impliedJTable().setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            impliedJTable().setRowSelectionAllowed(false);
-            impliedJTable().setCellSelectionEnabled(false);
-            impliedJTable().doLayout();
-        }
-
-        private List<String> getImpliedSelections() {
-            List<String> list = new ArrayList<>();
-            list.add("Implied covariance matrix (all variables)");
-            list.add("Implied covariance matrix (measured variables only)");
-            list.add("Implied correlation matrix (all variables)");
-            list.add("Implied correlation matrix (measured variables only)");
-            return list;
-        }
-
-    }
-
-    /**
-     * Presents a covariance matrix as a table model for the SemImEditor.
-     *
-     * @author Donald Crimbchin
-     */
-    static final class ImpliedCovTable extends AbstractTableModel {
-
-        private static final long serialVersionUID = -8269181589527893805L;
-
-        /**
-         * True iff the matrices for the observed variables ony should be
-         * displayed.
-         */
-        private final boolean measured;
-
-        /**
-         * True iff correlations (rather than covariances) should be displayed.
-         */
-        private final boolean correlations;
-
-        /**
-         * Formats numbers so that they have 4 digits after the decimal place.
-         */
-        private final NumberFormat nf;
-        private final SemImWrapper wrapper;
-
-        /**
-         * The matrix being displayed. (This varies.)
-         */
-        private final double[][] matrix;
-
-        /**
-         * Constructs a new table for the given covariance matrix, the nodes for
-         * which are as specified (in the order they appear in the matrix).
-         */
-        public ImpliedCovTable(SemImWrapper wrapper, boolean measured,
-                               boolean correlations) {
-            this.wrapper = wrapper;
-            this.measured = measured;
-            this.correlations = correlations;
-
-            this.nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-            if (measured() && covariances()) {
-                this.matrix = getSemIm().getImplCovarMeas().toArray();
-            } else if (measured()
-            ) {
-                this.matrix = corr(getSemIm().getImplCovarMeas().toArray());
-            } else if (covariances()) {
-                Matrix implCovarC = getSemIm().getImplCovar(false);
-                this.matrix = implCovarC.toArray();
-            } else {
-                Matrix implCovarC = getSemIm().getImplCovar(false);
-                this.matrix = corr(implCovarC.toArray());
-            }
-        }
-
-        /**
-         * @return the number of rows being displayed--one more than the size of
-         * the matrix, which may be different depending on whether only the
-         * observed variables are being displayed or all the variables are being
-         * displayed.
-         */
-        @Override
-        public int getRowCount() {
-            if (measured()) {
-                return this.getSemIm().getMeasuredNodes().size() + 1;
-            } else {
-                return this.getSemIm().getVariableNodes().size() + 1;
-            }
-        }
-
-        /**
-         * @return the number of columns displayed--one more than the size of
-         * the matrix, which may be different depending on whether only the
-         * observed variables are being displayed or all the variables are being
-         * displayed.
-         */
-        @Override
-        public int getColumnCount() {
-            if (measured()) {
-                return this.getSemIm().getMeasuredNodes().size() + 1;
-            } else {
-                return this.getSemIm().getVariableNodes().size() + 1;
-            }
-        }
-
-        /**
-         * @return the name of the column at columnIndex, which is "" for column
-         * 0 and the name of the variable for the other columns.
-         */
-        @Override
-        public String getColumnName(int columnIndex) {
-            if (columnIndex == 0) {
-                return "";
-            } else {
-                if (measured()) {
-                    List<Node> nodes = getSemIm().getMeasuredNodes();
-                    Node node = (nodes.get(columnIndex - 1));
-                    return node.getName();
-                } else {
-                    List<Node> nodes = getSemIm().getVariableNodes();
-                    Node node = (nodes.get(columnIndex - 1));
-                    return node.getName();
-                }
-            }
-        }
-
-        /**
-         * @return the value being displayed in a cell, either a variable name
-         * or a Double.
-         */
-        @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            if (rowIndex == 0) {
-                return getColumnName(columnIndex);
-            }
-            if (columnIndex == 0) {
-                return getColumnName(rowIndex);
-            } else if (rowIndex < columnIndex) {
-                return null;
-            } else {
-                return this.nf.format(this.matrix[rowIndex - 1][columnIndex - 1]);
-            }
-        }
-
-        private boolean covariances() {
-            return !correlations();
-        }
-
-        private double[][] corr(double[][] implCovar) {
-            int length = implCovar.length;
-            double[][] corr = new double[length][length];
-
-            for (int i = 1; i < length; i++) {
-                for (int j = 0; j < i; j++) {
-                    double d1 = implCovar[i][j];
-                    double d2 = implCovar[i][i];
-                    double d3 = implCovar[j][j];
-                    double d4 = d1 / FastMath.pow(d2 * d3, 0.5);
-
-                    if (d4 <= 1.0 || Double.isNaN(d4)) {
-                        corr[i][j] = d4;
-                    } else {
-                        throw new IllegalArgumentException(
-                                "Off-diagonal element at (" + i + ", " + j
-                                        + ") cannot be converted to correlation: "
-                                        + d1 + " <= FastMath.pow(" + d2 + " * " + d3
-                                        + ", 0.5)");
-                    }
-                }
-            }
-
-            for (int i = 0; i < length; i++) {
-                corr[i][i] = 1.0;
-            }
-
-            return corr;
-        }
-
-        /**
-         * @return true iff only observed variables are displayed.
-         */
-        private boolean measured() {
-            return this.measured;
-        }
-
-        /**
-         * @return true iff correlations (rather than covariances) are
-         * displayed.
-         */
-        private boolean correlations() {
-            return this.correlations;
-        }
-
-        private ISemIm getSemIm() {
-            return this.wrapper.getSemIm();
-        }
-    }
-
-    static final class ModelStatisticsPanel extends JTextArea {
-
-        private static final long serialVersionUID = -9096723049787232471L;
-
-        private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-        private final SemImWrapper wrapper;
-
-        public ModelStatisticsPanel(SemImWrapper wrapper) {
-            this.wrapper = wrapper;
-            reset();
-
-            addComponentListener(new ComponentAdapter() {
-                @Override
-                public void componentShown(ComponentEvent e) {
-                    reset();
-                }
-            });
-        }
-
-        private void reset() {
-            setText("");
-            setLineWrap(true);
-            setWrapStyleWord(true);
-
-            double modelChiSquare;
-            double modelDof;
-            double modelPValue;
-
-            SemPm semPm = semIm().getSemPm();
-            List<Node> variables = semPm.getVariableNodes();
-            boolean containsLatent = false;
-            for (Node node : variables) {
-                if (node.getNodeType() == NodeType.LATENT) {
-                    containsLatent = true;
-                    break;
-                }
-            }
-
-            try {
-                modelChiSquare = semIm().getChiSquare();
-                modelDof = semIm().getSemPm().getDof();
-                modelPValue = semIm().getPValue();
-            } catch (Exception exception) {
-                append("Model statistics not available.");
-                return;
-            }
-
-            if (containsLatent) {
-                append("\nEstimated degrees of Freedom = " + (int) modelDof);
-            } else {
-                append("\nDegrees of Freedom = " + (int) modelDof);
-            }
-//        append("\n(If the model is latent, this is the estimated degrees of freedom.)");
-
-            append("\nChi Square = " + this.nf.format(modelChiSquare));
-
-            if (modelDof >= 0) {
-                String pValueString = modelPValue > 0.001 ? this.nf.format(modelPValue)
-                        : new DecimalFormat("0.0000E0").format(modelPValue);
-                append("\nP Value = " + (Double.isNaN(modelPValue) || modelDof == 0 ? "undefined" : pValueString));
-                append("\nBIC Score = " + this.nf.format(semIm().getBicScore()));
-                append("\nCFI = " + this.nf.format(semIm().getCfi()));
-                append("\nRMSEA = " + this.nf.format(semIm().getRmsea()));
-
-            } else {
-                int numToFix = (int) FastMath.abs(modelDof);
-                append("\n\nA SEM with negative degrees of freedom is underidentified, "
-                        + "\nand other model statistics are meaningless.  Please increase "
-                        + "\nthe degrees of freedom to 0 or above by fixing at least "
-                        + numToFix + " parameter" + (numToFix == 1 ? "." : "s."));
-            }
-
-            append("\n\nThe above chi square test assumes that the maximum "
-                    + "likelihood function over the measured variables has been "
-                    + "minimized. Under that assumption, the null hypothesis for "
-                    + "the test is that the population covariance matrix over all "
-                    + "of the measured variables is equal to the estimated covariance "
-                    + "matrix over all of the measured variables written as a function "
-                    + "of the free model parameters--that is, the unfixed parameters "
-                    + "for each directed edge (the linear coefficient for that edge), "
-                    + "each exogenous variable (the variance for the error term for "
-                    + "that variable), and each bidirected edge (the covariance for "
-                    + "the exogenous variables it connects).  The model is explained "
-                    + "in Bollen, Structural Equations with Latent Variable, 110. "
-                    + "Degrees of freedom are calculated as m (m + 1) / 2 - d, where d "
-                    + "is the number of linear coefficients, variance terms, and error "
-                    + "covariance terms that are not fixed in the model. For latent models, "
-                    + "the degrees of freedom are termed 'estimated' since extra contraints "
-                    + "(e.g. pentad constraints) are not taken into account.");
-
-        }
-
-        private ISemIm semIm() {
-            return this.wrapper.getSemIm();
-        }
-    }
-
-    private Component getComp() {
-        EditorWindow editorWindow =
-                (EditorWindow) SwingUtilities.getAncestorOfClass(
-                        EditorWindow.class, this);
-
-        if (editorWindow != null) {
-            return editorWindow.getRootPane().getContentPane();
-        } else {
-            return null;
         }
     }
 

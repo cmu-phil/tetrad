@@ -39,8 +39,6 @@ public class SemOptimizerScattershot implements SemOptimizer {
     static final long serialVersionUID = 23L;
     private int numRestarts;
 
-    //=============================CONSTRUCTORS=========================//
-
     /**
      * Blank constructor.
      */
@@ -53,8 +51,6 @@ public class SemOptimizerScattershot implements SemOptimizer {
     public static SemOptimizerScattershot serializableInstance() {
         return new SemOptimizerScattershot();
     }
-
-    //==============================PUBLIC METHODS========================//
 
     /**
      * Optimizes the fitting function of the given Sem using the Powell method from Numerical Recipes by adjusting the
@@ -120,13 +116,13 @@ public class SemOptimizerScattershot implements SemOptimizer {
     }
 
     @Override
-    public void setNumRestarts(int numRestarts) {
-        this.numRestarts = numRestarts;
+    public int getNumRestarts() {
+        return this.numRestarts;
     }
 
     @Override
-    public int getNumRestarts() {
-        return this.numRestarts;
+    public void setNumRestarts(int numRestarts) {
+        this.numRestarts = numRestarts;
     }
 
     public String toString() {
@@ -262,6 +258,10 @@ public class SemOptimizerScattershot implements SemOptimizer {
         }
     }
 
+    private RandomUtil getRandom() {
+        return RandomUtil.getInstance();
+    }
+
     /**
      * Evaluates a fitting function for an array of freeParameters.
      *
@@ -341,10 +341,6 @@ public class SemOptimizerScattershot implements SemOptimizer {
         public void setAvoidNegativeVariances(boolean avoidNegativeVariances) {
             this.avoidNegativeVariances = avoidNegativeVariances;
         }
-    }
-
-    private RandomUtil getRandom() {
-        return RandomUtil.getInstance();
     }
 }
 

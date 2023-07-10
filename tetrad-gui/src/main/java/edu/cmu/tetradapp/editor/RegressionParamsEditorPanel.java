@@ -44,8 +44,8 @@ import java.util.List;
 import java.util.*;
 
 /**
- * Allows one to drop/drap variables from a source list to a response area and a
- * predictors list. Also lets one specify an alpha level.
+ * Allows one to drop/drap variables from a source list to a response area and a predictors list. Also lets one specify
+ * an alpha level.
  *
  * @author Tyler Gibson
  */
@@ -53,39 +53,32 @@ import java.util.*;
 class RegressionParamsEditorPanel extends JPanel {
 
     private static final long serialVersionUID = -194301447990323529L;
-
+    /**
+     * A mapping between variable names and what sort of variable they are: 1 - binary, 2- discrete, 3 - continuous.
+     */
+    private static final Map<String, Integer> VAR_MAP = new HashMap<>();
+    /**
+     * The font to render fields in.
+     */
+    private static final Font FONT = new Font("Dialog", Font.PLAIN, 12);
+    /**
+     * The list of predictors.
+     */
+    private static JList PREDICTORS_LIST;
+    /**
+     * The list of source variables.
+     */
+    private static JList SOURCE_LIST;
+    /**
+     * A list with a single item in it for the response variable.
+     */
+    private static JTextField RESPONSE_FIELD;
     private final boolean logistic;
     private final RegressionModel regressionModel;
     /**
      * The params that are being edited.
      */
     private final Parameters params;
-
-    /**
-     * The list of predictors.
-     */
-    private static JList PREDICTORS_LIST;
-
-    /**
-     * The list of source variables.
-     */
-    private static JList SOURCE_LIST;
-
-    /**
-     * A list with a single item in it for the response variable.
-     */
-    private static JTextField RESPONSE_FIELD;
-
-    /**
-     * A mapping between variable names and what sort of variable they are: 1 -
-     * binary, 2- discrete, 3 - continuous.
-     */
-    private static final Map<String, Integer> VAR_MAP = new HashMap<>();
-
-    /**
-     * The font to render fields in.
-     */
-    private static final Font FONT = new Font("Dialog", Font.PLAIN, 12);
 
     /**
      * Constructs the editor given the <code>Parameters</code> and the
@@ -190,9 +183,61 @@ class RegressionParamsEditorPanel extends JPanel {
         return selectedList;
     }
 
+    private static JScrollPane createScrollPane(JList comp, Dimension dim) {
+        JScrollPane pane = new JScrollPane(comp);
+        LayoutUtils.setAllSizes(pane, dim);
+        return pane;
+    }
+
+    private static Box createLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        Box box = Box.createHorizontalBox();
+        box.add(label);
+        box.add(Box.createHorizontalGlue());
+        return box;
+    }
+
+    private static JList createList() {
+        JList list = new JList(new VariableListModel());
+        list.setFont(RegressionParamsEditorPanel.getFONT());
+        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        list.setVisibleRowCount(10);
+        return list;
+    }
+
+    private static DataFlavor getListDataFlavor() {
+        try {
+            return new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + "; class=java.lang.Object",
+                    "Local Variable List");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static Map<String, Integer> getVarMap() {
+        return RegressionParamsEditorPanel.VAR_MAP;
+    }
+
+    private static JList getPredictorsList() {
+        return RegressionParamsEditorPanel.PREDICTORS_LIST;
+    }
+
+    private static JList getSourceList() {
+        return RegressionParamsEditorPanel.SOURCE_LIST;
+    }
+
+    private static JTextField getResponseField() {
+        return RegressionParamsEditorPanel.RESPONSE_FIELD;
+    }
+
+    private static Font getFONT() {
+        return RegressionParamsEditorPanel.FONT;
+    }
+
     /**
-     * Bulids the arrows that allow one to move variables around (can also use
-     * drag and drop)
+     * Bulids the arrows that allow one to move variables around (can also use drag and drop)
      */
     private Box buildSelectorArea(int startHeight) {
         Box box = Box.createVerticalBox();
@@ -307,21 +352,6 @@ class RegressionParamsEditorPanel extends JPanel {
         }
     }
 
-    private static JScrollPane createScrollPane(JList comp, Dimension dim) {
-        JScrollPane pane = new JScrollPane(comp);
-        LayoutUtils.setAllSizes(pane, dim);
-        return pane;
-    }
-
-    private static Box createLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        Box box = Box.createHorizontalBox();
-        box.add(label);
-        box.add(Box.createHorizontalGlue());
-        return box;
-    }
-
     private JTextField createResponse(JList list) {
         JTextField pane = new JTextField();
         pane.setFont(RegressionParamsEditorPanel.getFONT());
@@ -350,24 +380,6 @@ class RegressionParamsEditorPanel extends JPanel {
         return pane;
     }
 
-    private static JList createList() {
-        JList list = new JList(new VariableListModel());
-        list.setFont(RegressionParamsEditorPanel.getFONT());
-        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        list.setVisibleRowCount(10);
-        return list;
-    }
-
-    private static DataFlavor getListDataFlavor() {
-        try {
-            return new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType + "; class=java.lang.Object",
-                    "Local Variable List");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     private List<String> getPredictors() {
         ListModel model = RegressionParamsEditorPanel.getPredictorsList().getModel();
         List<String> predictors = new ArrayList<>();
@@ -387,27 +399,11 @@ class RegressionParamsEditorPanel extends JPanel {
         return i == 1;
     }
 
-    private static Map<String, Integer> getVarMap() {
-        return RegressionParamsEditorPanel.VAR_MAP;
-    }
-
-    private static JList getPredictorsList() {
-        return RegressionParamsEditorPanel.PREDICTORS_LIST;
-    }
-
-    private static JList getSourceList() {
-        return RegressionParamsEditorPanel.SOURCE_LIST;
-    }
-
-    private static JTextField getResponseField() {
-        return RegressionParamsEditorPanel.RESPONSE_FIELD;
-    }
-
-    private static Font getFONT() {
-        return RegressionParamsEditorPanel.FONT;
-    }
-
     //========================== Inner classes (a lot of'em) =========================================//
+
+    public Parameters getParams() {
+        return this.params;
+    }
 
     /**
      * A renderer that adds info about whether a variable is binary or not.
@@ -439,6 +435,93 @@ class RegressionParamsEditorPanel extends JPanel {
             }
 
             return this;
+        }
+    }
+
+    /**
+     * A basic model for the list (needed an addAll feature, which the detault model didn't have)
+     */
+    private static class VariableListModel extends AbstractListModel {
+
+        private final Vector<Comparable> delegate = new Vector<>();
+
+        public int getSize() {
+            return this.delegate.size();
+        }
+
+        public Object getElementAt(int index) {
+            return this.delegate.get(index);
+        }
+
+        public void remove(Comparable element) {
+            int index = this.delegate.indexOf(element);
+            if (0 <= index) {
+                this.delegate.remove(index);
+                this.fireIntervalRemoved(this, index, index);
+            }
+        }
+
+        public void add(Comparable element) {
+            this.delegate.add(element);
+            this.fireIntervalAdded(this, this.delegate.size(), this.delegate.size());
+        }
+
+        public void removeFirst(Comparable element) {
+            this.delegate.removeElement(element);
+            this.fireContentsChanged(this, 0, this.delegate.size());
+        }
+
+        public void removeAll(List<? extends Comparable> elements) {
+            this.delegate.removeAll(elements);
+            this.fireContentsChanged(this, 0, this.delegate.size());
+        }
+
+        public void addAll(List<? extends Comparable> elements) {
+            this.delegate.addAll(elements);
+            this.fireContentsChanged(this, 0, this.delegate.size());
+        }
+
+        public void removeAll() {
+            this.delegate.clear();
+            this.fireContentsChanged(this, 0, 0);
+        }
+
+        public void sort() {
+            Collections.sort(this.delegate);
+            this.fireContentsChanged(this, 0, this.delegate.size());
+        }
+
+    }
+
+    /**
+     * A basic transferable.
+     */
+    private static class ListTransferable implements Transferable {
+
+        private static final DataFlavor FLAVOR = RegressionParamsEditorPanel.getListDataFlavor();
+
+        private final List object;
+
+        public ListTransferable(List object) {
+            if (object == null) {
+                throw new NullPointerException();
+            }
+            this.object = object;
+        }
+
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{ListTransferable.FLAVOR};
+        }
+
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return flavor == ListTransferable.FLAVOR;
+        }
+
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            if (ListTransferable.FLAVOR != flavor) {
+                throw new UnsupportedFlavorException(flavor);
+            }
+            return this.object;
         }
     }
 
@@ -543,98 +626,6 @@ class RegressionParamsEditorPanel extends JPanel {
                 dge.startDrag(DragSource.DefaultMoveDrop, t, this);
             }
         }
-    }
-
-    /**
-     * A basic model for the list (needed an addAll feature, which the detault
-     * model didn't have)
-     */
-    private static class VariableListModel extends AbstractListModel {
-
-        private final Vector<Comparable> delegate = new Vector<>();
-
-        public int getSize() {
-            return this.delegate.size();
-        }
-
-        public Object getElementAt(int index) {
-            return this.delegate.get(index);
-        }
-
-        public void remove(Comparable element) {
-            int index = this.delegate.indexOf(element);
-            if (0 <= index) {
-                this.delegate.remove(index);
-                this.fireIntervalRemoved(this, index, index);
-            }
-        }
-
-        public void add(Comparable element) {
-            this.delegate.add(element);
-            this.fireIntervalAdded(this, this.delegate.size(), this.delegate.size());
-        }
-
-        public void removeFirst(Comparable element) {
-            this.delegate.removeElement(element);
-            this.fireContentsChanged(this, 0, this.delegate.size());
-        }
-
-        public void removeAll(List<? extends Comparable> elements) {
-            this.delegate.removeAll(elements);
-            this.fireContentsChanged(this, 0, this.delegate.size());
-        }
-
-        public void addAll(List<? extends Comparable> elements) {
-            this.delegate.addAll(elements);
-            this.fireContentsChanged(this, 0, this.delegate.size());
-        }
-
-        public void removeAll() {
-            this.delegate.clear();
-            this.fireContentsChanged(this, 0, 0);
-        }
-
-        public void sort() {
-            Collections.sort(this.delegate);
-            this.fireContentsChanged(this, 0, this.delegate.size());
-        }
-
-    }
-
-    /**
-     * A basic transferable.
-     */
-    private static class ListTransferable implements Transferable {
-
-        private static final DataFlavor FLAVOR = RegressionParamsEditorPanel.getListDataFlavor();
-
-        private final List object;
-
-        public ListTransferable(List object) {
-            if (object == null) {
-                throw new NullPointerException();
-            }
-            this.object = object;
-        }
-
-        public DataFlavor[] getTransferDataFlavors() {
-            return new DataFlavor[]{ListTransferable.FLAVOR};
-        }
-
-        public boolean isDataFlavorSupported(DataFlavor flavor) {
-            return flavor == ListTransferable.FLAVOR;
-        }
-
-        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-            if (ListTransferable.FLAVOR != flavor) {
-                throw new UnsupportedFlavorException(flavor);
-            }
-            return this.object;
-        }
-    }
-
-    public Parameters getParams() {
-        return this.params;
     }
 
 }

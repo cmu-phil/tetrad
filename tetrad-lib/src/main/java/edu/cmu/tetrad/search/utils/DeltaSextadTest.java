@@ -40,11 +40,10 @@ import java.util.Set;
  */
 public class DeltaSextadTest {
     static final long serialVersionUID = 23L;
-
-    private double[][] data;
     private final int N;
     private final ICovarianceMatrix cov;
     private final List<Node> variables;
+    private double[][] data;
 
     // As input we require a data set and a list of non-redundant Tetrads.
 
@@ -307,6 +306,48 @@ public class DeltaSextadTest {
         return 0.0;
     }
 
+    // Assumes data are mean-centered.
+    private double r(int x, int y, int z, int w) {
+        double sxyzw = 0.0;
+
+        double[] _x = this.data[x];
+        double[] _y = this.data[y];
+        double[] _z = this.data[z];
+        double[] _w = this.data[w];
+
+        int N = _x.length;
+
+        for (int j = 0; j < N; j++) {
+            sxyzw += _x[j] * _y[j] * _z[j] * _w[j];
+        }
+
+        return (1.0 / N) * sxyzw;
+    }
+
+    // Assumes data are mean-centered.
+    private double r(double[] array1, double[] array2, int N) {
+        int i;
+        double sum = 0.0;
+
+        for (i = 0; i < N; i++) {
+            sum += array1[i] * array2[i];
+        }
+
+        return (1.0 / N) * sum;
+    }
+
+    private int dofHarman(int n) {
+        int dof = n * (n - 5) / 2 + 1;
+        if (dof < 1) dof = 1;
+        return dof;
+    }
+
+//    private int dofDrton(int n) {
+//        int dof = ((n - 2) * (n - 3)) / 2 - 2;
+//        if (dof < 1) dof = 1;
+//        return dof;
+//    }
+
     // Represents a single covariance symbolically.
     private static class Sigma {
         private final int a;
@@ -341,48 +382,6 @@ public class DeltaSextadTest {
         public String toString() {
             return "Sigma(" + getA() + ", " + getB() + ")";
         }
-    }
-
-    // Assumes data are mean-centered.
-    private double r(int x, int y, int z, int w) {
-        double sxyzw = 0.0;
-
-        double[] _x = this.data[x];
-        double[] _y = this.data[y];
-        double[] _z = this.data[z];
-        double[] _w = this.data[w];
-
-        int N = _x.length;
-
-        for (int j = 0; j < N; j++) {
-            sxyzw += _x[j] * _y[j] * _z[j] * _w[j];
-        }
-
-        return (1.0 / N) * sxyzw;
-    }
-
-    // Assumes data are mean-centered.
-    private double r(double[] array1, double[] array2, int N) {
-        int i;
-        double sum = 0.0;
-
-        for (i = 0; i < N; i++) {
-            sum += array1[i] * array2[i];
-        }
-
-        return (1.0 / N) * sum;
-    }
-
-//    private int dofDrton(int n) {
-//        int dof = ((n - 2) * (n - 3)) / 2 - 2;
-//        if (dof < 1) dof = 1;
-//        return dof;
-//    }
-
-    private int dofHarman(int n) {
-        int dof = n * (n - 5) / 2 + 1;
-        if (dof < 1) dof = 1;
-        return dof;
     }
 
 }

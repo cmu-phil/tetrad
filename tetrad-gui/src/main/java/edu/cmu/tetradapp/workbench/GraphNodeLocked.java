@@ -34,8 +34,7 @@ import java.awt.event.FocusEvent;
 import java.util.List;
 
 /**
- * Represents a locked policy variable in the workbench. Appears as a
- * padlock.
+ * Represents a locked policy variable in the workbench. Appears as a padlock.
  *
  * @author josephramsey
  * @author Willie Wheeler
@@ -43,8 +42,7 @@ import java.util.List;
 public class GraphNodeLocked extends DisplayNode {
 
     /**
-     * Constructs a new node for representing latent variables in the
-     * graph workbench.
+     * Constructs a new node for representing latent variables in the graph workbench.
      */
     public GraphNodeLocked(Node modelNode) {
         setModelNode(modelNode);

@@ -49,10 +49,9 @@ import java.util.Set;
 public final class IndTestCramerT implements IndependenceTest {
 
     /**
-     * The data set over which conditional independence judgements are being formed.
+     * Formats as 0.0000.
      */
-    private DataSet dataSet;
-
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     /**
      * The correlation matrix.
      */
@@ -62,31 +61,26 @@ public final class IndTestCramerT implements IndependenceTest {
      * The variables of the correlation matrix, in order. (Unmodifiable list.)
      */
     private final List<Node> variables;
-
+    /**
+     * The data set over which conditional independence judgements are being formed.
+     */
+    private DataSet dataSet;
     /**
      * The significance level of the independence tests.
      */
     private double alpha;
-
     /**
      * The last used partial correlation distribution function.
      */
     private PartialCorrelationPdf pdf;
-
     /**
      * The cutoff value for 'alpha' area in the two tails of the partial correlation distribution function.
      */
     private double cutoff;
-
     /**
      * The last calculated partial correlation, needed to calculate relative strength.
      */
     private double storedR;
-
-    /**
-     * Formats as 0.0000.
-     */
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
@@ -166,8 +160,8 @@ public final class IndTestCramerT implements IndependenceTest {
     /**
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
+     * @param x  the one variable being compared.
+     * @param y  the second variable being compared.
      * @param _z the list of conditioning variables.
      * @return true iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
@@ -269,6 +263,13 @@ public final class IndTestCramerT implements IndependenceTest {
     }
 
     /**
+     * @return the getModel significance level.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    /**
      * Sets the significance level for future tests.
      */
     public void setAlpha(double alpha) {
@@ -277,13 +278,6 @@ public final class IndTestCramerT implements IndependenceTest {
         }
 
         this.alpha = alpha;
-    }
-
-    /**
-     * @return the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
     }
 
     private ICovarianceMatrix covMatrix() {

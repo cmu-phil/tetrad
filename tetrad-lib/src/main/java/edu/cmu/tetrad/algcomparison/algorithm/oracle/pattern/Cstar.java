@@ -127,12 +127,12 @@ public class Cstar implements Algorithm, TakesIndependenceWrapper {
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
-        this.test = independenceWrapper;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
     }
 
     @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 }

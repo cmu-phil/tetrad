@@ -48,11 +48,11 @@ import static org.apache.commons.math3.util.FastMath.*;
 public final class IndTestFisherZPercentIndependent implements IndependenceTest {
     private final List<Node> variables;
     private final List<DataSet> dataSets;
-    private double alpha;
     private final int[] rows;
     private final List<Matrix> data;
     private final List<Matrix> ncov;
     private final Map<Node, Integer> variablesMap;
+    private double alpha;
     private double percent = .75;
     private boolean fdr = true;
     private boolean verbose;
@@ -153,6 +153,13 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
     }
 
     /**
+     * Gets the getModel significance level.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -162,13 +169,6 @@ public final class IndTestFisherZPercentIndependent implements IndependenceTest 
         }
 
         this.alpha = alpha;
-    }
-
-    /**
-     * Gets the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
     }
 
     /**

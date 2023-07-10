@@ -2,9 +2,9 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.IndependenceTest;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -27,17 +27,17 @@ import static org.apache.commons.math3.util.FastMath.floor;
  */
 public class TeyssierScorer {
     private final List<Node> variables;
-    private ArrayList<Node> pi; // The current permutation.
-    private Map<Node, Integer> orderHash = new HashMap<>();
     private final IndependenceTest test;
     private final Score score;
-    private ArrayList<Set<Node>> prefixes;
-    private ArrayList<Pair> scores;
     private final Map<Object, ArrayList<Node>> bookmarkedOrders = new HashMap<>();
     private final Map<Object, ArrayList<Pair>> bookmarkedScores = new HashMap<>();
     private final Map<Object, Map<Node, Integer>> bookmarkedOrderHashes = new HashMap<>();
     private final Map<Object, Double> bookmarkedRunningScores = new HashMap<>();
     private final Map<Node, GrowShrinkTree> trees = new HashMap<>();
+    private ArrayList<Node> pi; // The current permutation.
+    private Map<Node, Integer> orderHash = new HashMap<>();
+    private ArrayList<Set<Node>> prefixes;
+    private ArrayList<Pair> scores;
     private Knowledge knowledge = new Knowledge();
     private boolean useScore;
     private boolean useRaskuttiUhler = false;

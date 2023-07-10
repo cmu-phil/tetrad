@@ -39,7 +39,8 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * Contains a number of basic statistical functions. Most methods are overloaded for either long or double arrays. NOTE:
  * Some methods in this class have been adapted from class DStat written by Michael Fanelli, and the routines have been
- * included here by permission. The methods which were adapted are: <ul> <li>gamma <li>internalGamma <li>beta <li>igamma
+ * included here by permission. The methods which were adapted are: <ul> <li>gamma <li>internalGamma <li>beta
+ * <li>igamma
  * <li>erf
  * <li>poisson <li>chidist <li>contTable1 </ul> These methods are protected
  * under copyright by the author. Here is the text of his copyright notice for DSTAT.java: "Copyright 1997 by Michael
@@ -50,6 +51,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public final class StatUtils {
     private static final double logCoshExp = StatUtils.logCoshExp();
+    static double pow2 = StatUtils.pow();
 
     /**
      * @param array a long array.
@@ -1522,7 +1524,6 @@ public final class StatUtils {
         return (1.0 - StatUtils.igamma((double) degreesOfFreedom / 2.0, x / 2.0));
     }
 
-
     //returns the value of a toss of an n-sided die
     public static int dieToss(int n) {
         return (int) floor(n * random());
@@ -1767,8 +1768,6 @@ public final class StatUtils {
         double diff = expected - sqrt(2.0 / PI);
         return diff * diff;
     }
-
-    static double pow2 = StatUtils.pow();
 
     public static double pow() {
         double sum = 0.0;

@@ -30,8 +30,8 @@ import java.beans.PropertyChangeEvent;
 import java.util.List;
 
 /**
- * Displays a list of graphs with tabs to select among them, similar to the Data
- * Editor. For use in displaying simulations.
+ * Displays a list of graphs with tabs to select among them, similar to the Data Editor. For use in displaying
+ * simulations.
  *
  * @author josephramsey
  */
@@ -45,8 +45,7 @@ public final class SimulationGraphEditor extends JPanel {
     private final List<Graph> graphs;
 
     /**
-     * A tabbed pane containing displays for all data models and displaying
-     * 'dataModel' currently.
+     * A tabbed pane containing displays for all data models and displaying 'dataModel' currently.
      */
     private JTabbedPane tabbedPane = new JTabbedPane();
 
@@ -65,11 +64,14 @@ public final class SimulationGraphEditor extends JPanel {
 
     //==========================PUBLIC METHODS=============================//
 
+    //=============================PRIVATE METHODS======================//
+    private static String tabName(int i) {
+        return "" + i;
+    }
+
     /**
-     * 2
-     * Replaces the getModel Datamodels with the given one. Note, that by
-     * calling this you are removing ALL the getModel data-models, they will be
-     * lost forever!
+     * 2 Replaces the getModel Datamodels with the given one. Note, that by calling this you are removing ALL the
+     * getModel data-models, they will be lost forever!
      *
      * @param graphs - The graphs to display now.
      */
@@ -139,11 +141,6 @@ public final class SimulationGraphEditor extends JPanel {
 
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-    }
-
-    //=============================PRIVATE METHODS======================//
-    private static String tabName(int i) {
-        return "" + i;
     }
 
     /**

@@ -51,8 +51,6 @@ public class Normal implements Distribution {
      */
     private double sd;
 
-    //=========================CONSTRUCTORS===========================//
-
     public Normal(double mean, double sd) {
         setParameter(0, mean);
         setParameter(1, sd);
@@ -67,7 +65,6 @@ public class Normal implements Distribution {
         return new Normal(0, 1);
     }
 
-    //=========================PUBLIC METHODS=========================//
 
     public String getName() {
         return "N";

@@ -40,14 +40,14 @@ import java.util.List;
  */
 public final class BayesProperties {
     private final DataSet dataSet;
-    private double chisq;
-    private double dof;
-    private double bic;
-    private double likelihood;
     private final List<Node> variables;
     private final int[][] data;
     private final int sampleSize;
     private final int[] numCategories;
+    private double chisq;
+    private double dof;
+    private double bic;
+    private double likelihood;
 
     public BayesProperties(DataSet dataSet) {
         if (dataSet == null) {
@@ -90,11 +90,13 @@ public final class BayesProperties {
         }
     }
 
-    public class LikelihoodRet {
-        public double p;
-        public double bic;
-        public double chiSq;
-        public double dof;
+    private static int getRowIndex(int[] dim, int[] values) {
+        int rowIndex = 0;
+        for (int i = 0; i < dim.length; i++) {
+            rowIndex *= dim[i];
+            rowIndex += values[i];
+        }
+        return rowIndex;
     }
 
     /**
@@ -357,24 +359,6 @@ public final class BayesProperties {
         return new Ret(lik, dof);
     }
 
-    private static class Ret {
-        private final double lik;
-        private final int dof;
-
-        public Ret(double lik, int dof) {
-            this.lik = lik;
-            this.dof = dof;
-        }
-
-        public double getLik() {
-            return this.lik;
-        }
-
-        public int getDof() {
-            return this.dof;
-        }
-    }
-
     private double getDofNode(int node, int[] parents) {
 
         // Number of categories for node.
@@ -397,16 +381,6 @@ public final class BayesProperties {
         return r * c;
     }
 
-
-    private static int getRowIndex(int[] dim, int[] values) {
-        int rowIndex = 0;
-        for (int i = 0; i < dim.length; i++) {
-            rowIndex *= dim[i];
-            rowIndex += values[i];
-        }
-        return rowIndex;
-    }
-
     public int getSampleSize() {
         return this.sampleSize;
     }
@@ -427,6 +401,31 @@ public final class BayesProperties {
         } else {
             return null;
         }
+    }
+
+    private static class Ret {
+        private final double lik;
+        private final int dof;
+
+        public Ret(double lik, int dof) {
+            this.lik = lik;
+            this.dof = dof;
+        }
+
+        public double getLik() {
+            return this.lik;
+        }
+
+        public int getDof() {
+            return this.dof;
+        }
+    }
+
+    public class LikelihoodRet {
+        public double p;
+        public double bic;
+        public double chiSq;
+        public double dof;
     }
 }
 

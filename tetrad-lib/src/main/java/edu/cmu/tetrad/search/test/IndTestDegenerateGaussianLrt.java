@@ -52,51 +52,20 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
+    // A constant.
+    private static final double L2PE = log(2.0 * PI * E);
     private final BoxDataSet ddata;
     private final double[][] _ddata;
     private final Map<Node, Integer> nodesHash;
     private final DataSet dataSet;
-
-    // The alpha level.
-    private double alpha = 0.001;
-
-    // The p value.
-    private double pValue = NaN;
-
     // The mixed variables of the original dataset.
     private final List<Node> variables;
-
     // The embedding map.
     private final Map<Integer, List<Integer>> embedding;
-
-    /**
-     * Stores a return value for a likelihood--i.e., a likelihood value and the degrees of freedom for it.
-     */
-    public static class Ret {
-        private final double lik;
-        private final double dof;
-
-        private Ret(double lik, double dof) {
-            this.lik = lik;
-            this.dof = dof;
-        }
-
-        public double getLik() {
-            return this.lik;
-        }
-
-        public double getDof() {
-            return this.dof;
-        }
-
-        public String toString() {
-            return "lik = " + this.lik + " dof = " + this.dof;
-        }
-    }
-
-    // A constant.
-    private static final double L2PE = log(2.0 * PI * E);
-
+    // The alpha level.
+    private double alpha = 0.001;
+    // The p value.
+    private double pValue = NaN;
     private boolean verbose;
 
     /**
@@ -193,7 +162,6 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         this._ddata = this.ddata.getDoubleData().toArray();
     }
 
-
     /**
      * @throws UnsupportedOperationException This method is not implemented.
      */
@@ -245,11 +213,11 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
                 false, NaN, NaN);
         if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                false,  NaN, NaN);
+                false, NaN, NaN);
         if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                false,  NaN, NaN);
+                false, NaN, NaN);
         if (lik0 == Double.POSITIVE_INFINITY) return new IndependenceResult(new IndependenceFact(x, y, _z),
-                false,  NaN, NaN);
+                false, NaN, NaN);
 
         double pValue;
 
@@ -440,5 +408,30 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         }
 
         return cov;
+    }
+
+    /**
+     * Stores a return value for a likelihood--i.e., a likelihood value and the degrees of freedom for it.
+     */
+    public static class Ret {
+        private final double lik;
+        private final double dof;
+
+        private Ret(double lik, double dof) {
+            this.lik = lik;
+            this.dof = dof;
+        }
+
+        public double getLik() {
+            return this.lik;
+        }
+
+        public double getDof() {
+            return this.dof;
+        }
+
+        public String toString() {
+            return "lik = " + this.lik + " dof = " + this.dof;
+        }
     }
 }

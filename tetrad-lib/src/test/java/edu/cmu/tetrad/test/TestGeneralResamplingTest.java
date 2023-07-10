@@ -56,6 +56,108 @@ import java.util.List;
  */
 public class TestGeneralResamplingTest {
 
+    private static int sum2DArray(int[][] ar, int iStart, int iEnd, int jStart, int jEnd) {
+        int sum = 0;
+        if (iStart == iEnd) {
+            if (jStart == jEnd) {
+                return ar[iStart][jStart];
+            } else if (jStart < jEnd) {
+                int mid = (jStart + jEnd) / 2;
+                sum += TestGeneralResamplingTest.sum2DArray(ar, iStart, iEnd, jStart, mid) + TestGeneralResamplingTest.sum2DArray(ar, iStart, iEnd, mid + 1, jEnd);
+            }
+        } else if (iStart < iEnd) {
+            int mid = (iStart + iEnd) / 2;
+            sum += TestGeneralResamplingTest.sum2DArray(ar, iStart, mid, jStart, jEnd) + TestGeneralResamplingTest.sum2DArray(ar, mid + 1, iEnd, jStart, jEnd);
+        }
+        return sum;
+    }
+
+    private static void printEdgeTypeConfusionMatrix(int[][] edgeAr) {
+        int numEdges = TestGeneralResamplingTest.sum2DArray(edgeAr, 0, edgeAr.length - 1, 0, edgeAr[0].length - 1);
+
+        System.out.println("=================================");
+        System.out.println("Edge Orientation Confusion Matrix");
+        System.out.println("=================================");
+        System.out.println("\t\tEstimated");
+        System.out.println("n=" + numEdges + "\t\tnil\t-->\t&lt;--\to->\t&lt;-o\to-o\t&lt;->\t---");
+        System.out.println("Truth: nil\t" + edgeAr[0][0] + "\t" + edgeAr[0][1] + "\t" + edgeAr[0][2] + "\t"
+                + edgeAr[0][3] + "\t" + edgeAr[0][4] + "\t" + edgeAr[0][5] + "\t" + edgeAr[0][6] + "\t" + edgeAr[0][7]);
+        System.out.println("Truth: -->\t" + edgeAr[1][0] + "\t" + edgeAr[1][1] + "\t" + edgeAr[1][2] + "\t"
+                + edgeAr[1][3] + "\t" + edgeAr[1][4] + "\t" + edgeAr[1][5] + "\t" + edgeAr[1][6] + "\t" + edgeAr[1][7]);
+        System.out.println("Truth: &lt;--\t" + edgeAr[2][0] + "\t" + edgeAr[2][1] + "\t" + edgeAr[2][2] + "\t"
+                + edgeAr[2][3] + "\t" + edgeAr[2][4] + "\t" + edgeAr[2][5] + "\t" + edgeAr[2][6] + "\t" + edgeAr[2][7]);
+        System.out.println("Truth: o->\t" + edgeAr[3][0] + "\t" + edgeAr[3][1] + "\t" + edgeAr[3][2] + "\t"
+                + edgeAr[3][3] + "\t" + edgeAr[3][4] + "\t" + edgeAr[3][5] + "\t" + edgeAr[3][6] + "\t" + edgeAr[3][7]);
+        System.out.println("Truth: &lt;-o\t" + edgeAr[4][0] + "\t" + edgeAr[4][1] + "\t" + edgeAr[4][2] + "\t"
+                + edgeAr[4][3] + "\t" + edgeAr[4][4] + "\t" + edgeAr[4][5] + "\t" + edgeAr[4][6] + "\t" + edgeAr[4][7]);
+        System.out.println("Truth: o-o\t" + edgeAr[5][0] + "\t" + edgeAr[5][1] + "\t" + edgeAr[5][2] + "\t"
+                + edgeAr[5][3] + "\t" + edgeAr[5][4] + "\t" + edgeAr[5][5] + "\t" + edgeAr[5][6] + "\t" + edgeAr[5][7]);
+        System.out.println("Truth: &lt;->\t" + edgeAr[6][0] + "\t" + edgeAr[6][1] + "\t" + edgeAr[6][2] + "\t"
+                + edgeAr[6][3] + "\t" + edgeAr[6][4] + "\t" + edgeAr[6][5] + "\t" + edgeAr[6][6] + "\t" + edgeAr[6][7]);
+        System.out.println("Truth: ---\t" + edgeAr[7][0] + "\t" + edgeAr[7][1] + "\t" + edgeAr[7][2] + "\t"
+                + edgeAr[7][3] + "\t" + edgeAr[7][4] + "\t" + edgeAr[7][5] + "\t" + edgeAr[7][6] + "\t" + edgeAr[7][7]);
+        int numerator = 0;
+        for (int i = 0; i < 8; i++) {
+            numerator += edgeAr[i][i];
+        }
+        System.out.println("Accuracy: " + numerator / (double) (numEdges));
+        numerator -= edgeAr[0][0];
+        int denominator = numEdges;
+        for (int i = 0; i < 8; i++) {
+            denominator -= edgeAr[i][0];
+        }
+        System.out.println("Precision: " + numerator / (double) (denominator));
+        denominator = numEdges;
+        for (int i = 0; i < 8; i++) {
+            denominator -= edgeAr[0][i];
+        }
+        System.out.println("Recall: " + numerator / (double) (denominator));
+    }
+
+    private static void printAdjConfusionMatrix(int[][] adjAr) {
+        int numEdges = TestGeneralResamplingTest.sum2DArray(adjAr, 0, adjAr.length - 1, 0, adjAr[0].length - 1);
+
+        System.out.println("============================");
+        System.out.println("Adjacency Confusion Matrix");
+        System.out.println("============================");
+        System.out.println("\t\tEstimated");
+        System.out.println("n=" + numEdges + "\t\tNo\tYes");
+        System.out.println("Truth: No\t" + adjAr[0][0] + "\t" + adjAr[0][1]);
+        System.out.println("Truth: Yes\t" + adjAr[1][0] + "\t" + adjAr[1][1]);
+        System.out.println("Accuracy: " + (adjAr[0][0] + adjAr[1][1]) / (double) (numEdges));
+        System.out.println("Precision: " + (adjAr[1][1]) / (double) (adjAr[1][1] + adjAr[0][1]));
+        System.out.println("Recall: " + (adjAr[1][1]) / (double) (adjAr[1][1] + adjAr[1][0]));
+        System.out.println("============================");
+        System.out.println();
+    }
+
+    private static Graph makeContinuousDAG(int numLatentConfounders) {
+        int numEdges = (int) (20 * (double) 2);
+
+        List<Node> vars = new ArrayList<>();
+
+        for (int i = 0; i < 20; i++) {
+            vars.add(new ContinuousVariable(Integer.toString(i)));
+        }
+
+        return RandomGraph.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
+    }
+
+    private static Graph makeDiscreteDAG(int numLatentConfounders) {
+        int numEdges = (int) (20 * (double) 2);
+
+        // System.out.println("Making list of vars");
+
+        List<Node> vars = new ArrayList<>();
+
+        for (int i = 0; i < 20; i++) {
+            vars.add(new DiscreteVariable(Integer.toString(i)));
+        }
+
+        // System.out.println("Making dag");
+        return RandomGraph.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
+    }
+
     @Test
     public void testFGESc() {
         final int penaltyDiscount = 2;
@@ -413,108 +515,6 @@ public class TestGeneralResamplingTest {
         int[][] edgeAr = GeneralResamplingTest.getEdgeTypeConfusionMatrix(truePag, resultGraph);
 
         TestGeneralResamplingTest.printEdgeTypeConfusionMatrix(edgeAr);
-    }
-
-    private static int sum2DArray(int[][] ar, int iStart, int iEnd, int jStart, int jEnd) {
-        int sum = 0;
-        if (iStart == iEnd) {
-            if (jStart == jEnd) {
-                return ar[iStart][jStart];
-            } else if (jStart < jEnd) {
-                int mid = (jStart + jEnd) / 2;
-                sum += TestGeneralResamplingTest.sum2DArray(ar, iStart, iEnd, jStart, mid) + TestGeneralResamplingTest.sum2DArray(ar, iStart, iEnd, mid + 1, jEnd);
-            }
-        } else if (iStart < iEnd) {
-            int mid = (iStart + iEnd) / 2;
-            sum += TestGeneralResamplingTest.sum2DArray(ar, iStart, mid, jStart, jEnd) + TestGeneralResamplingTest.sum2DArray(ar, mid + 1, iEnd, jStart, jEnd);
-        }
-        return sum;
-    }
-
-    private static void printEdgeTypeConfusionMatrix(int[][] edgeAr) {
-        int numEdges = TestGeneralResamplingTest.sum2DArray(edgeAr, 0, edgeAr.length - 1, 0, edgeAr[0].length - 1);
-
-        System.out.println("=================================");
-        System.out.println("Edge Orientation Confusion Matrix");
-        System.out.println("=================================");
-        System.out.println("\t\tEstimated");
-        System.out.println("n=" + numEdges + "\t\tnil\t-->\t&lt;--\to->\t&lt;-o\to-o\t&lt;->\t---");
-        System.out.println("Truth: nil\t" + edgeAr[0][0] + "\t" + edgeAr[0][1] + "\t" + edgeAr[0][2] + "\t"
-                + edgeAr[0][3] + "\t" + edgeAr[0][4] + "\t" + edgeAr[0][5] + "\t" + edgeAr[0][6] + "\t" + edgeAr[0][7]);
-        System.out.println("Truth: -->\t" + edgeAr[1][0] + "\t" + edgeAr[1][1] + "\t" + edgeAr[1][2] + "\t"
-                + edgeAr[1][3] + "\t" + edgeAr[1][4] + "\t" + edgeAr[1][5] + "\t" + edgeAr[1][6] + "\t" + edgeAr[1][7]);
-        System.out.println("Truth: &lt;--\t" + edgeAr[2][0] + "\t" + edgeAr[2][1] + "\t" + edgeAr[2][2] + "\t"
-                + edgeAr[2][3] + "\t" + edgeAr[2][4] + "\t" + edgeAr[2][5] + "\t" + edgeAr[2][6] + "\t" + edgeAr[2][7]);
-        System.out.println("Truth: o->\t" + edgeAr[3][0] + "\t" + edgeAr[3][1] + "\t" + edgeAr[3][2] + "\t"
-                + edgeAr[3][3] + "\t" + edgeAr[3][4] + "\t" + edgeAr[3][5] + "\t" + edgeAr[3][6] + "\t" + edgeAr[3][7]);
-        System.out.println("Truth: &lt;-o\t" + edgeAr[4][0] + "\t" + edgeAr[4][1] + "\t" + edgeAr[4][2] + "\t"
-                + edgeAr[4][3] + "\t" + edgeAr[4][4] + "\t" + edgeAr[4][5] + "\t" + edgeAr[4][6] + "\t" + edgeAr[4][7]);
-        System.out.println("Truth: o-o\t" + edgeAr[5][0] + "\t" + edgeAr[5][1] + "\t" + edgeAr[5][2] + "\t"
-                + edgeAr[5][3] + "\t" + edgeAr[5][4] + "\t" + edgeAr[5][5] + "\t" + edgeAr[5][6] + "\t" + edgeAr[5][7]);
-        System.out.println("Truth: &lt;->\t" + edgeAr[6][0] + "\t" + edgeAr[6][1] + "\t" + edgeAr[6][2] + "\t"
-                + edgeAr[6][3] + "\t" + edgeAr[6][4] + "\t" + edgeAr[6][5] + "\t" + edgeAr[6][6] + "\t" + edgeAr[6][7]);
-        System.out.println("Truth: ---\t" + edgeAr[7][0] + "\t" + edgeAr[7][1] + "\t" + edgeAr[7][2] + "\t"
-                + edgeAr[7][3] + "\t" + edgeAr[7][4] + "\t" + edgeAr[7][5] + "\t" + edgeAr[7][6] + "\t" + edgeAr[7][7]);
-        int numerator = 0;
-        for (int i = 0; i < 8; i++) {
-            numerator += edgeAr[i][i];
-        }
-        System.out.println("Accuracy: " + numerator / (double) (numEdges));
-        numerator -= edgeAr[0][0];
-        int denominator = numEdges;
-        for (int i = 0; i < 8; i++) {
-            denominator -= edgeAr[i][0];
-        }
-        System.out.println("Precision: " + numerator / (double) (denominator));
-        denominator = numEdges;
-        for (int i = 0; i < 8; i++) {
-            denominator -= edgeAr[0][i];
-        }
-        System.out.println("Recall: " + numerator / (double) (denominator));
-    }
-
-    private static void printAdjConfusionMatrix(int[][] adjAr) {
-        int numEdges = TestGeneralResamplingTest.sum2DArray(adjAr, 0, adjAr.length - 1, 0, adjAr[0].length - 1);
-
-        System.out.println("============================");
-        System.out.println("Adjacency Confusion Matrix");
-        System.out.println("============================");
-        System.out.println("\t\tEstimated");
-        System.out.println("n=" + numEdges + "\t\tNo\tYes");
-        System.out.println("Truth: No\t" + adjAr[0][0] + "\t" + adjAr[0][1]);
-        System.out.println("Truth: Yes\t" + adjAr[1][0] + "\t" + adjAr[1][1]);
-        System.out.println("Accuracy: " + (adjAr[0][0] + adjAr[1][1]) / (double) (numEdges));
-        System.out.println("Precision: " + (adjAr[1][1]) / (double) (adjAr[1][1] + adjAr[0][1]));
-        System.out.println("Recall: " + (adjAr[1][1]) / (double) (adjAr[1][1] + adjAr[1][0]));
-        System.out.println("============================");
-        System.out.println();
-    }
-
-    private static Graph makeContinuousDAG(int numLatentConfounders) {
-        int numEdges = (int) (20 * (double) 2);
-
-        List<Node> vars = new ArrayList<>();
-
-        for (int i = 0; i < 20; i++) {
-            vars.add(new ContinuousVariable(Integer.toString(i)));
-        }
-
-        return RandomGraph.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
-    }
-
-    private static Graph makeDiscreteDAG(int numLatentConfounders) {
-        int numEdges = (int) (20 * (double) 2);
-
-        // System.out.println("Making list of vars");
-
-        List<Node> vars = new ArrayList<>();
-
-        for (int i = 0; i < 20; i++) {
-            vars.add(new DiscreteVariable(Integer.toString(i)));
-        }
-
-        // System.out.println("Making dag");
-        return RandomGraph.randomGraph(vars, numLatentConfounders, numEdges, 30, 15, 15, false);
     }
 
 }

@@ -49,10 +49,6 @@ public final class BootstrapSampler {
 
     }
 
-
-    //============================== Public methods ================================//
-
-
     /**
      * This method takes a dataset and a sample size and creates a new dataset containing that number of samples by
      * drawing with replacement from the original dataset.

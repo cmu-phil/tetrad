@@ -31,8 +31,8 @@ import edu.cmu.tetrad.util.TetradLogger;
 /**
  * <p>The bootstrapping API will generate graphs will "null edges"--that is, edges that aren't in the compositite graph
  * but for which edge statistics are nonetheless available. These null edges are needed so that when the graph is loaded
- * back into a new Graph box, all of the bootstrapping information is still available. Unfortunately, such graphs cannot be
- * estiamted, so for estimation the null edges must be stripped from the graph.</p>
+ * back into a new Graph box, all of the bootstrapping information is still available. Unfortunately, such graphs cannot
+ * be estiamted, so for estimation the null edges must be stripped from the graph.</p>
  *
  * <p>This graph wrapper does this stripping of null edges from the graph.</p>.
  *

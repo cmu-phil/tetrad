@@ -61,14 +61,14 @@ import java.util.Set;
  */
 public class GraphScore implements Score {
 
-    private Graph dag;
-    private IndependenceFacts facts;
-
     // The variables of the covariance matrix.
     private final List<Node> variables;
-
+    private Graph dag;
+    private IndependenceFacts facts;
     // True if verbose output should be sent to out.
     private boolean verbose = false;
+    private Node n = null;
+    private List<Node> prefix = null;
 
     /**
      * Constructor
@@ -101,9 +101,6 @@ public class GraphScore implements Score {
     public double localScore(int y, int[] z) {
         return getPearlParentsTest().size();
     }
-
-    private Node n = null;
-    private List<Node> prefix = null;
 
     private Set<Node> getPearlParentsTest() {
         Set<Node> mb = new HashSet<>();

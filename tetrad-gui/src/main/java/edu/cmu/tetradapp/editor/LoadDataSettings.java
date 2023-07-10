@@ -60,8 +60,7 @@ import java.util.*;
 import java.util.prefs.Preferences;
 
 /**
- * Panel (to be put in a dialog) for letting the user choose how a data file
- * should be loaded.
+ * Panel (to be put in a dialog) for letting the user choose how a data file should be loaded.
  *
  * @author josephramsey
  */
@@ -70,47 +69,35 @@ public final class LoadDataSettings extends JPanel {
     private static final long serialVersionUID = -7597768949622586036L;
 
     private final List<File> files;
-
+    private final Color separatorColor;
+    private final Dimension labelSize;
     private File metadataFile;
     private Metadata metadata;
-
     private JRadioButton firstRowVarNamesYesRadioButton;
     private JRadioButton firstRowVarNamesNoRadioButton;
-
     private JRadioButton tabularRadioButton;
     private JRadioButton covarianceRadioButton;
-
     private JRadioButton contRadioButton;
     private JRadioButton discRadioButton;
     private JRadioButton mixedRadioButton;
     private IntTextField maxNumOfDiscCategoriesField;
-
     private JRadioButton commentDoubleSlashRadioButton;
     private JRadioButton commentPondRadioButton;
     private JRadioButton commentOtherRadioButton;
     private StringTextField commentStringField;
-
     private JRadioButton whitespaceDelimiterRadioButton;
     private JRadioButton singleCharDelimiterRadioButton;
     private JComboBox singleCharDelimiterComboBox;
-
     private JRadioButton doubleQuoteRadioButton;
     private JRadioButton singleQuoteRadioButton;
-
     private JButton metadataFileButton;
-
     private JRadioButton idNoneRadioButton;
     private JRadioButton idUnlabeledFirstColRadioButton;
     private JRadioButton idLabeledColRadioButton;
     private StringTextField idStringField;
-
-    private final Color separatorColor;
-
     private JRadioButton missingValueStarRadioButton;
     private JRadioButton missingValueQuestionRadioButton;
     private StringTextField missingStringField;
-
-    private final Dimension labelSize;
 
     //================================CONSTRUCTOR=======================//
     public LoadDataSettings(List<File> files) {
@@ -837,8 +824,7 @@ public final class LoadDataSettings extends JPanel {
     }
 
     /**
-     * This works for both validation(column and data) and data reading(column
-     * reader and data reader)
+     * This works for both validation(column and data) and data reading(column reader and data reader)
      */
     private void setQuoteChar(DataReader dataReader) {
         if (this.doubleQuoteRadioButton.isSelected()) {
@@ -934,8 +920,7 @@ public final class LoadDataSettings extends JPanel {
     }
 
     /**
-     * To check if comment marker is supplied while Other radio button is
-     * selected
+     * To check if comment marker is supplied while Other radio button is selected
      */
     public boolean isOtherCommentMarkerSpecified() {
         if (this.commentOtherRadioButton.isSelected()) {

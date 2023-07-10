@@ -12,6 +12,10 @@ import java.util.List;
  */
 public class ExploreComparison {
 
+    public static void main(String... args) {
+        new ExploreComparison().runFromSimulation();
+    }
+
     private void runFromSimulation() {
         ComparisonParameters params = new ComparisonParameters();
         params.setDataType(ComparisonParameters.DataType.Continuous);
@@ -39,9 +43,5 @@ public class ExploreComparison {
         tableColumns.add(Comparison.TableColumn.Elapsed);
 
         System.out.println(Comparison.summarize(results, tableColumns));
-    }
-
-    public static void main(String... args) {
-        new ExploreComparison().runFromSimulation();
     }
 }

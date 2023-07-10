@@ -41,21 +41,18 @@ public final class CptInvariantMarginalCalculator
      * @serial Cannot be null.
      */
     private final BayesIm bayesIm;
-
-    /**
-     * @serial Cannot be null.
-     */
-    private double[][] storedMarginals;
-
     /**
      * @serial Cannot be null.
      */
     private final Evidence evidence;
-
     /**
      * @serial Cannot be null.
      */
     private final UpdatedBayesIm updatedBayesIm;
+    /**
+     * @serial Cannot be null.
+     */
+    private double[][] storedMarginals;
 
     //=============================CONSTRUCTORS==========================//
 

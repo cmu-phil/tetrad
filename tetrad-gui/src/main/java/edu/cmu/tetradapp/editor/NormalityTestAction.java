@@ -49,8 +49,7 @@ class NormalityTestAction extends AbstractAction {
 
 
     /**
-     * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code>
-     * that its attached to.
+     * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code> that its attached to.
      */
     public NormalityTestAction(DataEditor editor) {
         super("Normality Tests...");
@@ -78,8 +77,7 @@ class NormalityTestAction extends AbstractAction {
 
 
     /**
-     * Creates a dialog that is showing the histogram for the given node (if null
-     * one is selected for you)
+     * Creates a dialog that is showing the histogram for the given node (if null one is selected for you)
      */
     private JPanel createNormalityTestDialog(
 

@@ -65,6 +65,15 @@ public class BoxCoxWrapper extends DataWrapper {
 
     }
 
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+    }
+
     private DataModel boxCox(DataSet dataSet, double lambda) {
         DataSet transformedData = new BoxDataSet(new VerticalDoubleDataBox(dataSet.getNumRows(), dataSet.getVariables().size()),
                 dataSet.getVariables());
@@ -113,15 +122,6 @@ public class BoxCoxWrapper extends DataWrapper {
         }
 
         return transformedData;
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static PcRunner serializableInstance() {
-        return PcRunner.serializableInstance();
     }
 }
 

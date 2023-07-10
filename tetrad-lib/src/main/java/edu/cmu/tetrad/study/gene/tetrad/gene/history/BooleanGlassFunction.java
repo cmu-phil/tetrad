@@ -307,13 +307,6 @@ public class BooleanGlassFunction implements UpdateFunction {
     }
 
     /**
-     * Returns the rate at which Boolean Glass subfunctions tend to affect the update.
-     */
-    public double getBooleanInfluenceRate() {
-        return this.booleanInfluenceRate;
-    }
-
-    /**
      * Sets the rate at which expression levels tend to return to equilibrium. Must be &gt; 0.0 and &lt;= 1.0.
      */
     public void setDecayRate(double decayRate) {
@@ -325,6 +318,13 @@ public class BooleanGlassFunction implements UpdateFunction {
         }
 
         this.decayRate = decayRate;
+    }
+
+    /**
+     * Returns the rate at which Boolean Glass subfunctions tend to affect the update.
+     */
+    public double getBooleanInfluenceRate() {
+        return this.booleanInfluenceRate;
     }
 
     /**

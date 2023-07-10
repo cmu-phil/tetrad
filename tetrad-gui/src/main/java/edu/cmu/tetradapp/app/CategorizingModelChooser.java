@@ -71,8 +71,6 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
      */
     private SessionNode sessionNode;
 
-    //========================== public methods =========================//
-
     public String getTitle() {
         return this.title;
     }
@@ -205,8 +203,6 @@ public class CategorizingModelChooser extends JPanel implements ModelChooser {
         this.add(vBox, BorderLayout.NORTH);
         this.add(new JScrollPane(this.tree), BorderLayout.CENTER);
     }
-
-    //================================= Inner classes ============================//
 
     /**
      * Wraps a model class and the name.

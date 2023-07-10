@@ -64,33 +64,24 @@ import java.util.Set;
  */
 public final class SvarGfci implements IGraphSearch {
 
-    // The PAG being constructed.
-    private Graph graph;
-
-    // The background knowledge.
-    private Knowledge knowledge = new Knowledge();
-
-    // The conditional independence test.
-    private IndependenceTest independenceTest;
-
-    // Flag for complete rule set, true if one should use complete rule set, false otherwise.
-    private boolean completeRuleSetUsed;
-
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-    private int maxPathLength = -1;
-
-    // The maxIndegree for the fast adjacency search.
-    private int maxIndegree = -1;
-
     // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    // True iff verbose output should be printed.
-    private boolean verbose;
-
     // The covariance matrix being searched over. Assumes continuous data.
     ICovarianceMatrix covarianceMatrix;
-
+    // The PAG being constructed.
+    private Graph graph;
+    // The background knowledge.
+    private Knowledge knowledge = new Knowledge();
+    // The conditional independence test.
+    private IndependenceTest independenceTest;
+    // Flag for complete rule set, true if one should use complete rule set, false otherwise.
+    private boolean completeRuleSetUsed;
+    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    private int maxPathLength = -1;
+    // The maxIndegree for the fast adjacency search.
+    private int maxIndegree = -1;
+    // True iff verbose output should be printed.
+    private boolean verbose;
     // The penalty discount for the GES search. By default, 2.
     private double penaltyDiscount = 2;
 
@@ -109,7 +100,6 @@ public final class SvarGfci implements IGraphSearch {
 
     private SepsetProducer sepsets;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new GFCI search for the given independence test and background knowledge.

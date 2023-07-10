@@ -608,17 +608,12 @@ public class JunctionTreeAlgorithm implements TetradSerializable {
         private final double[] prob;
 
         private final double[][] margProb;
-
-        private TreeSeparator parentSeparator;
-
         private final double[] potentials;
-
         private final List<TreeNode> children;
-
         private final int cardinality;
-
         private final Set<Node> clique;
         private final Node[] nodes;
+        private TreeSeparator parentSeparator;
 
         public TreeNode(Set<Node> clique, Set<Node> finishedCalculated) {
             this.clique = clique;

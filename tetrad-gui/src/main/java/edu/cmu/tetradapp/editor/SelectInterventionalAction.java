@@ -35,8 +35,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
     private final GraphWorkbench workbench;
 
     /**
-     * Creates a new copy subsession action for the given desktop and
-     * clipboard.
+     * Creates a new copy subsession action for the given desktop and clipboard.
      *
      * @param workbench
      */
@@ -51,8 +50,7 @@ public class SelectInterventionalAction extends AbstractAction implements Clipbo
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      *
      * @param e
      */

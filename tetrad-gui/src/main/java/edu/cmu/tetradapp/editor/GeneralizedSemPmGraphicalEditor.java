@@ -64,8 +64,7 @@ class GeneralizedSemPmGraphicalEditor extends JPanel {
     private GraphWorkbench workbench;
 
     /**
-     * The set of launched editors--or rather, the nodes for the launched
-     * editors.
+     * The set of launched editors--or rather, the nodes for the launched editors.
      */
     private Map<Object, EditorWindow> launchedEditors = new HashMap<>();
 

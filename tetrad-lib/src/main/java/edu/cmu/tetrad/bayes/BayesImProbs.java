@@ -87,6 +87,23 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
 
     //==========================PUBLIC METHODS==========================//
 
+    private static boolean hasNextValue(Proposition proposition, int variable,
+                                        int currentIndex) {
+        return BayesImProbs.nextValue(proposition, variable, currentIndex) != -1;
+    }
+
+    private static int nextValue(Proposition proposition, int variable,
+                                 int currentIndex) {
+        for (int i = currentIndex + 1;
+             i < proposition.getNumCategories(variable); i++) {
+            if (proposition.isAllowed(variable, i)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     /**
      * Calculates the probability in the given cell from the conditional probabilities in the BayesIm. It's the product
      * of the probabilities that each variable takes on the value it does given that the other variables take on the
@@ -234,23 +251,6 @@ public final class BayesImProbs implements DiscreteProbs, TetradSerializable {
 
     public List<Node> getVariables() {
         return this.variables;
-    }
-
-    private static boolean hasNextValue(Proposition proposition, int variable,
-                                        int currentIndex) {
-        return BayesImProbs.nextValue(proposition, variable, currentIndex) != -1;
-    }
-
-    private static int nextValue(Proposition proposition, int variable,
-                                 int currentIndex) {
-        for (int i = currentIndex + 1;
-             i < proposition.getNumCategories(variable); i++) {
-            if (proposition.isAllowed(variable, i)) {
-                return i;
-            }
-        }
-
-        return -1;
     }
 
     /**

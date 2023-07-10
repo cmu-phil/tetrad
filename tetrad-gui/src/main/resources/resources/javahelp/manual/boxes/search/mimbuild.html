@@ -2,11 +2,11 @@
 <html>
 <head>
     <title>Search Algorithms: MIM Build</title>
-    <meta http-equiv="Content-Type"
-          content="text/html; charset=iso-8859-1">
+    <meta content="text/html; charset=iso-8859-1"
+          http-equiv="Content-Type">
 </head>
 <body>
-<table width="95%" border="1" bgcolor="maroon">
+<table bgcolor="maroon" border="1" width="95%">
     <tbody>
     <tr>
         <td>
@@ -38,15 +38,15 @@
     input. For general information about model building algorithms, consult
     the <font color="#000000"><b><a href="../../search/../search.html">Search
         Algorithms</a></b></font> page.</font></p>
-<p><font color="#000000"><b><a name="Introduction" id="Introduction"></a><br>
+<p><font color="#000000"><b><a id="Introduction" name="Introduction"></a><br>
     Entering MIM Build parameters</b></font></p>
 <p>Create a new <font color="#000000">Search nodes</font> as
     described in the <font color="#000000"><a href="search_box.html">Search
         Algorithms</a></font> page, but in order to follow this tutorial,
     use the following graph to generate a simulated continuous data set:</p>
 <blockquote>
-    <p><font color="#000000"><img src="../../images/mimbuild1.png"
-                                  width="769" height="470"></font></p>
+    <p><font color="#000000"><img height="470"
+                                  src="../../images/mimbuild1.png" width="769"></font></p>
 </blockquote>
 <p>When the MIM Build algorithm is chosen from the Search box, a window
     appears for specifying search parameters.<br>
@@ -74,8 +74,8 @@
         latents is specified, the user should now determine which variables in
         the data set should be clustered together. When this button is clicked,
         the following dialog box appears:
-        <p><font color="#000000"><img src="../../images/mimbuild3.png"
-                                      width="1011" height="289"></font></p>
+        <p><font color="#000000"><img height="289"
+                                      src="../../images/mimbuild3.png" width="1011"></font></p>
         <p>In this example, we want to enter the measurement model that we
             know is the correct one by assumption. In other words, variables X1, X2
             and X3 should be clustered together, since they are pure indicators of
@@ -85,8 +85,8 @@
             up in the list. For example, click the X4 combo box and choose Cluster
             1. Do the same for X5 and X6. For variables X7, X8 and X9, choose
             Cluster 2. The final outcome should be as follows:</p>
-        <p><font color="#000000"><img src="../../images/mimbuild4.png"
-                                      width="1011" height="289"></font></p>
+        <p><font color="#000000"><img height="289"
+                                      src="../../images/mimbuild4.png" width="1011"></font></p>
     </li>
     <li><strong>algorithm</strong>: MIM Build is actually a family of
         algorithms for the problem of learning structural models. Currently, we
@@ -113,7 +113,7 @@
 </ul>
 <p>Execute the search as explained in the <font color="#000000"><b><a
         href="../../search/../search.html">Search Algorithms</a></b></font> page.</p>
-<p><font color="#000000"><b><a name="Interpretation" id="Interpretation"></a><br>
+<p><font color="#000000"><b><a id="Interpretation" name="Interpretation"></a><br>
 </b><b>Interpreting the output</b></font></p>
 <p><font color="#000000">MIM Build returns a CPDAG over latent
     variables that is completely analogous to the one produced by a <b><a

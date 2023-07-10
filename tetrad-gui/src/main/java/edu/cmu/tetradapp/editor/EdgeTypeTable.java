@@ -24,7 +24,6 @@ import org.apache.commons.math3.util.FastMath;
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,31 +37,31 @@ public class EdgeTypeTable extends JPanel {
     private static final long serialVersionUID = -9104061917163909746L;
 
     private static final String[] EDGES = {
-        "",
-        "Node 1",
-        "Interaction",
-        "Node 2"
+            "",
+            "Node 1",
+            "Interaction",
+            "Node 2"
     };
 
     private static final String[] EDGES_AND_EDGE_TYPES = {
-        "",
-        "Node 1",
-        "Interaction",
-        "Node 2",
-        "Ensemble",
-        "Edge",
-        "No edge",
-        "\u2192",
-        "\u2190",
-        "---",
-        "\u2192", // -G> pd nl
-        "\u2190", // <G- pd nl
-        "\u2192", // =G> dd nl
-        "\u2190", // <G= dd nl
-        "o->",
-        "<-o",
-        "o-o",
-        "<->"
+            "",
+            "Node 1",
+            "Interaction",
+            "Node 2",
+            "Ensemble",
+            "Edge",
+            "No edge",
+            "\u2192",
+            "\u2190",
+            "---",
+            "\u2192", // -G> pd nl
+            "\u2190", // <G- pd nl
+            "\u2192", // =G> dd nl
+            "\u2190", // <G= dd nl
+            "o->",
+            "<-o",
+            "o-o",
+            "<->"
     };
 
     private final JLabel title = new JLabel();
@@ -266,6 +265,40 @@ public class EdgeTypeTable extends JPanel {
         return graph;
     }
 
+    private static class StripedRowTableCellRenderer extends DefaultTableCellRenderer {
+
+        private static final long serialVersionUID = 4603884548966502824L;
+
+        private final Color STRIPE = new Color(0.929f, 0.953f, 0.996f);
+        private final Color NON_STRIPE = Color.WHITE;
+
+        public StripedRowTableCellRenderer() {
+            initComponents();
+        }
+
+        private void initComponents() {
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            if (!isSelected) {
+                label.setBackground((row % 2 == 0) ? this.NON_STRIPE : this.STRIPE);
+            }
+
+            if (column == 0) {
+                setText(Integer.toString(row + 1));
+                label.setHorizontalAlignment(SwingConstants.CENTER);
+                label.setFont(new Font("SansSerif", Font.BOLD, 12));
+            }
+
+            return label;
+        }
+
+    }
+
     class EdgeInfoTable extends JTable {
 
         private static final long serialVersionUID = -4052775309418269033L;
@@ -297,40 +330,6 @@ public class EdgeTypeTable extends JPanel {
             tableColumn.setPreferredWidth(FastMath.max(rendererWidth + getIntercellSpacing().width, tableColumn.getPreferredWidth()));
 
             return component;
-        }
-
-    }
-
-    private static class StripedRowTableCellRenderer extends DefaultTableCellRenderer {
-
-        private static final long serialVersionUID = 4603884548966502824L;
-
-        private final Color STRIPE = new Color(0.929f, 0.953f, 0.996f);
-        private final Color NON_STRIPE = Color.WHITE;
-
-        public StripedRowTableCellRenderer() {
-            initComponents();
-        }
-
-        private void initComponents() {
-            setOpaque(true);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-            if (!isSelected) {
-                label.setBackground((row % 2 == 0) ? this.NON_STRIPE : this.STRIPE);
-            }
-
-            if (column == 0) {
-                setText(Integer.toString(row + 1));
-                label.setHorizontalAlignment(SwingConstants.CENTER);
-                label.setFont(new Font("SansSerif", Font.BOLD, 12));
-            }
-
-            return label;
         }
 
     }

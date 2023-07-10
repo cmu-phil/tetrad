@@ -36,8 +36,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 /**
- * Copies a parentally closed selection of session nodes in the frontmost
- * session editor to the clipboard.
+ * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
  *
  * @author josephramsey
  */
@@ -45,16 +44,14 @@ final class PasteSubsessionAction extends AbstractAction
         implements ClipboardOwner {
 
     /**
-     * Constucts an action for loading the session in the given '.tet' file into
-     * the desktop.
+     * Constucts an action for loading the session in the given '.tet' file into the desktop.
      */
     public PasteSubsessionAction() {
         super("Paste");
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         Transferable transferable = InternalClipboard.getInstance()
@@ -89,12 +86,10 @@ final class PasteSubsessionAction extends AbstractAction
     }
 
     /**
-     * Notifies this object that it is no longer the owner of the contents of
-     * the clipboard.
+     * Notifies this object that it is no longer the owner of the contents of the clipboard.
      *
      * @param clipboard the clipboard that is no longer owned
-     * @param contents  the contents which this owner had placed on the
-     *                  clipboard
+     * @param contents  the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

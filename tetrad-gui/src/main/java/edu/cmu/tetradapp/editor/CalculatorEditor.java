@@ -48,23 +48,17 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
 
     /**
+     * List of all editors.
+     */
+    private final List<ExpressionEditor> editors = new LinkedList<>();
+    /**
      * The calculator's params.
      */
     private Parameters params;
-
-
     /**
      * The dataset the calculator is working on.
      */
     private DataSet dataSet;
-
-
-    /**
-     * List of all editors.
-     */
-    private final List<ExpressionEditor> editors = new LinkedList<>();
-
-
     /**
      * The editor last in focus.
      */
@@ -97,6 +91,27 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
     //================================= Public Methods ============================//
 
+    /**
+     * Sets the location of the window to the middle of the screen
+     *
+     * @param window - component whos location is set.
+     */
+    private static void setLocation(Window window) {
+        Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
+        Rectangle bounds = window.getBounds();
+        window.setLocation((screenDim.width - bounds.width) / 2,
+                (screenDim.height - bounds.height) / 2);
+    }
+
+    /**
+     * Creates a left-aligned label.
+     */
+    private static Box createLabel(String text) {
+        Box box = Box.createHorizontalBox();
+        box.add(new JLabel(text));
+        box.add(Box.createHorizontalGlue());
+        return box;
+    }
 
     /**
      * @return the data set that the editor is working with.
@@ -104,7 +119,6 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     public DataSet getDataSet() {
         return this.dataSet;
     }
-
 
     /**
      * Sets the calculator's params.
@@ -114,7 +128,6 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
     public void setParams(Parameters params) {
         this.params = params;
     }
-
 
     /**
      * Grabs the data set that the calculator is working on.
@@ -155,13 +168,14 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
     }
 
+    //=============================== Private Methods ===================================//
+
     /**
      * @return true.
      */
     public boolean mustBeShown() {
         return false;
     }
-
 
     public boolean finalizeEdit() {
         if (this.canceled) {
@@ -200,13 +214,9 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         return true;
     }
 
-    //=============================== Private Methods ===================================//
-
-
     /**
-     * Tries to parse the equations in the editor, if there is a parse exception
-     * then a message is displayed stating the error and null is returned. Otherwise
-     * the parsed equations are returned.
+     * Tries to parse the equations in the editor, if there is a parse exception then a message is displayed stating the
+     * error and null is returned. Otherwise the parsed equations are returned.
      */
     private List<Equation> parseEquations() {
         List<Equation> equations = new ArrayList<>();
@@ -235,20 +245,6 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         }
         return equations;
     }
-
-
-    /**
-     * Sets the location of the window to the middle of the screen
-     *
-     * @param window - component whos location is set.
-     */
-    private static void setLocation(Window window) {
-        Dimension screenDim = Toolkit.getDefaultToolkit().getScreenSize();
-        Rectangle bounds = window.getBounds();
-        window.setLocation((screenDim.width - bounds.width) / 2,
-                (screenDim.height - bounds.height) / 2);
-    }
-
 
     /**
      * Builds the GUI.
@@ -308,7 +304,6 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         return mainBox;
     }
 
-
     /**
      * Creates the select variable button.
      */
@@ -331,7 +326,6 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
         return box;
     }
-
 
     private JComponent createAddRemoveButtons() {
         Box box = Box.createHorizontalBox();
@@ -435,7 +429,6 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         return this.expressionsPanel;
     }
 
-
     /**
      * Creates the variable selection list.
      */
@@ -467,18 +460,6 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
         return pane;
     }
 
-
-    /**
-     * Creates a left-aligned label.
-     */
-    private static Box createLabel(String text) {
-        Box box = Box.createHorizontalBox();
-        box.add(new JLabel(text));
-        box.add(Box.createHorizontalGlue());
-        return box;
-    }
-
-
     /**
      * Removes the selected editors.
      */
@@ -506,8 +487,8 @@ public class CalculatorEditor extends JPanel implements FinalizingParameterEdito
 
 
     /**
-     * Inserts the given symbol in the last focused field in the expressions editor or
-     * if there isn't such a field then the top expression field.
+     * Inserts the given symbol in the last focused field in the expressions editor or if there isn't such a field then
+     * the top expression field.
      */
     private void insertSymbol(String symbol) {
         ExpressionEditor editor = this.focused;

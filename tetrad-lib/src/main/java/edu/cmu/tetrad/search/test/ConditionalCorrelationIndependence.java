@@ -54,70 +54,45 @@ import static org.apache.commons.math3.util.FastMath.*;
 public final class ConditionalCorrelationIndependence {
 
     /**
-     * Gives a choice of kernels to use for the independence judgmnts for conditional correlation independence.
-     *
-     * @see ConditionalCorrelationIndependence
-     */
-    public enum Kernel {Epinechnikov, Gaussian}
-
-    /**
-     * Gives a choice of basis functions to use for judgments of independence for conditional correlation independence.
-     *
-     * @see ConditionalCorrelationIndependence
-     */
-    public enum Basis {Polynomial, Cosine}
-
-    /**
      * The dataset supplied in the constructor.
      */
     private final DataSet dataSet;
-
     /**
      * The variables in datasSet.
      */
     private final List<Node> variables;
-
     /**
      * Map from nodes to their indices.
      */
     private final HashMap<Node, Integer> nodesHash;
-
     /**
      * The q value of the most recent test.
      */
     private double score;
-
     /**
      * Number of functions to use in the (truncated) basis.
      */
     private int numFunctions = 10;
-
     /**
      * Z cutoff for testing; depends on alpha.
      */
     private double cutoff;
-
     /**
      * Azzalini kernel widths are multiplied by this.
      */
     private double width = 1.0;
-
     /**
      * Kernel
      */
     private Kernel kernelMultiplier = Kernel.Gaussian;
-
     /**
      * Basis
      */
     private Basis basis = Basis.Polynomial;
-
     /**
      * The minimum sample size to use for the kernel regression.
      */
     private int kernelRegressionSampleSize = 100;
-
-    //==================CONSTRUCTORS====================//
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
@@ -136,8 +111,6 @@ public final class ConditionalCorrelationIndependence {
             this.nodesHash.put(this.variables.get(i), i);
         }
     }
-
-    //=================PUBLIC METHODS====================//
 
     /**
      * Returns the p-value of the test, x _||_ y | z. Can be compared to alpha.
@@ -175,6 +148,7 @@ public final class ConditionalCorrelationIndependence {
             return 0;
         }
     }
+
 
     /**
      * Calculates the residuals of x regressed nonparametrically onto z. Left public so it can be accessed separately.
@@ -289,6 +263,7 @@ public final class ConditionalCorrelationIndependence {
         return _residualsx;
     }
 
+
     /**
      * Sets the number of functions to use in (truncated) basis
      *
@@ -373,8 +348,6 @@ public final class ConditionalCorrelationIndependence {
         this.kernelRegressionSampleSize = kernelRegressionSapleSize;
     }
 
-    //=====================PRIVATE METHODS====================//
-
     /**
      * @return true just in the case the x and y vectors are independent, once undefined values have been removed. Left
      * public so it can be accessed separately.
@@ -421,6 +394,7 @@ public final class ConditionalCorrelationIndependence {
             dataSet.setDouble(i, col, min + (d - min) / (max - min));
         }
     }
+
 
     private double nonparametricFisherZ(double[] _x, double[] _y) {
 
@@ -584,6 +558,20 @@ public final class ConditionalCorrelationIndependence {
 
         return rows;
     }
+
+    /**
+     * Gives a choice of kernels to use for the independence judgmnts for conditional correlation independence.
+     *
+     * @see ConditionalCorrelationIndependence
+     */
+    public enum Kernel {Epinechnikov, Gaussian}
+
+    /**
+     * Gives a choice of basis functions to use for judgments of independence for conditional correlation independence.
+     *
+     * @see ConditionalCorrelationIndependence
+     */
+    public enum Basis {Polynomial, Cosine}
 }
 
 

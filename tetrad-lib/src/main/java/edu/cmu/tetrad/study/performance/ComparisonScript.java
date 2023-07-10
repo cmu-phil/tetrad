@@ -14,6 +14,10 @@ import java.util.List;
  */
 public class ComparisonScript {
 
+    public static void main(String... args) {
+        new ComparisonScript().runFromSimulation();
+    }
+
     private void runFromSimulation() {
         ComparisonParameters params = new ComparisonParameters();
         params.setDataType(ComparisonParameters.DataType.Continuous); // Continuous or Discrete
@@ -116,9 +120,5 @@ public class ComparisonScript {
             avgTable.setToken(0, j, tableColumns.get(j).toString());
         }
         System.out.println(avgTable);
-    }
-
-    public static void main(String... args) {
-        new ComparisonScript().runFromSimulation();
     }
 }

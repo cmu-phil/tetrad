@@ -34,8 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Extends AbstractAlgorithmRunner to produce a wrapper for the Purify
- * algorithm.
+ * Extends AbstractAlgorithmRunner to produce a wrapper for the Purify algorithm.
  *
  * @author Ricardo Silva
  */
@@ -64,8 +63,7 @@ public class PurifyRunner extends AbstractMimRunner implements GraphSource, Know
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     /**
-     * Executes the algorithm, producing (at least) a result workbench. Must be
-     * implemented in the extending class.
+     * Executes the algorithm, producing (at least) a result workbench. Must be implemented in the extending class.
      */
     public void execute() {
         Object source = getData();

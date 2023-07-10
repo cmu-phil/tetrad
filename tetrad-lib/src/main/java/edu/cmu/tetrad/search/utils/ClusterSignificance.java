@@ -26,15 +26,8 @@ import java.util.Set;
  */
 public class ClusterSignificance {
 
-    /**
-     * Gives the options for checking significance of clusters--could check the significance using a regression model,
-     * or could check to see if the cluster is a clique, or could not do the check.
-     */
-    public enum CheckType {Significance, Clique, None}
-
     private final List<Node> variables;
     private final DataModel dataModel;
-
     private CheckType checkType = CheckType.Clique;
 
     public ClusterSignificance(List<Node> variables, DataModel dataModel) {
@@ -42,23 +35,6 @@ public class ClusterSignificance {
         if (dataModel == null) throw new NullPointerException("Data model null.");
         this.variables = variables;
         this.dataModel = dataModel;
-    }
-
-    public void printClusterPValues(Set<List<Integer>> out) {
-        NumberFormat nf = new DecimalFormat("0.000");
-
-        for (List<Integer> _out : out) {
-            ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
-
-            try {
-                double p = clusterSignificance.significance(new ArrayList<>(_out));
-                TetradLogger.getInstance().forceLogMessage("OUT: " + variablesForIndices(new ArrayList<>(_out), variables)
-                        + " p = " + nf.format(p));
-            } catch (Exception e) {
-                TetradLogger.getInstance().forceLogMessage("OUT: " + variablesForIndices(new ArrayList<>(_out), variables)
-                        + " p = EXCEPTION");
-            }
-        }
     }
 
     public static List<Node> variablesForIndices(List<Integer> cluster, List<Node> variables) {
@@ -91,6 +67,29 @@ public class ClusterSignificance {
         List<Integer> cluster = new ArrayList<>();
         for (int i : indices) cluster.add(i);
         return cluster;
+    }
+
+    private static int dofHarman(int n) {
+        int dof = n * (n - 5) / 2 + 1;
+        if (dof < 0) dof = 0;
+        return dof;
+    }
+
+    public void printClusterPValues(Set<List<Integer>> out) {
+        NumberFormat nf = new DecimalFormat("0.000");
+
+        for (List<Integer> _out : out) {
+            ClusterSignificance clusterSignificance = new ClusterSignificance(variables, dataModel);
+
+            try {
+                double p = clusterSignificance.significance(new ArrayList<>(_out));
+                TetradLogger.getInstance().forceLogMessage("OUT: " + variablesForIndices(new ArrayList<>(_out), variables)
+                        + " p = " + nf.format(p));
+            } catch (Exception e) {
+                TetradLogger.getInstance().forceLogMessage("OUT: " + variablesForIndices(new ArrayList<>(_out), variables)
+                        + " p = EXCEPTION");
+            }
+        }
     }
 
     public void setCheckType(CheckType checkType) {
@@ -139,12 +138,6 @@ public class ClusterSignificance {
         } else {
             throw new IllegalArgumentException("Expecting a data set or a covariance matrix.");
         }
-    }
-
-    private static int dofHarman(int n) {
-        int dof = n * (n - 5) / 2 + 1;
-        if (dof < 0) dof = 0;
-        return dof;
     }
 
     private double getClusterChiSquare(List<Integer> cluster) {
@@ -251,6 +244,12 @@ public class ClusterSignificance {
 
         return est.estimate();
     }
+
+    /**
+     * Gives the options for checking significance of clusters--could check the significance using a regression model,
+     * or could check to see if the cluster is a clique, or could not do the check.
+     */
+    public enum CheckType {Significance, Clique, None}
 
 
 }

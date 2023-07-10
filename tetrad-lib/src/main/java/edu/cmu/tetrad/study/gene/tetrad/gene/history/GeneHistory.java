@@ -167,19 +167,19 @@ public class GeneHistory implements TetradSerializable {
     }
 
     /**
-     * Sets whether initialization should be synchronized.
-     */
-    public void setInitSync(boolean initSync) {
-        this.initSync = initSync;
-    }
-
-    /**
      * Determines whether initialization is synchronized.
      *
      * @return the getModel value of <code>initSync</code>.
      */
     public boolean getInitSync() {
         return this.initSync;
+    }
+
+    /**
+     * Sets whether initialization should be synchronized.
+     */
+    public void setInitSync(boolean initSync) {
+        this.initSync = initSync;
     }
 
     /**
@@ -190,17 +190,17 @@ public class GeneHistory implements TetradSerializable {
     }
 
     /**
-     * Sets the dish model.
-     */
-    public void setDishModel(DishModel dishModel) {
-        this.dishModel = dishModel;
-    }
-
-    /**
      * Gets the dish model.
      */
     public DishModel getDishModel() {
         return this.dishModel;
+    }
+
+    /**
+     * Sets the dish model.
+     */
+    public void setDishModel(DishModel dishModel) {
+        this.dishModel = dishModel;
     }
 
     /**

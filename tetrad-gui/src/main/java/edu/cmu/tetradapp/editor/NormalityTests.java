@@ -111,7 +111,8 @@ class NormalityTests {
      *
      * @param dataSet  relevant data set
      * @param variable continuous variable whose normality is in question
-     * @return Kolmogorov-Smirnov statistics: index 0 is the D_n value, 1-5 are the critical values at alpha = .2, .15. .10, .05, and .01 respectively.
+     * @return Kolmogorov-Smirnov statistics: index 0 is the D_n value, 1-5 are the critical values at alpha = .2, .15.
+     * .10, .05, and .01 respectively.
      */
 
     public static double[] kolmogorovSmirnov(DataSet dataSet, ContinuousVariable variable) {
@@ -160,7 +161,8 @@ class NormalityTests {
     /**
      * Calculates the K-S critical value
      *
-     * @param level the level at which you are rejecting or accepting the test.  Use one of the following values: 1 for alpha = .20, 2 for .15, 3 for .10, 4 for .05, 5 for .01
+     * @param level the level at which you are rejecting or accepting the test.  Use one of the following values: 1 for
+     *              alpha = .20, 2 for .15, 3 for .10, 4 for .05, 5 for .01
      * @param n     sample size
      * @return criticalValue the critical value for the given level
      */

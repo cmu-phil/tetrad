@@ -30,7 +30,10 @@ import org.apache.commons.math3.util.FastMath;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Stores a table of probabilities for a Bayes net and, together with BayesPm and Dag, provides methods to manipulate
@@ -243,6 +246,45 @@ public final class MlBayesImObs implements BayesIm {
     }
 
     //===============================PUBLIC METHODS========================//
+
+    /**
+     * This method chooses random probabilities for a row which add up to 1.0. Random doubles are drawn from a random
+     * distribution, and the final row is then normalized.
+     *
+     * @param size the length of the row.
+     * @return an array with randomly distributed probabilities of this length.
+     * @see #randomizeRow
+     */
+    private static double[] getRandomWeights(int size) {
+        assert size >= 0;
+
+        double[] row = new double[size];
+        double sum = 0.0;
+
+        // If I put most of the mass in each row on one of the categories,
+        // I get lovely classification results for Bayes nets with all
+        // 4-category variables. To include a bias, set 'bias' to a positive
+        // number.
+        final double bias = 0;
+
+        int randomCell = RandomUtil.getInstance().nextInt(size);
+
+        for (int i = 0; i < size; i++) {
+            row[i] = RandomUtil.getInstance().nextDouble();
+
+            if (i == randomCell) {
+                row[i] += bias;
+            }
+
+            sum += row[i];
+        }
+
+        for (int i = 0; i < size; i++) {
+            row[i] /= sum;
+        }
+
+        return row;
+    }
 
     /**
      * @return this PM.
@@ -643,6 +685,27 @@ public final class MlBayesImObs implements BayesIm {
         return simulateDataHelper(dataSet, latentDataSaved);
     }
 
+//    /**
+//     * Simulates a sample with the given sample size.
+//     *
+//     * @param sampleSize the sample size.
+//     * @param seed       the random number generator seed allows you recreate the
+//     *                   simulated data by passing in the same seed (so you don't have to store
+//     *                   the sample data
+//     * @return the simulated sample as a DataSet.
+//     */
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateData(sampleSize, latentDataSaved);
+//    }
+
+//    public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateDataHelper(dataSet, latentDataSaved);
+//    }
+
     private DataSet simulateTimeSeries(int sampleSize) {
         TimeLagGraph timeSeriesGraph = getBayesPm().getDag().getTimeLagGraph();
 
@@ -703,27 +766,6 @@ public final class MlBayesImObs implements BayesIm {
 
         return fullData;
     }
-
-//    /**
-//     * Simulates a sample with the given sample size.
-//     *
-//     * @param sampleSize the sample size.
-//     * @param seed       the random number generator seed allows you recreate the
-//     *                   simulated data by passing in the same seed (so you don't have to store
-//     *                   the sample data
-//     * @return the simulated sample as a DataSet.
-//     */
-//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-//        RandomUtil random = RandomUtil.getInstance();
-//        random.setSeed(seed);
-//        return simulateData(sampleSize, latentDataSaved);
-//    }
-
-//    public DataSet simulateData(DataSet dataSet, long seed, boolean latentDataSaved) {
-//        RandomUtil random = RandomUtil.getInstance();
-//        random.setSeed(seed);
-//        return simulateDataHelper(dataSet, latentDataSaved);
-//    }
 
     /**
      * Simulates a sample with the given sample size.
@@ -1093,45 +1135,6 @@ public final class MlBayesImObs implements BayesIm {
         this.parentDims[nodeIndex] = dims;
         this.probs[nodeIndex] = new double[numRows][numCols];
 
-    }
-
-    /**
-     * This method chooses random probabilities for a row which add up to 1.0. Random doubles are drawn from a random
-     * distribution, and the final row is then normalized.
-     *
-     * @param size the length of the row.
-     * @return an array with randomly distributed probabilities of this length.
-     * @see #randomizeRow
-     */
-    private static double[] getRandomWeights(int size) {
-        assert size >= 0;
-
-        double[] row = new double[size];
-        double sum = 0.0;
-
-        // If I put most of the mass in each row on one of the categories,
-        // I get lovely classification results for Bayes nets with all
-        // 4-category variables. To include a bias, set 'bias' to a positive
-        // number.
-        final double bias = 0;
-
-        int randomCell = RandomUtil.getInstance().nextInt(size);
-
-        for (int i = 0; i < size; i++) {
-            row[i] = RandomUtil.getInstance().nextDouble();
-
-            if (i == randomCell) {
-                row[i] += bias;
-            }
-
-            sum += row[i];
-        }
-
-        for (int i = 0; i < size; i++) {
-            row[i] /= sum;
-        }
-
-        return row;
     }
 
     /**

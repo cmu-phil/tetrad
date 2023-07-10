@@ -44,11 +44,10 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 /**
- * Displays a simulation and lets the user create new simulations. A simulation
- * is an ordered pair of a Graph and a list of DataSets. These can be created in
- * a variety of ways, either standalone or taking graphs, IM's, or PM's as
- * parents, and using the information those objects contain. For a Simulation
- * you need a RandomGraph and you need to pick a particular style of Simulation.
+ * Displays a simulation and lets the user create new simulations. A simulation is an ordered pair of a Graph and a list
+ * of DataSets. These can be created in a variety of ways, either standalone or taking graphs, IM's, or PM's as parents,
+ * and using the information those objects contain. For a Simulation you need a RandomGraph and you need to pick a
+ * particular style of Simulation.
  *
  * @author josephramsey
  * @author Kevin V. Bui (kvb2@pitt.edu)

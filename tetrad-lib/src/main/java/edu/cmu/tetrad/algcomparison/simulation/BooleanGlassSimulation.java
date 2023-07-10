@@ -34,6 +34,38 @@ public class BooleanGlassSimulation implements Simulation {
         this.randomGraph = graph;
     }
 
+    public static void topToBottomLayout(TimeLagGraph graph) {
+
+        final int xStart = 65;
+        final int yStart = 50;
+        final int xSpace = 100;
+        final int ySpace = 100;
+        List<Node> lag0Nodes = graph.getLag0Nodes();
+
+        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
+
+        int x = xStart - xSpace;
+
+        for (Node node : lag0Nodes) {
+            x += xSpace;
+            int y = yStart - ySpace;
+            TimeLagGraph.NodeId id = graph.getNodeId(node);
+
+            for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
+                y += ySpace;
+                Node _node = graph.getNode(id.getName(), lag);
+
+                if (_node == null) {
+                    System.out.println("Couldn't find " + null);
+                    continue;
+                }
+
+                _node.setCenterX(x);
+                _node.setCenterY(y);
+            }
+        }
+    }
+
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -89,38 +121,6 @@ public class BooleanGlassSimulation implements Simulation {
         BooleanGlassSimulation.topToBottomLayout(graph);
 
         this.graph = graph;
-    }
-
-    public static void topToBottomLayout(TimeLagGraph graph) {
-
-        final int xStart = 65;
-        final int yStart = 50;
-        final int xSpace = 100;
-        final int ySpace = 100;
-        List<Node> lag0Nodes = graph.getLag0Nodes();
-
-        lag0Nodes.sort(Comparator.comparingInt(Node::getCenterX));
-
-        int x = xStart - xSpace;
-
-        for (Node node : lag0Nodes) {
-            x += xSpace;
-            int y = yStart - ySpace;
-            TimeLagGraph.NodeId id = graph.getNodeId(node);
-
-            for (int lag = graph.getMaxLag(); lag >= 0; lag--) {
-                y += ySpace;
-                Node _node = graph.getNode(id.getName(), lag);
-
-                if (_node == null) {
-                    System.out.println("Couldn't find " + null);
-                    continue;
-                }
-
-                _node.setCenterX(x);
-                _node.setCenterY(y);
-            }
-        }
     }
 
     @Override

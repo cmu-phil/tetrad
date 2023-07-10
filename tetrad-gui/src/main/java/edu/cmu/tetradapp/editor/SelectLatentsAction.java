@@ -36,8 +36,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 
 /**
- * Copies a selection of session nodes in the frontmost session editor, to the
- * clipboard.
+ * Copies a selection of session nodes in the frontmost session editor, to the clipboard.
  *
  * @author josephramsey
  */
@@ -49,8 +48,7 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
     private final GraphWorkbench workbench;
 
     /**
-     * Creates a new copy subsession action for the given desktop and
-     * clipboard.
+     * Creates a new copy subsession action for the given desktop and clipboard.
      */
     public SelectLatentsAction(GraphWorkbench workbench) {
         super("Highlight Latent Nodes");
@@ -63,8 +61,7 @@ public class SelectLatentsAction extends AbstractAction implements ClipboardOwne
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         this.workbench.deselectAll();

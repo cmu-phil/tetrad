@@ -46,7 +46,6 @@ public class ParameterPair implements TetradSerializable {
      */
     private Parameter b;
 
-    //=============================CONSTRUCTORS==========================//
 
     /**
      * Constructs a new (blank) ordered pair where a = null and b = null.
@@ -72,8 +71,6 @@ public class ParameterPair implements TetradSerializable {
     public static ParameterPair serializableInstance() {
         return new ParameterPair();
     }
-
-    //============================PUBLIC METHODS========================//
 
     /**
      * Method getNumObjects

@@ -24,8 +24,8 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.collections4.map.HashedMap;
@@ -46,10 +46,9 @@ import java.util.Set;
 public class IndTestMnlrLr implements IndependenceTest {
     private final DataSet data;
     private final Map<Node, Integer> nodesHash;
-    private double alpha;
-
     // Likelihood function
     private final MnlrLikelihood likelihood;
+    private double alpha;
     private boolean verbose;
 
     public IndTestMnlrLr(DataSet data, double alpha) {

@@ -36,8 +36,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.Triple;
-import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
@@ -62,7 +62,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
         KnowledgeBoxInput {
 
     static final long serialVersionUID = 23L;
-
+    private final Map<String, Object> userAlgoSelections = new HashMap<>();
     private DataWrapper dataWrapper;
     private String name;
     private Algorithm algorithm;
@@ -71,7 +71,6 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     private Graph externalGraph;
     private List<Graph> graphList = new ArrayList<>();
     private Knowledge knowledge;
-    private final Map<String, Object> userAlgoSelections = new HashMap<>();
     private transient List<IndependenceTest> independenceTests;
 
     //===========================CONSTRUCTORS===========================//
@@ -90,9 +89,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DatWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
+     * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel) {
@@ -110,9 +108,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DatWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
+     * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
@@ -127,9 +124,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DatWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
+     * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GeneralAlgorithmRunner runner, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel) {
@@ -148,9 +144,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DatWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
+     * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, GeneralAlgorithmRunner runner,
                                   Parameters parameters,
@@ -189,9 +184,8 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DatWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
+     * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public GeneralAlgorithmRunner(DataWrapper dataWrapper, GraphSource graphSource, Parameters parameters,
                                   KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
@@ -438,8 +432,7 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     /**
-     * By default, algorithm do not support knowledge. Those that do will speak
-     * up.
+     * By default, algorithm do not support knowledge. Those that do will speak up.
      */
     @Override
     public boolean supportsKnowledge() {
@@ -452,13 +445,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     @Override
-    public void setExternalGraph(Graph graph) {
-        this.externalGraph = graph;
+    public Graph getExternalGraph() {
+        return this.externalGraph;
     }
 
     @Override
-    public Graph getExternalGraph() {
-        return this.externalGraph;
+    public void setExternalGraph(Graph graph) {
+        this.externalGraph = graph;
     }
 
     @Override
@@ -525,14 +518,12 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -633,13 +624,13 @@ public class GeneralAlgorithmRunner implements AlgorithmRunner, ParamsResettable
     }
 
     @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
-
+    public Map<String, String> getAllParamSettings() {
+        return Collections.EMPTY_MAP;
     }
 
     @Override
-    public Map<String, String> getAllParamSettings() {
-        return Collections.EMPTY_MAP;
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+
     }
 
     @Override

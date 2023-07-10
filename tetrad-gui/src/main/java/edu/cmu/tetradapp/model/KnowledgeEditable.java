@@ -27,8 +27,7 @@ import edu.cmu.tetrad.graph.Graph;
 import java.util.List;
 
 /**
- * Interface to indicate a class whose knowledge is capable of being edited by
- * the knowledge editor.
+ * Interface to indicate a class whose knowledge is capable of being edited by the knowledge editor.
  *
  * @author josephramsey
  */
@@ -45,8 +44,7 @@ public interface KnowledgeEditable {
     void setKnowledge(Knowledge knowledge);
 
     /**
-     * @return the source graph. This will be used to arrange the graph in the
-     * knowledge editor in a recognizable way.
+     * @return the source graph. This will be used to arrange the graph in the knowledge editor in a recognizable way.
      */
     Graph getSourceGraph();
 

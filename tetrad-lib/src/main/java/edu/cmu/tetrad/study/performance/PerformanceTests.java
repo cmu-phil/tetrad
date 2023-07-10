@@ -28,9 +28,8 @@ import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.BdeuScore;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.sem.LargeScaleSimulation;
 import edu.cmu.tetrad.util.MillisecondTimes;
@@ -55,6 +54,164 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
  */
 public class PerformanceTests {
     private PrintStream out = System.out;
+
+    public static String endpointMisclassification(List<Node> _nodes, Graph estGraph, Graph refGraph) {
+        int[][] counts = new int[4][4];
+
+        for (int i = 0; i < _nodes.size(); i++) {
+            for (int j = 0; j < _nodes.size(); j++) {
+                if (i == j) continue;
+
+                Endpoint endpoint1 = refGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
+                Endpoint endpoint2 = estGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
+
+                int index1 = PerformanceTests.getIndex(endpoint1);
+                int index2 = PerformanceTests.getIndex(endpoint2);
+
+                counts[index1][index2]++;
+            }
+        }
+
+        TextTable table2 = new TextTable(5, 5);
+
+        table2.setToken(0, 1, "-o");
+        table2.setToken(0, 2, "->");
+        table2.setToken(0, 3, "--");
+        table2.setToken(0, 4, "NO EDGE");
+        table2.setToken(1, 0, "-o");
+        table2.setToken(2, 0, "->");
+        table2.setToken(3, 0, "--");
+        table2.setToken(4, 0, "NO EDGE");
+
+        int sum = 0;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (i == 3 && j == 3) continue;
+                else sum += counts[i][j];
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (i == 3 && j == 3) table2.setToken(3 + 1, 3 + 1, "");
+                else table2.setToken(i + 1, j + 1, "" + counts[i][j]);
+            }
+        }
+
+        return table2.toString();
+
+    }
+
+    private static int getIndex(Endpoint endpoint) {
+        if (endpoint == Endpoint.CIRCLE) return 0;
+        if (endpoint == Endpoint.ARROW) return 1;
+        if (endpoint == Endpoint.TAIL) return 2;
+        if (endpoint == null) return 3;
+        throw new IllegalArgumentException();
+    }
+
+    public static void main(String... args) {
+        System.out.println("Start ");
+
+        PerformanceTests performanceTests = new PerformanceTests();
+
+
+        if (args.length == 3) {
+            if ("GFCI".equals(args[0])) {
+                int numVars = Integer.parseInt(args[1]);
+                double edgeFactor = Double.parseDouble(args[2]);
+//                    final int numCases = Integer.parseInt(args[3]);
+                performanceTests.testGfci(numVars, edgeFactor);
+            } else {
+                throw new IllegalArgumentException("Not a configuration!");
+            }
+        }
+//        else if (args.length == 4) {
+//            switch (args[0]) {
+//                case "GFCI": {
+//                    final int numVars = Integer.parseInt(args[1]);
+//                    final double edgeFactor = Double.parseDouble(args[2]);
+//                    final int numCases = Integer.parseInt(args[3]);
+//                    performanceTests.testGfci(numVars, edgeFactor);
+//                    break;
+//                }
+//                default:
+//                    throw new IllegalArgumentException("Not a configuration!");
+//            }
+//        }
+        else if (args.length == 5) {
+            switch (args[0]) {
+                case "PC": {
+                    int numVars = Integer.parseInt(args[1]);
+                    double edgeFactor = Double.parseDouble(args[2]);
+                    int numCases = Integer.parseInt(args[3]);
+                    double alpha = Double.parseDouble(args[4]);
+                    performanceTests.testPc(numVars, edgeFactor, numCases, alpha);
+                    break;
+                }
+                case "PCSTABLE": {
+                    int numVars = Integer.parseInt(args[1]);
+                    double edgeFactor = Double.parseDouble(args[2]);
+                    int numCases = Integer.parseInt(args[3]);
+                    double alpha = Double.parseDouble(args[4]);
+                    performanceTests.testPcStable(numVars, edgeFactor, numCases, alpha);
+                    break;
+                }
+                case "CPCSTABLE": {
+                    int numVars = Integer.parseInt(args[1]);
+                    double edgeFactor = Double.parseDouble(args[2]);
+                    int numCases = Integer.parseInt(args[3]);
+                    double alpha = Double.parseDouble(args[4]);
+                    performanceTests.testCpcStable(numVars, edgeFactor, numCases, alpha);
+                    break;
+                }
+                case "TestFgesComparisonContinuous": {
+                    int numVars = Integer.parseInt(args[1]);
+                    double edgeFactor = Double.parseDouble(args[2]);
+                    int numCases = Integer.parseInt(args[3]);
+                    int numRuns = Integer.parseInt(args[4]);
+
+                    performanceTests.testFgesComparisonContinuous(numVars, edgeFactor, numCases, numRuns);
+                    break;
+                }
+                case "TestFgesComparisonDiscrete": {
+                    int numVars = Integer.parseInt(args[1]);
+                    double edgeFactor = Double.parseDouble(args[2]);
+                    int numCases = Integer.parseInt(args[3]);
+                    int numRuns = Integer.parseInt(args[4]);
+
+                    performanceTests.testFgesComparisonDiscrete(numVars, edgeFactor, numCases, numRuns);
+                    break;
+                }
+                case "TestFgesMbComparisonContinuous": {
+                    int numVars = Integer.parseInt(args[1]);
+                    double edgeFactor = Double.parseDouble(args[2]);
+                    int numCases = Integer.parseInt(args[3]);
+                    int numRuns = Integer.parseInt(args[4]);
+
+                    performanceTests.testFgesMbComparisonContinuous(numVars, edgeFactor, numCases, numRuns);
+                    break;
+                }
+                case "TestFgesMbComparisonDiscrete": {
+                    int numVars = Integer.parseInt(args[1]);
+                    double edgeFactor = Double.parseDouble(args[2]);
+                    int numCases = Integer.parseInt(args[3]);
+                    int numRuns = Integer.parseInt(args[4]);
+
+                    performanceTests.testFgesMbComparisonDiscrete(numVars, edgeFactor, numCases, numRuns);
+                    break;
+                }
+                default:
+                    throw new IllegalArgumentException("Not a configuration.");
+            }
+        } else if (args.length == 6) {
+            throw new IllegalArgumentException("Not a configuration.");
+        }
+
+        System.out.println("Finish");
+
+        performanceTests.testPc(5000, 1, 1000, .0001);
+    }
 
     public void testPc(int numVars, double edgeFactor, int numCases, double alpha) {
         final int depth = -1;
@@ -316,7 +473,6 @@ public class PerformanceTests {
 
         this.out.close();
     }
-
 
     public void testCpc(int numVars, double edgeFactor, int numCases) {
         final double alpha = 0.0001;
@@ -1847,62 +2003,6 @@ public class PerformanceTests {
         return stats;
     }
 
-    public static String endpointMisclassification(List<Node> _nodes, Graph estGraph, Graph refGraph) {
-        int[][] counts = new int[4][4];
-
-        for (int i = 0; i < _nodes.size(); i++) {
-            for (int j = 0; j < _nodes.size(); j++) {
-                if (i == j) continue;
-
-                Endpoint endpoint1 = refGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
-                Endpoint endpoint2 = estGraph.getEndpoint(_nodes.get(i), _nodes.get(j));
-
-                int index1 = PerformanceTests.getIndex(endpoint1);
-                int index2 = PerformanceTests.getIndex(endpoint2);
-
-                counts[index1][index2]++;
-            }
-        }
-
-        TextTable table2 = new TextTable(5, 5);
-
-        table2.setToken(0, 1, "-o");
-        table2.setToken(0, 2, "->");
-        table2.setToken(0, 3, "--");
-        table2.setToken(0, 4, "NO EDGE");
-        table2.setToken(1, 0, "-o");
-        table2.setToken(2, 0, "->");
-        table2.setToken(3, 0, "--");
-        table2.setToken(4, 0, "NO EDGE");
-
-        int sum = 0;
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                if (i == 3 && j == 3) continue;
-                else sum += counts[i][j];
-            }
-        }
-
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                if (i == 3 && j == 3) table2.setToken(3 + 1, 3 + 1, "");
-                else table2.setToken(i + 1, j + 1, "" + counts[i][j]);
-            }
-        }
-
-        return table2.toString();
-
-    }
-
-
-    private static int getIndex(Endpoint endpoint) {
-        if (endpoint == Endpoint.CIRCLE) return 0;
-        if (endpoint == Endpoint.ARROW) return 1;
-        if (endpoint == Endpoint.TAIL) return 2;
-        if (endpoint == null) return 3;
-        throw new IllegalArgumentException();
-    }
-
     private Graph getLatentGraph(List<Node> vars, double edgeFactor, int numLatents) {
         int numEdges = (int) (vars.size() * edgeFactor);
 
@@ -1936,110 +2036,6 @@ public class PerformanceTests {
         for (int i : degreeCounts.keySet()) {
             System.out.println(i + " " + degreeCounts.get(i));
         }
-    }
-
-
-    public static void main(String... args) {
-        System.out.println("Start ");
-
-        PerformanceTests performanceTests = new PerformanceTests();
-
-
-        if (args.length == 3) {
-            if ("GFCI".equals(args[0])) {
-                int numVars = Integer.parseInt(args[1]);
-                double edgeFactor = Double.parseDouble(args[2]);
-//                    final int numCases = Integer.parseInt(args[3]);
-                performanceTests.testGfci(numVars, edgeFactor);
-            } else {
-                throw new IllegalArgumentException("Not a configuration!");
-            }
-        }
-//        else if (args.length == 4) {
-//            switch (args[0]) {
-//                case "GFCI": {
-//                    final int numVars = Integer.parseInt(args[1]);
-//                    final double edgeFactor = Double.parseDouble(args[2]);
-//                    final int numCases = Integer.parseInt(args[3]);
-//                    performanceTests.testGfci(numVars, edgeFactor);
-//                    break;
-//                }
-//                default:
-//                    throw new IllegalArgumentException("Not a configuration!");
-//            }
-//        }
-        else if (args.length == 5) {
-            switch (args[0]) {
-                case "PC": {
-                    int numVars = Integer.parseInt(args[1]);
-                    double edgeFactor = Double.parseDouble(args[2]);
-                    int numCases = Integer.parseInt(args[3]);
-                    double alpha = Double.parseDouble(args[4]);
-                    performanceTests.testPc(numVars, edgeFactor, numCases, alpha);
-                    break;
-                }
-                case "PCSTABLE": {
-                    int numVars = Integer.parseInt(args[1]);
-                    double edgeFactor = Double.parseDouble(args[2]);
-                    int numCases = Integer.parseInt(args[3]);
-                    double alpha = Double.parseDouble(args[4]);
-                    performanceTests.testPcStable(numVars, edgeFactor, numCases, alpha);
-                    break;
-                }
-                case "CPCSTABLE": {
-                    int numVars = Integer.parseInt(args[1]);
-                    double edgeFactor = Double.parseDouble(args[2]);
-                    int numCases = Integer.parseInt(args[3]);
-                    double alpha = Double.parseDouble(args[4]);
-                    performanceTests.testCpcStable(numVars, edgeFactor, numCases, alpha);
-                    break;
-                }
-                case "TestFgesComparisonContinuous": {
-                    int numVars = Integer.parseInt(args[1]);
-                    double edgeFactor = Double.parseDouble(args[2]);
-                    int numCases = Integer.parseInt(args[3]);
-                    int numRuns = Integer.parseInt(args[4]);
-
-                    performanceTests.testFgesComparisonContinuous(numVars, edgeFactor, numCases, numRuns);
-                    break;
-                }
-                case "TestFgesComparisonDiscrete": {
-                    int numVars = Integer.parseInt(args[1]);
-                    double edgeFactor = Double.parseDouble(args[2]);
-                    int numCases = Integer.parseInt(args[3]);
-                    int numRuns = Integer.parseInt(args[4]);
-
-                    performanceTests.testFgesComparisonDiscrete(numVars, edgeFactor, numCases, numRuns);
-                    break;
-                }
-                case "TestFgesMbComparisonContinuous": {
-                    int numVars = Integer.parseInt(args[1]);
-                    double edgeFactor = Double.parseDouble(args[2]);
-                    int numCases = Integer.parseInt(args[3]);
-                    int numRuns = Integer.parseInt(args[4]);
-
-                    performanceTests.testFgesMbComparisonContinuous(numVars, edgeFactor, numCases, numRuns);
-                    break;
-                }
-                case "TestFgesMbComparisonDiscrete": {
-                    int numVars = Integer.parseInt(args[1]);
-                    double edgeFactor = Double.parseDouble(args[2]);
-                    int numCases = Integer.parseInt(args[3]);
-                    int numRuns = Integer.parseInt(args[4]);
-
-                    performanceTests.testFgesMbComparisonDiscrete(numVars, edgeFactor, numCases, numRuns);
-                    break;
-                }
-                default:
-                    throw new IllegalArgumentException("Not a configuration.");
-            }
-        } else if (args.length == 6) {
-            throw new IllegalArgumentException("Not a configuration.");
-        }
-
-        System.out.println("Finish");
-
-        performanceTests.testPc(5000, 1, 1000, .0001);
     }
 }
 

@@ -63,7 +63,6 @@ public interface Score {
      */
     String toString();
 
-    //==============================DEFAULT METHODS=========================//
 
     default double localScoreDiff(int x, int y, int[] z) {
         return localScore(y, append(z, x)) - localScore(y, z);

@@ -32,13 +32,7 @@ import java.text.NumberFormat;
  */
 public final class IndependenceResultIndFacts implements TetradSerializable {
     static final long serialVersionUID = 23L;
-
-    public enum Type {
-        INDEPENDENT, DEPENDENT, UNDETERMINED
-    }
-
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
     private final int index;
     private final String fact;
     private final Type indep;
@@ -78,6 +72,10 @@ public final class IndependenceResultIndFacts implements TetradSerializable {
 
     public String toString() {
         return "Result: " + getFact() + "\t" + getType() + "\t" + IndependenceResultIndFacts.nf.format(getpValue());
+    }
+
+    public enum Type {
+        INDEPENDENT, DEPENDENT, UNDETERMINED
     }
 }
 

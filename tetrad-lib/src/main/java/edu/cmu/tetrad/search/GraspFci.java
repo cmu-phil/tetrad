@@ -63,26 +63,20 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  */
 public final class GraspFci implements IGraphSearch {
 
-    // The background knowledge.
-    private Knowledge knowledge = new Knowledge();
-
     // The conditional independence test.
     private final IndependenceTest independenceTest;
-
-    // Flag for complete rule set, true if one should use complete rule set, false otherwise.
-    private boolean completeRuleSetUsed = true;
-
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-    private int maxPathLength = -1;
-
     // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    // True iff verbose output should be printed.
-    private boolean verbose;
-
     // The score.
     private final Score score;
+    // The background knowledge.
+    private Knowledge knowledge = new Knowledge();
+    // Flag for complete rule set, true if one should use complete rule set, false otherwise.
+    private boolean completeRuleSetUsed = true;
+    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    private int maxPathLength = -1;
+    // True iff verbose output should be printed.
+    private boolean verbose;
     private int numStarts = 1;
     private int depth = -1;
     private boolean useRaskuttiUhler = false;
@@ -93,7 +87,6 @@ public final class GraspFci implements IGraphSearch {
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
 
-    //============================CONSTRUCTORS============================//
     public GraspFci(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
@@ -102,8 +95,6 @@ public final class GraspFci implements IGraphSearch {
         this.score = score;
         this.independenceTest = test;
     }
-
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Run the search and return s a PAG.
@@ -203,8 +194,6 @@ public final class GraspFci implements IGraphSearch {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-
-    //===========================================PRIVATE METHODS=======================================//
 
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;

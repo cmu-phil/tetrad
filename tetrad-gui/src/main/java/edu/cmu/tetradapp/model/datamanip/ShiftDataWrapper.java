@@ -93,15 +93,6 @@ public class ShiftDataWrapper extends DataWrapper {
         LogDataUtils.logDataModelList("Data in which variables have been shifted in time.", getDataModelList());
     }
 
-    private List<DataSet> shiftDataSets(List<DataSet> dataSets, int[] shifts) {
-        List<DataSet> shiftedDataSets = new ArrayList<>();
-
-        for (DataSet dataSet : dataSets) {
-            shiftedDataSets.add(TsUtils.createShiftedData(dataSet, shifts));
-        }
-        return shiftedDataSets;
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -109,6 +100,15 @@ public class ShiftDataWrapper extends DataWrapper {
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
+    }
+
+    private List<DataSet> shiftDataSets(List<DataSet> dataSets, int[] shifts) {
+        List<DataSet> shiftedDataSets = new ArrayList<>();
+
+        for (DataSet dataSet : dataSets) {
+            shiftedDataSets.add(TsUtils.createShiftedData(dataSet, shifts));
+        }
+        return shiftedDataSets;
     }
 }
 

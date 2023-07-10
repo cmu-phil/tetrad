@@ -102,6 +102,43 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
 
     //============================PUBLIC METHODS==========================//
 
+    private static int[] getSinglePoint(BayesIm bayesIm, int[] tiers) {
+        int[] point = new int[bayesIm.getNumNodes()];
+        int[] combination = new int[bayesIm.getNumNodes()];
+        RandomUtil randomUtil = RandomUtil.getInstance();
+
+        for (int nodeIndex : tiers) {
+            double cutoff = randomUtil.nextDouble();
+
+            for (int k = 0; k < bayesIm.getNumParents(nodeIndex); k++) {
+                combination[k] = point[bayesIm.getParent(nodeIndex, k)];
+            }
+
+            int rowIndex = bayesIm.getRowIndex(nodeIndex, combination);
+            double sum = 0.0;
+
+            for (int k = 0; k < bayesIm.getNumColumns(nodeIndex); k++) {
+                double probability =
+                        bayesIm.getProbability(nodeIndex, rowIndex, k);
+
+                if (Double.isNaN(probability)) {
+                    throw new IllegalStateException("Some probability " +
+                            "values in the BayesIm are not filled in; " +
+                            "cannot simulate data to do approximate updating.");
+                }
+
+                sum += probability;
+
+                if (sum >= cutoff) {
+                    point[nodeIndex] = k;
+                    break;
+                }
+            }
+        }
+
+        return point;
+    }
+
     /**
      * @return the Bayes instantiated model that is being updated.
      */
@@ -208,14 +245,14 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         return marginals;
     }
 
+    //==============================PRIVATE METHODS=======================//
+
     /**
      * Prints out the most recent marginal.
      */
     public String toString() {
         return "Approximate updater, evidence = " + this.evidence;
     }
-
-    //==============================PRIVATE METHODS=======================//
 
     private void doUpdate() {
         if (this.counts != null) {
@@ -286,43 +323,6 @@ public final class ApproximateUpdater implements ManipulatingBayesUpdater {
         }
 
         return updatedGraph;
-    }
-
-    private static int[] getSinglePoint(BayesIm bayesIm, int[] tiers) {
-        int[] point = new int[bayesIm.getNumNodes()];
-        int[] combination = new int[bayesIm.getNumNodes()];
-        RandomUtil randomUtil = RandomUtil.getInstance();
-
-        for (int nodeIndex : tiers) {
-            double cutoff = randomUtil.nextDouble();
-
-            for (int k = 0; k < bayesIm.getNumParents(nodeIndex); k++) {
-                combination[k] = point[bayesIm.getParent(nodeIndex, k)];
-            }
-
-            int rowIndex = bayesIm.getRowIndex(nodeIndex, combination);
-            double sum = 0.0;
-
-            for (int k = 0; k < bayesIm.getNumColumns(nodeIndex); k++) {
-                double probability =
-                        bayesIm.getProbability(nodeIndex, rowIndex, k);
-
-                if (Double.isNaN(probability)) {
-                    throw new IllegalStateException("Some probability " +
-                            "values in the BayesIm are not filled in; " +
-                            "cannot simulate data to do approximate updating.");
-                }
-
-                sum += probability;
-
-                if (sum >= cutoff) {
-                    point[nodeIndex] = k;
-                    break;
-                }
-            }
-        }
-
-        return point;
     }
 
     /**

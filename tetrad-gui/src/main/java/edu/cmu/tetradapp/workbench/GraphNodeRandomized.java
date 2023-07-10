@@ -34,8 +34,7 @@ import java.awt.event.FocusEvent;
 import java.util.List;
 
 /**
- * Represents a randomized policy variable in the workbench. Appears as a
- * die.
+ * Represents a randomized policy variable in the workbench. Appears as a die.
  *
  * @author josephramsey
  * @author Willie Wheeler
@@ -43,8 +42,7 @@ import java.util.List;
 public class GraphNodeRandomized extends DisplayNode {
 
     /**
-     * Constructs a new node for representing latent variables in the
-     * graph workbench.
+     * Constructs a new node for representing latent variables in the graph workbench.
      */
     public GraphNodeRandomized(Node modelNode) {
         setModelNode(modelNode);

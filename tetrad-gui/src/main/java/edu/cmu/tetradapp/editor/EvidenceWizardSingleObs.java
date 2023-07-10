@@ -32,8 +32,7 @@ import javax.swing.*;
 import javax.swing.border.MatteBorder;
 
 /**
- * Lets the user visually add and remove evidence, perform updates, and view
- * Bayes updating results.
+ * Lets the user visually add and remove evidence, perform updates, and view Bayes updating results.
  *
  * @author William Taysom -- Jun 14, 2003
  * @author josephramsey
@@ -49,8 +48,8 @@ class EvidenceWizardSingleObs extends JPanel {
     private final EvidenceEditorObs evidenceEditor;
 
     /**
-     * This is the wizard for the BayesUpdateEditor class.  It allows you to add
-     * and remove evidence, and to update based on it.
+     * This is the wizard for the BayesUpdateEditor class.  It allows you to add and remove evidence, and to update
+     * based on it.
      */
     public EvidenceWizardSingleObs(UpdaterWrapper updaterWrapper,
                                    GraphWorkbench workbench) {

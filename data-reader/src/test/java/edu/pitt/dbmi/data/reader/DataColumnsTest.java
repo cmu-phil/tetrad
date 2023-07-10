@@ -23,10 +23,10 @@ import edu.pitt.dbmi.data.reader.metadata.MetadataFileReader;
 import edu.pitt.dbmi.data.reader.metadata.MetadataReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularColumnFileReader;
 import edu.pitt.dbmi.data.reader.tabular.TabularColumnReader;
-import java.io.File;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -37,10 +37,9 @@ import java.nio.file.Path;
  */
 public class DataColumnsTest {
 
+    private final Delimiter delimiter = Delimiter.TAB;
     Path dataFile = new File(getClass().getResource("/data/metadata/sim_mixed_intervention.txt").getFile()).toPath();
     Path metadataFile = new File(getClass().getResource("/data/metadata/sim_mixed_intervention_metadata.json").getFile()).toPath();
-
-    private final Delimiter delimiter = Delimiter.TAB;
 
     public DataColumnsTest() {
     }

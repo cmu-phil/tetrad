@@ -24,9 +24,9 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.MarkovCheck;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -43,11 +43,16 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;
     private final DataModel dataModel;
     private final Parameters parameters;
-
+    private final Graph graph;
     private String name = "";
     private List<String> vars = new LinkedList<>();
-    private final Graph graph;
     private transient MarkovCheck markovCheck = null;
+
+    public MarkovCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, Parameters parameters) {
+        this.dataModel = dataModel.getSelectedDataModel();
+        this.graph = graphSource.getGraph();
+        this.parameters = parameters;
+    }
 
     /**
      * Generates a simple exemplar of this class to test serialization.
@@ -58,12 +63,6 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
         return new Knowledge();
     }
 
-    public MarkovCheckIndTestModel(DataWrapper dataModel, GraphSource graphSource, Parameters parameters) {
-        this.dataModel = dataModel.getSelectedDataModel();
-        this.graph = graphSource.getGraph();
-        this.parameters = parameters;
-    }
-
     public void setIndependenceTest(IndependenceTest test) {
         this.markovCheck = new MarkovCheck(this.graph, test, this.markovCheck == null ? MarkovCheck.ConditioningSetType.PARENTS : this.markovCheck.getSetType());
 
@@ -71,11 +70,6 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
 
     public MarkovCheck getMarkovCheck() {
         return this.markovCheck;
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
     }
 
     @Override
@@ -96,12 +90,17 @@ public class MarkovCheckIndTestModel implements SessionModel, GraphSource {
         return this.name;
     }
 
-    public void setVars(List<String> vars) {
-        this.vars = vars;
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<String> getVars() {
         return this.vars;
+    }
+
+    public void setVars(List<String> vars) {
+        this.vars = vars;
     }
 
     public List<IndependenceResult> getResults(boolean indep) {

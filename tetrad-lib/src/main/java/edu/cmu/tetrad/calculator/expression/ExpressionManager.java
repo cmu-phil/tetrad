@@ -37,23 +37,19 @@ public class ExpressionManager {
 
 
     /**
+     * Singleton instance.
+     */
+    private static final ExpressionManager INSTANCE = new ExpressionManager();
+    /**
      * A mapping from tokens to their descriptors.
      */
     private final Map<String, ExpressionDescriptor> tokenMap = new HashMap<>();
 
-
+//    private static RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
     /**
      * List of all the descriptors.
      */
     private final List<ExpressionDescriptor> descriptors;
-
-//    private static RandomGenerator randomGenerator = RandomUtil.getInstance().getRandomGenerator();
-
-
-    /**
-     * Singleton instance.
-     */
-    private static final ExpressionManager INSTANCE = new ExpressionManager();
 
 
     private ExpressionManager() {
@@ -76,23 +72,6 @@ public class ExpressionManager {
     public static ExpressionManager getInstance() {
         return ExpressionManager.INSTANCE;
     }
-
-    /**
-     * @return a list of all the descriptions.
-     */
-    public List<ExpressionDescriptor> getDescriptors() {
-        return Collections.unmodifiableList(this.descriptors);
-    }
-
-    /**
-     * @return the descriptor to use for the given token.
-     */
-    public ExpressionDescriptor getDescriptorFromToken(String token) {
-        return this.tokenMap.get(token);
-    }
-
-    //======================================= Private methods ===============================//
-
 
     /**
      * Builds all the descriptors.
@@ -190,6 +169,22 @@ public class ExpressionManager {
 
 //        Collections.sort(descriptor, new Comp());
         return descriptors;
+    }
+
+    /**
+     * @return a list of all the descriptions.
+     */
+    public List<ExpressionDescriptor> getDescriptors() {
+        return Collections.unmodifiableList(this.descriptors);
+    }
+
+    //======================================= Private methods ===============================//
+
+    /**
+     * @return the descriptor to use for the given token.
+     */
+    public ExpressionDescriptor getDescriptorFromToken(String token) {
+        return this.tokenMap.get(token);
     }
 
     //================================ Inner class ==============================//

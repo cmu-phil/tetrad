@@ -41,26 +41,26 @@ import org.apache.commons.math3.util.FastMath;
  */
 public class GaussianProcess {
 
+    private static final double INT = 0.1;                // don't reevaluate within 0.1 of the limit of the current bracket
+    private static final double EXT = 3.0;                // extrapolate maximum 3 times the current step-size
+    private static final int MAX = 20;                    // max 20 function evaluations per line search
+    private static final double RATIO = 10;               // maximum allowed slope ratio
     /**
      * hyperparameters
      */
     public Matrix logtheta;
-
     /**
      * input data points
      */
     public Matrix X;
-
     /**
      * Cholesky decomposition of the input
      */
     public Matrix L;
-
     /**
      * partial factor
      */
     public Matrix alpha;
-
     /**
      * covariance function
      */
@@ -76,6 +76,138 @@ public class GaussianProcess {
         this.covFunction = covFunction;
     }
 
+    private static Matrix sumColumns(Matrix a) {
+        Matrix sum = new Matrix(1, a.getColumnDimension());
+        for (int i = 0; i < a.getRowDimension(); i++)
+            sum.plusEquals(a.getMatrix(i, i, 0, a.getColumnDimension() - 1));
+        return sum;
+    }
+
+    private static double sum(Matrix a) {
+        double sum = 0;
+        for (int i = 0; i < a.getRowDimension(); i++)
+            for (int j = 0; j < a.getColumnDimension(); j++)
+                sum += a.get(i, j);
+        return sum;
+    }
+
+    private static Matrix fSubstitution(Matrix L, Matrix B) {
+
+        double[][] l = L.getArray();
+        double[][] b = B.getArray();
+        double[][] x = new double[B.getRowDimension()][B.getColumnDimension()];
+
+        int n = x.length;
+
+        for (int i = 0; i < B.getColumnDimension(); i++) {
+            for (int k = 0; k < n; k++) {
+                x[k][i] = b[k][i];
+                for (int j = 0; j < k; j++) {
+                    x[k][i] -= l[k][j] * x[j][i];
+                }
+                x[k][i] /= l[k][k];
+            }
+        }
+        return new Matrix(x);
+    }
+
+    private static Matrix bSubstitution(Matrix L, Matrix B) {
+
+        double[][] l = L.getArray();
+        double[][] b = B.getArray();
+        double[][] x = new double[B.getRowDimension()][B.getColumnDimension()];
+
+        int n = x.length - 1;
+
+        for (int i = 0; i < B.getColumnDimension(); i++) {
+            for (int k = n; k > -1; k--) {
+                x[k][i] = b[k][i];
+                for (int j = n; j > k; j--) {
+                    x[k][i] -= l[k][j] * x[j][i];
+                }
+                x[k][i] /= l[k][k];
+            }
+        }
+        return new Matrix(x);
+
+    }
+
+    private static Matrix bSubstitutionWithTranspose(Matrix L, Matrix B) {
+
+        double[][] l = L.getArray();
+        double[][] b = B.getArray();
+        double[][] x = new double[B.getRowDimension()][B.getColumnDimension()];
+
+        int n = x.length - 1;
+
+        for (int i = 0; i < B.getColumnDimension(); i++) {
+            for (int k = n; k > -1; k--) {
+                x[k][i] = b[k][i];
+                for (int j = n; j > k; j--) {
+                    x[k][i] -= l[j][k] * x[j][i];
+                }
+                x[k][i] /= l[k][k];
+            }
+        }
+        return new Matrix(x);
+
+    }
+
+    private static boolean hasInvalidNumbers(double[] array) {
+
+        for (double a : array) {
+            if (Double.isInfinite(a) || Double.isNaN(a)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * A simple test
+     *
+     * @param args
+     */
+    public static void main(String[] args) {
+
+
+        CovarianceFunction covFunc = new CovSum(6, new CovLINone(), new CovNoise());
+        GaussianProcess gp = new GaussianProcess(covFunc);
+
+        double[][] logtheta0 = {
+                {0.1},
+                {FastMath.log(0.1)}
+        };
+
+        Matrix params0 = new Matrix(logtheta0);
+
+        Matrix[] data = CsvtoMatrix.load("../armdata.csv", 6, 1);
+        Matrix X = data[0];
+        Matrix Y = data[1];
+
+        gp.train(X, Y, params0, -20);
+
+
+//        int size = 100;
+//        Matrix Xtrain = new Matrix(size, 1);
+//        Matrix Ytrain = new Matrix(size, 1);
+//
+//        Matrix Xtest = new Matrix(size, 1);
+//        Matrix Ytest = new Matrix(size, 1);
+
+        // half of the sinusoid uses points very close to each other and the other half uses
+        // more sparse data
+
+        Matrix[] datastar = CsvtoMatrix.load("../armdatastar.csv", 6, 1);
+        Matrix Xstar = datastar[0];
+        Matrix Ystar = datastar[1];
+
+        Matrix[] res = gp.predict(Xstar);
+
+        res[0].print(res[0].getColumnDimension(), 16);
+        res[1].print(res[1].getColumnDimension(), 16);
+    }
 
     /**
      * Trains the GP Hyperparameters maximizing the marginal likelihood. By default the minimisation algorithm performs
@@ -103,7 +235,6 @@ public class GaussianProcess {
         this.X = X;
         this.logtheta = minimize(logtheta0, iterations, X, y);
     }
-
 
     /**
      * Computes minus the log likelihood and its partial derivatives with respect to the hyperparameters; this mode is
@@ -154,7 +285,6 @@ public class GaussianProcess {
         }
     }
 
-
     /**
      * Computes Gaussian predictions, whose mean and variance are returned. Note that in cases where the covariance
      * function has noise contributions, the variance returned in S2 is for noisy test targets; if you want the variance
@@ -188,7 +318,6 @@ public class GaussianProcess {
         return new Matrix[]{ystar, Sstar};
     }
 
-
     /**
      * Computes Gaussian predictions, whose mean is returned. Note that in cases where the covariance function has noise
      * contributions, the variance returned in S2 is for noisy test targets; if you want the variance of the noise-free
@@ -212,97 +341,7 @@ public class GaussianProcess {
         Matrix Kstar = star[1];
 
         return Kstar.transpose().times(this.alpha);
-    }
-
-    private static Matrix sumColumns(Matrix a) {
-        Matrix sum = new Matrix(1, a.getColumnDimension());
-        for (int i = 0; i < a.getRowDimension(); i++)
-            sum.plusEquals(a.getMatrix(i, i, 0, a.getColumnDimension() - 1));
-        return sum;
-    }
-
-
-    private static double sum(Matrix a) {
-        double sum = 0;
-        for (int i = 0; i < a.getRowDimension(); i++)
-            for (int j = 0; j < a.getColumnDimension(); j++)
-                sum += a.get(i, j);
-        return sum;
-    }
-
-
-    private static Matrix fSubstitution(Matrix L, Matrix B) {
-
-        double[][] l = L.getArray();
-        double[][] b = B.getArray();
-        double[][] x = new double[B.getRowDimension()][B.getColumnDimension()];
-
-        int n = x.length;
-
-        for (int i = 0; i < B.getColumnDimension(); i++) {
-            for (int k = 0; k < n; k++) {
-                x[k][i] = b[k][i];
-                for (int j = 0; j < k; j++) {
-                    x[k][i] -= l[k][j] * x[j][i];
-                }
-                x[k][i] /= l[k][k];
-            }
-        }
-        return new Matrix(x);
-    }
-
-
-    private static Matrix bSubstitution(Matrix L, Matrix B) {
-
-        double[][] l = L.getArray();
-        double[][] b = B.getArray();
-        double[][] x = new double[B.getRowDimension()][B.getColumnDimension()];
-
-        int n = x.length - 1;
-
-        for (int i = 0; i < B.getColumnDimension(); i++) {
-            for (int k = n; k > -1; k--) {
-                x[k][i] = b[k][i];
-                for (int j = n; j > k; j--) {
-                    x[k][i] -= l[k][j] * x[j][i];
-                }
-                x[k][i] /= l[k][k];
-            }
-        }
-        return new Matrix(x);
-
-    }
-
-    private static Matrix bSubstitutionWithTranspose(Matrix L, Matrix B) {
-
-        double[][] l = L.getArray();
-        double[][] b = B.getArray();
-        double[][] x = new double[B.getRowDimension()][B.getColumnDimension()];
-
-        int n = x.length - 1;
-
-        for (int i = 0; i < B.getColumnDimension(); i++) {
-            for (int k = n; k > -1; k--) {
-                x[k][i] = b[k][i];
-                for (int j = n; j > k; j--) {
-                    x[k][i] -= l[j][k] * x[j][i];
-                }
-                x[k][i] /= l[k][k];
-            }
-        }
-        return new Matrix(x);
-
-    }
-
-    private static final double INT = 0.1;                // don't reevaluate within 0.1 of the limit of the current bracket
-
-    private static final double EXT = 3.0;                // extrapolate maximum 3 times the current step-size
-
-    private static final int MAX = 20;                    // max 20 function evaluations per line search
-
-    private static final double RATIO = 10;               // maximum allowed slope ratio
-
-    private static final double SIG = 0.1, RHO = GaussianProcess.SIG / 2;   // SIG and RHO are the constants controlling the Wolfe-
+    }    private static final double SIG = 0.1, RHO = GaussianProcess.SIG / 2;   // SIG and RHO are the constants controlling the Wolfe-
     // Powell conditions. SIG is the maximum allowed absolute ratio between
     // previous and new slopes (derivatives in the search direction), thus setting
     // SIG to low (positive) values forces higher precision in the line-searches.
@@ -310,7 +349,6 @@ public class GaussianProcess {
     // initial point in the linesearch). Constants must satisfy 0 < RHO < SIG < 1.
     // Tuning of SIG (depending on the nature of the function to be optimized) may
     // speed up the minimization; it is probably not worth playing much with RHO.
-
 
     private Matrix minimize(Matrix params, int length, Matrix in, Matrix out) {
 
@@ -521,61 +559,6 @@ public class GaussianProcess {
     }
 
 
-    private static boolean hasInvalidNumbers(double[] array) {
 
-        for (double a : array) {
-            if (Double.isInfinite(a) || Double.isNaN(a)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
-    /**
-     * A simple test
-     *
-     * @param args
-     */
-    public static void main(String[] args) {
-
-
-        CovarianceFunction covFunc = new CovSum(6, new CovLINone(), new CovNoise());
-        GaussianProcess gp = new GaussianProcess(covFunc);
-
-        double[][] logtheta0 = {
-                {0.1},
-                {FastMath.log(0.1)}
-        };
-
-        Matrix params0 = new Matrix(logtheta0);
-
-        Matrix[] data = CsvtoMatrix.load("../armdata.csv", 6, 1);
-        Matrix X = data[0];
-        Matrix Y = data[1];
-
-        gp.train(X, Y, params0, -20);
-
-
-//        int size = 100;
-//        Matrix Xtrain = new Matrix(size, 1);
-//        Matrix Ytrain = new Matrix(size, 1);
-//
-//        Matrix Xtest = new Matrix(size, 1);
-//        Matrix Ytest = new Matrix(size, 1);
-
-        // half of the sinusoid uses points very close to each other and the other half uses
-        // more sparse data
-
-        Matrix[] datastar = CsvtoMatrix.load("../armdatastar.csv", 6, 1);
-        Matrix Xstar = datastar[0];
-        Matrix Ystar = datastar[1];
-
-        Matrix[] res = gp.predict(Xstar);
-
-        res[0].print(res[0].getColumnDimension(), 16);
-        res[1].print(res[1].getColumnDimension(), 16);
-    }
 
 }

@@ -38,9 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Runs a test of logistic regression based on an example (South African heart
- * disease) from "Elements of Statistical Learning" by Hastie, Tibshirani and
- * Friedman.
+ * Runs a test of logistic regression based on an example (South African heart disease) from "Elements of Statistical
+ * Learning" by Hastie, Tibshirani and Friedman.
  *
  * @author Frank Wimberly
  */

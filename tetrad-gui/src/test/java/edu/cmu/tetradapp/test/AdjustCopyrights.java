@@ -37,6 +37,10 @@ import java.util.regex.Pattern;
  */
 public class AdjustCopyrights {
 
+    public static void main(String[] args) {
+        new AdjustCopyrights().adjustCopyrights();
+    }
+
     private void adjustCopyrights() {
         String copyrightNotice = null;
 
@@ -83,10 +87,8 @@ public class AdjustCopyrights {
         return FileLoadingUtils.fromFile(new File("project_tetrad/license_message"));
     }
 
-
     /**
-     * @return all of the files in the given directory whose names end with
-     * ".java".
+     * @return all of the files in the given directory whose names end with ".java".
      */
     private List<File> getJavaFiles(File directory) {
         if (!directory.isDirectory()) {
@@ -107,10 +109,6 @@ public class AdjustCopyrights {
         }
 
         return javaFiles;
-    }
-
-    public static void main(String[] args) {
-        new AdjustCopyrights().adjustCopyrights();
     }
 }
 

@@ -23,8 +23,8 @@ package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IMbSearch;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -58,17 +58,14 @@ public final class Mmmb implements IMbSearch {
      * The maximum number of variables conditioned on.
      */
     int depth;
-
-    /**
-     * Number of independence tests.
-     */
-    private int numIndTests;
-
     /**
      * The function from nodes to their sets of parents and children.
      */
     Map<Node, List<Node>> pc;
-
+    /**
+     * Number of independence tests.
+     */
+    private int numIndTests;
     /**
      * Set of trimmed nodes (for the symmetric implementation).
      */

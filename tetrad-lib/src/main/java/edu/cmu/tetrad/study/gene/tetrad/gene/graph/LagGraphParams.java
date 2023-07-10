@@ -6,16 +6,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 
 public class LagGraphParams {
-    static final long serialVersionUID = 23L;
     public static final int CONSTANT = 0;
     public static final int MAX = 1;
     public static final int MEAN = 2;
+    static final long serialVersionUID = 23L;
+    private final Parameters parameters;
     private int indegreeType;
     private int varsPerInd = 5;
     private int mlag = 1;
     private int indegree = 2;
     private double percentUnregulated = 10;
-    private final Parameters parameters;
 
     public LagGraphParams(Parameters parameters) {
         this.parameters = parameters;

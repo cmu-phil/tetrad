@@ -53,16 +53,14 @@ public class GraphComparisonParams extends SessionAdapter
     private DataSet dataSet;
 
     /**
-     * True iff the data table should be reset every time. Must be true by
-     * default so dataSet will be initialized.
+     * True iff the data table should be reset every time. Must be true by default so dataSet will be initialized.
      *
      * @serial True, false both OK.
      */
     private boolean resetTableOnExecute = true;
 
     /**
-     * True if the user wants to compare with the exact reference graph instead
-     * of removing the latent variables.
+     * True if the user wants to compare with the exact reference graph instead of removing the latent variables.
      *
      * @serial True, false both OK.
      */
@@ -169,35 +167,33 @@ public class GraphComparisonParams extends SessionAdapter
         this.keepLatents = keepLatents;
     }
 
-    public void setReferenceGraphName(String name) {
-        this.referenceGraphName = name;
-    }
-
     public String getReferenceGraphName() {
         return this.referenceGraphName;
     }
 
+    public void setReferenceGraphName(String name) {
+        this.referenceGraphName = name;
+    }
+
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
 
-    public void setTargetGraphName(String targetGraphName) {
-        this.targetGraphName = targetGraphName;
-    }
-
     public String getTargetGraphName() {
         return this.targetGraphName;
+    }
+
+    public void setTargetGraphName(String targetGraphName) {
+        this.targetGraphName = targetGraphName;
     }
 }
 

@@ -35,15 +35,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- * This is the toolbar for the GraphEditor.  Its tools are as follows: <ul> <li>
- * The 'move' tool, allows the user to select and move items in the workbench
- * workbench. <li> The 'addObserved' tool, allows the user to add new observed
- * variables. <li> The 'addLatent' tool, allows the user to add new latent
- * variables. <li> The 'addDirectedEdge' tool, allows the user to add new
- * directed edges. <li> The 'addNondirectedEdge' tool, allows the user to add
- * new nondirected edges. <li> The 'addPartiallyOrientedEdge' tool, allows the
- * user to create new partially directed edges. <li> The 'addBidirectedEdge'
- * tool, allows the user to create new bidirected edges. </ul>
+ * This is the toolbar for the GraphEditor.  Its tools are as follows: <ul> <li> The 'move' tool, allows the user to
+ * select and move items in the workbench workbench. <li> The 'addObserved' tool, allows the user to add new observed
+ * variables. <li> The 'addLatent' tool, allows the user to add new latent variables. <li> The 'addDirectedEdge' tool,
+ * allows the user to add new directed edges. <li> The 'addNondirectedEdge' tool, allows the user to add new nondirected
+ * edges. <li> The 'addPartiallyOrientedEdge' tool, allows the user to create new partially directed edges. <li> The
+ * 'addBidirectedEdge' tool, allows the user to create new bidirected edges. </ul>
  *
  * @author Donald Crimbchin
  * @author josephramsey
@@ -73,8 +70,7 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
     private final GraphWorkbench workbench;
 
     /**
-     * Constructs a new Graph toolbar governing the modes of the given
-     * GraphWorkbench.
+     * Constructs a new Graph toolbar governing the modes of the given GraphWorkbench.
      */
     public DagGraphToolbar(GraphWorkbench workbench) {
         if (workbench == null) {
@@ -143,35 +139,31 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
     }
 
     /**
-     * Convenience method to set the mode of the workbench.  Placed here because
-     * Java will not allow access to the variable 'workbench' from inner
-     * classes.
+     * Convenience method to set the mode of the workbench.  Placed here because Java will not allow access to the
+     * variable 'workbench' from inner classes.
      */
     private void setWorkbenchMode(int mode) {
         this.workbench.setWorkbenchMode(mode);
     }
 
     /**
-     * Convenience method to set the mode of the workbench.  Placed here because
-     * Java will not allow access to the variable 'workbench' from inner
-     * classes.
+     * Convenience method to set the mode of the workbench.  Placed here because Java will not allow access to the
+     * variable 'workbench' from inner classes.
      */
     private void setEdgeMode() {
         this.workbench.setEdgeMode(GraphWorkbench.DIRECTED_EDGE);
     }
 
     /**
-     * Convenience method to set the mode of the workbench.  Placed here because
-     * Java will not allow access to the variable 'workbench' from inner
-     * classes.
+     * Convenience method to set the mode of the workbench.  Placed here because Java will not allow access to the
+     * variable 'workbench' from inner classes.
      */
     private void setNodeMode(int mode) {
         this.workbench.setNodeType(mode);
     }
 
     /**
-     * Adds the various buttons to the toolbar, setting their properties
-     * appropriately.
+     * Adds the various buttons to the toolbar, setting their properties appropriately.
      */
     private void addButton(JToggleButton button, String name) {
         button.setIcon(
@@ -194,8 +186,7 @@ class DagGraphToolbar extends JPanel implements PropertyChangeListener {
     }
 
     /**
-     * For each workbench type, enables the arrow tools which that workbench can
-     * use and disables all others.
+     * For each workbench type, enables the arrow tools which that workbench can use and disables all others.
      */
     private void selectArrowTools() {
         this.addDirectedEdge.setEnabled(true);

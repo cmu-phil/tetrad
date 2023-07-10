@@ -198,7 +198,6 @@ public class FastIca {
      */
     private Matrix wInit;
 
-    //============================CONSTRUCTOR===========================//
 
     /**
      * Constructs an instance of the Fast ICA algorithm, taking as arguments the two arguments that cannot be defaulted:
@@ -211,7 +210,6 @@ public class FastIca {
         this.numComponents = numComponents;
     }
 
-    //=============================PUBLIC METHODS=======================//
 
     /**
      * If algorithmType == PARALLEL the components are extracted simultaneously (the default). if algorithmType ==
@@ -383,7 +381,6 @@ public class FastIca {
 
     }
 
-    //==============================PRIVATE METHODS==========================//
 
     private Matrix icaDeflation(Matrix X,
                                 double tolerance, int function, double alpha,
@@ -643,8 +640,6 @@ public class FastIca {
 
     }
 
-
-    //===============================CLASSES============================//
 
     /**
      * A list containing the following components

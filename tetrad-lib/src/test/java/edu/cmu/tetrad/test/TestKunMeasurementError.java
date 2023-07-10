@@ -41,6 +41,10 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class TestKunMeasurementError {
 
+    public static void main(String... args) {
+        new TestKunMeasurementError().TestCycles_Data_fMRI_FASK();
+    }
+
     public void TestCycles_Data_fMRI_FASK() {
         Parameters parameters = new Parameters();
 
@@ -94,10 +98,6 @@ public class TestKunMeasurementError {
         comparison.setTabDelimitedTables(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
-    }
-
-    public static void main(String... args) {
-        new TestKunMeasurementError().TestCycles_Data_fMRI_FASK();
     }
 }
 

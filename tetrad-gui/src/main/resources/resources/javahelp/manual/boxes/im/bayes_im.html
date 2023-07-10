@@ -5,9 +5,9 @@
           http-equiv="content-type">
     <title>IM</title>
 </head>
-<body vlink="#551a8b" alink="#ee0000" link="#0000ee"
-      style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);">
-<table width="95%" border="1" bgcolor="maroon">
+<body alink="#ee0000" link="#0000ee" style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);"
+      vlink="#551a8b">
+<table bgcolor="maroon" border="1" width="95%">
     <tr>
         <td><h2><font color="#FFFFFF">Bayes Instantiated Model </font></h2></td>
     </tr>
@@ -33,17 +33,17 @@
     How to Construct a Bayes IM</h3>
 <p>To construct a Bayes IM, first construct a DAG, then a Bayes PM, and add an IM box to the workspace, with an arrow
     from the Bayes PM to the IM.</p>
-<p><img src="../../images/bayesim1.gif" width="270" height="66"></p>
+<p><img height="66" src="../../images/bayesim1.gif" width="270"></p>
 <p>Fill in the Graph box and the PM box, as explained in <a href="../pm/bayes_pm.html">Bayes Parameterized Model</a>.
     For instance, you might end up with a graph that looks like this (the categories for X1 are shown).</p>
-<p><img src="../../images/bayesim2.gif" width="919" height="558"></p>
+<p><img height="558" src="../../images/bayesim2.gif" width="919"></p>
 <p>Now, double click the IM box. You get a choice of models; choose Bayes Instantiated Model:</p>
-<p><img src="../../images/bayesim3.gif" width="414" height="145"></p>
+<p><img height="145" src="../../images/bayesim3.gif" width="414"></p>
 <p>What you click OK, you are offered a choice. You may either initialize the parameters of your Bayes net manually
     (i.e., fill them in one by one, by hand), or fill them in randomly.</p>
-<p><img src="../../images/bayesim4.gif" width="406" height="207"></p>
+<p><img height="207" src="../../images/bayesim4.gif" width="406"></p>
 <p>We choose &quot;Manually.&quot; We now get a dialog that looks like the following:</p>
-<p><img src="../../images/bayesim5.gif" width="911" height="560"></p>
+<p><img height="560" src="../../images/bayesim5.gif" width="911"></p>
 <p>X1 here has two parents, X2 and X5. Each combination of parent values for X2 and X5 is listed as a row in the
     conditional probability table for X1. Each category for X1 is listed as a column in the conditional probability
     table. We can now fill in these probability values however we like, provided we choose non-negative real numbers
@@ -51,9 +51,9 @@
     you fill in the 0.2000 and 0.5000 in the table below, the table will fill in the 0.3000 for you. Also, if you simply
     want to fill in table cells randomly, right click on any <em>nonselected</em> table cell. You get a popup menu like
     the one below. </p>
-<p><img src="../../images/bayesim6.gif" width="500" height="271"></p>
+<p><img height="271" src="../../images/bayesim6.gif" width="500"></p>
 <p>If you select &quot;Randomize this row,&quot; the row is filled in with random values. For example: </p>
-<p><img src="../../images/bayesim7.gif" width="444" height="243"></p>
+<p><img height="243" src="../../images/bayesim7.gif" width="444"></p>
 <p>Similarly for the other popup menu functions shown.</p>
 <p>Once all of the table cells have been filled in, the Bayes IM is ready to be used as input to other boxes. You may,
     for example, simulate data using the Bayes IM, or you may perform updating operations on it. See <a
@@ -87,8 +87,8 @@
     <br>
     <br>
     <img
-            src="../../images/UBaysesIMcopy.jpg" alt="" width="859" height="495"
-            style="width: 859px; height: 495px;"><br>
+            alt="" height="495" src="../../images/UBaysesIMcopy.jpg" style="width: 859px; height: 495px;"
+            width="859"><br>
     <br>
     <br>
     Choose a variable either using the "Next" button on the right side of the window or by clicking on the variable in

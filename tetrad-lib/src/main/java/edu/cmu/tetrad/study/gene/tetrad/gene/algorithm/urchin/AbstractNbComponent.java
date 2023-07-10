@@ -59,12 +59,21 @@ public abstract class AbstractNbComponent implements NbComponent {
         return this.value;
     }
 
+    public void setValue(double level) {
+        this.value = level;
+    }
+
     public String getName() {
         return this.name;
     }
 
-    public void setValue(double level) {
-        this.value = level;
+    public void setName(String name) {
+        if (!NamingProtocol.isLegalName(name)) {
+            throw new IllegalArgumentException(
+                    NamingProtocol.getProtocolDescription());
+        }
+
+        this.name = name;
     }
 
     public void addParent(NbComponent component, int ie) {
@@ -122,15 +131,6 @@ public abstract class AbstractNbComponent implements NbComponent {
 
     public void setNparents(int nparents) {
         this.nparents = nparents;
-    }
-
-    public void setName(String name) {
-        if (!NamingProtocol.isLegalName(name)) {
-            throw new IllegalArgumentException(
-                    NamingProtocol.getProtocolDescription());
-        }
-
-        this.name = name;
     }
 
     public double getFactor() {

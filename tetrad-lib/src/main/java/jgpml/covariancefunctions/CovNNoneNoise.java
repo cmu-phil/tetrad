@@ -53,6 +53,24 @@ public class CovNNoneNoise implements CovarianceFunction {
     public CovNNoneNoise() {
     }
 
+    public static void main(String[] args) {
+
+        CovarianceFunction cf = new CovNNoneNoise();
+        CovarianceFunction cf2 = new CovSum(6, new CovNNone(), new CovNoise());
+
+
+        Matrix X = Matrix.identity(10, 6);
+
+        for (int i = 0; i < X.getRowDimension(); i++)
+            for (int j = 0; j < X.getColumnDimension(); j++)
+                X.set(i, j, FastMath.random());
+
+        Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}, {FastMath.log(0.1)}});
+
+        Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
+
+
+    }
 
     /**
      * Returns the number of hyperparameters of this<code>CovarianceFunction</code>
@@ -306,24 +324,5 @@ public class CovNNoneNoise implements CovarianceFunction {
                 throw new IllegalArgumentException("the covariance function CovNNoneNoise alllows for a maximum of 3 parameters!!");
         }
         return A;
-    }
-
-    public static void main(String[] args) {
-
-        CovarianceFunction cf = new CovNNoneNoise();
-        CovarianceFunction cf2 = new CovSum(6, new CovNNone(), new CovNoise());
-
-
-        Matrix X = Matrix.identity(10, 6);
-
-        for (int i = 0; i < X.getRowDimension(); i++)
-            for (int j = 0; j < X.getColumnDimension(); j++)
-                X.set(i, j, FastMath.random());
-
-        Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}, {FastMath.log(0.1)}});
-
-        Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
-
-
     }
 }

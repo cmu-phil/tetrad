@@ -26,11 +26,10 @@ import java.util.List;
 
 
 public class DataForCalibrationRfci {
+    public int depth = 5;
     PrintWriter outProb;
     private PrintWriter outGraph;
     private PrintWriter outPag;
-    public int depth = 5;
-
 
     public static void main(String[] args) throws IOException {
 
@@ -373,35 +372,6 @@ public class DataForCalibrationRfci {
         return estPag;
     }
 
-    private interface EdgeProbabiity {
-        double getProbability(Edge edge);
-    }
-
-    private static class EdgeFrequency implements EdgeProbabiity {
-        private final List<Graph> PagProbs;
-
-        public EdgeFrequency(List<Graph> PagProb) {
-            this.PagProbs = PagProb;
-        }
-
-        public double getProbability(Edge e) {
-            int count = 0;
-
-            if (!PagProbs.get(0).containsNode(e.getNode1())) throw new IllegalArgumentException();
-            if (!PagProbs.get(0).containsNode(e.getNode2())) throw new IllegalArgumentException();
-
-            for (Graph g : PagProbs) {
-                if (e.getEndpoint1() == Endpoint.NULL || e.getEndpoint2() == Endpoint.NULL) {
-                    if (!g.isAdjacentTo(e.getNode1(), e.getNode2())) count++;
-                } else {
-                    if (g.containsEdge(e)) count++;
-                }
-            }
-
-            return count / (double) PagProbs.size();
-        }
-    }
-
     public boolean checkProbFileExists(String modelName, int numVars, int numEdges, int numCases, int numBootstrapSamples, String alg, int i, double numLatentConfounders, double alpha, String data_path) {
 //		String dirname = System.getProperty("user.dir") +  "/CalibrationConstraintBased/"+ alg + "/" + modelName +"-Vars" + numVars +  "-Edges" + numEdges +  "-Cases" + numCases +  "-BS" + numBootstrapSamples + "-H" + numLatentConfounders + "-a" + alpha ;
         String dirname = data_path + "/CalibrationConstraintBased/" + alg + "/" + modelName + "-Vars" + numVars + "-Edges" + numEdges + "-Cases" + numCases + "-BS" + numBootstrapSamples + "-H" + numLatentConfounders + "-a" + alpha;
@@ -444,5 +414,34 @@ public class DataForCalibrationRfci {
         out.flush();
         out.print(s);
         out.flush();
+    }
+
+    private interface EdgeProbabiity {
+        double getProbability(Edge edge);
+    }
+
+    private static class EdgeFrequency implements EdgeProbabiity {
+        private final List<Graph> PagProbs;
+
+        public EdgeFrequency(List<Graph> PagProb) {
+            this.PagProbs = PagProb;
+        }
+
+        public double getProbability(Edge e) {
+            int count = 0;
+
+            if (!PagProbs.get(0).containsNode(e.getNode1())) throw new IllegalArgumentException();
+            if (!PagProbs.get(0).containsNode(e.getNode2())) throw new IllegalArgumentException();
+
+            for (Graph g : PagProbs) {
+                if (e.getEndpoint1() == Endpoint.NULL || e.getEndpoint2() == Endpoint.NULL) {
+                    if (!g.isAdjacentTo(e.getNode1(), e.getNode2())) count++;
+                } else {
+                    if (g.containsEdge(e)) count++;
+                }
+            }
+
+            return count / (double) PagProbs.size();
+        }
     }
 }

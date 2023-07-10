@@ -49,49 +49,37 @@ public final class VcPc implements IGraphSearch {
      * The independence test used for the PC search.
      */
     private final IndependenceTest independenceTest;
-
-    /**
-     * Forbidden and required edges for the search.
-     */
-    private Knowledge knowledge = new Knowledge();
-
-    /**
-     * The maximum number of nodes conditioned on in the search.
-     */
-    private int depth = 1000;
-
-    private Graph graph;
-
-
-    /**
-     * Elapsed time of last search.
-     */
-    private long elapsedTime;
-
-    /**
-     * Set of unshielded colliders from the triple orientation step.
-     */
-    private Set<Triple> colliderTriples;
-
-    /**
-     * Set of unshielded noncolliders from the triple orientation step.
-     */
-    private Set<Triple> noncolliderTriples;
-
-    /**
-     * Set of ambiguous unshielded triples.
-     */
-    private Set<Triple> ambiguousTriples;
-
-    private Set<Edge> definitelyNonadjacencies;
-
-    private boolean meekPreventCycles;
-
     /**
      * The logger for this class. The config needs to be set.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
+    /**
+     * Forbidden and required edges for the search.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * The maximum number of nodes conditioned on in the search.
+     */
+    private int depth = 1000;
+    private Graph graph;
+    /**
+     * Elapsed time of last search.
+     */
+    private long elapsedTime;
+    /**
+     * Set of unshielded colliders from the triple orientation step.
+     */
+    private Set<Triple> colliderTriples;
+    /**
+     * Set of unshielded noncolliders from the triple orientation step.
+     */
+    private Set<Triple> noncolliderTriples;
+    /**
+     * Set of ambiguous unshielded triples.
+     */
+    private Set<Triple> ambiguousTriples;
+    private Set<Edge> definitelyNonadjacencies;
+    private boolean meekPreventCycles;
     /**
      * The sepsets.
      */
@@ -124,6 +112,58 @@ public final class VcPc implements IGraphSearch {
 
     //==============================PUBLIC METHODS========================//
 
+    //    Constraints to guarantee future path conditions met. After traversing the entire path,
+//    returns last node on path when satisfied, stops otherwise.
+    private static Node traverseFuturePath(Node node, Edge edge1, Edge edge2) {
+        Endpoint E1 = edge1.getProximalEndpoint(node);
+        Endpoint E2 = edge2.getProximalEndpoint(node);
+        Endpoint E3 = edge2.getDistalEndpoint(node);
+        Endpoint E4 = edge1.getDistalEndpoint(node);
+        if (E1 == Endpoint.ARROW && E2 == Endpoint.ARROW && E3 == Endpoint.TAIL) {
+            return null;
+        }
+        if (E4 == Endpoint.ARROW) {
+            return null;
+        }
+        if (E4 == Endpoint.TAIL && E1 == Endpoint.TAIL && E2 == Endpoint.TAIL && E3 == Endpoint.TAIL) {
+            return null;
+        }
+        return edge2.getDistalNode(node);
+    }
+
+    //    Takes a triple n1-n2-child and adds child to futureNodes set if satisfies constraints for future.
+//    Uses traverseFuturePath to add nodes to set.
+    public static void futureNodeVisit(Graph graph, Node b, LinkedList<Node> path, Set<Node> futureNodes) {
+        path.addLast(b);
+        futureNodes.add(b);
+        for (Edge edge2 : graph.getEdges(b)) {
+            Node c;
+
+            int size = path.size();
+            if (path.size() < 2) {
+                c = edge2.getDistalNode(b);
+            } else {
+                Node a = path.get(size - 2);
+                Edge edge1 = graph.getEdge(a, b);
+                c = VcPc.traverseFuturePath(b, edge1, edge2);
+            }
+            if (c == null) {
+                continue;
+            }
+            if (path.contains(c)) {
+                continue;
+            }
+            VcPc.futureNodeVisit(graph, c, path, futureNodes);
+        }
+        path.removeLast();
+    }
+
+    public static boolean isArrowheadAllowed1(Node from, Node to,
+                                              Knowledge knowledge) {
+        return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
+                !knowledge.isForbidden(from.toString(), to.toString());
+    }
+
     /**
      * @return true just in case edges will not be added if they would create cycles.
      */
@@ -136,23 +176,6 @@ public final class VcPc implements IGraphSearch {
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;
-    }
-
-    /**
-     * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
-     * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
-     */
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
-        }
-
-        if (depth == Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-                    "due to a known bug.");
-        }
-
-        this.depth = depth;
     }
 
     /**
@@ -193,13 +216,29 @@ public final class VcPc implements IGraphSearch {
     }
 
     /**
+     * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
+     * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multi-core systems.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
+        }
+
+        if (depth == Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
+                    "due to a known bug.");
+        }
+
+        this.depth = depth;
+    }
+
+    /**
      * @return the set of ambiguous triples found during the most recent run of the algorithm. Non-null after a call to
      * <code>search()</code>.
      */
     public Set<Triple> getAmbiguousTriples() {
         return new HashSet<>(this.ambiguousTriples);
     }
-
 
     /**
      * @return the set of collider triples found during the most recent run of the algorithm. Non-null after a call to
@@ -220,6 +259,8 @@ public final class VcPc implements IGraphSearch {
     public Set<Edge> getAdjacencies() {
         return new HashSet<>(this.graph.getEdges());
     }
+
+    //==========================PRIVATE METHODS===========================//
 
     public Set<Edge> getApparentNonadjacencies() {
         return new HashSet<>(this.apparentlyNonadjacencies.keySet());
@@ -448,8 +489,6 @@ public final class VcPc implements IGraphSearch {
         return this.graph;
     }
 
-    //==========================PRIVATE METHODS===========================//
-
     //    For a node x, adds nodes y such that either y-x or y->x to the boundary of x
     private Set<Node> boundary(Node x, Graph graph) {
         Set<Node> boundary = new HashSet<>();
@@ -476,53 +515,6 @@ public final class VcPc implements IGraphSearch {
         }
         return futureNodes;
     }
-
-    //    Constraints to guarantee future path conditions met. After traversing the entire path,
-//    returns last node on path when satisfied, stops otherwise.
-    private static Node traverseFuturePath(Node node, Edge edge1, Edge edge2) {
-        Endpoint E1 = edge1.getProximalEndpoint(node);
-        Endpoint E2 = edge2.getProximalEndpoint(node);
-        Endpoint E3 = edge2.getDistalEndpoint(node);
-        Endpoint E4 = edge1.getDistalEndpoint(node);
-        if (E1 == Endpoint.ARROW && E2 == Endpoint.ARROW && E3 == Endpoint.TAIL) {
-            return null;
-        }
-        if (E4 == Endpoint.ARROW) {
-            return null;
-        }
-        if (E4 == Endpoint.TAIL && E1 == Endpoint.TAIL && E2 == Endpoint.TAIL && E3 == Endpoint.TAIL) {
-            return null;
-        }
-        return edge2.getDistalNode(node);
-    }
-
-    //    Takes a triple n1-n2-child and adds child to futureNodes set if satisfies constraints for future.
-//    Uses traverseFuturePath to add nodes to set.
-    public static void futureNodeVisit(Graph graph, Node b, LinkedList<Node> path, Set<Node> futureNodes) {
-        path.addLast(b);
-        futureNodes.add(b);
-        for (Edge edge2 : graph.getEdges(b)) {
-            Node c;
-
-            int size = path.size();
-            if (path.size() < 2) {
-                c = edge2.getDistalNode(b);
-            } else {
-                Node a = path.get(size - 2);
-                Edge edge1 = graph.getEdge(a, b);
-                c = VcPc.traverseFuturePath(b, edge1, edge2);
-            }
-            if (c == null) {
-                continue;
-            }
-            if (path.contains(c)) {
-                continue;
-            }
-            VcPc.futureNodeVisit(graph, c, path, futureNodes);
-        }
-        path.removeLast();
-    }
-
 
     private void orientUnshieldedTriples(Knowledge knowledge,
                                          IndependenceTest test, int depth) {
@@ -678,19 +670,9 @@ public final class VcPc implements IGraphSearch {
         }
     }
 
-    public enum CpcTripleType {
-        COLLIDER, NONCOLLIDER, AMBIGUOUS
-    }
-
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return VcPc.isArrowheadAllowed1(x, y, knowledge) &&
                 VcPc.isArrowheadAllowed1(z, y, knowledge);
-    }
-
-    public static boolean isArrowheadAllowed1(Node from, Node to,
-                                              Knowledge knowledge) {
-        return knowledge == null || !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     /**
@@ -710,6 +692,10 @@ public final class VcPc implements IGraphSearch {
 
     public void setFacts(IndependenceFacts facts) {
         this.facts = facts;
+    }
+
+    public enum CpcTripleType {
+        COLLIDER, NONCOLLIDER, AMBIGUOUS
     }
 }
 

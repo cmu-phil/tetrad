@@ -24,9 +24,9 @@ package edu.cmu.tetradapp.util;
 import java.awt.datatransfer.Clipboard;
 
 /**
- * Stores cut or copied objects in a way that does not allow them to be
- * accidentally pasted to other applications. Data that should be pastable to
- * other applications should use the System clipboard, Toolkit.getDefaultToolkit().getSystemClipboard().
+ * Stores cut or copied objects in a way that does not allow them to be accidentally pasted to other applications. Data
+ * that should be pastable to other applications should use the System clipboard,
+ * Toolkit.getDefaultToolkit().getSystemClipboard().
  *
  * @author josephramsey
  */
@@ -34,16 +34,16 @@ public class InternalClipboard extends Clipboard {
     private static final InternalClipboard ourInstance = new InternalClipboard();
     private static final InternalClipboard layoutInstance = new InternalClipboard();
 
+    private InternalClipboard() {
+        super("Internal Clipboard");
+    }
+
     public static InternalClipboard getInstance() {
         return InternalClipboard.ourInstance;
     }
 
     public static InternalClipboard getLayoutInstance() {
         return InternalClipboard.layoutInstance;
-    }
-
-    private InternalClipboard() {
-        super("Internal Clipboard");
     }
 }
 

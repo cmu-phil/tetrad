@@ -40,32 +40,27 @@ import java.util.WeakHashMap;
  */
 public final class DagToPag {
 
+    private static final WeakHashMap<Graph, Graph> history = new WeakHashMap<>();
     private final Graph dag;
-
-    /*
-     * The background knowledge.
-     */
-    private Knowledge knowledge = new Knowledge();
-
-    /**
-     * Glag for complete rule set, true if should use complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
-
     /**
      * The logger to use.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
+    /*
+     * The background knowledge.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * Glag for complete rule set, true if should use complete rule set, false otherwise.
+     */
+    private boolean completeRuleSetUsed = true;
     /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
     private int maxPathLength = -1;
     private boolean doDiscriminatingPathRule = true;
-    private static final WeakHashMap<Graph, Graph> history = new WeakHashMap<>();
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -74,7 +69,26 @@ public final class DagToPag {
         this.dag = new EdgeListGraph(dag);
     }
 
-    //========================PUBLIC METHODS==========================//
+
+    public static boolean existsInducingPathInto(Node x, Node y, Graph graph) {
+        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
+        if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
+
+        LinkedList<Node> path = new LinkedList<>();
+        path.add(x);
+
+        for (Node b : graph.getAdjacentNodes(x)) {
+            Edge edge = graph.getEdge(x, b);
+            if (edge.getProximalEndpoint(x) != Endpoint.ARROW) continue;
+//            if (!edge.pointsTowards(x)) continue;
+
+            if (graph.paths().existsInducingPathVisit(x, b, x, y, path)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * This method does the convertion of DAG to PAG.
@@ -120,27 +134,6 @@ public final class DagToPag {
 
         return graph;
     }
-
-    public static boolean existsInducingPathInto(Node x, Node y, Graph graph) {
-        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-        if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-
-        LinkedList<Node> path = new LinkedList<>();
-        path.add(x);
-
-        for (Node b : graph.getAdjacentNodes(x)) {
-            Edge edge = graph.getEdge(x, b);
-            if (edge.getProximalEndpoint(x) != Endpoint.ARROW) continue;
-//            if (!edge.pointsTowards(x)) continue;
-
-            if (graph.paths().existsInducingPathVisit(x, b, x, y, path)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
 
     public Knowledge getKnowledge() {
         return this.knowledge;

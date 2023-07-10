@@ -28,8 +28,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Tests the Version class, to make sure it can load versions from string
- * representations and generate string representations correctly.
+ * Tests the Version class, to make sure it can load versions from string representations and generate string
+ * representations correctly.
  *
  * @author josephramsey
  */

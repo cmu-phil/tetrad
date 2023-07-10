@@ -63,35 +63,38 @@ import java.util.*;
 public class SessionNode implements Node {
 
     static final long serialVersionUID = 23L;
-
+    /**
+     * A map from model classes to parameter objects.
+     *
+     * @serial Cannot be null.
+     */
+    private final Map<Class, Parameters> paramMap = new HashMap<>();
+    private final Parameters parameters = new Parameters();
+    private final Map<String, Object> attributes = new HashMap<>();
     /**
      * The (optional) name of this session node.
      *
      * @serial Cannot be null.
      */
     private String boxType;
-
     /**
      * The display name of the session node.
      *
      * @serial Cannot be null.
      */
     private String displayName;
-
     /**
      * The possible classes this SessionNode can use to construct models.
      *
      * @serial Cannot be null.
      */
     private Class[] modelClasses;
-
     /**
      * The class of the last model created.
      *
      * @serial Can be null.
      */
     private Class lastModelClass;
-
     /**
      * When a model is created, we keep a reference to its param types in order to determine, should the need arise,
      * whether one of the objects used to create the model has been destroyed.
@@ -99,33 +102,22 @@ public class SessionNode implements Node {
      * @serial Can be null.
      */
     private Class[] modelParamTypes;
-
     /**
      * The model itself. Once this is created, another model cannot be created until this one is explicitly destroyed.
      *
      * @serial Can be null.
      */
     private SessionModel model;
-
     /**
      * Stores a reference to the previous model so that information from it can be used to initialize a new model.
      *
      * @serial Can be null.
      */
     private SessionModel oldModel;
-
     /**
      * Stores a clone of the model being edited, in case the user wants to cancel.
      */
     private transient SessionModel savedModel;
-
-    /**
-     * A map from model classes to parameter objects.
-     *
-     * @serial Cannot be null.
-     */
-    private final Map<Class, Parameters> paramMap = new HashMap<>();
-
     /**
      * The set of parents of this node--a Set of SessionNodes. Must be kept in sync with sets of children in the parent
      * nodes.
@@ -133,7 +125,6 @@ public class SessionNode implements Node {
      * @serial Cannot be null.
      */
     private Set<SessionNode> parents = new HashSet<>();
-
     /**
      * The set of children of this node--a Set of SessionNodes. Must be kept in sync with sets of parents in the child
      * nodes.
@@ -141,7 +132,6 @@ public class SessionNode implements Node {
      * @serial Cannot be null.
      */
     private Set<SessionNode> children = new HashSet<>();
-
     /**
      * True iff the next edge should not be added. (Included for GUI user control.) Reset to true every time an edge is
      * added; edge adds must be disallowed individually. To disallow the next edge add, set to false.
@@ -149,7 +139,6 @@ public class SessionNode implements Node {
      * @serial Any value.
      */
     private boolean nextEdgeAddAllowed = true;
-
     /**
      * The number of times this session node should be executed (in depth first order) in a simulation
      * edu.cmu.tetrad.study.
@@ -157,25 +146,19 @@ public class SessionNode implements Node {
      * @serial Range &gt; 0.
      */
     private int repetition = 1;
-
     /**
      * Support for firing SessionEvent's.
      */
     private transient SessionSupport sessionSupport;
-
     /**
      * Handles incoming session events, basically by redirecting to any listeners of this session.
      */
     private transient SessionHandler sessionHandler;
     private TetradLoggerConfig loggerConfig;
-    private final Parameters parameters = new Parameters();
-
     /**
      * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
-
-    private final Map<String, Object> attributes = new HashMap<>();
 
     //==========================CONSTRUCTORS===========================//
 
@@ -1047,14 +1030,6 @@ public class SessionNode implements Node {
         return 0;
     }
 
-    /**
-     * True iff the next edge should not be added. (Included for GUI user control.) Reset to true every time an edge is
-     * added; edge adds must be disallowed individually. To disallow the next edge add, set to false.
-     */
-    public void setNextEdgeAddAllowed(boolean nextEdgeAddAllowed) {
-        this.nextEdgeAddAllowed = nextEdgeAddAllowed;
-    }
-
     public boolean existsParameterizedConstructor(Class modelClass) {
         Object param = getParam(modelClass);
         List parentModels = listParentModels();
@@ -1137,11 +1112,6 @@ public class SessionNode implements Node {
         this.savedModel = null;
     }
 
-    //=====================PACKAGE PROTECTED METHODS=====================//
-    //===================================================================//
-    // Note: Leave these method package protected for unit testing.      //
-    //===================================================================//
-
     /**
      * Determines whether a given model class is consistent with the models contained in the given List of nodes, in the
      * sense that the model class has a constructor that can take the models of the nodes as arguments.
@@ -1162,6 +1132,11 @@ public class SessionNode implements Node {
 
         return isConsistentModelClass(modelClass, nodeClasses, exact, null);
     }
+
+    //=====================PACKAGE PROTECTED METHODS=====================//
+    //===================================================================//
+    // Note: Leave these method package protected for unit testing.      //
+    //===================================================================//
 
     /**
      * <p>
@@ -1413,14 +1388,14 @@ public class SessionNode implements Node {
         return this.sessionHandler;
     }
 
-    //==============================PRIVATE METHODS=======================//
-
     /**
      * @return true iff the given node is parent of this node.
      */
     private boolean containsParent(SessionNode parent) {
         return this.parents.contains(parent);
     }
+
+    //==============================PRIVATE METHODS=======================//
 
     /**
      * @return the parameter types used to construct the model.
@@ -1435,6 +1410,14 @@ public class SessionNode implements Node {
      */
     private boolean isNextEdgeAddAllowed() {
         return this.nextEdgeAddAllowed;
+    }
+
+    /**
+     * True iff the next edge should not be added. (Included for GUI user control.) Reset to true every time an edge is
+     * added; edge adds must be disallowed individually. To disallow the next edge add, set to false.
+     */
+    public void setNextEdgeAddAllowed(boolean nextEdgeAddAllowed) {
+        this.nextEdgeAddAllowed = nextEdgeAddAllowed;
     }
 
     private List<Object> getParentModels() {
@@ -1795,51 +1778,6 @@ public class SessionNode implements Node {
     }
 
     /**
-     * Handles <code>SessionEvent</code>s. Hides the handling of these from the API.
-     */
-    private class SessionHandler extends SessionAdapter {
-
-        /**
-         * When a model is destroyed from a node this is listening to and this destroys one of the arguments used to
-         * create the model, then the model of this node has to be destroyed.
-         */
-        public void modelDestroyed(SessionEvent event) {
-            reassessModel();
-        }
-
-        /**
-         * When a new execution is begun of a simulation edu.cmu.tetrad.study, this event is sent downstream so that
-         * certain parameter objects can reset themselves.
-         */
-        public void executionStarted(SessionEvent event) {
-
-            // Restart the getModel param object if necessary.
-            Object model = getModel();
-
-            for (Class clazz : SessionNode.this.modelClasses) {
-                Object param = getParam(clazz);
-
-                if (param instanceof ExecutionRestarter) {
-                    ExecutionRestarter restarter = (ExecutionRestarter) param;
-                    restarter.newExecution();
-                }
-            }
-//
-//            if (model != null) {
-//                Object param = getParam(model.getClass());
-//
-//                if (param instanceof ExecutionRestarter) {
-//                    ExecutionRestarter restarter = (ExecutionRestarter) param;
-//                    restarter.newExecution();
-//                }
-//            }
-
-            // Pass the message along.
-            getSessionSupport().fireSessionEvent(event);
-        }
-    }
-
-    /**
      * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
      * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
      * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
@@ -1898,6 +1836,51 @@ public class SessionNode implements Node {
     @Override
     public void addAttribute(String key, Object value) {
         this.attributes.put(key, value);
+    }
+
+    /**
+     * Handles <code>SessionEvent</code>s. Hides the handling of these from the API.
+     */
+    private class SessionHandler extends SessionAdapter {
+
+        /**
+         * When a model is destroyed from a node this is listening to and this destroys one of the arguments used to
+         * create the model, then the model of this node has to be destroyed.
+         */
+        public void modelDestroyed(SessionEvent event) {
+            reassessModel();
+        }
+
+        /**
+         * When a new execution is begun of a simulation edu.cmu.tetrad.study, this event is sent downstream so that
+         * certain parameter objects can reset themselves.
+         */
+        public void executionStarted(SessionEvent event) {
+
+            // Restart the getModel param object if necessary.
+            Object model = getModel();
+
+            for (Class clazz : SessionNode.this.modelClasses) {
+                Object param = getParam(clazz);
+
+                if (param instanceof ExecutionRestarter) {
+                    ExecutionRestarter restarter = (ExecutionRestarter) param;
+                    restarter.newExecution();
+                }
+            }
+//
+//            if (model != null) {
+//                Object param = getParam(model.getClass());
+//
+//                if (param instanceof ExecutionRestarter) {
+//                    ExecutionRestarter restarter = (ExecutionRestarter) param;
+//                    restarter.newExecution();
+//                }
+//            }
+
+            // Pass the message along.
+            getSessionSupport().fireSessionEvent(event);
+        }
     }
 
 }

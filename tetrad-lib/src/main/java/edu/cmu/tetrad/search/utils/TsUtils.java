@@ -137,24 +137,6 @@ public class TsUtils {
         return new BoxDataSet(new DoubleDataBox(residuals.toArray()), timeSeries.getVariables());
     }
 
-    private int[] eliminateMissing(int[] parents, int dataIndex, DataSet dataSet, List<Node> missingVariables) {
-        List<Integer> _parents = new ArrayList<>();
-
-        for (int k : parents) {
-            if (!missingVariables.contains(dataSet.getVariable(k))) {
-                _parents.add(k);
-            }
-        }
-
-        int[] _parents2 = new int[_parents.size()];
-
-        for (int i = 0; i < _parents.size(); i++) {
-            _parents2[i] = _parents.get(i);
-        }
-
-        return _parents2;
-    }
-
     public static VarResult structuralVar(DataSet timeSeries, int numLags) {
         DataSet timeLags = TsUtils.createLagData(timeSeries, numLags);
         Knowledge knowledge = timeLags.getKnowledge().copy();
@@ -261,28 +243,6 @@ public class TsUtils {
         }
 
         return new BoxDataSet(new DoubleDataBox(shiftedData.toArray()), data.getVariables());
-    }
-
-    /**
-     * Gives a result consisting of the residuals and collapsed var graphs.
-     */
-    public static class VarResult {
-
-        private final DataSet residuals;
-        private final Graph collapsedVarGraph;
-
-        public VarResult(DataSet dataSet, Graph collapsedVarGraph) {
-            this.residuals = dataSet;
-            this.collapsedVarGraph = collapsedVarGraph;
-        }
-
-        public DataSet getResiduals() {
-            return this.residuals;
-        }
-
-        public Graph getCollapsedVarGraph() {
-            return this.collapsedVarGraph;
-        }
     }
 
     public static double[] getSelfLoopCoefs(DataSet timeSeries) {
@@ -640,6 +600,46 @@ public class TsUtils {
             }
         }
         return true;
+    }
+
+    private int[] eliminateMissing(int[] parents, int dataIndex, DataSet dataSet, List<Node> missingVariables) {
+        List<Integer> _parents = new ArrayList<>();
+
+        for (int k : parents) {
+            if (!missingVariables.contains(dataSet.getVariable(k))) {
+                _parents.add(k);
+            }
+        }
+
+        int[] _parents2 = new int[_parents.size()];
+
+        for (int i = 0; i < _parents.size(); i++) {
+            _parents2[i] = _parents.get(i);
+        }
+
+        return _parents2;
+    }
+
+    /**
+     * Gives a result consisting of the residuals and collapsed var graphs.
+     */
+    public static class VarResult {
+
+        private final DataSet residuals;
+        private final Graph collapsedVarGraph;
+
+        public VarResult(DataSet dataSet, Graph collapsedVarGraph) {
+            this.residuals = dataSet;
+            this.collapsedVarGraph = collapsedVarGraph;
+        }
+
+        public DataSet getResiduals() {
+            return this.residuals;
+        }
+
+        public Graph getCollapsedVarGraph() {
+            return this.collapsedVarGraph;
+        }
     }
 
 }

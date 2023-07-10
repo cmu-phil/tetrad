@@ -45,19 +45,16 @@ import java.util.Set;
 public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
 
     static final long serialVersionUID = 23L;
-
-    /**
-     * @serial Can be null.
-     */
-    private String name;
-
     /**
      * The wrapped SemPm.
      *
      * @serial Cannot be null.
      */
     private final GeneralizedSemPm semPm;
-
+    /**
+     * @serial Can be null.
+     */
+    private String name;
     /**
      * True iff errors should be shown in teh editor.
      */
@@ -197,14 +194,6 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
         }
     }
 
-    public void setReferencedParameters(Node node, GeneralizedSemPm oldPm, GeneralizedSemPm newPm) {
-        Set<String> parameters = this.semPm.getReferencedParameters(node);
-
-        for (String parameter : parameters) {
-
-        }
-    }
-
     public GeneralizedSemPmWrapper(SemPmWrapper pmWrapper) {
         if (pmWrapper == null) {
             throw new NullPointerException();
@@ -214,8 +203,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
     }
 
     /**
-     * Creates a new BayesPm from the given workbench and uses it to construct a
-     * new BayesPm.
+     * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
      */
     public GeneralizedSemPmWrapper(GraphSource graphWrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()));
@@ -226,24 +214,21 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
     }
 
     /**
-     * Creates a new BayesPm from the given workbench and uses it to construct a
-     * new BayesPm.
+     * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
      */
     public GeneralizedSemPmWrapper(GraphSource graphWrapper, GeneralizedSemPmWrapper wrapper) {
         this(new EdgeListGraph(graphWrapper.getGraph()), wrapper.getSemPm());
     }
 
     /**
-     * Creates a new BayesPm from the given workbench and uses it to construct a
-     * new BayesPm.
+     * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
      */
     public GeneralizedSemPmWrapper(DagWrapper dagWrapper, GeneralizedSemPmWrapper wrapper) {
         this(new EdgeListGraph(dagWrapper.getDag()), wrapper.getSemPm());
     }
 
     /**
-     * Creates a new BayesPm from the given workbench and uses it to construct a
-     * new BayesPm.
+     * Creates a new BayesPm from the given workbench and uses it to construct a new BayesPm.
      */
     public GeneralizedSemPmWrapper(SemGraphWrapper semGraphWrapper, GeneralizedSemPmWrapper wrapper) {
         this(semGraphWrapper.getSemGraph(), wrapper.getSemPm());
@@ -254,8 +239,7 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
     }
 
     /**
-     * Creates a new SemPm from the given workbench and uses it to construct a
-     * new BayesPm.
+     * Creates a new SemPm from the given workbench and uses it to construct a new BayesPm.
      */
     public GeneralizedSemPmWrapper(TimeLagGraphWrapper wrapper) {
         this(wrapper.getGraph());
@@ -307,20 +291,26 @@ public class GeneralizedSemPmWrapper implements KnowledgeBoxInput {
         return new GeneralizedSemPmWrapper(Dag.serializableInstance());
     }
 
+    public void setReferencedParameters(Node node, GeneralizedSemPm oldPm, GeneralizedSemPm newPm) {
+        Set<String> parameters = this.semPm.getReferencedParameters(node);
+
+        for (String parameter : parameters) {
+
+        }
+    }
+
     //============================PUBLIC METHODS=========================//
     public GeneralizedSemPm getSemPm() {
         return this.semPm;
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

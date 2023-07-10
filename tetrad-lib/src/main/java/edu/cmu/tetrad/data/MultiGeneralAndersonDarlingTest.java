@@ -41,28 +41,22 @@ public class MultiGeneralAndersonDarlingTest {
      * The column of data being analyzed.
      */
     private final List<List<Double>> data;
-
-    /**
-     * The A^2 statistic for <code>data</code>
-     */
-    private double aSquared;
-
-    /**
-     * The A^2 statistic adjusted for sample size.
-     */
-    private double aSquaredStar;
-
-    /**
-     * The interpolated p value for the adjusted a squared.
-     */
-    private double p;
-
     /**
      * The reference CDF.
      */
     private final List<RealDistribution> distributions;
-
-    //============================CONSTRUCTOR===========================//
+    /**
+     * The A^2 statistic for <code>data</code>
+     */
+    private double aSquared;
+    /**
+     * The A^2 statistic adjusted for sample size.
+     */
+    private double aSquaredStar;
+    /**
+     * The interpolated p value for the adjusted a squared.
+     */
+    private double p;
 
     /**
      * Constructs an Anderson-Darling test for the given column of data.
@@ -82,8 +76,6 @@ public class MultiGeneralAndersonDarlingTest {
 
         runTest();
     }
-
-    //============================PUBLIC METHODS=========================//
 
     /**
      * @return the A^2 statistic.

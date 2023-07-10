@@ -35,8 +35,8 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Wraps a DataModel as a model class for a Session, providing constructors for
- * the parents of Tetrad that are specified by Tetrad.
+ * Wraps a DataModel as a model class for a Session, providing constructors for the parents of Tetrad that are specified
+ * by Tetrad.
  *
  * @author josephramsey
  */
@@ -44,22 +44,18 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         DoNotAddOldModel, SimulationParamsSource, MultipleDataSource {
 
     static final long serialVersionUID = 23L;
-
     /**
-     * @serial Can be null.
-     */
-    private String name;
-
-    private DataModelList dataModelList;
-
-    /**
-     * Maps columns to discretization specs so that user's work is not forgotten
-     * from one editing of the same data set to the next.
+     * Maps columns to discretization specs so that user's work is not forgotten from one editing of the same data set
+     * to the next.
      *
      * @serial Cannot be null.
      */
     private final Map discretizationSpecs = new HashMap();
-
+    /**
+     * @serial Can be null.
+     */
+    private String name;
+    private DataModelList dataModelList;
     /**
      * Stores a reference to the source workbench, if there is one.
      *
@@ -242,9 +238,15 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
-     * Given base b (a String), returns the first node in the sequence "b1",
-     * "b2", "b3", etc., which is not already the name of a node in the
-     * workbench.
+     * Generates a simple exemplar of this class to test serialization.
+     */
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+    }
+
+    /**
+     * Given base b (a String), returns the first node in the sequence "b1", "b2", "b3", etc., which is not already the
+     * name of a node in the workbench.
      *
      * @param base the base string.
      * @return the first string in the sequence not already being used.
@@ -277,13 +279,6 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         return name;
     }
 
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static PcRunner serializableInstance() {
-        return PcRunner.serializableInstance();
-    }
-
     //==============================PUBLIC METHODS========================//
 
     /**
@@ -295,15 +290,15 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         return this.dataModelList;
     }
 
-    public List<DataModel> getDataModels() {
-        return new ArrayList<>(this.dataModelList);
-    }
-
     public void setDataModelList(DataModelList dataModelList) {
         if (dataModelList == null) {
             throw new NullPointerException("Data model list not provided.");
         }
         this.dataModelList = dataModelList;
+    }
+
+    public List<DataModel> getDataModels() {
+        return new ArrayList<>(this.dataModelList);
     }
 
     /**
@@ -350,6 +345,13 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
         return this.sourceGraph;
     }
 
+    /**
+     * Sets the source graph.
+     */
+    protected void setSourceGraph(Graph sourceGraph) {
+        this.sourceGraph = sourceGraph;
+    }
+
     public Graph getResultGraph() {
         return getSourceGraph();
     }
@@ -362,29 +364,19 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     /**
-     * Sets the source graph.
-     */
-    protected void setSourceGraph(Graph sourceGraph) {
-        this.sourceGraph = sourceGraph;
-    }
-
-    /**
-     * //     * Sets the source graph.
-     * //
+     * //     * Sets the source graph. //
      */
     public Map getDiscretizationSpecs() {
         return this.discretizationSpecs;
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -450,12 +442,12 @@ public class DataWrapper implements KnowledgeEditable, KnowledgeBoxInput,
     }
 
     @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
-        this.allParamSettings = paramSettings;
+    public Map<String, String> getAllParamSettings() {
+        return this.allParamSettings;
     }
 
     @Override
-    public Map<String, String> getAllParamSettings() {
-        return this.allParamSettings;
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamSettings = paramSettings;
     }
 }

@@ -148,6 +148,15 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
         }
     }
 
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static RemoveNonSkeletonEdgesModel serializableInstance() {
+        return new RemoveNonSkeletonEdgesModel(new Parameters(), GraphWrapper.serializableInstance());
+    }
+
     private void createKnowledge(Parameters params) {
         Knowledge knowledge = getKnowledge();
         if (knowledge == null) {
@@ -161,15 +170,6 @@ public class RemoveNonSkeletonEdgesModel extends KnowledgeBoxModel {
         }
 
         removeNonSkeletonEdges(resultGraph, knowledge);
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static RemoveNonSkeletonEdgesModel serializableInstance() {
-        return new RemoveNonSkeletonEdgesModel(new Parameters(), GraphWrapper.serializableInstance());
     }
 
     public Graph getResultGraph() {

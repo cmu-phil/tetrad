@@ -63,17 +63,16 @@ import java.util.*;
  */
 public final class FciOrient {
     private final SepsetProducer sepsets;
+    private final TetradLogger logger = TetradLogger.getInstance();
     private Knowledge knowledge = new Knowledge();
     private boolean changeFlag = true;
     private boolean completeRuleSetUsed = true;
     private int maxPathLength = -1;
-    private final TetradLogger logger = TetradLogger.getInstance();
     private boolean verbose;
     private Graph truePag;
     private boolean doDiscriminatingPathColliderRule = true;
     private boolean doDiscriminatingPathTailRule = true;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -82,7 +81,138 @@ public final class FciOrient {
         this.sepsets = sepsets;
     }
 
-    //========================PUBLIC METHODS==========================//
+
+    /**
+     * Gets a list of every uncovered partially directed path between two nodes in the graph.
+     * <p>
+     * Probably extremely slow.
+     *
+     * @param n1 The beginning node of the undirectedPaths.
+     * @param n2 The ending node of the undirectedPaths.
+     * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
+     */
+    public static List<List<Node>> getUcPdPaths(Node n1, Node n2, Graph graph) {
+        List<List<Node>> ucPdPaths = new LinkedList<>();
+
+        LinkedList<Node> soFar = new LinkedList<>();
+        soFar.add(n1);
+
+        List<Node> adjacencies = graph.getAdjacentNodes(n1);
+        for (Node curr : adjacencies) {
+            getUcPdPsHelper(curr, soFar, n2, ucPdPaths, graph);
+        }
+
+        return ucPdPaths;
+    }
+
+    /**
+     * Used in getUcPdPaths(n1,n2) to perform a breadth-first search on the graph.
+     * <p>
+     * ASSUMES soFar CONTAINS AT LEAST ONE NODE!
+     * <p>
+     * Probably extremely slow.
+     *
+     * @param curr      The getModel node to test for addition.
+     * @param soFar     The getModel partially built-up path.
+     * @param end       The node to finish the undirectedPaths at.
+     * @param ucPdPaths The getModel list of uncovered p.d. undirectedPaths.
+     */
+    private static void getUcPdPsHelper(Node curr, List<Node> soFar, Node end,
+                                        List<List<Node>> ucPdPaths, Graph graph) {
+
+        if (soFar.contains(curr)) {
+            return;
+        }
+
+        Node prev = soFar.get(soFar.size() - 1);
+        if (graph.getEndpoint(prev, curr) == Endpoint.TAIL
+                || graph.getEndpoint(curr, prev) == Endpoint.ARROW) {
+            return; // Adding curr would make soFar not p.d.
+        } else if (soFar.size() >= 2) {
+            Node prev2 = soFar.get(soFar.size() - 2);
+            if (graph.isAdjacentTo(prev2, curr)) {
+                return; // Adding curr would make soFar not uncovered.
+            }
+        }
+
+        soFar.add(curr); // Adding curr is OK, so let's do it.
+
+        if (curr.equals(end)) {
+            // We've reached the goal! Save soFar as a path.
+            ucPdPaths.add(new LinkedList<>(soFar));
+        } else {
+            // Otherwise, try each node adjacent to the getModel one.
+            List<Node> adjacents = graph.getAdjacentNodes(curr);
+            for (Node next : adjacents) {
+                getUcPdPsHelper(next, soFar, end, ucPdPaths, graph);
+            }
+        }
+
+        soFar.remove(soFar.get(soFar.size() - 1)); // For other recursive calls.
+    }
+
+    /**
+     * Gets a list of every uncovered circle path between two nodes in the graph by iterating through the uncovered
+     * partially directed undirectedPaths and only keeping the circle undirectedPaths.
+     * <p>
+     * Probably extremely slow.
+     *
+     * @param n1 The beginning node of the undirectedPaths.
+     * @param n2 The ending node of the undirectedPaths.
+     * @return A list of uncovered circle undirectedPaths between n1 and n2.
+     */
+    public static List<List<Node>> getUcCirclePaths(Node n1, Node n2, Graph graph) {
+        List<List<Node>> ucCirclePaths = new LinkedList<>();
+        List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2, graph);
+
+        for (List<Node> path : ucPdPaths) {
+            for (int i = 0; i < path.size() - 1; i++) {
+                Node j = path.get(i);
+                Node sj = path.get(i + 1);
+
+                if (!(graph.getEndpoint(j, sj) == Endpoint.CIRCLE)) {
+                    break;
+                }
+                if (!(graph.getEndpoint(sj, j) == Endpoint.CIRCLE)) {
+                    break;
+                }
+                // This edge is OK, it's all circles.
+
+                if (i == path.size() - 2) {
+                    // We're at the last edge, so this is a circle path.
+                    ucCirclePaths.add(path);
+                }
+            }
+        }
+
+        return ucCirclePaths;
+    }
+
+    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
+        if (!graph.isAdjacentTo(x, y)) return false;
+
+        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
+            return true;
+        }
+
+        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
+            return false;
+        }
+
+        if (graph.getEndpoint(y, x) == Endpoint.ARROW && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
+                return true;
+            }
+        }
+
+        if (graph.getEndpoint(y, x) == Endpoint.TAIL && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
+            if (knowledge.isForbidden(x.getName(), y.getName())) {
+                return false;
+            }
+        }
+
+        return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
+    }
 
     /**
      * Performs final FCI orientation on the given graph.
@@ -210,7 +340,6 @@ public final class FciOrient {
             }
         }
     }
-
 
     /**
      * Orients the graph according to rules in the graph (FCI step D).
@@ -767,7 +896,6 @@ public final class FciOrient {
         return false;
     }
 
-
     /**
      * Orients every edge on a path as undirected (i.e. A---B).
      * <p>
@@ -790,112 +918,6 @@ public final class FciOrient {
                         GraphUtils.pathString(graph, n1, n2));
             }
         }
-    }
-
-    /**
-     * Gets a list of every uncovered partially directed path between two nodes in the graph.
-     * <p>
-     * Probably extremely slow.
-     *
-     * @param n1 The beginning node of the undirectedPaths.
-     * @param n2 The ending node of the undirectedPaths.
-     * @return A list of uncovered partially directed undirectedPaths from n1 to n2.
-     */
-    public static List<List<Node>> getUcPdPaths(Node n1, Node n2, Graph graph) {
-        List<List<Node>> ucPdPaths = new LinkedList<>();
-
-        LinkedList<Node> soFar = new LinkedList<>();
-        soFar.add(n1);
-
-        List<Node> adjacencies = graph.getAdjacentNodes(n1);
-        for (Node curr : adjacencies) {
-            getUcPdPsHelper(curr, soFar, n2, ucPdPaths, graph);
-        }
-
-        return ucPdPaths;
-    }
-
-    /**
-     * Used in getUcPdPaths(n1,n2) to perform a breadth-first search on the graph.
-     * <p>
-     * ASSUMES soFar CONTAINS AT LEAST ONE NODE!
-     * <p>
-     * Probably extremely slow.
-     *
-     * @param curr      The getModel node to test for addition.
-     * @param soFar     The getModel partially built-up path.
-     * @param end       The node to finish the undirectedPaths at.
-     * @param ucPdPaths The getModel list of uncovered p.d. undirectedPaths.
-     */
-    private static void getUcPdPsHelper(Node curr, List<Node> soFar, Node end,
-                                        List<List<Node>> ucPdPaths, Graph graph) {
-
-        if (soFar.contains(curr)) {
-            return;
-        }
-
-        Node prev = soFar.get(soFar.size() - 1);
-        if (graph.getEndpoint(prev, curr) == Endpoint.TAIL
-                || graph.getEndpoint(curr, prev) == Endpoint.ARROW) {
-            return; // Adding curr would make soFar not p.d.
-        } else if (soFar.size() >= 2) {
-            Node prev2 = soFar.get(soFar.size() - 2);
-            if (graph.isAdjacentTo(prev2, curr)) {
-                return; // Adding curr would make soFar not uncovered.
-            }
-        }
-
-        soFar.add(curr); // Adding curr is OK, so let's do it.
-
-        if (curr.equals(end)) {
-            // We've reached the goal! Save soFar as a path.
-            ucPdPaths.add(new LinkedList<>(soFar));
-        } else {
-            // Otherwise, try each node adjacent to the getModel one.
-            List<Node> adjacents = graph.getAdjacentNodes(curr);
-            for (Node next : adjacents) {
-                getUcPdPsHelper(next, soFar, end, ucPdPaths, graph);
-            }
-        }
-
-        soFar.remove(soFar.get(soFar.size() - 1)); // For other recursive calls.
-    }
-
-    /**
-     * Gets a list of every uncovered circle path between two nodes in the graph by iterating through the uncovered
-     * partially directed undirectedPaths and only keeping the circle undirectedPaths.
-     * <p>
-     * Probably extremely slow.
-     *
-     * @param n1 The beginning node of the undirectedPaths.
-     * @param n2 The ending node of the undirectedPaths.
-     * @return A list of uncovered circle undirectedPaths between n1 and n2.
-     */
-    public static List<List<Node>> getUcCirclePaths(Node n1, Node n2, Graph graph) {
-        List<List<Node>> ucCirclePaths = new LinkedList<>();
-        List<List<Node>> ucPdPaths = getUcPdPaths(n1, n2, graph);
-
-        for (List<Node> path : ucPdPaths) {
-            for (int i = 0; i < path.size() - 1; i++) {
-                Node j = path.get(i);
-                Node sj = path.get(i + 1);
-
-                if (!(graph.getEndpoint(j, sj) == Endpoint.CIRCLE)) {
-                    break;
-                }
-                if (!(graph.getEndpoint(sj, j) == Endpoint.CIRCLE)) {
-                    break;
-                }
-                // This edge is OK, it's all circles.
-
-                if (i == path.size() - 2) {
-                    // We're at the last edge, so this is a circle path.
-                    ucCirclePaths.add(path);
-                }
-            }
-        }
-
-        return ucCirclePaths;
     }
 
     /**
@@ -1052,32 +1074,6 @@ public final class FciOrient {
         this.logger.forceLogMessage("Finishing BK Orientation.");
     }
 
-    public static boolean isArrowheadAllowed(Node x, Node y, Graph graph, Knowledge knowledge) {
-        if (!graph.isAdjacentTo(x, y)) return false;
-
-        if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
-            return true;
-        }
-
-        if (graph.getEndpoint(x, y) == Endpoint.TAIL) {
-            return false;
-        }
-
-        if (graph.getEndpoint(y, x) == Endpoint.ARROW && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
-                return true;
-            }
-        }
-
-        if (graph.getEndpoint(y, x) == Endpoint.TAIL && graph.getEndpoint(x, y) == Endpoint.CIRCLE) {
-            if (knowledge.isForbidden(x.getName(), y.getName())) {
-                return false;
-            }
-        }
-
-        return graph.getEndpoint(x, y) == Endpoint.CIRCLE;
-    }
-
     /**
      * @return the maximum length of any discriminating path, or -1 of unlimited.
      */
@@ -1106,6 +1102,13 @@ public final class FciOrient {
     }
 
     /**
+     * The true PAG if available. Can be null.
+     */
+    public Graph getTruePag() {
+        return this.truePag;
+    }
+
+    /**
      * Sets the true PAG for comparison.
      *
      * @param truePag This PAG.
@@ -1115,10 +1118,12 @@ public final class FciOrient {
     }
 
     /**
-     * The true PAG if available. Can be null.
+     * Change flag for repeat rules
+     *
+     * @return True if a change has occurred.
      */
-    public Graph getTruePag() {
-        return this.truePag;
+    public boolean isChangeFlag() {
+        return this.changeFlag;
     }
 
     /**
@@ -1128,15 +1133,6 @@ public final class FciOrient {
      */
     public void setChangeFlag(boolean changeFlag) {
         this.changeFlag = changeFlag;
-    }
-
-    /**
-     * Change flag for repeat rules
-     *
-     * @return True if a change has occurred.
-     */
-    public boolean isChangeFlag() {
-        return this.changeFlag;
     }
 
     /**

@@ -24,8 +24,8 @@ package edu.cmu.tetradapp.workbench;
 import java.awt.*;
 
 /**
- * Created by IntelliJ IDEA. User: jdramsey Date: Apr 1, 2006 Time: 5:19:32 PM
- * To change this template use File | Settings | File Templates.
+ * Created by IntelliJ IDEA. User: jdramsey Date: Apr 1, 2006 Time: 5:19:32 PM To change this template use File |
+ * Settings | File Templates.
  */
 public class DisplayNodeUtils {
     // Note that this component must be a JComponent, since non-rectangular

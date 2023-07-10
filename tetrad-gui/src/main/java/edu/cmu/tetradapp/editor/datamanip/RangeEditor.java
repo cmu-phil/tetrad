@@ -51,42 +51,34 @@ final class RangeEditor extends JComponent {
      * The categories whos ranges are being edited.
      */
     private final List<String> categories;
-
+    /**
+     * Used to keep track of which compoent has focus.
+     */
+    private final LinkedList<JTextField> focusTraveralOrder = new LinkedList<>();
+    /**
+     * Label map.
+     */
+    private final Map<Object, Integer> labels = new HashMap<>();
+    /**
+     * States whether the editor is editable.
+     */
+    private final boolean editableRange;
     /**
      * The text fields that allow one to edit the name of the category.
      */
     private StringTextField[] categoryFields;
-
     /**
      * The fields that allows a user to edit the lower bound on the range.
      */
     private DoubleTextField[] leftRangeFields;
-
     /**
      * The fields that allow a user to edit the upper bound on the range.
      */
     private DoubleTextField[] rightRangeFields;
 
-
     /**
-     * Used to keep track of which compoent has focus.
-     */
-    private final LinkedList<JTextField> focusTraveralOrder = new LinkedList<>();
-
-    /**
-     * Label map.
-     */
-    private final Map<Object, Integer> labels = new HashMap<>();
-
-
-    /**
-     * States whether the editor is editable.
-     */
-    private final boolean editableRange;
-
-    /**
-     * Contructs the range editor given the variable that is being edited and
-     * the continuous discreitization spec to base initial values on.
+     * Contructs the range editor given the variable that is being edited and the continuous discreitization spec to
+     * base initial values on.
      */
     public RangeEditor(ContinuousDiscretizationSpec spec) {
         this.breakpoints = spec.getBreakpoints();
@@ -99,8 +91,7 @@ final class RangeEditor extends JComponent {
 
 
     /**
-     * @return the <code>ContinuousDiscretizationSpec</code> that has been
-     * created by the user.
+     * @return the <code>ContinuousDiscretizationSpec</code> that has been created by the user.
      */
     public ContinuousDiscretizationSpec getDiscretizationSpec() {
         return new ContinuousDiscretizationSpec(this.breakpoints,
@@ -187,8 +178,7 @@ final class RangeEditor extends JComponent {
     }
 
     /**
-     * Creates the range fields, if the editor is not editable then all these fields should
-     * be not editable.
+     * Creates the range fields, if the editor is not editable then all these fields should be not editable.
      */
     private void createRangeFields() {
         this.leftRangeFields = new DoubleTextField[getNumCategories()];

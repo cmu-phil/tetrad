@@ -80,33 +80,6 @@ public final class CombinationGenerator {
     }
 
     /**
-     * @return the next combination in the series, or null if the series is finished.
-     */
-    public int[] next() {
-        int i = getNumObjects();
-
-        // Scan from the right for the first index whose value is less than
-        // its expected maximum (i + diff) and perform the fill() operation
-        // at that index.
-        while (--i > -1) {
-            if (this.local[i] < this.dims[i] - 1) {
-                fill(i);
-                this.begun = true;
-                System.arraycopy(this.local, 0, this.returned, 0, getNumObjects());
-                return this.returned;
-            }
-        }
-
-        if (this.begun) {
-            return null;
-        } else {
-            this.begun = true;
-            System.arraycopy(this.local, 0, this.returned, 0, getNumObjects());
-            return this.returned;
-        }
-    }
-
-    /**
      * This static method will print the series of combinations for a choose b to System.out.
      *
      * @param dims An int array consisting of the number of dimensions for each variable, in order.
@@ -141,6 +114,33 @@ public final class CombinationGenerator {
         }
 
         System.out.println();
+    }
+
+    /**
+     * @return the next combination in the series, or null if the series is finished.
+     */
+    public int[] next() {
+        int i = getNumObjects();
+
+        // Scan from the right for the first index whose value is less than
+        // its expected maximum (i + diff) and perform the fill() operation
+        // at that index.
+        while (--i > -1) {
+            if (this.local[i] < this.dims[i] - 1) {
+                fill(i);
+                this.begun = true;
+                System.arraycopy(this.local, 0, this.returned, 0, getNumObjects());
+                return this.returned;
+            }
+        }
+
+        if (this.begun) {
+            return null;
+        } else {
+            this.begun = true;
+            System.arraycopy(this.local, 0, this.returned, 0, getNumObjects());
+            return this.returned;
+        }
     }
 
     /**

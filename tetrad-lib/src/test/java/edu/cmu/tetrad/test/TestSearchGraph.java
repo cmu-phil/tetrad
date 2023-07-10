@@ -25,10 +25,10 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fas;
-import edu.cmu.tetrad.search.Rfci;
-import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Rfci;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
@@ -49,6 +49,159 @@ import static org.junit.Assert.fail;
  * @author josephramsey
  */
 public final class TestSearchGraph {
+
+    public static Graph erdosRenyiGraph(int n, int e) {
+        List<Node> nodes = new ArrayList<>();
+        for (int i = 0; i < n; i++) nodes.add(new GraphNode("X" + i));
+
+        Graph graph = new EdgeListGraph(nodes);
+
+        for (int e0 = 0; e0 < e; e0++) {
+            int i1 = RandomUtil.getInstance().nextInt(n);
+            int i2 = RandomUtil.getInstance().nextInt(n);
+
+            if (i1 == i2) {
+                e0--;
+                continue;
+            }
+
+            Edge edge = Edges.undirectedEdge(nodes.get(i1), nodes.get(i2));
+
+            if (graph.containsEdge(edge)) {
+                e0--;
+                continue;
+            }
+
+            graph.addEdge(edge);
+        }
+
+        return graph;
+    }
+
+    public static Graph weightedRandomGraph(int n, int e) {
+        List<Node> nodes = new ArrayList<>();
+        for (int i = 0; i < n; i++) nodes.add(new GraphNode("X" + i));
+
+        Graph graph = new EdgeListGraph(nodes);
+
+        for (int e0 = 0; e0 < e; e0++) {
+            int i1 = TestSearchGraph.weightedRandom(nodes, graph);
+//            int i2 = RandomUtil.getInstance().nextInt(n);
+            int i2 = TestSearchGraph.weightedRandom(nodes, graph);
+
+            if (!(TestSearchGraph.shortestPath(nodes.get(i1), nodes.get(i2), graph) < 9)) {
+                e0--;
+                continue;
+            }
+
+            if (i1 == i2) {
+                e0--;
+                continue;
+            }
+
+            Edge edge = Edges.undirectedEdge(nodes.get(i1), nodes.get(i2));
+
+            if (graph.containsEdge(edge)) {
+                e0--;
+                continue;
+            }
+
+            graph.addEdge(edge);
+        }
+
+        for (Edge edge : graph.getEdges()) {
+            Node n1 = edge.getNode1();
+            Node n2 = edge.getNode2();
+
+            if (!graph.paths().isAncestorOf(n2, n1)) {
+                graph.removeEdge(edge);
+                graph.addDirectedEdge(n1, n2);
+            } else {
+                graph.removeEdge(edge);
+                graph.addDirectedEdge(n2, n1);
+            }
+        }
+
+        return graph;
+    }
+
+    private static int shortestPath(Node n1, Node n2, Graph g) {
+        Queue<Node> Q = new ArrayDeque<>();
+        Map<Node, Node> V = new HashMap<>();
+
+        Q.offer(n1);
+        V.put(n1, null);
+
+        while (!Q.isEmpty()) {
+            Node m = Q.poll();
+
+            if (V.containsKey(n2)) break;
+
+            for (Node p : g.getAdjacentNodes(m)) {
+                if (V.containsKey(p)) continue;
+
+                Q.offer(p);
+                V.put(p, m);
+            }
+        }
+
+        int s = 0;
+
+        do {
+            s++;
+            n2 = V.get(n2);
+        } while (n2 != null);
+
+        return s;
+    }
+
+    private static int weightedRandom(List<Node> nodes, Graph graph) {
+        int total = 0;
+        int n = nodes.size();
+
+        for (int b = 0; b < n; b++) {
+            total = TestSearchGraph.weight(nodes, graph, total, b);
+        }
+
+        int r = RandomUtil.getInstance().nextInt(total);
+
+        int count = 0;
+        int index = 0;
+
+        for (int b = 0; b < n; b++) {
+            count = TestSearchGraph.weight(nodes, graph, count, b);
+            if (r <= count) {
+                index = b;
+                break;
+            }
+        }
+
+        return index;
+    }
+
+    private static int weight(List<Node> nodes, Graph graph, int total, int b) {
+        final double p = 1;
+        int degree = graph.getNumEdges(nodes.get(b));
+        int t = degree + 1;
+        total += pow(t, p);
+        return total;
+    }
+
+    private static double characteristicPathLength(Graph g) {
+        List<Node> nodes = g.getNodes();
+        int total = 0;
+        int count = 0;
+
+        for (int i = 0; i < nodes.size(); i++) {
+            for (int j = i; j < nodes.size(); j++) {
+                int shortest = TestSearchGraph.shortestPath(nodes.get(i), nodes.get(j), g);
+                total += shortest;
+                count++;
+            }
+        }
+
+        return total / (double) count;
+    }
 
     /**
      * Tests to see if d separation facts are symmetric.
@@ -264,81 +417,6 @@ public final class TestSearchGraph {
         System.out.println("\n ER CPL = " + TestSearchGraph.characteristicPathLength(erGraph));
     }
 
-    public static Graph erdosRenyiGraph(int n, int e) {
-        List<Node> nodes = new ArrayList<>();
-        for (int i = 0; i < n; i++) nodes.add(new GraphNode("X" + i));
-
-        Graph graph = new EdgeListGraph(nodes);
-
-        for (int e0 = 0; e0 < e; e0++) {
-            int i1 = RandomUtil.getInstance().nextInt(n);
-            int i2 = RandomUtil.getInstance().nextInt(n);
-
-            if (i1 == i2) {
-                e0--;
-                continue;
-            }
-
-            Edge edge = Edges.undirectedEdge(nodes.get(i1), nodes.get(i2));
-
-            if (graph.containsEdge(edge)) {
-                e0--;
-                continue;
-            }
-
-            graph.addEdge(edge);
-        }
-
-        return graph;
-    }
-
-    public static Graph weightedRandomGraph(int n, int e) {
-        List<Node> nodes = new ArrayList<>();
-        for (int i = 0; i < n; i++) nodes.add(new GraphNode("X" + i));
-
-        Graph graph = new EdgeListGraph(nodes);
-
-        for (int e0 = 0; e0 < e; e0++) {
-            int i1 = TestSearchGraph.weightedRandom(nodes, graph);
-//            int i2 = RandomUtil.getInstance().nextInt(n);
-            int i2 = TestSearchGraph.weightedRandom(nodes, graph);
-
-            if (!(TestSearchGraph.shortestPath(nodes.get(i1), nodes.get(i2), graph) < 9)) {
-                e0--;
-                continue;
-            }
-
-            if (i1 == i2) {
-                e0--;
-                continue;
-            }
-
-            Edge edge = Edges.undirectedEdge(nodes.get(i1), nodes.get(i2));
-
-            if (graph.containsEdge(edge)) {
-                e0--;
-                continue;
-            }
-
-            graph.addEdge(edge);
-        }
-
-        for (Edge edge : graph.getEdges()) {
-            Node n1 = edge.getNode1();
-            Node n2 = edge.getNode2();
-
-            if (!graph.paths().isAncestorOf(n2, n1)) {
-                graph.removeEdge(edge);
-                graph.addDirectedEdge(n1, n2);
-            } else {
-                graph.removeEdge(edge);
-                graph.addDirectedEdge(n2, n1);
-            }
-        }
-
-        return graph;
-    }
-
     public void test11() {
         Node x = new GraphNode("X");
         List<Node> nodes = Collections.singletonList(x);
@@ -348,84 +426,6 @@ public final class TestSearchGraph {
         Graph g2 = new EdgeListGraph(g);
 
         System.out.println();
-    }
-
-    private static int shortestPath(Node n1, Node n2, Graph g) {
-        Queue<Node> Q = new ArrayDeque<>();
-        Map<Node, Node> V = new HashMap<>();
-
-        Q.offer(n1);
-        V.put(n1, null);
-
-        while (!Q.isEmpty()) {
-            Node m = Q.poll();
-
-            if (V.containsKey(n2)) break;
-
-            for (Node p : g.getAdjacentNodes(m)) {
-                if (V.containsKey(p)) continue;
-
-                Q.offer(p);
-                V.put(p, m);
-            }
-        }
-
-        int s = 0;
-
-        do {
-            s++;
-            n2 = V.get(n2);
-        } while (n2 != null);
-
-        return s;
-    }
-
-    private static int weightedRandom(List<Node> nodes, Graph graph) {
-        int total = 0;
-        int n = nodes.size();
-
-        for (int b = 0; b < n; b++) {
-            total = TestSearchGraph.weight(nodes, graph, total, b);
-        }
-
-        int r = RandomUtil.getInstance().nextInt(total);
-
-        int count = 0;
-        int index = 0;
-
-        for (int b = 0; b < n; b++) {
-            count = TestSearchGraph.weight(nodes, graph, count, b);
-            if (r <= count) {
-                index = b;
-                break;
-            }
-        }
-
-        return index;
-    }
-
-    private static int weight(List<Node> nodes, Graph graph, int total, int b) {
-        final double p = 1;
-        int degree = graph.getNumEdges(nodes.get(b));
-        int t = degree + 1;
-        total += pow(t, p);
-        return total;
-    }
-
-    private static double characteristicPathLength(Graph g) {
-        List<Node> nodes = g.getNodes();
-        int total = 0;
-        int count = 0;
-
-        for (int i = 0; i < nodes.size(); i++) {
-            for (int j = i; j < nodes.size(); j++) {
-                int shortest = TestSearchGraph.shortestPath(nodes.get(i), nodes.get(j), g);
-                total += shortest;
-                count++;
-            }
-        }
-
-        return total / (double) count;
     }
 }
 

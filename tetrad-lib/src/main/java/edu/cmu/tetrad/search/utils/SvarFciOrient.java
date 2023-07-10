@@ -26,8 +26,8 @@ import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.Endpoint;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.SvarFci;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.SvarFci;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.util.FastMath;
@@ -53,36 +53,27 @@ public final class SvarFciOrient {
      * The SepsetMap being constructed.
      */
     private final SepsetProducer sepsets;
-
-    private Knowledge knowledge = new Knowledge();
-
-    private boolean changeFlag = true;
-
-    /**
-     * flag for complete rule set, true if one should use complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed;
-
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
-    private int maxPathLength = -1;
-
     /**
      * The logger to use.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
+    private final IndependenceTest independenceTest;
+    private Knowledge knowledge = new Knowledge();
+    private boolean changeFlag = true;
+    /**
+     * flag for complete rule set, true if one should use complete rule set, false otherwise.
+     */
+    private boolean completeRuleSetUsed;
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
+    private int maxPathLength = -1;
     /**
      * True iff verbose output should be printed.
      */
     private boolean verbose;
-
     private Graph truePag;
 
-    private final IndependenceTest independenceTest;
-
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -148,7 +139,6 @@ public final class SvarFciOrient {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
-    //===========================PRIVATE METHODS=========================//
 
     /**
      * Orients colliders in the graph.  (FCI Step C)
@@ -959,15 +949,15 @@ public final class SvarFciOrient {
         this.verbose = verbose;
     }
 
-    public void setTruePag(Graph truePag) {
-        this.truePag = truePag;
-    }
-
     /**
      * The true PAG if available. Can be null.
      */
     public Graph getTruePag() {
         return this.truePag;
+    }
+
+    public void setTruePag(Graph truePag) {
+        this.truePag = truePag;
     }
 
     private void orientSimilarPairs(Graph graph, Knowledge knowledge, Node x, Node y, Endpoint mark) {

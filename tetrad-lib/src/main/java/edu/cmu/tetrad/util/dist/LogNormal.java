@@ -34,6 +34,10 @@ public class LogNormal implements Distribution {
 
     private double sd;
 
+    public LogNormal(double sd) {
+        this.sd = sd;
+    }
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -41,10 +45,6 @@ public class LogNormal implements Distribution {
      */
     public static LogNormal serializableInstance() {
         return new LogNormal(.5);
-    }
-
-    public LogNormal(double sd) {
-        this.sd = sd;
     }
 
     public int getNumParameters() {

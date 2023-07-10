@@ -41,6 +41,10 @@ import edu.cmu.tetrad.util.Parameters;
  * @author josephramsey
  */
 public class Condition1 {
+    public static void main(String... args) {
+        new Condition1().compileTable();
+    }
+
     public void generateTetradResults() {
         Parameters parameters = new Parameters();
 
@@ -129,10 +133,6 @@ public class Condition1 {
                 "/Users/user/causal-comparisons/condition_1",
                 algorithms, statistics, parameters);
 
-    }
-
-    public static void main(String... args) {
-        new Condition1().compileTable();
     }
 }
 

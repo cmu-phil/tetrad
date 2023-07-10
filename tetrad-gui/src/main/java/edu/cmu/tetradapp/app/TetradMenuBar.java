@@ -43,17 +43,12 @@ import static java.awt.Desktop.getDesktop;
  * @author Chirayu Kong Wongchokprasitti chw20@pitt.edu
  */
 final class TetradMenuBar extends JMenuBar {
-
-    /**
-     *
-     */
     private static final long serialVersionUID = -2734606481426217430L;
 
     /**
      * A reference to the tetrad desktop.
      */
     private final TetradDesktop desktop;
-
 
     /**
      * Creates the main menubar for Tetrad.
@@ -102,48 +97,7 @@ final class TetradMenuBar extends JMenuBar {
         return suggestionBoxItem;
     }
 
-    public static class SuggestionDialog extends JDialog {
-        public SuggestionDialog(JComponent parent, String url) {
-            super((Frame) SwingUtilities.getAncestorOfClass(Frame.class, parent), "Message", true);
-            setResizable(false);
-
-            JPanel panel = new JPanel(new BorderLayout());
-
-            // Create a clickable link
-            JLabel label = new JLabel("<html>" +
-                    "<p>Please submit any issues you may have,</p>" +
-                    "<p>whether bug reports, general encouragement,</p>" +
-                    "<p>or feature requests, to our issues list. We'd</p>" +
-                    "<p>love to hear from you as we continue to</p>" +
-                    "<p>improve the Tetrad tools!</p>" +
-                    "<p><center><a href=\"" + url + "\">" + url + "</a></center>" +
-                    "</html>");
-            label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            label.setFont(label.getFont().deriveFont(Font.PLAIN, 14));
-            label.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    try {
-                        getDesktop().browse(new java.net.URI(url));
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            });
-
-            panel.add(label, BorderLayout.CENTER);
-            panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            getContentPane().add(panel);
-
-            pack();
-            setLocationRelativeTo(parent);
-        }
-    }
-
-    //================================ Private Method ===============================//
-
     private void buildFileMenu(JMenu fileMenu) {
-        //=======================FILE MENU=========================//
 
         // These have to be wrapped in JMenuItems to get the keyboard
         // accelerators to work correctly.
@@ -216,7 +170,6 @@ final class TetradMenuBar extends JMenuBar {
     }
 
     private void buildEditMenu(JMenu editMenu) {
-        //=======================EDIT MENU=========================//
         JMenuItem cut = new JMenuItem(new CutSubsessionAction());
         JMenuItem copy = new JMenuItem(new CopySubsessionAction());
         JMenuItem paste = new JMenuItem(new PasteSubsessionAction());
@@ -234,21 +187,16 @@ final class TetradMenuBar extends JMenuBar {
         editMenu.addSeparator();
     }
 
-
     /**
      * Builds the logging menu
      */
     private void buildLoggingMenu(JMenu loggingMenu) {
-        //================================= Logging Menu ==========================//
 
         // build the logging menu on the fly.
         loggingMenu.addMenuListener(new LoggingMenuListener());
     }
 
     private void buildTemplateMenu(JMenu templateMenu) {
-//      //=======================EXAMPLES MENU=========================//
-//      // Build a LoadTemplateAction for each file name in
-//      // this.exampleFiles.
         String[] templateNames = ConstructTemplateAction.getTemplateNames();
         for (String templateName : templateNames) {
             if ("--separator--".equals(templateName)) {
@@ -263,16 +211,12 @@ final class TetradMenuBar extends JMenuBar {
     }
 
     private void buildWindowMenu(JMenu windowMenu) {
-        //=======================WINDOW MENU=========================//
-        // These items are created on the fly based on whatever session
-        // editors are available.
         WindowMenuListener windowMenuListener =
                 new WindowMenuListener(windowMenu, this.desktop);
         windowMenu.addMenuListener(windowMenuListener);
     }
 
     private void buildHelpMenu(JMenu helpMenu) {
-        //=======================HELP MENU=========================//
         // A reference to the help item is stored at class level so that
         // it can be "clicked" from other classes.
 
@@ -286,7 +230,43 @@ final class TetradMenuBar extends JMenuBar {
         helpMenu.add(getSuggestionBoxItem(desktop, helpMenu));
     }
 
-    //========================= Inner Classes ==========================================//
+    public static class SuggestionDialog extends JDialog {
+        public SuggestionDialog(JComponent parent, String url) {
+            super((Frame) SwingUtilities.getAncestorOfClass(Frame.class, parent), "Message", true);
+            setResizable(false);
+
+            JPanel panel = new JPanel(new BorderLayout());
+
+            // Create a clickable link
+            JLabel label = new JLabel("<html>" +
+                    "<p>Please submit any issues you may have,</p>" +
+                    "<p>whether bug reports, general encouragement,</p>" +
+                    "<p>or feature requests, to our issues list. We'd</p>" +
+                    "<p>love to hear from you as we continue to</p>" +
+                    "<p>improve the Tetrad tools!</p>" +
+                    "<p><center><a href=\"" + url + "\">" + url + "</a></center>" +
+                    "</html>");
+            label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            label.setFont(label.getFont().deriveFont(Font.PLAIN, 14));
+            label.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        getDesktop().browse(new java.net.URI(url));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+
+            panel.add(label, BorderLayout.CENTER);
+            panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            getContentPane().add(panel);
+
+            pack();
+            setLocationRelativeTo(parent);
+        }
+    }
 
     private class LoggingMenuListener implements MenuListener {
 

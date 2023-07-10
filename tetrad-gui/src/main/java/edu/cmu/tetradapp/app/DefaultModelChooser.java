@@ -76,16 +76,16 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         return this.title;
     }
 
-    public Class getSelectedModel() {
-        ClassWrapper wrapper = (ClassWrapper) this.modelClassesBox.getSelectedItem();
-        return wrapper.getWrappedClass();
-    }
-
     public void setTitle(String title) {
         if (title == null) {
             throw new NullPointerException("The given title must not be null");
         }
         this.title = title;
+    }
+
+    public Class getSelectedModel() {
+        ClassWrapper wrapper = (ClassWrapper) this.modelClassesBox.getSelectedItem();
+        return wrapper.getWrappedClass();
     }
 
     public void setModelConfigs(List<SessionNodeModelConfig> configs) {
@@ -169,9 +169,6 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         b1.add(b3);
         add(b1, BorderLayout.CENTER);
     }
-
-    //============================= Private Methods ================================//
-
 
     /**
      * Basic wrapper class.

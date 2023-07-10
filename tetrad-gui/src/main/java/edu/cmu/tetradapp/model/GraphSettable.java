@@ -11,11 +11,11 @@ public interface GraphSettable extends GraphSource {
 
     void setGraph(Graph newValue);
 
-    void setModelIndex(int index);
-
     int getNumModels();
 
     String getModelSourceName();
 
     int getModelIndex();
+
+    void setModelIndex(int index);
 }

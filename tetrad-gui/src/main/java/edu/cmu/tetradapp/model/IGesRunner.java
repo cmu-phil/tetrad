@@ -34,19 +34,16 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jdramsey
- * Date: Jun 28, 2009
- * Time: 8:59:41 AM
- * To change this template use File | Settings | File Templates.
+ * Created by IntelliJ IDEA. User: jdramsey Date: Jun 28, 2009 Time: 8:59:41 AM To change this template use File |
+ * Settings | File Templates.
  */
 public interface IGesRunner {
 
     void execute();
 
-    void setIndex(int index);
-
     int getIndex();
+
+    void setIndex(int index);
 
     Graph getGraph();
 

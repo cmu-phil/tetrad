@@ -6,7 +6,6 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * A confusion matrix for arrows--i.e. TP, FP, TN, FN for counts of arrow endpoints. A true positive arrow is counted

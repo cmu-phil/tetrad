@@ -48,8 +48,6 @@ public class Split implements Distribution {
      */
     private double b;
 
-    //===========================CONSTRUCTORS===========================//
-
     /**
      * Creates a new split distribution, drawing uniformly from [-b, -a] U [a, b], where a and b are positive real
      * numbers.
@@ -80,8 +78,6 @@ public class Split implements Distribution {
     public static Split serializableInstance() {
         return new Split(0.0, 1.0);
     }
-
-    //==========================PUBLIC METHODS==========================//
 
     /**
      * @return a random value from [-b, -a] U [a, b].

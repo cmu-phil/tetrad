@@ -55,33 +55,25 @@ public final class SemEstimatorGibbs {
      * @serial Cannot be null.
      */
     private final SemPm semPm;
-
+    /**
+     * The initial semIm, obtained via params.
+     */
+    private final SemIm startIm;
+    private final boolean flatPrior;
     /**
      * The freeParameters of the SEM (i.e. edge coeffs, error cov, etc.
      */
 
     private double[] parameterMeans;
     private ParamConstraint[] paramConstraints;
-
-    /**
-     * The initial semIm, obtained via params.
-     */
-    private final SemIm startIm;
-
     private Matrix priorCov;
-
     /**
      * The most recently estimated model, or null if no model has been estimated yet.
      *
      * @serial Can be null.
      */
     private SemIm estimatedSem;
-
-    private final boolean flatPrior;
-
     private Matrix dataSet;
-
-    //=============================CONSTRUCTORS============================//
 
     /**
      * @param semPm         a SemPm specifying the graph and parameterization for the model.
@@ -105,7 +97,16 @@ public final class SemEstimatorGibbs {
         this.priorCov = new Matrix(sampleCovars);
     }
 
-    //==============================PUBLIC METHODS=========================//
+    public SemEstimatorGibbs(int numIterations, double stretch1, double stretch2, double tolerance, double priorVariance, SemPm semPm, SemIm startIm, boolean flatPrior) {
+        this.numIterations = numIterations;
+        this.stretch1 = stretch1;
+        this.stretch2 = stretch2;
+        this.tolerance = tolerance;
+        this.priorVariance = priorVariance;
+        this.semPm = semPm;
+        this.startIm = startIm;
+        this.flatPrior = flatPrior;
+    }
 
     /**
      * Runs the estimator on the data and SemPm passed in through the constructor.
@@ -296,17 +297,6 @@ public final class SemEstimatorGibbs {
         this.estimatedSem = posteriorIm;
         //setMeans(posteriorIm, data);
 
-    }
-
-    public SemEstimatorGibbs(int numIterations, double stretch1, double stretch2, double tolerance, double priorVariance, SemPm semPm, SemIm startIm, boolean flatPrior) {
-        this.numIterations = numIterations;
-        this.stretch1 = stretch1;
-        this.stretch2 = stretch2;
-        this.tolerance = tolerance;
-        this.priorVariance = priorVariance;
-        this.semPm = semPm;
-        this.startIm = startIm;
-        this.flatPrior = flatPrior;
     }
 
     private double brent(int param, double ax, double bx, double cx, double tol, double[] xmin, List<Parameter> parameters) {

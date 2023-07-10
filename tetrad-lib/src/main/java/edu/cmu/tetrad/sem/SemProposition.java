@@ -52,8 +52,6 @@ public final class SemProposition implements TetradSerializable {
      */
     private final double[] values;
 
-    //===========================CONSTRUCTORS===========================//
-
     /**
      * Creates a new Proposition which allows all values.
      */
@@ -83,8 +81,6 @@ public final class SemProposition implements TetradSerializable {
     public static SemProposition serializableInstance() {
         return new SemProposition(SemIm.serializableInstance());
     }
-
-    //===========================PUBLIC METHODS=========================//
 
     /**
      * @return the Bayes IM that this is a proposition for.

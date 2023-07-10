@@ -102,8 +102,6 @@ public final class SemPm implements Pm, TetradSerializable {
      */
     private int bIndex;
 
-    //===========================CONSTRUCTORS==========================//
-
     /**
      * Constructs a BayesPm from the given Graph, which must be convertible first into a ProtoSemGraph and then into a
      * SemGraph.
@@ -195,8 +193,6 @@ public final class SemPm implements Pm, TetradSerializable {
             }
         }
     }
-
-    //============================PUBLIC METHODS========================//
 
     /**
      * @return the structural model graph this SEM PM is using.
@@ -459,8 +455,6 @@ public final class SemPm implements Pm, TetradSerializable {
 
         return buf.toString();
     }
-
-    //============================PRIVATE METHODS======================//
 
     private void initializeNodes(SemGraph graph) {
         this.nodes = Collections.unmodifiableList(graph.getNodes());

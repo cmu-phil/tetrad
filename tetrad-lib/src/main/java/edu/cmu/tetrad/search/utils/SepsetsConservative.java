@@ -25,8 +25,8 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.Cpc;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import org.apache.commons.math3.util.FastMath;
 
@@ -128,8 +128,8 @@ public class SepsetsConservative implements SepsetProducer {
 
     // The published version.
     public List<List<Set<Node>>> getSepsetsLists(Node x, Node y, Node z,
-                                                  IndependenceTest test, int depth,
-                                                  boolean verbose) {
+                                                 IndependenceTest test, int depth,
+                                                 boolean verbose) {
         List<Set<Node>> sepsetsContainingY = new ArrayList<>();
         List<Set<Node>> sepsetsNotContainingY = new ArrayList<>();
 

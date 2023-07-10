@@ -59,11 +59,11 @@ public interface ISemIm extends Simulator {
 
     int getSampleSize();
 
-    void setParameterBoundsEnforced(boolean b);
-
     double getScore();
 
     boolean isParameterBoundsEnforced();
+
+    void setParameterBoundsEnforced(boolean b);
 
     List<Node> listUnmeasuredLatents();
 

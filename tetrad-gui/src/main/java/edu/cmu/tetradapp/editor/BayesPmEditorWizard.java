@@ -40,8 +40,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * A wizard to let the user go through a workbench systematically and set the
- * number of categories for each node along with the names of each category.
+ * A wizard to let the user go through a workbench systematically and set the number of categories for each node along
+ * with the names of each category.
  *
  * @author josephramsey
  */
@@ -51,54 +51,43 @@ final class BayesPmEditorWizard extends JPanel {
      * The BayesPm model being edited.
      */
     private final BayesPm bayesPm;
-
     /**
-     * Lets the user select the variable they want to edit.
-     */
-    private JComboBox<Node> variableChooser;
-
-    /**
-     * True iff the editing of measured variables is allowed.
-     */
-    private boolean editingMeasuredVariablesAllowed;
-
-    /**
-     * True iff the editing of latent variables is allowed.
-     */
-    private boolean editingLatentVariablesAllowed;
-
-    /**
-     * Lets the user see graphically which variable is being edited and click to
-     * another variable.
+     * Lets the user see graphically which variable is being edited and click to another variable.
      */
     private final GraphWorkbench workbench;
-
     /**
      * A reference to the category editor.
      */
     private final CategoryEditor categoryEditor;
-
-    /**
-     * A reference to the spinner model.
-     */
-    private SpinnerNumberModel spinnerModel;
-
     /**
      * The preset strings that will be used.
      */
     private final String[][] presetStrings = {{"Low", "High"},
             {"Low", "Medium", "High"}, {"On", "Off"}, {"Yes", "No"}};
-
-    /**
-     * ?
-     */
-    private List copiedCategories;
-
     /**
      * ?
      */
     private final Map<Object, Integer> labels = new HashMap<>();
-
+    /**
+     * Lets the user select the variable they want to edit.
+     */
+    private JComboBox<Node> variableChooser;
+    /**
+     * True iff the editing of measured variables is allowed.
+     */
+    private boolean editingMeasuredVariablesAllowed;
+    /**
+     * True iff the editing of latent variables is allowed.
+     */
+    private boolean editingLatentVariablesAllowed;
+    /**
+     * A reference to the spinner model.
+     */
+    private SpinnerNumberModel spinnerModel;
+    /**
+     * ?
+     */
+    private List copiedCategories;
     /**
      * ?
      */
@@ -110,10 +99,8 @@ final class BayesPmEditorWizard extends JPanel {
     private JMenu presetMenu;
 
     /**
-     * This is the wizard for the PMEditor class. Its function is to allow the
-     * user to enter, for each variable in the associated Graph, the number of
-     * categories it may take on and the string names for each of those
-     * categories.
+     * This is the wizard for the PMEditor class. Its function is to allow the user to enter, for each variable in the
+     * associated Graph, the number of categories it may take on and the string names for each of those categories.
      */
     public BayesPmEditorWizard(BayesPm bayesPm, GraphWorkbench workbench) {
         if (bayesPm == null) {
@@ -376,14 +363,6 @@ final class BayesPmEditorWizard extends JPanel {
         workbench.scrollWorkbenchToNode((Node) this.variableChooser.getSelectedItem());
     }
 
-    private void setNode(Node node) {
-        this.categoryEditor.setNode(node);
-        int numCategories = this.bayesPm.getNumCategories(node);
-        this.spinnerModel.setValue(numCategories);
-        firePropertyChange("modelChanged", null, null);
-        enableByNodeType();
-    }
-
     private GraphWorkbench workbench() {
         return this.workbench;
     }
@@ -404,6 +383,14 @@ final class BayesPmEditorWizard extends JPanel {
         }
 
         return selectedItem;
+    }
+
+    private void setNode(Node node) {
+        this.categoryEditor.setNode(node);
+        int numCategories = this.bayesPm.getNumCategories(node);
+        this.spinnerModel.setValue(numCategories);
+        firePropertyChange("modelChanged", null, null);
+        enableByNodeType();
     }
 
     private boolean isEditingMeasuredVariablesAllowed() {
@@ -431,6 +418,26 @@ final class BayesPmEditorWizard extends JPanel {
     }
 
     /**
+     * The actionPerformed method is still abstract.
+     */
+    abstract static class IndexedAction extends AbstractAction {
+
+        private static final long serialVersionUID = -8261331986030513841L;
+
+        private final int index;
+
+        public IndexedAction(String name, int index) {
+            super(name);
+            this.index = index;
+        }
+
+        public int getIndex() {
+            return this.index;
+        }
+
+    }
+
+    /**
      * Edits categories for each variable of a Bayes PM.
      *
      * @author josephramsey
@@ -440,9 +447,9 @@ final class BayesPmEditorWizard extends JPanel {
         private static final long serialVersionUID = -7488118975131239436L;
 
         private final BayesPm bayesPm;
+        private final LinkedList focusTraveralOrder = new LinkedList();
         private Node node;
         private StringTextField[] categoryFields;
-        private final LinkedList focusTraveralOrder = new LinkedList();
 
         public CategoryEditor(BayesPm bayesPm, Node node) {
             if (bayesPm == null) {
@@ -607,15 +614,6 @@ final class BayesPmEditorWizard extends JPanel {
             firePropertyChange("modelChanged", null, null);
         }
 
-        public void setNode(Node node) {
-            for (int i = 0; i < numCategories(); i++) {
-                this.categoryFields[i].setValue(this.categoryFields[i].getText());
-            }
-
-            this.node = node;
-            setNumCategories(this.bayesPm.getNumCategories(node));
-        }
-
         public void setCategories(List categories) {
             if (categories == null) {
                 throw new NullPointerException();
@@ -649,26 +647,15 @@ final class BayesPmEditorWizard extends JPanel {
         public Node getNode() {
             return this.node;
         }
-    }
 
-    /**
-     * The actionPerformed method is still abstract.
-     */
-    abstract static class IndexedAction extends AbstractAction {
+        public void setNode(Node node) {
+            for (int i = 0; i < numCategories(); i++) {
+                this.categoryFields[i].setValue(this.categoryFields[i].getText());
+            }
 
-        private static final long serialVersionUID = -8261331986030513841L;
-
-        private final int index;
-
-        public IndexedAction(String name, int index) {
-            super(name);
-            this.index = index;
+            this.node = node;
+            setNumCategories(this.bayesPm.getNumCategories(node));
         }
-
-        public int getIndex() {
-            return this.index;
-        }
-
     }
 
 }

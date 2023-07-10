@@ -183,16 +183,14 @@ class DescriptiveStatsModel extends AbstractTableModel {
     }
 
     /**
-     * @return the number of rows in the wrapper table model. Guarantees that
-     * this number will be at least 100.
+     * @return the number of rows in the wrapper table model. Guarantees that this number will be at least 100.
      */
     public int getRowCount() {
         return vars.size();
     }
 
     /**
-     * @return the number of columns in the wrapper table model. Guarantees that
-     * this number will be at least 30.
+     * @return the number of columns in the wrapper table model. Guarantees that this number will be at least 30.
      */
     public int getColumnCount() {
         return stats.get(0).stats.size() + 1;

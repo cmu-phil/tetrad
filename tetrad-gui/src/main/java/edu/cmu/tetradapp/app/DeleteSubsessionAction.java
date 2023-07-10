@@ -43,16 +43,14 @@ final class DeleteSubsessionAction extends AbstractAction
     private TetradDesktop desktop;
 
     /**
-     * Creates a new delete subsession action for the given desktop and
-     * clipboard.
+     * Creates a new delete subsession action for the given desktop and clipboard.
      */
     public DeleteSubsessionAction() {
         super("Delete");
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         SessionEditor sessionEditor = this.desktop.getFrontmostSessionEditor();
@@ -67,12 +65,10 @@ final class DeleteSubsessionAction extends AbstractAction
     }
 
     /**
-     * Notifies this object that it is no longer the owner of the contents of
-     * the clipboard.
+     * Notifies this object that it is no longer the owner of the contents of the clipboard.
      *
      * @param clipboard the clipboard that is no longer owned
-     * @param contents  the contents which this owner had placed on the
-     *                  clipboard
+     * @param contents  the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

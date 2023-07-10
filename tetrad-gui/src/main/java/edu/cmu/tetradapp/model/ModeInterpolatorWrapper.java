@@ -29,8 +29,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
- * Wraps a data model so that a random sample will automatically be drawn on
- * construction from a BayesIm.
+ * Wraps a data model so that a random sample will automatically be drawn on construction from a BayesIm.
  *
  * @author josephramsey
  */

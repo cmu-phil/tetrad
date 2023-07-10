@@ -23,9 +23,9 @@ import java.util.Set;
  */
 public class FaskGraphs {
     private final List<String> filenames = new ArrayList<>();
+    private final List<Boolean> types = new ArrayList<>();
     private List<DataSet> datasets = new ArrayList<>();
     private List<Graph> graphs = new ArrayList<>();
-    private final List<Boolean> types = new ArrayList<>();
 
     /**
      * @param path       The path to the directory containing the files.

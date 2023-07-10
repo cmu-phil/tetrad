@@ -14,11 +14,11 @@ public class TaskManager {
         return TaskManager.instance;
     }
 
-    public void setCanceled(boolean canceled) {
-        this.canceled = canceled;
-    }
-
     public boolean isCanceled() {
         return this.canceled;
+    }
+
+    public void setCanceled(boolean canceled) {
+        this.canceled = canceled;
     }
 }

@@ -88,10 +88,6 @@ public final class Proposition implements TetradSerializable {
         setToTautology();
     }
 
-    public static Proposition tautology(VariableSource variableSource) {
-        return new Proposition(variableSource);
-    }
-
     /**
      * Copies the info out of the old proposition into a new proposition for the new BayesIm.
      */
@@ -143,6 +139,10 @@ public final class Proposition implements TetradSerializable {
             System.arraycopy(proposition.allowedCategories[i], 0,
                     this.allowedCategories[i], 0, this.allowedCategories[i].length);
         }
+    }
+
+    public static Proposition tautology(VariableSource variableSource) {
+        return new Proposition(variableSource);
     }
 
     /**

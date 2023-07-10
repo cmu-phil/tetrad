@@ -51,6 +51,29 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
         this.shortDescription = shortDecription;
     }
 
+    public static Graph loadGraphPcAlgMatrix(DataSet dataSet) {
+        List<Node> vars = dataSet.getVariables();
+
+        Graph graph = new EdgeListGraph(vars);
+
+        for (int i = 0; i < dataSet.getNumRows(); i++) {
+            for (int j = 0; j < dataSet.getNumColumns(); j++) {
+                if (i == j) continue;
+                int g = dataSet.getInt(i, j);
+                int h = dataSet.getInt(j, i);
+
+
+                if (g == 1 && h == 1 && !graph.isAdjacentTo(vars.get(i), vars.get(j))) {
+                    graph.addUndirectedEdge(vars.get(i), vars.get(j)); //
+                } else if (g == 1 && h == 0) {
+                    graph.addDirectedEdge(vars.get(j), vars.get(i));
+                }
+            }
+        }
+
+        return graph;
+    }
+
     /**
      * Reads in the relevant graph from the file (see above) and returns it.
      */
@@ -108,29 +131,6 @@ public class ExternalAlgorithmPcalgPc extends ExternalAlgorithm {
         } catch (IOException e) {
             return -99;
         }
-    }
-
-    public static Graph loadGraphPcAlgMatrix(DataSet dataSet) {
-        List<Node> vars = dataSet.getVariables();
-
-        Graph graph = new EdgeListGraph(vars);
-
-        for (int i = 0; i < dataSet.getNumRows(); i++) {
-            for (int j = 0; j < dataSet.getNumColumns(); j++) {
-                if (i == j) continue;
-                int g = dataSet.getInt(i, j);
-                int h = dataSet.getInt(j, i);
-
-
-                if (g == 1 && h == 1 && !graph.isAdjacentTo(vars.get(i), vars.get(j))) {
-                    graph.addUndirectedEdge(vars.get(i), vars.get(j)); //
-                } else if (g == 1 && h == 0) {
-                    graph.addDirectedEdge(vars.get(j), vars.get(i));
-                }
-            }
-        }
-
-        return graph;
     }
 }
 

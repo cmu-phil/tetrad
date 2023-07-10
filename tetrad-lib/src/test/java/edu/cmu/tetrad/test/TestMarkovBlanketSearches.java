@@ -25,12 +25,15 @@ import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.GrowShrink;
 import edu.cmu.tetrad.search.IMbSearch;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.PcMb;
 import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.IndependenceTest;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 

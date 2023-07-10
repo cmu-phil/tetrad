@@ -54,8 +54,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     //========================CONSTRUCTORS===============================//
 
     /**
-     * Constructs a new workbench with an empty graph; useful if another graph
-     * will be set later.
+     * Constructs a new workbench with an empty graph; useful if another graph will be set later.
      */
     public TimeLagGraphWorkbench() {
         this(new TimeLagGraph());
@@ -75,6 +74,18 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
             }
         });
     }
+
+    private static boolean containsName(List<Node> nodes, String name) {
+        for (Node node : nodes) {
+            if (name.equals(node.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    //========================PUBLIC METHODS==============================//
 
     private void timeLagLayout() {
 
@@ -167,9 +178,6 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
         this.rememberedNodes = graph.getNodes();
     }
 
-
-    //========================PUBLIC METHODS==============================//
-
     /**
      * The type of edge to be drawn next.
      *
@@ -181,6 +189,25 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
      */
     public int getEdgeMode() {
         return this.edgeMode;
+    }
+
+    /**
+     * Sets the edge mode to the given mode.
+     */
+    public void setEdgeMode(int edgeMode) {
+        switch (edgeMode) {
+            case TimeLagGraphWorkbench.DIRECTED_EDGE:
+                // Falls through!
+            case TimeLagGraphWorkbench.NONDIRECTED_EDGE:
+                // Falls through!
+            case TimeLagGraphWorkbench.PARTIALLY_ORIENTED_EDGE:
+                // Falls through!
+            case TimeLagGraphWorkbench.BIDIRECTED_EDGE:
+                this.edgeMode = edgeMode;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -213,8 +240,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
-     * Creates a new display node for the workbench based on the given model
-     * node.
+     * Creates a new display node for the workbench based on the given model node.
      *
      * @param modelNode the model node.
      * @return the new display node.
@@ -246,8 +272,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
-     * Creates a new display edge for the workbench based on the given model
-     * edge.
+     * Creates a new display edge for the workbench based on the given model edge.
      *
      * @param modelEdge the model edge.
      * @return the new display edge.
@@ -271,8 +296,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
-     * Creates a new model edge for the workbench connecting the two given model
-     * nodes and using the edge type from #getEdgeType().
+     * Creates a new model edge for the workbench connecting the two given model nodes and using the edge type from
+     * #getEdgeType().
      *
      * @param node1 the one model node.
      * @param node2 the other model node.
@@ -298,9 +323,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
-     * Gets a new "tracking edge"--that is, an edge which is anchored at one end
-     * to a node but tracks the mouse at the other end.  Used for drawing new
-     * edges.
+     * Gets a new "tracking edge"--that is, an edge which is anchored at one end to a node but tracks the mouse at the
+     * other end.  Used for drawing new edges.
      *
      * @param node     the node to anchor to.
      * @param mouseLoc the location of the mouse.
@@ -327,8 +351,7 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
-     * Determines whether the next node to be constructed will be measured or
-     * latent.
+     * Determines whether the next node to be constructed will be measured or latent.
      *
      * @return MEASURED_NODE or LATENT_NODE
      * @see #MEASURED_NODE
@@ -339,9 +362,8 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
-     * Given base b (a String), returns the first node in the sequence "b1",
-     * "b2", "b3", etc., which is not already the name of a node in the
-     * workbench.
+     * Given base b (a String), returns the first node in the sequence "b1", "b2", "b3", etc., which is not already the
+     * name of a node in the workbench.
      *
      * @param base the base string.
      * @return the first string in the sequence not already being used.
@@ -373,25 +395,6 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
     }
 
     /**
-     * Sets the edge mode to the given mode.
-     */
-    public void setEdgeMode(int edgeMode) {
-        switch (edgeMode) {
-            case TimeLagGraphWorkbench.DIRECTED_EDGE:
-                // Falls through!
-            case TimeLagGraphWorkbench.NONDIRECTED_EDGE:
-                // Falls through!
-            case TimeLagGraphWorkbench.PARTIALLY_ORIENTED_EDGE:
-                // Falls through!
-            case TimeLagGraphWorkbench.BIDIRECTED_EDGE:
-                this.edgeMode = edgeMode;
-                break;
-            default:
-                throw new IllegalArgumentException();
-        }
-    }
-
-    /**
      * Sets the type of this node to the given type.
      */
     public void setNodeType(int nodeType) {
@@ -403,9 +406,10 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
         }
     }
 
+    //===========================PRIVATE METHODS==========================//
+
     /**
-     * Pastes a list of session elements (SessionNodeWrappers and SessionEdges)
-     * into the workbench.
+     * Pastes a list of session elements (SessionNodeWrappers and SessionEdges) into the workbench.
      */
     public void pasteSubgraph(List graphElements, Point upperLeft) {
 
@@ -432,12 +436,9 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
         }
     }
 
-    //===========================PRIVATE METHODS==========================//
-
     /**
-     * Adjusts the name to avoid name conflicts in the new session and, if the
-     * name is adjusted, adjusts the position so the user can see the two
-     * nodes.
+     * Adjusts the name to avoid name conflicts in the new session and, if the name is adjusted, adjusts the position so
+     * the user can see the two nodes.
      *
      * @param node   The node which is being adjusted
      * @param deltaX the shift in x
@@ -476,15 +477,6 @@ public class TimeLagGraphWorkbench extends GraphWorkbench {
         }
 
         return base + i;
-    }
-
-    private static boolean containsName(List<Node> nodes, String name) {
-        for (Node node : nodes) {
-            if (name.equals(node.getName())) {
-                return true;
-            }
-        }
-        return false;
     }
 }
 

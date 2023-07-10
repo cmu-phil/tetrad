@@ -75,6 +75,11 @@ public class ProximalGradient {
         this.edgeConverge = false;
     }
 
+    public static double norm2(DoubleMatrix1D vec) {
+        //return FastMath.sqrt(vec.copy().assign(Functions.pow(2)).zSum());
+        return FastMath.sqrt(new Algebra().norm2(vec));
+    }
+
     /**
      * Positive edge change tolerance is the number of iterations with 0 edge changes needed to converge. Negative edge
      * change tolerance means convergence happens when number of difference edges &lt;= |edge change tol|. Default is
@@ -83,7 +88,6 @@ public class ProximalGradient {
     public void setEdgeChangeTol(int t) {
         this.noEdgeChangeTol = t;
     }
-
 
     //run FISTA with step size backtracking attempt to speed up
     public DoubleMatrix1D learnBackTrack(ConvexProximal cp, DoubleMatrix1D Xin, double epsilon, int iterLimit) {
@@ -241,11 +245,6 @@ public class ProximalGradient {
             }
         }
         return X;
-    }
-
-    public static double norm2(DoubleMatrix1D vec) {
-        //return FastMath.sqrt(vec.copy().assign(Functions.pow(2)).zSum());
-        return FastMath.sqrt(new Algebra().norm2(vec));
     }
 }
 

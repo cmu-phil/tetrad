@@ -84,17 +84,15 @@ class QQPlotEditorPanel extends JPanel {
 
     //========================== Private Methods ================================//
 
-    private void changeQQPlot(QQPlot qqPlot) {
-        // fire event
-        this.firePropertyChange("histogramChange", null, qqPlot);
-    }
-
-
     private static void setPreferredAsMax(JComponent component) {
         component.setMaximumSize(component.getPreferredSize());
 
     }
 
+    private void changeQQPlot(QQPlot qqPlot) {
+        // fire event
+        this.firePropertyChange("histogramChange", null, qqPlot);
+    }
 
     private Box buildEditArea() {
         QQPlotEditorPanel.setPreferredAsMax(this.variableBox);

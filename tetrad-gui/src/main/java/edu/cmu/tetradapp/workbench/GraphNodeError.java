@@ -34,9 +34,8 @@ import java.awt.event.FocusEvent;
 import java.util.List;
 
 /**
- * Represents an error node in the workbench. Appears as a white oval with black
- * border, with the variable name in it. Clicking on the oval pops up a dialog
- * that lets the user modify the name of the variable.
+ * Represents an error node in the workbench. Appears as a white oval with black border, with the variable name in it.
+ * Clicking on the oval pops up a dialog that lets the user modify the name of the variable.
  *
  * @author josephramsey
  * @author Willie Wheeler
@@ -60,11 +59,9 @@ public class GraphNodeError extends DisplayNode {
     //===========================PUBLIC METHODS========================//
 
     /**
-     * Launches a dialog that lets the user change the name of the variable,
-     * making sure the user doesn't pick a name that's already being used.
-     * That's what the given graph is used for--to provide a list of variables
-     * whose names should not be picked by the user as the new name for any
-     * variable.
+     * Launches a dialog that lets the user change the name of the variable, making sure the user doesn't pick a name
+     * that's already being used. That's what the given graph is used for--to provide a list of variables whose names
+     * should not be picked by the user as the new name for any variable.
      */
     public void doDoubleClickAction(Graph graph) {
         List<Node> nodes = graph.getNodes();

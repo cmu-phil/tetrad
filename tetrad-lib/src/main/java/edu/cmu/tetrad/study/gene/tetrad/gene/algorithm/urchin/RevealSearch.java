@@ -177,7 +177,7 @@ public class RevealSearch {
 
     /**
      * This method computes m/e values for all single regulators, pairs and triples between two time lags (inclusively).
-     *  The resulting output graph will specify the parents of each gene as well as the time lag associated with each
+     * The resulting output graph will specify the parents of each gene as well as the time lag associated with each
      * causal link.
      */
     public RevealOutputGraph exhaustiveSearch(int lag1, int lag2) {

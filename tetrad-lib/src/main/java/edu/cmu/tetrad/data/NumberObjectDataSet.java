@@ -75,11 +75,6 @@ public final class NumberObjectDataSet
         implements DataSet {
     static final long serialVersionUID = 23L;
     private Map<String, String> columnToTooltip = new HashMap<>();
-
-    public Map<String, String> getColumnToTooltip() {
-        return this.columnToTooltip;
-    }
-
     /**
      * The name of the data model. This is not used internally; it is only here in case an external class wants this
      * dataset to have a name.
@@ -87,7 +82,6 @@ public final class NumberObjectDataSet
      * @serial
      */
     private String name;
-
     /**
      * The list of variables. These correspond columnwise to the columns of
      * <code>data</code>.
@@ -95,7 +89,6 @@ public final class NumberObjectDataSet
      * @serial
      */
     private List<Node> variables;
-
     /**
      * The container storing the data. Rows are cases; columns are variables. The order of columns is coordinated with
      * the order of variables in getVariable().
@@ -103,32 +96,26 @@ public final class NumberObjectDataSet
      * @serial
      */
     private Number[][] data;
-
     /**
      * The set of selected variables.
      *
      * @serial
      */
     private Set<Node> selection = new HashSet<>();
-
     /**
      * The knowledge associated with this data.
      *
      * @serial
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * The number formatter used for printing out continuous values.
      */
     private transient NumberFormat nf;
-
     /**
      * The character used as a delimiter when the dataset is printed.
      */
     private char outputDelimiter = '\t';
-
-    //============================CONSTRUCTORS==========================//
 
     /**
      * Constructs a data set with the given number of rows (cases) and the given list of variables. The number of
@@ -176,7 +163,6 @@ public final class NumberObjectDataSet
         this.outputDelimiter = dataSet.outputDelimiter;
     }
 
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
@@ -184,7 +170,46 @@ public final class NumberObjectDataSet
         return new NumberObjectDataSet(0, new LinkedList<>());
     }
 
-    //============================PUBLIC METHODS========================//
+    /**
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
+     */
+    private static void readObject(ObjectInputStream s)
+            throws IOException, ClassNotFoundException {
+        s.defaultReadObject();
+    }
+
+    /**
+     * Attempts to translate <code>element</code> into a double value, returning it if successful, otherwise throwing an
+     * exception. To be successful, the object must be either a Number or a String.
+     *
+     * @throws IllegalArgumentException if the translation cannot be made. The reason is in the message.
+     */
+    private static double getValueFromObjectContinuous(Object element) {
+        if ("*".equals(element) || "".equals(element)) {
+            return ContinuousVariable.getDoubleMissingValue();
+        } else if (element instanceof Number) {
+            return ((Number) element).doubleValue();
+        } else if (element instanceof String) {
+            try {
+                return Double.parseDouble((String) element);
+            } catch (NumberFormatException e) {
+                return ContinuousVariable.getDoubleMissingValue();
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "The argument 'element' must be " +
+                            "either a Number or a String.");
+        }
+    }
+
+    public Map<String, String> getColumnToTooltip() {
+        return this.columnToTooltip;
+    }
 
     /**
      * Gets the name of the data set.
@@ -506,7 +531,6 @@ public final class NumberObjectDataSet
     public List<Node> getVariables() {
         return new LinkedList<>(this.variables);
     }
-
 
     /**
      * @return a copy of the knowledge associated with this data set. (Cannot be null.)
@@ -923,8 +947,8 @@ public final class NumberObjectDataSet
      * data included. Discrete data will be represented by ints cast to doubles. Rows in this matrix are cases, and
      * columns are variables. The list of variable, in the order in which they occur in the matrix, is given by
      * getVariable(). //     * <p> //     * If isMultipliersCollapsed() returns false, multipliers in the dataset are //
-     *     * first expanded before returning the matrix, so the number of rows in the //     * returned matrix may not
-     * be the same as the number of rows in this //     * dataset.
+     * * first expanded before returning the matrix, so the number of rows in the //     * returned matrix may not be
+     * the same as the number of rows in this //     * dataset.
      * @throws IllegalStateException if this is not a continuous data set.
      * @see #getVariables //     * @see #isMulipliersCollapsed()
      */
@@ -1126,14 +1150,6 @@ public final class NumberObjectDataSet
         return new NumberObjectDataSet(getNumRows(), this.variables);
     }
 
-    public void setNumberFormat(NumberFormat nf) {
-        if (nf == null) {
-            throw new NullPointerException();
-        }
-
-        this.nf = nf;
-    }
-
     /**
      * Sets the character ('\t', ' ', ',', for instance) that is used to delimit tokens when the data set is printed out
      * using the toString() method.
@@ -1164,8 +1180,6 @@ public final class NumberObjectDataSet
 
         this.data = data2;
     }
-
-    //===============================PRIVATE METHODS=====================//
 
     private void setIntPrivate(int row, int col, int value) {
         if (value == -99) {
@@ -1200,19 +1214,6 @@ public final class NumberObjectDataSet
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
-     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
-     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
-     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
-     */
-    private static void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-    }
-
-    /**
      * @return the set of selected nodes, creating a new set if necessary.
      */
     private Set<Node> getSelection() {
@@ -1220,30 +1221,6 @@ public final class NumberObjectDataSet
             this.selection = new HashSet<>();
         }
         return this.selection;
-    }
-
-    /**
-     * Attempts to translate <code>element</code> into a double value, returning it if successful, otherwise throwing an
-     * exception. To be successful, the object must be either a Number or a String.
-     *
-     * @throws IllegalArgumentException if the translation cannot be made. The reason is in the message.
-     */
-    private static double getValueFromObjectContinuous(Object element) {
-        if ("*".equals(element) || "".equals(element)) {
-            return ContinuousVariable.getDoubleMissingValue();
-        } else if (element instanceof Number) {
-            return ((Number) element).doubleValue();
-        } else if (element instanceof String) {
-            try {
-                return Double.parseDouble((String) element);
-            } catch (NumberFormatException e) {
-                return ContinuousVariable.getDoubleMissingValue();
-            }
-        } else {
-            throw new IllegalArgumentException(
-                    "The argument 'element' must be " +
-                            "either a Number or a String.");
-        }
     }
 
     /**
@@ -1398,6 +1375,14 @@ public final class NumberObjectDataSet
         }
 
         return this.nf;
+    }
+
+    public void setNumberFormat(NumberFormat nf) {
+        if (nf == null) {
+            throw new NullPointerException();
+        }
+
+        this.nf = nf;
     }
 }
 

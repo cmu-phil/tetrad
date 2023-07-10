@@ -33,6 +33,10 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class TestGenerateMixedData {
 
+    public static void main(String... args) {
+        new TestGenerateMixedData().test1();
+    }
+
     public void test1() {
         Parameters parameters = new Parameters();
 
@@ -69,10 +73,6 @@ public class TestGenerateMixedData {
         comparison.setTabDelimitedTables(true);
 
         comparison.saveToFiles("mixed.lee.hastie.avg.degree.4", simulation, parameters);
-    }
-
-    public static void main(String... args) {
-        new TestGenerateMixedData().test1();
     }
 }
 

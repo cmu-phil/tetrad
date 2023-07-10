@@ -24,10 +24,10 @@ public class LoadMadelynData implements Simulation, HasParameterValues {
     private final String directory;
     private final String suffix;
     private final int structure;
-    private Graph graph;
-    private List<DataSet> dataSets = new ArrayList<>();
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
+    private Graph graph;
+    private List<DataSet> dataSets = new ArrayList<>();
 
     public LoadMadelynData(String directory, String suffix, int structure) {
         this.directory = directory;

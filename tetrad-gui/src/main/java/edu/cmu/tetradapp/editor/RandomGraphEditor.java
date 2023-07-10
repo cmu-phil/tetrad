@@ -53,19 +53,17 @@ class RandomGraphEditor extends JPanel {
     private final IntTextField minCycleLengthField;
 
     /**
-     * Constructs a dialog to edit the given workbench randomization
-     * parameters.
+     * Constructs a dialog to edit the given workbench randomization parameters.
      */
     public RandomGraphEditor(boolean cyclicAllowed, Parameters parameters) {
         this(new EdgeListGraph(), cyclicAllowed, parameters);
     }
 
     /**
-     * Constructs a dialog to edit the given workbench randomization
-     * parameters.
-     * //     * @param preferredNumNodes an integer which, if greater than 1, will revise the number of nodes,
-     * //     * number of edges,a nd number of latent nodes. Useful if the interface suggests a number of nodes
-     * //     * that overrides the number of nodes set in the preferences.
+     * Constructs a dialog to edit the given workbench randomization parameters. //     * @param preferredNumNodes an
+     * integer which, if greater than 1, will revise the number of nodes, //     * number of edges,a nd number of latent
+     * nodes. Useful if the interface suggests a number of nodes //     * that overrides the number of nodes set in the
+     * preferences.
      */
     public RandomGraphEditor(Graph oldGraph, boolean cyclicAllowed, Parameters parameters) {
         if (parameters == null) {
@@ -471,20 +469,20 @@ class RandomGraphEditor extends JPanel {
         return this.parameters.getBoolean("graphRandomFoward", true);
     }
 
-    public boolean isUniformlySelected() {
-        return this.parameters.getBoolean("graphUniformlySelected", true);
-    }
-
-    public boolean isChooseFixed() {
-        return this.parameters.getBoolean("graphChooseFixed", true);
-    }
-
     private void setRandomForward(boolean randomFoward) {
         this.parameters.set("graphRandomFoward", randomFoward);
     }
 
+    public boolean isUniformlySelected() {
+        return this.parameters.getBoolean("graphUniformlySelected", true);
+    }
+
     private void setUniformlySelected(boolean uniformlySelected) {
         this.parameters.set("graphUniformlySelected", uniformlySelected);
+    }
+
+    public boolean isChooseFixed() {
+        return this.parameters.getBoolean("graphChooseFixed", true);
     }
 
     private void setChooseFixed(boolean chooseFixed) {
@@ -599,6 +597,10 @@ class RandomGraphEditor extends JPanel {
         this.parameters.set("randomGraphMaxOutdegree", maxOutDegree);
     }
 
+    public boolean isConnected() {
+        return this.parameters.getBoolean("randomGraphConnected", false);
+    }
+
     private void setConnected(boolean connected) {
         this.parameters.set("randomGraphConnected", connected);
 
@@ -621,16 +623,12 @@ class RandomGraphEditor extends JPanel {
         }
     }
 
-    public boolean isConnected() {
-        return this.parameters.getBoolean("randomGraphConnected", false);
+    public boolean isAddCycles() {
+        return this.parameters.getBoolean("randomGraphAddCycles", false);
     }
 
     private void setAddCycles(boolean addCycles) {
         this.parameters.set("randomGraphAddCycles", addCycles);
-    }
-
-    public boolean isAddCycles() {
-        return this.parameters.getBoolean("randomGraphAddCycles", false);
     }
 
     public int getMinNumCycles() {

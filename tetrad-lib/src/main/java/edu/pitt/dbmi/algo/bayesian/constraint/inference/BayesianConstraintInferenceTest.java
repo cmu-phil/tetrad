@@ -31,6 +31,10 @@ public class BayesianConstraintInferenceTest {
     public BayesianConstraintInferenceTest() {
     }
 
+    public static void main(String[] args) {
+        new BayesianConstraintInferenceTest().testMain();
+    }
+
     /**
      * Test of main method, of class BayesianConstraintInference.
      */
@@ -40,10 +44,6 @@ public class BayesianConstraintInferenceTest {
                 "--cas", casFile
         };
         BayesianConstraintInference.main(args);
-    }
-
-    public static void main(String[] args) {
-        new BayesianConstraintInferenceTest().testMain();
     }
 }
 

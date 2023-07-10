@@ -47,14 +47,6 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
     }
 
     /**
-     * Sets the parameter-storing object. This is a separate method because
-     * a blank constructor is needed.
-     */
-    public void setParams(Parameters params) {
-        this.params = params;
-    }
-
-    /**
      * A method required by the interface that does nothing.
      */
     public void setParentModels(Object[] parentModels) {
@@ -129,12 +121,19 @@ public final class BayesDataParamsEditor extends JPanel implements ParameterEdit
     }
 
     /**
-     * @return the getMappings object being edited. (This probably should not be
-     * public, but it is needed so that the textfields can edit the model.)
+     * @return the getMappings object being edited. (This probably should not be public, but it is needed so that the
+     * textfields can edit the model.)
      */
     private synchronized Parameters getParams() {
 
         return this.params;
+    }
+
+    /**
+     * Sets the parameter-storing object. This is a separate method because a blank constructor is needed.
+     */
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 }
 

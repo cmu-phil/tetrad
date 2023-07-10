@@ -37,8 +37,8 @@ public class ParamConstraint implements TetradSerializable {
 
     private final double number;
     private final Parameter param2;
-    private ParamConstraintType type;
     private final SemIm semIm;
+    private ParamConstraintType type;
 
     /**
      * The first constructor specifies the parameter and a number and the type of relation imposed by the constraint.

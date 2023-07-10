@@ -34,22 +34,18 @@ import java.awt.*;
 public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
 
     /**
-     * States whether the component is selected or not.
-     */
-    private boolean selected;
-
-
-    /**
      * The colors
      */
     private static final Color BORDER_COLOR = new Color(148, 152, 177);
     private static final Color BACKGROUND_COLOR = new Color(255, 255, 219);
-
-
     /**
      * The Jlable that contains the name
      */
     private final JLabel name = new JLabel("Note");
+    /**
+     * States whether the component is selected or not.
+     */
+    private boolean selected;
 
 
     /**
@@ -58,8 +54,6 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
     public NoteDisplayComp() {
         buildComponents();
     }
-
-    //================================ Public Methods ==============================//
 
 
     /**
@@ -122,8 +116,6 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
         this.name.setText(name);
         //buildComponents();
     }
-
-    //========================== Private methods ===============================//
 
 
     private void buildComponents() {

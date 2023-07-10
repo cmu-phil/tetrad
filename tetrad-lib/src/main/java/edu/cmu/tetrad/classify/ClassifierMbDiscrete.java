@@ -29,10 +29,10 @@ import edu.cmu.tetrad.graph.Edge;
 import edu.cmu.tetrad.graph.Edges;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.PcMb;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MbUtils;
 import edu.cmu.tetrad.util.NumberFormatUtil;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -95,6 +95,29 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
         }
     }
 
+    /**
+     * Runs MbClassify using moves-line arguments. The syntax is:
+     * <pre>
+     * java MbClassify train.dat test.dat target alpha depth
+     * </pre>
+     *
+     * @param args train.dat test.dat alpha depth dirichlet_prior max_missing
+     */
+    public static void main(String[] args) {
+        String trainPath = args[0];
+        String testPath = args[1];
+        String targetString = args[2];
+        String alphaString = args[3];
+        String depthString = args[4];
+        String priorString = args[5];
+        String maxMissingString = args[6];
+
+        new ClassifierMbDiscrete(trainPath, testPath, targetString, alphaString, depthString,
+                priorString, maxMissingString);
+    }
+
+    //============================PUBLIC METHODS=========================//
+
     private void setup(DataSet train, DataSet test, Node target, double alpha,
                        int depth, double prior, int maxMissing) {
         this.train = train;
@@ -112,8 +135,6 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
                     target);
         }
     }
-
-    //============================PUBLIC METHODS=========================//
 
     /**
      * Classifies the test data by Bayesian updating. The procedure is as follows. First, PC-MB is run on the training
@@ -365,27 +386,6 @@ public class ClassifierMbDiscrete implements ClassifierDiscrete {
      */
     public double getPercentCorrect() {
         return this.percentCorrect;
-    }
-
-    /**
-     * Runs MbClassify using moves-line arguments. The syntax is:
-     * <pre>
-     * java MbClassify train.dat test.dat target alpha depth
-     * </pre>
-     *
-     * @param args train.dat test.dat alpha depth dirichlet_prior max_missing
-     */
-    public static void main(String[] args) {
-        String trainPath = args[0];
-        String testPath = args[1];
-        String targetString = args[2];
-        String alphaString = args[3];
-        String depthString = args[4];
-        String priorString = args[5];
-        String maxMissingString = args[6];
-
-        new ClassifierMbDiscrete(trainPath, testPath, targetString, alphaString, depthString,
-                priorString, maxMissingString);
     }
 }
 

@@ -54,33 +54,28 @@ import java.util.Set;
 public final class IndTestRegression implements IndependenceTest {
 
     /**
+     * The standard number formatter for Tetrad.
+     */
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    /**
      * The correlation matrix.
      */
     private final DoubleMatrix2D data;
-
     /**
      * The variables of the correlation matrix, in order. (Unmodifiable list.)
      */
     private final List<Node> variables;
-
+    private final DataSet dataSet;
     /**
      * The significance level of the independence tests.
      */
     private double alpha;
-
     /**
      * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
      */
     private double fishersZ;
-
-    /**
-     * The standard number formatter for Tetrad.
-     */
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private final DataSet dataSet;
     private boolean verbose;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation matrix implied by the
@@ -100,7 +95,6 @@ public final class IndTestRegression implements IndependenceTest {
         setAlpha(alpha);
     }
 
-    //==========================PUBLIC METHODS=============================//
 
     /**
      * Creates a new IndTestCramerT instance for a subset of the variables.
@@ -170,6 +164,13 @@ public final class IndTestRegression implements IndependenceTest {
     }
 
     /**
+     * Gets the getModel significance level.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -179,13 +180,6 @@ public final class IndTestRegression implements IndependenceTest {
         }
 
         this.alpha = alpha;
-    }
-
-    /**
-     * Gets the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
     }
 
     /**
@@ -201,7 +195,6 @@ public final class IndTestRegression implements IndependenceTest {
         return "Linear Regression Test, alpha = " + IndTestRegression.nf.format(getAlpha());
     }
 
-    //==========================PRIVATE METHODS============================//
 
     public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {

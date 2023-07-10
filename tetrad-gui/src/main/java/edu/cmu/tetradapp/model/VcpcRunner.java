@@ -23,11 +23,11 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.work_in_progress.VcPc;
-import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
+import edu.cmu.tetrad.search.work_in_progress.VcPc;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 import edu.cmu.tetradapp.util.IndTestType;
@@ -58,9 +58,8 @@ public class VcpcRunner extends AbstractAlgorithmRunner
     //============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DataWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DataWrapper must contain a DataSet that is either a DataSet
+     * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public VcpcRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -78,9 +77,7 @@ public class VcpcRunner extends AbstractAlgorithmRunner
 
 
     /**
-     * Constucts a wrapper for the given
-     * /**
-     * Constucts a wrapper for the given EdgeListGraph.
+     * Constucts a wrapper for the given /** Constucts a wrapper for the given EdgeListGraph.
      */
     public VcpcRunner(Graph graph, Parameters params) {
         super(graph, params);

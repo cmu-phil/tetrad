@@ -114,6 +114,23 @@ public final class UpdatedBayesIm implements BayesIm {
         return new UpdatedBayesIm(MlBayesIm.serializableInstance());
     }
 
+    private static boolean hasNextValue(Proposition proposition, int variable,
+                                        int curIndex) {
+        return UpdatedBayesIm.nextValue(proposition, variable, curIndex) != -1;
+    }
+
+    private static int nextValue(Proposition proposition, int variable,
+                                 int curIndex) {
+        for (int i = curIndex + 1;
+             i < proposition.getNumCategories(variable); i++) {
+            if (proposition.isAllowed(variable, i)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     //===============================PUBLIC METHODS=======================//
     public BayesPm getBayesPm() {
         return getBayesIm().getBayesPm();
@@ -261,6 +278,10 @@ public final class UpdatedBayesIm implements BayesIm {
         return getBayesIm().isIncomplete(nodeIndex, rowIndex);
     }
 
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        return getBayesIm().simulateData(sampleSize, seed, latentDataSaved);
+//    }
+
     public boolean isIncomplete(int nodeIndex) {
         return getBayesIm().isIncomplete(nodeIndex);
     }
@@ -268,10 +289,6 @@ public final class UpdatedBayesIm implements BayesIm {
     public DataSet simulateData(int sampleSize, boolean latentDataSaved) {
         return getBayesIm().simulateData(sampleSize, latentDataSaved);
     }
-
-//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-//        return getBayesIm().simulateData(sampleSize, seed, latentDataSaved);
-//    }
 
     public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
         throw new UnsupportedOperationException();
@@ -488,23 +505,6 @@ public final class UpdatedBayesIm implements BayesIm {
         }
 
         return assertionTrue / conditionTrue;
-    }
-
-    private static boolean hasNextValue(Proposition proposition, int variable,
-                                        int curIndex) {
-        return UpdatedBayesIm.nextValue(proposition, variable, curIndex) != -1;
-    }
-
-    private static int nextValue(Proposition proposition, int variable,
-                                 int curIndex) {
-        for (int i = curIndex + 1;
-             i < proposition.getNumCategories(variable); i++) {
-            if (proposition.isAllowed(variable, i)) {
-                return i;
-            }
-        }
-
-        return -1;
     }
 
     /**

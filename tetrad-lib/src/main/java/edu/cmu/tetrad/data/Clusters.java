@@ -60,8 +60,6 @@ public final class Clusters implements TetradSerializable {
      */
     private int numClusters = -1;
 
-    //================================CONSTRUCTORS========================//
-
     /**
      * Constructs a blank knowledge object.
      */
@@ -85,8 +83,6 @@ public final class Clusters implements TetradSerializable {
     public static Clusters serializableInstance() {
         return new Clusters();
     }
-
-    //===============================PUBLIC METHODS=======================//
 
     /**
      * Adds the given variable to the given index.  If a variable which is being added is already in a index, it is

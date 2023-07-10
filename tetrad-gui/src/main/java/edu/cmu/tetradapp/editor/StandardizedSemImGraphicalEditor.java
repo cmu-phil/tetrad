@@ -53,69 +53,54 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
      * The SemIM being edited.
      */
     private final StandardizedSemIm semIm;
-
-    /**
-     * Workbench for the graphical editor.
-     */
-    private GraphWorkbench workbench;
-
-    /**
-     * Stores the last active edge so that it can be reset properly.
-     */
-    private Object lastEditedObject;
-
-    /**
-     * This delay needs to be restored when the component is hidden.
-     */
-    private int savedTooltipDelay;
-
-    /**
-     * True iff this graphical display is editable.
-     */
-    private boolean editable = true;
-
-    /**
-     * The minimum of the range being edited.
-     */
-    private double min = Double.NEGATIVE_INFINITY;
-
-    /**
-     * The maximum of the range being edited.
-     */
-    private double max = Double.POSITIVE_INFINITY;
-
-    /**
-     * The edge being edited.
-     */
-    private Edge editingEdge;
-
     /**
      * The label for the minimum range value.
      */
     private final JLabel minRangeLabel;
-
     /**
      * The label for the maximum range value.
      */
     private final JLabel maxRangeLabel;
-
     /**
      * The label that displayed the getModel edge being edited.
      */
     private final JLabel edgeLabel;
-
     /**
-     * The textfield that displays the getModel value of the parameter being
-     * edited.
+     * The textfield that displays the getModel value of the parameter being edited.
      */
     private final DoubleTextField valueField;
-
     /**
-     * The slider that lets the user select a value within range for the
-     * getModel parameter being edited.
+     * The slider that lets the user select a value within range for the getModel parameter being edited.
      */
     private final JSlider slider;
-
+    /**
+     * Workbench for the graphical editor.
+     */
+    private GraphWorkbench workbench;
+    /**
+     * Stores the last active edge so that it can be reset properly.
+     */
+    private Object lastEditedObject;
+    /**
+     * This delay needs to be restored when the component is hidden.
+     */
+    private int savedTooltipDelay;
+    /**
+     * True iff this graphical display is editable.
+     */
+    private boolean editable = true;
+    /**
+     * The minimum of the range being edited.
+     */
+    private double min = Double.NEGATIVE_INFINITY;
+    /**
+     * The maximum of the range being edited.
+     */
+    private double max = Double.POSITIVE_INFINITY;
+    /**
+     * The edge being edited.
+     */
+    private Edge editingEdge;
     private boolean enableEditing = true;
 
     /**
@@ -252,13 +237,6 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
     //=================================PUBLIC METHODS=======================================//
     public GraphWorkbench getWorkbench() {
         return this.workbench;
-    }
-
-    public void setEditable(boolean editable) {
-        workbench().setAllowEdgeReorientations(editable);
-        workbench().setAllowDoubleClickActions(editable);
-        workbench().setAllowNodeEdgeSelection(editable);
-        this.editable = editable;
     }
 
     //========================PRIVATE METHODS===========================//
@@ -496,6 +474,13 @@ final class StandardizedSemImGraphicalEditor extends JPanel {
 
     private boolean isEditable() {
         return this.editable;
+    }
+
+    public void setEditable(boolean editable) {
+        workbench().setAllowEdgeReorientations(editable);
+        workbench().setAllowDoubleClickActions(editable);
+        workbench().setAllowNodeEdgeSelection(editable);
+        this.editable = editable;
     }
 
     public boolean isEnableEditing() {

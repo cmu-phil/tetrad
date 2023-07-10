@@ -191,8 +191,7 @@ public class IonRunner extends AbstractAlgorithmRunner
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
 
     /**
-     * Executes the algorithm, producing (at least) a result workbench. Must be
-     * implemented in the extending class.
+     * Executes the algorithm, producing (at least) a result workbench. Must be implemented in the extending class.
      */
     public void execute() {
         System.out.println("Executing.");

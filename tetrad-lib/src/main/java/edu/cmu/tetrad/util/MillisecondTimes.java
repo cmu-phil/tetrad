@@ -11,8 +11,6 @@ import java.lang.management.ManagementFactory;
  * @author josephramsey
  */
 public class MillisecondTimes {
-    public enum Type {Wall, User, CPU}
-
     public static Type type = Type.CPU;
 
     public static long wallTimeMillis() {
@@ -39,4 +37,6 @@ public class MillisecondTimes {
                 throw new IllegalArgumentException("Unexpected type: " + type);
         }
     }
+
+    public enum Type {Wall, User, CPU}
 }

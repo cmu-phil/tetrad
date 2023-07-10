@@ -26,10 +26,9 @@ import edu.cmu.tetrad.session.SessionNode;
 import java.util.List;
 
 /**
- * Represents a device that allows one to select between available models.  A chooser must have
- * an empty constructor, after construction the chooser's set methods will called in the following order:
- * setId(), setTitle(), setNodeName(), setModelConfigs(). After all set methods have been called the
- * setup() method should be called.
+ * Represents a device that allows one to select between available models.  A chooser must have an empty constructor,
+ * after construction the chooser's set methods will called in the following order: setId(), setTitle(), setNodeName(),
+ * setModelConfigs(). After all set methods have been called the setup() method should be called.
  *
  * @author Tyler Gibson
  */
@@ -41,17 +40,15 @@ public interface ModelChooser {
      */
     String getTitle();
 
+    /**
+     * @param title The title to use for the chooser.
+     */
+    void setTitle(String title);
 
     /**
      * @return the model class that was selected or null if nothing was selected.
      */
     Class getSelectedModel();
-
-
-    /**
-     * @param title The title to use for the chooser.
-     */
-    void setTitle(String title);
 
     /**
      * @param configs the models that this chooser should display.

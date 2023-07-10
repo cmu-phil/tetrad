@@ -32,24 +32,22 @@ import java.rmi.MarshalledObject;
 import java.util.List;
 
 /**
- * Holds a list of graph nodes for cut/paste operations. Note that a deep clone
- * of the graph elements list is made on creation, and once the data is
- * retrieved, it is deleted.
+ * Holds a list of graph nodes for cut/paste operations. Note that a deep clone of the graph elements list is made on
+ * creation, and once the data is retrieved, it is deleted.
  *
  * @author josephramsey
  */
 class SubgraphSelection implements Transferable {
 
     /**
-     * The list of graph nodes that constitutes the selection.
-     */
-    private List graphElements;
-
-    /**
      * Supported dataflavors--only one.
      */
     private final DataFlavor[] dataFlavors = {
             new DataFlavor(SubgraphSelection.class, "Subgraph Selection")};
+    /**
+     * The list of graph nodes that constitutes the selection.
+     */
+    private List graphElements;
 
     /**
      * Constructs a new selection with the given list of graph nodes.
@@ -81,13 +79,10 @@ class SubgraphSelection implements Transferable {
 
     /**
      * @param flavor the requested flavor for the data
-     * @return an object which represents the data to be transferred.  The class
-     * of the object returned is defined by the representation class of the
-     * flavor.
-     * @throws IOException                if the data is no longer available in
-     *                                    the requested flavor.
-     * @throws UnsupportedFlavorException if the requested data flavor is not
-     *                                    supported.
+     * @return an object which represents the data to be transferred.  The class of the object returned is defined by
+     * the representation class of the flavor.
+     * @throws IOException                if the data is no longer available in the requested flavor.
+     * @throws UnsupportedFlavorException if the requested data flavor is not supported.
      * @see DataFlavor#getRepresentationClass
      */
     public Object getTransferData(DataFlavor flavor)
@@ -103,18 +98,15 @@ class SubgraphSelection implements Transferable {
 
     /**
      * @param flavor the requested flavor for the data
-     * @return whether or not the specified data flavor is supported for this
-     * object.
+     * @return whether or not the specified data flavor is supported for this object.
      */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(getTransferDataFlavors()[0]);
     }
 
     /**
-     * @return an array of DataFlavor objects indicating the flavors the data
-     * can be provided in.  The array should be ordered according to preference
-     * for providing the data (from most richly descriptive to least
-     * descriptive).
+     * @return an array of DataFlavor objects indicating the flavors the data can be provided in.  The array should be
+     * ordered according to preference for providing the data (from most richly descriptive to least descriptive).
      */
     public DataFlavor[] getTransferDataFlavors() {
         return this.dataFlavors;

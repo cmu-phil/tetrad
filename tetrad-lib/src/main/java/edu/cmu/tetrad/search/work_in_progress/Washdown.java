@@ -53,10 +53,10 @@ import java.util.List;
  */
 
 public class Washdown {
-    private ICovarianceMatrix cov;
-    private DataSet dataSet;
     private final List<Node> variables;
     private final double alpha;
+    private ICovarianceMatrix cov;
+    private DataSet dataSet;
 
     /**
      * Constructor.

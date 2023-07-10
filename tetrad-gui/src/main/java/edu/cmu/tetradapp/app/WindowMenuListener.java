@@ -29,9 +29,8 @@ import java.awt.event.ActionListener;
 import java.util.*;
 
 /**
- * This listener constructs a menu on the fly consisting of all titles of the
- * internal frames currently on the desktop.  When the user selects one of these
- * titles, the corresponding internal frame is moved to the front.
+ * This listener constructs a menu on the fly consisting of all titles of the internal frames currently on the desktop.
+ * When the user selects one of these titles, the corresponding internal frame is moved to the front.
  *
  * @author josephramsey
  * @author Chirayu Kong Wongchokprasitti chw20@pitt.edu
@@ -44,16 +43,16 @@ final class WindowMenuListener implements MenuListener, ActionListener {
     private final JMenu windowMenu;
 
     /**
-     * A map from menu items to the internal frames they represent, used to
-     * determine which session editor to navigate to.
+     * A map from menu items to the internal frames they represent, used to determine which session editor to navigate
+     * to.
      */
     private final Hashtable<JMenuItem, JInternalFrame> itemsToFrames;
 
     private final TetradDesktop desktop;
 
     /**
-     * Constructs the window menu listener.  Requires to be told which object
-     * the window menu is and which object the desktop pane is.
+     * Constructs the window menu listener.  Requires to be told which object the window menu is and which object the
+     * desktop pane is.
      */
     public WindowMenuListener(JMenu windowMenu, TetradDesktop desktop) {
 
@@ -86,12 +85,10 @@ final class WindowMenuListener implements MenuListener, ActionListener {
     }
 
     /**
-     * Reacts when the window menu is selected by constructing a menu on the fly
-     * consisting of an alphabetized list of sessoin editors. The user can
-     * navigate to any session editor by selecting its name from the list.
+     * Reacts when the window menu is selected by constructing a menu on the fly consisting of an alphabetized list of
+     * sessoin editors. The user can navigate to any session editor by selecting its name from the list.
      *
-     * @param e the menu event indicating that the window menu has been
-     *          selected.
+     * @param e the menu event indicating that the window menu has been selected.
      */
     public void menuSelected(MenuEvent e) {
 
@@ -121,11 +118,10 @@ final class WindowMenuListener implements MenuListener, ActionListener {
     }
 
     /**
-     * Reacts to selections of menu items in the window menu by moving their
-     * corresponding internal frames to the front.
+     * Reacts to selections of menu items in the window menu by moving their corresponding internal frames to the
+     * front.
      *
-     * @param e the action event indicating which internal frame should be moved
-     *          to the front.
+     * @param e the action event indicating which internal frame should be moved to the front.
      */
     public void actionPerformed(ActionEvent e) {
         System.out.println(e.getActionCommand());

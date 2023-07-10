@@ -73,15 +73,6 @@ import java.util.*;
  * @see Ftfc
  */
 public final class Bpc {
-    private boolean outputMessage;
-
-    private ICovarianceMatrix covarianceMatrix;
-    private int numVariables;
-
-    private BpcTestType sigTestType;
-    private int[] labels;
-    private boolean scoreTestMode;
-
     /*
      * Color code for the different edges that show up during search
      */
@@ -92,7 +83,12 @@ public final class Bpc {
     final int EDGE_YELLOW = 4;
     final int EDGE_RED = 4;
     final int MAX_CLIQUE_TRIALS = 50;
-
+    private boolean outputMessage;
+    private ICovarianceMatrix covarianceMatrix;
+    private int numVariables;
+    private BpcTestType sigTestType;
+    private int[] labels;
+    private boolean scoreTestMode;
     private TetradTest tetradTest;
     private IndependenceTest independenceTest;
     private DataSet dataSet;

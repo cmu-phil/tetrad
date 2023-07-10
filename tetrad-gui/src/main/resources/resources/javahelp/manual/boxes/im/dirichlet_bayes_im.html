@@ -5,9 +5,9 @@
           http-equiv="content-type">
     <title>IM</title>
 </head>
-<body vlink="#551a8b" alink="#ee0000" link="#0000ee"
-      style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);">
-<table width="95%" border="1" bgcolor="maroon">
+<body alink="#ee0000" link="#0000ee" style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);"
+      vlink="#551a8b">
+<table bgcolor="maroon" border="1" width="95%">
     <tr>
         <td><h2><font color="#FFFFFF">Dirichlet Bayes Instantiated Model </font></h2></td>
     </tr>
@@ -41,17 +41,17 @@
     How to Construct a Dirichlet Bayes IM</h3>
 <p>To construct a Bayes IM, first construct a DAG, then a Bayes PM, and add an IM box to the workspace, with an arrow
     from the Bayes PM to the IM.</p>
-<p><img src="../../images/bayesim1.gif" width="270" height="66"></p>
+<p><img height="66" src="../../images/bayesim1.gif" width="270"></p>
 <p>Fill in the Graph box and the PM box, as explained in <a href="../pm/bayes_pm.html">Bayes Parameterized Model</a>.
     For instance, you might end up with a graph that looks like this (the categories for X1 are shown).</p>
-<p><img src="../../images/dirichletbayesim1.gif" width="920" height="556"></p>
+<p><img height="556" src="../../images/dirichletbayesim1.gif" width="920"></p>
 <p>Now, double click the IM box. You get a choice of models; choose Dirichlet Bayes Instantiated Model:</p>
-<p><img src="../../images/dirichletbayesim2.gif" width="459" height="152"></p>
+<p><img height="152" src="../../images/dirichletbayesim2.gif" width="459"></p>
 <p>What you click OK, you are offered a choice. You may either initialize the parameters of your Dirichlet Bayes net
     manually (i.e., fill them in one by one, by hand), or fill them in randomly.</p>
-<p><img src="../../images/dirichletbayesim4.gif" width="516" height="195"></p>
+<p><img height="195" src="../../images/dirichletbayesim4.gif" width="516"></p>
 <p>We choose &quot;Manually.&quot; We now get a dialog that looks like the following:</p>
-<p><img src="../../images/dirichletbayesim5.gif" width="844" height="514"></p>
+<p><img height="514" src="../../images/dirichletbayesim5.gif" width="844"></p>
 <p>There are two tabs in the dialog that comes up next, &quot;Probabilities&quot; and &quot;Pseudocounts.&quot; Let us
     consider &quot;Pseudocounts&quot; first. Pseudocounts are displayed in tables, one for each variable, with the same
     structure as conditional probability tables in Bayes IM's. Each pseudocount is a positive real number; in this case
@@ -62,7 +62,7 @@
     in that row. In order not to lose information, the total count for each row is displayed in the &quot;Probabiliities&quot;
     tab as well. To recover pseudocounts, simply multiply the probability of a cell by the &quot;total count&quot; in
     the rightmost column. </p>
-<p><img src="../../images/dirichletbayesim6.gif" width="844" height="510"></p>
+<p><img height="510" src="../../images/dirichletbayesim6.gif" width="844"></p>
 <p>[Note: there is some funny business going on with the right-click popup menus for doing randomization. Need to make
     this work.] </p>
 <p>&nbsp;</p>

@@ -57,6 +57,10 @@ public final class IndependenceTestModels {
         initDefaultModelMap();
     }
 
+    public static IndependenceTestModels getInstance() {
+        return IndependenceTestModels.INSTANCE;
+    }
+
     private void initModelMap() {
         // initialize enum map
         DataType[] dataTypes = DataType.values();
@@ -122,10 +126,6 @@ public final class IndependenceTestModels {
             default:
                 return null;
         }
-    }
-
-    public static IndependenceTestModels getInstance() {
-        return IndependenceTestModels.INSTANCE;
     }
 
     public List<IndependenceTestModel> getModels() {

@@ -70,6 +70,15 @@ public class CovMatrixSumWrapper extends DataWrapper {
 
     }
 
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+    }
+
     private Matrix calcSum(Matrix corr1, Matrix corr2) {
         if (corr1.getNumRows() != corr2.getNumRows()) {
             throw new IllegalArgumentException("Covariance matrices must be the same size.");
@@ -86,15 +95,6 @@ public class CovMatrixSumWrapper extends DataWrapper {
         }
 
         return corr3;
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static PcRunner serializableInstance() {
-        return PcRunner.serializableInstance();
     }
 
 

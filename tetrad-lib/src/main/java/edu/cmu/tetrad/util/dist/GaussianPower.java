@@ -27,11 +27,13 @@ public class GaussianPower implements Distribution {
     static final long serialVersionUID = 23L;
 
     private final double sd;
-    private double power;
     private final String name;
+    private double power;
 
-    public String getName() {
-        return this.name;
+    public GaussianPower(double power) {
+        this.sd = 1;
+        this.power = power;
+        this.name = "N^" + power + "(" + 0 + "," + (double) 1 + ")";
     }
 
     /**
@@ -43,10 +45,8 @@ public class GaussianPower implements Distribution {
         return new GaussianPower(2);
     }
 
-    public GaussianPower(double power) {
-        this.sd = 1;
-        this.power = power;
-        this.name = "N^" + power + "(" + 0 + "," + (double) 1 + ")";
+    public String getName() {
+        return this.name;
     }
 
     public void setParameter(int index, double value) {

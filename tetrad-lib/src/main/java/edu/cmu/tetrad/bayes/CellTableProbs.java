@@ -111,6 +111,23 @@ public final class CellTableProbs implements DiscreteProbs {
 
     //===========================PUBLIC METHODS=========================//
 
+    private static boolean hasNextValue(Proposition proposition, int variable,
+                                        int curIndex) {
+        return CellTableProbs.nextValue(proposition, variable, curIndex) != -1;
+    }
+
+    private static int nextValue(Proposition proposition, int variable,
+                                 int curIndex) {
+        for (int i = curIndex + 1;
+             i < proposition.getNumCategories(variable); i++) {
+            if (proposition.isAllowed(variable, i)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     /**
      * @return the estimated probability for the given cell. The order of the variable values is the order of the
      * variables in getVariable().
@@ -244,6 +261,8 @@ public final class CellTableProbs implements DiscreteProbs {
         return this.dataSet;
     }
 
+    //===========================PRIVATE METHODS===========================//
+
     /**
      * @return the list of variables for the dataset that this is estimating probabilities for.
      */
@@ -257,8 +276,6 @@ public final class CellTableProbs implements DiscreteProbs {
     private boolean isBoundsEnforced() {
         return true;
     }
-
-    //===========================PRIVATE METHODS===========================//
 
     /**
      * @param coords The coordinates of the cell. Each value must be less than the number of possible value for the
@@ -295,23 +312,6 @@ public final class CellTableProbs implements DiscreteProbs {
         }
 
         return cellIndex;
-    }
-
-    private static boolean hasNextValue(Proposition proposition, int variable,
-                                        int curIndex) {
-        return CellTableProbs.nextValue(proposition, variable, curIndex) != -1;
-    }
-
-    private static int nextValue(Proposition proposition, int variable,
-                                 int curIndex) {
-        for (int i = curIndex + 1;
-             i < proposition.getNumCategories(variable); i++) {
-            if (proposition.isAllowed(variable, i)) {
-                return i;
-            }
-        }
-
-        return -1;
     }
 
 }

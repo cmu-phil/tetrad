@@ -39,29 +39,23 @@ import java.util.Map;
 public class KnowledgeModelNode implements Node, TetradSerializableExcluded {
 
     static final long serialVersionUID = 23L;
-
+    private final Map<String, Object> attributes = new HashMap<>();
     /**
      * @serial
      */
     private String name;
-
     /**
-     * Node variable type (domain, interventional status, interventional
-     * value..) of this node variable
+     * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
-
     /**
      * @serial
      */
     private int centerX;
-
     /**
      * @serial
      */
     private int centerY;
-
-    private final Map<String, Object> attributes = new HashMap<>();
 
     //=============================CONSTRUCTORS=========================//
     public KnowledgeModelNode(String varName) {

@@ -59,7 +59,6 @@ public final class IndTestMulti implements IndependenceTest {
 
 //    private DataSet concatenatedData;
 
-    //==========================CONSTRUCTORS=============================//
 
     public IndTestMulti(List<IndependenceTest> independenceTests, ResolveSepsets.Method method) {
         Set<String> nodeNames = new HashSet<>();
@@ -74,7 +73,6 @@ public final class IndTestMulti implements IndependenceTest {
         this.method = method;
     }
 
-    //==========================PUBLIC METHODS=============================//
 
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();
@@ -101,14 +99,14 @@ public final class IndTestMulti implements IndependenceTest {
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN, Double.NaN);
     }
 
-    public void setAlpha(double alpha) {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * Gets the getModel significance level.
      */
     public double getAlpha() {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setAlpha(double alpha) {
         throw new UnsupportedOperationException();
     }
 

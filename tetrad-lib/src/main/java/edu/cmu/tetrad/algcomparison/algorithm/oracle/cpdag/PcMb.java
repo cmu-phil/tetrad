@@ -126,13 +126,13 @@ public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
-        this.test = test;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
     }
 
     @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 
     @Override

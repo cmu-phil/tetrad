@@ -37,30 +37,6 @@ public class ItkPredictorSearch {
     String[] names;
     int[][] expression;
 
-    public static class Gene implements Comparable {
-        int gene;
-
-        public Gene(int gene) {
-            this.gene = gene;
-        }
-
-        public int getIndex() {
-            return this.gene;
-        }
-
-        public int compareTo(Object o) {
-            int ret;
-            if (this.gene < ((Gene) o).getIndex()) {
-                ret = -1;
-            } else if (this.gene == ((Gene) o).getIndex()) {
-                ret = 0;
-            } else {
-                ret = 1;
-            }
-            return ret;
-        }
-    }
-
     public ItkPredictorSearch(int ngenes, int[][] expression, String[] names) {
 
         this.ngenes = ngenes;
@@ -363,6 +339,30 @@ public class ItkPredictorSearch {
         }
 
         return rep;
+    }
+
+    public static class Gene implements Comparable {
+        int gene;
+
+        public Gene(int gene) {
+            this.gene = gene;
+        }
+
+        public int getIndex() {
+            return this.gene;
+        }
+
+        public int compareTo(Object o) {
+            int ret;
+            if (this.gene < ((Gene) o).getIndex()) {
+                ret = -1;
+            } else if (this.gene == ((Gene) o).getIndex()) {
+                ret = 0;
+            } else {
+                ret = 1;
+            }
+            return ret;
+        }
     }
 
 }

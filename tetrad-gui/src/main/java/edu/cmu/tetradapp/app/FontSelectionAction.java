@@ -36,8 +36,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * Copies a selection of session nodes in the frontmost session editor, to the
- * clipboard.
+ * Copies a selection of session nodes in the frontmost session editor, to the clipboard.
  *
  * @author josephramsey
  */
@@ -54,16 +53,14 @@ final class FontSelectionAction extends AbstractAction
     private Font font;
 
     /**
-     * Creates a new copy subsession action for the given desktop and
-     * clipboard.
+     * Creates a new copy subsession action for the given desktop and clipboard.
      */
     public FontSelectionAction() {
         super("Font...");
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         GraphicsEnvironment graphicsEnvironment =

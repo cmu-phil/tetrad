@@ -34,19 +34,15 @@ import java.util.List;
  * @author Tyler Gibson
  */
 public class ConstantExpression implements Expression {
-    static final long serialVersionUID = 23L;
-
     /**
      * Constant expression for PI.
      */
     public static final ConstantExpression PI = new ConstantExpression(FastMath.PI, "PI");//"\u03C0");
-
-
     /**
      * Constant expression for e.
      */
     public static final ConstantExpression E = new ConstantExpression(FastMath.E, "E");// "e");
-
+    static final long serialVersionUID = 23L;
     /**
      * THe value of the expression.
      */

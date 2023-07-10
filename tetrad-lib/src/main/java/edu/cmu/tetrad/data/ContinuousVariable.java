@@ -45,41 +45,33 @@ public final class ContinuousVariable extends AbstractVariable {
      * This is the value which represents missing data in data columns for this variable.
      */
     private static final double MISSING_VALUE = Double.NaN;
-
+    private final Map<String, Object> attributes = new HashMap<>();
     /**
      * The node type.
      *
      * @serial
      */
     private NodeType nodeType = NodeType.MEASURED;
-
     /**
      * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
-
     /**
      * The x coordinate of the center of the node.
      *
      * @serial
      */
     private int centerX = -1;
-
     /**
      * The y coordinate of the center of the node.
      *
      * @serial
      */
     private int centerY = -1;
-
     /**
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
-
-    private final Map<String, Object> attributes = new HashMap<>();
-
-    //============================CONSTRUCTORS=========================//
 
     /**
      * Constructs a new continuous variable with the given name.
@@ -108,7 +100,22 @@ public final class ContinuousVariable extends AbstractVariable {
         return new ContinuousVariable("X");
     }
 
-    //==============================PUBLIC METHODS======================//
+    /**
+     * @return the missing value marker.
+     */
+    public static double getDoubleMissingValue() {
+        return ContinuousVariable.MISSING_VALUE;
+    }
+
+    /**
+     * Determines whether the argument is equal to the missing value marker.
+     *
+     * @param value the Object to test--should be a wrapped version of the missing value marker.
+     * @return true iff it really is a wrapped version of the missing value marker.
+     */
+    public static boolean isDoubleMissingValue(double value) {
+        return Double.isNaN(value);
+    }
 
     /**
      * Checks the value to make sure it's a legitimate value for this column.
@@ -142,23 +149,6 @@ public final class ContinuousVariable extends AbstractVariable {
      */
     public Object getMissingValueMarker() {
         return ContinuousVariable.MISSING_VALUE;
-    }
-
-    /**
-     * @return the missing value marker.
-     */
-    public static double getDoubleMissingValue() {
-        return ContinuousVariable.MISSING_VALUE;
-    }
-
-    /**
-     * Determines whether the argument is equal to the missing value marker.
-     *
-     * @param value the Object to test--should be a wrapped version of the missing value marker.
-     * @return true iff it really is a wrapped version of the missing value marker.
-     */
-    public static boolean isDoubleMissingValue(double value) {
-        return Double.isNaN(value);
     }
 
     /**

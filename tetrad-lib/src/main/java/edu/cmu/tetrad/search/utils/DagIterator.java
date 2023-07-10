@@ -145,7 +145,6 @@ public class DagIterator {
         return this.storedDag != null;
     }
 
-    //==============================CLASSES==============================//
 
     private static class DecoratedGraph {
         private Graph graph;

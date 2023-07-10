@@ -58,6 +58,23 @@ public class CovLINard implements CovarianceFunction {
         this.D = inputDimension;
     }
 
+    public static void main(String[] args) {
+
+        CovLINard cf = new CovLINard(6);
+
+        Matrix X = Matrix.identity(6, 6);
+        Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}, {0.3}, {0.4}, {0.5}, {0.6}});
+
+        Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
+
+        System.out.println();
+
+        Matrix d = cf.computeDerivatives(logtheta, X, 5);
+
+        d.print(d.getColumnDimension(), 8);
+
+    }
+
     /**
      * Returns the number of hyperparameters of this<code>CovarianceFunction</code>
      *
@@ -146,23 +163,5 @@ public class CovLINard implements CovarianceFunction {
 
         Matrix tmp = X.getMatrix(0, X.getRowDimension() - 1, index, index);
         return tmp.times(tmp.transpose()).times(-2);
-    }
-
-
-    public static void main(String[] args) {
-
-        CovLINard cf = new CovLINard(6);
-
-        Matrix X = Matrix.identity(6, 6);
-        Matrix logtheta = new Matrix(new double[][]{{0.1}, {0.2}, {0.3}, {0.4}, {0.5}, {0.6}});
-
-        Matrix z = new Matrix(new double[][]{{1, 2, 3, 4, 5, 6}, {1, 2, 3, 4, 5, 6}});
-
-        System.out.println();
-
-        Matrix d = cf.computeDerivatives(logtheta, X, 5);
-
-        d.print(d.getColumnDimension(), 8);
-
     }
 }

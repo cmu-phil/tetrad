@@ -42,6 +42,31 @@ import java.util.StringTokenizer;
 public class HandleyConvert {
 
     /**
+     * Converts the graph file from the moves line.
+     *
+     * @param args The expected argument is the filename of the graph file that has been saved out using the toString()
+     *             method of the edu.cmu.genehistory.kernel.UpdateGraph class.
+     */
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            throw new IllegalArgumentException("Expecting exactly one " +
+                    "argument, the filename " + "of the file to translate.");
+        }
+
+        try {
+            File inFile = new File(args[0]);
+            File outFile = new File(inFile.getName() + ".out");
+            BufferedReader in = new BufferedReader(new FileReader(inFile));
+            PrintStream out = new PrintStream(new FileOutputStream(outFile));
+
+            new HandleyConvert().convert(in, out);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Assumes that the graph is given by the buffered reader and prints the conversion of the grap to the printstream.
      *
      * @param in  the buffered reader containing the graph in the form of the main javadoc for this class.
@@ -81,31 +106,6 @@ public class HandleyConvert {
 
             lagGraph.addFactor(effect);
             lagGraph.addEdge(effect, new LaggedFactor(cause, 1));
-        }
-    }
-
-    /**
-     * Converts the graph file from the moves line.
-     *
-     * @param args The expected argument is the filename of the graph file that has been saved out using the toString()
-     *             method of the edu.cmu.genehistory.kernel.UpdateGraph class.
-     */
-    public static void main(String[] args) {
-        if (args.length != 1) {
-            throw new IllegalArgumentException("Expecting exactly one " +
-                    "argument, the filename " + "of the file to translate.");
-        }
-
-        try {
-            File inFile = new File(args[0]);
-            File outFile = new File(inFile.getName() + ".out");
-            BufferedReader in = new BufferedReader(new FileReader(inFile));
-            PrintStream out = new PrintStream(new FileOutputStream(outFile));
-
-            new HandleyConvert().convert(in, out);
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

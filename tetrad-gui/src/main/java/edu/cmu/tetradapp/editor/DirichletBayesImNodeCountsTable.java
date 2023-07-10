@@ -435,16 +435,13 @@ class DirichletBayesImNodeCountsTable extends JTable {
     }
 
     /**
-     * The abstract table model containing the parameters to be edited for a
-     * given node.  Parameters for a given node N with parents P1, P2, ..., are
-     * of the form P(N=v0 | P1=v1, P2=v2, ..., Pn = vn).  The first n columns of
-     * this table for each row contains a combination of values for (P1, P2, ...
-     * Pn), such as (v0, v1, ..., vn).  If there are m values for N, the next m
-     * columns contain numbers in the range [0.0, 1.0] representing conditional
-     * probabilities that N takes on that corresponding value given this
-     * combination of parent values.  These conditional probabilities may be
-     * edited.  As they are being edited for a given row, the only condition is
-     * that they be greater than or equal to 0.0.
+     * The abstract table model containing the parameters to be edited for a given node.  Parameters for a given node N
+     * with parents P1, P2, ..., are of the form P(N=v0 | P1=v1, P2=v2, ..., Pn = vn).  The first n columns of this
+     * table for each row contains a combination of values for (P1, P2, ... Pn), such as (v0, v1, ..., vn).  If there
+     * are m values for N, the next m columns contain numbers in the range [0.0, 1.0] representing conditional
+     * probabilities that N takes on that corresponding value given this combination of parent values.  These
+     * conditional probabilities may be edited.  As they are being edited for a given row, the only condition is that
+     * they be greater than or equal to 0.0.
      *
      * @author josephramsey
      */
@@ -456,8 +453,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
         private final DirichletBayesIm dirichletBayesIm;
 
         /**
-         * This table can only display conditional probabilities for one node at
-         * at time. This is the node.
+         * This table can only display conditional probabilities for one node at at time. This is the node.
          */
         private final int nodeIndex;
 
@@ -466,8 +462,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
         private PropertyChangeSupport pcs;
 
         /**
-         * Constructs a new editing table model for a given a node in a given
-         * dirichletBayesIm.
+         * Constructs a new editing table model for a given a node in a given dirichletBayesIm.
          */
         public Model(Node node, DirichletBayesIm dirichletBayesIm,
                      JComponent messageAnchor) {
@@ -523,9 +518,8 @@ class DirichletBayesImNodeCountsTable extends JTable {
         }
 
         /**
-         * @return the total number of columns in the table, which is equal to
-         * the number of parents for the node plus the number of values for the
-         * node.
+         * @return the total number of columns in the table, which is equal to the number of parents for the node plus
+         * the number of values for the node.
          */
         public int getColumnCount() {
             int numParents =
@@ -538,13 +532,10 @@ class DirichletBayesImNodeCountsTable extends JTable {
         }
 
         /**
-         * @return the value of the table at the given row and column. The
-         * type of value returned depends on the column.  If there are n
-         * parent values and m node values, then the first n columns have String
-         * values representing the values of the parent nodes for a particular
-         * combination (row) and the next m columns have Double values
-         * representing conditional probabilities of node values given parent
-         * value combinations.
+         * @return the value of the table at the given row and column. The type of value returned depends on the column.
+         * If there are n parent values and m node values, then the first n columns have String values representing the
+         * values of the parent nodes for a particular combination (row) and the next m columns have Double values
+         * representing conditional probabilities of node values given parent value combinations.
          */
         public Object getValueAt(int tableRow, int tableCol) {
             int numParents =
@@ -580,8 +571,7 @@ class DirichletBayesImNodeCountsTable extends JTable {
         }
 
         /**
-         * Determines whether a cell is in the column range to allow for
-         * editing.
+         * Determines whether a cell is in the column range to allow for editing.
          */
         public boolean isCellEditable(int row, int col) {
             int numParents =

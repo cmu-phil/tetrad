@@ -60,6 +60,18 @@ final class LoadDataAction extends AbstractAction {
         this.dataEditor = editor;
     }
 
+    private static JFileChooser getJFileChooser() {
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation
+                = Preferences.userRoot().get("fileSaveLocation", "");
+        chooser.setCurrentDirectory(new File(sessionSaveLocation));
+        chooser.resetChoosableFileFilters();
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        return chooser;
+    }
+
+    //======================= private methods =========================//
+
     /**
      * Performs the action of loading a session from a file.
      */
@@ -123,8 +135,6 @@ final class LoadDataAction extends AbstractAction {
         firePropertyChange("modelChanged", null, null);
     }
 
-    //======================= private methods =========================//
-
     /**
      * States whether the data is empty.
      */
@@ -140,16 +150,6 @@ final class LoadDataAction extends AbstractAction {
             }
         }
         return true;
-    }
-
-    private static JFileChooser getJFileChooser() {
-        JFileChooser chooser = new JFileChooser();
-        String sessionSaveLocation
-                = Preferences.userRoot().get("fileSaveLocation", "");
-        chooser.setCurrentDirectory(new File(sessionSaveLocation));
-        chooser.resetChoosableFileFilters();
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        return chooser;
     }
 
 }

@@ -8,14 +8,9 @@ import java.util.List;
 public class CompareTwoGraphs {
 
 
-    public enum CompareToType {DAG, CPDAG, PAG}
-
-    public enum ComparisonType {STATS_LIST, EDGEWISE, MISCLASSIFICATTONS}
-
     private final Graph target;
     private final Graph reference;
     private List<Statistic> statistics;
-
     private CompareToType compareToType = CompareToType.DAG;
     private ComparisonType comparisontype = ComparisonType.STATS_LIST;
 
@@ -35,7 +30,6 @@ public class CompareTwoGraphs {
     public void addStatistic(Statistic statistic) {
         this.statistics.add(statistic);
     }
-
 
     /**
      * Returns a string comparing 'target' to 'reference' using the given comparison method. If type comparison method
@@ -72,4 +66,8 @@ public class CompareTwoGraphs {
     private String misclassificationsString() {
         return "foo";
     }
+
+    public enum CompareToType {DAG, CPDAG, PAG}
+
+    public enum ComparisonType {STATS_LIST, EDGEWISE, MISCLASSIFICATTONS}
 }

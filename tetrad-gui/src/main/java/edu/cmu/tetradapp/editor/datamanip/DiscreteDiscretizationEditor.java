@@ -39,8 +39,8 @@ import java.util.Map;
  * @author josephramsey
  */
 class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEditor {
-    private RemapEditor remapEditor;
     private final DiscreteVariable variable;
+    private RemapEditor remapEditor;
 
     public DiscreteDiscretizationEditor(DiscreteVariable variable) {
         if (variable == null) {
@@ -73,25 +73,6 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
 
     //===========================PUBLIC METHODS==========================//
 
-    public DiscretizationSpec getDiscretizationSpec() {
-        return this.remapEditor.getDiscretizationSpec();
-    }
-
-    public void setDiscretizationSpec(DiscretizationSpec spec) {
-        this.remapEditor.setDiscretizationSpec((DiscreteDiscretizationSpec) spec);
-    }
-
-    //===========================PRIVATE METHODS=========================//
-
-    private RemapEditor createRemapEditor() {
-        List<String> categories = DiscreteDiscretizationEditor.defaultCategories(this.variable);
-        int[] remap = DiscreteDiscretizationEditor.defaultRemap(categories);
-        DiscreteDiscretizationSpec discretizationSpec =
-                new DiscreteDiscretizationSpec(remap, categories);
-        this.remapEditor = new RemapEditor(this.variable, discretizationSpec);
-        return this.remapEditor;
-    }
-
     private static int[] defaultRemap(List<String> categories) {
         int[] remap = new int[categories.size()];
         for (int i = 0; i < remap.length; i++) {
@@ -108,6 +89,25 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
         return categories;
     }
 
+    //===========================PRIVATE METHODS=========================//
+
+    public DiscretizationSpec getDiscretizationSpec() {
+        return this.remapEditor.getDiscretizationSpec();
+    }
+
+    public void setDiscretizationSpec(DiscretizationSpec spec) {
+        this.remapEditor.setDiscretizationSpec((DiscreteDiscretizationSpec) spec);
+    }
+
+    private RemapEditor createRemapEditor() {
+        List<String> categories = DiscreteDiscretizationEditor.defaultCategories(this.variable);
+        int[] remap = DiscreteDiscretizationEditor.defaultRemap(categories);
+        DiscreteDiscretizationSpec discretizationSpec =
+                new DiscreteDiscretizationSpec(remap, categories);
+        this.remapEditor = new RemapEditor(this.variable, discretizationSpec);
+        return this.remapEditor;
+    }
+
     //================================CLASSES============================//
 
     static final class BigLabel extends JLabel {
@@ -122,13 +122,12 @@ class DiscreteDiscretizationEditor extends JPanel implements DiscretizationEdito
     static final class RemapEditor extends JComponent {
         private final DiscreteVariable variable;
         private final List<String> newCategories = new LinkedList<>();
-        private StringTextField[] categoryFields;
-        private StringTextField[] rangeFields;
         private final Map<Object, Integer> labels = new HashMap<>();
-
         private final LinkedList<StringTextField> focusTraveralOrder =
                 new LinkedList<>();
         private final DiscreteVariable oldVariable;
+        private StringTextField[] categoryFields;
+        private StringTextField[] rangeFields;
 
         public RemapEditor(DiscreteVariable variable,
                            DiscreteDiscretizationSpec spec) {

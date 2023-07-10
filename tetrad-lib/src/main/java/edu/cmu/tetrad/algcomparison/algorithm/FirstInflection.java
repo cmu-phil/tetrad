@@ -36,6 +36,14 @@ public class FirstInflection implements Algorithm {
         this.parameter = parameter;
     }
 
+    private static double getValue(double value, Parameters parameters) {
+        if (parameters.getBoolean("logScale")) {
+            return FastMath.round(FastMath.pow(10.0, value) * 1000000000.0) / 1000000000.0;
+        } else {
+            return FastMath.round(value * 1000000000.0) / 1000000000.0;
+        }
+    }
+
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         Parameters _parameters = new Parameters(parameters);
@@ -178,14 +186,6 @@ public class FirstInflection implements Algorithm {
 
         return _previous;
 
-    }
-
-    private static double getValue(double value, Parameters parameters) {
-        if (parameters.getBoolean("logScale")) {
-            return FastMath.round(FastMath.pow(10.0, value) * 1000000000.0) / 1000000000.0;
-        } else {
-            return FastMath.round(value * 1000000000.0) / 1000000000.0;
-        }
     }
 
     @Override

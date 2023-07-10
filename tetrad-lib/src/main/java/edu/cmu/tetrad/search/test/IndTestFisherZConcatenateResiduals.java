@@ -174,8 +174,15 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, pValue- getAlpha());
+        return new IndependenceResult(new IndependenceFact(x, y, _z), independent, pValue, pValue - getAlpha());
 
+    }
+
+    /**
+     * Gets the getModel significance level.
+     */
+    public double getAlpha() {
+        return this.alpha;
     }
 
     /**
@@ -189,13 +196,6 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
 
         this.alpha = alpha;
 //        this.thresh = Double.NaN;
-    }
-
-    /**
-     * Gets the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
     }
 
     /**

@@ -68,9 +68,6 @@ public class SplitCasesWrapper extends DataWrapper {
         return PcRunner.serializableInstance();
     }
 
-    //========================= Private Methods ===================================//
-
-
     /**
      * @return the splitNames selected by the editor.
      */

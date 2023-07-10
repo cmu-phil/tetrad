@@ -44,6 +44,92 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestSemIm {
 
+    public static SemIm modifySemImStandardizedInterventionOnTargetParents(SemIm semIm, Node
+            target) {
+        SemIm modifiedSemIm = new SemIm(semIm);
+        SemGraph graph = new SemGraph(modifiedSemIm.getSemPm().getGraph());
+
+        // remove &lt;-&gt; arrows from a copy of the graph so we can use the getParents function to get Nodes with edges into target
+        SemGraph removedDoubleArrowEdges = new SemGraph(graph);
+        ArrayList<Edge> edgesToRemove = new ArrayList<>();
+        for (Edge e : removedDoubleArrowEdges.getEdges()) {
+            if ((e.getEndpoint1().equals(Endpoint.ARROW)) &&
+                    (e.getEndpoint2().equals(Endpoint.ARROW))) {
+                edgesToRemove.add(e);
+            }
+        }
+        for (Edge e : edgesToRemove) {
+            removedDoubleArrowEdges.removeEdge(e);
+        }
+
+        ArrayList<Node> targetParents = new
+                ArrayList<>(removedDoubleArrowEdges.getParents(removedDoubleArrowEdges.getNode(target.getName())));
+
+        SemEvidence semEvidence = new SemEvidence(modifiedSemIm);
+        for (Node n : targetParents) {
+            semEvidence.setManipulated(semEvidence.getNodeIndex(n.getName()),
+                    true);
+        }
+        SemUpdater semUpdater = new SemUpdater(modifiedSemIm);
+        semUpdater.setEvidence(semEvidence);
+        SemIm modifiedAndUpdatedSemIm = new
+                SemIm(semUpdater.getUpdatedSemIm());
+
+        for (Node n : targetParents) {
+            modifiedAndUpdatedSemIm.setErrVar(modifiedAndUpdatedSemIm.getVariableNode(n.getName()),
+                    1.0);
+            modifiedAndUpdatedSemIm.setMean(modifiedAndUpdatedSemIm.getVariableNode(n.getName()),
+                    0.0);
+        }
+
+        double varianceToAddToTargetAfterEdgeRemoval = 0.0;
+        for (Node n : targetParents) {
+            ArrayList<Node> nodesIntoTarget = new
+                    ArrayList<>(graph.getNodesInTo(graph.getNode(target.getName()),
+                    Endpoint.ARROW));
+
+            for (Node nodeIntoTarget : nodesIntoTarget) {
+                ArrayList<Edge> edgesConnectingParentAndTarget = new
+                        ArrayList<>(modifiedAndUpdatedSemIm.getSemPm().getGraph().getEdges(modifiedAndUpdatedSemIm.getVariableNode(nodeIntoTarget.getName()),
+                        modifiedAndUpdatedSemIm.getVariableNode(target.getName())));
+                if (edgesConnectingParentAndTarget.size() > 1) {
+                    for (Edge e : edgesConnectingParentAndTarget) {
+                        if ((e.getEndpoint1().equals(Endpoint.ARROW)) &&
+                                (e.getEndpoint2().equals(Endpoint.ARROW))) {
+                            Edge directedEdge1 = new
+                                    Edge(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
+                                    modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()),
+                                    Endpoint.TAIL, Endpoint.ARROW);
+                            double directedEdgeCoef = 0.0;
+                            if (edgesConnectingParentAndTarget.contains(directedEdge1)) {
+                                directedEdgeCoef =
+                                        modifiedAndUpdatedSemIm.getEdgeCoef(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
+                                                modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()));
+                            } else {
+                                directedEdgeCoef =
+                                        modifiedAndUpdatedSemIm.getEdgeCoef(modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()),
+                                                modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()));
+                            }
+                            varianceToAddToTargetAfterEdgeRemoval += (2 *
+                                    directedEdgeCoef *
+                                    modifiedAndUpdatedSemIm.getErrCovar(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
+                                            modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName())));
+                            modifiedAndUpdatedSemIm.setErrCovar(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
+                                    modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()),
+                                    0.0);
+                        }
+                    }
+                }
+            }
+        }
+        double oldTargetVariance =
+                modifiedAndUpdatedSemIm.getErrVar(modifiedAndUpdatedSemIm.getVariableNode(target.getName()));
+        modifiedAndUpdatedSemIm.setErrVar(modifiedAndUpdatedSemIm.getVariableNode(target.getName()),
+                (oldTargetVariance + varianceToAddToTargetAfterEdgeRemoval));
+
+        return modifiedAndUpdatedSemIm;
+    }
+
     @Test
     public void test2() {
         RandomUtil.getInstance().setSeed(49489384L);
@@ -337,92 +423,6 @@ public class TestSemIm {
 
         modified.simulateData(1000, false);
 
-    }
-
-    public static SemIm modifySemImStandardizedInterventionOnTargetParents(SemIm semIm, Node
-            target) {
-        SemIm modifiedSemIm = new SemIm(semIm);
-        SemGraph graph = new SemGraph(modifiedSemIm.getSemPm().getGraph());
-
-        // remove &lt;-&gt; arrows from a copy of the graph so we can use the getParents function to get Nodes with edges into target
-        SemGraph removedDoubleArrowEdges = new SemGraph(graph);
-        ArrayList<Edge> edgesToRemove = new ArrayList<>();
-        for (Edge e : removedDoubleArrowEdges.getEdges()) {
-            if ((e.getEndpoint1().equals(Endpoint.ARROW)) &&
-                    (e.getEndpoint2().equals(Endpoint.ARROW))) {
-                edgesToRemove.add(e);
-            }
-        }
-        for (Edge e : edgesToRemove) {
-            removedDoubleArrowEdges.removeEdge(e);
-        }
-
-        ArrayList<Node> targetParents = new
-                ArrayList<>(removedDoubleArrowEdges.getParents(removedDoubleArrowEdges.getNode(target.getName())));
-
-        SemEvidence semEvidence = new SemEvidence(modifiedSemIm);
-        for (Node n : targetParents) {
-            semEvidence.setManipulated(semEvidence.getNodeIndex(n.getName()),
-                    true);
-        }
-        SemUpdater semUpdater = new SemUpdater(modifiedSemIm);
-        semUpdater.setEvidence(semEvidence);
-        SemIm modifiedAndUpdatedSemIm = new
-                SemIm(semUpdater.getUpdatedSemIm());
-
-        for (Node n : targetParents) {
-            modifiedAndUpdatedSemIm.setErrVar(modifiedAndUpdatedSemIm.getVariableNode(n.getName()),
-                    1.0);
-            modifiedAndUpdatedSemIm.setMean(modifiedAndUpdatedSemIm.getVariableNode(n.getName()),
-                    0.0);
-        }
-
-        double varianceToAddToTargetAfterEdgeRemoval = 0.0;
-        for (Node n : targetParents) {
-            ArrayList<Node> nodesIntoTarget = new
-                    ArrayList<>(graph.getNodesInTo(graph.getNode(target.getName()),
-                    Endpoint.ARROW));
-
-            for (Node nodeIntoTarget : nodesIntoTarget) {
-                ArrayList<Edge> edgesConnectingParentAndTarget = new
-                        ArrayList<>(modifiedAndUpdatedSemIm.getSemPm().getGraph().getEdges(modifiedAndUpdatedSemIm.getVariableNode(nodeIntoTarget.getName()),
-                        modifiedAndUpdatedSemIm.getVariableNode(target.getName())));
-                if (edgesConnectingParentAndTarget.size() > 1) {
-                    for (Edge e : edgesConnectingParentAndTarget) {
-                        if ((e.getEndpoint1().equals(Endpoint.ARROW)) &&
-                                (e.getEndpoint2().equals(Endpoint.ARROW))) {
-                            Edge directedEdge1 = new
-                                    Edge(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
-                                    modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()),
-                                    Endpoint.TAIL, Endpoint.ARROW);
-                            double directedEdgeCoef = 0.0;
-                            if (edgesConnectingParentAndTarget.contains(directedEdge1)) {
-                                directedEdgeCoef =
-                                        modifiedAndUpdatedSemIm.getEdgeCoef(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
-                                                modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()));
-                            } else {
-                                directedEdgeCoef =
-                                        modifiedAndUpdatedSemIm.getEdgeCoef(modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()),
-                                                modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()));
-                            }
-                            varianceToAddToTargetAfterEdgeRemoval += (2 *
-                                    directedEdgeCoef *
-                                    modifiedAndUpdatedSemIm.getErrCovar(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
-                                            modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName())));
-                            modifiedAndUpdatedSemIm.setErrCovar(modifiedAndUpdatedSemIm.getVariableNode(e.getNode1().getName()),
-                                    modifiedAndUpdatedSemIm.getVariableNode(e.getNode2().getName()),
-                                    0.0);
-                        }
-                    }
-                }
-            }
-        }
-        double oldTargetVariance =
-                modifiedAndUpdatedSemIm.getErrVar(modifiedAndUpdatedSemIm.getVariableNode(target.getName()));
-        modifiedAndUpdatedSemIm.setErrVar(modifiedAndUpdatedSemIm.getVariableNode(target.getName()),
-                (oldTargetVariance + varianceToAddToTargetAfterEdgeRemoval));
-
-        return modifiedAndUpdatedSemIm;
     }
 }
 

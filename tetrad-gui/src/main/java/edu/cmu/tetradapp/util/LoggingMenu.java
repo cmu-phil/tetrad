@@ -66,16 +66,12 @@ class LoggingMenu extends JMenu {
 
 
     /**
-     * Constructs the logging menu, given the parent component that should be used
-     * to center dialogs on.
+     * Constructs the logging menu, given the parent component that should be used to center dialogs on.
      */
     public LoggingMenu(TetradLoggerConfig config, Component parent) {
         this(config);
         this.parent = parent;
     }
-
-
-    //============================ Private Methods ============================//
 
     /**
      * Builds the menu
@@ -124,9 +120,6 @@ class LoggingMenu extends JMenu {
         Component comp = this.parent == null ? JOptionUtils.centeringComp() : this.parent;
         JOptionPane.showMessageDialog(comp, panel, "Logging Setup", JOptionPane.PLAIN_MESSAGE);
     }
-
-    //=========================== Inner class ===============================//
-
 
     /**
      * Menu listener that builds the menu on the fly when clicked.

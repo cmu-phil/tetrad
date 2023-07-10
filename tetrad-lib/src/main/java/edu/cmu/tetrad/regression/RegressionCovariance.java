@@ -121,6 +121,20 @@ public class RegressionCovariance implements Regression {
 
     //===========================PUBLIC METHODS==========================//
 
+    private static Vector zeroMeans(int numVars) {
+        return new Vector(numVars);
+    }
+
+    private static Vector standardDeviations(ICovarianceMatrix covariances) {
+        Vector standardDeviations = new Vector(covariances.getDimension());
+
+        for (int i = 0; i < covariances.getDimension(); i++) {
+            standardDeviations.set(i, FastMath.sqrt(covariances.getValue(i, i)));
+        }
+
+        return standardDeviations;
+    }
+
     /**
      * Sets the cutoff for significance. Parameters with p values less than this will be labeled as significant.
      *
@@ -136,6 +150,8 @@ public class RegressionCovariance implements Regression {
     public Graph getGraph() {
         return this.graph;
     }
+
+    //===========================PRIVATE METHODS==========================//
 
     /**
      * Regresses the given target on the given regressors, yielding a regression plane, in which coefficients are given
@@ -254,8 +270,6 @@ public class RegressionCovariance implements Regression {
         return regress(target, _regressors);
     }
 
-    //===========================PRIVATE METHODS==========================//
-
     private String[] createVarNamesArray(List<Node> regressors) {
         String[] vNames = getVarNamesArray(regressors);
 
@@ -287,20 +301,6 @@ public class RegressionCovariance implements Regression {
         }
 
         return graph;
-    }
-
-    private static Vector zeroMeans(int numVars) {
-        return new Vector(numVars);
-    }
-
-    private static Vector standardDeviations(ICovarianceMatrix covariances) {
-        Vector standardDeviations = new Vector(covariances.getDimension());
-
-        for (int i = 0; i < covariances.getDimension(); i++) {
-            standardDeviations.set(i, FastMath.sqrt(covariances.getValue(i, i)));
-        }
-
-        return standardDeviations;
     }
 }
 

@@ -54,7 +54,8 @@ public final class SemGraph implements Graph {
      * @serial
      */
     private final Graph graph;
-
+    private final Map<String, Object> attributes = new HashMap<>();
+    private final Paths paths;
     /**
      * A map from nodes to their error nodes, if they exist. This includes variables nodes to their error nodes and
      * error nodes to themselves. Added because looking them up in the graph was not scalable.
@@ -62,20 +63,14 @@ public final class SemGraph implements Graph {
      * @serial
      */
     private Map<Node, Node> errorNodes = new HashMap<>();
-
     /**
      * True if error terms for exogenous terms should be shown.
      *
      * @serial
      */
     private boolean showErrorTerms;
-
     private boolean pag;
     private boolean cpdag;
-
-    private final Map<String, Object> attributes = new HashMap<>();
-    private final Paths paths;
-
     private Set<Triple> underLineTriples = new HashSet<>();
     private Set<Triple> dottedUnderLineTriples = new HashSet<>();
     private Set<Triple> ambiguousTriples = new HashSet<>();
@@ -188,6 +183,14 @@ public final class SemGraph implements Graph {
     //============================PUBLIC METHODS==========================//
 
     /**
+     * @return true iff either node associated with edge is an error term.
+     */
+    public static boolean isErrorEdge(Edge edge) {
+        return (edge.getNode1().getNodeType() == NodeType.ERROR ||
+                (edge.getNode2().getNodeType() == NodeType.ERROR));
+    }
+
+    /**
      * @return the error node associated with the given node, or null if the node has no associated error node.
      */
     public Node getErrorNode(Node node) {
@@ -225,14 +228,6 @@ public final class SemGraph implements Graph {
         }
 
         return found;
-    }
-
-    /**
-     * @return true iff either node associated with edge is an error term.
-     */
-    public static boolean isErrorEdge(Edge edge) {
-        return (edge.getNode1().getNodeType() == NodeType.ERROR ||
-                (edge.getNode2().getNodeType() == NodeType.ERROR));
     }
 
     /**
@@ -304,6 +299,11 @@ public final class SemGraph implements Graph {
         return getGraph().getNodes();
     }
 
+    @Override
+    public void setNodes(List<Node> nodes) {
+        this.graph.setNodes(nodes);
+    }
+
     public boolean removeEdge(Node node1, Node node2) {
         List<Edge> edges = getEdges(node1, node2);
 
@@ -339,7 +339,6 @@ public final class SemGraph implements Graph {
     public Graph subgraph(List<Node> nodes) {
         return getGraph().subgraph(nodes);
     }
-
 
     public boolean addDirectedEdge(Node nodeA, Node nodeB) {
         return addEdge(Edges.directedEdge(nodeA, nodeB));
@@ -583,7 +582,6 @@ public final class SemGraph implements Graph {
         return getGraph().toString();
     }
 
-
     public boolean isShowErrorTerms() {
         return this.showErrorTerms;
     }
@@ -619,11 +617,6 @@ public final class SemGraph implements Graph {
     @Override
     public Set<Node> getSepset(Node n1, Node n2) {
         return this.graph.getSepset(n1, n2);
-    }
-
-    @Override
-    public void setNodes(List<Node> nodes) {
-        this.graph.setNodes(nodes);
     }
 
     //========================PRIVATE METHODS===========================//

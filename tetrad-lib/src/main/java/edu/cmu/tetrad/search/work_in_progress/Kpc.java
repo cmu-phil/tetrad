@@ -26,8 +26,8 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.Fas;
 import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.test.IndTestHsic;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestHsic;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -57,43 +57,34 @@ public class Kpc implements IGraphSearch {
      * The independence test used for the PC search.
      */
     private final IndTestHsic independenceTest;
-
-    /**
-     * Forbidden and required edges for the search.
-     */
-    private Knowledge knowledge = new Knowledge();
-
-    /**
-     * Sepset information accumulated in the search.
-     */
-    private SepsetMap sepset;
-
-    /**
-     * The maximum number of nodes conditioned on in the search. The default it 1000.
-     */
-    private int depth = 1000;
-
-    /**
-     * The graph that's constructed during the search.
-     */
-    private Graph graph;
-
-    /**
-     * Elapsed time of the most recent search.
-     */
-    private long elapsedTime;
-
-    /**
-     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
-    private boolean meekPreventCycles;
-
     /**
      * The logger to use.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
+    /**
+     * Forbidden and required edges for the search.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * Sepset information accumulated in the search.
+     */
+    private SepsetMap sepset;
+    /**
+     * The maximum number of nodes conditioned on in the search. The default it 1000.
+     */
+    private int depth = 1000;
+    /**
+     * The graph that's constructed during the search.
+     */
+    private Graph graph;
+    /**
+     * Elapsed time of the most recent search.
+     */
+    private long elapsedTime;
+    /**
+     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large graphs).
+     */
+    private boolean meekPreventCycles;
     /**
      * In an enumeration of triple types, these are the collider triples.
      */
@@ -313,6 +304,13 @@ public class Kpc implements IGraphSearch {
     //===============================ADDED FOR KPC=========================//
 
     /**
+     * Gets the getModel significance level.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    /**
      * Sets the significance level at which independence judgments should be made.
      */
     public void setAlpha(double alpha) {
@@ -322,21 +320,6 @@ public class Kpc implements IGraphSearch {
 
         this.alpha = alpha;
         this.independenceTest.setAlpha(alpha);
-    }
-
-    /**
-     * Set the number of bootstrap samples to use
-     */
-    public void setPerms(int perms) {
-        this.perms = perms;
-        this.independenceTest.setPerms(perms);
-    }
-
-    /**
-     * Gets the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
     }
 
     /**
@@ -351,6 +334,14 @@ public class Kpc implements IGraphSearch {
      */
     public int getPerms() {
         return this.perms;
+    }
+
+    /**
+     * Set the number of bootstrap samples to use
+     */
+    public void setPerms(int perms) {
+        this.perms = perms;
+        this.independenceTest.setPerms(perms);
     }
 
     //===============================PRIVATE METHODS=======================//

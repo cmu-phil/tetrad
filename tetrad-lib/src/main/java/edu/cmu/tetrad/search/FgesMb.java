@@ -135,10 +135,7 @@ public final class FgesMb {
      */
     private boolean faithfulnessAssumed = false;
 
-    //===========================CONSTRUCTORS=============================//
     private boolean parallelized = false;
-
-    //==========================PUBLIC METHODS==========================//
 
     /**
      * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
@@ -151,6 +148,20 @@ public final class FgesMb {
         }
         setFgesScore(score);
         this.graph = new EdgeListGraph(getVariables());
+    }
+
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+        return null;
     }
 
     /**
@@ -412,24 +423,6 @@ public final class FgesMb {
         }
         this.maxDegree = maxDegree;
     }
-
-    //===========================PRIVATE METHODS========================//
-
-
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-        return null;
-    }
-
 
     private void calcMConnections(List<Node> targets) {
         this.sortedArrows = new ConcurrentSkipListSet<>();
@@ -1588,8 +1581,6 @@ public final class FgesMb {
             this.topGraphs.removeFirst();
         }
     }
-
-    //===========================SCORING METHODS===================//
 
     /**
      * Internal.

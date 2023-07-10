@@ -217,8 +217,6 @@ public final class SemIm implements Im, ISemIm {
         this(semPm, null, new Parameters());
     }
 
-    //=============================CONSTRUCTORS============================//
-
     /**
      * Constructs a new SEM IM from the given SEM PM, using the given params object to guide the choice of parameter
      * values.
@@ -375,6 +373,14 @@ public final class SemIm implements Im, ISemIm {
         }
     }
 
+    public SemIm(SemPm semPm, List<Node> variableNodes, List<Node> measuredNodes, Matrix edgeCoef, double[] variableMeansStdDev) {
+        this.semPm = semPm;
+        this.variableNodes = new ArrayList<>(variableNodes);
+        this.measuredNodes = new ArrayList<>(measuredNodes);
+        this.edgeCoef = new Matrix(edgeCoef);
+        this.variableMeansStdDev = Arrays.copyOf(variableMeansStdDev, variableMeansStdDev.length);
+    }
+
     public static List<String> getParameterNames() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.COEF_LOW);
@@ -428,8 +434,6 @@ public final class SemIm implements Im, ISemIm {
     public SemIm updatedIm(Matrix covariances, Vector means) {
         return new SemIm(this, covariances, means);
     }
-
-    //==============================PUBLIC METHODS=========================//
 
     /**
      * Sets the sample covariance matrix for this Sem as a submatrix of the given matrix. The variable names used in the
@@ -682,14 +686,6 @@ public final class SemIm implements Im, ISemIm {
             double mean = weightedSumOfParentMeans + intercepts[i];
             setMean(_node, mean);
         }
-    }
-
-    public SemIm(SemPm semPm, List<Node> variableNodes, List<Node> measuredNodes, Matrix edgeCoef, double[] variableMeansStdDev) {
-        this.semPm = semPm;
-        this.variableNodes = new ArrayList<>(variableNodes);
-        this.measuredNodes = new ArrayList<>(measuredNodes);
-        this.edgeCoef = new Matrix(edgeCoef);
-        this.variableMeansStdDev = Arrays.copyOf(variableMeansStdDev, variableMeansStdDev.length);
     }
 
     /**
@@ -1764,7 +1760,6 @@ public final class SemIm implements Im, ISemIm {
         return buf.toString();
     }
 
-    //==============================PRIVATE METHODS====================//
     private void retainPreviousValues(SemIm oldSemIm) {
         if (oldSemIm == null) {
             System.out.println("old sem im null");

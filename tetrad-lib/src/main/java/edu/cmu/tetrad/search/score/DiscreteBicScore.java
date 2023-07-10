@@ -45,11 +45,11 @@ import static org.apache.commons.math3.util.FastMath.log;
  */
 public class DiscreteBicScore implements DiscreteScore {
     private final DataSet dataSet;
-    private List<Node> variables;
     private final int[][] data;
     private final int sampleSize;
-    private double penaltyDiscount = 1;
     private final int[] numCategories;
+    private List<Node> variables;
+    private double penaltyDiscount = 1;
     private double structurePrior = 1;
 
     /**
@@ -91,6 +91,15 @@ public class DiscreteBicScore implements DiscreteScore {
         for (int i = 0; i < variables.size(); i++) {
             this.numCategories[i] = getVariable(i).getNumCategories();
         }
+    }
+
+    private static int getRowIndex(int[] dim, int[] values) {
+        int rowIndex = 0;
+        for (int i = 0; i < dim.length; i++) {
+            rowIndex *= dim[i];
+            rowIndex += values[i];
+        }
+        return rowIndex;
     }
 
     /**
@@ -210,6 +219,22 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
+     * Sets the variables to a new list of the same size.
+     *
+     * @param variables The new list of variables.
+     */
+    public void setVariables(List<Node> variables) {
+        for (int i = 0; i < variables.size(); i++) {
+            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
+                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
+                        "as the variable being substituted for it.");
+            }
+        }
+
+        this.variables = variables;
+    }
+
+    /**
      * Returns the sample size.
      *
      * @return This size.
@@ -259,22 +284,6 @@ public class DiscreteBicScore implements DiscreteScore {
     }
 
     /**
-     * Sets the variables to a new list of the same size.
-     *
-     * @param variables The new list of variables.
-     */
-    public void setVariables(List<Node> variables) {
-        for (int i = 0; i < variables.size(); i++) {
-            if (!variables.get(i).getName().equals(this.variables.get(i).getName())) {
-                throw new IllegalArgumentException("Variable in index " + (i + 1) + " does not have the same name " +
-                        "as the variable being substituted for it.");
-            }
-        }
-
-        this.variables = variables;
-    }
-
-    /**
      * Sets the penalty discount, which is a multiplier on the penalty term of BIC.
      *
      * @param penaltyDiscount This discount.
@@ -301,15 +310,6 @@ public class DiscreteBicScore implements DiscreteScore {
     @Override
     public String toString() {
         return "BIC Score";
-    }
-
-    private static int getRowIndex(int[] dim, int[] values) {
-        int rowIndex = 0;
-        for (int i = 0; i < dim.length; i++) {
-            rowIndex *= dim[i];
-            rowIndex += values[i];
-        }
-        return rowIndex;
     }
 
     private double getPriorForStructure(int parents) {

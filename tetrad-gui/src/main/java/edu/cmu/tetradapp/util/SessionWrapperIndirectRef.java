@@ -22,8 +22,7 @@
 package edu.cmu.tetradapp.util;
 
 /**
- * Indirect reference for SessionWrapper, to avoid package cycle while allowing
- * app components to access desktop.
+ * Indirect reference for SessionWrapper, to avoid package cycle while allowing app components to access desktop.
  *
  * @author josephramsey
  * @see DesktopController

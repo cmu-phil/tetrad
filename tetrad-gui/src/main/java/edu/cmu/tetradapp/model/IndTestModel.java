@@ -44,6 +44,12 @@ public class IndTestModel implements SessionModel {
     private LinkedList<String> vars = new LinkedList<>();
     private List<List<IndependenceResultIndFacts>> results;
 
+    public IndTestModel(IndTestProducer[] producers, Parameters parameters) {
+        this.indTestProducers = new ArrayList<>();
+
+        this.indTestProducers.addAll(Arrays.asList(producers));
+    }
+
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -53,20 +59,8 @@ public class IndTestModel implements SessionModel {
         return new Knowledge();
     }
 
-
-    public IndTestModel(IndTestProducer[] producers, Parameters parameters) {
-        this.indTestProducers = new ArrayList<>();
-
-        this.indTestProducers.addAll(Arrays.asList(producers));
-    }
-
     public List<IndTestProducer> getIndTestProducers() {
         return this.indTestProducers;
-    }
-
-    @Override
-    public void setName(String name) {
-        this.name = name;
     }
 
     @Override
@@ -74,12 +68,17 @@ public class IndTestModel implements SessionModel {
         return this.name;
     }
 
-    public void setVars(LinkedList<String> vars) {
-        this.vars = vars;
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }
 
     public LinkedList<String> getVars() {
         return this.vars;
+    }
+
+    public void setVars(LinkedList<String> vars) {
+        this.vars = vars;
     }
 
     public List<List<IndependenceResultIndFacts>> getResults() {

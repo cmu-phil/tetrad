@@ -22,8 +22,8 @@ package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.session.DelegatesEditing;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializable;
@@ -58,8 +58,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Displays a workbench editing workbench area together with a toolbench for
- * editing tetrad-style graphs.
+ * Displays a workbench editing workbench area together with a toolbench for editing tetrad-style graphs.
  *
  * @author Aaron Powers
  * @author josephramsey
@@ -69,13 +68,10 @@ public final class DagEditor extends JPanel
         implements GraphEditable, LayoutEditable, DelegatesEditing, IndTestProducer {
 
     private static final long serialVersionUID = -6082746735835257666L;
-
-    private GraphWorkbench workbench;
     private final Parameters parameters;
-
     private final JScrollPane graphEditorScroll = new JScrollPane();
-
     private final EdgeTypeTable edgeTypeTable;
+    private GraphWorkbench workbench;
 
     public DagEditor(DagWrapper dagWrapper) {
         setLayout(new BorderLayout());
@@ -108,11 +104,9 @@ public final class DagEditor extends JPanel
     }
 
     /**
-     * Returns a list of all the SessionNodeWrappers (TetradNodes) and
-     * SessionNodeEdges that are model components for the respective
-     * SessionNodes and SessionEdges selected in the workbench. Note that the
-     * workbench, not the SessionEditorNodes themselves, keeps track of the
-     * selection.
+     * Returns a list of all the SessionNodeWrappers (TetradNodes) and SessionNodeEdges that are model components for
+     * the respective SessionNodes and SessionEdges selected in the workbench. Note that the workbench, not the
+     * SessionEditorNodes themselves, keeps track of the selection.
      *
      * @return the set of selected model nodes.
      */
@@ -160,16 +154,6 @@ public final class DagEditor extends JPanel
     }
 
     @Override
-    public Map getModelEdgesToDisplay() {
-        return this.workbench.getModelEdgesToDisplay();
-    }
-
-    @Override
-    public Map getModelNodesToDisplay() {
-        return this.workbench.getModelNodesToDisplay();
-    }
-
-    @Override
     public void setGraph(Graph graph) {
         try {
             Dag dag = new Dag(graph);
@@ -177,6 +161,16 @@ public final class DagEditor extends JPanel
         } catch (Exception e) {
             throw new RuntimeException("Not a DAG", e);
         }
+    }
+
+    @Override
+    public Map getModelEdgesToDisplay() {
+        return this.workbench.getModelEdgesToDisplay();
+    }
+
+    @Override
+    public Map getModelNodesToDisplay() {
+        return this.workbench.getModelNodesToDisplay();
     }
 
     @Override
@@ -395,8 +389,7 @@ public final class DagEditor extends JPanel
     }
 
     /**
-     * Creates the "file" menu, which allows the user to load, save, and post
-     * workbench models.
+     * Creates the "file" menu, which allows the user to load, save, and post workbench models.
      *
      * @return this menu.
      */

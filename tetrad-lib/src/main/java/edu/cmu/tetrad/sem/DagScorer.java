@@ -50,18 +50,16 @@ public final class DagScorer implements TetradSerializable, Scorer {
     static final long serialVersionUID = 23L;
 
     private final ICovarianceMatrix covMatrix;
-    private DataSet dataSet;
     private final Matrix edgeCoef;
     private final Matrix errorCovar;
-    private Graph dag;
     private final List<Node> variables;
-    private Matrix implCovarMeasC;
     private final Matrix sampleCovar;
+    private DataSet dataSet;
+    private Graph dag;
+    private Matrix implCovarMeasC;
     private double logDetSample;
     private double fml = Double.NaN;
 
-
-    //=============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new SemEstimator that uses the specified optimizer.
@@ -101,8 +99,6 @@ public final class DagScorer implements TetradSerializable, Scorer {
     public static Scorer serializableInstance() {
         return new DagScorer(CovarianceMatrix.serializableInstance());
     }
-
-    //==============================PUBLIC METHODS=========================//
 
     /**
      * Runs the estimator on the data and SemPm passed in through the constructor. Returns the fml score of the
@@ -213,8 +209,6 @@ public final class DagScorer implements TetradSerializable, Scorer {
 
         return "\nSemEstimator";
     }
-
-    //============================PRIVATE METHODS==========================//
 
     /**
      * The value of the maximum likelihood function for the getModel the model (Bollen 107). To optimize, this should be

@@ -44,6 +44,17 @@ public class TestBooleanFunction extends TestCase {
     }
 
     /**
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
+     */
+    public static Test suite() {
+
+        // Edit the name of the class in the parens to match the name
+        // of this class.
+        return new TestSuite(TestBooleanFunction.class);
+    }
+
+    /**
      * Tests to make sure that null parent throw an exception.
      */
     public void testNullConstruction() {
@@ -235,17 +246,6 @@ public class TestBooleanFunction extends TestCase {
         function.setValue(7, true);
 
         TestCase.assertTrue(!(function.isCanalyzing()));
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestBooleanFunction.class);
     }
 }
 

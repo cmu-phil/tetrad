@@ -59,8 +59,6 @@ public class AndersonDarlingTest {
      */
     private double p;
 
-    //============================CONSTRUCTOR===========================//
-
     /**
      * Constructs an Anderson-Darling test for the given column of data.
      */
@@ -68,8 +66,6 @@ public class AndersonDarlingTest {
         this.data = data;
         runTest();
     }
-
-    //============================PUBLIC METHODS=========================//
 
     /**
      * @return the A^2 statistic.
@@ -91,8 +87,6 @@ public class AndersonDarlingTest {
     public double getP() {
         return this.p;
     }
-
-    //============================PRIVATE METHODS========================//
 
     private void runTest() {
         double[] x = leaveOutNanAndInfinite(this.data);

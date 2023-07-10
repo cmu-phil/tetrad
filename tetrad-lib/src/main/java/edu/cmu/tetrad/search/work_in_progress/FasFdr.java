@@ -24,8 +24,8 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IFas;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.*;
@@ -57,14 +57,14 @@ public class FasFdr implements IFas {
     private final double alpha;
     private final Graph graph;
     private final IndependenceTest test;
-    private Knowledge knowledge = new Knowledge();
-    private int depth = 1000;
     private final int numIndependenceTests;
     private final TetradLogger logger = TetradLogger.getInstance();
-    private SepsetMap sepset = new SepsetMap();
     private final NumberFormat nf = new DecimalFormat("0.00E0");
-    private boolean verbose;
     private final List<Double> pValueList = new ArrayList<>();
+    private Knowledge knowledge = new Knowledge();
+    private int depth = 1000;
+    private SepsetMap sepset = new SepsetMap();
+    private boolean verbose;
     private PrintStream out = System.out;
 
     //==========================CONSTRUCTORS=============================//

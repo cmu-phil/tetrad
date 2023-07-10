@@ -59,8 +59,6 @@ public final class SemEvidence implements TetradSerializable {
      */
     private final SemManipulation manipulation;
 
-    //=============================CONSTRUCTORS=========================//
-
     /**
      * Constructs a container for evidence for the given Bayes IM.
      */
@@ -86,8 +84,6 @@ public final class SemEvidence implements TetradSerializable {
     public static SemEvidence serializableInstance() {
         return new SemEvidence(SemIm.serializableInstance());
     }
-
-    //===========================PUBLIC METHODS=========================//
 
     /**
      * @return the Bayes IM that this is evidence for.

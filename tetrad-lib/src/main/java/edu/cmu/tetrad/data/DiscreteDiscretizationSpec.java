@@ -51,8 +51,6 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
      */
     private final List<String> categories;
 
-    //============================CONSTRUCTORS==========================//
-
     public DiscreteDiscretizationSpec(int[] remap, List<String> categories) {
         if (remap == null) {
             throw new NullPointerException();
@@ -73,8 +71,6 @@ public final class DiscreteDiscretizationSpec implements TetradSerializable, Dis
         return new DiscreteDiscretizationSpec(new int[0],
                 new ArrayList<>());
     }
-
-    //============================PUBLIC METHODS========================//
 
     public List<String> getCategories() {
         return this.categories;

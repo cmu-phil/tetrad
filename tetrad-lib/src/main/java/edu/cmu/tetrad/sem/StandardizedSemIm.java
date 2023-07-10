@@ -51,37 +51,24 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * Currently we are not allowing bidirected edges in the SEM graph.
  */
 public class StandardizedSemIm implements Simulator {
-    private Matrix edgeCoef;
-    private Matrix errorCovar;
-    private Map<Node, Double> errorVariances;
-    private final int sampleSize;
-
-    public int getSampleSize() {
-        return this.sampleSize;
-    }
-
-    public enum Initialization {
-        CALCULATE_FROM_SEM, INITIALIZE_FROM_DATA
-    }
-
     static final long serialVersionUID = 23L;
-
+    private final int sampleSize;
     /**
      * The SEM model.
      */
     private final SemPm semPm;
-
     /**
      * The graph of the model. Stored internally because it must be ensured that the error terms are showing.
      */
     private final SemGraph semGraph;
-
     /**
      * A map from edges in the graph to their coefficients. These are the only freeParameters in the model. This
      * includes coefficients for directed as well as bidirected edges.
      */
     private final Map<Edge, Double> edgeParameters;
-
+    private Matrix edgeCoef;
+    private Matrix errorCovar;
+    private Map<Node, Double> errorVariances;
     /**
      * A map from error nodes in the graph to their error variances. These are not freeParameters in the model; their
      * values are always calculated as residual variances, under the constraint that the variances of each variable must
@@ -94,9 +81,6 @@ public class StandardizedSemIm implements Simulator {
     private Edge editingEdge;
     private ParameterRange range;
 
-
-    //========================================CONSTRUCTORS========================================================//
-
     /**
      * Constructs a new standardized SEM IM, initializing from the freeParameters in the given SEM IM.
      *
@@ -105,15 +89,6 @@ public class StandardizedSemIm implements Simulator {
     public StandardizedSemIm(SemIm im, Parameters parameters) {
         this(im, Initialization.CALCULATE_FROM_SEM, parameters);
     }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static StandardizedSemIm serializableInstance() {
-        return new StandardizedSemIm(SemIm.serializableInstance(), new Parameters());
-    }
-
-    //===========================================PUBLIC METHODS==================================================//
 
     /**
      * Constructs a new standardized SEM IM from the freeParameters in the given SEM IM.
@@ -193,6 +168,17 @@ public class StandardizedSemIm implements Simulator {
                 }
             }
         }
+    }
+
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     */
+    public static StandardizedSemIm serializableInstance() {
+        return new StandardizedSemIm(SemIm.serializableInstance(), new Parameters());
+    }
+
+    public int getSampleSize() {
+        return this.sampleSize;
     }
 
     public boolean containsParameter(Edge edge) {
@@ -549,13 +535,6 @@ public class StandardizedSemIm implements Simulator {
         return simulateDataReducedForm(sampleSize, latentDataSaved);
     }
 
-//    @Override
-//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
-//        RandomUtil random = RandomUtil.getInstance();
-//        random.setSeed(seed);
-//        return simulateData(sampleSize, latentDataSaved);
-//    }
-
     public DataSet simulateDataReducedForm(int sampleSize, boolean latentDataSaved) {
         this.edgeCoef = null;
         this.errorCovar = null;
@@ -606,6 +585,13 @@ public class StandardizedSemIm implements Simulator {
         }
     }
 
+//    @Override
+//    public DataSet simulateData(int sampleSize, long seed, boolean latentDataSaved) {
+//        RandomUtil random = RandomUtil.getInstance();
+//        random.setSeed(seed);
+//        return simulateData(sampleSize, latentDataSaved);
+//    }
+
     /**
      * @return a copy of the implied covariance matrix over all the variables.
      */
@@ -619,8 +605,6 @@ public class StandardizedSemIm implements Simulator {
     public Matrix getImplCovarMeas() {
         return implCovarMeas().copy();
     }
-
-    //========================================PRIVATE METHODS==========================================//
 
     /**
      * @return Returns the error covariance matrix of the model. i.e. [a][b] is the covariance of E_a and E_b, with
@@ -712,7 +696,6 @@ public class StandardizedSemIm implements Simulator {
         return getSemPm().getMeasuredNodes();
     }
 
-
     public List<Node> getErrorNodes() {
         List<Node> errorNodes = new ArrayList<>();
 
@@ -730,63 +713,6 @@ public class StandardizedSemIm implements Simulator {
         return new SemPm(this.semPm);
     }
 
-    //-------------------------------------------PUBLIC CLASSES--------------------------------------------//
-
-    /**
-     * Stores a coefficient range--i.e. the edge and coefficient value for which the range is needed, plus the low and
-     * high ends of the range to which the coefficient value may be adjusted.
-     *
-     * @author josephramsey
-     */
-    public static final class ParameterRange implements TetradSerializable {
-        static final long serialVersionUID = 23L;
-
-        private final Edge edge;
-        private final double coef;
-        private final double low;
-        private final double high;
-
-        public ParameterRange(Edge edge, double coef, double low, double high) {
-            this.edge = edge;
-            this.coef = coef;
-            this.low = low;
-            this.high = high;
-        }
-
-        /**
-         * Generates a simple exemplar of this class to test serialization.
-         */
-        public static ParameterRange serializableInstance() {
-            return new ParameterRange(Edge.serializableInstance(), 1.0, 1.0, 1.0);
-        }
-
-        public Edge getEdge() {
-            return this.edge;
-        }
-
-        public double getCoef() {
-            return this.coef;
-        }
-
-        public double getLow() {
-            return this.low;
-        }
-
-        public double getHigh() {
-            return this.high;
-        }
-
-        public String toString() {
-
-            return "\n\nRange for " + this.edge +
-                    "\nCurrent value = " + this.coef +
-                    "\nLow end of range = " + this.low +
-                    "\nHigh end of range = " + this.high;
-        }
-    }
-
-    //-------------------------------------------PRIVATE METHODS-------------------------------------------//
-
     private boolean paramInBounds(Edge edge, double newValue) {
         this.edgeParameters.put(edge, newValue);
         Map<Node, Double> errorVariances = new HashMap<>();
@@ -802,6 +728,8 @@ public class StandardizedSemIm implements Simulator {
 
         return MatrixUtils.isPositiveDefinite(errCovar(errorVariances, true));
     }
+
+    //-------------------------------------------PUBLIC CLASSES--------------------------------------------//
 
     /**
      * Calculates the error variance for the given error node, given all of the coefficient values in the model.
@@ -881,6 +809,65 @@ public class StandardizedSemIm implements Simulator {
         }
 
         return 1.0 - otherVariance <= 0 ? Double.NaN : 1.0 - otherVariance;
+    }
+
+    //-------------------------------------------PRIVATE METHODS-------------------------------------------//
+
+    public enum Initialization {
+        CALCULATE_FROM_SEM, INITIALIZE_FROM_DATA
+    }
+
+    /**
+     * Stores a coefficient range--i.e. the edge and coefficient value for which the range is needed, plus the low and
+     * high ends of the range to which the coefficient value may be adjusted.
+     *
+     * @author josephramsey
+     */
+    public static final class ParameterRange implements TetradSerializable {
+        static final long serialVersionUID = 23L;
+
+        private final Edge edge;
+        private final double coef;
+        private final double low;
+        private final double high;
+
+        public ParameterRange(Edge edge, double coef, double low, double high) {
+            this.edge = edge;
+            this.coef = coef;
+            this.low = low;
+            this.high = high;
+        }
+
+        /**
+         * Generates a simple exemplar of this class to test serialization.
+         */
+        public static ParameterRange serializableInstance() {
+            return new ParameterRange(Edge.serializableInstance(), 1.0, 1.0, 1.0);
+        }
+
+        public Edge getEdge() {
+            return this.edge;
+        }
+
+        public double getCoef() {
+            return this.coef;
+        }
+
+        public double getLow() {
+            return this.low;
+        }
+
+        public double getHigh() {
+            return this.high;
+        }
+
+        public String toString() {
+
+            return "\n\nRange for " + this.edge +
+                    "\nCurrent value = " + this.coef +
+                    "\nLow end of range = " + this.low +
+                    "\nHigh end of range = " + this.high;
+        }
     }
 }
 

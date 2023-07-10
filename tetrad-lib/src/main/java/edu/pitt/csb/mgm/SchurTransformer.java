@@ -40,6 +40,10 @@ class SchurTransformer {
      */
     private final double[][] matrixT;
     /**
+     * Epsilon criteria taken from JAMA code (originally was 2^-52).
+     */
+    private final double epsilon = Precision.EPSILON;
+    /**
      * Cached value of P.
      */
     private RealMatrix cachedP;
@@ -51,11 +55,6 @@ class SchurTransformer {
      * Cached value of PT.
      */
     private RealMatrix cachedPt;
-
-    /**
-     * Epsilon criteria taken from JAMA code (originally was 2^-52).
-     */
-    private final double epsilon = Precision.EPSILON;
 
     /**
      * Build the transformation to Schur form of a general real matrix.

@@ -64,6 +64,13 @@ public class SemOptimizerEm implements SemOptimizer {
     public SemOptimizerEm() {
     }
 
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     */
+    public static SemOptimizerEm serializableInstance() {
+        return new SemOptimizerEm();
+    }
+
     public void optimize(SemIm semIm) {
         if (this.numRestarts < 1) this.numRestarts = 1;
 
@@ -150,23 +157,14 @@ public class SemOptimizerEm implements SemOptimizer {
     }
 
     @Override
-    public void setNumRestarts(int numRestarts) {
-        this.numRestarts = numRestarts;
-    }
-
-    @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static SemOptimizerEm serializableInstance() {
-        return new SemOptimizerEm();
+    @Override
+    public void setNumRestarts(int numRestarts) {
+        this.numRestarts = numRestarts;
     }
-
-    //==============================PRIVATE METHODS========================//
 
     private void initialize(SemIm semIm) {
         this.semIm = semIm;

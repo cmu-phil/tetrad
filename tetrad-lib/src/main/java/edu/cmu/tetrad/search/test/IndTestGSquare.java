@@ -47,42 +47,34 @@ import java.util.Set;
 public final class IndTestGSquare implements IndependenceTest {
 
     /**
+     * The standard number formatter for Tetrad.
+     */
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    /**
      * The G Square tester.
      */
     private final GSquareTest gSquareTest;
-
     /**
      * The variables in the discrete data sets or which conditional independence judgements are desired.
      */
     private final List<Node> variables;
-
     /**
      * The dataset of discrete variables.
      */
     private final DataSet dataSet;
-
     /**
      * The significance level for the test.
      */
     private final double alpha;
-
     /**
      * The p value associated with the most recent call of isIndependent.
      */
     private double pValue;
-
     /**
      * The lower bound of percentages of observation of some category in the data, given some particular combination of
      * values of conditioning variables, that coefs as 'determining."
      */
     private double determinationP = 0.99;
-
-    /**
-     * The standard number formatter for Tetrad.
-     */
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
-
     private boolean verbose;
 
     /**
@@ -149,8 +141,8 @@ public final class IndTestGSquare implements IndependenceTest {
     /**
      * Determines whether variable x is independent of variable y given a list of conditioning varNames z.
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
+     * @param x  the one variable being compared.
+     * @param y  the second variable being compared.
      * @param _z the list of conditioning varNames.
      * @return True iff x _||_ y | z.
      */
@@ -212,6 +204,15 @@ public final class IndTestGSquare implements IndependenceTest {
     }
 
     /**
+     * Gets the getModel significance level.
+     *
+     * @return this number.
+     */
+    public double getAlpha() {
+        return this.gSquareTest.getAlpha();
+    }
+
+    /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      *
@@ -219,15 +220,6 @@ public final class IndTestGSquare implements IndependenceTest {
      */
     public void setAlpha(double alpha) {
         this.gSquareTest.setAlpha(alpha);
-    }
-
-    /**
-     * Gets the getModel significance level.
-     *
-     * @return this number.
-     */
-    public double getAlpha() {
-        return this.gSquareTest.getAlpha();
     }
 
     /**
@@ -253,7 +245,7 @@ public final class IndTestGSquare implements IndependenceTest {
      * Returns a judgment whether the variables in z determine x.
      *
      * @param _z The list of variables z1,...,zn with respect to which we want to know whether z determines x oir z.
-     * @param x The one variable whose determination by z we want to know.
+     * @param x  The one variable whose determination by z we want to know.
      * @return true if it is estimated that z determines x or z determines y.
      */
     public boolean determines(Set<Node> _z, Node x) {

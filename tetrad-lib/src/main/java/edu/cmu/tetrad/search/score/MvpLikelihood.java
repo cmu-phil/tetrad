@@ -51,30 +51,22 @@ public class MvpLikelihood {
 
     // The variables of the dataset.
     private final List<Node> variables;
-
-    // The variables of the discrete dataset.
-    private List<Node> discreteVariables;
-
     // Indices of variables.
     private final Map<Node, Integer> nodesHash;
-
     // Continuous data only.
     private final double[][] continuousData;
-
     // Discrete data only.
     private final int[][] discreteData;
-
     // Partitions
     private final AdLeafTree adTree;
-
     // Fix degree
     private final int fDegree;
-
     // Structure Prior
     private final double structurePrior;
-
     // Discretize
     private final boolean discretize;
+    // The variables of the discrete dataset.
+    private List<Node> discreteVariables;
 
     public MvpLikelihood(DataSet dataSet, double structurePrior, int fDegree, boolean discretize) {
 

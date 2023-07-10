@@ -22,8 +22,8 @@
 package edu.cmu.tetrad.search.work_in_progress;
 
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.utils.ResolveSepsets;
 import edu.cmu.tetrad.search.utils.SepsetMap;
 import edu.cmu.tetrad.util.ChoiceGenerator;
@@ -65,58 +65,49 @@ public class Dci {
      * The sets of variables in each "marginal" dataset
      */
     private final List<Set<Node>> marginalVars = new ArrayList<>();
-
+    /**
+     * Definite noncolliders from every dataset
+     */
+    private final Set<Triple> definiteNoncolliders = new HashSet<>();
+    /**
+     * Definite colliders from every dataset
+     */
+    private final Set<Triple> definiteColliders = new HashSet<>();
+    private final List<Graph> discrimGraphs = new ArrayList<>();
+    private final List<Graph> currentDiscrimGraphs = new ArrayList<>();
+    private final List<Graph> finalGraphs = new ArrayList<>();
+    private final List<Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>> currentNecessaryTreks = new ArrayList<>();
+    /**
+     * Keeps up with getModel set of colliders being considered
+     */
+    private final Set<Triple> currentPossibleColliders = new HashSet<>();
+    private final Lock lock = new ReentrantLock();
     /**
      * The SepsetMaps constructed for each dataset
      */
     private List<SepsetMapDci> sepsetMaps = new ArrayList<>();
     private List<SepsetMapDci> minimalSepsetMaps;
-
     /**
      * Search depth for the fast adjacency search
      */
     private int depth = 3;
-
     /**
      * All triples of nodes
      */
     private Set<Triple> allTriples;
-
-    /**
-     * Definite noncolliders from every dataset
-     */
-    private final Set<Triple> definiteNoncolliders = new HashSet<>();
-
-    /**
-     * Definite colliders from every dataset
-     */
-    private final Set<Triple> definiteColliders = new HashSet<>();
-
     /**
      * Graph change status and sets of graphs resulting from initial and final orientation rules
      */
     private boolean changeFlag = true;
-    private final List<Graph> discrimGraphs = new ArrayList<>();
-    private final List<Graph> currentDiscrimGraphs = new ArrayList<>();
-    private final List<Graph> finalGraphs = new ArrayList<>();
-
     /**
      * Edge sequences ensuring treks
      */
     private Map<List<Node>, Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>> necessaryTreks;
-    private final List<Map<Set<Edge>, Map<Triple, List<Set<Edge>>>>> currentNecessaryTreks = new ArrayList<>();
-
     /**
      * Keeps up with getModel graph while searching for possible unshielded sets and
      */
     private Graph currentGraph;
     private Graph oldGraph;
-
-    /**
-     * Keeps up with getModel set of colliders being considered
-     */
-    private final Set<Triple> currentPossibleColliders = new HashSet<>();
-
     /**
      * Current set of nodePairs
      */
@@ -125,15 +116,12 @@ public class Dci {
      * Current marginal set of variables
      */
     private Set<Node> currentMarginalSet;
-
     /**
      * The pooling method to use to resolve inconsitencies
      */
     private ResolveSepsets.Method method;
-
     private int totalThreads;
     private int currentThread;
-    private final Lock lock = new ReentrantLock();
     private Map<Integer, Map<List<Node>, Set<Node>>> allPaths;
 
 
@@ -179,6 +167,118 @@ public class Dci {
 
     //============================= Public Methods ============================//
 
+    /**
+     * Finds all edge sequences that ensure a particular trek. Returns the edge sequence with necessary colliders along
+     * the sequence mapped to ancestral undirectedPaths
+     */
+    private static Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> pathsEnsuringTrek(Graph graph, List<Node> ensureTrek, Set<Node> conditioning) {
+        Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> paths = new HashMap<>();
+        Dci.pathsEnsuringTrek(graph, ensureTrek, 1, new LinkedList<>(Collections.singletonList(ensureTrek.get(0))),
+                conditioning, new HashMap<>(), paths, new HashSet<>(Collections.singletonList(ensureTrek.get(0))));
+        return paths;
+    }
+
+    private static void pathsEnsuringTrek(Graph graph, List<Node> ensureTrek, int index,
+                                          LinkedList<Node> path, Set<Node> conditioning, Map<Triple, NodePair> colliders,
+                                          Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> paths, Set<Node> visited) {
+        if (index == ensureTrek.size()) {
+            Map<Triple, List<Set<Edge>>> newColliders = new HashMap<>();
+            for (Triple triple : colliders.keySet()) {
+                List<Set<Edge>> edgeSet = new ArrayList<>();
+                List<List<Node>> treks = new ArrayList<>();
+                treks.addAll(graph.paths().treks(triple.getY(), colliders.get(triple).getFirst(), -1));
+                treks.addAll(graph.paths().treks(triple.getY(), colliders.get(triple).getSecond(), -1));
+                for (List<Node> trek : treks) {
+                    Set<Edge> edges = new HashSet<>();
+                    boolean okay = true;
+                    for (int k = 0; k < trek.size() - 1; k++) {
+                        if (graph.getEndpoint(trek.get(k + 1), trek.get(k)).equals(Endpoint.ARROW)) {
+                            okay = false;
+                            break;
+                        }
+                        edges.add(graph.getEdge(trek.get(k + 1), trek.get(k)));
+                    }
+                    if (okay) {
+                        edgeSet.add(edges);
+                    }
+                }
+                if (edgeSet.isEmpty()) {
+                    return;
+                }
+                newColliders.put(triple, edgeSet);
+            }
+            Set<Edge> edges = new HashSet<>();
+            for (int k = 0; k < path.size() - 1; k++) {
+                edges.add(graph.getEdge(path.get(k), path.get(k + 1)));
+            }
+            paths.put(edges, newColliders);
+            return;
+        }
+        Node node1 = path.getLast();
+        Node node2 = ensureTrek.get(index);
+
+        for (Edge edge : graph.getEdges(node1)) {
+            Node next = Edges.traverse(node1, edge);
+
+            if (next == null) {
+                continue;
+            }
+
+            if (path.size() > 1) {
+                Node node0 = path.get(path.size() - 2);
+                if (!next.equals(node0) && graph.isDefCollider(node0, node1, next) && !conditioning.contains(node1)) {
+                    continue;
+                }
+            }
+
+            if (visited.contains(next)) {
+                continue;
+            }
+
+            path.add(next);
+            visited.add(next);
+
+            if (conditioning.contains(node1)) {
+                Node node0 = path.get(path.size() - 3);
+                if (graph.getEndpoint(node0, node1).equals(Endpoint.TAIL) ||
+                        graph.getEndpoint(next, node1).equals(Endpoint.TAIL)) {
+                    path.removeLast();
+                    visited.remove(next);
+                    continue;
+                }
+                if (!graph.paths().possibleAncestor(next, node2)) {
+                    path.removeLast();
+                    visited.remove(next);
+                    continue;
+                }
+                colliders.put(new Triple(node0, node1, next), new NodePair(node2, ensureTrek.get(index - 1)));
+            }
+            Set<Node> currentVisited;
+            if (next.equals(node2)) {
+                index++;
+                currentVisited = new HashSet<>();
+                currentVisited.add(node2);
+            } else {
+                currentVisited = visited;
+            }
+            Dci.pathsEnsuringTrek(graph, ensureTrek, index, path, conditioning, colliders, paths, currentVisited);
+            path.removeLast();
+            if (next == node2) {
+                index--;
+            }
+            visited.remove(next);
+            List<Triple> remove = new ArrayList<>();
+            for (Triple triple : colliders.keySet()) {
+                if (triple.getY().equals(node1)) {
+                    remove.add(triple);
+                }
+            }
+            for (Triple triple : remove) {
+                colliders.remove(triple);
+            }
+        }
+    }
+
     public int getDepth() {
         return depth;
     }
@@ -195,6 +295,8 @@ public class Dci {
     public long getElapsedTime() {
         return elapsedTime;
     }
+
+    //============================= Private Methods ============================//
 
     /**
      * Gets the resulting sepsets
@@ -296,8 +398,6 @@ public class Dci {
         return new ArrayList<>(this.output);
     }
 
-    //============================= Private Methods ============================//
-
     private void findSepsets(List<IndependenceTest> independenceTests) {
         for (int k = 0; k < this.marginalVars.size(); k++) {
             IndependenceTest independenceTest = independenceTests.get(k);
@@ -320,6 +420,11 @@ public class Dci {
             this.minimalSepsetMaps = new ArrayList<>();
         }
     }
+
+    /*
+     * Propagates orientations that are consequences of the definite colliders
+     * that are initially oriented
+     */
 
     /**
      * Removes edges between variables independent in some dataset
@@ -386,11 +491,6 @@ public class Dci {
         }
     }
 
-    /*
-     * Propagates orientations that are consequences of the definite colliders
-     * that are initially oriented
-     */
-
     private void propagateInitialOrientations(Graph graph) {
         while (this.changeFlag) {
             this.changeFlag = false;
@@ -400,6 +500,9 @@ public class Dci {
         }
         this.changeFlag = true;
     }
+
+    // Does all 3 of these rules at once instead of going through all
+    // triples multiple times per iteration of doFinalOrientation.
 
     /**
      * Implements the double-triangle orientation rule for the initial graph with only definite colliders from each
@@ -467,6 +570,9 @@ public class Dci {
         }
     }
 
+    // if a*-&gt;Bo-oC and not a*-*c, then a*-&gt;b-->c
+    // (orient either circle if present, don't need both)
+
     private boolean isArrowheadAllowed(Graph graph, Node x, Node y) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
@@ -482,8 +588,7 @@ public class Dci {
         return true;
     }
 
-    // Does all 3 of these rules at once instead of going through all
-    // triples multiple times per iteration of doFinalOrientation.
+    //if a*-oC and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c
 
     private void initialAwayFromColliderAncestorCycle(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -524,8 +629,7 @@ public class Dci {
         }
     }
 
-    // if a*-&gt;Bo-oC and not a*-*c, then a*-&gt;b-->c
-    // (orient either circle if present, don't need both)
+    //if Ao->c and a-->b-->c, then a-->c
 
     private void awayFromCollider(Graph graph, Node a, Node b, Node c) {
         Endpoint BC = graph.getEndpoint(b, c);
@@ -553,8 +657,6 @@ public class Dci {
         }
     }
 
-    //if a*-oC and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c
-
     private void awayFromAncestor(Graph graph, Node a, Node b, Node c) {
         if ((graph.isAdjacentTo(a, c)) &&
                 (graph.getEndpoint(a, c) == Endpoint.CIRCLE)) {
@@ -573,8 +675,6 @@ public class Dci {
             }
         }
     }
-
-    //if Ao->c and a-->b-->c, then a-->c
 
     private void awayFromCycle(Graph graph, Node a, Node b, Node c) {
         if ((graph.isAdjacentTo(a, c)) &&
@@ -805,79 +905,6 @@ public class Dci {
         return this.currentThread;
     }
 
-    private class FindMinimalSpanningTrek implements Runnable {
-
-        Thread thisThread;
-
-        FindMinimalSpanningTrek() {
-            this.thisThread = new Thread(this);
-            this.thisThread.start();
-        }
-
-        public void run() {
-            while (Dci.this.currentThread < Dci.this.totalThreads) {
-                int threadNum = nextThread();
-                if (threadNum >= Dci.this.totalThreads) {
-                    break;
-                }
-                int size = Dci.this.currentMarginalSet.size();
-                NodePair nodePair = Dci.this.currentNodePairs.get(threadNum);
-                System.out.println("Finding minmal spanning treks... " + threadNum + " of " + Dci.this.totalThreads);
-                if (Dci.this.currentGraph.isAdjacentTo(Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()))) {
-                    Set<Node> otherNodes = new HashSet<>(Dci.this.currentMarginalSet);
-                    List<Node> adjacency = new ArrayList<>();
-                    adjacency.add(nodePair.getFirst());
-                    adjacency.add(nodePair.getSecond());
-                    otherNodes.removeAll(adjacency);
-                    Dci.this.allPaths.get(2).put(adjacency, otherNodes);
-                    continue;
-                }
-                Map<Integer, Map<List<Node>, Set<Node>>> newPaths = new HashMap<>();
-                for (int k = 2; k <= size; k++) {
-                    newPaths.put(k, new HashMap<>());
-                }
-                for (List<Node> trek : Dci.this.currentGraph.paths().treks(Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()), -1)) {
-                    boolean inMarginal = true;
-                    for (Node node : trek) {
-                        if (!Dci.this.currentMarginalSet.contains(node)) {
-                            inMarginal = false;
-                            break;
-                        }
-                    }
-                    if (!inMarginal) {
-                        continue;
-                    }
-                    Set<Node> otherNodes = new HashSet<>(Dci.this.currentMarginalSet);
-                    trek.forEach(otherNodes::remove);
-//                  allPaths.get(trek.size()).put(trek, otherNodes);
-                    newPaths.get(trek.size()).put(trek, otherNodes);
-                }
-                List<List<Node>> remove = new ArrayList<>();
-                for (int k = 2; k < size; k++) {
-                    Map<List<Node>, Set<Node>> trekMap = newPaths.get(k);
-                    for (int l = k + 1; l <= size; l++) {
-                        Map<List<Node>, Set<Node>> trekMapNext = newPaths.get(l);
-                        for (List<Node> trek : trekMap.keySet()) {
-                            for (List<Node> trekNext : trekMapNext.keySet()) {
-                                if (trekMap.get(trek).containsAll(trekMapNext.get(trekNext)) &&
-                                        isSubtrek(trekNext, trek)) {
-                                    remove.add(trekNext);
-                                }
-                            }
-                        }
-                        for (List<Node> nodes : remove) {
-                            trekMapNext.remove(nodes);
-                        }
-                        remove.clear();
-                    }
-                }
-                for (int k = 2; k <= size; k++) {
-                    Dci.this.allPaths.get(k).putAll(newPaths.get(k));
-                }
-            }
-        }
-    }
-
     /**
      * Determines whether one trek is a subtrek of another trek
      */
@@ -897,6 +924,10 @@ public class Dci {
         }
         return true;
     }
+
+    /*
+     * @return all triples in a graph
+     */
 
     /**
      * Checks where one open path is a subpath of another open path
@@ -933,10 +964,6 @@ public class Dci {
         return isSubpath;
     }
 
-    /*
-     * @return all triples in a graph
-     */
-
     private Set<Triple> getAllTriples(Graph graph) {
         Set<Triple> triples = new HashSet<>();
         for (Node node : graph.getNodes()) {
@@ -961,119 +988,6 @@ public class Dci {
             }
         }
     }
-
-    /**
-     * Finds all edge sequences that ensure a particular trek. Returns the edge sequence with necessary colliders along
-     * the sequence mapped to ancestral undirectedPaths
-     */
-    private static Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> pathsEnsuringTrek(Graph graph, List<Node> ensureTrek, Set<Node> conditioning) {
-        Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> paths = new HashMap<>();
-        Dci.pathsEnsuringTrek(graph, ensureTrek, 1, new LinkedList<>(Collections.singletonList(ensureTrek.get(0))),
-                conditioning, new HashMap<>(), paths, new HashSet<>(Collections.singletonList(ensureTrek.get(0))));
-        return paths;
-    }
-
-    private static void pathsEnsuringTrek(Graph graph, List<Node> ensureTrek, int index,
-                                          LinkedList<Node> path, Set<Node> conditioning, Map<Triple, NodePair> colliders,
-                                          Map<Set<Edge>, Map<Triple, List<Set<Edge>>>> paths, Set<Node> visited) {
-        if (index == ensureTrek.size()) {
-            Map<Triple, List<Set<Edge>>> newColliders = new HashMap<>();
-            for (Triple triple : colliders.keySet()) {
-                List<Set<Edge>> edgeSet = new ArrayList<>();
-                List<List<Node>> treks = new ArrayList<>();
-                treks.addAll(graph.paths().treks(triple.getY(), colliders.get(triple).getFirst(), -1));
-                treks.addAll(graph.paths().treks(triple.getY(), colliders.get(triple).getSecond(), -1));
-                for (List<Node> trek : treks) {
-                    Set<Edge> edges = new HashSet<>();
-                    boolean okay = true;
-                    for (int k = 0; k < trek.size() - 1; k++) {
-                        if (graph.getEndpoint(trek.get(k + 1), trek.get(k)).equals(Endpoint.ARROW)) {
-                            okay = false;
-                            break;
-                        }
-                        edges.add(graph.getEdge(trek.get(k + 1), trek.get(k)));
-                    }
-                    if (okay) {
-                        edgeSet.add(edges);
-                    }
-                }
-                if (edgeSet.isEmpty()) {
-                    return;
-                }
-                newColliders.put(triple, edgeSet);
-            }
-            Set<Edge> edges = new HashSet<>();
-            for (int k = 0; k < path.size() - 1; k++) {
-                edges.add(graph.getEdge(path.get(k), path.get(k + 1)));
-            }
-            paths.put(edges, newColliders);
-            return;
-        }
-        Node node1 = path.getLast();
-        Node node2 = ensureTrek.get(index);
-
-        for (Edge edge : graph.getEdges(node1)) {
-            Node next = Edges.traverse(node1, edge);
-
-            if (next == null) {
-                continue;
-            }
-
-            if (path.size() > 1) {
-                Node node0 = path.get(path.size() - 2);
-                if (!next.equals(node0) && graph.isDefCollider(node0, node1, next) && !conditioning.contains(node1)) {
-                    continue;
-                }
-            }
-
-            if (visited.contains(next)) {
-                continue;
-            }
-
-            path.add(next);
-            visited.add(next);
-
-            if (conditioning.contains(node1)) {
-                Node node0 = path.get(path.size() - 3);
-                if (graph.getEndpoint(node0, node1).equals(Endpoint.TAIL) ||
-                        graph.getEndpoint(next, node1).equals(Endpoint.TAIL)) {
-                    path.removeLast();
-                    visited.remove(next);
-                    continue;
-                }
-                if (!graph.paths().possibleAncestor(next, node2)) {
-                    path.removeLast();
-                    visited.remove(next);
-                    continue;
-                }
-                colliders.put(new Triple(node0, node1, next), new NodePair(node2, ensureTrek.get(index - 1)));
-            }
-            Set<Node> currentVisited;
-            if (next.equals(node2)) {
-                index++;
-                currentVisited = new HashSet<>();
-                currentVisited.add(node2);
-            } else {
-                currentVisited = visited;
-            }
-            Dci.pathsEnsuringTrek(graph, ensureTrek, index, path, conditioning, colliders, paths, currentVisited);
-            path.removeLast();
-            if (next == node2) {
-                index--;
-            }
-            visited.remove(next);
-            List<Triple> remove = new ArrayList<>();
-            for (Triple triple : colliders.keySet()) {
-                if (triple.getY().equals(node1)) {
-                    remove.add(triple);
-                }
-            }
-            for (Triple triple : remove) {
-                colliders.remove(triple);
-            }
-        }
-    }
-
 
     /**
      * For each necessary trek in a marginal graph, finds the treks in the getModel graph that traverse each node in the
@@ -1154,12 +1068,6 @@ public class Dci {
         }
         return path;
     }
-
-    /*
-     * Finds all skeletons for which some orientation of the edges preserves
-     * every d-connection present in an input graph using the skeletonSearch
-     * procedure described below
-     */
 
     private Map<Set<Edge>, Set<Map<Triple, List<Set<Edge>>>>> findPossibleSkeletons(Graph graph) {
         Set<Edge> allEdges = new HashSet<>(graph.getEdges());
@@ -1268,8 +1176,9 @@ public class Dci {
     }
 
     /*
-     * Tries to orient all collider/noncollider combination of triples accepting
-     * only those that ensure all treks and preserve all d-separations
+     * Finds all skeletons for which some orientation of the edges preserves
+     * every d-connection present in an input graph using the skeletonSearch
+     * procedure described below
      */
 
     private void allColliderCombinations(Graph graph, Set<Edge> removedEdges, Set<Triple> newColliders, int skeletonsLeft) {
@@ -1376,6 +1285,11 @@ public class Dci {
         this.currentPossibleColliders.clear();
         this.currentNecessaryTreks.clear();
     }
+
+    /*
+     * Tries to orient all collider/noncollider combination of triples accepting
+     * only those that ensure all treks and preserve all d-separations
+     */
 
     private void simpleColliderIterator(int skeletonsLeft) {
         Set<Set<Triple>> necessaryEdges = new HashSet<>();
@@ -1515,10 +1429,6 @@ public class Dci {
         return possible;
     }
 
-    /*
-     * Does the final set of orientations after colliders have been oriented
-     */
-
     private void doFinalOrientation(Graph graph) {
         this.discrimGraphs.clear();
         this.finalGraphs.clear();
@@ -1542,6 +1452,10 @@ public class Dci {
         }
         this.changeFlag = true;
     }
+
+    /*
+     * Does the final set of orientations after colliders have been oriented
+     */
 
     /**
      * Implements the double-triangle orientation rule, which states that if D*-oB, A*-&gt;B&lt;-*C and A*-*D*-*C is a
@@ -1591,8 +1505,6 @@ public class Dci {
         }
     }
 
-    // Does only the ancestor and cycle rules of these repeatedly until no changes
-
     private void awayFromAncestorCycle(Graph graph) {
         while (this.changeFlag) {
             this.changeFlag = false;
@@ -1623,8 +1535,7 @@ public class Dci {
         this.changeFlag = true;
     }
 
-    // Does all 3 of these rules at once instead of going through all
-    // triples multiple times per iteration of doFinalOrientation.
+    // Does only the ancestor and cycle rules of these repeatedly until no changes
 
     private void awayFromColliderAncestorCycle(Graph graph) {
         List<Node> nodes = graph.getNodes();
@@ -1654,6 +1565,8 @@ public class Dci {
         }
     }
 
+    // Does all 3 of these rules at once instead of going through all
+    // triples multiple times per iteration of doFinalOrientation.
 
     /**
      * The triangles that must be oriented this way (won't be done by another rule) all look like the ones below, where
@@ -2002,7 +1915,6 @@ public class Dci {
         System.out.println(this.sepsetMaps);
     }
 
-
     /**
      * Encodes every possible separation in a graph in the sepset
      */
@@ -2145,6 +2057,79 @@ public class Dci {
 
             }
 
+        }
+    }
+
+    private class FindMinimalSpanningTrek implements Runnable {
+
+        Thread thisThread;
+
+        FindMinimalSpanningTrek() {
+            this.thisThread = new Thread(this);
+            this.thisThread.start();
+        }
+
+        public void run() {
+            while (Dci.this.currentThread < Dci.this.totalThreads) {
+                int threadNum = nextThread();
+                if (threadNum >= Dci.this.totalThreads) {
+                    break;
+                }
+                int size = Dci.this.currentMarginalSet.size();
+                NodePair nodePair = Dci.this.currentNodePairs.get(threadNum);
+                System.out.println("Finding minmal spanning treks... " + threadNum + " of " + Dci.this.totalThreads);
+                if (Dci.this.currentGraph.isAdjacentTo(Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()))) {
+                    Set<Node> otherNodes = new HashSet<>(Dci.this.currentMarginalSet);
+                    List<Node> adjacency = new ArrayList<>();
+                    adjacency.add(nodePair.getFirst());
+                    adjacency.add(nodePair.getSecond());
+                    otherNodes.removeAll(adjacency);
+                    Dci.this.allPaths.get(2).put(adjacency, otherNodes);
+                    continue;
+                }
+                Map<Integer, Map<List<Node>, Set<Node>>> newPaths = new HashMap<>();
+                for (int k = 2; k <= size; k++) {
+                    newPaths.put(k, new HashMap<>());
+                }
+                for (List<Node> trek : Dci.this.currentGraph.paths().treks(Dci.this.currentGraph.getNode(nodePair.getFirst().getName()), Dci.this.currentGraph.getNode(nodePair.getSecond().getName()), -1)) {
+                    boolean inMarginal = true;
+                    for (Node node : trek) {
+                        if (!Dci.this.currentMarginalSet.contains(node)) {
+                            inMarginal = false;
+                            break;
+                        }
+                    }
+                    if (!inMarginal) {
+                        continue;
+                    }
+                    Set<Node> otherNodes = new HashSet<>(Dci.this.currentMarginalSet);
+                    trek.forEach(otherNodes::remove);
+//                  allPaths.get(trek.size()).put(trek, otherNodes);
+                    newPaths.get(trek.size()).put(trek, otherNodes);
+                }
+                List<List<Node>> remove = new ArrayList<>();
+                for (int k = 2; k < size; k++) {
+                    Map<List<Node>, Set<Node>> trekMap = newPaths.get(k);
+                    for (int l = k + 1; l <= size; l++) {
+                        Map<List<Node>, Set<Node>> trekMapNext = newPaths.get(l);
+                        for (List<Node> trek : trekMap.keySet()) {
+                            for (List<Node> trekNext : trekMapNext.keySet()) {
+                                if (trekMap.get(trek).containsAll(trekMapNext.get(trekNext)) &&
+                                        isSubtrek(trekNext, trek)) {
+                                    remove.add(trekNext);
+                                }
+                            }
+                        }
+                        for (List<Node> nodes : remove) {
+                            trekMapNext.remove(nodes);
+                        }
+                        remove.clear();
+                    }
+                }
+                for (int k = 2; k <= size; k++) {
+                    Dci.this.allPaths.get(k).putAll(newPaths.get(k));
+                }
+            }
         }
     }
 }

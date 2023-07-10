@@ -189,8 +189,10 @@ public class VariableConditioningEditor extends JPanel {
 
     public interface ConditioningPanel {
         Box getBox();
+
         // selected for removal.
         boolean isSelected();
+
         Node getVariable();
     }
 
@@ -365,11 +367,11 @@ public class VariableConditioningEditor extends JPanel {
         private ContinuousConditioningPanel.Type type;
 
         /**
-         * @param variable          This is the variable being conditioned on. Must be continuous and one of the variables
-         *                          in the histogram.
+         * @param variable          This is the variable being conditioned on. Must be continuous and one of the
+         *                          variables in the histogram.
          * @param dataSet           The dataset.
-         * @param conditioningPanel We will try to get some initialization information out of the conditioning
-         *                          panel. This must be for the same variable as variable.
+         * @param conditioningPanel We will try to get some initialization information out of the conditioning panel.
+         *                          This must be for the same variable as variable.
          */
         public ContinuousInquiryPanel(ContinuousVariable variable, DataSet dataSet, ContinuousConditioningPanel conditioningPanel) {
             this.data = ContinuousConditioningPanel.getContinuousData(variable.getName(), dataSet);
@@ -529,8 +531,7 @@ public class VariableConditioningEditor extends JPanel {
         }
 
         /**
-         * @return an array of breakpoints that divides the data into equal sized buckets,
-         * including the min and max.
+         * @return an array of breakpoints that divides the data into equal sized buckets, including the min and max.
          */
         public static double[] getNtileBreakpoints(double[] data, int ntiles) {
             double[] _data = new double[data.length];
@@ -611,8 +612,8 @@ public class VariableConditioningEditor extends JPanel {
         }
 
         /**
-         * Represents a chunk of data in a sorted array of data.  If low == high then
-         * the chunk only contains one member.
+         * Represents a chunk of data in a sorted array of data.  If low == high then the chunk only contains one
+         * member.
          */
         private static class Chunk {
 

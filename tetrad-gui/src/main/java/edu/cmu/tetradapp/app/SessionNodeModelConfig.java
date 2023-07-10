@@ -39,8 +39,8 @@ public interface SessionNodeModelConfig {
 
 
     /**
-     * @return the category that this model config belongs to or null if there isn't one.
-     * This allows you to organize models into various groupings.
+     * @return the category that this model config belongs to or null if there isn't one. This allows you to organize
+     * models into various groupings.
      */
     String getCategory();
 
@@ -71,8 +71,8 @@ public interface SessionNodeModelConfig {
 
 
     /**
-     * @return a newly created instance of the parameter editor for the params
-     * returned by <code>getParametersInstance()</code> or null if there is no such
+     * @return a newly created instance of the parameter editor for the params returned by
+     * <code>getParametersInstance()</code> or null if there is no such
      * editor.
      */
     ParameterEditor getParameterEditorInstance();

@@ -103,10 +103,29 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         return new StoredCellProbsObs(new ArrayList<>());
     }
 
+    private static boolean hasNextValue(Proposition proposition, int variable,
+                                        int curIndex) {
+        return StoredCellProbsObs.nextValue(proposition, variable, curIndex) != -1;
+    }
+
+    private static int nextValue(Proposition proposition, int variable,
+                                 int curIndex) {
+        for (int i = curIndex + 1;
+             i < proposition.getNumCategories(variable); i++) {
+            if (proposition.isAllowed(variable, i)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     // clear the probability table
     public void clearCellTable() {
         Arrays.fill(this.probs, Double.NaN);
     }
+
+    //=============================PUBLIC METHODS=========================//
 
     // get vaues by marginalizing probabilities from allowUnfaithfulness bayesIm
     public void createCellTable(MlBayesIm bayesIm) {
@@ -141,8 +160,6 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
             this.probs[i] = bayesIm.getProbability(i);
         }
     }
-
-    //=============================PUBLIC METHODS=========================//
 
     /**
      * @return the probability for the given cell, specified as a particular combination of variable values, for the
@@ -194,23 +211,6 @@ public final class StoredCellProbsObs implements TetradSerializable, DiscretePro
         }
 
         return p;
-    }
-
-    private static boolean hasNextValue(Proposition proposition, int variable,
-                                        int curIndex) {
-        return StoredCellProbsObs.nextValue(proposition, variable, curIndex) != -1;
-    }
-
-    private static int nextValue(Proposition proposition, int variable,
-                                 int curIndex) {
-        for (int i = curIndex + 1;
-             i < proposition.getNumCategories(variable); i++) {
-            if (proposition.isAllowed(variable, i)) {
-                return i;
-            }
-        }
-
-        return -1;
     }
 
     public double getConditionalProb(Proposition assertion,

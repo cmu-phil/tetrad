@@ -77,7 +77,6 @@ public final class SessionEditorNode extends DisplayNode {
      */
     private EditorWindow spawnedEditor;
 
-    //===========================CONSTRUCTORS==============================//
     /**
      * A reference to the sessionWrapper, the model associated with this node.
      */
@@ -183,7 +182,6 @@ public final class SessionEditorNode extends DisplayNode {
         return nodeConfig.getModels();
     }
 
-    //===========================PUBLIC METHODS============================//
     public void adjustToModel() {
         String acronym = getAcronym();
 

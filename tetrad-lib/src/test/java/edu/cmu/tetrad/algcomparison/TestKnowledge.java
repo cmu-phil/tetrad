@@ -26,6 +26,14 @@ import static junit.framework.TestCase.assertTrue;
 
 public class TestKnowledge {
 
+    private static void testKnowledge(DataSet dataSet, Knowledge knowledge, Parameters parameters, HasKnowledge algorithm) {
+        algorithm.setKnowledge(knowledge);
+        Graph _graph = ((Algorithm) algorithm).search(dataSet, parameters);
+        Node x1 = _graph.getNode("X1");
+        List<Node> innodes = _graph.getNodesOutTo(x1, Endpoint.ARROW);
+        assertTrue(innodes.isEmpty());
+    }
+
     // Tests to make sure knowledge gets passed into the algcomparison wrappers for
     // all methods that take knowledge.
     @Test
@@ -62,13 +70,5 @@ public class TestKnowledge {
         testKnowledge(dataSet, knowledge, parameters, new GraspFci(test, score));
         testKnowledge(dataSet, knowledge, parameters, new Rfci(test));
         testKnowledge(dataSet, knowledge, parameters, new SpFci(test, score));
-    }
-
-    private static void testKnowledge(DataSet dataSet, Knowledge knowledge, Parameters parameters, HasKnowledge algorithm) {
-        algorithm.setKnowledge(knowledge);
-        Graph _graph = ((Algorithm) algorithm).search(dataSet, parameters);
-        Node x1 = _graph.getNode("X1");
-        List<Node> innodes = _graph.getNodesOutTo(x1, Endpoint.ARROW);
-        assertTrue(innodes.isEmpty());
     }
 }

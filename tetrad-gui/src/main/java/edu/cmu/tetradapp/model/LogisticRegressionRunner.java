@@ -36,17 +36,16 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Extends AbstractAlgorithmRunner to produce a wrapper for the Regression
- * algorithm.
+ * Extends AbstractAlgorithmRunner to produce a wrapper for the Regression algorithm.
  *
  * @author Frank Wimberly after Joe Ramsey's PcRunner
  */
 public class LogisticRegressionRunner implements AlgorithmRunner, RegressionModel {
 
     static final long serialVersionUID = 23L;
-
-    private String name;
     private final Parameters params;
+    private final List<String> variableNames;
+    private String name;
     private String targetName;
     private List<String> regressorNames = new ArrayList<>();
     private List<DataSet> dataSets;
@@ -54,19 +53,15 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     private Graph outGraph;
     private LogisticRegression.Result result;
     private double alpha = 0.001;
-
     private int numModels = 1;
     private int modelIndex;
     private String modelSourceName;
 
-    private final List<String> variableNames;
-
     //=========================CONSTRUCTORS===============================//
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DataWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DataWrapper must contain a DataSet that is either a DataSet
+     * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public LogisticRegressionRunner(DataWrapper dataWrapper, Parameters params) {
         if (dataWrapper == null) {
@@ -179,8 +174,7 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
 
     /**
-     * Executes the algorithm, producing (at least) a result workbench. Must be
-     * implemented in the extending class.
+     * Executes the algorithm, producing (at least) a result workbench. Must be implemented in the extending class.
      */
     public void execute() {
         this.outGraph = new EdgeListGraph();
@@ -245,11 +239,11 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         throw new UnsupportedOperationException();
     }
 
-    public void setExternalGraph(Graph graph) {
-    }
-
     public Graph getExternalGraph() {
         return null;
+    }
+
+    public void setExternalGraph(Graph graph) {
     }
 
     @Override
@@ -286,14 +280,12 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -320,9 +312,8 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     /**
-     * @param node The node that the classifications are for. All triple from
-     *             adjacencies to this node to adjacencies to this node through the given
-     *             node will be considered.
+     * @param node The node that the classifications are for. All triple from adjacencies to this node to adjacencies to
+     *             this node through the given node will be considered.
      * @return the list of triples corresponding to
      * <code>getTripleClassificationNames</code> for the given node.
      */
@@ -338,13 +329,13 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
     }
 
     @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
-//        Map<String, String> allParamsSettings = paramSettings;
+    public Map<String, String> getAllParamSettings() {
+        return null;
     }
 
     @Override
-    public Map<String, String> getAllParamSettings() {
-        return null;
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+//        Map<String, String> allParamsSettings = paramSettings;
     }
 
     public int getNumModels() {
@@ -355,12 +346,12 @@ public class LogisticRegressionRunner implements AlgorithmRunner, RegressionMode
         return this.modelIndex;
     }
 
-    public String getModelSourceName() {
-        return this.modelSourceName;
-    }
-
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return this.modelSourceName;
     }
 
     public void setDataSet(DataSet dataSet) {

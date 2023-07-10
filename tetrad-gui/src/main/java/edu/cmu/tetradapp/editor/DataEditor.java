@@ -40,26 +40,23 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Displays data objects and allows users to edit these objects as well as load
- * and save them.
+ * Displays data objects and allows users to edit these objects as well as load and save them.
  *
  * @author josephramsey
  */
 public final class DataEditor extends JPanel implements KnowledgeEditable,
         PropertyChangeListener {
 
+    private final Parameters parameters;
     /**
      * The data wrapper being displayed.
      */
     private DataWrapper dataWrapper;
-
     /**
-     * A tabbed pane containing displays for all data models and displaying
-     * 'dataModel' currently.
+     * A tabbed pane containing displays for all data models and displaying 'dataModel' currently.
      */
     private JTabbedPane tabbedPane = new JTabbedPane();
     private boolean showMenus = true;
-    private final Parameters parameters;
 
     //==========================CONSTRUCTORS===============================//
 
@@ -76,8 +73,7 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
     }
 
     /**
-     * Constructs the data editor with an empty list of data displays, showing
-     * menus optionally.
+     * Constructs the data editor with an empty list of data displays, showing menus optionally.
      *
      * @param showMenus True if menus should be shown.
      */
@@ -159,10 +155,33 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
     //==========================PUBLIC METHODS=============================//
 
+    //=============================PRIVATE METHODS======================//
+    private static void removeEmptyModels(DataModelList dataModelList) {
+        for (int i = dataModelList.size() - 1; i >= 0; i--) {
+            DataModel dataModel = dataModelList.get(i);
+
+            if (dataModel instanceof DataSet
+                    && ((DataSet) dataModel).getNumColumns() == 0) {
+                if (dataModelList.size() > 1) {
+                    dataModelList.remove(dataModel);
+                }
+            }
+        }
+    }
+
+    private static String tabName(Object dataModel, int i) {
+        String tabName = ((DataModel) dataModel).getName();
+
+        if (tabName == null) {
+            tabName = "Data Set " + i;
+        }
+
+        return tabName;
+    }
+
     /**
-     * Replaces the Data models with the given one. Note, that by
-     * calling this you are removing ALL the getModel data-models, they will be
-     * lost forever!
+     * Replaces the Data models with the given one. Note, that by calling this you are removing ALL the getModel
+     * data-models, they will be lost forever!
      *
      * @param model - The model, must not be null
      */
@@ -371,20 +390,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-    }
-
-    //=============================PRIVATE METHODS======================//
-    private static void removeEmptyModels(DataModelList dataModelList) {
-        for (int i = dataModelList.size() - 1; i >= 0; i--) {
-            DataModel dataModel = dataModelList.get(i);
-
-            if (dataModel instanceof DataSet
-                    && ((DataSet) dataModel).getNumColumns() == 0) {
-                if (dataModelList.size() > 1) {
-                    dataModelList.remove(dataModel);
-                }
-            }
-        }
     }
 
     private JTable getSelectedJTable() {
@@ -725,16 +730,6 @@ public final class DataEditor extends JPanel implements KnowledgeEditable,
 
             validate();
         }
-    }
-
-    private static String tabName(Object dataModel, int i) {
-        String tabName = ((DataModel) dataModel).getName();
-
-        if (tabName == null) {
-            tabName = "Data Set " + i;
-        }
-
-        return tabName;
     }
 
     /**

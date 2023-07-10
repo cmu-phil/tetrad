@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -35,8 +35,8 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Holds a tetrad-style graph with all of the constructors necessary for it to
- * serve as a model for the tetrad application.
+ * Holds a tetrad-style graph with all of the constructors necessary for it to serve as a model for the tetrad
+ * application.
  *
  * @author josephramsey
  */
@@ -45,17 +45,6 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     private final Parameters params;
     private List<Node> selectedNodes;
     private List<Graph> graphs = new ArrayList<>();
-
-    public enum Type {
-        Subgraph, Adjacents, Adjacents_of_Adjacents, Adjacents_of_Adjacents_of_Adjacents, Parents, Children, Ancestors, Descendants,
-        Markov_Blankets, Treks, Trek_Edges,
-        Paths, Path_Edges, Directed_Paths, Directed_Path_Edges, Y_Structures,
-        Pag_Y_Structures, Indegree, Out_Degree, Degree
-    }
-
-    public enum nType {equals, atMost, atLeast}
-
-    //=============================CONSTRUCTORS==========================//
 
     public GraphSelectionWrapper(GraphSource graphWrapper, Parameters parameters) {
         this(graphWrapper.getGraph(), parameters);
@@ -72,6 +61,7 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         init(params, graphs);
     }
 
+    //=============================CONSTRUCTORS==========================//
 
     public GraphSelectionWrapper(Graph graph, Parameters params) {
         if (graph == null) {
@@ -100,8 +90,6 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         return new GraphSelectionWrapper(Dag.serializableInstance(), new Parameters());
     }
 
-    //===============================================METHODS================================//
-
     private void init(Parameters params, List<Graph> graphs) {
         setGraphs(graphs);
 
@@ -118,9 +106,14 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         log();
     }
 
-
     public List<Node> getSelectedVariables() {
         return this.selectedNodes;
+    }
+
+    //===============================================METHODS================================//
+
+    public void setSelectedVariables(List<Node> variables) {
+        this.selectedNodes = variables;
     }
 
     private List<Graph> getSelectionGraphs(Parameters params) {
@@ -147,6 +140,28 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         } else {
             return this.graphs;
         }
+    }
+
+    public void setGraphs(List<Graph> graphs) {
+        this.graphs = graphs;
+
+        List<Graph> selectionGraphs = new ArrayList<>();
+
+        for (int i = 0; i < graphs.size(); i++) {
+            selectionGraphs.add(new EdgeListGraph());
+        }
+
+        setSelectedVariables(new ArrayList<>());
+        this.params.set("selectionGraphs", selectionGraphs);
+
+        List<Node> highlighted = (List<Node>) this.params.get("highlightInEditor", new ArrayList<>());
+        highlighted.retainAll(getSelectedGraph(0).getNodes());
+        this.params.set("highlightInEditor", highlighted);
+        List<Node> selected = getSelectedVariables();
+        selected.retainAll(getSelectedGraph(0).getNodes());
+        setSelectedVariables(selected);
+
+        log();
     }
 
     private Graph calculateSelectionGraph(int k) {
@@ -624,28 +639,6 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         return getSelectionGraphs(this.params).get(0);
     }
 
-    public void setGraphs(List<Graph> graphs) {
-        this.graphs = graphs;
-
-        List<Graph> selectionGraphs = new ArrayList<>();
-
-        for (int i = 0; i < graphs.size(); i++) {
-            selectionGraphs.add(new EdgeListGraph());
-        }
-
-        setSelectedVariables(new ArrayList<>());
-        this.params.set("selectionGraphs", selectionGraphs);
-
-        List<Node> highlighted = (List<Node>) this.params.get("highlightInEditor", new ArrayList<>());
-        highlighted.retainAll(getSelectedGraph(0).getNodes());
-        this.params.set("highlightInEditor", highlighted);
-        List<Node> selected = getSelectedVariables();
-        selected.retainAll(getSelectedGraph(0).getNodes());
-        setSelectedVariables(selected);
-
-        log();
-    }
-
     public Graph getSelectionGraph(int i) {
         List<Graph> selectionGraphs = (List<Graph>) this.params.get("selectionGraphs", new ArrayList<>());
 
@@ -664,12 +657,12 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         return getSelectedGraph(0);
     }
 
-    public void setDialogText(String dialogText) {
-        this.params.set("dialogText", dialogText);
-    }
-
     public String getDialogText() {
         return this.params.getString("dialogText", "");
+    }
+
+    public void setDialogText(String dialogText) {
+        this.params.set("dialogText", dialogText);
     }
 
     public Type getType() {
@@ -708,13 +701,12 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         return getSelectedGraph(0).getNodeNames();
     }
 
-    public void setSelectedVariables(List<Node> variables) {
-        this.selectedNodes = variables;
-    }
-
-
     public List<Node> getVariables() {
         return getSelectedGraph(0).getNodes();
+    }
+
+    public int getN() {
+        return this.params.getInt("n", 0);
     }
 
     public void setN(int n) {
@@ -722,24 +714,17 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
         this.params.set("n", n);
     }
 
-    public int getN() {
-        return this.params.getInt("n", 0);
+    public String getNType() {
+        return this.params.getString("nType", "atLeast");
     }
 
     public void setNType(nType NType) {
         this.params.set("nType", NType.toString());
     }
 
-    public String getNType() {
-        return this.params.getString("nType", "atLeast");
-    }
-
     public List<Node> getHighlightInEditor() {
         return (List<Node>) this.params.get("highlightInEditor", new ArrayList<Node>());
     }
-
-
-    //===========================================PRIVATE METHODS====================================//
 
     // Calculates a graph from give nodes and edges. The nodes are always included in the graph, plus
     // whatever nodes and edges are in the edges set.
@@ -769,6 +754,9 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
 
         return mb;
     }
+
+
+    //===========================================PRIVATE METHODS====================================//
 
     private Set<Edge> yStructures(Graph graph, Node z, int i) {
         Set<Edge> edges = new HashSet<>();
@@ -840,14 +828,12 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -858,6 +844,15 @@ public class GraphSelectionWrapper implements GraphSource, KnowledgeBoxInput, Io
     public IndependenceTest getIndependenceTest() {
         return new MsepTest(getGraph());
     }
+
+    public enum Type {
+        Subgraph, Adjacents, Adjacents_of_Adjacents, Adjacents_of_Adjacents_of_Adjacents, Parents, Children, Ancestors, Descendants,
+        Markov_Blankets, Treks, Trek_Edges,
+        Paths, Path_Edges, Directed_Paths, Directed_Path_Edges, Y_Structures,
+        Pag_Y_Structures, Indegree, Out_Degree, Degree
+    }
+
+    public enum nType {equals, atMost, atLeast}
 }
 
 

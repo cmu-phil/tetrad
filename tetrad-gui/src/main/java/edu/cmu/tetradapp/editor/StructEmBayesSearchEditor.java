@@ -36,16 +36,14 @@ import java.beans.PropertyChangeListener;
 import java.text.NumberFormat;
 
 /**
- * An editor for Bayes net instantiated models.  Assumes that the workbench and
- * parameterized model have been established (that is, that the nodes have been
- * identified and named and that the number and names of the values for the
- * nodes have been specified) and allows the user to set conditional
- * probabilities of node values given combinations of parent values.
+ * An editor for Bayes net instantiated models.  Assumes that the workbench and parameterized model have been
+ * established (that is, that the nodes have been identified and named and that the number and names of the values for
+ * the nodes have been specified) and allows the user to set conditional probabilities of node values given combinations
+ * of parent values.
  *
  * @author Aaron Powers
  * @author josephramsey
- * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM
- * Bayes estimator
+ * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM Bayes estimator
  */
 class StructEmBayesSearchEditor extends JPanel {
 

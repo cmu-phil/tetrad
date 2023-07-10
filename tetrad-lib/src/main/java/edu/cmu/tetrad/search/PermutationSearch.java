@@ -61,41 +61,6 @@ public class PermutationSearch {
     }
 
     /**
-     * Performe the search and return a CPDAG.
-     *
-     * @return The CPDAG.
-     */
-    public Graph search() {
-        List<int[]> tasks = new ArrayList<>();
-        if (!this.knowledge.isEmpty() && this.knowledge.getVariablesNotInTiers().isEmpty()) {
-            int start, end = 0;
-            for (int i = 0; i < this.knowledge.getNumTiers(); i++) {
-                start = end;
-                for (String name : this.knowledge.getTier(i)) {
-                    this.order.add(this.nodeMap.get(name));
-                    end++;
-                }
-                if (!this.knowledge.isTierForbiddenWithin(i)) {
-                    tasks.add(new int[]{start, end});
-                }
-            }
-        } else {
-            this.order.addAll(this.variables);
-            tasks.add(new int[]{0, this.variables.size()});
-        }
-
-        for (int[] task : tasks) {
-            List<Node> prefix = new ArrayList<>(this.order.subList(0, task[0]));
-            List<Node> suborder = this.order.subList(task[0], task[1]);
-            this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
-        }
-
-        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
-    }
-
-    // TO DO: moved to a better place like GraphUtils
-
-    /**
      * Construct a graph given a specification of the parents for each node.
      *
      * @param nodes   The nodes.
@@ -134,6 +99,41 @@ public class PermutationSearch {
         }
 
         return graph;
+    }
+
+    // TO DO: moved to a better place like GraphUtils
+
+    /**
+     * Performe the search and return a CPDAG.
+     *
+     * @return The CPDAG.
+     */
+    public Graph search() {
+        List<int[]> tasks = new ArrayList<>();
+        if (!this.knowledge.isEmpty() && this.knowledge.getVariablesNotInTiers().isEmpty()) {
+            int start, end = 0;
+            for (int i = 0; i < this.knowledge.getNumTiers(); i++) {
+                start = end;
+                for (String name : this.knowledge.getTier(i)) {
+                    this.order.add(this.nodeMap.get(name));
+                    end++;
+                }
+                if (!this.knowledge.isTierForbiddenWithin(i)) {
+                    tasks.add(new int[]{start, end});
+                }
+            }
+        } else {
+            this.order.addAll(this.variables);
+            tasks.add(new int[]{0, this.variables.size()});
+        }
+
+        for (int[] task : tasks) {
+            List<Node> prefix = new ArrayList<>(this.order.subList(0, task[0]));
+            List<Node> suborder = this.order.subList(task[0], task[1]);
+            this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
+        }
+
+        return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
     }
 
     /**

@@ -31,38 +31,32 @@ import java.io.*;
  * (<a href="mailto:rsaavedr@ai.uwf.edu">rsaavedr@ai.uwf.edu</A>)
  */
 public abstract class BasicMatrix {
-    protected String name;
-    protected int n;
-
     /**
      * Maximum short value
      */
     public static final short MAX_SHORT = Short.MAX_VALUE;
-
     /**
      * Minimum short getValue
      */
     public static final short MIN_SHORT = Short.MIN_VALUE;
-
     /**
      * Maximum int value
      */
     public static final int MAX_INT = Integer.MAX_VALUE;
-
     /**
      * Minimum int value
      */
     public static final int MIN_INT = Integer.MIN_VALUE;
-
     /**
      * Maximum float value
      */
     public static final float MAX_FLOAT = Float.MAX_VALUE;
-
     /**
      * Minimum float value
      */
     public static final float MIN_FLOAT = -BasicMatrix.MAX_FLOAT;
+    protected String name;
+    protected int n;
 
     /**
      * No parameters constructor, only used within the package
@@ -165,17 +159,17 @@ public abstract class BasicMatrix {
     }
 
     /**
-     * Sets the name of this matrix
-     */
-    public void setName(String newName) {
-        this.name = newName;
-    }
-
-    /**
      * Returns name of this matrix
      */
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * Sets the name of this matrix
+     */
+    public void setName(String newName) {
+        this.name = newName;
     }
 
     /**

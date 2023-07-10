@@ -196,12 +196,12 @@ public class TestSession {
         }
     }
 
-    private void setEventId(String eventId) {
-        this.eventId = eventId;
-    }
-
     private String getEventId() {
         return this.eventId;
+    }
+
+    private void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 
     /**

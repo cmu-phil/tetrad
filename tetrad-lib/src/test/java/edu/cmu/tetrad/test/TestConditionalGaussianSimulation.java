@@ -38,6 +38,10 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class TestConditionalGaussianSimulation {
 
+    public static void main(String... args) {
+        new TestConditionalGaussianSimulation().testBryan();
+    }
+
     public void testBryan(String... args) {
         Parameters parameters = new Parameters();
 
@@ -88,10 +92,6 @@ public class TestConditionalGaussianSimulation {
         comparison.setShowUtilities(true);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
-    }
-
-    public static void main(String... args) {
-        new TestConditionalGaussianSimulation().testBryan();
     }
 }
 

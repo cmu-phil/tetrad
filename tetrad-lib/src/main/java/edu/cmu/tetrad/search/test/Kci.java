@@ -52,32 +52,23 @@ public class Kci implements IndependenceTest {
     // Variables in data
     private final List<Node> variables;
     private final double[] h;
-
-    // The alpha level of the test.
-    private double alpha;
-
     // A normal distribution with 1 degree of freedom.
     private final NormalDistribution normal = new NormalDistribution(new SynchronizedRandomGenerator(
             new Well44497b(193924L)), 0, 1);
-
-    // True if the approximation algorithms should be used instead of Theorems 3 or 4.
-    private boolean approximate;
-
     // Convenience map from nodes to their indices in the list of variables.
     private final Map<Node, Integer> hash;
-
-    // Eigenvalues greater than this time the maximum will be kept.
-    private double threshold = 0.01;
-
-    // Number of bostraps for Theorem 4 and Proposition 5.
-    private int numBootstraps = 5000;
-
-    // Azzalini optimal kernel widths will be multiplied by this.
-    private double widthMultiplier = 1.0;
-
     // Record of independence facts
     private final Map<IndependenceFact, IndependenceResult> facts = new ConcurrentHashMap<>();
-
+    // The alpha level of the test.
+    private double alpha;
+    // True if the approximation algorithms should be used instead of Theorems 3 or 4.
+    private boolean approximate;
+    // Eigenvalues greater than this time the maximum will be kept.
+    private double threshold = 0.01;
+    // Number of bostraps for Theorem 4 and Proposition 5.
+    private int numBootstraps = 5000;
+    // Azzalini optimal kernel widths will be multiplied by this.
+    private double widthMultiplier = 1.0;
     // Epsilon for Propositio 5.
     private double epsilon = 0.001;
 
@@ -116,7 +107,6 @@ public class Kci implements IndependenceTest {
         this.alpha = alpha;
     }
 
-    //====================================PUBLIC METHODS==================================//
 
     /**
      * @throws javax.help.UnsupportedOperationException Method not implemented.
@@ -698,6 +688,16 @@ public class Kci implements IndependenceTest {
         return sum;
     }
 
+    private List<Integer> getRows(DataSet dataSet) {
+        List<Integer> rows = new ArrayList<>();
+
+        for (int k = 0; k < dataSet.getNumRows(); k++) {
+            rows.add(k);
+        }
+
+        return rows;
+    }
+
     private class Eigendecomposition {
         private final Matrix k;
         private Matrix D;
@@ -787,16 +787,5 @@ public class Kci implements IndependenceTest {
             return this;
         }
 
-    }
-
-
-    private List<Integer> getRows(DataSet dataSet) {
-        List<Integer> rows = new ArrayList<>();
-
-        for (int k = 0; k < dataSet.getNumRows(); k++) {
-            rows.add(k);
-        }
-
-        return rows;
     }
 }

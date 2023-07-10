@@ -1,4 +1,3 @@
-
 /**
  * Contains some utility classes for search algorithms.
  */

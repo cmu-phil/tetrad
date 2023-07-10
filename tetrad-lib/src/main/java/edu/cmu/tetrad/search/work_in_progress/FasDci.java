@@ -62,52 +62,43 @@ public class FasDci {
      * The independence tests for each dataset. This should be appropriate to the data.
      */
     private final IndependenceTest independenceTest;
-
+    /**
+     * The logger, by default the empty logger.
+     */
+    private final TetradLogger logger = TetradLogger.getInstance();
     /**
      * Specification of which edges are forbidden or required. NOTE: to be implemented later
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
      * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
      */
     private int depth = 1000;
-
     /**
      * The number of independence tests.
      */
     private int numIndependenceTests;
-
     /**
      * The method used to resolve independencies.
      */
     private ResolveSepsets.Method method;
-
     /**
      * If resolving independencies, the sets of variables in each "Marginal" dataset
      */
     private List<Set<Node>> marginalVars;
-
     /**
      * If resolving independenceis, the set of independence tests for other datasets
      */
     private List<IndependenceTest> independenceTests;
-
     /**
      * Independencies known prior to the search
      */
     private SepsetMapDci knownIndependencies;
-
     /**
      * Associations known prior to the search
      */
     private SepsetMapDci knownAssociations;
-
-    /**
-     * The logger, by default the empty logger.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
 
 //    private List<Double> pValues = new ArrayList<Double>();
 

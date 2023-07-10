@@ -42,21 +42,17 @@ import java.text.NumberFormat;
 final class SaveDataAction extends AbstractAction {
 
     /**
+     * Formats all numbers.
+     */
+    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    /**
      * The dataEditor.                          -
      */
     private DataEditor dataEditor;
-
-
     /***
      * Search editor to get data from.
      */
     private MarkovBlanketSearchEditor searchEditor;
-
-
-    /**
-     * Formats all numbers.
-     */
-    private final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
     /**
      * Creates a new action to save data.

@@ -30,13 +30,6 @@ package edu.cmu.tetrad.data;
  */
 public final class CaseExpander implements DataFilter {
 
-    /**
-     * Expands cases for the given dataset.
-     */
-    public DataSet filter(DataSet dataSet) {
-        return CaseExpander.expand(dataSet);
-    }
-
     private static DataSet expand(DataSet dataSet) {
         int rows = 0;
 
@@ -74,6 +67,13 @@ public final class CaseExpander implements DataFilter {
         }
 
         return newDataSet;
+    }
+
+    /**
+     * Expands cases for the given dataset.
+     */
+    public DataSet filter(DataSet dataSet) {
+        return CaseExpander.expand(dataSet);
     }
 }
 

@@ -70,6 +70,37 @@ class OtherGroupsEditor extends JPanel {
         //   this.add(Box.createVerticalGlue());
     }
 
+    /**
+     * Sorts the elemenets of a default list model
+     */
+    private static void sort(DefaultListModel model) {
+        Object[] elements = model.toArray();
+        Arrays.sort(elements);
+
+        model.clear();
+
+        for (Object element : elements) {
+            model.addElement(element);
+        }
+    }
+
+    private static Set<String> getElementsInModel(DefaultListModel model) {
+        Set<String> elements = new HashSet<>();
+        for (int i = 0; i < model.getSize(); i++) {
+            elements.add((String) model.getElementAt(i));
+        }
+        return elements;
+    }
+
+    private static boolean modelContains(Object o, DefaultListModel model) {
+        for (int i = 0; i < model.getSize(); i++) {
+            if (o.equals(model.getElementAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     //===================== Private Methods ============================//
     private Box buildComponent() {
         Box vBox = Box.createVerticalBox();
@@ -120,8 +151,7 @@ class OtherGroupsEditor extends JPanel {
     }
 
     /**
-     * Builds a group box using the given knowledge group (if null a default
-     * instance is returned).
+     * Builds a group box using the given knowledge group (if null a default instance is returned).
      *
      * @return - A required/forbidden work area.
      */
@@ -142,7 +172,7 @@ class OtherGroupsEditor extends JPanel {
         Set<String> fromGroup = group.getFromVariables();
         Set<String> toGroup = group.getToVariables();
 
-        // Don't allow to create forbidden group from this required group if 
+        // Don't allow to create forbidden group from this required group if
         // no variables in the from or to boxes - Zhou
         forbiddenButton.setEnabled(!fromGroup.isEmpty() && !toGroup.isEmpty());
 
@@ -219,37 +249,6 @@ class OtherGroupsEditor extends JPanel {
         repaint();
     }
 
-    /**
-     * Sorts the elemenets of a default list model
-     */
-    private static void sort(DefaultListModel model) {
-        Object[] elements = model.toArray();
-        Arrays.sort(elements);
-
-        model.clear();
-
-        for (Object element : elements) {
-            model.addElement(element);
-        }
-    }
-
-    private static Set<String> getElementsInModel(DefaultListModel model) {
-        Set<String> elements = new HashSet<>();
-        for (int i = 0; i < model.getSize(); i++) {
-            elements.add((String) model.getElementAt(i));
-        }
-        return elements;
-    }
-
-    private static boolean modelContains(Object o, DefaultListModel model) {
-        for (int i = 0; i < model.getSize(); i++) {
-            if (o.equals(model.getElementAt(i))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     //========================== Inner classes =====================================//
 
     /**
@@ -311,6 +310,65 @@ class OtherGroupsEditor extends JPanel {
         }
     }
 
+    /**
+     * A list that allows the user to move variables from it to others. The variables are not deleted when moved.
+     */
+    private static class VariableDragList extends JList implements DragGestureListener, DropTargetListener {
+
+        public VariableDragList(List<String> items) {
+            setLayoutOrientation(JList.HORIZONTAL_WRAP);
+            setVisibleRowCount(0);
+            this.setCellRenderer(new VariableRenderer());
+
+            new DropTarget(this, DnDConstants.ACTION_MOVE, this, true);
+
+            DragSource dragSource = DragSource.getDefaultDragSource();
+            dragSource.createDefaultDragGestureRecognizer(this,
+                    DnDConstants.ACTION_MOVE, this);
+
+            setModel(new DefaultListModel());
+            for (Object item : items) {
+                ((DefaultListModel) getModel()).addElement(item);
+            }
+        }
+
+        public void dragGestureRecognized(DragGestureEvent dragGestureEvent) {
+            if (getSelectedIndex() == -1) {
+                return;
+            }
+
+            List list = getSelectedValuesList();
+            if (list == null) {
+                getToolkit().beep();
+            } else {
+                ListTransferable transferable = new ListTransferable(list);
+                dragGestureEvent.startDrag(DragSource.DefaultMoveDrop,
+                        transferable);
+            }
+        }
+
+        public void drop(DropTargetDropEvent dtde) {
+            dtde.getDropTargetContext().dropComplete(true);
+        }
+
+        public void dragEnter(DropTargetDragEvent dtde) {
+
+        }
+
+        public void dragOver(DropTargetDragEvent dtde) {
+
+        }
+
+        public void dropActionChanged(DropTargetDragEvent dtde) {
+
+        }
+
+        public void dragExit(DropTargetEvent dte) {
+
+        }
+
+    }
+
     private class GroupVariableDragList extends JList implements DropTargetListener, DragSourceListener, DragGestureListener {
 
         /**
@@ -319,8 +377,7 @@ class OtherGroupsEditor extends JPanel {
         private final int index;
 
         /**
-         * States that whether this if the "from" side or the "to" side
-         * (true=from, false=to).
+         * States that whether this if the "from" side or the "to" side (true=from, false=to).
          */
         private final boolean from;
 
@@ -470,66 +527,6 @@ class OtherGroupsEditor extends JPanel {
         }
 
         public void dragExit(DragSourceEvent dse) {
-
-        }
-
-    }
-
-    /**
-     * A list that allows the user to move variables from it to others. The
-     * variables are not deleted when moved.
-     */
-    private static class VariableDragList extends JList implements DragGestureListener, DropTargetListener {
-
-        public VariableDragList(List<String> items) {
-            setLayoutOrientation(JList.HORIZONTAL_WRAP);
-            setVisibleRowCount(0);
-            this.setCellRenderer(new VariableRenderer());
-
-            new DropTarget(this, DnDConstants.ACTION_MOVE, this, true);
-
-            DragSource dragSource = DragSource.getDefaultDragSource();
-            dragSource.createDefaultDragGestureRecognizer(this,
-                    DnDConstants.ACTION_MOVE, this);
-
-            setModel(new DefaultListModel());
-            for (Object item : items) {
-                ((DefaultListModel) getModel()).addElement(item);
-            }
-        }
-
-        public void dragGestureRecognized(DragGestureEvent dragGestureEvent) {
-            if (getSelectedIndex() == -1) {
-                return;
-            }
-
-            List list = getSelectedValuesList();
-            if (list == null) {
-                getToolkit().beep();
-            } else {
-                ListTransferable transferable = new ListTransferable(list);
-                dragGestureEvent.startDrag(DragSource.DefaultMoveDrop,
-                        transferable);
-            }
-        }
-
-        public void drop(DropTargetDropEvent dtde) {
-            dtde.getDropTargetContext().dropComplete(true);
-        }
-
-        public void dragEnter(DropTargetDragEvent dtde) {
-
-        }
-
-        public void dragOver(DropTargetDragEvent dtde) {
-
-        }
-
-        public void dropActionChanged(DropTargetDragEvent dtde) {
-
-        }
-
-        public void dragExit(DropTargetEvent dte) {
 
         }
 

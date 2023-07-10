@@ -47,10 +47,9 @@ import java.util.*;
 public class IndTestMvpLrt implements IndependenceTest {
     private final DataSet data;
     private final Map<Node, Integer> nodesHash;
-    private double alpha;
-
     // Likelihood function
     private final MvpLikelihood likelihood;
+    private double alpha;
     private boolean verbose;
 
     /**

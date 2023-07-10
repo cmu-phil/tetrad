@@ -60,29 +60,23 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
 
     //Discrete Data coded as integers, no IntMatrix2D apparently...
     private final DoubleMatrix2D yDat;
-
-    private List<Node> variables;
-    private List<Node> initVariables;
-
-    //Discrete Data coded as dummy variables
-    private DoubleMatrix2D dDat;
-
-
     private final DoubleMatrix1D lambda;
     private final Algebra alg = new Algebra();
-
-    private long elapsedTime;
-
     //Levels of Discrete variables
     private final int[] l;
-    private int lsum;
-    private int[] lcumsum;
     int p;
     int q;
     int n;
-
+    private List<Node> variables;
+    private List<Node> initVariables;
+    //Discrete Data coded as dummy variables
+    private DoubleMatrix2D dDat;
+    private long elapsedTime;
+    private int lsum;
+    private int[] lcumsum;
     //parameter weights
     private DoubleMatrix1D weights;
+    private MGMParams params;
 
     public Mgm(DoubleMatrix2D x, DoubleMatrix2D y, List<Node> variables, int[] l, double[] lambda) {
 
@@ -159,159 +153,6 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         makeDummy();
     }
 
-    public static class MGMParams {
-        //Model parameters
-        private DoubleMatrix2D beta; //continuous-continuous
-        private DoubleMatrix1D betad; //cont squared node pot
-        private DoubleMatrix2D theta; //continuous-discrete
-        private DoubleMatrix2D phi; //discrete-discrete
-        private DoubleMatrix1D alpha1; //cont linear node pot
-        private DoubleMatrix1D alpha2; //disc node pot
-
-        public MGMParams() {
-
-        }
-
-        //nothing is copied here, all pointers back to inputs...
-        public MGMParams(DoubleMatrix2D beta, DoubleMatrix1D betad, DoubleMatrix2D theta,
-                         DoubleMatrix2D phi, DoubleMatrix1D alpha1, DoubleMatrix1D alpha2) {
-            this.beta = beta;
-            this.betad = betad;
-            this.theta = theta;
-            this.phi = phi;
-            this.alpha1 = alpha1;
-            this.alpha2 = alpha2;
-        }
-
-        //copy from another parameter set
-        public MGMParams(MGMParams parIn) {
-            this.beta = parIn.beta.copy();
-            this.betad = parIn.betad.copy();
-            this.theta = parIn.theta.copy();
-            this.phi = parIn.phi.copy();
-            this.alpha1 = parIn.alpha1.copy();
-            this.alpha2 = parIn.alpha2.copy();
-        }
-
-        //copy params from flattened vector
-        public MGMParams(DoubleMatrix1D vec, int p, int ltot) {
-            int[] lens = {p * p, p, p * ltot, ltot * ltot, p, ltot};
-            int[] lenSums = new int[lens.length];
-            lenSums[0] = lens[0];
-            for (int i = 1; i < lenSums.length; i++) {
-                lenSums[i] = lens[i] + lenSums[i - 1];
-            }
-
-            if (vec.size() != lenSums[5])
-                throw new IllegalArgumentException("Param vector dimension doesn't match: Found " + vec.size() + " need " + lenSums[5]);
-
-            this.beta = DoubleFactory2D.dense.make(vec.viewPart(0, lens[0]).toArray(), p);
-            this.betad = vec.viewPart(lenSums[0], lens[1]).copy();
-            this.theta = DoubleFactory2D.dense.make(vec.viewPart(lenSums[1], lens[2]).toArray(), ltot);
-            this.phi = DoubleFactory2D.dense.make(vec.viewPart(lenSums[2], lens[3]).toArray(), ltot);
-            this.alpha1 = vec.viewPart(lenSums[3], lens[4]).copy();
-            this.alpha2 = vec.viewPart(lenSums[4], lens[5]).copy();
-        }
-
-        public String toString() {
-            String outStr = "alpha1: " + this.alpha1.toString();
-            outStr += "\nalpha2: " + this.alpha2.toString();
-            outStr += "\nbeta: " + this.beta.toString();
-            outStr += "\nbetad: " + this.betad.toString();
-            outStr += "\ntheta: " + this.theta.toString();
-            outStr += "\nphi: " + this.phi.toString();
-            return outStr;
-        }
-
-        public DoubleMatrix1D getAlpha1() {
-            return this.alpha1;
-        }
-
-        public DoubleMatrix1D getAlpha2() {
-            return this.alpha2;
-        }
-
-        public DoubleMatrix1D getBetad() {
-            return this.betad;
-        }
-
-        public DoubleMatrix2D getBeta() {
-            return this.beta;
-        }
-
-        public DoubleMatrix2D getPhi() {
-            return this.phi;
-        }
-
-        public DoubleMatrix2D getTheta() {
-            return this.theta;
-        }
-
-        public void setAlpha1(DoubleMatrix1D alpha1) {
-            this.alpha1 = alpha1;
-        }
-
-        public void setAlpha2(DoubleMatrix1D alpha2) {
-            this.alpha2 = alpha2;
-        }
-
-        public void setBeta(DoubleMatrix2D beta) {
-            this.beta = beta;
-        }
-
-        public void setBetad(DoubleMatrix1D betad) {
-            this.betad = betad;
-        }
-
-        public void setPhi(DoubleMatrix2D phi) {
-            this.phi = phi;
-        }
-
-        public void setTheta(DoubleMatrix2D theta) {
-            this.theta = theta;
-        }
-
-        /**
-         * Copy all params into a single vector
-         *
-         * @return
-         */
-        public DoubleMatrix1D toMatrix1D() {
-            DoubleFactory1D fac = DoubleFactory1D.dense;
-            int p = this.alpha1.size();
-            int ltot = this.alpha2.size();
-            int[] lens = {p * p, p, p * ltot, ltot * ltot, p, ltot};
-            int[] lenSums = new int[lens.length];
-            lenSums[0] = lens[0];
-            for (int i = 1; i < lenSums.length; i++) {
-                lenSums[i] = lens[i] + lenSums[i - 1];
-            }
-
-            DoubleMatrix1D outVec = fac.make(p * p + p + p * ltot + ltot * ltot + p + ltot);
-            outVec.viewPart(0, lens[0]).assign(Mgm.flatten(this.beta));
-            outVec.viewPart(lenSums[0], lens[1]).assign(this.betad);
-            outVec.viewPart(lenSums[1], lens[2]).assign(Mgm.flatten(this.theta));
-            outVec.viewPart(lenSums[2], lens[3]).assign(Mgm.flatten(this.phi));
-            outVec.viewPart(lenSums[3], lens[4]).assign(this.alpha1);
-            outVec.viewPart(lenSums[4], lens[5]).assign(this.alpha2);
-
-            return outVec;
-        }
-
-        //likely depreciated
-        public double[][] toVector() {
-            double[][] outArr = new double[1][];
-            outArr[0] = toMatrix1D().toArray();
-            return outArr;
-        }
-    }
-
-    private MGMParams params;
-
-    public void setParams(MGMParams newParams) {
-        this.params = newParams;
-    }
-
     //create column major vector from matrix (i.e. concatenate columns)
     public static DoubleMatrix1D flatten(DoubleMatrix2D m) {
         DoubleMatrix1D[] colArray = new DoubleMatrix1D[m.columns()];
@@ -320,6 +161,212 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         }
 
         return DoubleFactory1D.dense.make(colArray);
+    }
+
+    /*
+     * PRIVATE UTILS
+     */
+    //Utils
+    //sum rows together if marg == 1 and cols together if marg == 2
+    //Using row-major speeds up marg=1 5x
+    private static DoubleMatrix1D margSum(DoubleMatrix2D mat, int marg) {
+        int n = 0;
+        DoubleMatrix1D vec = null;
+        DoubleFactory1D fac = DoubleFactory1D.dense;
+
+        if (marg == 1) {
+            n = mat.columns();
+            vec = fac.make(n);
+            for (int j = 0; j < mat.rows(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                for (int i = 0; i < n; i++) {
+                    vec.setQuick(i, vec.getQuick(i) + mat.getQuick(j, i));
+                }
+            }
+        } else if (marg == 2) {
+            n = mat.rows();
+            vec = fac.make(n);
+            for (int i = 0; i < n; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                vec.setQuick(i, mat.viewRow(i).zSum());
+            }
+        }
+
+        return vec;
+    }
+
+    //zeros out everthing below di-th diagonal
+    public static DoubleMatrix2D upperTri(DoubleMatrix2D mat, int di) {
+        for (int i = FastMath.max(-di + 1, 0); i < mat.rows(); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            for (int j = 0; j < FastMath.min(i + di, mat.rows()); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                mat.set(i, j, 0);
+            }
+        }
+
+        return mat;
+    }
+
+    //zeros out everthing above di-th diagonal
+    private static DoubleMatrix2D lowerTri(DoubleMatrix2D mat, int di) {
+        for (int i = 0; i < mat.rows() - FastMath.max(di + 1, 0); i++) {
+            if (Thread.currentThread().isInterrupted()) {
+                break;
+            }
+
+            for (int j = FastMath.max(i + di + 1, 0); j < mat.rows(); j++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                mat.set(i, j, 0);
+            }
+        }
+
+        return mat;
+    }
+
+    // should move somewhere else...
+    private static double norm2(DoubleMatrix2D mat) {
+        //return FastMath.sqrt(mat.copy().assign(Functions.pow(2)).zSum());
+        Algebra al = new Algebra();
+
+        //norm found by svd so we need rows >= cols
+        if (mat.rows() < mat.columns()) {
+            return al.norm2(al.transpose(mat));
+        }
+        return al.norm2(mat);
+    }
+
+    private static double norm2(DoubleMatrix1D vec) {
+        //return FastMath.sqrt(vec.copy().assign(Functions.pow(2)).zSum());
+        return FastMath.sqrt(new Algebra().norm2(vec));
+    }
+
+    private static void runTests1() {
+        try {
+            final String path = "/Users/ajsedgewick/tetrad_master/tetrad/tetrad-lib/src/main/java/edu/pitt/csb/mgm/test_data";
+            System.out.println(path);
+            DoubleMatrix2D xIn = DoubleFactory2D.dense.make(MixedUtils.loadDelim(path, "med_test_C.txt").getDoubleData().toArray());
+            DoubleMatrix2D yIn = DoubleFactory2D.dense.make(MixedUtils.loadDelim(path, "med_test_D.txt").getDoubleData().toArray());
+            int[] L = new int[24];
+            Node[] vars = new Node[48];
+            for (int i = 0; i < 24; i++) {
+                L[i] = 2;
+                vars[i] = new ContinuousVariable("X" + i);
+                vars[i + 24] = new DiscreteVariable("Y" + i);
+            }
+
+            final double lam = .2;
+            Mgm model = new Mgm(xIn, yIn, new ArrayList<>(Arrays.asList(vars)), L, new double[]{lam, lam, lam});
+            Mgm model2 = new Mgm(xIn, yIn, new ArrayList<>(Arrays.asList(vars)), L, new double[]{lam, lam, lam});
+
+            System.out.println("Weights: " + Arrays.toString(model.weights.toArray()));
+
+            DoubleMatrix2D test = xIn.copy();
+            DoubleMatrix2D test2 = xIn.copy();
+            long t = MillisecondTimes.timeMillis();
+            for (int i = 0; i < 50000; i++) {
+                test2 = xIn.copy();
+                test.assign(test2);
+            }
+            System.out.println("assign Time: " + (MillisecondTimes.timeMillis() - t));
+
+            t = MillisecondTimes.timeMillis();
+            double[][] xArr = xIn.toArray();
+            for (int i = 0; i < 50000; i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    break;
+                }
+
+                //test = DoubleFactory2D.dense.make(xArr);
+                test2 = xIn.copy();
+                test = test2;
+            }
+            System.out.println("equals Time: " + (MillisecondTimes.timeMillis() - t));
+
+
+            System.out.println("Init nll: " + model.smoothValue(model.params.toMatrix1D()));
+            System.out.println("Init reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
+
+            t = MillisecondTimes.timeMillis();
+            model.learnEdges(700);
+            //model.learn(1e-7, 700);
+            System.out.println("Orig Time: " + (MillisecondTimes.timeMillis() - t));
+
+            System.out.println("nll: " + model.smoothValue(model.params.toMatrix1D()));
+            System.out.println("reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
+
+            System.out.println("params:\n" + model.params);
+            System.out.println("adjMat:\n" + model.adjMatFromMGM());
+
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * test non penalty use cases
+     */
+    private static void runTests2() {
+        Graph g = GraphUtils.convert("X1-->X2,X3-->X2,X4-->X5");
+        //simple graph pm im gen example
+
+        HashMap<String, Integer> nd = new HashMap<>();
+        nd.put("X1", 0);
+        nd.put("X2", 0);
+        nd.put("X3", 4);
+        nd.put("X4", 4);
+        nd.put("X5", 4);
+
+        g = MixedUtils.makeMixedGraph(g, nd);
+
+        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(g, "Split(-1.5,-.5,.5,1.5)");
+        System.out.println(pm);
+
+        GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
+        System.out.println(im);
+
+        final int samps = 1000;
+        DataSet ds = im.simulateDataFisher(samps);
+        ds = MixedUtils.makeMixedData(ds, nd);
+        //System.out.println(ds);
+
+        final double lambda = 0;
+        Mgm model = new Mgm(ds, new double[]{lambda, lambda, lambda});
+
+        System.out.println("Init nll: " + model.smoothValue(model.params.toMatrix1D()));
+        System.out.println("Init reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
+
+        model.learn(1e-8, 1000);
+
+        System.out.println("Learned nll: " + model.smoothValue(model.params.toMatrix1D()));
+        System.out.println("Learned reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
+
+        System.out.println("params:\n" + model.params);
+        System.out.println("adjMat:\n" + model.adjMatFromMGM());
+    }
+
+    public static void main(String[] args) {
+        Mgm.runTests1();
+    }
+
+    public void setParams(MGMParams newParams) {
+        this.params = newParams;
     }
 
     //init all parameters to zeros except for betad which is set to 1s
@@ -741,7 +788,6 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         return this.lambda.get(0) * betaNorms + this.lambda.get(1) * thetaNorms + this.lambda.get(2) * phiNorms;
     }
 
-
     /**
      * Gradient of the pseudolikelihood
      *
@@ -1135,7 +1181,6 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         return this.lambda.get(0) * betaNorms + this.lambda.get(1) * thetaNorms + this.lambda.get(2) * phiNorms;
     }
 
-
     /**
      * Learn MGM traditional way with objective function tolerance. Recommended for inference applications that need
      * accurate pseudolikelihood
@@ -1323,207 +1368,151 @@ public class Mgm extends ConvexProximal implements IGraphSearch {
         return this.elapsedTime;
     }
 
+    public static class MGMParams {
+        //Model parameters
+        private DoubleMatrix2D beta; //continuous-continuous
+        private DoubleMatrix1D betad; //cont squared node pot
+        private DoubleMatrix2D theta; //continuous-discrete
+        private DoubleMatrix2D phi; //discrete-discrete
+        private DoubleMatrix1D alpha1; //cont linear node pot
+        private DoubleMatrix1D alpha2; //disc node pot
 
-    /*
-     * PRIVATE UTILS
-     */
-    //Utils
-    //sum rows together if marg == 1 and cols together if marg == 2
-    //Using row-major speeds up marg=1 5x
-    private static DoubleMatrix1D margSum(DoubleMatrix2D mat, int marg) {
-        int n = 0;
-        DoubleMatrix1D vec = null;
-        DoubleFactory1D fac = DoubleFactory1D.dense;
+        public MGMParams() {
 
-        if (marg == 1) {
-            n = mat.columns();
-            vec = fac.make(n);
-            for (int j = 0; j < mat.rows(); j++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                for (int i = 0; i < n; i++) {
-                    vec.setQuick(i, vec.getQuick(i) + mat.getQuick(j, i));
-                }
-            }
-        } else if (marg == 2) {
-            n = mat.rows();
-            vec = fac.make(n);
-            for (int i = 0; i < n; i++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                vec.setQuick(i, mat.viewRow(i).zSum());
-            }
         }
 
-        return vec;
-    }
-
-    //zeros out everthing below di-th diagonal
-    public static DoubleMatrix2D upperTri(DoubleMatrix2D mat, int di) {
-        for (int i = FastMath.max(-di + 1, 0); i < mat.rows(); i++) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            for (int j = 0; j < FastMath.min(i + di, mat.rows()); j++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                mat.set(i, j, 0);
-            }
+        //nothing is copied here, all pointers back to inputs...
+        public MGMParams(DoubleMatrix2D beta, DoubleMatrix1D betad, DoubleMatrix2D theta,
+                         DoubleMatrix2D phi, DoubleMatrix1D alpha1, DoubleMatrix1D alpha2) {
+            this.beta = beta;
+            this.betad = betad;
+            this.theta = theta;
+            this.phi = phi;
+            this.alpha1 = alpha1;
+            this.alpha2 = alpha2;
         }
 
-        return mat;
-    }
-
-    //zeros out everthing above di-th diagonal
-    private static DoubleMatrix2D lowerTri(DoubleMatrix2D mat, int di) {
-        for (int i = 0; i < mat.rows() - FastMath.max(di + 1, 0); i++) {
-            if (Thread.currentThread().isInterrupted()) {
-                break;
-            }
-
-            for (int j = FastMath.max(i + di + 1, 0); j < mat.rows(); j++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                mat.set(i, j, 0);
-            }
+        //copy from another parameter set
+        public MGMParams(MGMParams parIn) {
+            this.beta = parIn.beta.copy();
+            this.betad = parIn.betad.copy();
+            this.theta = parIn.theta.copy();
+            this.phi = parIn.phi.copy();
+            this.alpha1 = parIn.alpha1.copy();
+            this.alpha2 = parIn.alpha2.copy();
         }
 
-        return mat;
-    }
+        //copy params from flattened vector
+        public MGMParams(DoubleMatrix1D vec, int p, int ltot) {
+            int[] lens = {p * p, p, p * ltot, ltot * ltot, p, ltot};
+            int[] lenSums = new int[lens.length];
+            lenSums[0] = lens[0];
+            for (int i = 1; i < lenSums.length; i++) {
+                lenSums[i] = lens[i] + lenSums[i - 1];
+            }
 
-    // should move somewhere else...
-    private static double norm2(DoubleMatrix2D mat) {
-        //return FastMath.sqrt(mat.copy().assign(Functions.pow(2)).zSum());
-        Algebra al = new Algebra();
+            if (vec.size() != lenSums[5])
+                throw new IllegalArgumentException("Param vector dimension doesn't match: Found " + vec.size() + " need " + lenSums[5]);
 
-        //norm found by svd so we need rows >= cols
-        if (mat.rows() < mat.columns()) {
-            return al.norm2(al.transpose(mat));
+            this.beta = DoubleFactory2D.dense.make(vec.viewPart(0, lens[0]).toArray(), p);
+            this.betad = vec.viewPart(lenSums[0], lens[1]).copy();
+            this.theta = DoubleFactory2D.dense.make(vec.viewPart(lenSums[1], lens[2]).toArray(), ltot);
+            this.phi = DoubleFactory2D.dense.make(vec.viewPart(lenSums[2], lens[3]).toArray(), ltot);
+            this.alpha1 = vec.viewPart(lenSums[3], lens[4]).copy();
+            this.alpha2 = vec.viewPart(lenSums[4], lens[5]).copy();
         }
-        return al.norm2(mat);
-    }
 
-    private static double norm2(DoubleMatrix1D vec) {
-        //return FastMath.sqrt(vec.copy().assign(Functions.pow(2)).zSum());
-        return FastMath.sqrt(new Algebra().norm2(vec));
-    }
-
-    private static void runTests1() {
-        try {
-            final String path = "/Users/ajsedgewick/tetrad_master/tetrad/tetrad-lib/src/main/java/edu/pitt/csb/mgm/test_data";
-            System.out.println(path);
-            DoubleMatrix2D xIn = DoubleFactory2D.dense.make(MixedUtils.loadDelim(path, "med_test_C.txt").getDoubleData().toArray());
-            DoubleMatrix2D yIn = DoubleFactory2D.dense.make(MixedUtils.loadDelim(path, "med_test_D.txt").getDoubleData().toArray());
-            int[] L = new int[24];
-            Node[] vars = new Node[48];
-            for (int i = 0; i < 24; i++) {
-                L[i] = 2;
-                vars[i] = new ContinuousVariable("X" + i);
-                vars[i + 24] = new DiscreteVariable("Y" + i);
-            }
-
-            final double lam = .2;
-            Mgm model = new Mgm(xIn, yIn, new ArrayList<>(Arrays.asList(vars)), L, new double[]{lam, lam, lam});
-            Mgm model2 = new Mgm(xIn, yIn, new ArrayList<>(Arrays.asList(vars)), L, new double[]{lam, lam, lam});
-
-            System.out.println("Weights: " + Arrays.toString(model.weights.toArray()));
-
-            DoubleMatrix2D test = xIn.copy();
-            DoubleMatrix2D test2 = xIn.copy();
-            long t = MillisecondTimes.timeMillis();
-            for (int i = 0; i < 50000; i++) {
-                test2 = xIn.copy();
-                test.assign(test2);
-            }
-            System.out.println("assign Time: " + (MillisecondTimes.timeMillis() - t));
-
-            t = MillisecondTimes.timeMillis();
-            double[][] xArr = xIn.toArray();
-            for (int i = 0; i < 50000; i++) {
-                if (Thread.currentThread().isInterrupted()) {
-                    break;
-                }
-
-                //test = DoubleFactory2D.dense.make(xArr);
-                test2 = xIn.copy();
-                test = test2;
-            }
-            System.out.println("equals Time: " + (MillisecondTimes.timeMillis() - t));
-
-
-            System.out.println("Init nll: " + model.smoothValue(model.params.toMatrix1D()));
-            System.out.println("Init reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
-
-            t = MillisecondTimes.timeMillis();
-            model.learnEdges(700);
-            //model.learn(1e-7, 700);
-            System.out.println("Orig Time: " + (MillisecondTimes.timeMillis() - t));
-
-            System.out.println("nll: " + model.smoothValue(model.params.toMatrix1D()));
-            System.out.println("reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
-
-            System.out.println("params:\n" + model.params);
-            System.out.println("adjMat:\n" + model.adjMatFromMGM());
-
-
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        public String toString() {
+            String outStr = "alpha1: " + this.alpha1.toString();
+            outStr += "\nalpha2: " + this.alpha2.toString();
+            outStr += "\nbeta: " + this.beta.toString();
+            outStr += "\nbetad: " + this.betad.toString();
+            outStr += "\ntheta: " + this.theta.toString();
+            outStr += "\nphi: " + this.phi.toString();
+            return outStr;
         }
-    }
 
-    /**
-     * test non penalty use cases
-     */
-    private static void runTests2() {
-        Graph g = GraphUtils.convert("X1-->X2,X3-->X2,X4-->X5");
-        //simple graph pm im gen example
+        public DoubleMatrix1D getAlpha1() {
+            return this.alpha1;
+        }
 
-        HashMap<String, Integer> nd = new HashMap<>();
-        nd.put("X1", 0);
-        nd.put("X2", 0);
-        nd.put("X3", 4);
-        nd.put("X4", 4);
-        nd.put("X5", 4);
+        public void setAlpha1(DoubleMatrix1D alpha1) {
+            this.alpha1 = alpha1;
+        }
 
-        g = MixedUtils.makeMixedGraph(g, nd);
+        public DoubleMatrix1D getAlpha2() {
+            return this.alpha2;
+        }
 
-        GeneralizedSemPm pm = MixedUtils.GaussianCategoricalPm(g, "Split(-1.5,-.5,.5,1.5)");
-        System.out.println(pm);
+        public void setAlpha2(DoubleMatrix1D alpha2) {
+            this.alpha2 = alpha2;
+        }
 
-        GeneralizedSemIm im = MixedUtils.GaussianCategoricalIm(pm);
-        System.out.println(im);
+        public DoubleMatrix1D getBetad() {
+            return this.betad;
+        }
 
-        final int samps = 1000;
-        DataSet ds = im.simulateDataFisher(samps);
-        ds = MixedUtils.makeMixedData(ds, nd);
-        //System.out.println(ds);
+        public void setBetad(DoubleMatrix1D betad) {
+            this.betad = betad;
+        }
 
-        final double lambda = 0;
-        Mgm model = new Mgm(ds, new double[]{lambda, lambda, lambda});
+        public DoubleMatrix2D getBeta() {
+            return this.beta;
+        }
 
-        System.out.println("Init nll: " + model.smoothValue(model.params.toMatrix1D()));
-        System.out.println("Init reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
+        public void setBeta(DoubleMatrix2D beta) {
+            this.beta = beta;
+        }
 
-        model.learn(1e-8, 1000);
+        public DoubleMatrix2D getPhi() {
+            return this.phi;
+        }
 
-        System.out.println("Learned nll: " + model.smoothValue(model.params.toMatrix1D()));
-        System.out.println("Learned reg term: " + model.nonSmoothValue(model.params.toMatrix1D()));
+        public void setPhi(DoubleMatrix2D phi) {
+            this.phi = phi;
+        }
 
-        System.out.println("params:\n" + model.params);
-        System.out.println("adjMat:\n" + model.adjMatFromMGM());
-    }
+        public DoubleMatrix2D getTheta() {
+            return this.theta;
+        }
 
-    public static void main(String[] args) {
-        Mgm.runTests1();
+        public void setTheta(DoubleMatrix2D theta) {
+            this.theta = theta;
+        }
+
+        /**
+         * Copy all params into a single vector
+         *
+         * @return
+         */
+        public DoubleMatrix1D toMatrix1D() {
+            DoubleFactory1D fac = DoubleFactory1D.dense;
+            int p = this.alpha1.size();
+            int ltot = this.alpha2.size();
+            int[] lens = {p * p, p, p * ltot, ltot * ltot, p, ltot};
+            int[] lenSums = new int[lens.length];
+            lenSums[0] = lens[0];
+            for (int i = 1; i < lenSums.length; i++) {
+                lenSums[i] = lens[i] + lenSums[i - 1];
+            }
+
+            DoubleMatrix1D outVec = fac.make(p * p + p + p * ltot + ltot * ltot + p + ltot);
+            outVec.viewPart(0, lens[0]).assign(Mgm.flatten(this.beta));
+            outVec.viewPart(lenSums[0], lens[1]).assign(this.betad);
+            outVec.viewPart(lenSums[1], lens[2]).assign(Mgm.flatten(this.theta));
+            outVec.viewPart(lenSums[2], lens[3]).assign(Mgm.flatten(this.phi));
+            outVec.viewPart(lenSums[3], lens[4]).assign(this.alpha1);
+            outVec.viewPart(lenSums[4], lens[5]).assign(this.alpha2);
+
+            return outVec;
+        }
+
+        //likely depreciated
+        public double[][] toVector() {
+            double[][] outArr = new double[1][];
+            outArr[0] = toMatrix1D().toArray();
+            return outArr;
+        }
     }
 
 }

@@ -42,23 +42,18 @@ public final class TimeSeriesData implements DataModel {
      * @serial
      */
     private final Matrix data2;
-
-    /**
-     * @serial
-     */
-    private String name;
-
     /**
      * @serial
      */
     private final List<String> varNames;
-
+    /**
+     * @serial
+     */
+    private String name;
     /**
      * @serial
      */
     private Knowledge knowledge = new Knowledge();
-
-    //==============================CONSTRUCTOR===========================//
 
     /**
      * Constructs a new time series data contains for the given row-major data array and the given list of variables.
@@ -98,8 +93,6 @@ public final class TimeSeriesData implements DataModel {
         varNames.add("Y");
         return new TimeSeriesData(new Matrix(2, 2), varNames);
     }
-
-    //=================================PUBLIC METHODS======================//
 
     public String getName() {
         return this.name;

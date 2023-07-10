@@ -52,8 +52,6 @@ public final class SemManipulation implements TetradSerializable {
      */
     private final boolean[] manipulated;
 
-    //===========================CONSTRUCTORS============================//
-
     /**
      * Constructs a container for evidence for the given Bayes IM.
      */
@@ -77,8 +75,6 @@ public final class SemManipulation implements TetradSerializable {
     public static SemManipulation serializableInstance() {
         return new SemManipulation(SemIm.serializableInstance());
     }
-
-    //===========================PUBLIC METHODS=========================//
 
     public int getNodeIndex(String nodeName) {
         List<Node> nodes = this.semIm.getSemPm().getVariableNodes();

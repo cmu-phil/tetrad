@@ -50,8 +50,6 @@ public class Uniform implements Distribution {
      */
     private double b;
 
-    //=========================CONSTRUCTORS===========================//
-
     public Uniform(double a, double b) {
         if (!(a <= b)) {
             throw new IllegalArgumentException("a must be less than or equal to b.");
@@ -67,8 +65,6 @@ public class Uniform implements Distribution {
     public static Uniform serializableInstance() {
         return new Uniform(0, 1);
     }
-
-    //=========================PUBLIC METHODS=========================//
 
     /**
      * Sets the value of the i'th parameter.

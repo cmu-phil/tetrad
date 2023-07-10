@@ -24,7 +24,6 @@ package edu.cmu.tetrad.search.utils;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.*;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.MillisecondTimes;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -42,52 +41,6 @@ import java.util.Set;
  * @author josephramsey
  */
 public final class PcCommon implements IGraphSearch {
-
-    /**
-     * <p>NONE = no heuristic, PC-1 = sort nodes alphabetically; PC-1 = sort edges by p-value; PC-3 = additionally sort
-     * edges in reverse order using p-values of associated independence facts. See this reference:</p>
-     *
-     * <p>Spirtes, P., Glymour, C. N., & Scheines, R. (2000). Causation, prediction, and search. MIT press.</p>
-     */
-    public enum PcHeuristicType {NONE, HEURISTIC_1, HEURISTIC_2, HEURISTIC_3}
-
-    /**
-     * Gives the type of FAS used, regular or stable.
-     *
-     * @see Pc
-     * @see Cpc
-     * @see FasType
-     */
-    public enum FasType {REGULAR, STABLE}
-
-    /**
-     * <p>Give the options for the collider discovery algroithm to use--FAS with sepsets reasoning, FAS with conservative
-     * reasoning, or FAS with Max P reasoning. See these respective references:</p>
-     *
-     * <p>Spirtes, P., Glymour, C. N., & Scheines, R. (2000). Causation, prediction, and search. MIT press.</p>
-
-     * <p>Ramsey, J., Zhang, J., &amp; Spirtes, P. L. (2012). Adjacency-faithfulness and conservative causal inference.
-     * arXiv preprint arXiv:1206.6843.</p>
-     *
-     * <p>Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm by maximizing p-value. arXiv
-     * preprint arXiv:1610.00378.</p>
-     *
-     * @see Fas
-     * @see Cpc
-     * @see ColliderDiscovery
-     */
-    public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
-
-    /**
-     * Gives the type of conflict to be used, priority (when there is a conflict, keep the orientation that has already
-     * been made), bidirected (when there is a conflict, orient a bidirected edge), or overwrite (when there is a
-     * conflict, use the new orientation).
-     *
-     * @see Pc
-     * @see Cpc
-     * @see ConflictRule
-     */
-    public enum ConflictRule {PRIORITIZE_EXISTING, ORIENT_BIDIRECTED, OVERWRITE_EXISTING}
 
     private final IndependenceTest independenceTest;
     private final TetradLogger logger = TetradLogger.getInstance();
@@ -121,6 +74,36 @@ public final class PcCommon implements IGraphSearch {
     }
 
     /**
+     * Orient a single unshielded triple, x*-*y*-*z, in a graph.
+     *
+     * @param conflictRule The conflict rule to use.
+     * @param graph        The graph to orient.
+     * @see PcCommon.ConflictRule
+     */
+    public static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph) {
+        if (conflictRule == ConflictRule.PRIORITIZE_EXISTING) {
+            if (!(graph.getEndpoint(x, y) == Endpoint.ARROW && graph.getEndpoint(z, y) == Endpoint.ARROW)) {
+                graph.removeEdge(x, y);
+                graph.removeEdge(z, y);
+                graph.addDirectedEdge(x, y);
+                graph.addDirectedEdge(z, y);
+            }
+        } else if (conflictRule == ConflictRule.ORIENT_BIDIRECTED) {
+            graph.setEndpoint(x, y, Endpoint.ARROW);
+            graph.setEndpoint(z, y, Endpoint.ARROW);
+
+            System.out.println("Orienting " + graph.getEdge(x, y) + " " + graph.getEdge(z, y));
+        } else if (conflictRule == ConflictRule.OVERWRITE_EXISTING) {
+            graph.removeEdge(x, y);
+            graph.removeEdge(z, y);
+            graph.addDirectedEdge(x, y);
+            graph.addDirectedEdge(z, y);
+        }
+
+        TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(x, y, z));
+    }
+
+    /**
      * @param maxPathLength The max path length for the max p collider orientation heuristic.
      */
     public void setMaxPathLength(int maxPathLength) {
@@ -148,6 +131,15 @@ public final class PcCommon implements IGraphSearch {
      */
     public boolean isMeekPreventCycles() {
         return this.meekPreventCycles;
+    }
+
+    /**
+     * Sets to true just in case edges will not be added if they would create cycles.
+     *
+     * @param meekPreventCycles True just in case edges will not be added if they would create cycles.
+     */
+    public void setMeekPreventCycles(boolean meekPreventCycles) {
+        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
@@ -252,15 +244,6 @@ public final class PcCommon implements IGraphSearch {
         TetradLogger.getInstance().flush();
 
         return this.graph;
-    }
-
-    /**
-     * Sets to true just in case edges will not be added if they would create cycles.
-     *
-     * @param meekPreventCycles True just in case edges will not be added if they would create cycles.
-     */
-    public void setMeekPreventCycles(boolean meekPreventCycles) {
-        this.meekPreventCycles = meekPreventCycles;
     }
 
     /**
@@ -378,36 +361,6 @@ public final class PcCommon implements IGraphSearch {
      */
     public Set<Edge> getAdjacencies() {
         return new HashSet<>(this.graph.getEdges());
-    }
-
-    /**
-     * Orient a single unshielded triple, x*-*y*-*z, in a graph.
-     *
-     * @param conflictRule The conflict rule to use.
-     * @param graph        The graph to orient.
-     * @see PcCommon.ConflictRule
-     */
-    public static void orientCollider(Node x, Node y, Node z, ConflictRule conflictRule, Graph graph) {
-        if (conflictRule == ConflictRule.PRIORITIZE_EXISTING) {
-            if (!(graph.getEndpoint(x, y) == Endpoint.ARROW && graph.getEndpoint(z, y) == Endpoint.ARROW)) {
-                graph.removeEdge(x, y);
-                graph.removeEdge(z, y);
-                graph.addDirectedEdge(x, y);
-                graph.addDirectedEdge(z, y);
-            }
-        } else if (conflictRule == ConflictRule.ORIENT_BIDIRECTED) {
-            graph.setEndpoint(x, y, Endpoint.ARROW);
-            graph.setEndpoint(z, y, Endpoint.ARROW);
-
-            System.out.println("Orienting " + graph.getEdge(x, y) + " " + graph.getEdge(z, y));
-        } else if (conflictRule == ConflictRule.OVERWRITE_EXISTING) {
-            graph.removeEdge(x, y);
-            graph.removeEdge(z, y);
-            graph.addDirectedEdge(x, y);
-            graph.addDirectedEdge(z, y);
-        }
-
-        TetradLogger.getInstance().log("colliderOrientations", LogUtilsSearch.colliderOrientedMsg(x, y, z));
     }
 
     private void logTriples() {
@@ -621,5 +574,51 @@ public final class PcCommon implements IGraphSearch {
             }
         }
     }
+
+    /**
+     * <p>NONE = no heuristic, PC-1 = sort nodes alphabetically; PC-1 = sort edges by p-value; PC-3 = additionally sort
+     * edges in reverse order using p-values of associated independence facts. See this reference:</p>
+     *
+     * <p>Spirtes, P., Glymour, C. N., & Scheines, R. (2000). Causation, prediction, and search. MIT press.</p>
+     */
+    public enum PcHeuristicType {NONE, HEURISTIC_1, HEURISTIC_2, HEURISTIC_3}
+
+    /**
+     * Gives the type of FAS used, regular or stable.
+     *
+     * @see Pc
+     * @see Cpc
+     * @see FasType
+     */
+    public enum FasType {REGULAR, STABLE}
+
+    /**
+     * <p>Give the options for the collider discovery algroithm to use--FAS with sepsets reasoning, FAS with
+     * conservative reasoning, or FAS with Max P reasoning. See these respective references:</p>
+     *
+     * <p>Spirtes, P., Glymour, C. N., & Scheines, R. (2000). Causation, prediction, and search. MIT press.</p>
+     *
+     * <p>Ramsey, J., Zhang, J., &amp; Spirtes, P. L. (2012). Adjacency-faithfulness and conservative causal inference.
+     * arXiv preprint arXiv:1206.6843.</p>
+     *
+     * <p>Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm by maximizing p-value. arXiv
+     * preprint arXiv:1610.00378.</p>
+     *
+     * @see Fas
+     * @see Cpc
+     * @see ColliderDiscovery
+     */
+    public enum ColliderDiscovery {FAS_SEPSETS, CONSERVATIVE, MAX_P}
+
+    /**
+     * Gives the type of conflict to be used, priority (when there is a conflict, keep the orientation that has already
+     * been made), bidirected (when there is a conflict, orient a bidirected edge), or overwrite (when there is a
+     * conflict, use the new orientation).
+     *
+     * @see Pc
+     * @see Cpc
+     * @see ConflictRule
+     */
+    public enum ConflictRule {PRIORITIZE_EXISTING, ORIENT_BIDIRECTED, OVERWRITE_EXISTING}
 }
 

@@ -71,45 +71,33 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  */
 public final class SpFci implements IGraphSearch {
 
-    // The PAG being constructed.
-    private Graph graph;
-
-    // The background knowledge.
-    private Knowledge knowledge = new Knowledge();
-
-    // The conditional independence test.
-    private IndependenceTest independenceTest;
-
-    // Flag for complete rule set, true if you should use complete rule set, false otherwise.
-    private boolean completeRuleSetUsed = true;
-
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-    private int maxPathLength = -1;
-
-    // The maxDegree for the fast adjacency search.
-    private int maxDegree = -1;
-
     // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    // True iff verbose output should be printed.
-    private boolean verbose;
-
-    // The covariance matrix beign searched over. Assumes continuous data.
-    ICovarianceMatrix covarianceMatrix;
-
-    // The sample size.
-    int sampleSize;
-
-    // The print stream that output is directed to.
-    private PrintStream out = System.out;
-
     // The score.
     private final Score score;
+    // The covariance matrix beign searched over. Assumes continuous data.
+    ICovarianceMatrix covarianceMatrix;
+    // The sample size.
+    int sampleSize;
+    // The PAG being constructed.
+    private Graph graph;
+    // The background knowledge.
+    private Knowledge knowledge = new Knowledge();
+    // The conditional independence test.
+    private IndependenceTest independenceTest;
+    // Flag for complete rule set, true if you should use complete rule set, false otherwise.
+    private boolean completeRuleSetUsed = true;
+    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    private int maxPathLength = -1;
+    // The maxDegree for the fast adjacency search.
+    private int maxDegree = -1;
+    // True iff verbose output should be printed.
+    private boolean verbose;
+    // The print stream that output is directed to.
+    private PrintStream out = System.out;
     private int depth = -1;
     private boolean doDiscriminatingPathRule = true;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -126,7 +114,6 @@ public final class SpFci implements IGraphSearch {
         this.independenceTest = test;
     }
 
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Runs the search and returns the discovered PAG.
@@ -181,6 +168,15 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
+     * Returns The maximum indegree of the output graph.
+     *
+     * @return This maximum.
+     */
+    public int getMaxDegree() {
+        return this.maxDegree;
+    }
+
+    /**
      * Sets the max degree of the search.
      *
      * @param maxDegree This maximum.
@@ -191,15 +187,6 @@ public final class SpFci implements IGraphSearch {
         }
 
         this.maxDegree = maxDegree;
-    }
-
-    /**
-     * Returns The maximum indegree of the output graph.
-     *
-     * @return This maximum.
-     */
-    public int getMaxDegree() {
-        return this.maxDegree;
     }
 
     /**
@@ -307,7 +294,6 @@ public final class SpFci implements IGraphSearch {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
-    //===========================================PRIVATE METHODS=======================================//
 
     // Due to Spirtes.
     private void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {

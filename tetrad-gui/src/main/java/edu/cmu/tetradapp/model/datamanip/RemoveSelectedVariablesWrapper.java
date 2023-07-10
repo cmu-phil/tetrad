@@ -70,9 +70,6 @@ public class RemoveSelectedVariablesWrapper extends DataWrapper {
         return PcRunner.serializableInstance();
     }
 
-    //=========================== Private Methods =================================//
-
-
     private static DataModel createRectangularModel(DataSet data) {
         for (int i = data.getNumColumns() - 1; i >= 0; i--) {
             if (data.isSelected(data.getVariable(i))) {

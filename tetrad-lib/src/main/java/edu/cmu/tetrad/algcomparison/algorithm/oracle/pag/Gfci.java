@@ -143,23 +143,23 @@ public class Gfci implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
-    public void setScoreWrapper(ScoreWrapper score) {
-        this.score = score;
-    }
-
-    @Override
     public ScoreWrapper getScoreWrapper() {
         return this.score;
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper test) {
-        this.test = test;
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
     }
 
     @Override
     public IndependenceWrapper getIndependenceWrapper() {
         return this.test;
+    }
+
+    @Override
+    public void setIndependenceWrapper(IndependenceWrapper test) {
+        this.test = test;
     }
 
     @Override

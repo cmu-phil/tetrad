@@ -36,14 +36,13 @@ import java.util.Map;
 public class GraphNode implements Node {
 
     static final long serialVersionUID = 23L;
-
+    private final Map<String, Object> attributes = new HashMap<>();
     /**
      * The name of the node.
      *
      * @serial
      */
     private String name = "??";
-
     /**
      * The type of the node.
      *
@@ -51,32 +50,26 @@ public class GraphNode implements Node {
      * @see edu.cmu.tetrad.graph.NodeType
      */
     private NodeType nodeType = NodeType.MEASURED;
-
     /**
      * Node variable type (domain, interventional status, interventional value..) of this node variable
      */
     private NodeVariableType nodeVariableType = NodeVariableType.DOMAIN;
-
     /**
      * The x coordinate of the center of the node.
      *
      * @serial
      */
     private int centerX = -1;
-
     /**
      * The y coordinate of the center of the node.
      *
      * @serial
      */
     private int centerY = -1;
-
     /**
      * Fires property change events.
      */
     private transient PropertyChangeSupport pcs;
-
-    private final Map<String, Object> attributes = new HashMap<>();
 
     //============================CONSTRUCTORS==========================//
 
@@ -114,6 +107,19 @@ public class GraphNode implements Node {
     }
 
     /**
+     * Sets the name of this variable.
+     */
+    public final void setName(String name) {
+        if (name == null) {
+            throw new NullPointerException("Name must not be null.");
+        }
+
+        String oldName = this.name;
+        this.name = name;
+        getPcs().firePropertyChange("name", oldName, this.name);
+    }
+
+    /**
      * @return the node type.
      * @see edu.cmu.tetrad.graph.NodeType
      */
@@ -131,19 +137,6 @@ public class GraphNode implements Node {
             throw new NullPointerException("Node type must not be null.");
         }
         this.nodeType = nodeType;
-    }
-
-    /**
-     * Sets the name of this variable.
-     */
-    public final void setName(String name) {
-        if (name == null) {
-            throw new NullPointerException("Name must not be null.");
-        }
-
-        String oldName = this.name;
-        this.name = name;
-        getPcs().firePropertyChange("name", oldName, this.name);
     }
 
     /**

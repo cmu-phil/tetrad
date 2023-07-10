@@ -39,8 +39,7 @@ final class TetFileFilter extends FileFilter {
     }
 
     /**
-     * @return the description of this file filter that will be displayed in a
-     * JFileChooser.
+     * @return the description of this file filter that will be displayed in a JFileChooser.
      */
     public String getDescription() {
         return "Tetrad serialized session workbench (.tet)";

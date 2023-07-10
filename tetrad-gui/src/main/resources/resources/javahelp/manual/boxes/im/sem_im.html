@@ -5,9 +5,9 @@
           http-equiv="content-type">
     <title>IM</title>
 </head>
-<body vlink="#551a8b" alink="#ee0000" link="#0000ee"
-      style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);">
-<table width="95%" border="1" bgcolor="maroon">
+<body alink="#ee0000" link="#0000ee" style="background-color: rgb(255, 255, 255); color: rgb(0, 0, 0);"
+      vlink="#551a8b">
+<table bgcolor="maroon" border="1" width="95%">
     <tr>
         <td><h2><font color="#FFFFFF">SEM Instantiated Model</font></h2></td>
     </tr>
@@ -33,35 +33,35 @@
 <h3>How to Construct a SEM IM</h3>
 <p>To construct a SEM IM, first construct a SEM Graph, then a SEM PM, as explained in SEM Parametric Model, and then add
     an IM box to the workspace, with arrows form the SEM PM to the IM:</p>
-<p><img src="../../images/semim1.gif" width="272" height="68"></p>
+<p><img height="68" src="../../images/semim1.gif" width="272"></p>
 <p>For instance, you might end up with a SEM PM that looks like this.</p>
-<p><img src="../../images/semim2.gif" width="477" height="545"></p>
+<p><img height="545" src="../../images/semim2.gif" width="477"></p>
 <p>When you double click the IM box now, you get a SEM IM model that's been filled in with randomly chosen values.
     (Notice you're not given a choice of models; this is because there is only one IM model in Tetrad that can serve as
     a child of a SEM PM model.)</p>
-<p><img src="../../images/semim3.gif" width="482" height="553"></p>
+<p><img height="553" src="../../images/semim3.gif" width="482"></p>
 <p>Notice that in the SEM IM model, parameter values appear where parameter names appeared in the SEM PM. For instance,
     the linear coefficient for the edge X6--&gt;X5 is labeled as &quot;B7&quot; in the SEM PM, but the actual real value
     for the parameter, &quot;-0.7867,&quot; is shown in the SEM IM. These real values may be edited in two ways. The
     first way is to click on the numbers themselves. If you click on the &quot;-0.7867,&quot; above, a small box appears
     to let you edit the value of this parameters.</p>
-<p><img src="../../images/semim4.gif" width="475" height="547"></p>
+<p><img height="547" src="../../images/semim4.gif" width="475"></p>
 <p>You may, for instance, type &quot;.25&quot; and hit return; your new value for the parameter is recorded.</p>
-<p><img src="../../images/semim5.gif" width="477" height="549"></p>
+<p><img height="549" src="../../images/semim5.gif" width="477"></p>
 <p>The other way to view and edit parameter values is using the Tabular Editor. If you click on the Tabular Editor tab,
     you get this display.</p>
-<p><img src="../../images/semim6.gif" width="476" height="550"></p>
+<p><img height="550" src="../../images/semim6.gif" width="476"></p>
 <p>Notice that the parameter value for the edge coefficient of the edge X6--&gt;X5 is &quot;0.2500.&quot; We can edit
     this value again from this view by clicking on the box containing the value &quot;0.2500&quot; and changing it to,
     say, &quot;-.5.&quot;</p>
-<p><img src="../../images/semim7.gif" width="477" height="549"></p>
+<p><img height="549" src="../../images/semim7.gif" width="477"></p>
 <p>Whichever view we edit values in, the other view will reflect the updated values.</p>
 <p>Notice that in the tabular view there are some columns to show statistics for each parameter. These columns are used
     by the SEM Estimator to show how robust the estimtation of each parameter is. These are ordinary statistics
     calculated for SEM estimations; SE standard for &quot;standard error,&quot; T for &quot;t statistic,&quot; and P for
     &quot;p value.&quot; </p>
 <p>If you click on the Implied Matrices tab, an implied matrix of some type that you choose will be displayed.</p>
-<p><img src="../../images/semim8.gif" width="477" height="551"></p>
+<p><img height="551" src="../../images/semim8.gif" width="477"></p>
 <p>You may display either the implied covariance matrix of the model for all variables (shown), or the implied
     covariance matrix of the model for the measured variables only, or one of the corresponding implied correlation
     matrices.</p>

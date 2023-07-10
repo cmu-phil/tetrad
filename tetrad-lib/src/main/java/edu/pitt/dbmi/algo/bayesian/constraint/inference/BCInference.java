@@ -35,54 +35,30 @@ import static org.apache.commons.math3.util.FastMath.log;
 public class BCInference {
 
 
-    public enum OP {
-
-        independent, dependent
-
-    }
-
     private static final int MININUM_EXPONENT = -1022;
-
-    private double priorEquivalentSampleSize = 1;
-
-    private int[] countsTree;
-
-    private int[] counts;
-
     private final double[] logfact;
-
-    private int[][] parents;
-
     /**
      * Maximum cases (samples) to read from a text file.
      */
     private final int maxCases;
-
     /**
      * Maximum number of measured nodes.
      */
     private final int maxNodes;
-
-    private int maxParents;
-
-    private int maxCells;
-
-    private int countsTreePtr;
-
-    private int countsPtr;
-
-    private int numberOfNodes;
-
     private final int numberOfCases;
-
     private final int[][] cases;
-
     private final int[] nodeDimension;
-
     private final int scoreFn;
-
     private final double[][] scores;
-
+    private double priorEquivalentSampleSize = 1;
+    private int[] countsTree;
+    private int[] counts;
+    private int[][] parents;
+    private int maxParents;
+    private int maxCells;
+    private int countsTreePtr;
+    private int countsPtr;
+    private int numberOfNodes;
     private int numberOfScores;
 
     /**
@@ -535,6 +511,12 @@ public class BCInference {
 
     public void setPriorEqivalentSampleSize(double priorEquivalentSampleSize) {
         this.priorEquivalentSampleSize = priorEquivalentSampleSize;
+    }
+
+    public enum OP {
+
+        independent, dependent
+
     }
 }
 

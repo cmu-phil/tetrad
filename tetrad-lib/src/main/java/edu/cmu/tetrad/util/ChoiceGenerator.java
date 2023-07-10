@@ -113,6 +113,46 @@ public final class ChoiceGenerator {
     }
 
     /**
+     * This static method will print the series of combinations for a choose b to System.out.
+     *
+     * @param a the number of objects being selected from.
+     * @param b the number of objects in the desired selection.
+     */
+    @SuppressWarnings("SameParameterValue")
+    public static void testPrint(int a, int b) {
+        ChoiceGenerator cg = new ChoiceGenerator(a, b);
+        int[] choice;
+
+        System.out.println();
+        System.out.println(
+                "Printing combinations for " + a + " choose " + b + ":");
+        System.out.println();
+
+        while ((choice = cg.next()) != null) {
+            if (choice.length == 0) {
+                System.out.println("zero-length array");
+            } else {
+                for (int aChoice : choice) {
+                    System.out.print(aChoice + "\t");
+                }
+
+                System.out.println();
+            }
+        }
+
+        System.out.println();
+    }
+
+    public static int getNumCombinations(int a, int b) {
+        return (int) round(exp(ChoiceGenerator.logCombinations(a, b)));
+    }
+
+    public static double logCombinations(int a, int b) {
+//        return lngamma(a + 1) - lngamma(b + 1) - lngamma((a - b) + 1);
+        return Gamma.logGamma(a + 1) - Gamma.logGamma(b + 1) - Gamma.logGamma((a - b) + 1);
+    }
+
+    /**
      * @return the next combination in the series, or null if the series is finished.
      */
     public synchronized int[] next() {
@@ -144,37 +184,6 @@ public final class ChoiceGenerator {
     }
 
     /**
-     * This static method will print the series of combinations for a choose b to System.out.
-     *
-     * @param a the number of objects being selected from.
-     * @param b the number of objects in the desired selection.
-     */
-    @SuppressWarnings("SameParameterValue")
-    public static void testPrint(int a, int b) {
-        ChoiceGenerator cg = new ChoiceGenerator(a, b);
-        int[] choice;
-
-        System.out.println();
-        System.out.println(
-                "Printing combinations for " + a + " choose " + b + ":");
-        System.out.println();
-
-        while ((choice = cg.next()) != null) {
-            if (choice.length == 0) {
-                System.out.println("zero-length array");
-            } else {
-                for (int aChoice : choice) {
-                    System.out.print(aChoice + "\t");
-                }
-
-                System.out.println();
-            }
-        }
-
-        System.out.println();
-    }
-
-    /**
      * @return Ibid.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -201,15 +210,6 @@ public final class ChoiceGenerator {
         for (int i = index + 1; i < getB(); i++) {
             this.choiceLocal[i] = this.choiceLocal[i - 1] + 1;
         }
-    }
-
-    public static int getNumCombinations(int a, int b) {
-        return (int) round(exp(ChoiceGenerator.logCombinations(a, b)));
-    }
-
-    public static double logCombinations(int a, int b) {
-//        return lngamma(a + 1) - lngamma(b + 1) - lngamma((a - b) + 1);
-        return Gamma.logGamma(a + 1) - Gamma.logGamma(b + 1) - Gamma.logGamma((a - b) + 1);
     }
 }
 

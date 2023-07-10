@@ -625,64 +625,53 @@ public class RandomGraph {
          * Indicates the structural assumption. May be ANY_DAG, CONNECTED_DAG.
          */
         private final int structure;
-
+        /**
+         * The random source.
+         */
+        private final RandomUtil randomUtil = RandomUtil.getInstance();
         /**
          * The number of nodes in a graph. The default is 4.
          */
         private int numNodes;
-
         /**
          * The maximum indegree for a node in a graph. The default is 3.
          */
         private int maxInDegree;
-
         /**
          * The maximum outdegree of a node in a graph. The defualt is 3.
          */
         private int maxOutDegree;
-
         /**
          * The maximum degree of a node in a graph. The default is the maximum number possible (the value -1 is used for
          * this).
          */
         private int maxDegree;
-
         /**
          * The maximum number of edges in the graph. The default is the number of nodes minus 1.
          */
         private int maxEdges;
-
         /**
          * The number of iterations for the Markov chain process.
          */
         private int numIterations;
-
         /**
          * Matrix of parents for each node. parentMatrix[i][0] indicates the number of parents; parentMatrix[i][k]
          * represents the (k-1)'th parent, k = 1...max.
          */
         private int[][] parentMatrix;
-
         /**
          * Matrix of parents for each node. childMatrix[i][0] indicates the number of parents; childMatrix[i][k]
          * represents the (k-1)'th child, k = 1...max.
          */
         private int[][] childMatrix;
-
         /**
          * Parent of random edge. 0 is the default parent node.
          */
         private int randomParent;
-
         /**
          * Child of random edge. 0 is the default child node.
          */
         private int randomChild = 1;
-
-        /**
-         * The random source.
-         */
-        private final RandomUtil randomUtil = RandomUtil.getInstance();
         //    RandomUtil randomUtil = new SeededRandomUtil(23333342L);
 
         //===============================CONSTRUCTORS==========================//
@@ -796,10 +785,6 @@ public class RandomGraph {
             return this.maxEdges;
         }
 
-        private int getMaxPossibleEdges() {
-            return getNumNodes() * getMaxDegree() / 2;
-        }
-
         public void setMaxEdges(int maxEdges) {
             if (maxEdges < 0) {
                 throw new IllegalArgumentException("Max edges must be >= 0.");
@@ -810,6 +795,10 @@ public class RandomGraph {
             }
 
             this.maxEdges = maxEdges;
+        }
+
+        private int getMaxPossibleEdges() {
+            return getNumNodes() * getMaxDegree() / 2;
         }
 
         private int getNumIterations() {

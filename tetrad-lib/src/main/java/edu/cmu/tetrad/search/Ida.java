@@ -88,47 +88,6 @@ public class Ida {
     }
 
     /**
-     * Gives a list of nodes (parents or children) and corresponding minimum effects for the IDA algorithm.
-     *
-     * @author josephramsey
-     */
-    public static class NodeEffects {
-        private List<Node> nodes;
-        private LinkedList<Double> effects;
-
-        NodeEffects(List<Node> nodes, LinkedList<Double> effects) {
-            this.setNodes(nodes);
-            this.setEffects(effects);
-        }
-
-        public List<Node> getNodes() {
-            return this.nodes;
-        }
-
-        public void setNodes(List<Node> nodes) {
-            this.nodes = nodes;
-        }
-
-        public LinkedList<Double> getEffects() {
-            return this.effects;
-        }
-
-        public void setEffects(LinkedList<Double> effects) {
-            this.effects = effects;
-        }
-
-        public String toString() {
-            StringBuilder b = new StringBuilder();
-
-            for (int i = 0; i < this.nodes.size(); i++) {
-                b.append(this.nodes.get(i)).append("=").append(this.effects.get(i)).append(" ");
-            }
-
-            return b.toString();
-        }
-    }
-
-    /**
      * Calculates the true effect of (x, y) given the true DAG (which must be provided).
      *
      * @param trueDag The true DAG.
@@ -282,6 +241,47 @@ public class Ida {
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when regressing " +
                     LogUtilsSearch.getScoreFact(child, regressors));
+        }
+    }
+
+    /**
+     * Gives a list of nodes (parents or children) and corresponding minimum effects for the IDA algorithm.
+     *
+     * @author josephramsey
+     */
+    public static class NodeEffects {
+        private List<Node> nodes;
+        private LinkedList<Double> effects;
+
+        NodeEffects(List<Node> nodes, LinkedList<Double> effects) {
+            this.setNodes(nodes);
+            this.setEffects(effects);
+        }
+
+        public List<Node> getNodes() {
+            return this.nodes;
+        }
+
+        public void setNodes(List<Node> nodes) {
+            this.nodes = nodes;
+        }
+
+        public LinkedList<Double> getEffects() {
+            return this.effects;
+        }
+
+        public void setEffects(LinkedList<Double> effects) {
+            this.effects = effects;
+        }
+
+        public String toString() {
+            StringBuilder b = new StringBuilder();
+
+            for (int i = 0; i < this.nodes.size(); i++) {
+                b.append(this.nodes.get(i)).append("=").append(this.effects.get(i)).append(" ");
+            }
+
+            return b.toString();
         }
     }
 }

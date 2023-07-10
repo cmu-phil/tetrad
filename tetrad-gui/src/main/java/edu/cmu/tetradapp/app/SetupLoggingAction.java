@@ -44,16 +44,6 @@ public class SetupLoggingAction extends AbstractAction {
     }
 
 
-    //========================= Public Methods =================================//
-
-
-    public void actionPerformed(ActionEvent e) {
-        JComponent comp = SetupLoggingAction.buildSetupLoggingComponent();
-        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), comp,
-                "File Logging Setup", JOptionPane.PLAIN_MESSAGE);
-    }
-
-
     /**
      * The component used to config logging.
      */
@@ -167,9 +157,6 @@ public class SetupLoggingAction extends AbstractAction {
         return b1;
     }
 
-    //========================= Private Methods =================================//
-
-
     /**
      * Builds the output selection boxes.
      */
@@ -199,6 +186,12 @@ public class SetupLoggingAction extends AbstractAction {
         box.add(Box.createHorizontalGlue());
 
         return box;
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        JComponent comp = SetupLoggingAction.buildSetupLoggingComponent();
+        JOptionPane.showMessageDialog(JOptionUtils.centeringComp(), comp,
+                "File Logging Setup", JOptionPane.PLAIN_MESSAGE);
     }
 
 

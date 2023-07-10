@@ -22,10 +22,10 @@ public class LoadContinuousDataSmithSim implements Simulation, HasParameterValue
     static final long serialVersionUID = 23L;
     private final int index;
     private final String path;
-    private Graph graph;
-    private List<DataSet> dataSets = new ArrayList<>();
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
+    private Graph graph;
+    private List<DataSet> dataSets = new ArrayList<>();
 
     public LoadContinuousDataSmithSim(String path, int index) {
         this.path = path;

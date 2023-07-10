@@ -45,6 +45,8 @@ public class DMSearch {
     //If not subseting, should be set to the entire input set.
     private int[] trueInputs;
     private DataSet data;
+    private CovarianceMatrix cov;
+    private LatentStructure dmStructure;
 
     public void setMinDiscount(int minDiscount) {
         this.minDiscount = minDiscount;
@@ -54,48 +56,45 @@ public class DMSearch {
         return (this.minDiscount);
     }
 
-    public void setGesDepth(int gesDepth) {
-        this.gesDepth = gesDepth;
-    }
-
     public int getGesDepth() {
         return (gesDepth);
     }
 
-    public void setTrueInputs(int[] trueInputs) {
-        this.trueInputs = trueInputs;
-    }
-
-    public void setInputs(int[] inputs) {
-        this.inputs = inputs;
-    }
-
-    public void setOutputs(int[] outputs) {
-        this.outputs = outputs;
-    }
-
-    public void setData(DataSet data) {
-        this.data = data;
+    public void setGesDepth(int gesDepth) {
+        this.gesDepth = gesDepth;
     }
 
     public int[] getTrueInputs() {
         return (this.trueInputs);
     }
 
+    public void setTrueInputs(int[] trueInputs) {
+        this.trueInputs = trueInputs;
+    }
+
     public DataSet getData() {
         return (this.data);
+    }
+
+    public void setData(DataSet data) {
+        this.data = data;
     }
 
     public int[] getInputs() {
         return (inputs);
     }
 
+    public void setInputs(int[] inputs) {
+        this.inputs = inputs;
+    }
+
     public int[] getOutputs() {
         return (outputs);
     }
 
-    private CovarianceMatrix cov;
-    private LatentStructure dmStructure;
+    public void setOutputs(int[] outputs) {
+        this.outputs = outputs;
+    }
 
     public LatentStructure getDmStructure() {
         return (dmStructure);

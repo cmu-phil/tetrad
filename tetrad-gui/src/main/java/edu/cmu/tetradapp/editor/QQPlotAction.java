@@ -49,8 +49,7 @@ class QQPlotAction extends AbstractAction {
 
 
     /**
-     * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code>
-     * that its attached to.
+     * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code> that its attached to.
      */
     public QQPlotAction(DataEditor editor) {
         super("Q-Q Plots...");
@@ -107,8 +106,7 @@ class QQPlotAction extends AbstractAction {
 
 
     /**
-     * Creates a dialog that is showing the histogram for the given node (if null
-     * one is selected for you)
+     * Creates a dialog that is showing the histogram for the given node (if null one is selected for you)
      */
     private JPanel createQQPlotDialog(Node selected) {
         JPanel panel = new JPanel(); //new JPanel(findOwner(), dialogTitle, false);

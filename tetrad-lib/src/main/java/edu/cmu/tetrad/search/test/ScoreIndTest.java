@@ -39,8 +39,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import static org.apache.commons.math3.util.FastMath.log;
-
 /**
  * <p>Gives a way of interpreting a score as an independence test. The contract is that
  * the score returned will be negative for independence and positive for dependence; this simply reports these
@@ -52,8 +50,8 @@ public class ScoreIndTest implements IndependenceTest {
 
     private final Score score;
     private final List<Node> variables;
-    private double bump = Double.NaN;
     private final DataModel data;
+    private double bump = Double.NaN;
     private boolean verbose;
 
     public ScoreIndTest(Score score) {

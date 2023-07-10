@@ -29,11 +29,10 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * An editor for Bayes net instantiated models. Assumes that the workbench and
- * parameterized model have been established (that is, that the nodes have been
- * identified and named and that the number and names of the values for the
- * nodes have been specified) and allows the user to set conditional
- * probabilities of node values given combinations of parent values.
+ * An editor for Bayes net instantiated models. Assumes that the workbench and parameterized model have been established
+ * (that is, that the nodes have been identified and named and that the number and names of the values for the nodes
+ * have been specified) and allows the user to set conditional probabilities of node values given combinations of parent
+ * values.
  *
  * @author Aaron Powers
  * @author josephramsey
@@ -43,11 +42,11 @@ public class BayesImEditor extends JPanel {
     private static final long serialVersionUID = 1L;
 
     private final JPanel targetPanel;
+    private final BayesImWrapper wrapper;
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */
     private BayesImEditorWizard wizard;
-    private final BayesImWrapper wrapper;
 
     /**
      * Constructs a new instanted model editor from a Bayes IM.

@@ -43,8 +43,7 @@ public class TextFileUtils {
     /**
      * Determine the delimiter for a text data file.
      * <p>
-     * Reads the first n lines of data in a text file and attempts to infer what
-     * delimiter is used.
+     * Reads the first n lines of data in a text file and attempts to infer what delimiter is used.
      * <p>
      * Idea expanded from <a>https://rdrr.io/cran/reader/man/get.delim.html</a>.
      *
