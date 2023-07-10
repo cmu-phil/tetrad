@@ -122,7 +122,6 @@ public final class BFci implements IGraphSearch {
         subAlg.setAllowInternalRandomness(this.allowInternalRandomness);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
-        alg.setVerbose(this.verbose);
 
         Graph graph = alg.search();
 

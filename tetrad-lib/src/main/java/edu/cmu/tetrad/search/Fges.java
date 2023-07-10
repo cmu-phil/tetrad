@@ -36,8 +36,6 @@ import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -46,8 +44,8 @@ import static org.apache.commons.math3.util.FastMath.max;
 import static org.apache.commons.math3.util.FastMath.min;
 
 /**
- * <p>Imlements the Fast Greedy Equivalence Search (GGES) algorithm. This is
- * an implementation of the Greedy Equivalence Search algroithm, originally due to Chris Meek but developed
+ * <p>Implements the Fast Greedy Equivalence Search (FGES) algorithm. This is
+ * an implementation of the Greedy Equivalence Search algorithm, originally due to Chris Meek but developed
  * significantly by Max Chickering. FGES uses with some optimizations that allow it to scale accurately to thousands of
  * variables accurately for the sparse case. The reference for FGES is this:</p>
  *
@@ -165,7 +163,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     private boolean parallelized = false;
 
     /**
-     * Constroctor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
+     * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
      * conditional dependence and a negative values in case of conditional independence. See Chickering (2002), locally
      * consistent scoring criterion. This by default uses all the processors on the machine.
      *
@@ -250,8 +248,8 @@ public final class Fges implements IGraphSearch, DagScorer {
 
     /**
      * Sets whether one-edge faithfulness should be assumed. This assumption is that if X and Y are unconditionally
-     * depedendent, then there is an edge between X and Y in the graph. This could in principle be false, as for a path
-     * cancelation wheter one path is A->B->C->D and the other path is A->D.
+     * dependent, then there is an edge between X and Y in the graph. This could in principle be false, as for a path
+     * cancellation whether one path is A->B->C->D and the other path is A->D.
      *
      * @param faithfulnessAssumed True if so.
      */
@@ -294,31 +292,6 @@ public final class Fges implements IGraphSearch, DagScorer {
      */
     public double scoreDag(Graph dag) {
         return scoreDag(dag, false);
-    }
-
-    /**
-     * Sets the initial graph.
-     *
-     * @param initialGraph This graph.
-     */
-    public void setInitialGraph(Graph initialGraph) {
-        if (initialGraph == null) {
-            this.initialGraph = null;
-            return;
-        }
-
-        initialGraph = GraphUtils.replaceNodes(initialGraph, variables);
-
-        if (verbose) {
-            out.println("External graph variables: " + initialGraph.getNodes());
-            out.println("Data set variables: " + variables);
-        }
-
-        if (!new HashSet<>(initialGraph.getNodes()).equals(new HashSet<>(variables))) {
-            throw new IllegalArgumentException("Variables aren't the same.");
-        }
-
-        this.initialGraph = initialGraph;
     }
 
     /**
@@ -399,17 +372,6 @@ public final class Fges implements IGraphSearch, DagScorer {
      */
     public void setSymmetricFirstStep(boolean symmetricFirstStep) {
         this.symmetricFirstStep = symmetricFirstStep;
-    }
-
-    /**
-     * Makes a string for the edge Bayes factors to log.
-     *
-     * @param dag The DAG to logs the factors for.
-     * @return The string to log.
-     */
-    public String logEdgeBayesFactorsString(Graph dag) {
-        Map<Edge, Double> factors = logEdgeBayesFactors(dag);
-        return logBayesPosteriorFactorsString(factors);
     }
 
 
@@ -540,7 +502,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         return !knowledge.isEmpty();
     }
 
-    // Calcuates new arrows based on changes in the graph for the forward search.
+    // Calculates new arrows based on changes in the graph for the forward search.
     private void reevaluateForward(final Set<Node> nodes) {
         class AdjTask implements Callable<Boolean> {
 
@@ -1087,51 +1049,12 @@ public final class Fges implements IGraphSearch, DagScorer {
         return variables;
     }
 
-    private Map<Edge, Double> logEdgeBayesFactors(Graph dag) {
-        Map<Edge, Double> logBayesFactors = new HashMap<>();
-        double withEdge = scoreDag(dag);
-
-        for (Edge edge : dag.getEdges()) {
-            dag.removeEdge(edge);
-            double withoutEdge = scoreDag(dag);
-            double difference = withEdge - withoutEdge;
-            logBayesFactors.put(edge, difference);
-            dag.addEdge(edge);
-        }
-
-        return logBayesFactors;
-    }
-
-    private String logBayesPosteriorFactorsString(final Map<Edge, Double> factors) {
-        NumberFormat nf = new DecimalFormat("0.00");
-        StringBuilder builder = new StringBuilder();
-
-        List<Edge> edges = new ArrayList<>(factors.keySet());
-
-        edges.sort((o1, o2) -> -Double.compare(factors.get(o1), factors.get(o2)));
-
-        builder.append("Edge Posterior Log Bayes Factors:\n\n");
-
-        builder.append("For a DAG in the IMaGES pattern with model totalScore m, for each edge e in the "
-                + "DAG, the model totalScore that would result from removing each edge, calculating "
-                + "the resulting model totalScore m(e), and then reporting m - m(e). The totalScore used is "
-                + "the IMScore, L - SUM_i{kc ln n(i)}, L is the maximum likelihood of the model, "
-                + "k isthe number of parameters of the model, n(i) is the sample size of the ith "
-                + "data set, and c is the penalty penaltyDiscount. Note that the more negative the totalScore, "
-                + "the more important the edge is to the posterior probability of the IMaGES model. "
-                + "Edges are given in order of their importance so measured.\n\n");
-
-        int i = 0;
-
-        for (Edge edge : edges) {
-            builder.append(++i).append(". ").append(edge).append(" ").append(nf.format(factors.get(edge))).append("\n");
-        }
-
-        return builder.toString();
-    }
-
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
+    }
+
+    public void setInitialGraph(Graph initialGraph) {
+        this.initialGraph = initialGraph;
     }
 
     /**
@@ -1152,20 +1075,12 @@ public final class Fges implements IGraphSearch, DagScorer {
             this.setParents(parents);
         }
 
-        public Set<Node> getT() {
-            return T;
-        }
-
         public void setT(Set<Node> t) {
             T = t;
         }
 
         public void setNayx(Set<Node> nayx) {
             this.nayx = nayx;
-        }
-
-        public Set<Node> getParents() {
-            return parents;
         }
 
         public void setParents(Set<Node> parents) {
@@ -1236,10 +1151,10 @@ public final class Fges implements IGraphSearch, DagScorer {
 
         // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
         // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
-        // bump, we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
+        // bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
         // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
         // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
-        // not equal to zero by keeping a list. This last part is commened out by default.
+        // not equal to zero by keeping a list. This last part is commented out by default.
         public int compareTo(@NotNull Arrow arrow) {
 
             final int compare = Double.compare(arrow.getBump(), getBump());

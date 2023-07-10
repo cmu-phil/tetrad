@@ -114,13 +114,13 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Runs PC starting with a commplete graph over the given list of nodes, using the given independence test and
+     * Runs PC starting with a complete graph over the given list of nodes, using the given independence test and
      * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information is
      * consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
      * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
      * or due to statistical errors in conditional independence judgments.
      * <p>
-     * All the given nodes must be in the domatein of the given conditional independence test.
+     * All the given nodes must be in the domain of the given conditional independence test.
      *
      * @param nodes The sublist of nodes to search over.
      * @return The search graph.
@@ -262,7 +262,7 @@ public class Pc implements IGraphSearch {
      * checked.
      *
      * @param depth The depth of the search. The default is 1000. A value of -1 may be used to indicate that the depth
-     *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
+     *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multicore
      *              machines.
      */
     public void setDepth(int depth) {

@@ -31,7 +31,7 @@ import static org.apache.commons.math3.util.FastMath.min;
  *
  * <p>A "Markov adequacy score" is also given, which simply returns zero if the Markov p-value Uniformity test
  * fails and the fraction of dependent judgments for the local Faithfulness check otherwise. Maximizing this score picks
- * out models for which Markov holds and faithfuless holds to the extend possible; these model should generally have
+ * out models for which Markov holds and faithfulness holds to the extend possible; these model should generally have
  * good accuracy scores.</p>
  *
  * @author josephramsey
@@ -243,7 +243,7 @@ public class MarkovCheck {
     /**
      * Returns the Markov Adequacy Score for the graph. This is zero if the p-value of the KS test of Uniformity is less
      * than alpha, and the fraction of dependent pairs otherwise. This is only for continuous Gaussian data, as it
-     * hard-codes the Fisher Z test for the local Markov and Faithfulness checsk.
+     * hard-codes the Fisher Z test for the local Markov and Faithfulness check.
      *
      * @param alpha The alpha level for the KS test of Uniformity. An alpha level greater than this will be considered
      *              uniform.
@@ -376,100 +376,6 @@ public class MarkovCheck {
 
     private void generateResultsAllSubsets(boolean indep, List<IndependenceFact> msep, List<IndependenceFact> mconn) {
         List<IndependenceFact> facts = indep ? msep : mconn;
-
-        class IndCheckTask implements Callable<List<IndependenceResult>> {
-            private final int from;
-            private final int to;
-            private final List<IndependenceFact> facts;
-            private final IndependenceTest independenceTest;
-
-            IndCheckTask(int from, int to, List<IndependenceFact> facts, IndependenceTest test) {
-                this.from = from;
-                this.to = to;
-                this.facts = facts;
-                this.independenceTest = test;
-            }
-
-            @Override
-            public List<IndependenceResult> call() {
-                List<IndependenceResult> results = new ArrayList<>();
-
-                for (int i = from; i < to; i++) {
-                    if (Thread.interrupted()) break;
-                    IndependenceFact fact = facts.get(i);
-
-                    Node x = fact.getX();
-                    Node y = fact.getY();
-                    Set<Node> z = fact.getZ();
-                    boolean verbose = independenceTest.isVerbose();
-                    independenceTest.setVerbose(false);
-                    IndependenceResult result;
-                    try {
-                        result = independenceTest.checkIndependence(x, y, z);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    boolean indep = result.isIndependent();
-                    double pValue = result.getPValue();
-                    independenceTest.setVerbose(verbose);
-
-                    if (!Double.isNaN(pValue)) {
-                        results.add(new IndependenceResult(fact, indep, pValue, Double.NaN));
-                    }
-                }
-
-                return results;
-            }
-        }
-
-        List<Callable<List<IndependenceResult>>> tasks = new ArrayList<>();
-
-        int chunkSize = getChunkSize(facts.size());
-
-        for (int i = 0; i < facts.size() && !Thread.currentThread().isInterrupted(); i += chunkSize) {
-            IndCheckTask task = new IndCheckTask(i, min(facts.size(), i + chunkSize), facts, independenceTest);
-
-            if (!parallelized) {
-                List<IndependenceResult> _results = task.call();
-                getResultsLocal(indep).addAll(_results);
-            } else {
-                tasks.add(task);
-            }
-        }
-
-        if (parallelized) {
-            List<Future<List<IndependenceResult>>> theseResults = ForkJoinPool.commonPool().invokeAll(tasks);
-
-            for (Future<List<IndependenceResult>> future : theseResults) {
-                try {
-                    getResultsLocal(indep).addAll(future.get());
-                } catch (InterruptedException | ExecutionException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    }
-
-    private void generateResultsAllSubsets(boolean indep, Node x, List<Node> other) {
-        List<IndependenceFact> facts = new ArrayList<>();
-
-        for (Node y : other) {
-            List<Node> _other = new ArrayList<>(other);
-            _other.remove(y);
-
-            SublistGenerator generator = new SublistGenerator(_other.size(), _other.size());
-            int[] list;
-
-            while ((list = generator.next()) != null) {
-                Set<Node> z = GraphUtils.asSet(list, _other);
-
-                if (indep && this.msep.isMSeparated(x, y, z)) {
-                    facts.add(new IndependenceFact(x, y, z));
-                } else if (!indep) {
-                    facts.add(new IndependenceFact(x, y, z));
-                }
-            }
-        }
 
         class IndCheckTask implements Callable<List<IndependenceResult>> {
             private final int from;

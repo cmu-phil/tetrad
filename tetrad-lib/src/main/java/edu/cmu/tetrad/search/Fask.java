@@ -46,7 +46,7 @@ import static org.apache.commons.math3.util.FastMath.*;
 /**
  * <p>Implements the FASK (Fast Adjacency Skewness) algorithm, which makes decisions for adjacency
  * and orientation using a combination of conditional independence testing, judgments of nonlinear adjacency, and
- * pairwsie orientation due to non-Gaussianity. The reference is this:</p>
+ * pairwise orientation due to non-Gaussianity. The reference is this:</p>
  *
  * <p>Sanchez-Romero, R., Ramsey, J. D., Zhang, K., Glymour, M. R., Huang, B., and Glymour, C.
  * (2019). Estimating feedforward and feedback effective connections from fMRI time series: Assessments of statistical
@@ -152,12 +152,12 @@ public final class Fask implements IGraphSearch {
     private long elapsed;
     // For the Fast Adjacency Search, the maximum number of edges in a conditioning set.
     private int depth = -1;
-    // Knowledge the the search will obey, of forbidden and required edges.
+    // Knowledge the search will obey, of forbidden and required edges.
     private Knowledge knowledge = new Knowledge();
     // A threshold for including extra adjacencies due to skewness. Default is 0.3. For more edges, lower
     // this threshold.
     private double skewEdgeThreshold;
-    // A theshold for making 2-cycles. Default is 0 (no 2-cycles.) Note that the 2-cycle rule will only work
+    // A threshold for making 2-cycles. Default is 0 (no 2-cycles.) Note that the 2-cycle rule will only work
     // with the FASK left-right rule. Default is 0; a good value for finding a decent set of 2-cycles is 0.1.
     private double twoCycleScreeningCutoff;
     // At the end of the procedure, two cycles marked in the graph (for having small LR differences) are then
@@ -168,7 +168,7 @@ public final class Fask implements IGraphSearch {
     private double orientationAlpha;
     // Bias for orienting with negative coefficients.
     private double delta;
-    // Whether X and Y should be adjusted for skewness. (Otherwise, they are assumed to have positive skewness.
+    // Whether X and Y should be adjusted for skewness. (Otherwise, they are assumed to have positive skewness.)
     private boolean empirical = true;
     // By default, FAS Stable will be used for adjacencies, though this can be set.
     private AdjacencyMethod adjacencyMethod = AdjacencyMethod.GRASP;
@@ -500,7 +500,7 @@ public final class Fask implements IGraphSearch {
 
     /**
      * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1. unlimited. Making this too
-     *              high may results in statistical errors.
+     *              high may result in statistical errors.
      */
     public void setDepth(int depth) {
         this.depth = depth;
@@ -528,7 +528,7 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
-     * Sets the extermal graph to use. This graph will be used as a set of adjacencies ot be included in the graph is
+     * Sets the external graph to use. This graph will be used as a set of adjacencies ot be included in the graph is
      * the "external graph" options is selected. It doesn't matter what the orientations of the graph are; the graph
      * will be reoriented using the left-right rule selected.
      *
@@ -581,13 +581,13 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
-     * Sets the the adjacency method used.
+     * Sets the adjacency method used.
      *
      * @param adjacencyMethod This method.
      * @see AdjacencyMethod
      */
     public void setAdjacencyMethod(AdjacencyMethod adjacencyMethod) {
-//        this.adjacencyMethod = adjacencyMethod;
+        this.adjacencyMethod = adjacencyMethod;
     }
 
     /**

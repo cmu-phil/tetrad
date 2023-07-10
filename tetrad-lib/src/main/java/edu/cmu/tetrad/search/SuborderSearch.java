@@ -28,11 +28,11 @@ import java.util.Set;
 public interface SuborderSearch {
 
     /**
-     * Searches the suburder.
+     * Searches the suborder.
      *
      * @param prefix   The prefix of the suborder.
      * @param suborder The suborder.
-     * @param gsts     The GrowShinkTree being used to do caching of scores.
+     * @param gsts     The GrowShrinkTree being used to do caching of scores.
      * @see GrowShrinkTree
      */
     void searchSuborder(List<Node> prefix, List<Node> suborder, Map<Node, GrowShrinkTree> gsts);

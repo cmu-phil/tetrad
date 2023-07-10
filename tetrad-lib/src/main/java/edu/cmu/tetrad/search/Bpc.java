@@ -581,10 +581,6 @@ public final class Bpc {
     private List<int[]> findComponents(int[][] graph, int size) {
         boolean[] marked = new boolean[size];
 
-        for (int i = 0; i < size; i++) {
-            marked[i] = false;
-        }
-
         int numMarked = 0;
         List<int[]> output = new ArrayList<>();
         int[] tempComponent = new int[size];

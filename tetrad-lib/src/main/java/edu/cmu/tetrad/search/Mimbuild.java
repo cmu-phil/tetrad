@@ -51,7 +51,7 @@ import java.util.List;
  * score with the given penalty discount (default 2).</p>
  *
  * <p>One may wish to obtain the implied correlation matrix over the latents and
- * run one's own choice of CPDDAG algorithm on it with one's own test or score; a method is available to return this
+ * run one's own choice of CPDAG algorithm on it with one's own test or score; a method is available to return this
  * covariance matrix.</p>
  *
  * <p>A suitable clustering for Mimbuild may be obtained using the BPC or FOFC
@@ -189,9 +189,9 @@ public class Mimbuild {
     }
 
     /**
-     * Returns the inferred covariance matrix over the late4nt variables.
+     * Returns the inferred covariance matrix over the latent variables.
      *
-     * @return Thsi covariance matrix.
+     * @return This covariance matrix.
      */
     public ICovarianceMatrix getLatentsCov() {
         return this.latentsCov;
@@ -412,7 +412,7 @@ public class Mimbuild {
             }
         }
 
-        System.out.println("# nnonredundant elemnts of cov(error) = " + latentscov.getNumRows() * (latentscov.getNumRows() + 1) / 2);
+        System.out.println("# nonredundant elemnts of cov(error) = " + latentscov.getNumRows() * (latentscov.getNumRows() + 1) / 2);
 
         int _loadings = 0;
 

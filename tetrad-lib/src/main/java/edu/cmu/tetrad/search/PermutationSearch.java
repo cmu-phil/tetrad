@@ -35,7 +35,6 @@ public class PermutationSearch {
     private final Map<Node, GrowShrinkTree> gsts;
     private final Map<String, Node> nodeMap;
     private Knowledge knowledge = new Knowledge();
-    private boolean verbose = false;
 
     /**
      * Constructs a new PermutationSearch using the given SuborderSearch.
@@ -143,15 +142,6 @@ public class PermutationSearch {
      */
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
-    }
-
-    /**
-     * Sets whether verbose output should be printed.
-     *
-     * @param verbose True if so.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     /**

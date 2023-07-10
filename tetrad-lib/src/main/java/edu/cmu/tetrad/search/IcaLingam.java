@@ -77,8 +77,8 @@ import static org.apache.commons.math3.util.FastMath.abs;
  * <ol>
  *     <li>Estimate W using LiNG-D or using a user-provided W matrix.</li>
  *     <li>Find the strongest diagonal for W using a linear assignment process.</li>
- *     <li>Permute the matrix for this strongest diagonal and scele the matrix to produce B Hat</li>
- *     <li>Set entries in BHat less than the treshold in absolute value to zero.</li>
+ *     <li>Permute the matrix for this strongest diagonal and scale the matrix to produce B Hat</li>
+ *     <li>Set entries in BHat less than the threshold in absolute value to zero.</li>
  *     <li>If acyclicity is guaranteed, set small coefficients to zero until an acyclic
  *     model is achieved.</li>
  * </ol>
@@ -161,11 +161,10 @@ public class IcaLingam {
             }
 
             TetradLogger.getInstance().forceLogMessage("Effective threshold = " + abs(coef.coef));
-            return scaledBHat;
         } else {
             TetradLogger.getInstance().forceLogMessage("Threshold = " + abs(bThreshold));
-            return scaledBHat;
         }
+        return scaledBHat;
     }
 
     /**
@@ -179,7 +178,7 @@ public class IcaLingam {
     }
 
     /**
-     * Whether the ICA-LiNGAM algorithm is guaranteed to produce an acyclic graph. This is implemnted by setting small
+     * Whether the ICA-LiNGAM algorithm is guaranteed to produce an acyclic graph. This is implemented by setting small
      * coefficients in B hat to zero until an acyclic model is found.
      *
      * @param acyclicityGuaranteed True if so.

@@ -40,7 +40,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * <p>Implements a modification of FCI that started by running the FGES algorithm and
  * then fixes that result to be correct for latent variables models. First, colliders from the FGES results are copied
  * into the final circle-circle graph, and some independence reasoning is used to add the remaining colliders into the
- * graph. Then, the FCI final orentation rules are applied. The reference is here:</p>
+ * graph. Then, the FCI final orientation rules are applied. The reference is here:</p>
  *
  * <p>Ogarrio, J. M., Spirtes, P., &amp; Ramsey, J. (2016, August). A hybrid causal
  * search algorithm for latent variable models. In Conference on probabilistic graphical models (pp. 368-379).
@@ -49,7 +49,7 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * <p>Because the method both runs FGES (a score-based algorithm) and does
  * additional checking of conditional independencies, both as part of its collider orientation step and also as part of
  * the the definite discriminating path step in the final FCI orientation rules, both a score and a test need to be used
- * to construct a GFCI algorihtm.</p>
+ * to construct a GFCI algorithm.</p>
  *
  * <p>Note that various score-based algorithms could be used in place of FGES
  * for the initial step; in this repository we give three other options, GRaSP-FCI, BFCI (BOSS FCI), and SP-FCI
@@ -75,7 +75,6 @@ public final class GFci implements IGraphSearch {
     private final IndependenceTest independenceTest;
     private final TetradLogger logger = TetradLogger.getInstance();
     private final Score score;
-    private Graph graph;
     private Knowledge knowledge = new Knowledge();
     private boolean completeRuleSetUsed = true;
     private int maxPathLength = -1;
@@ -115,7 +114,7 @@ public final class GFci implements IGraphSearch {
         this.logger.log("info", "Starting FCI algorithm.");
         this.logger.log("info", "Independence test = " + getIndependenceTest() + ".");
 
-        this.graph = new EdgeListGraph(nodes);
+        Graph graph;
 
         Fges fges = new Fges(this.score);
         fges.setKnowledge(getKnowledge());
@@ -123,12 +122,12 @@ public final class GFci implements IGraphSearch {
         fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
         fges.setMaxDegree(this.maxDegree);
         fges.setOut(this.out);
-        this.graph = fges.search();
+        graph = fges.search();
 
-        Graph fgesGraph = new EdgeListGraph(this.graph);
+        Graph fgesGraph = new EdgeListGraph(graph);
 
-        SepsetProducer sepsets = new SepsetsGreedy(this.graph, this.independenceTest, null, this.depth, knowledge);
-        gfciExtraEdgeRemovalStep(this.graph, fgesGraph, nodes, sepsets);
+        SepsetProducer sepsets = new SepsetsGreedy(graph, this.independenceTest, null, this.depth, knowledge);
+        gfciExtraEdgeRemovalStep(graph, fgesGraph, nodes, sepsets);
         GraphUtils.gfciR0(graph, fgesGraph, sepsets, knowledge);
 
         if (this.possibleMsepSearchDone) {
@@ -146,9 +145,9 @@ public final class GFci implements IGraphSearch {
 
         fciOrient.doFinalOrientation(graph);
 
-        GraphUtils.replaceNodes(this.graph, this.independenceTest.getVariables());
+        GraphUtils.replaceNodes(graph, this.independenceTest.getVariables());
 
-        return this.graph;
+        return graph;
     }
 
     /**
@@ -198,7 +197,7 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum path lenth for the discriminating path rule.
+     * Sets the maximum path length for the discriminating path rule.
      *
      * @param maxPathLength the maximum length of any discriminating path, or -1 if unlimited.
      */
@@ -229,7 +228,7 @@ public final class GFci implements IGraphSearch {
     }
 
     /**
-     * Sets the print stream used for output, default Sysem.out.
+     * Sets the print stream used for output, default System.out.
      *
      * @param out This print stream.
      */

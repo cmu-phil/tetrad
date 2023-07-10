@@ -35,7 +35,7 @@ import java.util.*;
 
 /**
  * <p>Adjusts FCI (see) to use conservative orientation as in CPC (see). Because the
- * collider orientatation is conservative, there may be ambiguous triples; these may be retrieved using that accessor
+ * collider orientation is conservative, there may be ambiguous triples; these may be retrieved using that accessor
  * method.</p>
  *
  * <p>This class is configured to respect knowledge of forbidden and required
@@ -116,16 +116,6 @@ public final class Cfci implements IGraphSearch {
     }
 
 
-    private static List<Node> asList(int[] indices, List<Node> nodes) {
-        List<Node> list = new LinkedList<>();
-
-        for (int i : indices) {
-            list.add(nodes.get(i));
-        }
-
-        return list;
-    }
-
     /**
      * Performs the search and returns the PAG.
      *
@@ -157,7 +147,7 @@ public final class Cfci implements IGraphSearch {
 
         // Note we don't use the sepsets from this search.
 
-        // Optional step: Possible Msep. (Needed for correctness but very time consuming.)
+        // Optional step: Possible Msep. (Needed for correctness but very time-consuming.)
         if (isPossibleMsepSearchDone()) {
             long time1 = MillisecondTimes.timeMillis();
             ruleR0(this.independenceTest, this.depth, this.sepsets);
@@ -268,14 +258,14 @@ public final class Cfci implements IGraphSearch {
      * Returns true if Zhang's complete rule set should be used, false if only R1-T1 (the rule set of the original FCI)
      * should be used. False by default.
      *
-     * @return True for the complete ruleset.
+     * @return True for the complete rule set.
      */
     public boolean isCompleteRuleSetUsed() {
         return this.completeRuleSetUsed;
     }
 
     /**
-     * Sets whether the complete ruleset should be used.
+     * Sets whether the complete rule set should be used.
      *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-T1 (the rule
      *                            set of the original FCI) should be used. False by default.

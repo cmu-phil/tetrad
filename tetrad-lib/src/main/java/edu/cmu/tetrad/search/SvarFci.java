@@ -243,7 +243,7 @@ public final class SvarFci implements IGraphSearch {
     }
 
     /**
-     * Returns whether Zhang's complete ruleset is to be used.
+     * Returns whether Zhang's complete rule set is to be used.
      *
      * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
      * should be used. False by default.
@@ -253,7 +253,7 @@ public final class SvarFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether Zhang's complete ruleset is to be used.
+     * Sets whether Zhang's complete rule set is to be used.
      *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.

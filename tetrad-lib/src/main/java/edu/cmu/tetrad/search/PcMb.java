@@ -100,10 +100,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      */
     private Set<Triple> ambiguousTriples;
     /**
-     * The most recently returned graph.
-     */
-    private Graph graph;
-    /**
      * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large graphs).
      */
     private boolean meekPreventCycles;
@@ -134,16 +130,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.variables = test.getVariables();
     }
 
-
-    private static List<Node> asList(int[] indices, List<Node> nodes) {
-        List<Node> list = new LinkedList<>();
-
-        for (int i : indices) {
-            list.add(nodes.get(i));
-        }
-
-        return list;
-    }
 
     private static boolean isArrowheadAllowed1(Node from, Node to,
                                                Knowledge knowledge) {
@@ -349,7 +335,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
 
         this.logger.log("graph", "\nReturning this graph: " + graph);
 
-        this.graph = graph;
         return graph;
     }
 

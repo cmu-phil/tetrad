@@ -37,7 +37,7 @@ import java.util.List;
 public interface IFas extends IGraphSearch {
 
     /**
-     * Sets the knoweledge for the search.
+     * Sets the knowledge for the search.
      *
      * @param knowledge This knowledge.
      */
@@ -45,7 +45,7 @@ public interface IFas extends IGraphSearch {
 
     /**
      * Returns the sepset map discovered during search--that is, the map from node pairs to the sepsets used in the
-     * search to removed the corresponding edges from the complete graph.
+     * search to remove the corresponding edges from the complete graph.
      *
      * @return This map.
      */

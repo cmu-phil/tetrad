@@ -40,7 +40,7 @@ import java.util.*;
  * variables from multiple datasets with overlapping variables. In Proceedings of the Fourteenth International
  * Conference on Artificial Intelligence and Statistics (pp. 3-15). JMLR Workshop and Conference Proceedings.</p>
  *
- * <p>The idea of this implementation is that one initializes this test with multiple independenc tests (for multiple
+ * <p>The idea of this implementation is that one initializes this test with multiple independence tests (for multiple
  * datasets), then a call to the independence check method for X _||_ Y | Z list the independence tests from among
  * these, calls each and gets a p-value, then uses a resolution method (such as Fisher's) to resolve these
  * p-values.</p>
@@ -124,7 +124,7 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * Returns the list of TetradNodes over which this independence checker is capable of determinine independence
+     * Returns the list of TetradNodes over which this independence checker is capable of determinining independence
      * relations-- that is, all the variables in the given graph or the given data set.
      *
      * @return This list.

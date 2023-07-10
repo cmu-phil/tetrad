@@ -238,7 +238,7 @@ public class Lofs {
 
 
     /**
-     * Sets for R2 whether cycles shoudld be oriented.
+     * Sets for R2 whether cycles should be oriented.
      *
      * @param r2Orient2Cycles True if so.
      */

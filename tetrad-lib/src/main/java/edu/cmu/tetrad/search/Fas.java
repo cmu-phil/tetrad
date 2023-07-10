@@ -395,8 +395,6 @@ public class Fas implements IFas {
             Collections.reverse(ppx);
         }
 
-        Graph g0 = new EdgeListGraph(getNodes());
-
         if (ppx.size() >= depth) {
             ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);
             int[] choice;

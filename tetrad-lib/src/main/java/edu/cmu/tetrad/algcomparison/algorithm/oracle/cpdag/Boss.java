@@ -74,8 +74,6 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             PermutationSearch permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(this.knowledge);
 
-            permutationSearch.setVerbose(parameters.getBoolean(Params.VERBOSE));
-
             return permutationSearch.search();
         } else {
             Boss algorithm = new Boss(this.score);
@@ -85,7 +83,6 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
             search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
-            search.setVerbose(parameters.getBoolean(Params.VERBOSE));
             Graph graph = search.search();
             if (parameters.getBoolean(Params.SAVE_BOOTSTRAP_GRAPHS)) this.bootstrapGraphs = search.getGraphs();
             return graph;
@@ -111,16 +108,11 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     public List<String> getParameters() {
         ArrayList<String> params = new ArrayList<>();
 
-        // Flags
-        params.add(Params.VERBOSE);
-
         // Parameters
         params.add(Params.USE_BES);
         params.add(Params.NUM_STARTS);
         params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
-//        params.add(Params.DEPTH);
         params.add(Params.TIME_LAG);
-
 
         return params;
     }

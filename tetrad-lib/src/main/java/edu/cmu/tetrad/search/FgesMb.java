@@ -68,7 +68,7 @@ public final class FgesMb {
     // The static ForkJoinPool instance.
     private final ForkJoinPool pool = ForkJoinPool.commonPool();
     // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
-    // The ordering doesn't matter; it just have to be transitive.
+    // The ordering doesn't matter; it just has to be transitive.
     int arrowIndex;
     Set<Edge> removedEdges = new HashSet<>();
     /**
@@ -122,7 +122,7 @@ public final class FgesMb {
     private Graph effectEdgesGraph;
     // Where printed output is sent.
     private PrintStream out = System.out;
-    // A initial adjacencies graph.
+    // An initial adjacencies graph.
     private Graph adjacencies;
     // The graph being constructed.
     private Graph graph;
@@ -130,12 +130,6 @@ public final class FgesMb {
     private Mode mode = Mode.heuristicSpeedup;
     // Bounds the degree of the graph.
     private int maxDegree = -1;
-    /**
-     * True if one-edge faithfulness is assumed. Speeds the algorithm up.
-     */
-    private boolean faithfulnessAssumed = false;
-
-    private boolean parallelized = false;
 
     /**
      * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
@@ -165,16 +159,6 @@ public final class FgesMb {
     }
 
     /**
-     * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
-     *
-     * @param faithfulnessAssumed True if so.
-     * @see Fges#setFaithfulnessAssumed(boolean)
-     */
-    public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
-        this.faithfulnessAssumed = faithfulnessAssumed;
-    }
-
-    /**
      * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
      * edges till a minimum is achieved.
      *
@@ -188,7 +172,7 @@ public final class FgesMb {
      * Searches over a specific list of target variables.
      *
      * @param targets The targets.
-     * @return The union of the edges for the Markov blanekt graph for each target.
+     * @return The union of the edges for the Markov blanket graph for each target.
      */
     public Graph search(List<Node> targets) {
 
@@ -286,7 +270,7 @@ public final class FgesMb {
     }
 
     /**
-     * If the true graph is set, askterisks will be printed in log output for the true edges.
+     * If the true graph is set, asterisks will be printed in log output for the true edges.
      *
      * @param trueGraph The true graph.
      */
@@ -298,19 +282,10 @@ public final class FgesMb {
      * Returns the totalScore of the given DAG, up to a constant.
      *
      * @param dag The dag to score.
-     * @return The scre of the DAG.
+     * @return The score of the DAG.
      */
     public double getScore(Graph dag) {
         return scoreDag(dag);
-    }
-
-    /**
-     * Returns the list of top scoring graphs.
-     *
-     * @return The top scoring graphs.
-     */
-    public LinkedList<ScoredGraph> getTopGraphs() {
-        return this.topGraphs;
     }
 
     /**
@@ -374,7 +349,7 @@ public final class FgesMb {
     }
 
     /**
-     * Sets the graph of preset adjacenies for the algorithm; edges not in this adjacencies graph will not be added.
+     * Sets the graph of preset adjacencies for the algorithm; edges not in this adjacencies graph will not be added.
      *
      * @param adjacencies This graph.
      */
@@ -397,10 +372,8 @@ public final class FgesMb {
     /**
      * Creates a new processors pool with the specified number of threads.
      *
-     * @param parallelized True if parallelized,
      */
-    public void setParallelized(boolean parallelized) {
-        this.parallelized = parallelized;
+    public void setParallelized() {
     }
 
     /**
@@ -718,7 +691,7 @@ public final class FgesMb {
                 continue;
             }
 
-            if (!getTNeighbors(x, y).containsAll(arrow.getHOrT())) {
+            if (!new HashSet<>(getTNeighbors(x, y)).containsAll(arrow.getHOrT())) {
                 continue;
             }
 
@@ -873,7 +846,7 @@ public final class FgesMb {
         }
     }
 
-    // Calcuates new arrows based on changes in the graph for the forward search.
+    // Calculates new arrows based on changes in the graph for the forward search.
     private void reevaluateForward(Set<Node> nodes) {
         class AdjTask extends RecursiveTask<Boolean> {
 
@@ -1589,7 +1562,7 @@ public final class FgesMb {
         allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
     }
 
-    // Basic data structure for an arrow a->b considered for additiom or removal from the graph, together with
+    // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
     // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
     // For the forward direction, T neighbors are needed; for the backward direction, H neighbors are needed.
     // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
@@ -1634,10 +1607,10 @@ public final class FgesMb {
 
         // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
         // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
-        // bump, we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
+        // bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
         // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
         // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
-        // not equal to zero by keeping a list. This last part is commened out by default.
+        // not equal to zero by keeping a list. This last part is commented out by default.
         public int compareTo(@NotNull Arrow arrow) {
             int compare = Double.compare(arrow.getBump(), getBump());
 

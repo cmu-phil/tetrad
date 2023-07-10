@@ -20,14 +20,14 @@ import static java.lang.Double.NEGATIVE_INFINITY;
 
 /**
  * <p>Implements the GRaSP algorithms, which uses a certain procedure to search
- * in the space of permutations of variables for ones that imply CPDAGs that are especailly close to the CPDAG of the
+ * in the space of permutations of variables for ones that imply CPDAGs that are especially close to the CPDAG of the
  * true model. The reference is here:</p>
  *
  * <p>Lam, W. Y., Andrews, B., &amp; Ramsey, J. (2022, August). Greedy relaxations of
  * the sparsest permutation algorithm. In Uncertainty in Artificial Intelligence (pp. 1052-1062). PMLR.</p>
  *
  * <p>GRaSP can use either a score or an independence test; you can provide
- * both, though if you do you need to use the paremeters to choose which one will be used. The score options is more
+ * both, though if you do you need to use the parameters to choose which one will be used. The score options is more
  * scalable and accurate, though the independence option is perhaps a little easier ot deal with theoretically and are
  * useful for generating unit test results.</p>
  *
@@ -39,7 +39,7 @@ import static java.lang.Double.NEGATIVE_INFINITY;
  * continuous/discrete case as well.</p>
  *
  * <p>The version of GRaSP described in the above reference is limited to about 100
- * varibles in execution time, after which it become impracticably slow. Recent optimizations allow it to scale further
+ * variables in execution time, after which it become impracticably slow. Recent optimizations allow it to scale further
  * than that; hopefully these will be written up soon and made available.</p>
  *
  * <p>Knowledge can be used with this search. If tiered knowledge is used, then
@@ -110,7 +110,7 @@ public class Grasp {
 
     /**
      * Given an initial permutation, 'order', of the variables, searches for a best permutation of the variables by
-     * rearranging the varialbes in 'order'.
+     * rearranging the variables in 'order'.
      *
      * @param order The initial permutation.
      * @return The discovered permutation at the end of the procedure.
@@ -173,7 +173,7 @@ public class Grasp {
     }
 
     /**
-     * Returns the number of edges in the DAG implied by the discovered permuttion.
+     * Returns the number of edges in the DAG implied by the discovered permutation.
      *
      * @return This number.
      */
@@ -198,7 +198,7 @@ public class Grasp {
     }
 
     /**
-     * Sets the number of times the best order algorithm should be rerun with different starting permtutions in search
+     * Sets the number of times the best order algorithm should be rerun with different starting permutations in search
      * of a best BIC scoring permutation.
      *
      * @param numStarts This number; if 1, it is run just once with the given starting permutation; if 2 or higher, it

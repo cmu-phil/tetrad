@@ -246,10 +246,10 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the Zhang complete rule set should be used; if false if only R1-R4 (the rule set of the original
+     * Sets whether the Zhang complete rule set should be used; false if only R1-R4 (the rule set of the original
      * FCI) should be used. False by default.
      *
-     * @param completeRuleSetUsed True for the complete Zhang ruleset.
+     * @param completeRuleSetUsed True for the complete Zhang rule set.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
@@ -296,7 +296,7 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets which PC heuristic type should be used in the intitial adjacency search.
+     * Sets which PC heuristic type should be used in the initial adjacency search.
      *
      * @param heuristic The heuristic type.
      * @see edu.cmu.tetrad.search.utils.PcCommon.PcHeuristicType
@@ -306,7 +306,7 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the stable options hould be used in the initial adjacency search.
+     * Sets whether the stable options should be used in the initial adjacency search.
      *
      * @param stable True if so.
      * @see Pc
