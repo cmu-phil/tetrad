@@ -78,6 +78,7 @@ public class Ftfc {
     private List<List<Node>> clusters;
 
     private boolean verbose;
+
     /**
      * Conctructor.
      *

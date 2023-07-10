@@ -43,6 +43,7 @@ public class BCCausalInference {
     private final int scoreFn;  // score function
     private final int[] nodeDimension;
     private final int[][] cases;
+
     public BCCausalInference(int[] nodeDimension, int[][] cases) {
         this.nodeDimension = nodeDimension;
         this.cases = cases;

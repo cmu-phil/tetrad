@@ -80,6 +80,7 @@ public class StandardizedSemIm implements Simulator {
     private Matrix implCovarMeas;
     private Edge editingEdge;
     private ParameterRange range;
+
     /**
      * Constructs a new standardized SEM IM, initializing from the freeParameters in the given SEM IM.
      *
@@ -88,6 +89,7 @@ public class StandardizedSemIm implements Simulator {
     public StandardizedSemIm(SemIm im, Parameters parameters) {
         this(im, Initialization.CALCULATE_FROM_SEM, parameters);
     }
+
     /**
      * Constructs a new standardized SEM IM from the freeParameters in the given SEM IM.
      *

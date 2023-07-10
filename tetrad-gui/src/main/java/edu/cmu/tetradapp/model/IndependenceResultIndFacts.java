@@ -37,6 +37,7 @@ public final class IndependenceResultIndFacts implements TetradSerializable {
     private final String fact;
     private final Type indep;
     private final double pValue;
+
     public IndependenceResultIndFacts(int index, String fact, Type indep, double pValue) {
         this.index = index;
         this.fact = fact;

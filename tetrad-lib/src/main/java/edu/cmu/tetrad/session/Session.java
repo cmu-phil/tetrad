@@ -43,8 +43,7 @@ import java.util.Set;
  * construction of graphs in general, even if different graphs are implemented using different classes. The SessionNode
  * can keep track of what its parents are and therefore which of its possible models it's capable of constructing.
  * <p>The Session itself keeps track of which nodes are in the session and manages adding and removing nodes. Nodes
- * that
- * are added to the session must be freshly constructed. This constraint eliminates a number of problems that might
+ * that are added to the session must be freshly constructed. This constraint eliminates a number of problems that might
  * otherwise exist if interconnected SessionNodes were permitted to participate in more than one Session. If the addNode
  * method is called with a node that is not in the freshly constructed state (either because it was actually just
  * constructed or because the <code>reset</code> method was just called on the node), an IllegalArgumentException is

@@ -58,6 +58,7 @@ public final class PcCommon implements IGraphSearch {
     private ColliderDiscovery colliderDiscovery = ColliderDiscovery.FAS_SEPSETS;
     private ConflictRule conflictRule = ConflictRule.PRIORITIZE_EXISTING;
     private PcHeuristicType pcHeuristicType = PcHeuristicType.NONE;
+
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
      * independence test, for fear of duplicating the data set!
@@ -593,8 +594,7 @@ public final class PcCommon implements IGraphSearch {
 
     /**
      * <p>Give the options for the collider discovery algroithm to use--FAS with sepsets reasoning, FAS with
-     * conservative
-     * reasoning, or FAS with Max P reasoning. See these respective references:</p>
+     * conservative reasoning, or FAS with Max P reasoning. See these respective references:</p>
      *
      * <p>Spirtes, P., Glymour, C. N., & Scheines, R. (2000). Causation, prediction, and search. MIT press.</p>
      *

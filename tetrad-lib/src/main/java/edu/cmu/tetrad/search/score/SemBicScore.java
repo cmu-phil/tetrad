@@ -101,6 +101,7 @@ public class SemBicScore implements Score {
 
     // The rule type to use.
     private RuleType ruleType = RuleType.CHICKERING;
+
     /**
      * Constructs the score using a covariance matrix.
      */

@@ -316,14 +316,7 @@ public class GaussianProcess {
         Matrix Sstar = Kss.minus(GaussianProcess.sumColumns(v).transpose());
 
         return new Matrix[]{ystar, Sstar};
-    }    private static final double SIG = 0.1, RHO = GaussianProcess.SIG / 2;   // SIG and RHO are the constants controlling the Wolfe-
-    // Powell conditions. SIG is the maximum allowed absolute ratio between
-    // previous and new slopes (derivatives in the search direction), thus setting
-    // SIG to low (positive) values forces higher precision in the line-searches.
-    // RHO is the minimum allowed fraction of the expected (from the slope at the
-    // initial point in the linesearch). Constants must satisfy 0 < RHO < SIG < 1.
-    // Tuning of SIG (depending on the nature of the function to be optimized) may
-    // speed up the minimization; it is probably not worth playing much with RHO.
+    }
 
     /**
      * Computes Gaussian predictions, whose mean is returned. Note that in cases where the covariance function has noise
@@ -348,7 +341,14 @@ public class GaussianProcess {
         Matrix Kstar = star[1];
 
         return Kstar.transpose().times(this.alpha);
-    }
+    }    private static final double SIG = 0.1, RHO = GaussianProcess.SIG / 2;   // SIG and RHO are the constants controlling the Wolfe-
+    // Powell conditions. SIG is the maximum allowed absolute ratio between
+    // previous and new slopes (derivatives in the search direction), thus setting
+    // SIG to low (positive) values forces higher precision in the line-searches.
+    // RHO is the minimum allowed fraction of the expected (from the slope at the
+    // initial point in the linesearch). Constants must satisfy 0 < RHO < SIG < 1.
+    // Tuning of SIG (depending on the nature of the function to be optimized) may
+    // speed up the minimization; it is probably not worth playing much with RHO.
 
     private Matrix minimize(Matrix params, int length, Matrix in, Matrix out) {
 

@@ -71,7 +71,7 @@ public class TestFges {
 
 
     private final PrintStream out = System.out;
-//    private OutputStream out =
+    //    private OutputStream out =
     private HashMap<Node, Integer> hashIndices;
 
     public static void main(String... args) {

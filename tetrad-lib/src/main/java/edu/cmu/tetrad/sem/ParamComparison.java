@@ -53,6 +53,7 @@ public class ParamComparison {
      */
     private final transient String name;
     private final int ordinal = ParamComparison.nextOrdinal++;
+
     /**
      * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */

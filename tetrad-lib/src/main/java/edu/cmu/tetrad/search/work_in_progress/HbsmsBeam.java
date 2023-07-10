@@ -511,6 +511,7 @@ public final class HbsmsBeam implements Hbsms {
         private final Edge edge;
         private final HbsmsBeam.Move.Type type;
         private Edge secondEdge;
+
         public Move(Edge edge, HbsmsBeam.Move.Type type) {
             this.edge = edge;
             this.type = type;

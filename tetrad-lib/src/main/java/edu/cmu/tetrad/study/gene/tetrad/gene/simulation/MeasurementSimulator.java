@@ -47,8 +47,7 @@ import java.util.Arrays;
  * especially for the raw data set. A simulation with 1,000,000 cells where each cell has 1000 genes, for instance, can
  * take quite a long time and can easily overflow RAM in Java if all of the raw expression levels are saved out.&gt; 0
  * <p>For examples of how to use the measurement simulator code, see the TestMeasurementSimulator class. This is a
- * JUnit
- * test class that contains several examples of code use.&gt; 0
+ * JUnit test class that contains several examples of code use.&gt; 0
  *
  * @author josephramsey
  * @see TestMeasurementSimulator

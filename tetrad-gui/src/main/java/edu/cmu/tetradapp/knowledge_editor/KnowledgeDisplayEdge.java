@@ -768,8 +768,8 @@ public class KnowledgeDisplayEdge extends JComponent implements IDisplayEdge {
 
     /**
      * Calculates the intersection with the boundary of the given component along a line which connects one point which
-     * lies inside the boundary of the component with another point which lies outside the boundary of the component.
-     * If the first point does not lie inside the boundary, or if the second point does not lie outside the boundary, a
+     * lies inside the boundary of the component with another point which lies outside the boundary of the component. If
+     * the first point does not lie inside the boundary, or if the second point does not lie outside the boundary, a
      * null is returned. If the connecting line intersects the boundary at more than one place, the outermost one is
      * returned.
      */

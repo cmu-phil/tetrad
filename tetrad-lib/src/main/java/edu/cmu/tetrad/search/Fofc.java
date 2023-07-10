@@ -77,6 +77,7 @@ public class Fofc {
     private boolean verbose;
     private boolean significanceChecked;
     private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
+
     /**
      * Conctructor.
      *

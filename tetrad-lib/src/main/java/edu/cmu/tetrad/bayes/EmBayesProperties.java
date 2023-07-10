@@ -61,6 +61,7 @@ public final class EmBayesProperties {
                     "Please specify the search tolerance first.");
         }
     };
+
     public EmBayesProperties(DataSet dataSet, Graph graph) {
         setDataSet(dataSet);
         setGraph(graph);

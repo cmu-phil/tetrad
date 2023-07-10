@@ -91,7 +91,7 @@ class CovMatrixTable extends AbstractTableModel {
     /**
      * @return the value at the given (row, column) coordinates of the table as an Object.  If the variable for the
      * column is a DiscreteVariable, the String value (as opposed to the integer index value) is extracted and returned.
-     *  If the coordinates are out of range of the wrapped table model, 'null' is returned. Otherwise, the value stored
+     * If the coordinates are out of range of the wrapped table model, 'null' is returned. Otherwise, the value stored
      * in the wrapped table model at the given coordinates is returned.
      */
     public Object getValueAt(int row, int col) {

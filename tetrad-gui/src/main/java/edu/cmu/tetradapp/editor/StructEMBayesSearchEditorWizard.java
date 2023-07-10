@@ -36,10 +36,10 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 
 /**
- * Allows the user to choose a variable in a Bayes net and edit the parameters associated with that variable.
- * Parameters are of the form P(Node=value1|Parent1=value2, Parent2=value2,...); values for these parameters are
- * probabilities ranging from 0.0 to 1.0. For a given combination of parent values for node N, the probabilities for the
- * values of N conditional on that combination of parent values must sum to 1.0
+ * Allows the user to choose a variable in a Bayes net and edit the parameters associated with that variable. Parameters
+ * are of the form P(Node=value1|Parent1=value2, Parent2=value2,...); values for these parameters are probabilities
+ * ranging from 0.0 to 1.0. For a given combination of parent values for node N, the probabilities for the values of N
+ * conditional on that combination of parent values must sum to 1.0
  *
  * @author josephramsey
  * @author Frank Wimberly adapted for EM Bayes estimation and Structural EM bayes estimation.

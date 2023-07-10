@@ -287,6 +287,7 @@ public class PcLingam {
     private static class Score {
         double score;
         double[] pvals;
+
         public Score(double score, double[] pvals) {
             this.score = score;
             this.pvals = pvals;

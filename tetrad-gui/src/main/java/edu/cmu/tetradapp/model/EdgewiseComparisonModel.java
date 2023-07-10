@@ -49,6 +49,7 @@ public final class EdgewiseComparisonModel implements SessionModel, DoNotAddOldM
     private final Graph referenceGraph;
     private final Parameters params;
     private String name;
+
     /**
      * Compares the results of a PC to a reference workbench by counting errors of omission and commission. The counts
      * can be retrieved using the methods

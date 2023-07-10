@@ -102,7 +102,7 @@ public class Purify {
      */
     private CorrelationMatrix correlationMatrix;
 
-//     SCORE-BASED PURIFY - using BIC score function and Structural EM for
+    //     SCORE-BASED PURIFY - using BIC score function and Structural EM for
 //     search. Probabilistic model is Gaussian. - search operator consists only
 //     of adding a bi-directed edge between pairs of error variables - after
 //     such pairs are found, an heuristic is applied to eliminate one member of
@@ -113,6 +113,7 @@ public class Purify {
     private List<Node> forbiddenList;
     private int numVars;
     private TetradTest tetradTest;
+
     /*********************************************************
      * INITIALIZATION                                                                                        o
      *********************************************************/
@@ -137,6 +138,7 @@ public class Purify {
 
         this.variables = correlationMatrix.getVariables();
     }
+
     public Purify(DataSet dataSet, double sig, BpcTestType testType,
                   Clusters clusters) {
         if (DataUtils.containsMissingValue(dataSet)) {
@@ -155,6 +157,7 @@ public class Purify {
 
         this.variables = dataSet.getVariables();
     }
+
     public Purify(TetradTest tetradTest, Clusters knowledge) {
         this.tetradTest = tetradTest;
         initAlgorithm(-1., BpcTestType.NONE, knowledge);
