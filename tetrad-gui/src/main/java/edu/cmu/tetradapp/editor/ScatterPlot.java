@@ -338,7 +338,6 @@ public class ScatterPlot {
             double x1 = _x.get(row);
             double y1 = _y.get(row);
 
-//            if (this._x instanceof DiscreteVariable) {
             double v = 0.03;
 
             if (jitterStyle == JitterStyle.Gaussian) {
@@ -346,15 +345,12 @@ public class ScatterPlot {
             } else if (jitterStyle == JitterStyle.Uniform) {
                 x1 += RandomUtil.getInstance().nextUniform(-2 * spreadx * v, 2 * spreadx * v);
             }
-//            }
 
-//            if (this._y instanceof DiscreteVariable) {
             if (jitterStyle == JitterStyle.Gaussian) {
                 y1 += RandomUtil.getInstance().nextNormal(0, spready * v);
             } else if (jitterStyle == JitterStyle.Uniform) {
                 y1 += RandomUtil.getInstance().nextUniform(-2 * spready * v, 2 * spready * v);
             }
-//            }
 
             pt.setLocation(x1, y1);
             cleanedVals.add(pt);
