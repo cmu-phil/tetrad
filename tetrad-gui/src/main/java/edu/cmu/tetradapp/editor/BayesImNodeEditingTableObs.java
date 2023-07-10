@@ -266,12 +266,10 @@ class BayesImNodeEditingTableObs extends JTable {
          * The BayesIm being edited.
          */
         private final MlBayesImObs bayesIm;
-
+        private final java.util.List<Node> obsNodes = new ArrayList<>();
         private int failedRow = -1;
         private int failedCol = -1;
         private PropertyChangeSupport pcs;
-
-        private final java.util.List<Node> obsNodes = new ArrayList<>();
 
         /////////////////////////////////////////////////////////////
         // construct a new editing table model for a given bayesIm

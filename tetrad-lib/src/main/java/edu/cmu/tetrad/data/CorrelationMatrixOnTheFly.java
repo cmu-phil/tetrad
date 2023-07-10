@@ -44,10 +44,8 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     static final long serialVersionUID = 23L;
-    private boolean verbose;
-
     private final ICovarianceMatrix cov;
-
+    private boolean verbose;
     /**
      * The variables (in order) for this covariance matrix.
      *
@@ -100,6 +98,11 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return this.cov.getVariables();
     }
 
+    public void setVariables(List<Node> variables) {
+        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
+        this.variables = variables;
+    }
+
     /**
      * @return the variable names, in order.
      */
@@ -128,6 +131,10 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      */
     public final int getSampleSize() {
         return this.cov.getSampleSize();
+    }
+
+    public final void setSampleSize(int sampleSize) {
+        this.cov.setSampleSize(sampleSize);
     }
 
     /**
@@ -201,14 +208,6 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         return v;
     }
 
-    public void setMatrix(Matrix matrix) {
-        this.cov.setMatrix(matrix);
-    }
-
-    public final void setSampleSize(int sampleSize) {
-        this.cov.setSampleSize(sampleSize);
-    }
-
     /**
      * @return the size of the square matrix.
      */
@@ -229,6 +228,10 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         }
 
         return matrix;
+    }
+
+    public void setMatrix(Matrix matrix) {
+        this.cov.setMatrix(matrix);
     }
 
     public final void select(Node variable) {
@@ -288,11 +291,6 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
     @Override
     public boolean isMixed() {
         return false;
-    }
-
-    public void setVariables(List<Node> variables) {
-        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
-        this.variables = variables;
     }
 
     public boolean isVerbose() {

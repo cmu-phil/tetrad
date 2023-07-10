@@ -45,8 +45,7 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     private final StandardizedSemIm semIm;
 
     /**
-     * True iff the matrices for the observed variables ony should be
-     * displayed.
+     * True iff the matrices for the observed variables ony should be displayed.
      */
     private final boolean measured;
 
@@ -66,8 +65,8 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
     private final double[][] matrix;
 
     /**
-     * Constructs a new table for the given covariance matrix, the nodes for
-     * which are as specified (in the order they appear in the matrix).
+     * Constructs a new table for the given covariance matrix, the nodes for which are as specified (in the order they
+     * appear in the matrix).
      */
     public StandardizedSemImImpliedCovTable(StandardizedSemIm semIm, boolean measured,
                                             boolean correlations) {
@@ -88,73 +87,6 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
             Matrix implCovarC = getSemIm().getImplCovar();
             this.matrix = StandardizedSemImImpliedCovTable.corr(implCovarC.toArray());
         }
-    }
-
-    /**
-     * @return the number of rows being displayed--one more than the size of the
-     * matrix, which may be different depending on whether only the observed
-     * variables are being displayed or all the variables are being displayed.
-     */
-    public int getRowCount() {
-        if (measured()) {
-            return this.getSemIm().getMeasuredNodes().size() + 1;
-        } else {
-            return this.getSemIm().getVariableNodes().size() + 1;
-        }
-    }
-
-    /**
-     * @return the number of columns displayed--one more than the size of the
-     * matrix, which may be different depending on whether only the observed
-     * variables are being displayed or all the variables are being displayed.
-     */
-    public int getColumnCount() {
-        if (measured()) {
-            return this.getSemIm().getMeasuredNodes().size() + 1;
-        } else {
-            return this.getSemIm().getVariableNodes().size() + 1;
-        }
-    }
-
-    /**
-     * @return the name of the column at columnIndex, which is "" for column 0
-     * and the name of the variable for the other columns.
-     */
-    public String getColumnName(int columnIndex) {
-        if (columnIndex == 0) {
-            return "";
-        } else {
-            if (measured()) {
-                List nodes = getSemIm().getMeasuredNodes();
-                Node node = ((Node) nodes.get(columnIndex - 1));
-                return node.getName();
-            } else {
-                List nodes = getSemIm().getVariableNodes();
-                Node node = ((Node) nodes.get(columnIndex - 1));
-                return node.getName();
-            }
-        }
-    }
-
-    /**
-     * @return the value being displayed in a cell, either a variable name or a
-     * Double.
-     */
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        if (rowIndex == 0) {
-            return getColumnName(columnIndex);
-        }
-        if (columnIndex == 0) {
-            return getColumnName(rowIndex);
-        } else if (rowIndex < columnIndex) {
-            return null;
-        } else {
-            return this.nf.format(this.matrix[rowIndex - 1][columnIndex - 1]);
-        }
-    }
-
-    private boolean covariances() {
-        return !correlations();
     }
 
     private static double[][] corr(double[][] implCovar) {
@@ -185,6 +117,70 @@ final class StandardizedSemImImpliedCovTable extends AbstractTableModel {
         }
 
         return corr;
+    }
+
+    /**
+     * @return the number of rows being displayed--one more than the size of the matrix, which may be different
+     * depending on whether only the observed variables are being displayed or all the variables are being displayed.
+     */
+    public int getRowCount() {
+        if (measured()) {
+            return this.getSemIm().getMeasuredNodes().size() + 1;
+        } else {
+            return this.getSemIm().getVariableNodes().size() + 1;
+        }
+    }
+
+    /**
+     * @return the number of columns displayed--one more than the size of the matrix, which may be different depending
+     * on whether only the observed variables are being displayed or all the variables are being displayed.
+     */
+    public int getColumnCount() {
+        if (measured()) {
+            return this.getSemIm().getMeasuredNodes().size() + 1;
+        } else {
+            return this.getSemIm().getVariableNodes().size() + 1;
+        }
+    }
+
+    /**
+     * @return the name of the column at columnIndex, which is "" for column 0 and the name of the variable for the
+     * other columns.
+     */
+    public String getColumnName(int columnIndex) {
+        if (columnIndex == 0) {
+            return "";
+        } else {
+            if (measured()) {
+                List nodes = getSemIm().getMeasuredNodes();
+                Node node = ((Node) nodes.get(columnIndex - 1));
+                return node.getName();
+            } else {
+                List nodes = getSemIm().getVariableNodes();
+                Node node = ((Node) nodes.get(columnIndex - 1));
+                return node.getName();
+            }
+        }
+    }
+
+    /**
+     * @return the value being displayed in a cell, either a variable name or a Double.
+     */
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        if (rowIndex == 0) {
+            return getColumnName(columnIndex);
+        }
+        if (columnIndex == 0) {
+            return getColumnName(rowIndex);
+        } else if (rowIndex < columnIndex) {
+            return null;
+        } else {
+            return this.nf.format(this.matrix[rowIndex - 1][columnIndex - 1]);
+        }
+    }
+
+    private boolean covariances() {
+        return !correlations();
     }
 
     /**

@@ -40,6 +40,13 @@ public class Vector implements TetradSerializable {
         this.data = new ArrayRealVector(size);
     }
 
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     */
+    public static Vector serializableInstance() {
+        return new Vector(0);
+    }
+
     public void assign(double value) {
         for (int i = 0; i < this.data.getDimension(); i++) {
             this.data.setEntry(i, value);
@@ -129,13 +136,6 @@ public class Vector implements TetradSerializable {
         Vector v = (Vector) o;
 
         return MatrixUtils.equals(v.toArray(), this.toArray());
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static Vector serializableInstance() {
-        return new Vector(0);
     }
 
     public double dot(Vector v2) {

@@ -64,13 +64,13 @@ public class ZsbScore implements Score {
 
     // The variables of the covariance matrix.
     private final List<Node> variables;
-    private double riskBound = 0.001;
     // The running maximum score, for estimating the true minimal model.
     double[] maxScores;
     // The running estimate of the number of parents in the true minimal model.
     int[] estMaxParents;
     // The running estimate of the residual variance of the true minimal model.
     double[] estMaxVarRys;
+    private double riskBound = 0.001;
     // The covariance matrix.
     private ICovarianceMatrix covariances;
     // The sample size of the covariance matrix.
@@ -106,6 +106,31 @@ public class ZsbScore implements Score {
     public ZsbScore(DataSet dataSet) {
         this(SimpleDataLoader.getCovarianceMatrix(dataSet));
         this.data = dataSet.getDoubleData();
+    }
+
+    private static double zhangShenLambda(int m0, double pn, double riskBound) {
+        if (m0 > pn) throw new IllegalArgumentException("m0 should not be > pn; m0 = " + m0 + " pn = " + pn);
+
+        double high = 10000.0;
+        double low = 0.0;
+
+        while (high - low > 1e-13) {
+            double lambda = (high + low) / 2.0;
+
+            double p = getP(pn, m0, lambda);
+
+            if (p < 1.0 - riskBound) {
+                low = lambda;
+            } else {
+                high = lambda;
+            }
+        }
+
+        return low;
+    }
+
+    private static double getP(double pn, double m0, double lambda) {
+        return 2. - pow((1. + (exp(-(lambda - 1.) / 2.)) * sqrt(lambda)), pn - m0);
     }
 
     /**
@@ -266,27 +291,6 @@ public class ZsbScore implements Score {
         this.riskBound = riskBound;
     }
 
-    private static double zhangShenLambda(int m0, double pn, double riskBound) {
-        if (m0 > pn) throw new IllegalArgumentException("m0 should not be > pn; m0 = " + m0 + " pn = " + pn);
-
-        double high = 10000.0;
-        double low = 0.0;
-
-        while (high - low > 1e-13) {
-            double lambda = (high + low) / 2.0;
-
-            double p = getP(pn, m0, lambda);
-
-            if (p < 1.0 - riskBound) {
-                low = lambda;
-            } else {
-                high = lambda;
-            }
-        }
-
-        return low;
-    }
-
     private double getLambda(int m0, int pn) {
         if (lambdas == null) {
             lambdas = new ArrayList<>();
@@ -300,10 +304,6 @@ public class ZsbScore implements Score {
         }
 
         return lambdas.get(m0);
-    }
-
-    private static double getP(double pn, double m0, double lambda) {
-        return 2. - pow((1. + (exp(-(lambda - 1.) / 2.)) * sqrt(lambda)), pn - m0);
     }
 
     private int[] indices(List<Node> __adj) {

@@ -38,35 +38,13 @@ import java.util.regex.Pattern;
 public class ExpressionLexer {
 
     /**
-     * The previous offset--before the getModel token was read.
+     * Cached CPDAGS.
      */
-    private int currentOffset;
-
-
-    /**
-     * The getModel position of the lexer.
-     */
-    private int nextOffset;
-
-
-    /**
-     * Mapping between tokens to their matchers.
-     */
-    private Map<Token, Matcher> matchers = new HashMap<>();
-
-
-    /**
-     * The last matcher.
-     */
-    private Matcher lastMatcher;
-
-
+    private static Map<Token, Pattern> PATTERNS;
     /**
      * The car sequenced being lexed.
      */
     private final CharSequence charSequence;
-
-
     /**
      * The tokens.
      */
@@ -74,12 +52,22 @@ public class ExpressionLexer {
             Token.NUMBER, Token.OPERATOR, Token.RPAREN, Token.PARAMETER,
             Token.EQUATION, Token.STRING
     };
-
-
     /**
-     * Cached CPDAGS.
+     * The previous offset--before the getModel token was read.
      */
-    private static Map<Token, Pattern> PATTERNS;
+    private int currentOffset;
+    /**
+     * The getModel position of the lexer.
+     */
+    private int nextOffset;
+    /**
+     * Mapping between tokens to their matchers.
+     */
+    private Map<Token, Matcher> matchers = new HashMap<>();
+    /**
+     * The last matcher.
+     */
+    private Matcher lastMatcher;
 
 
     public ExpressionLexer(CharSequence seq) {
@@ -94,6 +82,63 @@ public class ExpressionLexer {
     }
 
     //=================================== Public Methods =====================================//
+
+    /**
+     * Creates a map from tokens to regex Matchers for the given CharSequence, given a map from tokens to regex Patterns
+     * (and the CharSequence).
+     */
+    private static Map<Token, Matcher> createMatchers(Map<Token, Pattern> patterns, CharSequence charSequence) {
+        Map<Token, Matcher> matchers = new HashMap<>();
+        for (Token token : patterns.keySet()) {
+            Pattern pattern = patterns.get(token);
+            Matcher matcher = pattern.matcher(charSequence);
+            matchers.put(token, matcher);
+        }
+        return matchers;
+    }
+
+    private static Map<Token, Pattern> createPatterns() {
+        Map<Token, Pattern> map = new HashMap<>();
+        Map<Token, String> regex = new HashMap<>();
+
+        regex.put(Token.WHITESPACE, "\\s+");
+        regex.put(Token.LPAREN, "\\(");
+        regex.put(Token.RPAREN, "\\)");
+        regex.put(Token.COMMA, ",");
+        regex.put(Token.NUMBER, "-?[\\d\\.]+(e-?\\d+)?");
+        regex.put(Token.OPERATOR, ExpressionLexer.getExpressionRegex());
+        regex.put(Token.PARAMETER, "\\$|(([a-zA-Z]{1})([a-zA-Z0-9-_/:\\.]*))");
+        regex.put(Token.EQUATION, "\\=");
+        regex.put(Token.STRING, "\\\".*\\\"");
+
+
+        for (Token token : regex.keySet()) {
+            map.put(token, Pattern.compile("\\G" + regex.get(token)));
+        }
+
+        return map;
+    }
+
+    /**
+     * Builds a regex that can identify expressions.
+     */
+    private static String getExpressionRegex() {
+        String str = "(";
+        List<ExpressionDescriptor> descriptors = ExpressionManager.getInstance().getDescriptors();
+        for (int i = 0; i < descriptors.size(); i++) {
+            ExpressionDescriptor exp = descriptors.get(i);
+            str += "(" + exp.getToken() + ")";
+            if (i < descriptors.size() - 1) {
+                str += "|";
+            }
+        }
+        // replace meta characters where necessary.
+        str = str.replace("+", "\\+");
+        str = str.replace("*", "\\*");
+        str = str.replace("^", "\\^");
+
+        return str + ")";
+    }
 
     /**
      * @return the type of the next token. For words and quoted charSequence tokens, the charSequence that the token
@@ -126,6 +171,8 @@ public class ExpressionLexer {
         return Token.UNKNOWN;
     }
 
+    //=================================== Private Methods ====================================//
+
     /**
      * @return the string corresponding to the last token lexed.
      */
@@ -154,9 +201,6 @@ public class ExpressionLexer {
         return this.nextOffset;
     }
 
-    //=================================== Private Methods ====================================//
-
-
     private boolean readToken(Token token) {
         Matcher matcher = this.matchers.get(token);
         boolean found = matcher.find(this.nextOffset);
@@ -178,66 +222,6 @@ public class ExpressionLexer {
         }
 
         return found;
-    }
-
-
-    /**
-     * Creates a map from tokens to regex Matchers for the given CharSequence, given a map from tokens to regex Patterns
-     * (and the CharSequence).
-     */
-    private static Map<Token, Matcher> createMatchers(Map<Token, Pattern> patterns, CharSequence charSequence) {
-        Map<Token, Matcher> matchers = new HashMap<>();
-        for (Token token : patterns.keySet()) {
-            Pattern pattern = patterns.get(token);
-            Matcher matcher = pattern.matcher(charSequence);
-            matchers.put(token, matcher);
-        }
-        return matchers;
-    }
-
-
-    private static Map<Token, Pattern> createPatterns() {
-        Map<Token, Pattern> map = new HashMap<>();
-        Map<Token, String> regex = new HashMap<>();
-
-        regex.put(Token.WHITESPACE, "\\s+");
-        regex.put(Token.LPAREN, "\\(");
-        regex.put(Token.RPAREN, "\\)");
-        regex.put(Token.COMMA, ",");
-        regex.put(Token.NUMBER, "-?[\\d\\.]+(e-?\\d+)?");
-        regex.put(Token.OPERATOR, ExpressionLexer.getExpressionRegex());
-        regex.put(Token.PARAMETER, "\\$|(([a-zA-Z]{1})([a-zA-Z0-9-_/:\\.]*))");
-        regex.put(Token.EQUATION, "\\=");
-        regex.put(Token.STRING, "\\\".*\\\"");
-
-
-        for (Token token : regex.keySet()) {
-            map.put(token, Pattern.compile("\\G" + regex.get(token)));
-        }
-
-        return map;
-    }
-
-
-    /**
-     * Builds a regex that can identify expressions.
-     */
-    private static String getExpressionRegex() {
-        String str = "(";
-        List<ExpressionDescriptor> descriptors = ExpressionManager.getInstance().getDescriptors();
-        for (int i = 0; i < descriptors.size(); i++) {
-            ExpressionDescriptor exp = descriptors.get(i);
-            str += "(" + exp.getToken() + ")";
-            if (i < descriptors.size() - 1) {
-                str += "|";
-            }
-        }
-        // replace meta characters where necessary.
-        str = str.replace("+", "\\+");
-        str = str.replace("*", "\\*");
-        str = str.replace("^", "\\^");
-
-        return str + ")";
     }
 
 

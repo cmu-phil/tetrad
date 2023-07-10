@@ -88,6 +88,35 @@ public final class SelectionGenerator {
     }
 
     /**
+     * This static method will print the series of combinations for a choose b to System.out.
+     *
+     * @param a the number of objects being selected from.
+     */
+    public static void testPrint(int a) {
+        SelectionGenerator cg = new SelectionGenerator(a);
+        int[] selection;
+
+        System.out.println();
+        System.out.println(
+                "Printing selections for " + a + " items:");
+        System.out.println();
+
+        while ((selection = cg.next()) != null) {
+            if (selection.length == 0) {
+                System.out.println("zero-length array");
+            } else {
+                for (int aSelection : selection) {
+                    System.out.print(aSelection + "\t");
+                }
+
+                System.out.println();
+            }
+        }
+
+        System.out.println();
+    }
+
+    /**
      * @return the next selection in the series, or null if the series is finished.
      */
     public int[] next() {
@@ -117,35 +146,6 @@ public final class SelectionGenerator {
             System.arraycopy(this.selectionLocal, 0, this.selectionReturned, 0, this.a);
             return this.selectionReturned;
         }
-    }
-
-    /**
-     * This static method will print the series of combinations for a choose b to System.out.
-     *
-     * @param a the number of objects being selected from.
-     */
-    public static void testPrint(int a) {
-        SelectionGenerator cg = new SelectionGenerator(a);
-        int[] selection;
-
-        System.out.println();
-        System.out.println(
-                "Printing selections for " + a + " items:");
-        System.out.println();
-
-        while ((selection = cg.next()) != null) {
-            if (selection.length == 0) {
-                System.out.println("zero-length array");
-            } else {
-                for (int aSelection : selection) {
-                    System.out.print(aSelection + "\t");
-                }
-
-                System.out.println();
-            }
-        }
-
-        System.out.println();
     }
 
     /**

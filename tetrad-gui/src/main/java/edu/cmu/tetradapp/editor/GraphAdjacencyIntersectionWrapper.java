@@ -33,9 +33,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Calculates the intersection of adjacencies for a list of graphs--the
- * adjacencies that are shared by all graphs, the the adjacencies that
- * are shared by all but one graph, and so on down to one graph.
+ * Calculates the intersection of adjacencies for a list of graphs--the adjacencies that are shared by all graphs, the
+ * the adjacencies that are shared by all but one graph, and so on down to one graph.
  *
  * @author josephramsey
  */
@@ -46,6 +45,15 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
 
     public GraphAdjacencyIntersectionWrapper(GraphSource[] data1, Parameters parameters) {
         construct(data1);
+    }
+
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static DataWrapper serializableInstance() {
+        return new DataWrapper(new Parameters());
     }
 
     private void construct(GraphSource... GraphSources) {
@@ -63,16 +71,6 @@ public class GraphAdjacencyIntersectionWrapper implements SessionModel, DoNotAdd
 
         this.graphs = graphs;
     }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static DataWrapper serializableInstance() {
-        return new DataWrapper(new Parameters());
-    }
-
 
     public List<Graph> getGraphs() {
         return this.graphs;

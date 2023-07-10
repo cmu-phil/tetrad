@@ -24,8 +24,8 @@ import static java.util.Collections.sort;
 public class CompareTwoGraphs {
 
     /**
-     * Returns an edgewise comparison of two graphs. This says, edge by edge, what the differences and similarities
-     * are between the two graphs.
+     * Returns an edgewise comparison of two graphs. This says, edge by edge, what the differences and similarities are
+     * between the two graphs.
      *
      * @param trueGraph   The true graph.
      * @param targetGraph The target graph.
@@ -305,8 +305,8 @@ public class CompareTwoGraphs {
 
 
     /**
-     * Returns a misclassification comparison of two graphs. This includes both an edge misclassiifcation matrix
-     * as well as an endpoint misclassification matrix.
+     * Returns a misclassification comparison of two graphs. This includes both an edge misclassiifcation matrix as well
+     * as an endpoint misclassification matrix.
      *
      * @param trueGraph   The true graph.
      * @param targetGraph The target graph.

@@ -45,10 +45,6 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
 
     }
 
-    public void setParams(Parameters params) {
-        this.params = params;
-    }
-
     public void setParentModels(Object[] parentModels) {
         // Ignore.
     }
@@ -58,9 +54,8 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
     }
 
     /**
-     * Constructs the Gui used to edit properties; called from each constructor.
-     * Constructs labels and text fields for editing each property and adds
-     * appropriate listeners.
+     * Constructs the Gui used to edit properties; called from each constructor. Constructs labels and text fields for
+     * editing each property and adds appropriate listeners.
      */
     public void setup() {
         setLayout(new BorderLayout());
@@ -101,11 +96,15 @@ public class EMBayesEstimatorParamsEditor extends JPanel implements ParameterEdi
     }
 
     /**
-     * @return the getMappings object being edited. (This probably should not be
-     * public, but it is needed so that the textfields can edit the model.)
+     * @return the getMappings object being edited. (This probably should not be public, but it is needed so that the
+     * textfields can edit the model.)
      */
     protected synchronized Parameters getParams() {
         return this.params;
+    }
+
+    public void setParams(Parameters params) {
+        this.params = params;
     }
 }
 

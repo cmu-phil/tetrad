@@ -39,10 +39,10 @@ public class DagInCpcagIterator {
      * these edges have already been oriented left and/or right.
      */
     private final LinkedList<DecoratedGraph> decoratedGraphs = new LinkedList<>();
-    private Graph storedGraph;
-    private boolean returnedOne;
     private final LinkedList<Triple> colliders;
     private final boolean allowNewColliders;
+    private Graph storedGraph;
+    private boolean returnedOne;
 
     /**
      * The given CPDAG must be a CPDAG. If it does not consist entirely of directed and undirected edges and if it is
@@ -169,11 +169,11 @@ public class DagInCpcagIterator {
     private static class DecoratedGraph {
         private final Graph graph;
         private final Edge edge;
+        private final Knowledge knowledge;
+        private final boolean allowArbitraryOrientation;
         private boolean triedLeft;
         private boolean triedRight;
-        private final Knowledge knowledge;
         private Map<Graph, Set<Edge>> changedEdges = new HashMap<>();
-        private final boolean allowArbitraryOrientation;
 
         public DecoratedGraph(Graph graph, Knowledge knowledge, Map<Graph, Set<Edge>> changedEdges, boolean allowArbitraryOrientation) {
             this.graph = graph;

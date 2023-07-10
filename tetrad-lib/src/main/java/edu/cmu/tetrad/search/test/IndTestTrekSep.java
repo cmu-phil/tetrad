@@ -41,15 +41,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Adam Brodie
  */
 public final class IndTestTrekSep implements IndependenceTest {
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final ICovarianceMatrix covMatrix;
     private final List<Node> latents;
-    private boolean verbose;
     private final List<List<Node>> clustering;
-    private List<Node> variables;
-    private double alpha;
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
     private final Map<Node, Integer> indexMap;
     private final Map<String, Node> nameMap;
+    private boolean verbose;
+    private List<Node> variables;
+    private double alpha;
 
     //==========================CONSTRUCTORS=============================//
 
@@ -162,6 +162,15 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
+     * Gets the model significance level.
+     *
+     * @return This alpha.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      *
@@ -176,15 +185,6 @@ public final class IndTestTrekSep implements IndependenceTest {
     }
 
     /**
-     * Gets the model significance level.
-     *
-     * @return This alpha.
-     */
-    public double getAlpha() {
-        return this.alpha;
-    }
-
-    /**
      * Returns the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      *
@@ -192,6 +192,18 @@ public final class IndTestTrekSep implements IndependenceTest {
      */
     public List<Node> getVariables() {
         return this.latents;
+    }
+
+    /**
+     * Sets the varialbe to this list (of the same length). Useful is multiple test are used that need the same
+     * object-identical lists of variables.
+     *
+     * @param variables This list.
+     */
+    public void setVariables(List<Node> variables) {
+        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
+        this.variables = new ArrayList<>(variables);
+        this.covMatrix.setVariables(variables);
     }
 
     /**
@@ -258,18 +270,6 @@ public final class IndTestTrekSep implements IndependenceTest {
      */
     public String toString() {
         return "t-Separation test, alpha = " + IndTestTrekSep.nf.format(getAlpha());
-    }
-
-    /**
-     * Sets the varialbe to this list (of the same length). Useful is multiple test are used that need the same
-     * object-identical lists of variables.
-     *
-     * @param variables This list.
-     */
-    public void setVariables(List<Node> variables) {
-        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
-        this.variables = new ArrayList<>(variables);
-        this.covMatrix.setVariables(variables);
     }
 
     /**

@@ -130,6 +130,23 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
 
     //=============================PUBLIC METHODS=========================//
 
+    private static boolean hasNextValue(Proposition proposition, int variable,
+                                        int curIndex) {
+        return StoredCellProbs.nextValue(proposition, variable, curIndex) != -1;
+    }
+
+    private static int nextValue(Proposition proposition, int variable,
+                                 int curIndex) {
+        for (int i = curIndex + 1;
+             i < proposition.getNumCategories(variable); i++) {
+            if (proposition.isAllowed(variable, i)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     /**
      * @return the probability for the given cell, specified as a particular combination of variable values, for the
      * list of variables (in order) returned by get
@@ -174,23 +191,6 @@ public final class StoredCellProbs implements TetradSerializable, DiscreteProbs 
         }
 
         return p;
-    }
-
-    private static boolean hasNextValue(Proposition proposition, int variable,
-                                        int curIndex) {
-        return StoredCellProbs.nextValue(proposition, variable, curIndex) != -1;
-    }
-
-    private static int nextValue(Proposition proposition, int variable,
-                                 int curIndex) {
-        for (int i = curIndex + 1;
-             i < proposition.getNumCategories(variable); i++) {
-            if (proposition.isAllowed(variable, i)) {
-                return i;
-            }
-        }
-
-        return -1;
     }
 
     public double getConditionalProb(Proposition assertion,

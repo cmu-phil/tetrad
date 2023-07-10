@@ -65,11 +65,11 @@ import java.util.concurrent.RecursiveTask;
  * @see Knowledge
  */
 public final class FciMax implements IGraphSearch {
+    private final IndependenceTest independenceTest;
+    private final TetradLogger logger = TetradLogger.getInstance();
     private SepsetMap sepsets;
     private Knowledge knowledge = new Knowledge();
-    private final IndependenceTest independenceTest;
     private long elapsedTime;
-    private final TetradLogger logger = TetradLogger.getInstance();
     private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
     private boolean stable = false;
     private boolean completeRuleSetUsed = true;

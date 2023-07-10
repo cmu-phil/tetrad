@@ -37,6 +37,10 @@ import edu.cmu.tetrad.util.Parameters;
  */
 public class TestImagesSimulation {
 
+    public static void main(String... args) {
+        new TestImagesSimulation().test1();
+    }
+
     public void test1() {
         Parameters parameters = new Parameters();
 
@@ -91,10 +95,6 @@ public class TestImagesSimulation {
         comparison.setTabDelimitedTables(false);
 
         comparison.compareFromSimulations("comparison", simulations, algorithms, statistics, parameters);
-    }
-
-    public static void main(String... args) {
-        new TestImagesSimulation().test1();
     }
 }
 

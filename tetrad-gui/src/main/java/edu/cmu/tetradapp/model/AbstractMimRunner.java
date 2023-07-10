@@ -29,28 +29,24 @@ import edu.cmu.tetrad.util.Parameters;
 import java.util.List;
 
 /**
- * Implements a stub that basic algorithm wrappers can extend if they take
- * either a dataModel model or a workbench model as parent. Contains basic
- * methods for executing algorithm and returning results.
+ * Implements a stub that basic algorithm wrappers can extend if they take either a dataModel model or a workbench model
+ * as parent. Contains basic methods for executing algorithm and returning results.
  *
  * @author josephramsey
  */
 public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     static final long serialVersionUID = 23L;
-
     /**
-     * @serial Can be null.
-     */
-    private String name;
-
-    /**
-     * Keeps a reference to the dataModel source that has been provided
-     * (hopefully either a dataModel model or a graph).
+     * Keeps a reference to the dataModel source that has been provided (hopefully either a dataModel model or a
+     * graph).
      *
      * @serial Cannot be null.
      */
     private final transient DataModel dataModel;
-
+    /**
+     * @serial Can be null.
+     */
+    private String name;
     /**
      * The parameters guiding this search (when executed).
      *
@@ -90,9 +86,8 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
     //===========================CONSTRUCTORS===========================//
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DatWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
+     * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     AbstractMimRunner(DataWrapper dataWrapper, Clusters clusters, Parameters params) {
         if (dataWrapper == null) {
@@ -154,12 +149,28 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         return this.resultGraph;
     }
 
+    void setResultGraph(Graph graph) {
+        this.resultGraph = graph;
+    }
+
     public Clusters getClusters() {
         return this.clusters;
     }
 
+    void setClusters(Clusters clusters) {
+        if (clusters == null) {
+            throw new NullPointerException();
+        }
+
+        this.clusters = clusters;
+    }
+
     public Graph getStructureGraph() {
         return this.structureGraph;
+    }
+
+    void setStructureGraph(Graph graph) {
+        this.structureGraph = graph;
     }
 
     public Graph getFullGraph() {
@@ -186,6 +197,8 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         }
     }
 
+    //===========================PROTECTED METHODS========================//
+
     public final Parameters getParams() {
         return this.params;
     }
@@ -198,29 +211,10 @@ public abstract class AbstractMimRunner implements MimRunner, ParamsResettable {
         return this.params;
     }
 
-    //===========================PROTECTED METHODS========================//
-
-    void setResultGraph(Graph graph) {
-        this.resultGraph = graph;
-    }
-
-    void setClusters(Clusters clusters) {
-        if (clusters == null) {
-            throw new NullPointerException();
-        }
-
-        this.clusters = clusters;
-    }
-
-    void setStructureGraph(Graph graph) {
-        this.structureGraph = graph;
-    }
-
     //===========================PRIVATE METHODS==========================//
 
     /**
-     * Find the dataModel model. (If it's a list, take the one that's
-     * selected.)
+     * Find the dataModel model. (If it's a list, take the one that's selected.)
      */
     private DataModel getDataModel(DataWrapper dataWrapper) {
         DataModel dataModel = dataWrapper.getSelectedDataModel();

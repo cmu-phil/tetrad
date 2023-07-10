@@ -156,6 +156,15 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
         }
     }
 
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static ForbiddenGraphModel serializableInstance() {
+        return new ForbiddenGraphModel(new Parameters(), GraphWrapper.serializableInstance());
+    }
+
     private void createKnowledge(Parameters params) {
         Knowledge knowledge = getKnowledge();
         if (knowledge == null) {
@@ -189,15 +198,6 @@ public class ForbiddenGraphModel extends KnowledgeBoxModel {
 //                }
 //            }
 //        }
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static ForbiddenGraphModel serializableInstance() {
-        return new ForbiddenGraphModel(new Parameters(), GraphWrapper.serializableInstance());
     }
 
     public Graph getResultGraph() {

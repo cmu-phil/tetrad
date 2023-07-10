@@ -39,20 +39,18 @@ import java.util.Arrays;
  */
 public class PolynomialTerm implements TetradSerializable {
     static final long serialVersionUID = 23L;
-
-    /**
-     * The coefficient of the term.
-     *
-     * @serial
-     */
-    private double coefficient;
-
     /**
      * The variables of the term.
      *
      * @serial
      */
     private final int[] variables;
+    /**
+     * The coefficient of the term.
+     *
+     * @serial
+     */
+    private double coefficient;
 
     //=================================CONSTRUCTORS========================//
 

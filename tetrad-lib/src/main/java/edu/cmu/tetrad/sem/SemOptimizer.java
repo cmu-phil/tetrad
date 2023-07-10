@@ -39,9 +39,9 @@ public interface SemOptimizer extends TetradSerializable {
      */
     void optimize(SemIm sem);
 
-    void setNumRestarts(int numRestarts);
-
     int getNumRestarts();
+
+    void setNumRestarts(int numRestarts);
 }
 
 

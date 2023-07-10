@@ -44,14 +44,12 @@ public final class EmBayesEstimator {
     private final BayesPm bayesPm;
 
     private final DataSet dataSet;
+    private final Node[] nodes;
+    //latents
+    private final Graph graph;
     //private DataSet ddsNm;
     private DataSet mixedData;   //Contains all variables with missing value columns for
-    //latents
-
     private List<Node> allVariables;          //Variables in mixedData (observed and latents)
-
-    private final Node[] nodes;
-    private final Graph graph;
     private BayesPm bayesPmObs;
     private BayesIm observedIm;
     private BayesIm estimatedIm;

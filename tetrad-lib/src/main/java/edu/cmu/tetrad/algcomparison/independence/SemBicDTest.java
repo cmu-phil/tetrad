@@ -1,6 +1,9 @@
 package edu.cmu.tetrad.algcomparison.independence;
 
-import edu.cmu.tetrad.data.*;
+import edu.cmu.tetrad.data.CovarianceMatrix;
+import edu.cmu.tetrad.data.DataModel;
+import edu.cmu.tetrad.data.DataSet;
+import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.search.work_in_progress.SemBicScoreDeterministic;

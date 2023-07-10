@@ -28,7 +28,6 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Identifiability, based on RowSummingExactUpdater
@@ -47,23 +46,19 @@ public final class Identifiability implements ManipulatingBayesUpdater {
      * @serial Cannot be null.
      */
     private final BayesIm bayesIm;
-
+    private final boolean debug = false;
     /**
      * Stores evidence for all variables.
      *
      * @serial Cannot be null.
      */
     private Evidence evidence;
-
     /**
      * The last manipulated BayesIm.
      *
      * @serial Can be null.
      */
     private BayesIm manipulatedBayesIm;
-
-
-    private final boolean debug = false;
 
 
     //==============================CONSTRUCTORS===========================//
@@ -73,13 +68,6 @@ public final class Identifiability implements ManipulatingBayesUpdater {
      */
     public Identifiability(BayesIm bayesIm) {
         this(bayesIm, Evidence.tautology(bayesIm));
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static Identifiability serializableInstance() {
-        return new Identifiability(MlBayesIm.serializableInstance());
     }
 
     /////////////////////////////////////////////////////////////////
@@ -100,6 +88,13 @@ public final class Identifiability implements ManipulatingBayesUpdater {
             int[] cComponents = getCComponents(bayesIm);
             printCComponents(cComponents);
         }
+    }
+
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     */
+    public static Identifiability serializableInstance() {
+        return new Identifiability(MlBayesIm.serializableInstance());
     }
 
     //============================PUBLIC METHODS==========================//

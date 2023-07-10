@@ -1,4 +1,3 @@
-
 /**
  * Contains classes for searching for (mostly structural) causal models given data.
  */

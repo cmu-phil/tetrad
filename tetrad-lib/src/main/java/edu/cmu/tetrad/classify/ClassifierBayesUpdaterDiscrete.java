@@ -62,22 +62,6 @@ public final class ClassifierBayesUpdaterDiscrete
      * @serial
      */
     private final DataSet testData;
-
-    /**
-     * The percentage of correct estimates of the target variable.  This will be set to a meaningful value upon
-     * completion of the crossTabulate method.
-     *
-     * @serial
-     */
-    private double percentCorrect;
-
-    /**
-     * The target variable (inferred from its name).
-     *
-     * @serial
-     */
-    private DiscreteVariable targetVariable;
-
     /*
      * The variables in the dataset to be classified.  These should be
      * the same variables as in the training dataset according to the
@@ -85,7 +69,19 @@ public final class ClassifierBayesUpdaterDiscrete
      * @serial
      */
     private final List<Node> bayesImVars;
-
+    /**
+     * The percentage of correct estimates of the target variable.  This will be set to a meaningful value upon
+     * completion of the crossTabulate method.
+     *
+     * @serial
+     */
+    private double percentCorrect;
+    /**
+     * The target variable (inferred from its name).
+     *
+     * @serial
+     */
+    private DiscreteVariable targetVariable;
     /**
      * @serial
      */

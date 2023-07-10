@@ -38,9 +38,8 @@ import java.util.*;
 import static org.apache.commons.math3.util.FastMath.abs;
 
 /**
- * This is the scatterplot model class holding the necessary information to
- * create a scatterplot. It uses Point2D to hold the pair of values need to
- * create the scatterplot.
+ * This is the scatterplot model class holding the necessary information to create a scatterplot. It uses Point2D to
+ * hold the pair of values need to create the scatterplot.
  *
  * @author Adrian Tang
  * @author josephramsey
@@ -177,8 +176,7 @@ public class ScatterPlot {
     }
 
     /**
-     * Seives through the sample values and grabs only the values for the
-     * response and predictor variables.
+     * Seives through the sample values and grabs only the values for the response and predictor variables.
      *
      * @return a vector containing the filtered values.
      */

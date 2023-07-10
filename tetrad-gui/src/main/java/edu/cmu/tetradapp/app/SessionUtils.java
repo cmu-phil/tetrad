@@ -40,14 +40,12 @@ import java.util.List;
 final class SessionUtils {
 
     /**
-     * Shows a dialog that says "Explanation of [Model type]" followed by a list
-     * of each parent combination for that model type with buttons that link to
-     * an explanations of how the model works with each combination of parent
+     * Shows a dialog that says "Explanation of [Model type]" followed by a list of each parent combination for that
+     * model type with buttons that link to an explanations of how the model works with each combination of parent
      * values.
      *
      * @param warning   If true, shows a warning icon.
-     * @param onlyModel If true, displays a message indicating that this is the
-     *                  only model consistent with the parents.
+     * @param onlyModel If true, displays a message indicating that this is the only model consistent with the parents.
      */
     public static void showPermissibleParentsDialog(Class modelClass,
                                                     JComponent centeringComp,
@@ -91,9 +89,8 @@ final class SessionUtils {
     }
 
     /**
-     * @return a string listing the combinations of legal parent models for a
-     * given model class. The item at [i][j] is the jth parent model description
-     * of the ith parent model combination.
+     * @return a string listing the combinations of legal parent models for a given model class. The item at [i][j] is
+     * the jth parent model description of the ith parent model combination.
      */
     private static String[][] possibleParentCombinations(Class modelClass) {
         List<List<String>> parentCombinations = new LinkedList<>();

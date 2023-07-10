@@ -8,7 +8,7 @@ import edu.cmu.tetrad.search.score.Score;
  * @author josephramsey
  */
 public interface HasPenaltyDiscount extends Score {
-    void setPenaltyDiscount(double penaltyDiscount);
-
     double getPenaltyDiscount();
+
+    void setPenaltyDiscount(double penaltyDiscount);
 }

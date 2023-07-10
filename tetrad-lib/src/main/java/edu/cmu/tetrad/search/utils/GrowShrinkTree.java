@@ -84,9 +84,9 @@ public class GrowShrinkTree {
     private static class GSTNode implements Comparable<GSTNode> {
         private final GrowShrinkTree tree;
         private final Node add;
+        private final double growScore;
         private boolean grow;
         private boolean shrink;
-        private final double growScore;
         private double shrinkScore;
         private List<GSTNode> branches;
         private Set<Node> remove;

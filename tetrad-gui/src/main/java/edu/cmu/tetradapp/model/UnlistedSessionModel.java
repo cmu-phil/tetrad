@@ -24,8 +24,8 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.util.TetradSerializable;
 
 /**
- * Tags a session model as unlisted, in the sense that it doesn't show up in
- * lists of models presented to the user but may be constructed by the session.
+ * Tags a session model as unlisted, in the sense that it doesn't show up in lists of models presented to the user but
+ * may be constructed by the session.
  *
  * @author josephramsey
  */

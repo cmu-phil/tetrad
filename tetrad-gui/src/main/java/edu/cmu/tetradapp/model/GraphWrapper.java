@@ -25,8 +25,8 @@ import edu.cmu.tetrad.calculator.expression.Expression;
 import edu.cmu.tetrad.calculator.expression.VariableExpression;
 import edu.cmu.tetrad.data.KnowledgeBoxInput;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.sem.GeneralizedSemIm;
 import edu.cmu.tetrad.sem.GeneralizedSemPm;
 import edu.cmu.tetrad.session.SimulationParamsSource;
@@ -37,11 +37,14 @@ import edu.cmu.tetradapp.util.IonInput;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Holds a tetrad-style graph with all of the constructors necessary for it to
- * serve as a model for the tetrad application.
+ * Holds a tetrad-style graph with all of the constructors necessary for it to serve as a model for the tetrad
+ * application.
  *
  * @author josephramsey
  */
@@ -151,74 +154,6 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
 
     //==============================PUBLIC METHODS======================//
 
-    public Graph getGraph() {
-        return this.graphs.get(getModelIndex());
-    }
-
-    public void setGraph(Graph graph) {
-        this.graphs = new ArrayList<>();
-        this.graphs.add(new EdgeListGraph(graph));
-        log();
-    }
-
-    public boolean allowRandomGraph() {
-        return true;
-    }
-
-    @Override
-    public IndependenceTest getIndependenceTest() {
-        return new MsepTest(getGraph());
-    }
-
-    public String getName() {
-        return this.name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Graph getSourceGraph() {
-        return getGraph();
-    }
-
-    public Graph getResultGraph() {
-        return getGraph();
-    }
-
-    public List<String> getVariableNames() {
-        return getGraph().getNodeNames();
-    }
-
-    public List<Node> getVariables() {
-        return getGraph().getNodes();
-    }
-
-    @Override
-    public Map<String, String> getParamSettings() {
-        Map<String, String> paramSettings = new HashMap<>();
-        paramSettings.put("# Vars", Integer.toString(getGraph().getNumNodes()));
-        paramSettings.put("# Edges", Integer.toString(getGraph().getNumEdges()));
-        if (getGraph().paths().existsDirectedCycle()) paramSettings.put("Cyclic", null);
-        return paramSettings;
-    }
-
-    @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
-        this.allParamSettings = paramSettings;
-    }
-
-    @Override
-    public Map<String, String> getAllParamSettings() {
-        return this.allParamSettings;
-    }
-
-    public Parameters getParameters() {
-        return this.parameters;
-    }
-
-    //==========================PRIVATE METaHODS===========================//
-
     private static String findParameter(Expression expression, String name) {
         List<Expression> expressions = expression.getExpressions();
 
@@ -299,20 +234,86 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         return graph2;
     }
 
+    public Graph getGraph() {
+        return this.graphs.get(getModelIndex());
+    }
+
+    public void setGraph(Graph graph) {
+        this.graphs = new ArrayList<>();
+        this.graphs.add(new EdgeListGraph(graph));
+        log();
+    }
+
+    public boolean allowRandomGraph() {
+        return true;
+    }
+
+    @Override
+    public IndependenceTest getIndependenceTest() {
+        return new MsepTest(getGraph());
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Graph getSourceGraph() {
+        return getGraph();
+    }
+
+    public Graph getResultGraph() {
+        return getGraph();
+    }
+
+    public List<String> getVariableNames() {
+        return getGraph().getNodeNames();
+    }
+
+    public List<Node> getVariables() {
+        return getGraph().getNodes();
+    }
+
+    @Override
+    public Map<String, String> getParamSettings() {
+        Map<String, String> paramSettings = new HashMap<>();
+        paramSettings.put("# Vars", Integer.toString(getGraph().getNumNodes()));
+        paramSettings.put("# Edges", Integer.toString(getGraph().getNumEdges()));
+        if (getGraph().paths().existsDirectedCycle()) paramSettings.put("Cyclic", null);
+        return paramSettings;
+    }
+
+    @Override
+    public Map<String, String> getAllParamSettings() {
+        return this.allParamSettings;
+    }
+
+    //==========================PRIVATE METaHODS===========================//
+
+    @Override
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamSettings = paramSettings;
+    }
+
+    public Parameters getParameters() {
+        return this.parameters;
+    }
+
     private void log() {
         TetradLogger.getInstance().log("info", "General Graph");
         TetradLogger.getInstance().log("graph", "" + getGraph());
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {
@@ -327,12 +328,12 @@ public class GraphWrapper implements KnowledgeBoxInput, IonInput, IndTestProduce
         return this.modelIndex;
     }
 
-    public String getModelSourceName() {
-        return this.modelSourceName;
-    }
-
     public void setModelIndex(int modelIndex) {
         this.modelIndex = modelIndex;
+    }
+
+    public String getModelSourceName() {
+        return this.modelSourceName;
     }
 
     @Override

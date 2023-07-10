@@ -134,6 +134,15 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
         }
     }
 
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static RequiredGraphModel serializableInstance() {
+        return new RequiredGraphModel(new Parameters(), GraphWrapper.serializableInstance());
+    }
+
     private void createKnowledge() {
         Knowledge knwl = getKnowledge();
         if (knwl == null) {
@@ -170,15 +179,6 @@ public class RequiredGraphModel extends KnowledgeBoxModel {
                 }
             }
         }
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static RequiredGraphModel serializableInstance() {
-        return new RequiredGraphModel(new Parameters(), GraphWrapper.serializableInstance());
     }
 
     public Graph getResultGraph() {

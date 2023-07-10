@@ -193,6 +193,8 @@ public interface Graph extends TetradSerializable {
      */
     List<Node> getNodes();
 
+    void setNodes(List<Node> nodes);
+
     /**
      * @return the names of the nodes, in the order of <code>getNodes</code>.
      */
@@ -360,8 +362,6 @@ public interface Graph extends TetradSerializable {
 
     Set<Node> getSepset(Node n1, Node n2);
 
-    void setNodes(List<Node> nodes);
-
     Map<String, Object> getAllAttributes();
 
     Object getAttribute(String key);
@@ -375,6 +375,8 @@ public interface Graph extends TetradSerializable {
     Set<Triple> getDottedUnderlines();
 
     Set<Triple> getAmbiguousTriples();
+
+    void setAmbiguousTriples(Set<Triple> triples);
 
     /**
      * States whether r-s-r is an underline triple or not.
@@ -401,8 +403,6 @@ public interface Graph extends TetradSerializable {
     void setUnderLineTriples(Set<Triple> triples);
 
     void setDottedUnderLineTriples(Set<Triple> triples);
-
-    void setAmbiguousTriples(Set<Triple> triples);
 
     void removeTriplesNotInGraph();
 }

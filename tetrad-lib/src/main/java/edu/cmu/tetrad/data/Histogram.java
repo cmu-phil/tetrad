@@ -35,9 +35,9 @@ import java.util.Map;
  * @author josephramsey
  */
 public class Histogram {
+    private final DataSet dataSet;
     private Node target;
     private int numBins = 10;
-    private final DataSet dataSet;
     private Map<Node, double[]> continuousIntervals;
     private Map<Node, Integer> discreteValues;
 
@@ -56,27 +56,6 @@ public class Histogram {
     }
 
     //========================================PUBLIC METHODS=================================//
-
-    /**
-     * Sets the target. Setting the target removes all conditioning variables and sets the number of bins to the default
-     * (using Sturges' formula).
-     *
-     * @param target The name of the target in the data set.
-     */
-    private void setTarget(String target) {
-        Node _target;
-
-        if (target == null) {
-            _target = this.dataSet.getVariable(0);
-        } else {
-            _target = this.dataSet.getVariable(target);
-        }
-
-        this.target = _target;
-        this.continuousIntervals = new HashMap<>();
-        this.discreteValues = new HashMap<>();
-//        this.numBins = (int) ceil(log(this.dataSet.getNumRows()) / log(2) + 1);
-    }
 
     /**
      * Adds a continuous conditioning variables, conditioning on a range of values.
@@ -237,6 +216,27 @@ public class Histogram {
      */
     public String getTarget() {
         return this.target.getName();
+    }
+
+    /**
+     * Sets the target. Setting the target removes all conditioning variables and sets the number of bins to the default
+     * (using Sturges' formula).
+     *
+     * @param target The name of the target in the data set.
+     */
+    private void setTarget(String target) {
+        Node _target;
+
+        if (target == null) {
+            _target = this.dataSet.getVariable(0);
+        } else {
+            _target = this.dataSet.getVariable(target);
+        }
+
+        this.target = _target;
+        this.continuousIntervals = new HashMap<>();
+        this.discreteValues = new HashMap<>();
+//        this.numBins = (int) ceil(log(this.dataSet.getNumRows()) / log(2) + 1);
     }
 
     public Node getTargetNode() {

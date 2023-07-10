@@ -50,13 +50,13 @@ public final class DagScorer implements TetradSerializable, Scorer {
     static final long serialVersionUID = 23L;
 
     private final ICovarianceMatrix covMatrix;
-    private DataSet dataSet;
     private final Matrix edgeCoef;
     private final Matrix errorCovar;
-    private Graph dag;
     private final List<Node> variables;
-    private Matrix implCovarMeasC;
     private final Matrix sampleCovar;
+    private DataSet dataSet;
+    private Graph dag;
+    private Matrix implCovarMeasC;
     private double logDetSample;
     private double fml = Double.NaN;
 

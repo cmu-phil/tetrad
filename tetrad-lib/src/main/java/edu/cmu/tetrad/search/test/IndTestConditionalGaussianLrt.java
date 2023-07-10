@@ -48,11 +48,9 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class IndTestConditionalGaussianLrt implements IndependenceTest {
     private final DataSet data;
     private final Map<Node, Integer> nodesHash;
-    private double alpha;
-
     // Likelihood function
     private final ConditionalGaussianLikelihood likelihood;
-
+    private double alpha;
     private boolean verbose;
     private int numCategoriesToDiscretize = 3;
 
@@ -124,8 +122,10 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         double dof0 = ret1.getDof() - ret2.getDof();
 
         if (dof0 <= 0) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
-        if (this.alpha == 0) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
-        if (this.alpha == 1) return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
+        if (this.alpha == 0)
+            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
+        if (this.alpha == 1)
+            return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
         if (lik0 == Double.POSITIVE_INFINITY)
             return new IndependenceResult(new IndependenceFact(x, y, _z), false, Double.NaN, Double.NaN);
 

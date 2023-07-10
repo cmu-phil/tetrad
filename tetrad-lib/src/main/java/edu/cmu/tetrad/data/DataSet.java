@@ -267,14 +267,14 @@ public interface DataSet extends DataModel {
     String toString();
 
     /**
-     * The number formatter used to print out continuous values.
-     */
-    void setNumberFormat(NumberFormat nf);
-
-    /**
      * The number format of the dataset.
      */
     NumberFormat getNumberFormat();
+
+    /**
+     * The number formatter used to print out continuous values.
+     */
+    void setNumberFormat(NumberFormat nf);
 
     /**
      * The character used a delimiter when the dataset is output.

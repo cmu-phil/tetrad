@@ -53,10 +53,10 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     private final List<Node> variables;
     private final int sampleSize;
     private final List<DataSet> dataSets;
-    private double alpha;
-    private double pValue = Double.NaN;
     private final List<ICovarianceMatrix> ncov;
     private final Map<Node, Integer> variablesMap;
+    private double alpha;
+    private double pValue = Double.NaN;
     private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
@@ -171,6 +171,15 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     }
 
     /**
+     * Gets the getModel significance level.
+     *
+     * @return this alpha.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      *
@@ -182,15 +191,6 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
         }
 
         this.alpha = alpha;
-    }
-
-    /**
-     * Gets the getModel significance level.
-     *
-     * @return this alpha.
-     */
-    public double getAlpha() {
-        return this.alpha;
     }
 
     /**

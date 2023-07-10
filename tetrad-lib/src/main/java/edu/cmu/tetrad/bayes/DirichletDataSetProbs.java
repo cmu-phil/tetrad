@@ -49,25 +49,22 @@ public final class DirichletDataSetProbs implements DiscreteProbs {
      * @serial
      */
     private final int[] dims;
-
-    /**
-     * Indicates whether bounds on coordinate values are explicitly enforced. This may slow down loops.
-     *
-     * @serial
-     */
-    private boolean boundsEnforced = true;
-
     /**
      * The number of rows in the data.
      *
      * @serial
      */
     private final int numRows;
-
     /**
      * @serial
      */
     private final double symmValue;
+    /**
+     * Indicates whether bounds on coordinate values are explicitly enforced. This may slow down loops.
+     *
+     * @serial
+     */
+    private boolean boundsEnforced = true;
 
     //============================CONSTRUCTORS===========================//
 

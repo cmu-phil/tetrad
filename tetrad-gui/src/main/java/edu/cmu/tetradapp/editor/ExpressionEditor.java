@@ -45,52 +45,38 @@ class ExpressionEditor extends JPanel {
 
 
     /**
+     * Normal selections color.
+     */
+    private static final Color SELECTION = new Color(204, 204, 255);
+    /**
      * The variable field.
      */
     private final JTextField variable;
-
-
     /**
      * The expression field.
      */
     private final JTextField expression;
-
-
     /**
      * Parser.
      */
     private final ExpressionParser parser;
-
-
-    /**
-     * The last field to have focus.
-     */
-    private JTextField lastFocused;
-
-
     /**
      * Focus listeners.
      */
     private final List<FocusListener> listeners = new LinkedList<>();
-
-
-    /**
-     * States whether the remove box is clicked.
-     */
-    private boolean remove;
-
-
     /**
      * The active selections if there is one.
      */
     private final List<Selection> selections = new LinkedList<>();
-
-
-    /**
-     * Normal selections color.
-     */
-    private static final Color SELECTION = new Color(204, 204, 255);
     private final PositionsFocusListener positionsListener;
+    /**
+     * The last field to have focus.
+     */
+    private JTextField lastFocused;
+    /**
+     * States whether the remove box is clicked.
+     */
+    private boolean remove;
 
 
     /**
@@ -155,9 +141,8 @@ class ExpressionEditor extends JPanel {
     }
 
     /**
-     * Adds a focus listener that will be notified about the focus events of
-     * the fields in the editor.  The listener will only be notified of gain focus
-     * events.
+     * Adds a focus listener that will be notified about the focus events of the fields in the editor.  The listener
+     * will only be notified of gain focus events.
      */
     public void addFieldFocusListener(FocusListener listener) {
         this.listeners.add(listener);
@@ -275,8 +260,7 @@ class ExpressionEditor extends JPanel {
 
 
     /**
-     * Inserts the given symbol into the last focused field, of if there isn't one
-     * the expression field.
+     * Inserts the given symbol into the last focused field, of if there isn't one the expression field.
      *
      * @param append States whether it should append to the field's getModel value or not.
      */
@@ -297,8 +281,8 @@ class ExpressionEditor extends JPanel {
 
 
     /**
-     * States whether the caret is in the getModel selection, if not false is returned and
-     * all the selections are removed (as the user moved the caret around).
+     * States whether the caret is in the getModel selection, if not false is returned and all the selections are
+     * removed (as the user moved the caret around).
      */
     private boolean caretInSelection(Selection sel) {
         int caret = this.expression.getCaretPosition();
@@ -341,8 +325,7 @@ class ExpressionEditor extends JPanel {
 
 
     /**
-     * Adjusts any getModel selections to the fact that the given selections was just
-     * replaced by the given string.
+     * Adjusts any getModel selections to the fact that the given selections was just replaced by the given string.
      */
     private void adjustSelections(Selection selection, String inserted) {
         int dif = (selection.y - selection.x) - inserted.length();
@@ -383,6 +366,18 @@ class ExpressionEditor extends JPanel {
         }
     }
 
+    private static class PositionsFocusListener extends FocusAdapter {
+        private int start;
+        private int end;
+        private int caretPosition;
+
+        public void focusLost(FocusEvent e) {
+            JTextField textField = (JTextField) e.getSource();
+            this.start = textField.getSelectionStart();
+            this.end = textField.getSelectionEnd();
+            this.caretPosition = textField.getCaretPosition();
+        }
+    }
 
     /**
      * Focus listener for the variable field.
@@ -404,7 +399,6 @@ class ExpressionEditor extends JPanel {
         }
     }
 
-
     /**
      * Focus listener for the expression field.
      */
@@ -424,19 +418,6 @@ class ExpressionEditor extends JPanel {
         @Override
         public void focusLost(FocusEvent e) {
 
-        }
-    }
-
-    private static class PositionsFocusListener extends FocusAdapter {
-        private int start;
-        private int end;
-        private int caretPosition;
-
-        public void focusLost(FocusEvent e) {
-            JTextField textField = (JTextField) e.getSource();
-            this.start = textField.getSelectionStart();
-            this.end = textField.getSelectionEnd();
-            this.caretPosition = textField.getCaretPosition();
         }
     }
 

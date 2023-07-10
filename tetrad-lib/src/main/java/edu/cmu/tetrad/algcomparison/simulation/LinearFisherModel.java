@@ -25,10 +25,10 @@ import java.util.List;
 public class LinearFisherModel implements Simulation, TakesData {
 
     static final long serialVersionUID = 23L;
-    private List<DataSet> dataSets = new ArrayList<>();
-    private List<Graph> graphs = new ArrayList<>();
     private final RandomGraph randomGraph;
     private final List<DataModel> shocks;
+    private List<DataSet> dataSets = new ArrayList<>();
+    private List<Graph> graphs = new ArrayList<>();
 
     public LinearFisherModel(RandomGraph graph) {
         this.randomGraph = graph;

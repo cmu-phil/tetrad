@@ -36,70 +36,60 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 /**
- * Implements a stub that basic algorithm wrappers can extend if they take
- * either a dataModel model or a workbench model as parent. Contains basic
- * methods for executing algorithm and returning results.
+ * Implements a stub that basic algorithm wrappers can extend if they take either a dataModel model or a workbench model
+ * as parent. Contains basic methods for executing algorithm and returning results.
  *
  * @author josephramsey
  */
 public abstract class AbstractAlgorithmRunner
         implements AlgorithmRunner, ParamsResettable, Unmarshallable {
     static final long serialVersionUID = 23L;
+    final Map<String, String> paramSettings = new LinkedHashMap<>();
     private DataWrapper dataWrapper;
-
     /**
      * @serial Can be null.
      */
     private String name;
-
     /**
      * The parameters guiding this search (when executed).
      *
      * @serial Cannot be null.
      */
     private Parameters params;
-
     /**
-     * Keeps a reference to the dataModel source that has been provided
-     * (hopefully either a dataModel model or a graph).
+     * Keeps a reference to the dataModel source that has been provided (hopefully either a dataModel model or a
+     * graph).
      *
      * @serial Can be null.
      */
     private transient DataModel dataModel;
-
     /**
      * Keeps a reference to the source graph, if there is one.
      *
      * @serial Can be null.
      */
     private Graph sourceGraph;
-
     /**
      * Keeps a reference to the result graph for the algorithm.
      *
      * @serial Can be null.
      */
     private Graph resultGraph = new EdgeListGraph();
-
     /**
      * The initial graph for the algorithm, if feasible.
      */
     private Graph externalGraph;
-
     /**
-     * A series of graphs that the search algorithm might search over, if
-     * it's that kind of algorithm.
+     * A series of graphs that the search algorithm might search over, if it's that kind of algorithm.
      */
     private List<Graph> graphs;
     private Map<String, String> allParamSettings;
-    final Map<String, String> paramSettings = new LinkedHashMap<>();
 
     //===========================CONSTRUCTORS===========================//
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DatWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
+     * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
                                    Parameters params, KnowledgeBoxModel knowledgeBoxModel) {
@@ -128,9 +118,8 @@ public abstract class AbstractAlgorithmRunner
     }
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DatWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DatWrapper must contain a DataSet that is either a DataSet or
+     * a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public AbstractAlgorithmRunner(DataWrapper dataWrapper,
                                    Parameters params, KnowledgeBoxModel knowledgeBoxModel, IndependenceFactsModel facts) {
@@ -257,9 +246,12 @@ public abstract class AbstractAlgorithmRunner
         return this.resultGraph;
     }
 
+    public final void setResultGraph(Graph resultGraph) {
+        this.resultGraph = resultGraph;
+    }
+
     /**
-     * By default, algorithm do not support knowledge. Those that do will
-     * speak up.
+     * By default, algorithm do not support knowledge. Those that do will speak up.
      */
     public boolean supportsKnowledge() {
         return false;
@@ -269,12 +261,12 @@ public abstract class AbstractAlgorithmRunner
         return null;
     }
 
-    public void setExternalGraph(Graph graph) {
-        this.externalGraph = graph;
-    }
-
     public Graph getExternalGraph() {
         return this.externalGraph;
+    }
+
+    public void setExternalGraph(Graph graph) {
+        this.externalGraph = graph;
     }
 
     @Override
@@ -307,10 +299,6 @@ public abstract class AbstractAlgorithmRunner
         return this.dataWrapper.getDataModelList();
     }
 
-    public final void setResultGraph(Graph resultGraph) {
-        this.resultGraph = resultGraph;
-    }
-
     public final Parameters getParams() {
         return this.params;
     }
@@ -326,8 +314,7 @@ public abstract class AbstractAlgorithmRunner
     //===========================PRIVATE METHODS==========================//
 
     /**
-     * Find the dataModel model. (If it's a list, take the one that's
-     * selected.)
+     * Find the dataModel model. (If it's a list, take the one that's selected.)
      */
     private DataModel getSelectedDataModel(DataWrapper dataWrapper) {
         DataModelList dataModelList = dataWrapper.getDataModelList();
@@ -378,14 +365,12 @@ public abstract class AbstractAlgorithmRunner
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s)
             throws IOException, ClassNotFoundException {

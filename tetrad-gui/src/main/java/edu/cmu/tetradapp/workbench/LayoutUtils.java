@@ -41,20 +41,14 @@ import java.util.prefs.Preferences;
  * @author Tyler
  */
 public class LayoutUtils {
-    public enum Layout {
-        lag0TopToBottom, lag0BottomToTop, lag0LeftToRight, lag0RightToLeft,
-        topToBottom, bottomToTop, leftToRight, rightToLeft, layered, source, knowledge, circle,
-        kamadaKawai, fruchtermReingold, distanceFromSelected
-    }
-
     static Layout layout = Layout.topToBottom;
-
-    public static void setLayout(Layout _layout) {
-        LayoutUtils.layout = _layout;
-    }
 
     public static Layout getLayout() {
         return LayoutUtils.layout;
+    }
+
+    public static void setLayout(Layout _layout) {
+        LayoutUtils.layout = _layout;
     }
 
     public static void setAllSizes(Component comp, Dimension dim) {
@@ -64,14 +58,12 @@ public class LayoutUtils {
         comp.setSize(dim);
     }
 
-
     public static Box leftAlignJLabel(JLabel label) {
         Box box = Box.createHorizontalBox();
         box.add(label);
         box.add(Box.createHorizontalGlue());
         return box;
     }
-
 
     public static void copyLag0LayoutTopToBottom(LayoutEditable layoutEditable) {
         TimeLagGraph graph = layoutEditable.getGraph().getTimeLagGraph();
@@ -629,6 +621,12 @@ public class LayoutUtils {
                 break;
             default:
         }
+    }
+
+    public enum Layout {
+        lag0TopToBottom, lag0BottomToTop, lag0LeftToRight, lag0RightToLeft,
+        topToBottom, bottomToTop, leftToRight, rightToLeft, layered, source, knowledge, circle,
+        kamadaKawai, fruchtermReingold, distanceFromSelected
     }
 }
 

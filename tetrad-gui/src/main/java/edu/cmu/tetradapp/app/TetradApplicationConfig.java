@@ -110,28 +110,8 @@ public class TetradApplicationConfig {
     }
 
     /**
-     * @param id - The id of the session config (e.g., "Graph" etc)
-     * @return the <code>SessionNodeConfig</code> to be used for the given id,
-     * or null if there isn't one defined for the given id.
-     */
-    public SessionNodeConfig getSessionNodeConfig(String id) {
-        return this.configs.get(id);
-    }
-
-    /**
-     * @return the <code>SessionNodeConfig</code> that the given model is part
-     * of.
-     */
-    public SessionNodeConfig getSessionNodeConfig(Class model) {
-        return this.classMap.get(model);
-    }
-
-    //============================== Private Methods ====================================//
-
-    /**
-     * Loads the configuration from the root element of the configuratin.xml
-     * file. It is assumed that the document has been validated against its dtd
-     * already.
+     * Loads the configuration from the root element of the configuratin.xml file. It is assumed that the document has
+     * been validated against its dtd already.
      */
     private static Map<String, SessionNodeConfig> buildConfiguration(Element root) {
         Elements elements = root.getChildElements();
@@ -177,6 +157,8 @@ public class TetradApplicationConfig {
         }
         return v;
     }
+
+    //============================== Private Methods ====================================//
 
     /**
      * Builds the model configs from the models element.
@@ -226,8 +208,7 @@ public class TetradApplicationConfig {
     }
 
     /**
-     * Configures the logger that the given element represents and returns its
-     * id.
+     * Configures the logger that the given element represents and returns its id.
      */
     private static TetradLoggerConfig configureLogger(Element logger) {
         Elements elements = logger.getChildElements();
@@ -252,9 +233,8 @@ public class TetradApplicationConfig {
     }
 
     /**
-     * Creates the display comp from an image/comp class. If the not null then
-     * it is given as an argument to the constructor of the given class. IF the
-     * givne comp is null then the default is used.
+     * Creates the display comp from an image/comp class. If the not null then it is given as an argument to the
+     * constructor of the given class. IF the givne comp is null then the default is used.
      */
     private static SessionDisplayComp createDisplayComp(String image, Class compClass) {
         if (compClass == null) {
@@ -295,8 +275,7 @@ public class TetradApplicationConfig {
     }
 
     /**
-     * removes newline and extra white space (Seems to be sensitive to this,
-     * when its html)
+     * removes newline and extra white space (Seems to be sensitive to this, when its html)
      */
     private static String pruneNodeSpecificMessage(String text) {
         int size = text.length();
@@ -336,6 +315,22 @@ public class TetradApplicationConfig {
     }
 
     /**
+     * @param id - The id of the session config (e.g., "Graph" etc)
+     * @return the <code>SessionNodeConfig</code> to be used for the given id, or null if there isn't one defined for
+     * the given id.
+     */
+    public SessionNodeConfig getSessionNodeConfig(String id) {
+        return this.configs.get(id);
+    }
+
+    /**
+     * @return the <code>SessionNodeConfig</code> that the given model is part of.
+     */
+    public SessionNodeConfig getSessionNodeConfig(Class model) {
+        return this.classMap.get(model);
+    }
+
+    /**
      * A map from ids to node configs.
      */
     public Map<String, SessionNodeConfig> getConfigs() {
@@ -345,8 +340,8 @@ public class TetradApplicationConfig {
     //============================== Inner classes =======================================//
 
     /**
-     * Default implementation of the session config. Most functionality is
-     * implemented by static methods from the outer-class.
+     * Default implementation of the session config. Most functionality is implemented by static methods from the
+     * outer-class.
      */
     private static class DefaultNodeConfig implements SessionNodeConfig {
 
@@ -354,11 +349,11 @@ public class TetradApplicationConfig {
          * ALl the config info of the configuration.
          */
         private final Map<Class, SessionNodeModelConfig> modelMap = new HashMap<>();
+        private final String id;
         private List<SessionNodeModelConfig> models;
         private String image;
         private Class compClass;
         private String nodeSpecificMessage;
-        private final String id;
         private String chooserTitle;
         private Class chooserClass;
 
@@ -383,6 +378,13 @@ public class TetradApplicationConfig {
 
         public String getNodeSpecificMessage() {
             return this.nodeSpecificMessage;
+        }
+
+        private void setNodeSpecificMessage(String text) {
+            if (text == null) {
+                throw new NullPointerException("The node specific message text must not be null");
+            }
+            this.nodeSpecificMessage = TetradApplicationConfig.pruneNodeSpecificMessage(text);
         }
 
         public ModelChooser getModelChooserInstance(SessionNode sessionNode) {
@@ -438,13 +440,6 @@ public class TetradApplicationConfig {
             }
             this.chooserTitle = title;
             this.chooserClass = chooserClass;
-        }
-
-        private void setNodeSpecificMessage(String text) {
-            if (text == null) {
-                throw new NullPointerException("The node specific message text must not be null");
-            }
-            this.nodeSpecificMessage = TetradApplicationConfig.pruneNodeSpecificMessage(text);
         }
 
         private void setDisplayComp(String image, Class comp) {

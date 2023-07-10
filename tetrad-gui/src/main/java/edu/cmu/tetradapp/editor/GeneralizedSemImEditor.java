@@ -56,27 +56,22 @@ public final class GeneralizedSemImEditor extends JPanel implements DelegatesEdi
      * The SemPm being edited.
      */
     private final GeneralizedSemIm semIm;
-
-    /**
-     * The graphical editor for the SemIm.
-     */
-    private GeneralizedSemImGraphicalEditor graphicalEditor;
-
-    /**
-     * The graphical editor for the SemIm.
-     */
-    private GeneralizedSemImListEditor listEditor;
-
     /**
      * A reference to the error terms menu item so it can be reset.
      */
     private final JMenuItem errorTerms;
-
     /**
-     * A common map of nodes to launched editors so that they can all be closed
-     * when this editor is closed.
+     * A common map of nodes to launched editors so that they can all be closed when this editor is closed.
      */
     private final Map<Object, EditorWindow> launchedEditors = new HashMap<>();
+    /**
+     * The graphical editor for the SemIm.
+     */
+    private GeneralizedSemImGraphicalEditor graphicalEditor;
+    /**
+     * The graphical editor for the SemIm.
+     */
+    private GeneralizedSemImListEditor listEditor;
 
     //========================CONSTRUCTORS===========================//
     public GeneralizedSemImEditor(GeneralizedSemEstimatorWrapper wrapper) {

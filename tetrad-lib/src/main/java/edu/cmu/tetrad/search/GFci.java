@@ -21,9 +21,14 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.EdgeListGraph;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.utils.*;
+import edu.cmu.tetrad.search.utils.FciOrient;
+import edu.cmu.tetrad.search.utils.SepsetProducer;
+import edu.cmu.tetrad.search.utils.SepsetsGreedy;
 import edu.cmu.tetrad.util.TetradLogger;
 
 import java.io.PrintStream;
@@ -67,17 +72,17 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  * @see Knowledge
  */
 public final class GFci implements IGraphSearch {
+    private final IndependenceTest independenceTest;
+    private final TetradLogger logger = TetradLogger.getInstance();
+    private final Score score;
     private Graph graph;
     private Knowledge knowledge = new Knowledge();
-    private final IndependenceTest independenceTest;
     private boolean completeRuleSetUsed = true;
     private int maxPathLength = -1;
     private int maxDegree = -1;
-    private final TetradLogger logger = TetradLogger.getInstance();
     private boolean verbose;
     private PrintStream out = System.out;
     private boolean faithfulnessAssumed = true;
-    private final Score score;
     private boolean doDiscriminatingPathRule = true;
     private boolean possibleMsepSearchDone = true;
     private int depth = -1;

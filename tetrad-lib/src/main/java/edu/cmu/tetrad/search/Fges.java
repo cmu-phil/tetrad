@@ -183,6 +183,21 @@ public final class Fges implements IGraphSearch, DagScorer {
 
     //==========================PUBLIC METHODS==========================//
 
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
      * edges till a minimum is achieved.
@@ -398,6 +413,8 @@ public final class Fges implements IGraphSearch, DagScorer {
         return logBayesPosteriorFactorsString(factors);
     }
 
+    //===========================PRIVATE METHODS========================//
+
     /**
      * Returns the score of the final search model.
      *
@@ -405,24 +422,6 @@ public final class Fges implements IGraphSearch, DagScorer {
      */
     public double getModelScore() {
         return modelScore;
-    }
-
-    //===========================PRIVATE METHODS========================//
-
-
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-
-        return null;
     }
 
     //Sets the discrete scoring function to use.

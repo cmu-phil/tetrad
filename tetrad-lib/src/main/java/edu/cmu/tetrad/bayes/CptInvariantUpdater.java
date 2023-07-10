@@ -28,7 +28,6 @@ import edu.cmu.tetrad.graph.Node;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Calculates updated probabilities for variables conditional on their parents as well as single-variable updated

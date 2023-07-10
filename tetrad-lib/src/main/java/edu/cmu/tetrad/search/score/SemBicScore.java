@@ -74,15 +74,11 @@ import static org.apache.commons.math3.util.FastMath.log;
  */
 public class SemBicScore implements Score {
 
-    /**
-     * Gives two options for calculating the BIC score, one describe by Chickering and the other due to Nandy et al.
-     */
-    public enum RuleType {CHICKERING, NANDY}
-
     // The sample size of the covariance matrix.
     private final int sampleSize;
     // A  map from variable names to their indices.
     private final Map<Node, Integer> indexMap;
+    private final double logN;
     private boolean calculateRowSubsets;
     // The dataset.
     private DataModel dataModel;
@@ -105,8 +101,6 @@ public class SemBicScore implements Score {
 
     // The rule type to use.
     private RuleType ruleType = RuleType.CHICKERING;
-    private final double logN;
-
     /**
      * Constructs the score using a covariance matrix.
      */
@@ -150,11 +144,6 @@ public class SemBicScore implements Score {
         this.indexMap = indexMap(this.variables);
         this.calculateRowSubsets = true;
         this.logN = log(sampleSize);
-    }
-
-    @NotNull
-    private ICovarianceMatrix getiCovarianceMatrix(DataSet dataSet) {
-        return SimpleDataLoader.getCovarianceMatrix(dataSet);
     }
 
     public static double getVarRy(int i, int[] parents, Matrix data, ICovarianceMatrix covariances, boolean calculateRowSubsets)
@@ -245,6 +234,10 @@ public class SemBicScore implements Score {
         return rows;
     }
 
+    @NotNull
+    private ICovarianceMatrix getiCovarianceMatrix(DataSet dataSet) {
+        return SimpleDataLoader.getCovarianceMatrix(dataSet);
+    }
 
     @Override
     public double localScoreDiff(int x, int y, int[] z) {
@@ -276,9 +269,6 @@ public class SemBicScore implements Score {
         return -this.sampleSize * log(1.0 - r * r) - c * log(this.sampleSize)
                 - 2.0 * (sp1 - sp2);
     }
-
-
-//    private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
 
     /**
      * @param i       The index of the node.
@@ -316,6 +306,9 @@ public class SemBicScore implements Score {
             throw new IllegalStateException("That rule type is not implemented: " + this.ruleType);
         }
     }
+
+
+//    private final Map<List<Integer>, Double> cache = new ConcurrentHashMap<>();
 
     /**
      * Specialized scoring method for a single parent. Used to speed up the effect edges search.
@@ -383,7 +376,6 @@ public class SemBicScore implements Score {
 
         this.variables = variables;
     }
-
 
     @Override
     public int getMaxDegree() {
@@ -553,6 +545,11 @@ public class SemBicScore implements Score {
     public String toString() {
         return "SEM BIC Score";
     }
+
+    /**
+     * Gives two options for calculating the BIC score, one describe by Chickering and the other due to Nandy et al.
+     */
+    public enum RuleType {CHICKERING, NANDY}
 }
 
 

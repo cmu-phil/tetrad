@@ -42,17 +42,14 @@ public final class TimeSeriesData implements DataModel {
      * @serial
      */
     private final Matrix data2;
-
-    /**
-     * @serial
-     */
-    private String name;
-
     /**
      * @serial
      */
     private final List<String> varNames;
-
+    /**
+     * @serial
+     */
+    private String name;
     /**
      * @serial
      */

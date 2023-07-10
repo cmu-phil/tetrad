@@ -117,72 +117,6 @@ class QQPlot {
     //==================================== Public Methods ====================================//
 
     /**
-     * @return the max sample value.
-     */
-    public double getMaxSample() {
-        return this.maxData;
-    }
-
-
-    /**
-     * @return the min sample value.
-     */
-    public double getMinSample() {
-        return this.minData;
-    }
-
-
-    /**
-     * @return the min comparison value.
-     */
-    public double getMinIdeal() {
-        return this.minComparison;
-    }
-
-    /**
-     * @return the node that has been selected.
-     */
-    public Node getSelectedVariable() {
-        return this.selectedVariable;
-    }
-
-    public void setSelectedVariable(ContinuousVariable c) {
-        this.selectedVariable = c;
-    }
-
-    public double[] getComparisonVariable() {
-        return this.comparisonVariable;
-    }
-
-    public DataSet getDataSet() {
-        return this.dataSet;
-    }
-
-    //============================ Private Methods =======================//
-
-    /**
-     * Calculates the ideal quantiles values for the provided dataset.
-     *
-     * @param n    Normal distribution generated from the dataset.
-     * @param data Dataset that n is generated from, and whose normality is in question.
-     */
-    private void calculateComparisonSet(cern.jet.random.Normal n, DataSet data) {
-        this.comparisonVariable = new double[data.getNumRows()];
-
-        for (int i = 0; i < data.getNumRows(); i++) {
-            double valueAtQuantile = QQPlot.findQuantile((i + 1) / (data.getNumRows() + 1.0), this.minData, this.maxData, n, .0001, 0, 50);
-            this.comparisonVariable[i] = valueAtQuantile;
-
-            if (valueAtQuantile < this.minComparison) {
-                this.minComparison = valueAtQuantile;
-            }
-            if (valueAtQuantile > this.maxComparison) {
-                this.maxComparison = valueAtQuantile;
-            }
-        }
-    }
-
-    /**
      * @param quantile  Desired quantile you wish to find
      * @param low       The minimum of your dataset
      * @param high      The maximum of your dataset
@@ -209,6 +143,70 @@ class QQPlot {
             } else {
                 //System.out.println("Searching greater");
                 return QQPlot.findQuantile(quantile, mid + precision, high, n, precision, count + 1, searchCap);
+            }
+        }
+    }
+
+    /**
+     * @return the max sample value.
+     */
+    public double getMaxSample() {
+        return this.maxData;
+    }
+
+    /**
+     * @return the min sample value.
+     */
+    public double getMinSample() {
+        return this.minData;
+    }
+
+    /**
+     * @return the min comparison value.
+     */
+    public double getMinIdeal() {
+        return this.minComparison;
+    }
+
+    /**
+     * @return the node that has been selected.
+     */
+    public Node getSelectedVariable() {
+        return this.selectedVariable;
+    }
+
+    public void setSelectedVariable(ContinuousVariable c) {
+        this.selectedVariable = c;
+    }
+
+    public double[] getComparisonVariable() {
+        return this.comparisonVariable;
+    }
+
+    //============================ Private Methods =======================//
+
+    public DataSet getDataSet() {
+        return this.dataSet;
+    }
+
+    /**
+     * Calculates the ideal quantiles values for the provided dataset.
+     *
+     * @param n    Normal distribution generated from the dataset.
+     * @param data Dataset that n is generated from, and whose normality is in question.
+     */
+    private void calculateComparisonSet(cern.jet.random.Normal n, DataSet data) {
+        this.comparisonVariable = new double[data.getNumRows()];
+
+        for (int i = 0; i < data.getNumRows(); i++) {
+            double valueAtQuantile = QQPlot.findQuantile((i + 1) / (data.getNumRows() + 1.0), this.minData, this.maxData, n, .0001, 0, 50);
+            this.comparisonVariable[i] = valueAtQuantile;
+
+            if (valueAtQuantile < this.minComparison) {
+                this.minComparison = valueAtQuantile;
+            }
+            if (valueAtQuantile > this.maxComparison) {
+                this.maxComparison = valueAtQuantile;
             }
         }
     }

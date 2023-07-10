@@ -31,9 +31,8 @@ import java.text.NumberFormat;
 
 
 /**
- * A text field which is specialized for displaying and editing doubles. Handles
- * otherwise annoying GUI-related functions like keeping the textbox the right
- * size and listening to itself.
+ * A text field which is specialized for displaying and editing doubles. Handles otherwise annoying GUI-related
+ * functions like keeping the textbox the right size and listening to itself.
  *
  * @author josephramsey
  */
@@ -55,8 +54,7 @@ public class DoubleTextField extends JTextField {
     private NumberFormat smallNumberFormat;
 
     /**
-     * The cutoff below which (in absolute value) values will be displayed
-     * using the small number format.
+     * The cutoff below which (in absolute value) values will be displayed using the small number format.
      */
     private double smallNumberCutoff = 1e-4;
 
@@ -68,10 +66,9 @@ public class DoubleTextField extends JTextField {
     //============================CONSTRUCTORS=========================//
 
     /**
-     * Constructs a new text field to display double values and allow them to be
-     * edited. The initial value and character width of the text field can be
-     * specified, along with the format with which the numbers should be
-     * displayed. To accept only certain values, set a value filter using the
+     * Constructs a new text field to display double values and allow them to be edited. The initial value and character
+     * width of the text field can be specified, along with the format with which the numbers should be displayed. To
+     * accept only certain values, set a value filter using the
      * <code>setValueChecker</code> method.
      *
      * @param value  the initial value to be displayed.
@@ -92,8 +89,16 @@ public class DoubleTextField extends JTextField {
     //============================PUBLIC FIELDS=========================//
 
     /**
-     * Sets the value of the text field to the given double value. Should
-     * be overridden for more specific behavior.
+     * Accesses the double value currently displayed.
+     *
+     * @return the getModel value.
+     */
+    public double getValue() {
+        return this.value;
+    }
+
+    /**
+     * Sets the value of the text field to the given double value. Should be overridden for more specific behavior.
      *
      * @param value the value to be set.
      */
@@ -114,15 +119,6 @@ public class DoubleTextField extends JTextField {
     }
 
     /**
-     * Accesses the double value currently displayed.
-     *
-     * @return the getModel value.
-     */
-    public double getValue() {
-        return this.value;
-    }
-
-    /**
      * Sets whether the given value should be accepted.
      */
     public void setFilter(Filter filter) {
@@ -130,8 +126,8 @@ public class DoubleTextField extends JTextField {
     }
 
     /**
-     * Convinces the text field to stay the right size in layouts that are
-     * trying to expand it like a balloon by returning the preferred size.
+     * Convinces the text field to stay the right size in layouts that are trying to expand it like a balloon by
+     * returning the preferred size.
      *
      * @return the maximum size.
      */
@@ -140,8 +136,7 @@ public class DoubleTextField extends JTextField {
     }
 
     /**
-     * Convinces the text field to stay the right size in layouts that are
-     * trying to shrink it.
+     * Convinces the text field to stay the right size in layouts that are trying to shrink it.
      *
      * @return the maximum size.
      */
@@ -221,21 +216,17 @@ public class DoubleTextField extends JTextField {
     //==============================Interfaces============================//
 
     /**
-     * Filters the given value, returning the value that should actually be
-     * displayed. Typical use is to return either the value or the old value,
-     * depending on whether the value is in range, though more complicated
-     * uses are permitted. Side effects (such as storing the value in the
-     * process of filtering it) are permitted.
+     * Filters the given value, returning the value that should actually be displayed. Typical use is to return either
+     * the value or the old value, depending on whether the value is in range, though more complicated uses are
+     * permitted. Side effects (such as storing the value in the process of filtering it) are permitted.
      */
     public interface Filter {
 
         /**
-         * Filters the given value, returning the new value that should be
-         * displayed.
+         * Filters the given value, returning the new value that should be displayed.
          *
          * @param value    The value entered by the user.
-         * @param oldValue The value previously displayed, in case it needs
-         *                 to be reverted to.
+         * @param oldValue The value previously displayed, in case it needs to be reverted to.
          */
         double filter(double value, double oldValue);
     }

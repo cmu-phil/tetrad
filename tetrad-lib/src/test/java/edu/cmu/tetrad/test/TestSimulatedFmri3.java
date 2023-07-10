@@ -37,6 +37,10 @@ import edu.cmu.tetrad.util.Params;
  */
 public class TestSimulatedFmri3 {
 
+    public static void main(String... args) {
+        new TestSimulatedFmri3().TestCycles_Data_fMRI_FASK();
+    }
+
     public void TestCycles_Data_fMRI_FASK() {
         Parameters parameters = new Parameters();
 
@@ -230,10 +234,6 @@ public class TestSimulatedFmri3 {
 
             comparison.compareFromSimulations("comparison_" + dirs[i], simulations, algorithms, statistics, parameters);
         }
-    }
-
-    public static void main(String... args) {
-        new TestSimulatedFmri3().TestCycles_Data_fMRI_FASK();
     }
 }
 

@@ -38,8 +38,7 @@ import java.io.ObjectInputStream;
  * Wraps a Bayes Pm for use in the Tetrad application.
  *
  * @author josephramsey
- * @author Frank Wimberly adapted for EM Bayes estimator and structural EM Bayes
- * estimator
+ * @author Frank Wimberly adapted for EM Bayes estimator and structural EM Bayes estimator
  */
 public class EmBayesEstimatorWrapper implements SessionModel, GraphSource {
     static final long serialVersionUID = 23L;

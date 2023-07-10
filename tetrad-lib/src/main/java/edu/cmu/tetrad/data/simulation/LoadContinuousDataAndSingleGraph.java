@@ -25,10 +25,10 @@ import java.util.List;
 public class LoadContinuousDataAndSingleGraph implements Simulation, HasParameterValues {
     static final long serialVersionUID = 23L;
     private final String path;
-    private Graph graph;
-    private List<DataSet> dataSets = new ArrayList<>();
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
+    private Graph graph;
+    private List<DataSet> dataSets = new ArrayList<>();
 
     public LoadContinuousDataAndSingleGraph(String path) {
         this.path = path;

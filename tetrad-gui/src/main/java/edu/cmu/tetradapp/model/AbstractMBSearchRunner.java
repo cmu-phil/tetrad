@@ -27,8 +27,11 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DoubleDataBox;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndTestChiSquare;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.IndTestGSquare;
+import edu.cmu.tetrad.search.test.IndTestRegression;
 import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZGeneralizedInverse;
-import edu.cmu.tetrad.search.test.*;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IndTestType;
 
@@ -38,42 +41,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Abstract subclass for Markov Blanket searches. This should be used so that the markov blanket search
- * can also be used as input for a search box.
+ * Abstract subclass for Markov Blanket searches. This should be used so that the markov blanket search can also be used
+ * as input for a search box.
  *
  * @author Tyler Gibson
  */
 public abstract class AbstractMBSearchRunner extends DataWrapper implements MarkovBlanketSearchRunner {
     static final long serialVersionUID = 23L;
-
-    /**
-     * Data model.
-     *
-     * @serial may be null.
-     */
-    private DataSet dataModel;
-
-    /**
-     * The variables in the markov blanket.
-     *
-     * @serial may be null.
-     */
-    private List<Node> variables;
-
     /**
      * The source data model.
      *
      * @serial not null.
      */
     private final DataSet source;
-
     /**
      * The search params.
      *
      * @serial not null.
      */
     private final Parameters params;
-
+    /**
+     * Data model.
+     *
+     * @serial may be null.
+     */
+    private DataSet dataModel;
+    /**
+     * The variables in the markov blanket.
+     *
+     * @serial may be null.
+     */
+    private List<Node> variables;
     /**
      * The name of the search algorithm
      *
@@ -99,6 +97,12 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
         this.source = (DataSet) source;
     }
 
+    private static DataSet castData(DataModel model) {
+        if (model instanceof DataSet) {
+            return (DataSet) model;
+        }
+        throw new IllegalStateException("The data model must be a rectangular data set.");
+    }
 
     /**
      * @return the parameters for the search.
@@ -107,15 +111,12 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
         return this.params;
     }
 
-
     /**
-     * @return the data model for the variables in the Markov blanket or null if
-     * the runner has not executed yet.
+     * @return the data model for the variables in the Markov blanket or null if the runner has not executed yet.
      */
     public DataSet getDataModelForMarkovBlanket() {
         return this.dataModel;
     }
-
 
     /**
      * @return the variables in the MB searhc.
@@ -124,17 +125,11 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
         return this.variables;
     }
 
-
     /**
      * @return the source of the search.
      */
     public DataSet getSource() {
         return this.source;
-    }
-
-
-    public void setSearchName(String n) {
-        this.searchName = n;
     }
 
     /**
@@ -149,6 +144,9 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
 
     //============== Protected methods ===============================//
 
+    public void setSearchName(String n) {
+        this.searchName = n;
+    }
 
     /**
      * Makes sure the data is not empty.
@@ -158,7 +156,6 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
             throw new IllegalStateException("Cannot run algorithm on an empty data set.");
         }
     }
-
 
     /**
      * Sets the results of the search.
@@ -176,10 +173,10 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
         this.setDataModel(this.dataModel);
     }
 
+    //==================== Private Methods ===========================//
 
     /**
-     * @return an appropriate independence test given the type of data set and values
-     * in the params.
+     * @return an appropriate independence test given the type of data set and values in the params.
      */
     IndependenceTest getIndependenceTest() {
         IndTestType type = (IndTestType) this.params.get("indTestType", IndTestType.FISHER_Z);
@@ -210,26 +207,13 @@ public abstract class AbstractMBSearchRunner extends DataWrapper implements Mark
         throw new IllegalStateException("Cannot find Independence for Data source.");
     }
 
-    //==================== Private Methods ===========================//
-
-
-    private static DataSet castData(DataModel model) {
-        if (model instanceof DataSet) {
-            return (DataSet) model;
-        }
-        throw new IllegalStateException("The data model must be a rectangular data set.");
-    }
-
-
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     @SuppressWarnings("UnusedDeclaration")
     private void readObject(ObjectInputStream s)

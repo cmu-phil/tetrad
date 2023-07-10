@@ -45,12 +45,11 @@ public class Mmhc implements IGraphSearch {
      * The independence test used for the PC search.
      */
     private final IndependenceTest independenceTest;
-
+    private final DataSet data;
     /**
      * The maximum number of nodes conditioned on in the search.
      */
     private int depth;
-    private final DataSet data;
     private Knowledge knowledge = new Knowledge();
 
     //=============================CONSTRUCTORS==========================//
@@ -72,10 +71,13 @@ public class Mmhc implements IGraphSearch {
         return this.depth;
     }
 
+    public void setDepth(int depth) {
+        this.depth = depth;
+    }
+
     public long getElapsedTime() {
         return 0;
     }
-
 
     /**
      * Runs PC starting with a fully connected graph over all of the variables in the domain of the independence test.
@@ -114,10 +116,6 @@ public class Mmhc implements IGraphSearch {
 
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    public void setDepth(int depth) {
-        this.depth = depth;
     }
 }
 

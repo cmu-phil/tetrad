@@ -42,14 +42,16 @@ import java.util.Set;
  * SessionNodes can also support more than one possible type of model. A SessionNode, for instance, can support the
  * construction of graphs in general, even if different graphs are implemented using different classes. The SessionNode
  * can keep track of what its parents are and therefore which of its possible models it's capable of constructing.
- * <p>The Session itself keeps track of which nodes are in the session and manages adding and removing nodes. Nodes that
+ * <p>The Session itself keeps track of which nodes are in the session and manages adding and removing nodes. Nodes
+ * that
  * are added to the session must be freshly constructed. This constraint eliminates a number of problems that might
  * otherwise exist if interconnected SessionNodes were permitted to participate in more than one Session. If the addNode
  * method is called with a node that is not in the freshly constructed state (either because it was actually just
  * constructed or because the <code>reset</code> method was just called on the node), an IllegalArgumentException is
  * thrown. <p>When a node is removed from a session, all of its connections to other objects are eliminated and its
  * models destroyed. This has consequences for other objects, since destroying the model of a session node may result in
- * the destruction of models downstream and the elimination of parent/child relationships between nodes is mutual.&gt; 0
+ * the destruction of models downstream and the elimination of parent/child relationships between nodes is mutual.&gt;
+ * 0
  * <p>The Session organizes events coming from the nodes in the session so that a listener to the Session receives all
  * events from the Session. This is convenience service so that listeners do not need to pay attention to all of the
  * different nodes in the session individually. See <code>SessionEvent</code> for the types of events that are sent.&gt;
@@ -66,21 +68,18 @@ import java.util.Set;
  */
 public final class Session implements TetradSerializable {
     static final long serialVersionUID = 23L;
-
-    /**
-     * The name of the session.
-     *
-     * @serial Can't be null.
-     */
-    private String name;
-
     /**
      * The session nodes, stored as a Set of nodes.
      *
      * @serial Can't be null.
      */
     private final List<SessionNode> nodes = new LinkedList<>();
-
+    /**
+     * The name of the session.
+     *
+     * @serial Can't be null.
+     */
+    private String name;
     /**
      * Notes when the model has changed. Should be false at time of deserialization.
      */
@@ -120,6 +119,13 @@ public final class Session implements TetradSerializable {
     //===========================PUBLIC METHODS===========================//
 
     /**
+     * Gets the name.
+     */
+    public String getName() {
+        return this.name;
+    }
+
+    /**
      * Sets the name.
      */
     public void setName(String name) {
@@ -128,13 +134,6 @@ public final class Session implements TetradSerializable {
         }
 
         this.name = name;
-    }
-
-    /**
-     * Gets the name.
-     */
-    public String getName() {
-        return this.name;
     }
 
     /**
@@ -333,6 +332,34 @@ public final class Session implements TetradSerializable {
 
     //=========================== MEMBER CLASSES =========================//
 
+    public boolean isEmpty() {
+        return this.nodes.isEmpty();
+    }
+
+    /**
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
+     */
+    private void readObject(ObjectInputStream s)
+            throws IOException, ClassNotFoundException {
+        s.defaultReadObject();
+
+        if (this.name == null) {
+            throw new NullPointerException();
+        }
+
+        if (this.nodes == null) {
+            throw new NullPointerException();
+        }
+
+        this.sessionChanged = false;
+        this.newSession = false;
+    }
+
     /**
      * Handles <code>SessionEvent</code>s. Hides the handling of these from the API.
      */
@@ -392,34 +419,6 @@ public final class Session implements TetradSerializable {
         public void addingEdge(SessionEvent event) {
             getSessionSupport().fireSessionEvent(event, false);
         }
-    }
-
-    public boolean isEmpty() {
-        return this.nodes.isEmpty();
-    }
-
-    /**
-     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
-     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
-     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
-     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
-     */
-    private void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-
-        if (this.name == null) {
-            throw new NullPointerException();
-        }
-
-        if (this.nodes == null) {
-            throw new NullPointerException();
-        }
-
-        this.sessionChanged = false;
-        this.newSession = false;
     }
 }
 

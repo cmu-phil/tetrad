@@ -28,8 +28,8 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * Provides a little display/editor for notes in the session workbench. This may
- * be elaborated in the future to allow marked up text.
+ * Provides a little display/editor for notes in the session workbench. This may be elaborated in the future to allow
+ * marked up text.
  *
  * @author josephramsey
  */
@@ -41,8 +41,8 @@ public class EdgewiseComparisonEditor extends JPanel {
      * The model for the note.
      */
     private final EdgewiseComparisonModel comparison;
-    private JTextArea area;
     private final Parameters params;
+    private JTextArea area;
 
     /**
      * Constructs the editor given the model

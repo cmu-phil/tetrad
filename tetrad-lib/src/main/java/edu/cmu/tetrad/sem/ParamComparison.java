@@ -33,27 +33,26 @@ public class ParamComparison {
      * Indicates that the two freeParameters are not compared.
      */
     public static final ParamComparison NC = new ParamComparison("NC");
-
-    /**
-     * Indicates that the first parameter is less than the second.
-     */
-    private static final ParamComparison LT = new ParamComparison("LT");
-
     /**
      * Indicates that the first parameter is equal to the second.
      */
     public static final ParamComparison EQ = new ParamComparison("EQ");
-
+    /**
+     * Indicates that the first parameter is less than the second.
+     */
+    private static final ParamComparison LT = new ParamComparison("LT");
     /**
      * Indicates that the first parameter is less than or equal to the second.
      */
     private static final ParamComparison LE = new ParamComparison("LE");
-
+    private static final ParamComparison[] TYPES = {ParamComparison.NC, ParamComparison.LT, ParamComparison.EQ, ParamComparison.LE};
+    // Declarations required for serialization.
+    private static int nextOrdinal;
     /**
      * The name of this type.
      */
     private final transient String name;
-
+    private final int ordinal = ParamComparison.nextOrdinal++;
     /**
      * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
      */
@@ -67,11 +66,6 @@ public class ParamComparison {
     public String toString() {
         return this.name;
     }
-
-    // Declarations required for serialization.
-    private static int nextOrdinal;
-    private final int ordinal = ParamComparison.nextOrdinal++;
-    private static final ParamComparison[] TYPES = {ParamComparison.NC, ParamComparison.LT, ParamComparison.EQ, ParamComparison.LE};
 
 }
 

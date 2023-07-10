@@ -173,10 +173,10 @@ public class Sp implements SuborderSearch {
 
 
     static class SwapIterator implements Iterator<int[]> {
-        private int[] next;
         private final int n;
         private final int[] perm;
         private final int[] dirs;
+        private int[] next;
 
         public SwapIterator(int size) {
             this.n = size;
@@ -192,6 +192,12 @@ public class Sp implements SuborderSearch {
                 }
                 this.dirs[0] = 0;
             }
+        }
+
+        private static void swap(int i, int j, int[] arr) {
+            int x = arr[i];
+            arr[i] = arr[j];
+            arr[j] = x;
         }
 
         @Override
@@ -239,12 +245,6 @@ public class Sp implements SuborderSearch {
                     this.dirs[j] = (j < k) ? +1 : -1;
 
             return this.next;
-        }
-
-        private static void swap(int i, int j, int[] arr) {
-            int x = arr[i];
-            arr[i] = arr[j];
-            arr[j] = x;
         }
     }
 }

@@ -76,21 +76,18 @@ public final class DirichletBayesIm implements BayesIm {
      * @serial
      */
     private final BayesPm bayesPm;
-
-    /**
-     * 1.0000 The default row size for randomly creating new rows.
-     *
-     * @serial
-     */
-    private double nextRowTotal = 100.0;
-
     /**
      * The array of nodes from the graph. Order is important.
      *
      * @serial
      */
     private final Node[] nodes;
-
+    /**
+     * 1.0000 The default row size for randomly creating new rows.
+     *
+     * @serial
+     */
+    private double nextRowTotal = 100.0;
     /**
      * The array of dimensionality (number of values for each node) for each of the subarrays of 'parents'.
      *
@@ -213,6 +210,33 @@ public final class DirichletBayesIm implements BayesIm {
     //===============================PUBLIC METHODS========================//
 
     /**
+     * This method chooses random probabilities for a row which add up to 1.0. Random doubles are drawn from a random
+     * distribution, and the final row is then normalized.
+     *
+     * @param size the length of the row.
+     * @return an array with randomly distributed probabilities of this length.
+     * @see #randomizeRow
+     */
+    private static double[] getRandomWeights(int size) {
+        assert size >= 0;
+
+        double[] weights = new double[size];
+        double sum = 0.0;
+
+        for (int i = 0; i < size; i++) {
+            RandomUtil randomUtil = RandomUtil.getInstance();
+            weights[i] = randomUtil.nextDouble();
+            sum += weights[i];
+        }
+
+        for (int i = 0; i < size; i++) {
+            weights[i] /= sum;
+        }
+
+        return weights;
+    }
+
+    /**
      * @return this PM.
      */
     public BayesPm getBayesPm() {
@@ -241,6 +265,14 @@ public final class DirichletBayesIm implements BayesIm {
      */
     private double getNextRowTotal() {
         return this.nextRowTotal;
+    }
+
+    /**
+     * The row total that will be used for the next randomized row. This should be set before calling a randomize
+     * method. The default value is 100.
+     */
+    private void setNextRowTotal(double nextRowTotal) {
+        this.nextRowTotal = nextRowTotal;
     }
 
     /**
@@ -429,6 +461,8 @@ public final class DirichletBayesIm implements BayesIm {
         return variableNames;
     }
 
+    //=============================PRIVATE METHODS=======================//
+
     public List<Node> getMeasuredNodes() {
         throw new UnsupportedOperationException();
     }
@@ -443,8 +477,6 @@ public final class DirichletBayesIm implements BayesIm {
 
         return variables;
     }
-
-    //=============================PRIVATE METHODS=======================//
 
     /**
      * This method initializes the probability tables for all of the nodes in the Bayes net.
@@ -676,14 +708,6 @@ public final class DirichletBayesIm implements BayesIm {
     }
 
     /**
-     * The row total that will be used for the next randomized row. This should be set before calling a randomize
-     * method. The default value is 100.
-     */
-    private void setNextRowTotal(double nextRowTotal) {
-        this.nextRowTotal = nextRowTotal;
-    }
-
-    /**
      * Sets the probability for the given node. The matrix row represent row index, the row in the table for this for
      * node which represents the combination of parent values in question. of the CPT. The matrix column represent
      * column index, the column in the table for this node which represents the value of the node in question.
@@ -737,15 +761,6 @@ public final class DirichletBayesIm implements BayesIm {
                 RandomUtil.getInstance(), latentDataSaved);
     }
 
-    /**
-     * Would be nice to have this method supported, but no one's using it, so it's not.
-     *
-     * @throws UnsupportedOperationException If you ever try to getDist it.
-     */
-    public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
-        throw new UnsupportedOperationException();
-    }
-
 //    /**
 //     * Simulates a random sample with the number of cases equal to
 //     * <code>sampleSize</code>.
@@ -764,6 +779,15 @@ public final class DirichletBayesIm implements BayesIm {
 //        random.setSeed(seed);
 //        return simulateData(sampleSize, latentDataSaved);
 //    }
+
+    /**
+     * Would be nice to have this method supported, but no one's using it, so it's not.
+     *
+     * @throws UnsupportedOperationException If you ever try to getDist it.
+     */
+    public DataSet simulateData(DataSet dataSet, boolean latentDataSaved) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Simulates a sample with the given sample size.
@@ -1018,33 +1042,6 @@ public final class DirichletBayesIm implements BayesIm {
         row[size - 1] = getNextRowTotal() - sum;
 
         return row;
-    }
-
-    /**
-     * This method chooses random probabilities for a row which add up to 1.0. Random doubles are drawn from a random
-     * distribution, and the final row is then normalized.
-     *
-     * @param size the length of the row.
-     * @return an array with randomly distributed probabilities of this length.
-     * @see #randomizeRow
-     */
-    private static double[] getRandomWeights(int size) {
-        assert size >= 0;
-
-        double[] weights = new double[size];
-        double sum = 0.0;
-
-        for (int i = 0; i < size; i++) {
-            RandomUtil randomUtil = RandomUtil.getInstance();
-            weights[i] = randomUtil.nextDouble();
-            sum += weights[i];
-        }
-
-        for (int i = 0; i < size; i++) {
-            weights[i] /= sum;
-        }
-
-        return weights;
     }
 
     /**

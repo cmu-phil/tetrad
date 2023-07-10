@@ -53,17 +53,14 @@ class GeneralizedSemImListEditor extends JPanel {
      * The SemPm being edited.
      */
     private final GeneralizedSemIm semIm;
-
-
-    /**
-     * The set of launched editors--or rather, the nodes for the launched editors.
-     */
-    private Map<Object, EditorWindow> launchedEditors = new HashMap<>();
-
     /**
      * The box containing all of the formulas.
      */
     private final Box formulasBox;
+    /**
+     * The set of launched editors--or rather, the nodes for the launched editors.
+     */
+    private Map<Object, EditorWindow> launchedEditors = new HashMap<>();
 
     /**
      * Constructs a SemPm graphical editor for the given SemIm.

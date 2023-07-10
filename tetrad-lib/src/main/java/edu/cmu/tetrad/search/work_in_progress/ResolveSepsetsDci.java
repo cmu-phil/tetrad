@@ -24,9 +24,9 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodePair;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.IndTestChiSquare;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.RandomUtil;
@@ -42,11 +42,6 @@ import java.util.*;
  * @author Robert Tillman
  */
 public final class ResolveSepsetsDci {
-    public enum Method {
-        fisher, fisher2, tippett, worsleyfriston, stouffer, mudholkergeorge,
-        mudholkergeorge2, average, averagetest, random, fdr, majority
-    }
-
     /**
      * Resolves all inconsistencies between sepsets using a paricular method. Returns a sepsetMapDci with the resolved
      * separations and associations. resolvedIndependent and resolvedDependent keep up with the number resolved to check
@@ -625,6 +620,11 @@ public final class ResolveSepsetsDci {
         TetradLogger.getInstance().log("independence", "c = " + c);
 
         return independent;
+    }
+
+    public enum Method {
+        fisher, fisher2, tippett, worsleyfriston, stouffer, mudholkergeorge,
+        mudholkergeorge2, average, averagetest, random, fdr, majority
     }
 }
 

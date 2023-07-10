@@ -29,8 +29,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.apache.commons.math3.distribution.ChiSquaredDistribution;
@@ -53,11 +53,12 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
     private final DataSet originalData;
     private final List<Node> searchVariables;
     private final DataSet internalData;
-    private double alpha;
-    private double lastP;
     private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
     private final LogisticRegression logisticRegression;
     private final RegressionDataset regression;
+    int[] _rows;
+    private double alpha;
+    private double lastP;
     private boolean verbose;
 
     public IndTestMultinomialLogisticRegression(DataSet data, double alpha) {
@@ -217,8 +218,6 @@ public class IndTestMultinomialLogisticRegression implements IndependenceTest {
 
         return new IndependenceResult(new IndependenceFact(x, y, z), independent, p, alpha - p);
     }
-
-    int[] _rows;
 
     private int[] getNonMissingRows() {
         if (this._rows == null) {

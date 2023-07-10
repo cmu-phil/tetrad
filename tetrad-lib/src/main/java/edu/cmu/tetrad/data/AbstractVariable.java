@@ -69,6 +69,13 @@ public abstract class AbstractVariable implements Variable {
     public abstract boolean isMissingValue(Object value);
 
     /**
+     * @return the name of this variable.
+     */
+    public final String getName() {
+        return this.name;
+    }
+
+    /**
      * Sets the name of this variable.
      */
     public final void setName(String name) {
@@ -83,13 +90,6 @@ public abstract class AbstractVariable implements Variable {
         }
 
         this.name = name;
-    }
-
-    /**
-     * @return the name of this variable.
-     */
-    public final String getName() {
-        return this.name;
     }
 
     /**

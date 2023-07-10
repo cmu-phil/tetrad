@@ -41,14 +41,12 @@ class DiscDetIndepParamsEditor extends JComponent {
     private final Parameters params;
 
     /**
-     * A text field to allow the user to enter the number of dishes to
-     * generate.
+     * A text field to allow the user to enter the number of dishes to generate.
      */
     private final DoubleTextField alphaField;
 
     /**
-     * A text field to allow the user to enter the number of dishes to
-     * generate.
+     * A text field to allow the user to enter the number of dishes to generate.
      */
     private final IntTextField depthField;
 
@@ -85,9 +83,8 @@ class DiscDetIndepParamsEditor extends JComponent {
     }
 
     /**
-     * Constructs the Gui used to edit properties; called from each constructor.
-     * Constructs labels and text fields for editing each property and adds
-     * appropriate listeners.
+     * Constructs the Gui used to edit properties; called from each constructor. Constructs labels and text fields for
+     * editing each property and adds appropriate listeners.
      */
     private void buildGui() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -110,8 +107,8 @@ class DiscDetIndepParamsEditor extends JComponent {
     }
 
     /**
-     * @return the mapping object being edited. (This probably should not be
-     * public, but it is needed so that the textfields can edit the model.)
+     * @return the mapping object being edited. (This probably should not be public, but it is needed so that the
+     * textfields can edit the model.)
      */
     private Parameters params() {
         return this.params;

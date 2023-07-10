@@ -41,31 +41,17 @@ import java.util.List;
  */
 public class Edge implements TetradSerializable, Comparable<Edge> {
     static final long serialVersionUID = 23L;
-
-
-    public enum Property {
-        dd, nl, pd, pl
-    }
-
     private final Node node1;
     private final Node node2;
     private Endpoint endpoint1;
     private Endpoint endpoint2;
-
     // Usual coloring--set to something else for a special line color.
     private transient Color lineColor;
-
     private boolean bold = false;
-
     private boolean highlighted = false;
-
     private List<Property> properties = new ArrayList<>();
-
     private List<EdgeTypeProbability> edgeTypeProbabilities = new ArrayList<>();
-
     private double probability;
-
-    // =========================CONSTRUCTORS============================//
 
     /**
      * Constructs a new edge by specifying the nodes it connects and the endpoint types.
@@ -98,6 +84,8 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         }
     }
 
+    // =========================CONSTRUCTORS============================//
+
     public Edge(Edge edge) {
         this(edge.node1, edge.node2, edge.endpoint1, edge.endpoint2);
         this.lineColor = edge.getLineColor();
@@ -116,14 +104,14 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
                 Endpoint.ARROW);
     }
 
-    // ==========================PUBLIC METHODS===========================//
-
     /**
      * @return the A node.
      */
     public final Node getNode1() {
         return this.node1;
     }
+
+    // ==========================PUBLIC METHODS===========================//
 
     /**
      * @return the B node.
@@ -139,15 +127,15 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         return this.endpoint1;
     }
 
+    public final void setEndpoint1(Endpoint e) {
+        this.endpoint1 = e;
+    }
+
     /**
      * @return the endpoint of the edge at the B node.
      */
     public final Endpoint getEndpoint2() {
         return this.endpoint2;
-    }
-
-    public final void setEndpoint1(Endpoint e) {
-        this.endpoint1 = e;
     }
 
     public final void setEndpoint2(Endpoint e) {
@@ -372,11 +360,11 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
         return getNode2().compareTo(_edge.getNode2());
     }
 
-    // ===========================PRIVATE METHODS===========================//
-
     private boolean pointingLeft(Endpoint endpoint1, Endpoint endpoint2) {
         return (endpoint1 == Endpoint.ARROW && (endpoint2 == Endpoint.TAIL || endpoint2 == Endpoint.CIRCLE));
     }
+
+    // ===========================PRIVATE METHODS===========================//
 
     /**
      * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
@@ -448,5 +436,9 @@ public class Edge implements TetradSerializable, Comparable<Edge> {
 
     public void setHighlighted(boolean highlighted) {
         this.highlighted = highlighted;
+    }
+
+    public enum Property {
+        dd, nl, pd, pl
     }
 }

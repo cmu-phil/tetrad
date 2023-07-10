@@ -31,8 +31,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 /**
- * Edits the properties of a measurement paramsPureClusters. See
- * BasicIndTestParamsEditor for more explanations.
+ * Edits the properties of a measurement paramsPureClusters. See BasicIndTestParamsEditor for more explanations.
  *
  * @author Ricardo Silva
  */

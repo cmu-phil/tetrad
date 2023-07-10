@@ -32,9 +32,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 public final class TestCellTable {
-    private CellTable table;
     private final int[] dims = {2, 2, 2, 2};
-
     private final int[][] data = {{1, 1, 1, 0}, {0, 0, 1, 0},
             {1, 1, 1, 0}, {0, 0, 1, 0}, {0, 0, 0, 0}, {1, 1, 1, 0},
             {1, 1, 1, 0}, {0, 1, 0, 1}, {0, 1, 1, 0}, {0, 0, 0, 1},
@@ -286,6 +284,18 @@ public final class TestCellTable {
             {0, 1, 0, 0}, {0, 0, 0, 1}, {0, 0, 0, 1}, {1, 1, 1, 0},
             {0, 0, 1, 0}, {0, 1, 0, 1}, {1, 1, 1, 0}, {0, 1, 0, 1},
             {0, 1, 0, 1}, {0, 0, 0, 1}};
+    private CellTable table;
+
+    private static int[] pickRandomCell() {
+
+        int[] cell = new int[4];
+
+        for (int i = 0; i < 4; i++) {
+            cell[i] = RandomUtil.getInstance().nextInt(2);
+        }
+
+        return cell;
+    }
 
     public void setUp() {
 
@@ -403,17 +413,6 @@ public final class TestCellTable {
             assertEquals(myCount, this.table.calcMargin(testCell));
             assertEquals(myCount, this.table.calcMargin(cell, marginVars));
         }
-    }
-
-    private static int[] pickRandomCell() {
-
-        int[] cell = new int[4];
-
-        for (int i = 0; i < 4; i++) {
-            cell[i] = RandomUtil.getInstance().nextInt(2);
-        }
-
-        return cell;
     }
 }
 

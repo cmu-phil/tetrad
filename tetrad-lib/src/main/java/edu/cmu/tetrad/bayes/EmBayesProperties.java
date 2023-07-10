@@ -41,10 +41,6 @@ import java.util.Map;
  * @author josephramsey
  */
 public final class EmBayesProperties {
-    public interface Estimator {
-        BayesIm estimate(BayesPm bayesPm, DataSet dataSet);
-    }
-
     private DataSet dataSet;
     private BayesPm bayesPm;
     private Graph graph;
@@ -65,44 +61,9 @@ public final class EmBayesProperties {
                     "Please specify the search tolerance first.");
         }
     };
-
     public EmBayesProperties(DataSet dataSet, Graph graph) {
         setDataSet(dataSet);
         setGraph(graph);
-    }
-
-    public void setGraph(Graph graph) {
-        if (graph == null) {
-            throw new NullPointerException();
-        }
-
-        List<Node> vars = this.dataSet.getVariables();
-        Map<String, DiscreteVariable> nodesToVars =
-                new HashMap<>();
-        for (int i = 0; i < this.dataSet.getNumColumns(); i++) {
-            DiscreteVariable var = (DiscreteVariable) vars.get(i);
-            String name = var.getName();
-            Node node = new GraphNode(name);
-            nodesToVars.put(node.getName(), var);
-        }
-
-        Dag dag = new Dag(graph);
-        BayesPm bayesPm = new BayesPm(dag);
-
-        List<Node> nodes = bayesPm.getDag().getNodes();
-
-        for (Node node1 : nodes) {
-            DiscreteVariable var = nodesToVars.get(node1.getName());
-
-            if (var != null) {
-                List<String> categories = var.getCategories();
-                bayesPm.setCategories(node1, categories);
-            }
-        }
-
-        this.graph = graph;
-        this.bayesPm = bayesPm;
-        this.blankBayesIm = new MlBayesIm(bayesPm);
     }
 
     /**
@@ -168,8 +129,6 @@ public final class EmBayesProperties {
         this.estimator = estimator;
     }
 
-    //=========================================PRIVATE METHODS===================================//
-
     private double logProbDataGivenStructure() {
         BayesIm bayesIm = this.estimator.estimate(this.bayesPm, this.dataSet);
         BayesImProbs probs = new BayesImProbs(bayesIm);
@@ -213,6 +172,8 @@ public final class EmBayesProperties {
         return numParams;
     }
 
+    //=========================================PRIVATE METHODS===================================//
+
     private double parameterPenalty() {
         int numParams = numNonredundantParams();
         double r = this.dataSet.getNumRows();
@@ -221,6 +182,40 @@ public final class EmBayesProperties {
 
     private Graph getGraph() {
         return this.graph;
+    }
+
+    public void setGraph(Graph graph) {
+        if (graph == null) {
+            throw new NullPointerException();
+        }
+
+        List<Node> vars = this.dataSet.getVariables();
+        Map<String, DiscreteVariable> nodesToVars =
+                new HashMap<>();
+        for (int i = 0; i < this.dataSet.getNumColumns(); i++) {
+            DiscreteVariable var = (DiscreteVariable) vars.get(i);
+            String name = var.getName();
+            Node node = new GraphNode(name);
+            nodesToVars.put(node.getName(), var);
+        }
+
+        Dag dag = new Dag(graph);
+        BayesPm bayesPm = new BayesPm(dag);
+
+        List<Node> nodes = bayesPm.getDag().getNodes();
+
+        for (Node node1 : nodes) {
+            DiscreteVariable var = nodesToVars.get(node1.getName());
+
+            if (var != null) {
+                List<String> categories = var.getCategories();
+                bayesPm.setCategories(node1, categories);
+            }
+        }
+
+        this.graph = graph;
+        this.bayesPm = bayesPm;
+        this.blankBayesIm = new MlBayesIm(bayesPm);
     }
 
     private DataSet getDataSet() {
@@ -239,6 +234,10 @@ public final class EmBayesProperties {
         this.chisq = Double.NaN;
 
         this.dataSet = dataSet;
+    }
+
+    public interface Estimator {
+        BayesIm estimate(BayesPm bayesPm, DataSet dataSet);
     }
 
 }

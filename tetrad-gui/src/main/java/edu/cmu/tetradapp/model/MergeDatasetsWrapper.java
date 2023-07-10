@@ -38,6 +38,15 @@ public class MergeDatasetsWrapper extends DataWrapper {
         construct(data);
     }
 
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+    }
+
     private void construct(DataWrapper... dataWrappers) {
         for (DataWrapper wrapper : dataWrappers) {
             if (wrapper == null) {
@@ -54,15 +63,6 @@ public class MergeDatasetsWrapper extends DataWrapper {
         this.setDataModel(merged);
 
         LogDataUtils.logDataModelList("Parent data in which constant columns have been removed.", getDataModelList());
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static PcRunner serializableInstance() {
-        return PcRunner.serializableInstance();
     }
 
 

@@ -23,10 +23,10 @@ public class LoadContinuousDataAndSingleGraph implements Simulation, HasParamete
     static final long serialVersionUID = 23L;
     private final String path;
     private final String subdir;
-    private Graph graph;
-    private List<DataSet> dataSets = new ArrayList<>();
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
+    private Graph graph;
+    private List<DataSet> dataSets = new ArrayList<>();
 
     public LoadContinuousDataAndSingleGraph(String path, String subdir) {
         this.path = path;

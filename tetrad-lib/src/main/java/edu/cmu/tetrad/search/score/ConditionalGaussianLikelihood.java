@@ -54,15 +54,12 @@ import static org.apache.commons.math3.util.FastMath.log;
  */
 public class ConditionalGaussianLikelihood {
 
+    // A constant.
+    private static final double LOG2PI = log(2.0 * FastMath.PI);
     // The data set. May contain continuous and/or discrete mixedVariables.
     private final DataSet mixedDataSet;
-
     // The data set with all continuous mixedVariables discretized.
     private final DataSet dataSet;
-
-    // Number of categories to use to discretize continuous mixedVariables.
-    private int numCategoriesToDiscretize = 3;
-
     // The mixedVariables of the mixed data set.
     private final List<Node> mixedVariables;
 
@@ -71,48 +68,14 @@ public class ConditionalGaussianLikelihood {
 
     // Continuous data only.
     private final double[][] continuousData;
-
+    // Number of categories to use to discretize continuous mixedVariables.
+    private int numCategoriesToDiscretize = 3;
     // Multiplier on degrees of freedom for the continuous portion of those degrees.
     private double penaltyDiscount = 1;
-
     // "Cell" consisting of all rows.
     private List<Integer> rows;
-
     // Discretize the parents
     private boolean discretize;
-
-    // A constant.
-    private static final double LOG2PI = log(2.0 * FastMath.PI);
-
-    public void setRows(List<Integer> rows) {
-        this.rows = rows;
-    }
-
-    /**
-     * Gives return value for a conditional Gaussain likelihood, returning a likelihood value and the degrees of freedom
-     * for it.
-     */
-    public static class Ret {
-        private final double lik;
-        private final int dof;
-
-        private Ret(double lik, int dof) {
-            this.lik = lik;
-            this.dof = dof;
-        }
-
-        public double getLik() {
-            return this.lik;
-        }
-
-        public int getDof() {
-            return this.dof;
-        }
-
-        public String toString() {
-            return "lik = " + this.lik + " dof = " + this.dof;
-        }
-    }
 
     /**
      * Constructs the score using a covariance matrix.
@@ -152,6 +115,10 @@ public class ConditionalGaussianLikelihood {
 
         this.rows = new ArrayList<>();
         for (int i = 0; i < dataSet.getNumRows(); i++) this.rows.add(i);
+    }
+
+    public void setRows(List<Integer> rows) {
+        this.rows = rows;
     }
 
     /**
@@ -262,7 +229,6 @@ public class ConditionalGaussianLikelihood {
 
         return replaced;
     }
-
 
     // The likelihood of the joint over all of these mixedVariables, assuming conditional Gaussian,
     // continuous and discrete.
@@ -389,5 +355,31 @@ public class ConditionalGaussianLikelihood {
         }
 
         return cells;
+    }
+
+    /**
+     * Gives return value for a conditional Gaussain likelihood, returning a likelihood value and the degrees of freedom
+     * for it.
+     */
+    public static class Ret {
+        private final double lik;
+        private final int dof;
+
+        private Ret(double lik, int dof) {
+            this.lik = lik;
+            this.dof = dof;
+        }
+
+        public double getLik() {
+            return this.lik;
+        }
+
+        public int getDof() {
+            return this.dof;
+        }
+
+        public String toString() {
+            return "lik = " + this.lik + " dof = " + this.dof;
+        }
     }
 }

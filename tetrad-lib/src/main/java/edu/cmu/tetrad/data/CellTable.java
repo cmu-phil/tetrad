@@ -41,12 +41,11 @@ public final class CellTable {
 //     */
 //    private int[] coordCopy;
 
+    private final MultiDimIntTable table;
     /**
      * The value used in the data for missing values.
      */
     private int missingValue = -99;
-
-    private final MultiDimIntTable table;
 
     /**
      * Constructs a new cell table using the given array for dimensions, initializing all cells in the table to zero.

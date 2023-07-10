@@ -23,8 +23,8 @@ package edu.cmu.tetrad.search.utils;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import org.apache.commons.math3.util.FastMath;
@@ -240,7 +240,7 @@ public final class MaxP {
             return;
         }
 
-        IndependenceResult result1 =  this.independenceTest.checkIndependence(a, c);
+        IndependenceResult result1 = this.independenceTest.checkIndependence(a, c);
         double s1 = result1.getScore();
         IndependenceResult result2 = this.independenceTest.checkIndependence(a, c, b);
         double s2 = result2.getScore();

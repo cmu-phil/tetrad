@@ -48,31 +48,24 @@ import static org.apache.commons.math3.util.FastMath.*;
  */
 public class GicScores implements Score {
 
-    // The dataset.
-    private DataSet dataSet;
-
-    // The correlation matrix.
-    private ICovarianceMatrix covariances;
-
-    // The variables of the covariance matrix.
-    private List<Node> variables;
-
     // The sample size of the covariance matrix.
     private final int sampleSize;
-
+    Matrix data;
+    // The dataset.
+    private DataSet dataSet;
+    // The correlation matrix.
+    private ICovarianceMatrix covariances;
+    // The variables of the covariance matrix.
+    private List<Node> variables;
     // True if verbose output should be sent to out.
     private boolean verbose = false;
-
     // The rule type to use.
     private RuleType ruleType = RuleType.MANUAL;
-
     // Sample size or equivalent sample size.
     private double N;
-
     // Manually set lambda, by default log(n);
     private double lambda;
     private boolean calculateRowSubsets = false;
-    Matrix data;
     //    private boolean calculateSquareEuclideanNorms = false;
     private double penaltyDiscount = 1;
 
@@ -206,6 +199,33 @@ public class GicScores implements Score {
         return covariances;
     }
 
+    private void setCovariances(ICovarianceMatrix covariances) {
+//        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
+        this.covariances = covariances;
+//        this.covariances = covariances;
+
+//        boolean exists = false;
+
+//        for (int i = 0; i < correlations.getSize(); i++) {
+//            for (int j = 0; j < correlations.getSize(); j++) {
+//                if (i == j) continue;
+//                double r = correlations.getValue(i, j);
+//                if (abs(r) > correlationThreshold) {
+//                    System.out.println("Absolute correlation too high: " + r);
+//                    exists = true;
+//                }
+//            }
+//        }
+
+//        if (exists) {
+//            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
+//                    + ") in absolute value.");
+//        }
+
+
+        this.N = covariances.getSampleSize();
+    }
+
     public int getSampleSize() {
         return sampleSize;
     }
@@ -215,13 +235,13 @@ public class GicScores implements Score {
         return bump > 0;
     }
 
-    public DataSet getDataSet() {
-        return dataSet;
-    }
-
 //    public void setTrueErrorVariance(double trueErrorVariance) {
 //        this.trueErrorVariance = trueErrorVariance;
 //    }
+
+    public DataSet getDataSet() {
+        return dataSet;
+    }
 
     public boolean isVerbose() {
         return verbose;
@@ -264,16 +284,12 @@ public class GicScores implements Score {
         return Double.isNaN(v);
     }
 
-    public void setRuleType(RuleType ruleType) {
-        this.ruleType = ruleType;
-    }
-
 //    public RuleType getRuleType() {
 //        return ruleType;
 //    }
 
-    public void setLambda(double lambda) {
-        this.lambda = lambda;
+    public void setRuleType(RuleType ruleType) {
+        this.ruleType = ruleType;
     }
 
 //    public void setPenaltyDiscount(double penaltyDiscount) {
@@ -292,6 +308,10 @@ public class GicScores implements Score {
 //        this.calculateSquareEuclideanNorms = calculateSquareEuclideanNorms;
 //    }
 
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
+    }
+
     public double getPenaltyDiscount() {
         return penaltyDiscount;
     }
@@ -300,6 +320,11 @@ public class GicScores implements Score {
         this.penaltyDiscount = penaltyDiscount;
     }
 
+    public String toString() {
+        return "Generalized Information Criterion Score";
+    }
+
+
     /**
      * Gives the options for the rules to use for calculating the scores. The "GIC" rules, and RICc, are the rules
      * proposed in the Kim et al. paper for generalized information criteria.'
@@ -307,39 +332,6 @@ public class GicScores implements Score {
      * @see GicScores
      */
     public enum RuleType {MANUAL, BIC, NANDY, GIC2, RIC, RICc, GIC5, GIC6}
-
-
-    private void setCovariances(ICovarianceMatrix covariances) {
-//        CorrelationMatrix correlations = new CorrelationMatrix(covariances);
-        this.covariances = covariances;
-//        this.covariances = covariances;
-
-//        boolean exists = false;
-
-//        for (int i = 0; i < correlations.getSize(); i++) {
-//            for (int j = 0; j < correlations.getSize(); j++) {
-//                if (i == j) continue;
-//                double r = correlations.getValue(i, j);
-//                if (abs(r) > correlationThreshold) {
-//                    System.out.println("Absolute correlation too high: " + r);
-//                    exists = true;
-//                }
-//            }
-//        }
-
-//        if (exists) {
-//            throw new IllegalArgumentException("Some correlations are too high (> " + correlationThreshold
-//                    + ") in absolute value.");
-//        }
-
-
-        this.N = covariances.getSampleSize();
-    }
-
-
-    public String toString() {
-        return "Generalized Information Criterion Score";
-    }
 }
 
 

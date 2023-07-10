@@ -44,47 +44,39 @@ import java.util.*;
  */
 public class Ion {
 
-    // prune using path length
-    private boolean pathLengthSearch = true;
-
-    // prune using adjacencies
-    private boolean doAdjacencySearch;
-
     /**
      * The input PAGs being to be intergrated, possibly FCI outputs.
      */
     private final List<Graph> input = new ArrayList<>();
-
     /**
      * The output PAGs over all variables consistent with the input PAGs
      */
     private final List<Graph> output = new ArrayList<>();
-
     /**
      * All the variables being integrated from the input PAGs
      */
     private final List<String> variables = new ArrayList<>();
-
     /**
      * Definite noncolliders
      */
     private final Set<Triple> definiteNoncolliders = new HashSet<>();
-
+    private final Set<Graph> discrimGraphs = new HashSet<>();
+    private final Set<Graph> finalResult = new HashSet<>();
+    // running runtime and time and size information for hitting sets
+    private final List<Integer> recGraphs = new ArrayList<>();
+    private final List<Double> recHitTimes = new ArrayList<>();
+    // prune using path length
+    private boolean pathLengthSearch = true;
+    // prune using adjacencies
+    private boolean doAdjacencySearch;
     /**
      * separations and associations found in the input PAGs
      */
     private Set<IonIndependenceFacts> separations;
-
     /**
      * tracks changes for final orientations orientation methods
      */
     private boolean changeFlag = true;
-    private final Set<Graph> discrimGraphs = new HashSet<>();
-    private final Set<Graph> finalResult = new HashSet<>();
-
-    // running runtime and time and size information for hitting sets
-    private final List<Integer> recGraphs = new ArrayList<>();
-    private final List<Double> recHitTimes = new ArrayList<>();
     private double runtime;
 
     // maximum memory usage
@@ -118,6 +110,55 @@ public class Ion {
     }
 
     //============================= Public Methods ============================//
+
+    public static List<List<Node>> treks(Graph graph, Node node1, Node node2) {
+        List<List<Node>> paths = new LinkedList<>();
+        Ion.treks(graph, node1, node2, new LinkedList<>(), paths);
+        return paths;
+    }
+
+    /**
+     * Constructs the list of treks between node1 and node2.
+     */
+    private static void treks(Graph graph, Node node1, Node node2,
+                              LinkedList<Node> path, List<List<Node>> paths) {
+        path.addLast(node1);
+
+        for (Edge edge : graph.getEdges(node1)) {
+            Node next = Edges.traverse(node1, edge);
+
+            if (next == null) {
+                continue;
+            }
+
+            if (path.size() > 1) {
+                Node node0 = path.get(path.size() - 2);
+
+                if (next == node0) {
+                    continue;
+                }
+
+                if (graph.isDefCollider(node0, node1, next)) {
+                    continue;
+                }
+            }
+
+            if (next == node2) {
+                LinkedList<Node> _path = new LinkedList<>(path);
+                _path.add(next);
+                paths.add(_path);
+                continue;
+            }
+
+            if (path.contains(next)) {
+                continue;
+            }
+
+            Ion.treks(graph, next, node2, path, paths);
+        }
+
+        path.removeLast();
+    }
 
     /**
      * Sets path length search on or off.
@@ -550,6 +591,8 @@ public class Ion {
         return this.output;
     }
 
+    // return hitting set sizes
+
     /**
      * @return The total runtime and times for hitting set calculations.
      */
@@ -572,6 +615,8 @@ public class Ion {
         return list;
     }
 
+    // summarizes time and hitting set time and size information for latex
+
     /**
      * @return The maximum memory used in a run of ION
      */
@@ -579,7 +624,7 @@ public class Ion {
         return this.maxMemory;
     }
 
-    // return hitting set sizes
+    //============================= Private Methods ============================//
 
     public List<Integer> getIterations() {
         int totalit = 0;
@@ -598,8 +643,6 @@ public class Ion {
         list.add(averageit);
         return list;
     }
-
-    // summarizes time and hitting set time and size information for latex
 
     /**
      * Summarizes time and hitting set time and size information for latex
@@ -638,8 +681,6 @@ public class Ion {
         return stats;
     }
 
-    //============================= Private Methods ============================//
-
     /**
      * Logs a set of graphs with a corresponding message
      */
@@ -664,6 +705,10 @@ public class Ion {
         }
         return nodePairs;
     }
+
+    /*
+     * @return all triples in a graph
+     */
 
     /**
      * Finds all node pairs that are not adjacent in an input graph
@@ -726,10 +771,6 @@ public class Ion {
             }
         }
     }
-
-    /*
-     * @return all triples in a graph
-     */
 
     private Set<Triple> getAllTriples(Graph graph) {
         Set<Triple> triples = new HashSet<>();
@@ -1196,6 +1237,9 @@ public class Ion {
         }
     }
 
+    // if a*-&gt;Bo-oC and not a*-*c, then a*-&gt;b-->c
+    // (orient either circle if present, don't need both)
+
     //if Ao->c and a-->b-->c, then a-->c
     // Zhang's rule R2, awy from ancestor.
     private void ruleR2(Node a, Node b, Node c, Graph graph) {
@@ -1221,6 +1265,8 @@ public class Ion {
         }
     }
 
+    //if a*-oC and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c
+
     private boolean isArrowheadAllowed(Graph graph, Node x, Node y) {
         if (graph.getEndpoint(x, y) == Endpoint.ARROW) {
             return true;
@@ -1235,9 +1281,6 @@ public class Ion {
         }
         return true;
     }
-
-    // if a*-&gt;Bo-oC and not a*-*c, then a*-&gt;b-->c
-    // (orient either circle if present, don't need both)
 
     private void awayFromCollider(Graph graph, Node a, Node b, Node c) {
         Endpoint BC = graph.getEndpoint(b, c);
@@ -1264,8 +1307,6 @@ public class Ion {
             }
         }
     }
-
-    //if a*-oC and either a-->b*-&gt;c or a*-&gt;b-->c, then a*-&gt;c
 
     private void awayFromAncestor(Graph graph, Node a, Node b, Node c) {
         if ((graph.isAdjacentTo(a, c)) &&
@@ -1532,6 +1573,79 @@ public class Ion {
         return pagsOut;
     }
 
+    private Graph screenForKnowledge(Graph pag) {
+        for (Iterator<KnowledgeEdge> it = this.knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge next = it.next();
+            Node y = pag.getNode(next.getFrom());
+            Node x = pag.getNode(next.getTo());
+
+            if (x == null || y == null) {
+                continue;
+            }
+
+            Edge edge = pag.getEdge(x, y);
+
+            if (edge == null) {
+                continue;
+            }
+
+            if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.TAIL) {
+                return null;
+            } else if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
+                pag.removeEdge(edge);
+                pag.addEdge(Edges.bidirectedEdge(x, y));
+            } else if (edge.getProximalEndpoint(x) == Endpoint.CIRCLE && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
+                pag.removeEdge(edge);
+                pag.addEdge(Edges.partiallyOrientedEdge(x, y));
+            }
+        }
+
+
+        for (Iterator<KnowledgeEdge> it = this.knowledge.requiredEdgesIterator(); it.hasNext(); ) {
+            KnowledgeEdge next = it.next();
+            Node x = pag.getNode(next.getFrom());
+            Node y = pag.getNode(next.getTo());
+
+            if (x == null || y == null) {
+                continue;
+            }
+
+            Edge edge = pag.getEdge(x, y);
+
+            if (edge == null) {
+                return null;
+            } else if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.TAIL) {
+                return null;
+            } else if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
+                return null;
+            } else if (edge.getProximalEndpoint(x) == Endpoint.CIRCLE && edge.getProximalEndpoint(y) == Endpoint.ARROW) {
+                pag.removeEdge(edge);
+                pag.addEdge(Edges.directedEdge(x, y));
+            } else if (edge.getProximalEndpoint(x) == Endpoint.CIRCLE && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
+                pag.removeEdge(edge);
+                pag.addEdge(Edges.directedEdge(x, y));
+            }
+        }
+
+
+//        doFinalOrientation(pag);
+        return pag;
+    }
+
+    private Set<Graph> applyKnowledge(Set<Graph> outputSet) {
+        Set<Graph> _out = new HashSet<>();
+
+        for (Graph graph : outputSet) {
+            Graph _graph = screenForKnowledge(graph);
+
+            if (_graph != null) {
+                _out.add(_graph);
+            }
+        }
+
+        return _out;
+    }
+
     /**
      * Exactly the same as edu.cmu.tetrad.graph.IndependenceFact excepting this class allows for multiple conditioning
      * sets to be associated with a single pair of nodes, which is necessary for the proper ordering of iterations in
@@ -1681,128 +1795,6 @@ public class Ion {
 
             }
         }
-    }
-
-    public static List<List<Node>> treks(Graph graph, Node node1, Node node2) {
-        List<List<Node>> paths = new LinkedList<>();
-        Ion.treks(graph, node1, node2, new LinkedList<>(), paths);
-        return paths;
-    }
-
-    /**
-     * Constructs the list of treks between node1 and node2.
-     */
-    private static void treks(Graph graph, Node node1, Node node2,
-                              LinkedList<Node> path, List<List<Node>> paths) {
-        path.addLast(node1);
-
-        for (Edge edge : graph.getEdges(node1)) {
-            Node next = Edges.traverse(node1, edge);
-
-            if (next == null) {
-                continue;
-            }
-
-            if (path.size() > 1) {
-                Node node0 = path.get(path.size() - 2);
-
-                if (next == node0) {
-                    continue;
-                }
-
-                if (graph.isDefCollider(node0, node1, next)) {
-                    continue;
-                }
-            }
-
-            if (next == node2) {
-                LinkedList<Node> _path = new LinkedList<>(path);
-                _path.add(next);
-                paths.add(_path);
-                continue;
-            }
-
-            if (path.contains(next)) {
-                continue;
-            }
-
-            Ion.treks(graph, next, node2, path, paths);
-        }
-
-        path.removeLast();
-    }
-
-    private Graph screenForKnowledge(Graph pag) {
-        for (Iterator<KnowledgeEdge> it = this.knowledge.forbiddenEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge next = it.next();
-            Node y = pag.getNode(next.getFrom());
-            Node x = pag.getNode(next.getTo());
-
-            if (x == null || y == null) {
-                continue;
-            }
-
-            Edge edge = pag.getEdge(x, y);
-
-            if (edge == null) {
-                continue;
-            }
-
-            if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.TAIL) {
-                return null;
-            } else if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
-                pag.removeEdge(edge);
-                pag.addEdge(Edges.bidirectedEdge(x, y));
-            } else if (edge.getProximalEndpoint(x) == Endpoint.CIRCLE && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
-                pag.removeEdge(edge);
-                pag.addEdge(Edges.partiallyOrientedEdge(x, y));
-            }
-        }
-
-
-        for (Iterator<KnowledgeEdge> it = this.knowledge.requiredEdgesIterator(); it.hasNext(); ) {
-            KnowledgeEdge next = it.next();
-            Node x = pag.getNode(next.getFrom());
-            Node y = pag.getNode(next.getTo());
-
-            if (x == null || y == null) {
-                continue;
-            }
-
-            Edge edge = pag.getEdge(x, y);
-
-            if (edge == null) {
-                return null;
-            } else if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.TAIL) {
-                return null;
-            } else if (edge.getProximalEndpoint(x) == Endpoint.ARROW && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
-                return null;
-            } else if (edge.getProximalEndpoint(x) == Endpoint.CIRCLE && edge.getProximalEndpoint(y) == Endpoint.ARROW) {
-                pag.removeEdge(edge);
-                pag.addEdge(Edges.directedEdge(x, y));
-            } else if (edge.getProximalEndpoint(x) == Endpoint.CIRCLE && edge.getProximalEndpoint(y) == Endpoint.CIRCLE) {
-                pag.removeEdge(edge);
-                pag.addEdge(Edges.directedEdge(x, y));
-            }
-        }
-
-
-//        doFinalOrientation(pag);
-        return pag;
-    }
-
-    private Set<Graph> applyKnowledge(Set<Graph> outputSet) {
-        Set<Graph> _out = new HashSet<>();
-
-        for (Graph graph : outputSet) {
-            Graph _graph = screenForKnowledge(graph);
-
-            if (_graph != null) {
-                _out.add(_graph);
-            }
-        }
-
-        return _out;
     }
 }
 

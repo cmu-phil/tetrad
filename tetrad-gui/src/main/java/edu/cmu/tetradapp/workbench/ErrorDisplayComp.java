@@ -45,10 +45,6 @@ public class ErrorDisplayComp extends JComponent
         setSize(getPreferredSize());
     }
 
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
@@ -75,7 +71,6 @@ public class ErrorDisplayComp extends JComponent
         g.drawString(getName(), stringX, stringY);
     }
 
-
     /**
      * Calculates the size of the component based on its name.
      */
@@ -89,6 +84,10 @@ public class ErrorDisplayComp extends JComponent
 
     public boolean isSelected() {
         return this.selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 }
 

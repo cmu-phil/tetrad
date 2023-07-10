@@ -18,10 +18,6 @@ public abstract class ExternalAlgorithm implements Algorithm {
     protected int simIndex = -1;
     protected List<String> usedParameters = new ArrayList<>();
 
-    public void setSimulation(Simulation simulation) {
-        this.simulation = simulation;
-    }
-
     public void setPath(String path) {
         this.path = path;
     }
@@ -32,6 +28,10 @@ public abstract class ExternalAlgorithm implements Algorithm {
 
     public Simulation getSimulation() {
         return this.simulation;
+    }
+
+    public void setSimulation(Simulation simulation) {
+        this.simulation = simulation;
     }
 
     public abstract long getElapsedTime(DataModel dataSet, Parameters parameters);

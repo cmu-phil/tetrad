@@ -19,10 +19,10 @@ public class LoadContinuousDataAndSingleGraphKun implements Simulation, HasParam
     static final long serialVersionUID = 23L;
     private final String path;
     private final String prefix;
-    private Graph graph;
-    private List<ICovarianceMatrix> covs = new ArrayList<>();
     private final List<String> usedParameters = new ArrayList<>();
     private final Parameters parametersValues = new Parameters();
+    private Graph graph;
+    private List<ICovarianceMatrix> covs = new ArrayList<>();
 
     public LoadContinuousDataAndSingleGraphKun(String path, String prefix) {
         this.path = path;

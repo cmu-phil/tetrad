@@ -43,28 +43,24 @@ import static edu.cmu.tetrad.graph.Edges.directedEdge;
 public class EdgeListGraph implements Graph, TripleClassifier {
 
     static final long serialVersionUID = 23L;
-
-    /**
-     * A list of the nodes in the graph, in the order in which they were added.
-     *
-     * @serial
-     */
-    private final List<Node> nodes;
-
     /**
      * The edges in the graph.
      *
      * @serial
      */
     final Set<Edge> edgesSet;
-
     /**
      * Map from each node to the List of edges connected to that node.
      *
      * @serial
      */
     final Map<Node, Set<Edge>> edgeLists;
-
+    /**
+     * A list of the nodes in the graph, in the order in which they were added.
+     *
+     * @serial
+     */
+    private final List<Node> nodes;
     /**
      * A hash from node names to nodes;
      */

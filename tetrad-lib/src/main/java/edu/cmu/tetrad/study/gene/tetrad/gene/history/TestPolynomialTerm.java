@@ -40,6 +40,17 @@ public class TestPolynomialTerm extends TestCase {
     }
 
     /**
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
+     */
+    public static Test suite() {
+
+        // Edit the name of the class in the parens to match the name
+        // of this class.
+        return new TestSuite(TestPolynomialTerm.class);
+    }
+
+    /**
      * Tests to make sure that null parent throw an exception.
      */
     public void testConstruction() {
@@ -59,17 +70,6 @@ public class TestPolynomialTerm extends TestCase {
         PolynomialTerm term = new PolynomialTerm(0.5, new int[]{0, 1, 1, 2});
         double[] values = {1.0, 2.0, 3.0};
         TestCase.assertEquals(6.0, term.evaluate(values), 0.00001);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestPolynomialTerm.class);
     }
 }
 

@@ -25,13 +25,16 @@ import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import org.apache.commons.math3.util.FastMath;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * <p>Provides a SepsetProcuder that selects the first sepset it comes to from
@@ -162,7 +165,7 @@ public class SepsetsGreedy implements SepsetProducer {
     }
 
     private Set<Node> possibleParents(Node x, Set<Node> adjx,
-                                       Knowledge knowledge, Node y) {
+                                      Knowledge knowledge, Node y) {
         Set<Node> possibleParents = new HashSet<>();
         String _x = x.getName();
 

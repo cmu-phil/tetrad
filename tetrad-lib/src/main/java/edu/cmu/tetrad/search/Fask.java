@@ -137,6 +137,46 @@ import static org.apache.commons.math3.util.FastMath.*;
 public final class Fask implements IGraphSearch {
 
 
+    // The score to be used for the FAS adjacency search.
+    private final IndependenceTest test;
+    private final Score score;
+    // The data sets being analyzed. They must all have the same variables and the same
+    // number of records.
+    private final DataSet dataSet;
+    // Used for calculating coefficient values.
+    private final RegressionDataset regressionDataset;
+    private double[][] D;
+    // An initial graph to constrain the adjacency step.
+    private Graph externalGraph;
+    // Elapsed time of the search, in milliseconds.
+    private long elapsed;
+    // For the Fast Adjacency Search, the maximum number of edges in a conditioning set.
+    private int depth = -1;
+    // Knowledge the the search will obey, of forbidden and required edges.
+    private Knowledge knowledge = new Knowledge();
+    // A threshold for including extra adjacencies due to skewness. Default is 0.3. For more edges, lower
+    // this threshold.
+    private double skewEdgeThreshold;
+    // A theshold for making 2-cycles. Default is 0 (no 2-cycles.) Note that the 2-cycle rule will only work
+    // with the FASK left-right rule. Default is 0; a good value for finding a decent set of 2-cycles is 0.1.
+    private double twoCycleScreeningCutoff;
+    // At the end of the procedure, two cycles marked in the graph (for having small LR differences) are then
+    // tested statistically to see if they are two-cycles, using this cutoff. To adjust this cutoff, set the
+    // two cycle alpha to a number in [0, 1]. The default alpha  is 0.01.
+    private double orientationCutoff;
+    // The corresponding alpha.
+    private double orientationAlpha;
+    // Bias for orienting with negative coefficients.
+    private double delta;
+    // Whether X and Y should be adjusted for skewness. (Otherwise, they are assumed to have positive skewness.
+    private boolean empirical = true;
+    // By default, FAS Stable will be used for adjacencies, though this can be set.
+    private AdjacencyMethod adjacencyMethod = AdjacencyMethod.GRASP;
+    // The left right rule to use, default FASK.
+    private LeftRight leftRight = LeftRight.RSKEW;
+    // The graph resulting from search.
+    private Graph graph;
+
     /**
      * Constructor.
      *
@@ -159,6 +199,44 @@ public final class Fask implements IGraphSearch {
         this.regressionDataset = new RegressionDataset(dataSet);
         this.orientationCutoff = getZForAlpha(0.01);
         this.orientationAlpha = 0.01;
+    }
+
+    private static double cu(double[] x, double[] y, double[] condition) {
+        double exy = 0.0;
+
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (condition[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+    // Returns E(XY | Z > 0); Z is typically either X or Y.
+    private static double E(double[] x, double[] y, double[] z) {
+        double exy = 0.0;
+        int n = 0;
+
+        for (int k = 0; k < x.length; k++) {
+            if (z[k] > 0) {
+                exy += x[k] * y[k];
+                n++;
+            }
+        }
+
+        return exy / n;
+    }
+
+
+    //======================================== PUBLIC METHODS ====================================//
+
+    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
+    private static double correxp(double[] x, double[] y, double[] z) {
+        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
     }
 
     /**
@@ -363,72 +441,6 @@ public final class Fask implements IGraphSearch {
 
         return graph;
     }
-
-    /**
-     * Enumerates the options left-right rules to use for FASK. Options include the FASK left-right rule and three
-     * left-right rules from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
-     * paper, "empirical" versions were given in which the variables are multiplied through by the signs of the
-     * skewnesses; we follow this advice here (with good results). These others are provided for those who prefer them.
-     */
-    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
-
-    // The score to be used for the FAS adjacency search.
-    private final IndependenceTest test;
-    private final Score score;
-    // The data sets being analyzed. They must all have the same variables and the same
-    // number of records.
-    private final DataSet dataSet;
-    // Used for calculating coefficient values.
-    private final RegressionDataset regressionDataset;
-    private double[][] D;
-    // An initial graph to constrain the adjacency step.
-    private Graph externalGraph;
-    // Elapsed time of the search, in milliseconds.
-    private long elapsed;
-    // For the Fast Adjacency Search, the maximum number of edges in a conditioning set.
-    private int depth = -1;
-
-    // Knowledge the the search will obey, of forbidden and required edges.
-    private Knowledge knowledge = new Knowledge();
-
-    // A threshold for including extra adjacencies due to skewness. Default is 0.3. For more edges, lower
-    // this threshold.
-    private double skewEdgeThreshold;
-
-    // A theshold for making 2-cycles. Default is 0 (no 2-cycles.) Note that the 2-cycle rule will only work
-    // with the FASK left-right rule. Default is 0; a good value for finding a decent set of 2-cycles is 0.1.
-    private double twoCycleScreeningCutoff;
-
-    // At the end of the procedure, two cycles marked in the graph (for having small LR differences) are then
-    // tested statistically to see if they are two-cycles, using this cutoff. To adjust this cutoff, set the
-    // two cycle alpha to a number in [0, 1]. The default alpha  is 0.01.
-    private double orientationCutoff;
-
-    // The corresponding alpha.
-    private double orientationAlpha;
-
-    // Bias for orienting with negative coefficients.
-    private double delta;
-
-    // Whether X and Y should be adjusted for skewness. (Otherwise, they are assumed to have positive skewness.
-    private boolean empirical = true;
-
-    // By default, FAS Stable will be used for adjacencies, though this can be set.
-    private AdjacencyMethod adjacencyMethod = AdjacencyMethod.GRASP;
-
-    // The left right rule to use, default FASK.
-    private LeftRight leftRight = LeftRight.RSKEW;
-
-    // The graph resulting from search.
-    private Graph graph;
-
-
-    //======================================== PUBLIC METHODS ====================================//
-
-    /**
-     * Enumerates the alternatives to use for finding the initial adjacencies for FASK.
-     */
-    public enum AdjacencyMethod {FAS_STABLE, FGES, BOSS, GRASP, EXTERNAL_GRAPH, NONE}
 
     /**
      * Returns the coefficient matrix for the search. If the search has not yet run, runs it, then estimates
@@ -843,40 +855,18 @@ public final class Fask implements IGraphSearch {
         );
     }
 
-    private static double cu(double[] x, double[] y, double[] condition) {
-        double exy = 0.0;
+    /**
+     * Enumerates the options left-right rules to use for FASK. Options include the FASK left-right rule and three
+     * left-right rules from the Hyvarinen and Smith pairwise orientation paper: Robust Skew, Skew, and Tanh. In that
+     * paper, "empirical" versions were given in which the variables are multiplied through by the signs of the
+     * skewnesses; we follow this advice here (with good results). These others are provided for those who prefer them.
+     */
+    public enum LeftRight {FASK1, FASK2, RSKEW, SKEW, TANH}
 
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (condition[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-    // Returns E(XY | Z > 0); Z is typically either X or Y.
-    private static double E(double[] x, double[] y, double[] z) {
-        double exy = 0.0;
-        int n = 0;
-
-        for (int k = 0; k < x.length; k++) {
-            if (z[k] > 0) {
-                exy += x[k] * y[k];
-                n++;
-            }
-        }
-
-        return exy / n;
-    }
-
-    // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
-    private static double correxp(double[] x, double[] y, double[] z) {
-        return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));
-    }
+    /**
+     * Enumerates the alternatives to use for finding the initial adjacencies for FASK.
+     */
+    public enum AdjacencyMethod {FAS_STABLE, FGES, BOSS, GRASP, EXTERNAL_GRAPH, NONE}
 }
 
 

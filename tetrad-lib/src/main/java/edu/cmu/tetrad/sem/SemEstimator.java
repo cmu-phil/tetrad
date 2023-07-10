@@ -165,6 +165,19 @@ public final class SemEstimator implements TetradSerializable {
 
     //==============================PUBLIC METHODS=========================//
 
+    private static boolean containsCovarParam(SemPm semPm) {
+        boolean containsCovarParam = false;
+        List<Parameter> params = semPm.getParameters();
+
+        for (Parameter param : params) {
+            if (param.getType() == ParamType.COVAR) {
+                containsCovarParam = true;
+                break;
+            }
+        }
+        return containsCovarParam;
+    }
+
     /**
      * Runs the estimator on the data and SemPm passed in through the constructor.
      */
@@ -223,10 +236,6 @@ public final class SemEstimator implements TetradSerializable {
         return this.estimatedSem;
     }
 
-    private void setCovMatrix(ICovarianceMatrix covMatrix) {
-        this.covMatrix = covMatrix;
-    }
-
     /**
      * @return the estimated SemIm. If the <code>estimate</code> method has not yet been called, <code>null</code> is
      * returned.
@@ -235,20 +244,54 @@ public final class SemEstimator implements TetradSerializable {
         return this.estimatedSem;
     }
 
+    private void setEstimatedSem(SemIm estimatedSem) {
+        this.estimatedSem = estimatedSem;
+    }
+
     public DataSet getDataSet() {
         return this.dataSet;
+    }
+
+    private void setDataSet(DataSet dataSet) {
+        List<Node> nodes1 = this.semPm.getMeasuredNodes();
+
+        List<Node> vars = new ArrayList<>();
+
+        for (Node node : nodes1) {
+            Node _node = dataSet.getVariable(node.getName());
+            vars.add(_node);
+        }
+
+        DataSet _dataSet = new BoxDataSet(new VerticalDoubleDataBox(dataSet.getDoubleData().transpose().toArray()), vars);
+        _dataSet.setName(dataSet.getName());
+
+        this.dataSet = _dataSet;
     }
 
     public SemPm getSemPm() {
         return this.semPm;
     }
 
+    private void setSemPm(SemPm semPm) {
+        this.semPm = semPm;
+    }
+
+    //============================PRIVATE METHODS==========================//
+
     public ICovarianceMatrix getCovMatrix() {
         return this.covMatrix;
     }
 
+    private void setCovMatrix(ICovarianceMatrix covMatrix) {
+        this.covMatrix = covMatrix;
+    }
+
     private SemOptimizer getSemOptimizer() {
         return this.semOptimizer;
+    }
+
+    public void setSemOptimizer(SemOptimizer semOptimizer) {
+        this.semOptimizer = semOptimizer;
     }
 
     /**
@@ -276,8 +319,6 @@ public final class SemEstimator implements TetradSerializable {
 
         return buf.toString();
     }
-
-    //============================PRIVATE METHODS==========================//
 
     private SemOptimizer getDefaultOptimization(SemIm semIm) {
         if (semIm == null) throw new NullPointerException();
@@ -344,19 +385,6 @@ public final class SemEstimator implements TetradSerializable {
         return dataSet.subsetColumns(varIndices);
     }
 
-    private static boolean containsCovarParam(SemPm semPm) {
-        boolean containsCovarParam = false;
-        List<Parameter> params = semPm.getParameters();
-
-        for (Parameter param : params) {
-            if (param.getType() == ParamType.COVAR) {
-                containsCovarParam = true;
-                break;
-            }
-        }
-        return containsCovarParam;
-    }
-
     /**
      * Sets the means of variables in the SEM IM based on the given data set.
      */
@@ -386,34 +414,6 @@ public final class SemEstimator implements TetradSerializable {
         }
     }
 
-    public void setSemOptimizer(SemOptimizer semOptimizer) {
-        this.semOptimizer = semOptimizer;
-    }
-
-    private void setEstimatedSem(SemIm estimatedSem) {
-        this.estimatedSem = estimatedSem;
-    }
-
-    private void setSemPm(SemPm semPm) {
-        this.semPm = semPm;
-    }
-
-    private void setDataSet(DataSet dataSet) {
-        List<Node> nodes1 = this.semPm.getMeasuredNodes();
-
-        List<Node> vars = new ArrayList<>();
-
-        for (Node node : nodes1) {
-            Node _node = dataSet.getVariable(node.getName());
-            vars.add(_node);
-        }
-
-        DataSet _dataSet = new BoxDataSet(new VerticalDoubleDataBox(dataSet.getDoubleData().transpose().toArray()), vars);
-        _dataSet.setName(dataSet.getName());
-
-        this.dataSet = _dataSet;
-    }
-
     /**
      * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
      * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
@@ -436,12 +436,12 @@ public final class SemEstimator implements TetradSerializable {
         }
     }
 
-    public void setScoreType(ScoreType scoreType) {
-        this.scoreType = scoreType;
-    }
-
     private ScoreType getScoreType() {
         return this.scoreType;
+    }
+
+    public void setScoreType(ScoreType scoreType) {
+        this.scoreType = scoreType;
     }
 
     public void setNumRestarts(int numRestarts) {

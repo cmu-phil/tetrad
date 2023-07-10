@@ -25,12 +25,11 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.GraphSampling;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
+
+import javax.swing.*;
 import java.util.List;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 
 /**
- *
  * Mar 19, 2023 1:45:50 AM
  *
  * @author Kevin V. Bui (kvb2univpitt@gmail.com)

@@ -37,8 +37,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Adds a new template session subgraph to the frontmost session editor. of one
- * of three types.
+ * Adds a new template session subgraph to the frontmost session editor. of one of three types.
  *
  * @author josephramsey
  */
@@ -94,10 +93,99 @@ final class ConstructTemplateAction extends AbstractAction {
         return templateNamesCopy;
     }
 
+    private static void selectSubgraph(List<Node> nodes) {
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        SessionEditorWorkbench sessionWorkbench
+                = sessionEditor.getSessionWorkbench();
+
+        for (Node node : nodes) {
+            sessionWorkbench.selectNode(node);
+        }
+
+        Set<Edge> edges = sessionWorkbench.getGraph().getEdges();
+
+        for (Edge edge : edges) {
+            Node node1 = edge.getNode1();
+            Node node2 = edge.getNode2();
+            if (nodes.contains(node1) && nodes.contains(node2)) {
+                sessionWorkbench.selectEdge(edge);
+            }
+        }
+
+        sessionWorkbench.scrollNodesToVisible(nodes);
+    }
+
     /**
-     * Performs the action of adding the specified templatew into the frontmost
-     * session. It is assumed that all example sessions will be located in
-     * directory "example_sessions".
+     * Returns the next string in the sequence.
+     *
+     * @param base the string base of the name--for example, "Graph".
+     * @return the next string in the sequence--for example, "Graph1".
+     */
+    private static String nextName(String base) {
+        SessionEditorIndirectRef sessionEditorRef
+                = DesktopController.getInstance().getFrontmostSessionEditor();
+        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
+        SessionEditorWorkbench sessionWorkbench
+                = sessionEditor.getSessionWorkbench();
+        SessionWrapper graph = sessionWorkbench.getSessionWrapper();
+
+        if (base == null) {
+            throw new NullPointerException("Base name must be non-null.");
+        }
+
+        int i = 0;    // Sequence 1, 2, 3, ...
+
+        loop:
+        while (true) {
+            i++;
+            String name = base + i;
+
+            for (Node o : graph.getNodes()) {
+                if (o.getName().equals(name)) {
+                    continue loop;
+                }
+            }
+
+            break;
+        }
+
+        return base + i;
+    }
+
+    private static SessionNodeWrapper getNewModelNode(String nextButtonType,
+                                                      String name) {
+        if (nextButtonType == null) {
+            throw new NullPointerException(
+                    "Next button type must be a " + "non-null string.");
+        }
+
+        Class[] modelClasses = ConstructTemplateAction.getModelClasses(nextButtonType);
+        SessionNode newNode
+                = new SessionNode(nextButtonType, name, modelClasses);
+        SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
+        nodeWrapper.setButtonType(nextButtonType);
+        return nodeWrapper;
+    }
+
+    /**
+     * @return the model classes associated with the given button type.
+     * @throws NullPointerException if no classes are stored for the given type.
+     */
+    private static Class[] getModelClasses(String nextButtonType) {
+        TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();
+        SessionNodeConfig config = tetradConfig.getSessionNodeConfig(nextButtonType);
+        if (config == null) {
+            throw new NullPointerException("There is no configuration for button: " + nextButtonType);
+        }
+
+        return config.getModels();
+    }
+
+    /**
+     * Performs the action of adding the specified templatew into the frontmost session. It is assumed that all example
+     * sessions will be located in directory "example_sessions".
      */
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -298,67 +386,6 @@ final class ConstructTemplateAction extends AbstractAction {
         ConstructTemplateAction.selectSubgraph(nodes);
     }
 
-    private static void selectSubgraph(List<Node> nodes) {
-        SessionEditorIndirectRef sessionEditorRef
-                = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
-                = sessionEditor.getSessionWorkbench();
-
-        for (Node node : nodes) {
-            sessionWorkbench.selectNode(node);
-        }
-
-        Set<Edge> edges = sessionWorkbench.getGraph().getEdges();
-
-        for (Edge edge : edges) {
-            Node node1 = edge.getNode1();
-            Node node2 = edge.getNode2();
-            if (nodes.contains(node1) && nodes.contains(node2)) {
-                sessionWorkbench.selectEdge(edge);
-            }
-        }
-
-        sessionWorkbench.scrollNodesToVisible(nodes);
-    }
-
-    /**
-     * Returns the next string in the sequence.
-     *
-     * @param base the string base of the name--for example, "Graph".
-     * @return the next string in the sequence--for example, "Graph1".
-     */
-    private static String nextName(String base) {
-        SessionEditorIndirectRef sessionEditorRef
-                = DesktopController.getInstance().getFrontmostSessionEditor();
-        SessionEditor sessionEditor = (SessionEditor) sessionEditorRef;
-        SessionEditorWorkbench sessionWorkbench
-                = sessionEditor.getSessionWorkbench();
-        SessionWrapper graph = sessionWorkbench.getSessionWrapper();
-
-        if (base == null) {
-            throw new NullPointerException("Base name must be non-null.");
-        }
-
-        int i = 0;    // Sequence 1, 2, 3, ...
-
-        loop:
-        while (true) {
-            i++;
-            String name = base + i;
-
-            for (Node o : graph.getNodes()) {
-                if (o.getName().equals(name)) {
-                    continue loop;
-                }
-            }
-
-            break;
-        }
-
-        return base + i;
-    }
-
     private SessionWrapper getSessionWrapper() {
         SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();
@@ -424,34 +451,5 @@ final class ConstructTemplateAction extends AbstractAction {
         getSessionWrapper().addEdge(edge);
         getSessionWorkbench().revalidate();
         getSessionWorkbench().repaint();
-    }
-
-    private static SessionNodeWrapper getNewModelNode(String nextButtonType,
-                                                      String name) {
-        if (nextButtonType == null) {
-            throw new NullPointerException(
-                    "Next button type must be a " + "non-null string.");
-        }
-
-        Class[] modelClasses = ConstructTemplateAction.getModelClasses(nextButtonType);
-        SessionNode newNode
-                = new SessionNode(nextButtonType, name, modelClasses);
-        SessionNodeWrapper nodeWrapper = new SessionNodeWrapper(newNode);
-        nodeWrapper.setButtonType(nextButtonType);
-        return nodeWrapper;
-    }
-
-    /**
-     * @return the model classes associated with the given button type.
-     * @throws NullPointerException if no classes are stored for the given type.
-     */
-    private static Class[] getModelClasses(String nextButtonType) {
-        TetradApplicationConfig tetradConfig = TetradApplicationConfig.getInstance();
-        SessionNodeConfig config = tetradConfig.getSessionNodeConfig(nextButtonType);
-        if (config == null) {
-            throw new NullPointerException("There is no configuration for button: " + nextButtonType);
-        }
-
-        return config.getModels();
     }
 }

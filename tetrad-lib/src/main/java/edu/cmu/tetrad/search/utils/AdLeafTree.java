@@ -19,18 +19,14 @@ public class AdLeafTree {
 
     // The data set the tree is for.
     private final DataSet dataSet;
-
-    // Contains the root of the tree.
-    private List<Vary> baseCase;
-
     // Indices of variables.
     private final Map<Node, Integer> nodesHash;
-
     // Discrete data only.
     private final int[][] discreteData;
-
     // Dimensions of the discrete variables (otherwise 0).
     private final int[] dims;
+    // Contains the root of the tree.
+    private List<Vary> baseCase;
 
     /**
      * Constructs an AD Leaf Tree for the given dataset.

@@ -73,6 +73,17 @@ public class TestMeasurementSimulator extends TestCase {
     }
 
     /**
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
+     */
+    public static Test suite() {
+
+        // Edit the name of the class in the parens to match the name
+        // of this class.
+        return new TestSuite(TestMeasurementSimulator.class);
+    }
+
+    /**
      * Sets up a GeneHistory object in the format for Richard's diagnostic. The graph consists of three genes--1, 2, 3.
      * In addition to the standard edges from each gene one time step back to itself in the getModel time step, there is
      * an edge from G1:1 to G2:0, from G1:1 to G3:0, and from G2:1 to G3:0. A Glass function is created using this graph
@@ -398,17 +409,6 @@ public class TestMeasurementSimulator extends TestCase {
         TestCase.assertEquals(0.3, gene2time1sd, 0.1);
         TestCase.assertEquals(0.3, gene3time1sd, 0.1);
         TestCase.assertEquals(0.3, gene1time2sd, 0.1);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestMeasurementSimulator.class);
     }
 }
 

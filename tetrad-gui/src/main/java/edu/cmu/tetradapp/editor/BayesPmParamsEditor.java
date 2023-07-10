@@ -50,18 +50,9 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     private IntTextField upperBoundField;
 
     /**
-     * Constructs a dialog to edit the given workbench Bayes simulation
-     * getMappings object.
+     * Constructs a dialog to edit the given workbench Bayes simulation getMappings object.
      */
     public BayesPmParamsEditor() {
-    }
-
-    public void setParams(Parameters params) {
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -185,13 +176,21 @@ public final class BayesPmParamsEditor extends JPanel implements ParameterEditor
     }
 
     /**
-     * Returns the getMappings object being edited. (This probably should not be
-     * public, but it is needed so that the textfields can edit the model.)
+     * Returns the getMappings object being edited. (This probably should not be public, but it is needed so that the
+     * textfields can edit the model.)
      *
      * @return the stored simulation parameters model.
      */
     private synchronized Parameters getParams() {
         return this.params;
+    }
+
+    public void setParams(Parameters params) {
+        if (params == null) {
+            throw new NullPointerException();
+        }
+
+        this.params = params;
     }
 }
 

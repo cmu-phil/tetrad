@@ -33,8 +33,7 @@ public interface SessionNodeConfig {
 
 
     /**
-     * @return the model confif for the model with the given class or null if there isn't
-     * one.
+     * @return the model confif for the model with the given class or null if there isn't one.
      */
     SessionNodeModelConfig getModelConfig(Class model);
 
@@ -53,16 +52,15 @@ public interface SessionNodeConfig {
 
     /**
      * @param sessionNode - The CessionNode for the getModel node.
-     * @return a newly created <code>ModelChooser</code> that should be utilized to select a model. If no
-     * chooser was specified then the default chooser will be returned.
+     * @return a newly created <code>ModelChooser</code> that should be utilized to select a model. If no chooser was
+     * specified then the default chooser will be returned.
      */
     ModelChooser getModelChooserInstance(SessionNode sessionNode);
 
 
     /**
-     * @return a newly created <code>SessionDisplayComp</code> that is used to display the node
-     * on the session workbench. If no display component class was specified then a default instance
-     * will be used.
+     * @return a newly created <code>SessionDisplayComp</code> that is used to display the node on the session
+     * workbench. If no display component class was specified then a default instance will be used.
      */
     SessionDisplayComp getSessionDisplayCompInstance();
 

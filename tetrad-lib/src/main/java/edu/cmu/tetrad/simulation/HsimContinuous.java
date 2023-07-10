@@ -45,6 +45,25 @@ public class HsimContinuous {
 
     //**************Public methods***********************//
 
+    // Calculates the Markov blanket of a node in a graph.
+    private static Set<Node> mb(Graph graph, Node z) {
+        Set<Node> mb = new HashSet<>(graph.getAdjacentNodes(z));
+
+        for (Node c : graph.getChildren(z)) {
+            for (Node p : graph.getParents(c)) {
+                //make sure you don't add z itslef to the markov blanket
+                if (p != z) {
+                    mb.add(p);
+                }
+            }
+        }
+
+        return mb;
+    }
+
+
+//========================================PRIVATE METHODS====================================//
+
     public DataSet hybridsimulate() {
         // Find Markov Blankets for resimulated variables**/
         // this needs to be made general, rather than only for two specific names nodes**/
@@ -131,25 +150,6 @@ public class HsimContinuous {
             }
         }
         return this.data;
-    }
-
-
-//========================================PRIVATE METHODS====================================//
-
-    // Calculates the Markov blanket of a node in a graph.
-    private static Set<Node> mb(Graph graph, Node z) {
-        Set<Node> mb = new HashSet<>(graph.getAdjacentNodes(z));
-
-        for (Node c : graph.getChildren(z)) {
-            for (Node p : graph.getParents(c)) {
-                //make sure you don't add z itslef to the markov blanket
-                if (p != z) {
-                    mb.add(p);
-                }
-            }
-        }
-
-        return mb;
     }
 
     /// *********Private methods for setting private variables***********//

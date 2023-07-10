@@ -41,8 +41,7 @@ import java.text.NumberFormat;
 import java.util.prefs.Preferences;
 
 /**
- * Presents a dialog allowing the user to change the number format used to
- * render real numbers throughout Tetrad.
+ * Presents a dialog allowing the user to change the number format used to render real numbers throughout Tetrad.
  *
  * @author josephramsey
  */
@@ -67,8 +66,8 @@ final class NumberFormatAction extends AbstractAction
     //===========================PUBLIC METHODS========================//
 
     /**
-     * Pops up a dialog that lets the user decide how to render real numbers.
-     * A basic and an advanced version are available.
+     * Pops up a dialog that lets the user decide how to render real numbers. A basic and an advanced version are
+     * available.
      */
     public void actionPerformed(ActionEvent e) {
 
@@ -280,20 +279,16 @@ final class NumberFormatAction extends AbstractAction
     }
 
     /**
-     * @return the most recent number format, whether from the basic or from
-     * the advanced tab.
-     * @throws RuntimeException if the getModel format string cannot be
-     *                          accepted by DecimalFormat.
+     * @return the most recent number format, whether from the basic or from the advanced tab.
+     * @throws RuntimeException if the getModel format string cannot be accepted by DecimalFormat.
      */
     private NumberFormat getNumberFormat() throws IllegalStateException {
         return new DecimalFormat(getFormatString());
     }
 
     /**
-     * @return the most recent format string, whether from the basic or from
-     * the advanced tab.
-     * @throws RuntimeException if the stored format string cannot be
-     *                          accepted by DecimalFormat.
+     * @return the most recent format string, whether from the basic or from the advanced tab.
+     * @throws RuntimeException if the stored format string cannot be accepted by DecimalFormat.
      */
     private String getFormatString() throws RuntimeException {
         String format = this.formatField.getText();
@@ -316,9 +311,8 @@ final class NumberFormatAction extends AbstractAction
     //============================PRIVATE METHODS=====================//
 
     /**
-     * This sets up the behavior in the advanced tab where when you change
-     * the format or the example numnber, it updates the rendering. It also
-     * sets the color of the format or example to red when it's ill-formatted.
+     * This sets up the behavior in the advanced tab where when you change the format or the example numnber, it updates
+     * the rendering. It also sets the color of the format or example to red when it's ill-formatted.
      *
      * @param sampleFieldAdvanced The example field.
      * @param renderFieldAdvanced The render field.

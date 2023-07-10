@@ -70,40 +70,32 @@ public class SvarFas implements IFas {
      * The independence test. This should be appropriate to the types
      */
     private final IndependenceTest test;
-
+    /**
+     * The logger, by default the empty logger.
+     */
+    private final TetradLogger logger = TetradLogger.getInstance();
+    private final NumberFormat nf = new DecimalFormat("0.00E0");
     /**
      * Specification of which edges are forbidden or required.
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * The maximum number of variables conditioned on in any conditional independence test. If the depth is -1, it will
      * be taken to be the maximum value, which is 1000. Otherwise, it should be set to a non-negative integer.
      */
     private int depth = 1000;
-
     /**
      * The number of independence tests.
      */
     private int numIndependenceTests;
-
-    /**
-     * The logger, by default the empty logger.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-
     /**
      * The sepsets found during the search.
      */
     private SepsetMap sepset = new SepsetMap();
-
     /**
      * The depth 0 graph, specified initially.
      */
     private Graph externalGraph;
-
-    private final NumberFormat nf = new DecimalFormat("0.00E0");
-
     /**
      * True iff verbose output should be printed.
      */

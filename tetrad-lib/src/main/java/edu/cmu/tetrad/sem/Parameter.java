@@ -60,21 +60,18 @@ public final class Parameter implements TetradSerializable {
      * @serial Cannot be null.
      */
     private final Node nodeB;
-
-    /**
-     * The name of the parameter.
-     *
-     * @serial Cannot be null.
-     */
-    private String name;
-
     /**
      * The type of parameter--coefficient, covariance, or variance.
      *
      * @serial Cannot be null. Should be ParamType.VAR if nodeA != nodeB and ParamType.COVAR if nodeA == nodeB.
      */
     private final ParamType type;
-
+    /**
+     * The name of the parameter.
+     *
+     * @serial Cannot be null.
+     */
+    private String name;
     /**
      * True iff this parameter is fixed in estimation.
      *

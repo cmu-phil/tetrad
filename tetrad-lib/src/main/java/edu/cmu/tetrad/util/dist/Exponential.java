@@ -38,14 +38,6 @@ public class Exponential implements Distribution {
         this.lambda = lambda;
     }
 
-    public int getNumParameters() {
-        return 1;
-    }
-
-    public String getName() {
-        return "Exponential";
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -53,6 +45,14 @@ public class Exponential implements Distribution {
      */
     public static Exponential serializableInstance() {
         return new Exponential(.5);
+    }
+
+    public int getNumParameters() {
+        return 1;
+    }
+
+    public String getName() {
+        return "Exponential";
     }
 
     public void setParameter(int index, double value) {

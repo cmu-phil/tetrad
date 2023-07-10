@@ -52,13 +52,12 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
 public final class LargeScaleSimulation {
 
     static final long serialVersionUID = 23L;
-
+    private final List<Node> variableNodes;
+    private final Graph graph;
     private int[][] parents;
     private double[][] coefs;
     private double[] errorVars;
     private double[] means;
-    private final List<Node> variableNodes;
-    private final Graph graph;
     private double coefLow;
     private double coefHigh = 1.0;
     private double varLow = 1.0;
@@ -106,6 +105,30 @@ public final class LargeScaleSimulation {
         if (graph instanceof SemGraph) {
             ((SemGraph) graph).setShowErrorTerms(false);
         }
+    }
+
+    public static String getPrefix(String s) {
+        return s.substring(0, 1);
+    }
+
+    public static int getIndex(String s) {
+        int y = 0;
+        for (int i = s.length() - 1; i >= 0; i--) {
+            try {
+                y = Integer.parseInt(s.substring(i));
+            } catch (NumberFormatException e) {
+                return y;
+            }
+        }
+        throw new IllegalArgumentException("Not integer suffix.");
+    }
+
+    public static int getLag(String s) {
+        if (s.indexOf(':') == -1) {
+            return 0;
+        }
+        String tmp = s.substring(s.indexOf(':') + 1);
+        return (Integer.parseInt(tmp));
     }
 
     /**
@@ -526,12 +549,12 @@ public final class LargeScaleSimulation {
         this.meanHigh = meanHigh;
     }
 
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
     public PrintStream getOut() {
         return this.out;
+    }
+
+    public void setOut(PrintStream out) {
+        this.out = out;
     }
 
     public boolean isVerbose() {
@@ -706,30 +729,6 @@ public final class LargeScaleSimulation {
 
         //System.out.println("Knowledge in graph = " + knowledge);
         return knowledge;
-    }
-
-    public static String getPrefix(String s) {
-        return s.substring(0, 1);
-    }
-
-    public static int getIndex(String s) {
-        int y = 0;
-        for (int i = s.length() - 1; i >= 0; i--) {
-            try {
-                y = Integer.parseInt(s.substring(i));
-            } catch (NumberFormatException e) {
-                return y;
-            }
-        }
-        throw new IllegalArgumentException("Not integer suffix.");
-    }
-
-    public static int getLag(String s) {
-        if (s.indexOf(':') == -1) {
-            return 0;
-        }
-        String tmp = s.substring(s.indexOf(':') + 1);
-        return (Integer.parseInt(tmp));
     }
 
     public double[][] getUncorrelatedShocks(int sampleSize) {

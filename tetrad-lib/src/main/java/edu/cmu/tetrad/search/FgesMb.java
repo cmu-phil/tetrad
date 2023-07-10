@@ -153,6 +153,20 @@ public final class FgesMb {
         this.graph = new EdgeListGraph(getVariables());
     }
 
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+        return null;
+    }
+
     /**
      * Set to true if it is assumed that all path pairs with one length 1 path do not cancel.
      *
@@ -401,6 +415,8 @@ public final class FgesMb {
         return this.maxDegree;
     }
 
+    //===========================PRIVATE METHODS========================//
+
     /**
      * The maximum of parents any nodes can have in output CPDAG.
      *
@@ -412,24 +428,6 @@ public final class FgesMb {
         }
         this.maxDegree = maxDegree;
     }
-
-    //===========================PRIVATE METHODS========================//
-
-
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-        return null;
-    }
-
 
     private void calcMConnections(List<Node> targets) {
         this.sortedArrows = new ConcurrentSkipListSet<>();

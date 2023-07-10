@@ -46,29 +46,26 @@ import java.util.concurrent.RecursiveTask;
  */
 public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     static final long serialVersionUID = 23L;
+    private final double[] variances;
     private boolean verbose = false;
-
     /**
      * The name of the covariance matrix.
      *
      * @serial May be null.
      */
     private String name;
-
     /**
      * The variables (in order) for this covariance matrix.
      *
      * @serial Cannot be null.
      */
     private List<Node> variables;
-
     /**
      * The size of the sample from which this covariance matrix was calculated.
      *
      * @serial Range &gt; 0.
      */
     private int sampleSize;
-
     /**
      * Stored matrix data. Should be square. This may be set by derived classes, but it must always be set to a
      * legitimate covariance matrix.
@@ -76,29 +73,23 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      * @serial Cannot be null. Must be symmetric and positive definite.
      */
     private Matrix matrix;
-
     /**
      * @serial Do not remove this field; it is needed for serialization.
      */
     private DoubleMatrix2D matrixC;
-
     /**
      * The list of selected variables.
      *
      * @serial Cannot be null.
      */
     private Set<Node> selectedVariables = new HashSet<>();
-
     /**
      * The knowledge for this data.
      *
      * @serial Cannot be null.
      */
     private Knowledge knowledge = new Knowledge();
-
     private double[][] vectors = null;
-
-    private final double[] variances;
 
 
     //=============================CONSTRUCTORS=========================//
@@ -316,6 +307,11 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return this.variables;
     }
 
+    public void setVariables(List<Node> variables) {
+        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
+        this.variables = variables;
+    }
+
     /**
      * @return the variable names, in order.
      */
@@ -356,6 +352,14 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
      */
     public final int getSampleSize() {
         return this.sampleSize;
+    }
+
+    public final void setSampleSize(int sampleSize) {
+        if (sampleSize <= 0) {
+            throw new IllegalArgumentException("Sample size must be > 0.");
+        }
+
+        this.sampleSize = sampleSize;
     }
 
     /**
@@ -494,19 +498,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         return v;
     }
 
-    public void setMatrix(Matrix matrix) {
-        this.matrix = matrix;
-        checkMatrix();
-    }
-
-    public final void setSampleSize(int sampleSize) {
-        if (sampleSize <= 0) {
-            throw new IllegalArgumentException("Sample size must be > 0.");
-        }
-
-        this.sampleSize = sampleSize;
-    }
-
     /**
      * @return the size of the square matrix.
      */
@@ -527,6 +518,11 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         }
 
         return matrix;
+    }
+
+    public void setMatrix(Matrix matrix) {
+        this.matrix = matrix;
+        checkMatrix();
     }
 
     public final Matrix getMatrix(int[] rows) {
@@ -610,11 +606,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     @Override
     public boolean isMixed() {
         return false;
-    }
-
-    public void setVariables(List<Node> variables) {
-        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
-        this.variables = variables;
     }
 
     public boolean isVerbose() {

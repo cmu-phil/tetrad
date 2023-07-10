@@ -46,18 +46,14 @@ public class SaveGraph extends AbstractAction {
      * The component whose image is to be saved.
      */
     private final GraphEditable graphEditable;
-
-    /**
-     * A reference to the title, to be used a dialog title.
-     */
-    private String title;
-
     /**
      * True if the graph should be saved in XML, false if in text.
      */
     private final Type type;
-
-    public enum Type {text, xml, json, r, dot, pcalg, lavaan}
+    /**
+     * A reference to the title, to be used a dialog title.
+     */
+    private String title;
 
     public SaveGraph(GraphEditable graphEditable, String title, Type type) {
         super(title);
@@ -224,6 +220,8 @@ public class SaveGraph extends AbstractAction {
     private GraphEditable getGraphEditable() {
         return this.graphEditable;
     }
+
+    public enum Type {text, xml, json, r, dot, pcalg, lavaan}
 }
 
 

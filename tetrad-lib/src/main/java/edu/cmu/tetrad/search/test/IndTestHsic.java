@@ -59,30 +59,25 @@ import java.util.Set;
 public final class IndTestHsic implements IndependenceTest {
 
     /**
-     * The variables of the covariance matrix, in order. (Unmodifiable list.)
-     */
-    private final List<Node> variables;
-
-    /**
-     * The significance level of the independence tests.
-     */
-    private double alpha;
-
-    /**
-     * The cutoff value for 'alpha'
-     */
-    private double thresh = Double.NaN;
-
-    /**
      * Formats as 0.0000.
      */
     private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
+    /**
+     * The variables of the covariance matrix, in order. (Unmodifiable list.)
+     */
+    private final List<Node> variables;
     /**
      * Stores a reference to the dataset being analyzed.
      */
     private final DataSet dataSet;
-
+    /**
+     * The significance level of the independence tests.
+     */
+    private double alpha;
+    /**
+     * The cutoff value for 'alpha'
+     */
+    private double thresh = Double.NaN;
     /**
      * A stored p value, if the deterministic test was used.
      */
@@ -174,8 +169,8 @@ public final class IndTestHsic implements IndependenceTest {
     /**
      * Determines whether variable x is independent of variable y given a list of conditioning variables z.
      *
-     * @param x the one variable being compared.
-     * @param y the second variable being compared.
+     * @param x  the one variable being compared.
+     * @param y  the second variable being compared.
      * @param _z the list of conditioning variables.
      * @return True iff x _||_ y | z.
      */
@@ -522,20 +517,6 @@ public final class IndTestHsic implements IndependenceTest {
     }
 
     /**
-     * Sets the significance level at which independence judgments should be made.
-     *
-     * @param alpha This alpha.
-     */
-    public void setAlpha(double alpha) {
-        if (alpha < 0.0 || alpha > 1.0) {
-            throw new IllegalArgumentException("Significance out of range.");
-        }
-
-        this.alpha = alpha;
-        this.thresh = Double.NaN;
-    }
-
-    /**
      * Sets the precision for the Incomplete Choleksy factorization method for approximating Gram matrices. A value
      * &lt;= 0 indicates that the Incomplete Cholesky method should not be used and instead use the exact matrices.
      *
@@ -570,6 +551,20 @@ public final class IndTestHsic implements IndependenceTest {
      */
     public double getAlpha() {
         return this.alpha;
+    }
+
+    /**
+     * Sets the significance level at which independence judgments should be made.
+     *
+     * @param alpha This alpha.
+     */
+    public void setAlpha(double alpha) {
+        if (alpha < 0.0 || alpha > 1.0) {
+            throw new IllegalArgumentException("Significance out of range.");
+        }
+
+        this.alpha = alpha;
+        this.thresh = Double.NaN;
     }
 
     /**

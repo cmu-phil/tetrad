@@ -43,36 +43,30 @@ import java.util.*;
 public class IndTestProbabilistic implements IndependenceTest {
 
     /**
-     * Calculates probabilities of independence for conditional independence facts.
-     */
-    private boolean threshold;
-
-    /**
      * The data set for which conditional  independence judgments are requested.
      */
     private final DataSet data;
-
     /**
      * The nodes of the data set.
      */
     private final List<Node> nodes;
-
     /**
      * Indices of the nodes.
      */
     private final Map<Node, Integer> indices;
-
     /**
      * A map from independence facts to their probabilities of independence.
      */
     private final Map<IndependenceFact, Double> H;
+    private final BCInference bci;
+    /**
+     * Calculates probabilities of independence for conditional independence facts.
+     */
+    private boolean threshold;
     private double posterior;
     private boolean verbose;
-
     private double cutoff = 0.5;
     private double priorEquivalentSampleSize = 10;
-
-    private final BCInference bci;
 
     //==========================CONSTRUCTORS=============================//
 

@@ -40,27 +40,6 @@ import static org.junit.Assert.assertEquals;
  */
 public final class TestEvidence {
 
-    /**
-     * Richard's 2-variable example worked by hand.
-     */
-    @Test
-    public void testUpdate1() {
-        BayesIm bayesIm = TestEvidence.sampleBayesIm2();
-
-        Evidence evidence = Evidence.tautology(bayesIm);
-        evidence.getProposition().removeCategory(0, 1);
-        evidence.getProposition().setVariable(1, false);
-        evidence.setManipulated(0, true);
-        Evidence evidence2 = new Evidence(evidence, bayesIm);
-
-        assertEquals(evidence2, evidence);
-        assertEquals(evidence, new Evidence(evidence));
-
-        BayesIm bayesIm2 = new MlBayesIm(bayesIm);
-        Evidence evidence3 = new Evidence(evidence, bayesIm2);
-        assertTrue(!(evidence3.equals(evidence2)));
-    }
-
     private static BayesIm sampleBayesIm2() {
         Node a = new GraphNode("a");
         Node b = new GraphNode("b");
@@ -111,6 +90,27 @@ public final class TestEvidence {
         bayesIm1.setProbability(2, 5, 0, .7);
         bayesIm1.setProbability(2, 5, 1, .3);
         return bayesIm1;
+    }
+
+    /**
+     * Richard's 2-variable example worked by hand.
+     */
+    @Test
+    public void testUpdate1() {
+        BayesIm bayesIm = TestEvidence.sampleBayesIm2();
+
+        Evidence evidence = Evidence.tautology(bayesIm);
+        evidence.getProposition().removeCategory(0, 1);
+        evidence.getProposition().setVariable(1, false);
+        evidence.setManipulated(0, true);
+        Evidence evidence2 = new Evidence(evidence, bayesIm);
+
+        assertEquals(evidence2, evidence);
+        assertEquals(evidence, new Evidence(evidence));
+
+        BayesIm bayesIm2 = new MlBayesIm(bayesIm);
+        Evidence evidence3 = new Evidence(evidence, bayesIm2);
+        assertTrue(!(evidence3.equals(evidence2)));
     }
 }
 

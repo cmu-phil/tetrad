@@ -38,14 +38,18 @@ import java.io.ObjectInputStream;
  */
 public class DishModel implements TetradSerializable {
     static final long serialVersionUID = 23L;
-
+    /**
+     * An array of dish bumps for each dish.
+     *
+     * @serial
+     */
+    private final double[] dishBumps;
     /**
      * The number of the getModel dish.
      *
      * @serial
      */
     private int dishNumber;
-
     /**
      * The standard deviation of the normal distribution from which dish bump values are drawn, in percent. The
      * distribution has a mean of 100%.
@@ -53,13 +57,6 @@ public class DishModel implements TetradSerializable {
      * @serial
      */
     private double dishBumpStDev = 10.0;
-
-    /**
-     * An array of dish bumps for each dish.
-     *
-     * @serial
-     */
-    private final double[] dishBumps;
 
     //===============================CONSTRUCTORS========================//
 

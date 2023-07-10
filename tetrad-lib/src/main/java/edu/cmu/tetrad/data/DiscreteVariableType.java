@@ -33,17 +33,19 @@ import java.io.ObjectStreamException;
  * @author josephramsey
  */
 public final class DiscreteVariableType implements TetradSerializable {
-    static final long serialVersionUID = 23L;
-
     public static final DiscreteVariableType NOMINAL =
             new DiscreteVariableType("Nominal");
+    static final long serialVersionUID = 23L;
     private static final DiscreteVariableType ORDINAL =
             new DiscreteVariableType("Ordinal");
-
+    private static final DiscreteVariableType[] TYPES = {DiscreteVariableType.NOMINAL, DiscreteVariableType.ORDINAL};
+    // Declarations required for serialization.
+    private static int nextOrdinal;
     /**
      * The name of this type.
      */
     private final transient String name;
+    private final int ordinal = DiscreteVariableType.nextOrdinal++;
 
     /**
      * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
@@ -65,11 +67,6 @@ public final class DiscreteVariableType implements TetradSerializable {
     public String toString() {
         return this.name;
     }
-
-    // Declarations required for serialization.
-    private static int nextOrdinal;
-    private final int ordinal = DiscreteVariableType.nextOrdinal++;
-    private static final DiscreteVariableType[] TYPES = {DiscreteVariableType.NOMINAL, DiscreteVariableType.ORDINAL};
 
     Object readResolve() throws ObjectStreamException {
         return DiscreteVariableType.TYPES[this.ordinal]; // Canonicalize.

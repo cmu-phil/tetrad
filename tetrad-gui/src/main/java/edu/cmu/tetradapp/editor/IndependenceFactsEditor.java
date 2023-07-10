@@ -22,9 +22,9 @@
 package edu.cmu.tetradapp.editor;
 
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.MsepTest;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.util.ChoiceGenerator;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetradapp.model.IndTestModel;
@@ -55,6 +55,7 @@ import java.util.prefs.Preferences;
  * @author josephramsey
  */
 public class IndependenceFactsEditor extends JPanel {
+    private final NumberFormat nf = new DecimalFormat("0.0000");
     private IndTestModel model;
     private LinkedList<String> vars;
     private JTextField textField;
@@ -63,7 +64,6 @@ public class IndependenceFactsEditor extends JPanel {
     private AbstractTableModel tableModel;
     private int sortDir;
     private int lastSortCol;
-    private final NumberFormat nf = new DecimalFormat("0.0000");
     private boolean showPs;
 
     public IndependenceFactsEditor(IndTestModel model) {
@@ -102,6 +102,44 @@ public class IndependenceFactsEditor extends JPanel {
     }
 
     //========================PUBLIC METHODS==========================//
+
+    public IndependenceFactsEditor(LayoutManager layout, boolean isDoubleBuffered) {
+        super(layout, isDoubleBuffered);
+    }
+
+    //=============================PRIVATE METHODS=======================//
+
+    private static List<String> asList(int[] indices, List<String> nodes) {
+        List<String> list = new LinkedList<>();
+
+        for (int i : indices) {
+            list.add(nodes.get(i));
+        }
+
+        return list;
+    }
+
+    private static String factString(Node x, Node y, Set<Node> condSet) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(x.getName());
+        sb.append(" _||_ ");
+        sb.append(y.getName());
+
+        Iterator<Node> it = condSet.iterator();
+
+        if (it.hasNext()) {
+            sb.append(" | ");
+            sb.append(it.next());
+        }
+
+        while (it.hasNext()) {
+            sb.append(", ");
+            sb.append(it.next());
+        }
+
+        return sb.toString();
+    }
 
     /**
      * Performs the action of opening a session from a file.
@@ -385,8 +423,6 @@ public class IndependenceFactsEditor extends JPanel {
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
     }
 
-    //=============================PRIVATE METHODS=======================//
-
     private void sortByColumn(int sortCol) {
         if (sortCol == this.getLastSortCol()) {
             this.setSortDir(-1 * this.getSortDir());
@@ -437,59 +473,6 @@ public class IndependenceFactsEditor extends JPanel {
         showPs = !showPs;
         tableModel.fireTableDataChanged();
     }
-
-    static class Renderer extends DefaultTableCellRenderer {
-        private final IndependenceFactsEditor editor;
-        private JTable table;
-        private int row;
-        private boolean selected;
-
-        public Renderer(IndependenceFactsEditor editor) {
-            this.editor = editor;
-        }
-
-        public void setValue(Object value) {
-            int indep = 0;
-
-            int numCols = table.getModel().getColumnCount();
-
-            if (selected) {
-                setForeground(table.getSelectionForeground());
-                setBackground(table.getSelectionBackground());
-            } else {
-                for (int i = 2; i < numCols; i++) {
-                    Object _value = table.getModel().getValueAt(row, i);
-
-                    if ("INDEPENDENT".equals(_value) || "D-SEPARATED".equals(_value)) {
-                        indep++;
-                    }
-                }
-
-                this.setForeground(table.getForeground());
-
-                if (!editor.isShowPs()) {
-                    if (!(indep == 0 || indep == numCols - 2)) {
-                        this.setBackground(Color.YELLOW);
-                    } else {
-                        this.setBackground(table.getBackground());
-                    }
-                } else {
-                    this.setBackground(table.getBackground());
-                }
-            }
-
-            this.setText((String) value);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            this.table = table;
-            this.row = row;
-            selected = isSelected;
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        }
-    }
-
 
     private List<String> getDataVars() {
         return this.getIndependenceTest(0).getVariableNames();
@@ -661,49 +644,12 @@ public class IndependenceFactsEditor extends JPanel {
         this.tableModel.fireTableDataChanged();
     }
 
-    private static List<String> asList(int[] indices, List<String> nodes) {
-        List<String> list = new LinkedList<>();
-
-        for (int i : indices) {
-            list.add(nodes.get(i));
-        }
-
-        return list;
-    }
-
     private LinkedList<String> getVars() {
         return this.vars;
     }
 
     private JTextField getTextField() {
         return this.textField;
-    }
-
-    public IndependenceFactsEditor(LayoutManager layout, boolean isDoubleBuffered) {
-        super(layout, isDoubleBuffered);
-    }
-
-
-    private static String factString(Node x, Node y, Set<Node> condSet) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(x.getName());
-        sb.append(" _||_ ");
-        sb.append(y.getName());
-
-        Iterator<Node> it = condSet.iterator();
-
-        if (it.hasNext()) {
-            sb.append(" | ");
-            sb.append(it.next());
-        }
-
-        while (it.hasNext()) {
-            sb.append(", ");
-            sb.append(it.next());
-        }
-
-        return sb.toString();
     }
 
     private IndependenceTest getIndependenceTest(int i) {
@@ -744,6 +690,58 @@ public class IndependenceFactsEditor extends JPanel {
         }
 
         Preferences.userRoot().putInt("indFactsListLimit", listLimit);
+    }
+
+    static class Renderer extends DefaultTableCellRenderer {
+        private final IndependenceFactsEditor editor;
+        private JTable table;
+        private int row;
+        private boolean selected;
+
+        public Renderer(IndependenceFactsEditor editor) {
+            this.editor = editor;
+        }
+
+        public void setValue(Object value) {
+            int indep = 0;
+
+            int numCols = table.getModel().getColumnCount();
+
+            if (selected) {
+                setForeground(table.getSelectionForeground());
+                setBackground(table.getSelectionBackground());
+            } else {
+                for (int i = 2; i < numCols; i++) {
+                    Object _value = table.getModel().getValueAt(row, i);
+
+                    if ("INDEPENDENT".equals(_value) || "D-SEPARATED".equals(_value)) {
+                        indep++;
+                    }
+                }
+
+                this.setForeground(table.getForeground());
+
+                if (!editor.isShowPs()) {
+                    if (!(indep == 0 || indep == numCols - 2)) {
+                        this.setBackground(Color.YELLOW);
+                    } else {
+                        this.setBackground(table.getBackground());
+                    }
+                } else {
+                    this.setBackground(table.getBackground());
+                }
+            }
+
+            this.setText((String) value);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            this.table = table;
+            this.row = row;
+            selected = isSelected;
+            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
     }
 }
 

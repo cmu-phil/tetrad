@@ -36,36 +36,28 @@ import java.util.*;
  * @author Tyler Gibson
  */
 public final class KnowledgeGroup implements TetradSerializable {
+    /**
+     * The types of groups (Can an enum be used instead?)
+     */
+    public static final int REQUIRED = 1;
+    public static final int FORBIDDEN = 2;
     static final long serialVersionUID = 23L;
-
-
     /**
      * The left group of variables.
      *
      * @serial - not null
      */
     private final Set<String> fromGroup;
-
-
     /**
      * The right group of variables.
      *
      * @serial - not null
      */
     private final Set<String> toGroup;
-
-
     /**
      * The type of group that this is (currently either required or forbidden).
      */
     private final int type;
-
-
-    /**
-     * The types of groups (Can an enum be used instead?)
-     */
-    public static final int REQUIRED = 1;
-    public static final int FORBIDDEN = 2;
 
 
     /**
@@ -115,11 +107,21 @@ public final class KnowledgeGroup implements TetradSerializable {
         return new KnowledgeGroup(KnowledgeGroup.REQUIRED, new HashSet<>(0), new HashSet<>(0));
     }
 
+    /**
+     * States whether the two have a non-empty intersection or not.
+     */
+    private static boolean intersect(Set<String> set1, Set<String> set2) {
+        for (String var : set1) {
+            if (set2.contains(var)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public int getType() {
         return this.type;
     }
-
 
     /**
      * States whether this group is empty, that is there is no edges in it (Note there may be some partial information
@@ -129,16 +131,13 @@ public final class KnowledgeGroup implements TetradSerializable {
         return this.fromGroup.isEmpty() || this.toGroup.isEmpty();
     }
 
-
     public Set<String> getFromVariables() {
         return Collections.unmodifiableSet(this.fromGroup);
     }
 
-
     public Set<String> getToVariables() {
         return Collections.unmodifiableSet(this.toGroup);
     }
-
 
     /**
      * @return - edges.
@@ -153,11 +152,9 @@ public final class KnowledgeGroup implements TetradSerializable {
         return edges;
     }
 
-
     public boolean containsEdge(KnowledgeEdge edge) {
         return this.fromGroup.contains(edge.getFrom()) && this.toGroup.contains(edge.getTo());
     }
-
 
     /**
      * Computes a hashcode.
@@ -170,6 +167,7 @@ public final class KnowledgeGroup implements TetradSerializable {
         return hash;
     }
 
+    //=========================== Private Methods ==========================//
 
     /**
      * Equals when they are the same type and have the same edges.
@@ -189,22 +187,6 @@ public final class KnowledgeGroup implements TetradSerializable {
                 && this.toGroup.equals(thatGroup.toGroup);
 
     }
-
-    //=========================== Private Methods ==========================//
-
-
-    /**
-     * States whether the two have a non-empty intersection or not.
-     */
-    private static boolean intersect(Set<String> set1, Set<String> set2) {
-        for (String var : set1) {
-            if (set2.contains(var)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
 
     /**
      * Adds semantic checks to the default deserialization method. This method must have the standard signature for a

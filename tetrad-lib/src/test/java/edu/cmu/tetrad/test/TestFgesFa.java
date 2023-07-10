@@ -36,6 +36,10 @@ import edu.cmu.tetrad.util.Params;
 public class TestFgesFa {
 
 
+    public static void main(String... args) {
+        new TestFgesFa().test1();
+    }
+
     public void test1() {
 
         Graph graph = RandomGraph.randomGraph(10, 0, 10,
@@ -62,10 +66,6 @@ public class TestFgesFa {
         Graph CPDAG = alg.search(dataSet, parameters);
 
         System.out.println(CPDAG);
-    }
-
-    public static void main(String... args) {
-        new TestFgesFa().test1();
     }
 }
 

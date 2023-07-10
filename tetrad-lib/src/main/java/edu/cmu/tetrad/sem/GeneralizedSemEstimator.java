@@ -51,6 +51,88 @@ public class GeneralizedSemEstimator {
     private String report = "";
     private double aSquaredStar = Double.NaN;
 
+    private static double[][] calcResiduals(double[][] data, List<Node> tierOrdering,
+                                            List<String> params, double[] paramValues,
+                                            GeneralizedSemPm pm, MyContext context) {
+        if (pm == null) throw new NullPointerException();
+
+        double[][] calculatedValues = new double[data.length][data[0].length];
+        double[][] residuals = new double[data.length][data[0].length];
+
+        for (Node node : tierOrdering) {
+            context.putVariableValue(Objects.requireNonNull(pm.getErrorNode(node)).toString(), 0.0);
+        }
+
+        for (int i = 0; i < params.size(); i++) {
+            context.putParameterValue(params.get(i), paramValues[i]);
+        }
+
+        ROWS:
+        for (int row = 0; row < data.length; row++) {
+            for (int j = 0; j < tierOrdering.size(); j++) {
+                context.putVariableValue(tierOrdering.get(j).getName(), data[row][j]);
+                if (Double.isNaN(data[row][j])) continue ROWS;
+            }
+
+            for (int j = 0; j < tierOrdering.size(); j++) {
+                Node node = tierOrdering.get(j);
+                Expression expression = pm.getNodeExpression(node);
+                calculatedValues[row][j] = expression.evaluate(context);
+                if (Double.isNaN(calculatedValues[row][j])) continue ROWS;
+                residuals[row][j] = data[row][j] - calculatedValues[row][j];
+            }
+        }
+
+        return residuals;
+    }
+
+    private static double[] calcOneResiduals(int index, double[][] data, List<Node> tierOrdering,
+                                             List<String> params, double[] values,
+                                             GeneralizedSemPm pm, MyContext context) {
+        if (pm == null) throw new NullPointerException();
+
+        double[] residuals = new double[data.length];
+
+        for (Node node : tierOrdering) {
+            context.putVariableValue(Objects.requireNonNull(pm.getErrorNode(node)).toString(), 0.0);
+        }
+
+        for (int i = 0; i < params.size(); i++) {
+            context.putParameterValue(params.get(i), values[i]);
+        }
+
+
+        for (int row = 0; row < data.length; row++) {
+            for (int i = 0; i < tierOrdering.size(); i++) {
+                context.putVariableValue(tierOrdering.get(i).getName(), data[row][i]);
+            }
+            Node node = tierOrdering.get(index);
+            Expression expression = pm.getNodeExpression(node);
+            double calculatedValue = expression.evaluate(context);
+            residuals[row] = data[row][index] - calculatedValue;
+        }
+
+        return residuals;
+    }
+
+    private static double[][] getDataValues(DataSet data, List<Node> tierOrdering) {
+        double[][] dataValues = new double[data.getNumRows()][tierOrdering.size()];
+
+        int[] indices = new int[tierOrdering.size()];
+
+        for (int i = 0; i < tierOrdering.size(); i++) {
+            indices[i] = data.getColumn(data.getVariable(tierOrdering.get(i).getName()));
+        }
+
+        for (int i = 0; i < data.getNumRows(); i++) {
+            for (int j = 0; j < tierOrdering.size(); j++) {
+                dataValues[i][j] = data.getDouble(i, indices[j]);
+            }
+        }
+
+        return dataValues;
+    }
+
     /**
      * Maximizes likelihood equation by equation. Assumes the equations are recursive and that each has exactly one
      * error term.
@@ -119,7 +201,6 @@ public class GeneralizedSemEstimator {
         return estIm;
     }
 
-
     public String getReport() {
         return this.report;
     }
@@ -128,6 +209,23 @@ public class GeneralizedSemEstimator {
         return this.aSquaredStar;
     }
 
+    private double[] optimize(MultivariateFunction function, double[] values) {
+        PointValuePair pair;
+
+        {
+//            0.01, 0.000001
+            //2.0D * FastMath.ulp(1.0D), 1e-8
+            MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
+            pair = search.optimize(
+                    new InitialGuess(values),
+                    new ObjectiveFunction(function),
+                    GoalType.MINIMIZE,
+                    new MaxEval(100000)
+            );
+        }
+
+        return pair.getPoint();
+    }
 
     public static class MyContext implements Context {
         final Map<String, Double> variableValues = new HashMap<>();
@@ -156,107 +254,6 @@ public class GeneralizedSemEstimator {
         public void putVariableValue(String s, double value) {
             this.variableValues.put(s, value);
         }
-    }
-
-    private static double[][] calcResiduals(double[][] data, List<Node> tierOrdering,
-                                            List<String> params, double[] paramValues,
-                                            GeneralizedSemPm pm, MyContext context) {
-        if (pm == null) throw new NullPointerException();
-
-        double[][] calculatedValues = new double[data.length][data[0].length];
-        double[][] residuals = new double[data.length][data[0].length];
-
-        for (Node node : tierOrdering) {
-            context.putVariableValue(Objects.requireNonNull(pm.getErrorNode(node)).toString(), 0.0);
-        }
-
-        for (int i = 0; i < params.size(); i++) {
-            context.putParameterValue(params.get(i), paramValues[i]);
-        }
-
-        ROWS:
-        for (int row = 0; row < data.length; row++) {
-            for (int j = 0; j < tierOrdering.size(); j++) {
-                context.putVariableValue(tierOrdering.get(j).getName(), data[row][j]);
-                if (Double.isNaN(data[row][j])) continue ROWS;
-            }
-
-            for (int j = 0; j < tierOrdering.size(); j++) {
-                Node node = tierOrdering.get(j);
-                Expression expression = pm.getNodeExpression(node);
-                calculatedValues[row][j] = expression.evaluate(context);
-                if (Double.isNaN(calculatedValues[row][j])) continue ROWS;
-                residuals[row][j] = data[row][j] - calculatedValues[row][j];
-            }
-        }
-
-        return residuals;
-    }
-
-    private static double[] calcOneResiduals(int index, double[][] data, List<Node> tierOrdering,
-                                             List<String> params, double[] values,
-                                             GeneralizedSemPm pm, MyContext context) {
-        if (pm == null) throw new NullPointerException();
-
-        double[] residuals = new double[data.length];
-
-        for (Node node : tierOrdering) {
-            context.putVariableValue(Objects.requireNonNull(pm.getErrorNode(node)).toString(), 0.0);
-        }
-
-        for (int i = 0; i < params.size(); i++) {
-            context.putParameterValue(params.get(i), values[i]);
-        }
-
-
-        for (int row = 0; row < data.length; row++) {
-            for (int i = 0; i < tierOrdering.size(); i++) {
-                context.putVariableValue(tierOrdering.get(i).getName(), data[row][i]);
-            }
-            Node node = tierOrdering.get(index);
-            Expression expression = pm.getNodeExpression(node);
-            double calculatedValue = expression.evaluate(context);
-            residuals[row] = data[row][index] - calculatedValue;
-        }
-
-        return residuals;
-    }
-
-
-    private static double[][] getDataValues(DataSet data, List<Node> tierOrdering) {
-        double[][] dataValues = new double[data.getNumRows()][tierOrdering.size()];
-
-        int[] indices = new int[tierOrdering.size()];
-
-        for (int i = 0; i < tierOrdering.size(); i++) {
-            indices[i] = data.getColumn(data.getVariable(tierOrdering.get(i).getName()));
-        }
-
-        for (int i = 0; i < data.getNumRows(); i++) {
-            for (int j = 0; j < tierOrdering.size(); j++) {
-                dataValues[i][j] = data.getDouble(i, indices[j]);
-            }
-        }
-
-        return dataValues;
-    }
-
-    private double[] optimize(MultivariateFunction function, double[] values) {
-        PointValuePair pair;
-
-        {
-//            0.01, 0.000001
-            //2.0D * FastMath.ulp(1.0D), 1e-8
-            MultivariateOptimizer search = new PowellOptimizer(1e-7, 1e-7);
-            pair = search.optimize(
-                    new InitialGuess(values),
-                    new ObjectiveFunction(function),
-                    GoalType.MINIMIZE,
-                    new MaxEval(100000)
-            );
-        }
-
-        return pair.getPoint();
     }
 
     static class LikelihoodFittingFunction implements MultivariateFunction {

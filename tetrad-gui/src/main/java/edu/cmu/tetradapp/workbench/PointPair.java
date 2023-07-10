@@ -48,8 +48,8 @@ public class PointPair {
     }
 
     /**
-     * This creates a PointPair with <code>from</code> set to <code>p1</code>,
-     * and <code>to</code> set to <code>p2</code>.
+     * This creates a PointPair with <code>from</code> set to <code>p1</code>, and <code>to</code> set to
+     * <code>p2</code>.
      *
      * @param p1 The <code>from</code> Point
      * @param p2 The <code>to</code> Point

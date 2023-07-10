@@ -58,6 +58,31 @@ public class SemOptimizerRegression implements SemOptimizer {
 
     //============================PUBLIC METHODS==========================//
 
+    private static int[] indexedParents(int[] parents) {
+        int[] pp = new int[parents.length];
+        for (int j = 0; j < pp.length; j++) pp[j] = j + 1;
+        return pp;
+    }
+
+    @NotNull
+    private static Matrix bStar(Matrix b) {
+        Matrix byx = new Matrix(b.getNumRows() + 1, 1);
+        byx.set(0, 0, 1);
+        for (int j = 0; j < b.getNumRows(); j++) byx.set(j + 1, 0, -b.get(j, 0));
+        return byx;
+    }
+
+    private static int[] concat(int i, int[] parents) {
+        int[] all = new int[parents.length + 1];
+        all[0] = i;
+        System.arraycopy(parents, 0, all, 1, parents.length);
+        return all;
+    }
+
+    private static Matrix getCov(int[] _rows, int[] cols, Matrix covarianceMatrix) {
+        return covarianceMatrix.getSelection(_rows, cols);
+    }
+
     /**
      * Fit the freeParameters by doing local regressions.
      */
@@ -113,42 +138,17 @@ public class SemOptimizerRegression implements SemOptimizer {
     }
 
     @Override
-    public void setNumRestarts(int numRestarts) {
-        this.numRestarts = numRestarts;
-    }
-
-    @Override
     public int getNumRestarts() {
         return this.numRestarts;
     }
 
+    @Override
+    public void setNumRestarts(int numRestarts) {
+        this.numRestarts = numRestarts;
+    }
+
     public String toString() {
         return "Sem Optimizer Regression";
-    }
-
-    private static int[] indexedParents(int[] parents) {
-        int[] pp = new int[parents.length];
-        for (int j = 0; j < pp.length; j++) pp[j] = j + 1;
-        return pp;
-    }
-
-    @NotNull
-    private static Matrix bStar(Matrix b) {
-        Matrix byx = new Matrix(b.getNumRows() + 1, 1);
-        byx.set(0, 0, 1);
-        for (int j = 0; j < b.getNumRows(); j++) byx.set(j + 1, 0, -b.get(j, 0));
-        return byx;
-    }
-
-    private static int[] concat(int i, int[] parents) {
-        int[] all = new int[parents.length + 1];
-        all[0] = i;
-        System.arraycopy(parents, 0, all, 1, parents.length);
-        return all;
-    }
-
-    private static Matrix getCov(int[] _rows, int[] cols, Matrix covarianceMatrix) {
-        return covarianceMatrix.getSelection(_rows, cols);
     }
 }
 

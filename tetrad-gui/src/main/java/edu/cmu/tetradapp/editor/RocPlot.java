@@ -39,79 +39,65 @@ import java.text.NumberFormat;
 class RocPlot extends JPanel implements PropertyChangeListener {
 
     /**
-     * The stored size of this component.
-     */
-    private Dimension size;
-
-    /**
      * The background color of this component.
      */
     private final Color backgroundColor = Color.WHITE;
-
     /**
      * Color the axes are drawn in for graphs.
      */
     private final Color boundaryColor = Color.DARK_GRAY;
-
     /**
      * Color the title is drawn in.
      */
     private final Color titleColor = Color.DARK_GRAY;
-
     /**
      * Color the plot is drawn in.
      */
     private final Color plotColor = Color.BLUE;
-
+    /**
+     * The font used for bold text.
+     */
+    private final Font fontBold = new Font("Serif", Font.BOLD, 12);
+    /**
+     * The font used for titles.
+     */
+    private final Font titleFont = new Font("Serif", Font.BOLD, 18);
+    /**
+     * The font metrics for the title font.
+     */
+    private final FontMetrics titleFm;
+    /**
+     * The font metrics of the non-bold font.
+     */
+    private final FontMetrics fm;
+    /**
+     * The data defining the ROC curve
+     */
+    private final double[][] points;
+    /**
+     * A String to be printed on the plot.
+     */
+    private final String info;
+    /**
+     * The stored size of this component.
+     */
+    private Dimension size;
     /**
      * The rectangle within which the graph is to be plotted.
      */
     private Rectangle plotRect;
-
     /**
      * The insets of the graph from the boundaries of this component.
      */
     private Insets graphInsets = new Insets(25, 25, 25, 25);
-
     /**
      * The title of this graph, which is drawn at the top of the graph.
      */
     private String title = "ROC Plot";
 
     /**
-     * The font used for bold text.
-     */
-    private final Font fontBold = new Font("Serif", Font.BOLD, 12);
-
-    /**
-     * The font used for titles.
-     */
-    private final Font titleFont = new Font("Serif", Font.BOLD, 18);
-
-    /**
-     * The font metrics for the title font.
-     */
-    private final FontMetrics titleFm;
-
-    /**
-     * The font metrics of the non-bold font.
-     */
-    private final FontMetrics fm;
-
-    /**
-     * The data defining the ROC curve
-     */
-    private final double[][] points;
-
-    /**
-     * A String to be printed on the plot.
-     */
-    private final String info;
-
-    /**
-     * Constructs a power graph using the given model.  The argument points
-     * contains the coordinates of x and y for each point.  I.e. points[i][0] is
-     * the x coordinate and points[i][1] is the y coordinate of the ith point.
+     * Constructs a power graph using the given model.  The argument points contains the coordinates of x and y for each
+     * point.  I.e. points[i][0] is the x coordinate and points[i][1] is the y coordinate of the ith point.
      */
     public RocPlot(double[][] points, String title, String info) {
         this.points = points;
@@ -130,11 +116,9 @@ class RocPlot extends JPanel implements PropertyChangeListener {
     }
 
     /**
-     * Calculates the rectangle in which the graph is plotted.  Labels for the
-     * graph are drawn in the margin.
+     * Calculates the rectangle in which the graph is plotted.  Labels for the graph are drawn in the margin.
      *
-     * @param size the size of this component with respect to which the plot
-     *             rectangle is calculated.
+     * @param size the size of this component with respect to which the plot rectangle is calculated.
      */
     private void calcPlotRect(Dimension size) {
         int left = this.graphInsets.left;
@@ -157,9 +141,8 @@ class RocPlot extends JPanel implements PropertyChangeListener {
     }
 
     /**
-     * This method draws tick marks for the x axis.  The x axis represents pi_e,
-     * the true probability of effect in treatment, and ranges in value from
-     * pi_c to 1.0.
+     * This method draws tick marks for the x axis.  The x axis represents pi_e, the true probability of effect in
+     * treatment, and ranges in value from pi_c to 1.0.
      *
      * @param g the graphics context.
      */
@@ -235,8 +218,8 @@ class RocPlot extends JPanel implements PropertyChangeListener {
 
     /**
      * @param x the value of x (between pi_c and 1.0).
-     * @return a pixel x position which is the proportion x / (range from pi_e
-     * to 1.0) from the left side of the unit square to the right.
+     * @return a pixel x position which is the proportion x / (range from pi_e to 1.0) from the left side of the unit
+     * square to the right.
      */
     private int getXPos(double x) {
         Rectangle r = getPlotRect();
@@ -246,8 +229,7 @@ class RocPlot extends JPanel implements PropertyChangeListener {
 
     /**
      * @param y a value between 0.0 and 1.0, inclusive.
-     * @return a pixel y position which is the proportion x / 1.0 from the
-     * bottom of the unit square to the top.
+     * @return a pixel y position which is the proportion x / 1.0 from the bottom of the unit square to the top.
      */
     private int getYPos(double y) {
         Rectangle r = getPlotRect();
@@ -255,8 +237,8 @@ class RocPlot extends JPanel implements PropertyChangeListener {
     }
 
     /**
-     * Paints the "power" graph for each of the requested measures. Measures are
-     * requested by selecting the appropriate checkboxes in the control panel.
+     * Paints the "power" graph for each of the requested measures. Measures are requested by selecting the appropriate
+     * checkboxes in the control panel.
      *
      * @param g the graphics context.
      */

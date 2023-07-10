@@ -13,10 +13,10 @@ import java.util.Set;
  * @author josephramsey
  */
 public class BidirectedConfusion {
+    private final int tn;
     private int tp;
     private int fp;
     private int fn;
-    private final int tn;
 
     public BidirectedConfusion(Graph truth, Graph est) {
         this.tp = 0;

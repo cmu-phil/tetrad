@@ -49,6 +49,12 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
  * @author josephramsey.
  */
 public class PerformanceTestsDan {
+    public static void main(String... args) {
+        System.out.println("Start ");
+
+        new PerformanceTestsDan().testIdaOutputForDan();
+    }
+
     private void testIdaOutputForDan() {
         final int numRuns = 100;
 
@@ -248,12 +254,6 @@ public class PerformanceTestsDan {
         }
 
         out.println();
-    }
-
-    public static void main(String... args) {
-        System.out.println("Start ");
-
-        new PerformanceTestsDan().testIdaOutputForDan();
     }
 }
 

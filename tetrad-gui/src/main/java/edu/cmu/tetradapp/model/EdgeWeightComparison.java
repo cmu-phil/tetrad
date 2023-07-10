@@ -35,10 +35,9 @@ import java.text.NumberFormat;
  */
 public class EdgeWeightComparison implements SessionModel {
     static final long serialVersionUID = 23L;
-
-    private String name;
     private final SemIm reference;
     private final SemIm target;
+    private String name;
 
     public EdgeWeightComparison(SemEstimatorWrapper reference, SemEstimatorWrapper target, Parameters parameters) {
         this.reference = reference.getEstimatedSemIm();
@@ -53,6 +52,15 @@ public class EdgeWeightComparison implements SessionModel {
     public EdgeWeightComparison(SemImWrapper reference, SemImWrapper target, Parameters parameters) {
         this.reference = reference.getSemIm();
         this.target = target.getSemIm();
+    }
+
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static DataWrapper serializableInstance() {
+        return new DataWrapper(new Parameters());
     }
 
     public String getDisplayString() {
@@ -79,22 +87,12 @@ public class EdgeWeightComparison implements SessionModel {
         return displayString;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getName() {
         return this.name;
     }
 
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static DataWrapper serializableInstance() {
-        return new DataWrapper(new Parameters());
+    public void setName(String name) {
+        this.name = name;
     }
 }
 

@@ -53,12 +53,7 @@ public class TextTable {
      * The number of spaces between columns. By default, 2.
      */
     private int columnSpacing = 2;
-
-    public enum Delimiter {JUSTIFIED, COMMA, TAB, SPACE}
-
     private Delimiter delimiter = Delimiter.JUSTIFIED;
-
-//    private boolean tabDelimited;
 
     /**
      * Construct the text table; the table has a fixed number of rows and columns, each greater than zero.
@@ -76,6 +71,8 @@ public class TextTable {
             }
         }
     }
+
+//    private boolean tabDelimited;
 
     /**
      * Sets the token at the given row and column, each of which must be &gt;= 0 and less than the number of rows or
@@ -220,6 +217,8 @@ public class TextTable {
     public void setDelimiter(Delimiter delimiter) {
         this.delimiter = delimiter;
     }
+
+    public enum Delimiter {JUSTIFIED, COMMA, TAB, SPACE}
 }
 
 

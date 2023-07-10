@@ -48,6 +48,9 @@ import java.util.*;
  */
 public class MixedUtils {
 
+    //labels corresponding to values from allEdgeStats
+    public static final String EdgeStatHeader = "TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\tBidir";
+
     public static int[] getDiscreteInds(List<Node> nodes) {
         List<Integer> indList = new ArrayList<>();
         int curInd = 0;
@@ -647,9 +650,6 @@ public class MixedUtils {
 
         return vec;
     }
-
-    //labels corresponding to values from allEdgeStats
-    public static final String EdgeStatHeader = "TD\tTU\tFL\tFD\tFU\tFPD\tFPU\tFND\tFNU\tBidir";
 
     //assumes Graphs have properly assigned variable types
     public static int[][] allEdgeStats(Graph pT, Graph pE) {

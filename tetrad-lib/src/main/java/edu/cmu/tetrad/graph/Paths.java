@@ -19,6 +19,12 @@ public class Paths implements TetradSerializable {
         this.graph = graph;
     }
 
+    private static void addToSet(Map<Node, Set<Node>> previous, Node b, Node c) {
+        previous.computeIfAbsent(c, k -> new HashSet<>());
+        Set<Node> list = previous.get(c);
+        list.add(b);
+    }
+
     /**
      * Returns a valid causal order for either a DAG or a CPDAG. (bryanandrews)
      *
@@ -132,81 +138,6 @@ public class Paths implements TetradSerializable {
 
         return copy;
     }
-
-    public static class AllCliquesAlgorithm {
-
-        public static void main(String[] args) {
-            int[][] graph = {
-                    {0, 1, 1, 0, 0},
-                    {1, 0, 1, 1, 0},
-                    {1, 1, 0, 1, 1},
-                    {0, 1, 1, 0, 1},
-                    {0, 0, 1, 1, 0}
-            };
-            int n = graph.length;
-
-            List<List<Integer>> cliques = findCliques(graph, n);
-            System.out.println("All Cliques:");
-            for (List<Integer> clique : cliques) {
-                System.out.println(clique);
-            }
-        }
-
-        public static List<List<Integer>> findCliques(int[][] graph, int n) {
-            List<List<Integer>> cliques = new ArrayList<>();
-            Set<Integer> candidates = new HashSet<>();
-            Set<Integer> excluded = new HashSet<>();
-            Set<Integer> included = new HashSet<>();
-
-            for (int i = 0; i < n; i++) {
-                candidates.add(i);
-            }
-
-            bronKerbosch(graph, candidates, excluded, included, cliques);
-
-            return cliques;
-        }
-
-        private static void bronKerbosch(int[][] graph, Set<Integer> candidates,
-                                         Set<Integer> excluded, Set<Integer> included,
-                                         List<List<Integer>> cliques) {
-            if (candidates.isEmpty() && excluded.isEmpty()) {
-                cliques.add(new ArrayList<>(included));
-                return;
-            }
-
-            Set<Integer> candidatesCopy = new HashSet<>(candidates);
-            for (int vertex : candidatesCopy) {
-                Set<Integer> neighbors = new HashSet<>();
-                for (int i = 0; i < graph.length; i++) {
-                    if (graph[vertex][i] == 1 && candidates.contains(i)) {
-                        neighbors.add(i);
-                    }
-                }
-
-                bronKerbosch(graph, intersect(candidates, neighbors),
-                        intersect(excluded, neighbors),
-                        union(included, vertex),
-                        cliques);
-
-                candidates.remove(vertex);
-                excluded.add(vertex);
-            }
-        }
-
-        private static Set<Integer> intersect(Set<Integer> set1, Set<Integer> set2) {
-            Set<Integer> result = new HashSet<>(set1);
-            result.retainAll(set2);
-            return result;
-        }
-
-        private static Set<Integer> union(Set<Integer> set, int element) {
-            Set<Integer> result = new HashSet<>(set);
-            result.add(element);
-            return result;
-        }
-    }
-
 
     /**
      * @return the connected components of the given graph, as a list of lists of nodes.
@@ -1261,12 +1192,6 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-    private static void addToSet(Map<Node, Set<Node>> previous, Node b, Node c) {
-        previous.computeIfAbsent(c, k -> new HashSet<>());
-        Set<Node> list = previous.get(c);
-        list.add(b);
-    }
-
     public boolean existsSemidirectedPath(Node from, Node to) {
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
@@ -1516,7 +1441,6 @@ public class Paths implements TetradSerializable {
         return false;
     }
 
-
     /**
      * Detemrmines whether x and y are d-connected given z.
      *
@@ -1592,7 +1516,6 @@ public class Paths implements TetradSerializable {
 
         return false;
     }
-
 
     /**
      * Assumes node should be in component.
@@ -1776,7 +1699,6 @@ public class Paths implements TetradSerializable {
         return new ArrayList<>(ancestors);
     }
 
-
     /**
      * Determines whether one node is an ancestor of another.
      */
@@ -1879,6 +1801,80 @@ public class Paths implements TetradSerializable {
     public boolean possibleAncestor(Node node1, Node node2) {
         return existsSemiDirectedPathFromTo(node1,
                 Collections.singleton(node2));
+    }
+
+    public static class AllCliquesAlgorithm {
+
+        public static void main(String[] args) {
+            int[][] graph = {
+                    {0, 1, 1, 0, 0},
+                    {1, 0, 1, 1, 0},
+                    {1, 1, 0, 1, 1},
+                    {0, 1, 1, 0, 1},
+                    {0, 0, 1, 1, 0}
+            };
+            int n = graph.length;
+
+            List<List<Integer>> cliques = findCliques(graph, n);
+            System.out.println("All Cliques:");
+            for (List<Integer> clique : cliques) {
+                System.out.println(clique);
+            }
+        }
+
+        public static List<List<Integer>> findCliques(int[][] graph, int n) {
+            List<List<Integer>> cliques = new ArrayList<>();
+            Set<Integer> candidates = new HashSet<>();
+            Set<Integer> excluded = new HashSet<>();
+            Set<Integer> included = new HashSet<>();
+
+            for (int i = 0; i < n; i++) {
+                candidates.add(i);
+            }
+
+            bronKerbosch(graph, candidates, excluded, included, cliques);
+
+            return cliques;
+        }
+
+        private static void bronKerbosch(int[][] graph, Set<Integer> candidates,
+                                         Set<Integer> excluded, Set<Integer> included,
+                                         List<List<Integer>> cliques) {
+            if (candidates.isEmpty() && excluded.isEmpty()) {
+                cliques.add(new ArrayList<>(included));
+                return;
+            }
+
+            Set<Integer> candidatesCopy = new HashSet<>(candidates);
+            for (int vertex : candidatesCopy) {
+                Set<Integer> neighbors = new HashSet<>();
+                for (int i = 0; i < graph.length; i++) {
+                    if (graph[vertex][i] == 1 && candidates.contains(i)) {
+                        neighbors.add(i);
+                    }
+                }
+
+                bronKerbosch(graph, intersect(candidates, neighbors),
+                        intersect(excluded, neighbors),
+                        union(included, vertex),
+                        cliques);
+
+                candidates.remove(vertex);
+                excluded.add(vertex);
+            }
+        }
+
+        private static Set<Integer> intersect(Set<Integer> set1, Set<Integer> set2) {
+            Set<Integer> result = new HashSet<>(set1);
+            result.retainAll(set2);
+            return result;
+        }
+
+        private static Set<Integer> union(Set<Integer> set, int element) {
+            Set<Integer> result = new HashSet<>(set);
+            result.add(element);
+            return result;
+        }
     }
 }
 

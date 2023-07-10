@@ -471,29 +471,6 @@ public final class GraphSearchUtils {
         return mag;
     }
 
-    /**
-     * Stores a result for checking whether a graph is a legal PAG--(a) whether it is (a boolean), and (b) the reason
-     * why it is not, if it is not (a String).
-     */
-    public static class LegalPagRet {
-        private final boolean legalPag;
-        private final String reason;
-
-        public LegalPagRet(boolean legalPag, String reason) {
-            if (reason == null) throw new NullPointerException("Reason must be given.");
-            this.legalPag = legalPag;
-            this.reason = reason;
-        }
-
-        public boolean isLegalPag() {
-            return legalPag;
-        }
-
-        public String getReason() {
-            return reason;
-        }
-    }
-
     public static LegalPagRet isLegalPag(Graph pag) {
 
         for (Node n : pag.getNodes()) {
@@ -545,29 +522,6 @@ public final class GraphSearchUtils {
         }
 
         return new LegalPagRet(true, "This is a legal PAG");
-    }
-
-    /**
-     * Stores a result for checking whether a graph is a legal MAG--(a) whether it is (a boolean), and (b) the reason
-     * why it is not, if it is not (a String).
-     */
-    public static class LegalMagRet {
-        private final boolean legalMag;
-        private final String reason;
-
-        public LegalMagRet(boolean legalPag, String reason) {
-            if (reason == null) throw new NullPointerException("Reason must be given.");
-            this.legalMag = legalPag;
-            this.reason = reason;
-        }
-
-        public boolean isLegalMag() {
-            return legalMag;
-        }
-
-        public String getReason() {
-            return reason;
-        }
     }
 
     private static LegalMagRet isLegalMag(Graph mag) {
@@ -871,7 +825,6 @@ public final class GraphSearchUtils {
         return subsets;
     }
 
-
     /**
      * Generates the list of DAGs in the given cpdag.
      */
@@ -951,7 +904,6 @@ public final class GraphSearchUtils {
 
         return graphs;
     }
-
 
     // The published version.
     public static CpcTripleType getCpcTripleType(Node x, Node y, Node z,
@@ -1334,6 +1286,52 @@ public final class GraphSearchUtils {
      */
     public enum CpcTripleType {
         COLLIDER, NONCOLLIDER, AMBIGUOUS
+    }
+
+    /**
+     * Stores a result for checking whether a graph is a legal PAG--(a) whether it is (a boolean), and (b) the reason
+     * why it is not, if it is not (a String).
+     */
+    public static class LegalPagRet {
+        private final boolean legalPag;
+        private final String reason;
+
+        public LegalPagRet(boolean legalPag, String reason) {
+            if (reason == null) throw new NullPointerException("Reason must be given.");
+            this.legalPag = legalPag;
+            this.reason = reason;
+        }
+
+        public boolean isLegalPag() {
+            return legalPag;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+    }
+
+    /**
+     * Stores a result for checking whether a graph is a legal MAG--(a) whether it is (a boolean), and (b) the reason
+     * why it is not, if it is not (a String).
+     */
+    public static class LegalMagRet {
+        private final boolean legalMag;
+        private final String reason;
+
+        public LegalMagRet(boolean legalPag, String reason) {
+            if (reason == null) throw new NullPointerException("Reason must be given.");
+            this.legalMag = legalPag;
+            this.reason = reason;
+        }
+
+        public boolean isLegalMag() {
+            return legalMag;
+        }
+
+        public String getReason() {
+            return reason;
+        }
     }
 
     /**

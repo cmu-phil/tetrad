@@ -64,8 +64,7 @@ public final class SessionEditor extends JComponent
     }
 
     /**
-     * Constructs a new session editor.  A session editor consists of a session
-     * workbench and a session toolbar.
+     * Constructs a new session editor.  A session editor consists of a session workbench and a session toolbar.
      *
      * @param name The name of the session.  This is used for saving out
      */
@@ -108,11 +107,9 @@ public final class SessionEditor extends JComponent
     }
 
     /**
-     * @return a list of all the SessionNodeWrappers (TetradNodes) and
-     * SessionNodeEdges that are model components for the respective
-     * SessionNodes and SessionEdges selected in the workbench. Note that the
-     * workbench, not the SessionEditorNodes themselves, keeps track of the
-     * selection.
+     * @return a list of all the SessionNodeWrappers (TetradNodes) and SessionNodeEdges that are model components for
+     * the respective SessionNodes and SessionEdges selected in the workbench. Note that the workbench, not the
+     * SessionEditorNodes themselves, keeps track of the selection.
      */
     public List getSelectedModelComponents() {
         List selectedComponents = getWorkbench().getSelectedComponents();
@@ -134,9 +131,8 @@ public final class SessionEditor extends JComponent
     }
 
     /**
-     * Pastes a consistent list of model nodes into the workbench. Note that the
-     * responsivity of the toolbar to events needs to be turned off during this
-     * operation.
+     * Pastes a consistent list of model nodes into the workbench. Note that the responsivity of the toolbar to events
+     * needs to be turned off during this operation.
      *
      * @param sessionElements the list of model nodes.
      * @param point           the upper left corner of the first node.

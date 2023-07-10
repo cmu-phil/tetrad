@@ -30,8 +30,8 @@ import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.DataUtils;
 import edu.cmu.tetrad.graph.IndependenceFact;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.*;
 import org.apache.commons.math3.util.FastMath;
@@ -53,35 +53,30 @@ import java.util.Set;
 public final class IndTestFisherZGeneralizedInverse implements IndependenceTest {
 
     /**
+     * Formats as 0.0000.
+     */
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    /**
      * The correlation matrix.
      */
     private final DoubleMatrix2D data;
-
     /**
      * The variables of the correlation matrix, in order. (Unmodifiable list.)
      */
     private final List<Node> variables;
-
+    private final DataSet dataSet;
     /**
      * The significance level of the independence tests.
      */
     private double alpha;
-
     /**
      * The cutoff value for 'alpha' area in the two tails of the partial correlation distribution function.
      */
     private double thresh = Double.NaN;
-
     /**
      * The value of the Fisher's Z statistic associated with the las calculated partial correlation.
      */
     private double fishersZ;
-
-    /**
-     * Formats as 0.0000.
-     */
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-    private final DataSet dataSet;
     private boolean verbose;
 
     //==========================CONSTRUCTORS=============================//
@@ -119,7 +114,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
      *
      * @param xVar the one variable being compared.
      * @param yVar the second variable being compared.
-     * @param _z    the list of conditioning variables.
+     * @param _z   the list of conditioning variables.
      * @return True iff x _||_ y | z.
      * @throws RuntimeException if a matrix singularity is encountered.
      */
@@ -228,6 +223,13 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     }
 
     /**
+     * Gets the getModel significance level.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -237,13 +239,6 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
         }
 
         this.alpha = alpha;
-    }
-
-    /**
-     * Gets the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
     }
 
     /**

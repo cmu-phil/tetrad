@@ -60,14 +60,6 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public class Fofc {
 
-    /**
-     * Gives the options to be used in FOFC to sort through the various possibilities for forming clusters to find the
-     * best options. SAG (Seed and Grow) looks for good seed clusters and then grows them by adding one variable at a
-     * time. GAP (Grow and Pick) grows out all the cluster initially and then just picks from among these. SAG is
-     * generally faster; GAP is generally slower but more accurate.
-     */
-    public enum Algorithm {SAG, GAP}
-
     private final CorrelationMatrix corr;
     // The list of all variables.
     private final List<Node> variables;
@@ -80,12 +72,11 @@ public class Fofc {
     // The data.
     private final transient DataModel dataModel;
     private final BpcTestType testType;
+    private final Algorithm algorithm;
     private List<List<Node>> clusters;
     private boolean verbose;
     private boolean significanceChecked;
-    private final Algorithm algorithm;
     private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
-
     /**
      * Conctructor.
      *
@@ -182,7 +173,6 @@ public class Fofc {
     public void setCheckType(ClusterSignificance.CheckType checkType) {
         this.checkType = checkType;
     }
-
 
     // renjiey
     private int findFrequentestIndex(Integer[] outliers) {
@@ -1031,6 +1021,14 @@ public class Fofc {
             TetradLogger.getInstance().forceLogMessage(s);
         }
     }
+
+    /**
+     * Gives the options to be used in FOFC to sort through the various possibilities for forming clusters to find the
+     * best options. SAG (Seed and Grow) looks for good seed clusters and then grows them by adding one variable at a
+     * time. GAP (Grow and Pick) grows out all the cluster initially and then just picks from among these. SAG is
+     * generally faster; GAP is generally slower but more accurate.
+     */
+    public enum Algorithm {SAG, GAP}
 }
 
 

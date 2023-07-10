@@ -33,8 +33,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 /**
- * Copies a selection of session nodes in the frontmost session editor, to the
- * clipboard.
+ * Copies a selection of session nodes in the frontmost session editor, to the clipboard.
  *
  * @author josephramsey
  */
@@ -42,16 +41,14 @@ final class CopySubsessionAction extends AbstractAction
         implements ClipboardOwner {
 
     /**
-     * Creates a new copy subsession action for the given desktop and
-     * clipboard.
+     * Creates a new copy subsession action for the given desktop and clipboard.
      */
     public CopySubsessionAction() {
         super("Copy");
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         SessionEditorIndirectRef sessionEditorRef =

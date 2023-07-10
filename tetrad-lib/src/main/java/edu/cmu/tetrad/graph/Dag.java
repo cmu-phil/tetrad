@@ -217,6 +217,10 @@ public final class Dag implements Graph {
         return this.graph.getNodes();
     }
 
+    public void setNodes(List<Node> nodes) {
+        this.graph.setNodes(nodes);
+    }
+
     public List<String> getNodeNames() {
         return this.graph.getNodeNames();
     }
@@ -349,10 +353,6 @@ public final class Dag implements Graph {
 
     public Set<Node> getSepset(Node n1, Node n2) {
         return this.graph.getSepset(n1, n2);
-    }
-
-    public void setNodes(List<Node> nodes) {
-        this.graph.setNodes(nodes);
     }
 
     public Map<String, Object> getAllAttributes() {

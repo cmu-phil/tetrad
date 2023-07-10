@@ -31,8 +31,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 
 /**
- * Pastes a layout into a LayoutEditable gadget, which lays out the graph in
- * that gadget according to the stored graph.
+ * Pastes a layout into a LayoutEditable gadget, which lays out the graph in that gadget according to the stored graph.
  *
  * @author josephramsey
  */
@@ -44,8 +43,7 @@ public class PasteLayoutAction extends AbstractAction
     private final LayoutEditable layoutEditable;
 
     /**
-     * Constucts an action for loading the session in the given '.tet' file into
-     * the layoutEditable.
+     * Constucts an action for loading the session in the given '.tet' file into the layoutEditable.
      */
     public PasteLayoutAction(LayoutEditable layoutEditable) {
         super("Paste Layout");
@@ -58,8 +56,7 @@ public class PasteLayoutAction extends AbstractAction
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         Transferable transferable = InternalClipboard.getLayoutInstance()
@@ -81,12 +78,10 @@ public class PasteLayoutAction extends AbstractAction
     }
 
     /**
-     * Notifies this object that it is no longer the owner of the contents of
-     * the clipboard.
+     * Notifies this object that it is no longer the owner of the contents of the clipboard.
      *
      * @param clipboard the clipboard that is no longer owned
-     * @param contents  the contents which this owner had placed on the
-     *                  clipboard
+     * @param contents  the contents which this owner had placed on the clipboard
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }

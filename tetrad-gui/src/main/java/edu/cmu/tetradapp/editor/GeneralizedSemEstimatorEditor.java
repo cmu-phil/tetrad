@@ -51,23 +51,19 @@ import java.util.prefs.Preferences;
 public final class GeneralizedSemEstimatorEditor extends JPanel implements DelegatesEditing, LayoutEditable {
 
     private static final long serialVersionUID = 5161532456725190959L;
-
-    /**
-     * The graphical editor for the SemIm.
-     */
-    private GeneralizedSemImGraphicalEditor graphicalEditor;
-
     /**
      * A reference to the error terms menu item so it can be reset.
      */
     private final JMenuItem errorTerms;
-
     /**
-     * A common map of nodes to launched editors so that they can all be closed
-     * when this editor is closed.
+     * A common map of nodes to launched editors so that they can all be closed when this editor is closed.
      */
     private final Map<Object, EditorWindow> launchedEditors = new HashMap<>();
     private final GeneralizedSemEstimatorWrapper wrapper;
+    /**
+     * The graphical editor for the SemIm.
+     */
+    private GeneralizedSemImGraphicalEditor graphicalEditor;
 
     //========================CONSTRUCTORS===========================//
     public GeneralizedSemEstimatorEditor(GeneralizedSemEstimatorWrapper wrapper) {

@@ -24,14 +24,14 @@ package edu.cmu.tetradapp.model;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.search.IndependenceTest;
-import edu.cmu.tetrad.search.utils.ResolveSepsets;
-import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZGeneralizedInverse;
-import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZPercentIndependent;
-import edu.cmu.tetrad.search.work_in_progress.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.search.score.ImagesScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
 import edu.cmu.tetrad.search.test.*;
+import edu.cmu.tetrad.search.utils.ResolveSepsets;
+import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZGeneralizedInverse;
+import edu.cmu.tetrad.search.work_in_progress.IndTestFisherZPercentIndependent;
+import edu.cmu.tetrad.search.work_in_progress.IndTestMultinomialLogisticRegression;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetradapp.util.IndTestType;
 import edu.pitt.csb.mgm.IndTestMultinomialLogisticRegressionWald;
@@ -50,9 +50,8 @@ final class IndTestChooser {
     }
 
     /**
-     * @return an independence checker appropriate to the given data source.
-     * Also sets the Parameters on the params to an appropriate type object
-     * (using the existing one if it's of the right type).
+     * @return an independence checker appropriate to the given data source. Also sets the Parameters on the params to
+     * an appropriate type object (using the existing one if it's of the right type).
      */
     public IndependenceTest getTest(Object dataSource, Parameters params,
                                     IndTestType testType) {

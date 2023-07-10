@@ -51,6 +51,16 @@ class LoadGraphPcalg extends AbstractAction {
         this.graphEditable = graphEditable;
     }
 
+    private static JFileChooser getJFileChooser() {
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation =
+                Preferences.userRoot().get("fileSaveLocation", "");
+        chooser.setCurrentDirectory(new File(sessionSaveLocation));
+        chooser.resetChoosableFileFilters();
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        return chooser;
+    }
+
     /**
      * Performs the action of loading a session from a file.
      */
@@ -71,16 +81,6 @@ class LoadGraphPcalg extends AbstractAction {
         Graph graph = GraphSaveLoadUtils.loadGraphPcalg(file);
         LayoutUtil.circleLayout(graph, 200, 200, 150);
         this.graphEditable.setGraph(graph);
-    }
-
-    private static JFileChooser getJFileChooser() {
-        JFileChooser chooser = new JFileChooser();
-        String sessionSaveLocation =
-                Preferences.userRoot().get("fileSaveLocation", "");
-        chooser.setCurrentDirectory(new File(sessionSaveLocation));
-        chooser.resetChoosableFileFilters();
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        return chooser;
     }
 }
 

@@ -31,9 +31,8 @@ import edu.cmu.tetrad.session.SimulationParamsSource;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
- * Specifies the methods that all algorithm runners must implement. All
- * algorithm runners must know what their parameters are, must know what their
- * source graph is, and must know what their result graph is (if it has been
+ * Specifies the methods that all algorithm runners must implement. All algorithm runners must know what their
+ * parameters are, must know what their source graph is, and must know what their result graph is (if it has been
  * calculated).
  *
  * @author josephramsey
@@ -43,8 +42,7 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
     long serialVersionUID = 23L;
 
     /**
-     * @return the data used to execute this algorithm. Might possibly be a
-     * graph.
+     * @return the data used to execute this algorithm. Might possibly be a graph.
      */
     DataModel getDataModel();
 
@@ -54,8 +52,8 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
     Parameters getParams();
 
     /**
-     * @return the graph from which data was originally generated, if such a
-     * graph is available. Otherwise, returns null.
+     * @return the graph from which data was originally generated, if such a graph is available. Otherwise, returns
+     * null.
      */
     Graph getSourceGraph();
 
@@ -75,14 +73,14 @@ public interface AlgorithmRunner extends SessionModel, Executable, GraphSource,
     MeekRules getMeekRules();
 
     /**
-     * Sets the initial graph for the algorithm, if feasible.
-     */
-    void setExternalGraph(Graph graph);
-
-    /**
      * @return the initial graph, if there is one, or null if not.
      */
     Graph getExternalGraph();
+
+    /**
+     * Sets the initial graph for the algorithm, if feasible.
+     */
+    void setExternalGraph(Graph graph);
 
     String getAlgorithmName();
 }

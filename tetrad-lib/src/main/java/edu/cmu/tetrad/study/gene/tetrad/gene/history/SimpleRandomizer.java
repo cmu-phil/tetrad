@@ -40,23 +40,19 @@ import java.util.List;
  * @author josephramsey
  */
 public class SimpleRandomizer implements GraphInitializer {
-    static final long serialVersionUID = 23L;
-
     /**
      * Indicates constant indegree.
      */
     public static final int CONSTANT = 0;
-
     /**
      * Indicates maximum indegree.
      */
     public static final int MAX = 1;
-
     /**
      * Indicates mean indegree.
      */
     public static final int MEAN = 2;
-
+    static final long serialVersionUID = 23L;
     /**
      * The indegree type of this randomizer.
      */

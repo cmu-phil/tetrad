@@ -89,8 +89,7 @@ public class EditorUtils {
     }
 
     /**
-     * Modifies the name of the given file if necessary to ensure that it has
-     * the given suffix.
+     * Modifies the name of the given file if necessary to ensure that it has the given suffix.
      */
     private static File ensureSuffix(File file, String suffix) {
         String fileName = file.getName();
@@ -165,16 +164,14 @@ public class EditorUtils {
     }
 
     /**
-     * Displays a save dialog in the getModel save directory and returns the
-     * selected file. The file is of form prefix.suffix.
+     * Displays a save dialog in the getModel save directory and returns the selected file. The file is of form
+     * prefix.suffix.
      *
      * @param prefix    The prefix of the file.
      * @param suffix    The suffix of the file.
-     * @param parent    The parent that the save dialog should be centered on
-     *                  and in front of.
-     * @param overwrite True iff the file prefix.suffix should be overwritten.
-     *                  If false, the next avialable filename in the series
-     *                  prefix{n}.suffix will be suggested.
+     * @param parent    The parent that the save dialog should be centered on and in front of.
+     * @param overwrite True iff the file prefix.suffix should be overwritten. If false, the next avialable filename in
+     *                  the series prefix{n}.suffix will be suggested.
      * @return null, if the selection was cancelled or there was an error.
      */
     public static File getSaveFile(String prefix, String suffix,

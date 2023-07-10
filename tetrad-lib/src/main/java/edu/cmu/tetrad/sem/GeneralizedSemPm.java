@@ -108,58 +108,49 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      * String representations of initial parameter distributions. A map from parameter names to expression strings.
      */
     private final Map<String, String> parameterExpressionStrings;
-
-    /**
-     * Distributions from which initial values for freeParameters are drawn.
-     */
-    private Map<String, Expression> parameterEstimationInitializationExpressions;
-
     /**
      * String representations of initial parameter distributions. A map from parameter names to expression strings.
      */
     private final Map<String, String> parameterEstimationInitializationExpressionStrings;
-
+    /**
+     * A map from initial name strings to parameter templates.
+     */
+    private final Map<String, String> startsWithParametersTemplates;
+    /**
+     * A map from initial name strings to parameter templates.
+     */
+    private final Map<String, String> startsWithParametersEstimationInitializationTemplates;
+    /**
+     * A map from names to nodes, speedup.
+     */
+    private final Map<String, Node> namesToNodes = new HashMap<>();
+    private final Map<String, Integer> parameterSubscript = new HashMap<>();
+    /**
+     * Distributions from which initial values for freeParameters are drawn.
+     */
+    private Map<String, Expression> parameterEstimationInitializationExpressions;
     /**
      * The stored template for variables.
      */
     private String variablesTemplate = "TSUM(NEW(B)*$)";
-
     /**
      * The stored template for error terms.
      */
     private String errorsTemplate = "Normal(0, NEW(s))";
-
     /**
      * The stored template for freeParameters.
      */
     private String parametersTemplate = "Split(-1.0,-.5,.5,1.0)";
-
     /**
      * The stored template for freeParameters.
      */
     private String parametersEstimationInitializationTemplate = "Split(-1.0,-.5,.5,1.0)";
 
+    //===========================CONSTRUCTORS==========================//
     /**
      * The list of variable names.
      */
     private List<String> variableNames;
-
-    /**
-     * A map from initial name strings to parameter templates.
-     */
-    private final Map<String, String> startsWithParametersTemplates;
-
-    /**
-     * A map from initial name strings to parameter templates.
-     */
-    private final Map<String, String> startsWithParametersEstimationInitializationTemplates;
-
-    /**
-     * A map from names to nodes, speedup.
-     */
-    private final Map<String, Node> namesToNodes = new HashMap<>();
-
-    //===========================CONSTRUCTORS==========================//
 
     /**
      * Constructs a BayesPm from the given Graph, which must be convertible first into a ProtoSemGraph and then into a
@@ -440,6 +431,8 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return new GeneralizedSemPm(Dag.serializableInstance());
     }
 
+    //============================PUBLIC METHODS========================//
+
     public static List<String> getParameterNames() {
         List<String> parameters = new ArrayList<>();
         parameters.add("generalSemFunctionTemplateMeasured");
@@ -448,8 +441,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         parameters.add("generalSemParameterTemplate");
         return parameters;
     }
-
-    //============================PUBLIC METHODS========================//
 
     public Expression getNodeExpression(Node node) {
         return this.nodeExpressions.get(node);
@@ -783,7 +774,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return new SemGraph(this.graph);
     }
 
-
     /**
      * @return all the nodes in the sem, including error nodes.
      */
@@ -922,8 +912,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return base + subscript;
     }
 
-    private final Map<String, Integer> parameterSubscript = new HashMap<>();
-
     /**
      * @param node the given node, variable or error.
      * @return all parents of the given node, with error node(s?) last.
@@ -1047,10 +1035,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         return this.parametersTemplate;
     }
 
-    public String getParametersEstimationInitializationTemplate() {
-        return this.parametersEstimationInitializationTemplate;
-    }
-
     public void setParametersTemplate(String parametersTemplate) throws ParseException {
         if (parametersTemplate == null) {
             throw new NullPointerException();
@@ -1067,6 +1051,10 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         }
 
         this.parametersTemplate = parametersTemplate;
+    }
+
+    public String getParametersEstimationInitializationTemplate() {
+        return this.parametersEstimationInitializationTemplate;
     }
 
     public void setParametersEstimationInitializationTemplate(String parametersTemplate) throws ParseException {

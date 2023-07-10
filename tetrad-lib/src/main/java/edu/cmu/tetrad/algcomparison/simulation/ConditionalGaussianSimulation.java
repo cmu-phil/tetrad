@@ -40,6 +40,34 @@ public class ConditionalGaussianSimulation implements Simulation {
         this.randomGraph = graph;
     }
 
+    private static Graph makeMixedGraph(Graph g, Map<String, Integer> m) {
+        List<Node> nodes = g.getNodes();
+        for (int i = 0; i < nodes.size(); i++) {
+            Node n = nodes.get(i);
+            int nL = m.get(n.getName());
+            Node nNew;
+            if (nL > 0) {
+                nNew = new DiscreteVariable(n.getName(), nL);
+            } else {
+                nNew = new ContinuousVariable(n.getName());
+            }
+            nNew.setNodeType(n.getNodeType());
+            nodes.set(i, nNew);
+
+        }
+
+        Graph outG = new EdgeListGraph(nodes);
+
+        for (Edge e : g.getEdges()) {
+            Node n1 = e.getNode1();
+            Node n2 = e.getNode2();
+            Edge eNew = new Edge(outG.getNode(n1.getName()), outG.getNode(n2.getName()), e.getEndpoint1(), e.getEndpoint2());
+            outG.addEdge(eNew);
+        }
+
+        return outG;
+    }
+
     @Override
     public void createData(Parameters parameters, boolean newModel) {
         if (parameters.getLong(Params.SEED) != -1L) {
@@ -405,6 +433,10 @@ public class ConditionalGaussianSimulation implements Simulation {
         this.meanHigh = meanHigh;
     }
 
+    private int pickNumCategories(int min, int max) {
+        return min + RandomUtil.getInstance().nextInt(max - min + 1);
+    }
+
     private static class Combination {
 
         private final Parameter parameter;
@@ -471,37 +503,5 @@ public class ConditionalGaussianSimulation implements Simulation {
             VariableValues v = (VariableValues) o;
             return v.variable.equals(this.variable) && v.value == this.value;
         }
-    }
-
-    private static Graph makeMixedGraph(Graph g, Map<String, Integer> m) {
-        List<Node> nodes = g.getNodes();
-        for (int i = 0; i < nodes.size(); i++) {
-            Node n = nodes.get(i);
-            int nL = m.get(n.getName());
-            Node nNew;
-            if (nL > 0) {
-                nNew = new DiscreteVariable(n.getName(), nL);
-            } else {
-                nNew = new ContinuousVariable(n.getName());
-            }
-            nNew.setNodeType(n.getNodeType());
-            nodes.set(i, nNew);
-
-        }
-
-        Graph outG = new EdgeListGraph(nodes);
-
-        for (Edge e : g.getEdges()) {
-            Node n1 = e.getNode1();
-            Node n2 = e.getNode2();
-            Edge eNew = new Edge(outG.getNode(n1.getName()), outG.getNode(n2.getName()), e.getEndpoint1(), e.getEndpoint2());
-            outG.addEdge(eNew);
-        }
-
-        return outG;
-    }
-
-    private int pickNumCategories(int min, int max) {
-        return min + RandomUtil.getInstance().nextInt(max - min + 1);
     }
 }

@@ -59,12 +59,30 @@ public class FactorAnalysisAction extends AbstractAction {
 
 
     /**
-     * Constructs the <code>HistogramAction</code> given the <code>DataEditor</code>
-     * that its attached to.
+     * Constructs the <code>HistogramAction</code> given the <code>DataEditor</code> that its attached to.
      */
     public FactorAnalysisAction(DataEditor editor) {
         super("Factor Analysis...");
         this.dataEditor = editor;
+    }
+
+    public static void main(String[] args) {
+        java.util.List<Node> nodes = new ArrayList<>();
+
+        for (int i = 0; i < 9; i++) {
+            nodes.add(new ContinuousVariable("X" + (i + 1)));
+        }
+
+        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 9,
+                30, 15, 15, false));
+        SemPm pm = new SemPm(graph);
+        SemIm im = new SemIm(pm);
+        DataSet data = im.simulateData(500, false);
+        ICovarianceMatrix cov = new CovarianceMatrix(data);
+
+        FactorAnalysis factorAnalysis = new FactorAnalysis(cov);
+        //factorAnalysis.centroidUnity();
+        factorAnalysis.successiveResidual();
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -171,6 +189,8 @@ public class FactorAnalysisAction extends AbstractAction {
         return panel;
     }
 
+    //============================== Private methods ============================//
+
     private String tableString(Matrix matrix, NumberFormat nf, double threshold) {
         TextTable table = new TextTable(matrix.getNumRows() + 1, matrix.getNumColumns() + 1);
 
@@ -193,30 +213,9 @@ public class FactorAnalysisAction extends AbstractAction {
 
     }
 
-    //============================== Private methods ============================//
-
     private JFrame findOwner() {
         return (JFrame) SwingUtilities.getAncestorOfClass(
                 JFrame.class, this.dataEditor);
-    }
-
-    public static void main(String[] args) {
-        java.util.List<Node> nodes = new ArrayList<>();
-
-        for (int i = 0; i < 9; i++) {
-            nodes.add(new ContinuousVariable("X" + (i + 1)));
-        }
-
-        Graph graph = new Dag(RandomGraph.randomGraph(nodes, 0, 9,
-                30, 15, 15, false));
-        SemPm pm = new SemPm(graph);
-        SemIm im = new SemIm(pm);
-        DataSet data = im.simulateData(500, false);
-        ICovarianceMatrix cov = new CovarianceMatrix(data);
-
-        FactorAnalysis factorAnalysis = new FactorAnalysis(cov);
-        //factorAnalysis.centroidUnity();
-        factorAnalysis.successiveResidual();
     }
 }
 

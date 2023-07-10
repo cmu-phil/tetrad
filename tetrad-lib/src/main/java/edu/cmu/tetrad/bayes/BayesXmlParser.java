@@ -39,6 +39,73 @@ import java.util.*;
 public final class BayesXmlParser {
     private Map<String, Node> namesToVars;
 
+    private static BayesIm makeBayesIm(BayesPm bayesPm, Element element2) {
+        if (!"cpts".equals(element2.getQualifiedName())) {
+            throw new IllegalArgumentException("Expecting 'cpts' element.");
+        }
+
+        MlBayesIm bayesIm = new MlBayesIm(bayesPm);
+
+        Elements elements2 = element2.getChildElements();
+
+        for (int nodeIndex = 0; nodeIndex < elements2.size(); nodeIndex++) {
+            Element e1 = elements2.get(nodeIndex);
+
+            if (!"cpt".equals(e1.getQualifiedName())) {
+                throw new IllegalArgumentException("Expecting 'cpt' element.");
+            }
+
+            String numRowsString = e1.getAttributeValue("numRows");
+            String numColsString = e1.getAttributeValue("numCols");
+
+            int numRows = Integer.parseInt(numRowsString);
+            int numCols = Integer.parseInt(numColsString);
+
+            Elements e1Elements = e1.getChildElements();
+
+            if (e1Elements.size() != numRows) {
+                throw new IllegalArgumentException("Element cpt claimed " +
+                        numRows + " rows, but there are only " +
+                        e1Elements.size() + " rows in the file.");
+            }
+
+            for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
+                Element e2 = e1Elements.get(rowIndex);
+
+                if (!"row".equals(e2.getQualifiedName())) {
+                    throw new IllegalArgumentException(
+                            "Expecting 'parent' element.");
+                }
+
+                Text rowNode = (Text) e2.getChild(0);
+                String rowString = rowNode.getValue();
+
+                StringTokenizer t = new StringTokenizer(rowString);
+
+                for (int colIndex = 0; colIndex < numCols; colIndex++) {
+                    String token = t.nextToken();
+
+                    try {
+                        double value = Double.parseDouble(token);
+                        bayesIm.setProbability(nodeIndex, rowIndex, colIndex,
+                                value);
+                    } catch (NumberFormatException e) {
+                        // Skip.
+                    }
+                }
+
+                if (t.hasMoreTokens()) {
+                    throw new IllegalArgumentException("Element cpt claimed " +
+                            numCols +
+                            " columnns , but there are more that that " +
+                            "in the file.");
+                }
+            }
+        }
+
+        return bayesIm;
+    }
+
     public BayesIm getBayesIm(Element element) {
         if (!"bayesNet".equals(element.getQualifiedName())) {
             throw new IllegalArgumentException("Expecting 'bayesNet' element.");
@@ -169,73 +236,6 @@ public final class BayesXmlParser {
         }
 
         return bayesPm;
-    }
-
-    private static BayesIm makeBayesIm(BayesPm bayesPm, Element element2) {
-        if (!"cpts".equals(element2.getQualifiedName())) {
-            throw new IllegalArgumentException("Expecting 'cpts' element.");
-        }
-
-        MlBayesIm bayesIm = new MlBayesIm(bayesPm);
-
-        Elements elements2 = element2.getChildElements();
-
-        for (int nodeIndex = 0; nodeIndex < elements2.size(); nodeIndex++) {
-            Element e1 = elements2.get(nodeIndex);
-
-            if (!"cpt".equals(e1.getQualifiedName())) {
-                throw new IllegalArgumentException("Expecting 'cpt' element.");
-            }
-
-            String numRowsString = e1.getAttributeValue("numRows");
-            String numColsString = e1.getAttributeValue("numCols");
-
-            int numRows = Integer.parseInt(numRowsString);
-            int numCols = Integer.parseInt(numColsString);
-
-            Elements e1Elements = e1.getChildElements();
-
-            if (e1Elements.size() != numRows) {
-                throw new IllegalArgumentException("Element cpt claimed " +
-                        numRows + " rows, but there are only " +
-                        e1Elements.size() + " rows in the file.");
-            }
-
-            for (int rowIndex = 0; rowIndex < numRows; rowIndex++) {
-                Element e2 = e1Elements.get(rowIndex);
-
-                if (!"row".equals(e2.getQualifiedName())) {
-                    throw new IllegalArgumentException(
-                            "Expecting 'parent' element.");
-                }
-
-                Text rowNode = (Text) e2.getChild(0);
-                String rowString = rowNode.getValue();
-
-                StringTokenizer t = new StringTokenizer(rowString);
-
-                for (int colIndex = 0; colIndex < numCols; colIndex++) {
-                    String token = t.nextToken();
-
-                    try {
-                        double value = Double.parseDouble(token);
-                        bayesIm.setProbability(nodeIndex, rowIndex, colIndex,
-                                value);
-                    } catch (NumberFormatException e) {
-                        // Skip.
-                    }
-                }
-
-                if (t.hasMoreTokens()) {
-                    throw new IllegalArgumentException("Element cpt claimed " +
-                            numCols +
-                            " columnns , but there are more that that " +
-                            "in the file.");
-                }
-            }
-        }
-
-        return bayesIm;
     }
 }
 

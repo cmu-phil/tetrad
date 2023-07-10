@@ -66,12 +66,12 @@ import java.util.Set;
  */
 public class Pc implements IGraphSearch {
     private final IndependenceTest independenceTest;
+    private final TetradLogger logger = TetradLogger.getInstance();
     private Knowledge knowledge = new Knowledge();
     private SepsetMap sepsets;
     private int depth = 1000;
     private Graph graph;
     private long elapsedTime;
-    private final TetradLogger logger = TetradLogger.getInstance();
     private int numIndependenceTests;
     private boolean verbose = false;
     private PcCommon.ConflictRule conflictRule = PcCommon.ConflictRule.PRIORITIZE_EXISTING;

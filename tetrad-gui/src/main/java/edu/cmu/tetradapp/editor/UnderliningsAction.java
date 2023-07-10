@@ -40,8 +40,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Puts up a panel showing some graph properties, e.g., number of nodes and
- * edges in the graph, etc.
+ * Puts up a panel showing some graph properties, e.g., number of nodes and edges in the graph, etc.
  *
  * @author josephramsey
  */
@@ -49,8 +48,7 @@ public class UnderliningsAction extends AbstractAction implements ClipboardOwner
     private final GraphWorkbench workbench;
 
     /**
-     * Creates a new copy subsession action for the given LayoutEditable and
-     * clipboard.
+     * Creates a new copy subsession action for the given LayoutEditable and clipboard.
      */
     public UnderliningsAction(GraphWorkbench graph) {
         super("Underlinings");
@@ -58,8 +56,7 @@ public class UnderliningsAction extends AbstractAction implements ClipboardOwner
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         Box b = Box.createVerticalBox();

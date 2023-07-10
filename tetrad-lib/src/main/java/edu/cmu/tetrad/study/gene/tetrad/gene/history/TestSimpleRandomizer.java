@@ -45,6 +45,17 @@ public class TestSimpleRandomizer extends TestCase {
     }
 
     /**
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
+     */
+    public static Test suite() {
+
+        // Edit the name of the class in the parens to match the name
+        // of this class.
+        return new TestSuite(TestSimpleRandomizer.class);
+    }
+
+    /**
      * Sets up a graph to randomize with 100 variables in it.
      */
     public void setUp() {
@@ -183,17 +194,6 @@ public class TestSimpleRandomizer extends TestCase {
 
     public void tearDown() {
         this.lagGraph = null;
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestSimpleRandomizer.class);
     }
 }
 

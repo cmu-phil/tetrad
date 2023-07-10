@@ -35,17 +35,14 @@ final class Lineizer {
      * The character sequence being tokenized.
      */
     private final BufferedReader reader;
-
-    /**
-     * Stores the line read by hasMoreLines, until it is retrieved by nextLine, at which point it is null.
-     */
-    private String tempLine;
-
     /**
      * The comment marker.
      */
     private final String commentMarker;
-
+    /**
+     * Stores the line read by hasMoreLines, until it is retrieved by nextLine, at which point it is null.
+     */
+    private String tempLine;
     /**
      * The line number of the line most recently read.
      */

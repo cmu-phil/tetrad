@@ -23,8 +23,9 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
+import edu.cmu.tetrad.search.Fci;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Rfci;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
@@ -103,8 +104,7 @@ public class FciRunner extends AbstractAlgorithmRunner
     //=================PUBLIC METHODS OVERRIDING ABSTRACT=================//
 
     /**
-     * Executes the algorithm, producing (at least) a result workbench. Must be
-     * implemented in the extending class.
+     * Executes the algorithm, producing (at least) a result workbench. Must be implemented in the extending class.
      */
     public void execute() {
         Knowledge knowledge = (Knowledge) getParams().get("knowledge", new Knowledge());

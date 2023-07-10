@@ -29,8 +29,8 @@ import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.regression.LogisticRegression;
 import edu.cmu.tetrad.regression.RegressionDataset;
 import edu.cmu.tetrad.regression.RegressionResult;
-import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.test.IndependenceResult;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
 import edu.cmu.tetrad.util.ProbUtils;
 import edu.cmu.tetrad.util.TetradLogger;
@@ -54,12 +54,12 @@ public class IndTestMultinomialLogisticRegressionWald implements IndependenceTes
     private final DataSet originalData;
     private final List<Node> searchVariables;
     private final DataSet internalData;
-    private double alpha;
-    private double lastP;
     private final Map<Node, List<Node>> variablesPerNode = new HashMap<>();
     private final LogisticRegression logisticRegression;
     private final RegressionDataset regression;
     private final boolean preferLinear;
+    private double alpha;
+    private double lastP;
     private boolean verbose;
 
     public IndTestMultinomialLogisticRegressionWald(DataSet data, double alpha, boolean preferLinear) {

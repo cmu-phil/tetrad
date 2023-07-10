@@ -46,17 +46,14 @@ public final class RegexTokenizer {
      * Matcher for searching for the right-hand quote char of a pair of quote chars.
      */
     private final Matcher quoteCharMatcher;
-
-    /**
-     * The position just after the last delimiter found.
-     */
-    private int position;
-
     /**
      * The quote character.
      */
     private final char quoteChar;
-
+    /**
+     * The position just after the last delimiter found.
+     */
+    private int position;
     /**
      * A flag indicating that the last token has been parsed.
      */

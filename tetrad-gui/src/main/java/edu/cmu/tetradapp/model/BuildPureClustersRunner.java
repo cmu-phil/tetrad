@@ -26,13 +26,13 @@ import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.NodeType;
-import edu.cmu.tetrad.search.work_in_progress.BpcTetradPurifyWashdown;
-import edu.cmu.tetrad.search.work_in_progress.Washdown;
+import edu.cmu.tetrad.search.Bpc;
 import edu.cmu.tetrad.search.utils.BpcAlgorithmType;
 import edu.cmu.tetrad.search.utils.BpcTestType;
-import edu.cmu.tetrad.search.Bpc;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.search.utils.MimUtils;
+import edu.cmu.tetrad.search.work_in_progress.BpcTetradPurifyWashdown;
+import edu.cmu.tetrad.search.work_in_progress.Washdown;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.util.Parameters;
@@ -43,11 +43,9 @@ import java.rmi.MarshalledObject;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
- * Extends AbstractAlgorithmRunner to produce a wrapper for the
- * BuildPureClusters algorithm.
+ * Extends AbstractAlgorithmRunner to produce a wrapper for the BuildPureClusters algorithm.
  *
  * @author Ricardo Silva
  */
@@ -98,8 +96,7 @@ public class BuildPureClustersRunner extends AbstractMimRunner
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     /**
-     * Executes the algorithm, producing (at least) a result workbench. Must be
-     * implemented in the extending class.
+     * Executes the algorithm, producing (at least) a result workbench. Must be implemented in the extending class.
      */
     public void execute() {
         boolean rKey = getParams().getBoolean("BPCrDown", false);

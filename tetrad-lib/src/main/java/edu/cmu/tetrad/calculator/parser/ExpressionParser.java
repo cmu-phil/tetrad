@@ -34,48 +34,29 @@ import java.util.*;
 public class ExpressionParser {
 
     /**
-     * The type of restriction on parameters. It's either the case that the expression may only contain parameters in
-     * the given list, or may not contain parameters in the given list, or that there is no restribution--whatever
-     * parameters occur in the expression are OK.
-     */
-    public enum RestrictionType {
-        MAY_ONLY_CONTAIN, MAY_NOT_CONTAIN, NONE
-    }
-
-
-    /**
-     * The getModel token.
-     */
-    private Token token;
-
-
-    /**
-     * The lexer.
-     */
-    private ExpressionLexer lexer;
-
-
-    /**
      * The expressin manager used to get the actual expressions from.
      */
     private final ExpressionManager expressions = ExpressionManager.getInstance();
-
     /**
      * The parameters read from the string.
      */
     private final Set<String> parameters;
-
-
     /**
      * The parameters that are allowed in an expression.
      */
     private final Set<String> restrictionParameters;
-
+    /**
+     * The getModel token.
+     */
+    private Token token;
+    /**
+     * The lexer.
+     */
+    private ExpressionLexer lexer;
     /**
      * The type of restribution on parameters.
      */
     private RestrictionType restrictionType;
-
 
     /**
      * Constructrs a parser that has no allowable parameters.
@@ -105,9 +86,6 @@ public class ExpressionParser {
         this.restrictionType = type;
     }
 
-    //================================ Public methods ===================================//
-
-
     /**
      * Parses the given expression, or throws an exception if its not possible.
      */
@@ -119,6 +97,7 @@ public class ExpressionParser {
         return exp;
     }
 
+    //================================ Public methods ===================================//
 
     /**
      * Parses an equation of the form Variable = Expression.
@@ -140,9 +119,6 @@ public class ExpressionParser {
         return this.lexer.getNextOffset();
     }
 
-    //================================ Private Methods =================================//
-
-
     /**
      * Moves to the next token.
      */
@@ -153,6 +129,8 @@ public class ExpressionParser {
             throw new ParseException("Unrecognized token,", this.lexer.getCurrentOffset());
         }
     }
+
+    //================================ Private Methods =================================//
 
     /**
      * Parses the expression.
@@ -256,7 +234,6 @@ public class ExpressionParser {
         return expression;
     }
 
-
     private Expression parsePlusExpression() throws ParseException {
         Expression expression = parseMultDivExpression();
 
@@ -322,7 +299,6 @@ public class ExpressionParser {
 
         return expression;
     }
-
 
     /**
      * Chomps an expression.
@@ -416,7 +392,6 @@ public class ExpressionParser {
         throw new ParseException("Unexpected token: " + this.lexer.getTokenString(), this.lexer.getCurrentOffset());
     }
 
-
     /**
      * Creates an evaluation expression.
      */
@@ -429,7 +404,6 @@ public class ExpressionParser {
         nextToken();
         return new EvaluationExpression(variable, s.replace("\"", ""));
     }
-
 
     /**
      * Pareses a comma seperated list of expressions.
@@ -463,7 +437,6 @@ public class ExpressionParser {
         }
     }
 
-
     /**
      * @return the descriptor represented by the getModel token or throws an exception if there isn't one.
      */
@@ -476,7 +449,6 @@ public class ExpressionParser {
         return descriptor;
     }
 
-
     /**
      * Expects the given token and then reads the next token.
      */
@@ -486,7 +458,6 @@ public class ExpressionParser {
         }
         nextToken();
     }
-
 
     private RestrictionType getRestrictionType() {
         return this.restrictionType;
@@ -498,6 +469,15 @@ public class ExpressionParser {
 
     private String getTokenString() {
         return this.lexer.getTokenString();
+    }
+
+    /**
+     * The type of restriction on parameters. It's either the case that the expression may only contain parameters in
+     * the given list, or may not contain parameters in the given list, or that there is no restribution--whatever
+     * parameters occur in the expression are OK.
+     */
+    public enum RestrictionType {
+        MAY_ONLY_CONTAIN, MAY_NOT_CONTAIN, NONE
     }
 }
 

@@ -63,112 +63,81 @@ import java.util.concurrent.*;
  */
 public final class SvarFges implements IGraphSearch, DagScorer {
 
+    final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
     /**
-     * Internal.
+     * The logger for this class. The config needs to be set.
      */
-    private enum Mode {
-        allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
-    }
-
+    private final TetradLogger logger = TetradLogger.getInstance();
+    /**
+     * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
+     */
+    private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
+    // The static ForkJoinPool instance.
+    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
+    private final int[] count = new int[1];
+    // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
+    // The ordering doesn't matter; it just has to be transitive.
+    int arrowIndex;
+    Set<Edge> removedEdges = new HashSet<>();
     /**
      * Specification of forbidden and required edges.
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * List of variables in the data set, in order.
      */
     private List<Node> variables;
-
     /**
      * The true graph, if known. If this is provided, asterisks will be printed out next to false positive added edges
      * (that is, edges added that aren't adjacencies in the true graph).
      */
     private Graph trueGraph;
-
     /**
      * An initial graph to start from.
      */
     private Graph externalGraph;
-
     /**
      * Elapsed time of the most recent search.
      */
     private long elapsedTime;
-
     /**
      * The totalScore for discrete searches.
      */
     private Score score;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-
-    /**
-     * The top n graphs found by the algorithm, where n is numCPDAGsToStore.
-     */
-    private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
-
     /**
      * The number of top CPDAGs to store.
      */
     private int numCPDAGsToStore;
-
     /**
      * True if verbose output should be printed.
      */
     private boolean verbose;
-
     // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
     private SortedSet<Arrow> sortedArrows;
-
     // Arrows added to sortedArrows for each <i, j>.
     private Map<OrderedPair<Node>, Set<Arrow>> lookupArrows;
-
     // A utility map to help with orientation.
     private Map<Node, Set<Node>> neighbors;
-
     // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
-
-    // The static ForkJoinPool instance.
-    private final ForkJoinPool pool = ForkJoinPoolInstance.getInstance().getPool();
-
     // A running tally of the total BIC totalScore.
     private double totalScore;
-
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
-
     // Where printed output is sent.
     private PrintStream out = System.out;
-
     // An initial adjacencies graph.
     private Graph adjacencies;
-
     // The graph being constructed.
     private Graph graph;
-
-    // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
-    // The ordering doesn't matter; it just has to be transitive.
-    int arrowIndex;
-
     // Internal.
     private Mode mode = Mode.heuristicSpeedup;
-
     /**
      * True if one-edge faithfulness is assumed. Speeds the algorithm up.
      */
     private boolean faithfulnessAssumed = false;
-
     // Bounds the indegree of the graph.
     private int maxIndegree = -1;
-
-    final int maxThreads = ForkJoinPoolInstance.getInstance().getPool().getParallelism();
-
-    private final int[] count = new int[1];
 
 
     //===========================CONSTRUCTORS=============================//
@@ -185,6 +154,20 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     //==========================PUBLIC METHODS==========================//
+
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+        return null;
+    }
 
     /**
      * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
@@ -348,17 +331,17 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
-     */
-    public void setOut(PrintStream out) {
-        this.out = out;
-    }
-
-    /**
      * @return the output stream that output (except for log output) should be sent to.
      */
     public PrintStream getOut() {
         return this.out;
+    }
+
+    /**
+     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     */
+    public void setOut(PrintStream out) {
+        this.out = out;
     }
 
     /**
@@ -389,6 +372,17 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     }
 
     /**
+     * For BIC totalScore, a multiplier on the penalty term. For continuous searches.
+     *
+     * @deprecated Use the setters on the individual scores instead.
+     */
+    public void setPenaltyDiscount(double penaltyDiscount) {
+        if (this.score instanceof HasPenaltyDiscount) {
+            ((HasPenaltyDiscount) this.score).setPenaltyDiscount(penaltyDiscount);
+        }
+    }
+
+    /**
      * @deprecated Use the setters on the individual scores instead.
      */
     public void setSamplePrior(double samplePrior) {
@@ -403,17 +397,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     public void setStructurePrior(double expectedNumParents) {
         if (this.score instanceof DiscreteScore) {
             ((DiscreteScore) this.score).setStructurePrior(expectedNumParents);
-        }
-    }
-
-    /**
-     * For BIC totalScore, a multiplier on the penalty term. For continuous searches.
-     *
-     * @deprecated Use the setters on the individual scores instead.
-     */
-    public void setPenaltyDiscount(double penaltyDiscount) {
-        if (this.score instanceof HasPenaltyDiscount) {
-            ((HasPenaltyDiscount) this.score).setPenaltyDiscount(penaltyDiscount);
         }
     }
 
@@ -436,13 +419,13 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         this.maxIndegree = maxIndegree;
     }
 
+    //===========================PRIVATE METHODS========================//
+
     public int getMinChunk(int n) {
         // The minimum number of operations to do before parallelizing.
         int minChunk = 100;
         return FastMath.max(n / this.maxThreads, minChunk);
     }
-
-    //===========================PRIVATE METHODS========================//
 
     //Sets the discrete scoring function to use.
     private void setScore(Score totalScore) {
@@ -459,71 +442,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         buildIndexing(totalScore.getVariables());
 
         this.maxIndegree = this.score.getMaxDegree();
-    }
-
-    private class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
-        private final int from;
-        private final int to;
-        private final List<Node> nodes;
-        private final Set<Node> emptySet;
-
-        public NodeTaskEmptyGraph(int from, int to, List<Node> nodes, Set<Node> emptySet) {
-            this.from = from;
-            this.to = to;
-            this.nodes = nodes;
-            this.emptySet = emptySet;
-        }
-
-        @Override
-        protected Boolean compute() {
-            for (int i = this.from; i < this.to; i++) {
-                if ((i + 1) % 1000 == 0) {
-                    SvarFges.this.count[0] += 1000;
-                    SvarFges.this.out.println("Initializing effect edges: " + (SvarFges.this.count[0]));
-                }
-
-                Node y = this.nodes.get(i);
-                SvarFges.this.neighbors.put(y, this.emptySet);
-
-                for (int j = i + 1; j < this.nodes.size(); j++) {
-                    if (Thread.currentThread().isInterrupted()) {
-                        break;
-                    }
-
-                    Node x = this.nodes.get(j);
-
-                    if (existsKnowledge()) {
-                        if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
-                            continue;
-                        }
-
-                        if (invalidSetByKnowledge(y, this.emptySet)) {
-                            continue;
-                        }
-                    }
-
-                    if (SvarFges.this.adjacencies != null && !SvarFges.this.adjacencies.isAdjacentTo(x, y)) {
-                        continue;
-                    }
-
-                    int child = SvarFges.this.hashIndices.get(y);
-                    int parent = SvarFges.this.hashIndices.get(x);
-                    double bump = SvarFges.this.score.localScoreDiff(parent, child);
-
-                    if (bump > 0) {
-                        Edge edge = Edges.undirectedEdge(x, y);
-                        SvarFges.this.effectEdgesGraph.addEdge(edge);
-                    }
-
-                    if (bump > 0.0) {
-                        addArrow(x, y, this.emptySet, this.emptySet, bump);
-                        addArrow(y, x, this.emptySet, this.emptySet, bump);
-                    }
-                }
-            }
-
-            return true;
-        }
     }
 
     private void initializeForwardEdgesFromEmptyGraph(List<Node> nodes) {
@@ -1227,73 +1145,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         }
     }
 
-    // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
-    // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
-    // For the forward direction, T neighbors are needed; for the backward direction, H neighbors are needed.
-    // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
-    // as the "bump".
-    private static class Arrow implements Comparable<Arrow> {
-        private final double bump;
-        private final Node a;
-        private final Node b;
-        private final Set<Node> hOrT;
-        private final Set<Node> naYX;
-        private final int index;
-
-        public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX, int index) {
-            this.bump = bump;
-            this.a = a;
-            this.b = b;
-            this.hOrT = hOrT;
-            this.naYX = naYX;
-            this.index = index;
-        }
-
-        public double getBump() {
-            return this.bump;
-        }
-
-        public Node getA() {
-            return this.a;
-        }
-
-        public Node getB() {
-            return this.b;
-        }
-
-        public Set<Node> getHOrT() {
-            return this.hOrT;
-        }
-
-        public Set<Node> getNaYX() {
-            return this.naYX;
-        }
-
-        // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
-        // to zero with an existing element, so for the cases where the comparison is to zero, i.e. have the same
-        // bump, we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
-        // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
-        // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
-        // not equal to zero by keeping a list. This last part is commented out by default.
-        public int compareTo(@NotNull Arrow arrow) {
-            int compare = Double.compare(arrow.getBump(), getBump());
-
-            if (compare == 0) {
-                return Integer.compare(getIndex(), arrow.getIndex());
-            }
-
-            return compare;
-        }
-
-        public String toString() {
-            return "Arrow<" + this.a + "->" + this.b + " bump = " + this.bump + " t/h = " + this.hOrT + " naYX = " + this.naYX + ">";
-        }
-
-        public int getIndex() {
-            return this.index;
-        }
-    }
-
     // Get all adj that are connected to Y by an undirected edge and not adjacent to X.
     private Set<Node> getTNeighbors(Node x, Node y) {
         List<Edge> yEdges = this.graph.getEdges(y);
@@ -1412,8 +1263,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
         return true;
     }
-
-    Set<Edge> removedEdges = new HashSet<>();
 
     // Do an actual deletion (Definition 13 from Chickering, 2002).
     private boolean delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX) {
@@ -1681,20 +1530,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return false;
     }
 
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-        return null;
-    }
-
     // Runs Meek rules on just the changed adj.
     private Set<Node> meekOrientRestricted(Knowledge knowledge) {
         MeekRules rules = new MeekRules();
@@ -1738,8 +1573,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
         arrows.add(arrow);
     }
-
-    //===========================SCORING METHODS===================//
 
     /**
      * Scores the given DAG, up to a constant.
@@ -1786,6 +1619,8 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     private List<Node> getVariables() {
         return this.variables;
     }
+
+    //===========================SCORING METHODS===================//
 
     // Stores the graph, if its totalScore knocks out one of the top ones.
     private void storeGraph() {
@@ -1910,6 +1745,145 @@ public final class SvarFges implements IGraphSearch, DagScorer {
             Edge oldxy = this.graph.getEdge(x1, y1);
             this.graph.removeEdge(oldxy);
             this.removedEdges.add(Edges.undirectedEdge(x1, y1));
+        }
+    }
+
+    /**
+     * Internal.
+     */
+    private enum Mode {
+        allowUnfaithfulness, heuristicSpeedup, coverNoncolliders
+    }
+
+    // Basic data structure for an arrow a->b considered for addition or removal from the graph, together with
+    // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
+    // For the forward direction, T neighbors are needed; for the backward direction, H neighbors are needed.
+    // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
+    // as the "bump".
+    private static class Arrow implements Comparable<Arrow> {
+        private final double bump;
+        private final Node a;
+        private final Node b;
+        private final Set<Node> hOrT;
+        private final Set<Node> naYX;
+        private final int index;
+
+        public Arrow(double bump, Node a, Node b, Set<Node> hOrT, Set<Node> naYX, int index) {
+            this.bump = bump;
+            this.a = a;
+            this.b = b;
+            this.hOrT = hOrT;
+            this.naYX = naYX;
+            this.index = index;
+        }
+
+        public double getBump() {
+            return this.bump;
+        }
+
+        public Node getA() {
+            return this.a;
+        }
+
+        public Node getB() {
+            return this.b;
+        }
+
+        public Set<Node> getHOrT() {
+            return this.hOrT;
+        }
+
+        public Set<Node> getNaYX() {
+            return this.naYX;
+        }
+
+        // Sorting by bump, high to low. The problem is the SortedSet contains won't add a new element if it compares
+        // to zero with an existing element, so for the cases where the comparison is to zero, i.e. have the same
+        // bump, we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
+        // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
+        // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
+        // not equal to zero by keeping a list. This last part is commented out by default.
+        public int compareTo(@NotNull Arrow arrow) {
+            int compare = Double.compare(arrow.getBump(), getBump());
+
+            if (compare == 0) {
+                return Integer.compare(getIndex(), arrow.getIndex());
+            }
+
+            return compare;
+        }
+
+        public String toString() {
+            return "Arrow<" + this.a + "->" + this.b + " bump = " + this.bump + " t/h = " + this.hOrT + " naYX = " + this.naYX + ">";
+        }
+
+        public int getIndex() {
+            return this.index;
+        }
+    }
+
+    private class NodeTaskEmptyGraph extends RecursiveTask<Boolean> {
+        private final int from;
+        private final int to;
+        private final List<Node> nodes;
+        private final Set<Node> emptySet;
+
+        public NodeTaskEmptyGraph(int from, int to, List<Node> nodes, Set<Node> emptySet) {
+            this.from = from;
+            this.to = to;
+            this.nodes = nodes;
+            this.emptySet = emptySet;
+        }
+
+        @Override
+        protected Boolean compute() {
+            for (int i = this.from; i < this.to; i++) {
+                if ((i + 1) % 1000 == 0) {
+                    SvarFges.this.count[0] += 1000;
+                    SvarFges.this.out.println("Initializing effect edges: " + (SvarFges.this.count[0]));
+                }
+
+                Node y = this.nodes.get(i);
+                SvarFges.this.neighbors.put(y, this.emptySet);
+
+                for (int j = i + 1; j < this.nodes.size(); j++) {
+                    if (Thread.currentThread().isInterrupted()) {
+                        break;
+                    }
+
+                    Node x = this.nodes.get(j);
+
+                    if (existsKnowledge()) {
+                        if (getKnowledge().isForbidden(x.getName(), y.getName()) && getKnowledge().isForbidden(y.getName(), x.getName())) {
+                            continue;
+                        }
+
+                        if (invalidSetByKnowledge(y, this.emptySet)) {
+                            continue;
+                        }
+                    }
+
+                    if (SvarFges.this.adjacencies != null && !SvarFges.this.adjacencies.isAdjacentTo(x, y)) {
+                        continue;
+                    }
+
+                    int child = SvarFges.this.hashIndices.get(y);
+                    int parent = SvarFges.this.hashIndices.get(x);
+                    double bump = SvarFges.this.score.localScoreDiff(parent, child);
+
+                    if (bump > 0) {
+                        Edge edge = Edges.undirectedEdge(x, y);
+                        SvarFges.this.effectEdgesGraph.addEdge(edge);
+                    }
+
+                    if (bump > 0.0) {
+                        addArrow(x, y, this.emptySet, this.emptySet, bump);
+                        addArrow(y, x, this.emptySet, this.emptySet, bump);
+                    }
+                }
+            }
+
+            return true;
         }
     }
 }

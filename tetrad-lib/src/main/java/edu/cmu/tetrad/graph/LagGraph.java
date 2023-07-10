@@ -32,19 +32,23 @@ import java.util.*;
  */
 public class LagGraph implements Graph {
     static final long serialVersionUID = 23L;
-
-    private Dag graph = new Dag();
     private final List<String> variables = new ArrayList<>();
     private final Map<String, List<Node>> laggedVariables = new HashMap<>();
-
     private final Map<String, Object> attributes = new HashMap<>();
-
+    private Dag graph = new Dag();
     private Set<Triple> underLineTriples = new HashSet<>();
     private Set<Triple> dottedUnderLineTriples = new HashSet<>();
     private Set<Triple> ambiguousTriples = new HashSet<>();
 
 
     private Paths paths;
+
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     */
+    public static LagGraph serializableInstance() {
+        return new LagGraph();
+    }
 
     // New methods.
     public boolean addVariable(String variable) {
@@ -70,13 +74,6 @@ public class LagGraph implements Graph {
         }
 
         return true;
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     */
-    public static LagGraph serializableInstance() {
-        return new LagGraph();
     }
 
     // Modified methods from graph.
@@ -185,6 +182,11 @@ public class LagGraph implements Graph {
 
     public List<Node> getNodes() {
         return getGraph().getNodes();
+    }
+
+    @Override
+    public void setNodes(List<Node> nodes) {
+        this.graph.setNodes(nodes);
     }
 
     public List<String> getNodeNames() {
@@ -307,11 +309,6 @@ public class LagGraph implements Graph {
     @Override
     public Set<Node> getSepset(Node n1, Node n2) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setNodes(List<Node> nodes) {
-        this.graph.setNodes(nodes);
     }
 
     private Dag getGraph() {

@@ -68,16 +68,6 @@ public class Bes {
     }
 
     /**
-     * Sets the knowledge for the search.
-     *
-     * @param knowledge This knowledge.
-     * @see Knowledge
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-    /**
      * Sets the depth for the search, which is the maximum number of variables conditioned on.
      *
      * @param depth This maximum; for unlimited depth use -1; otherwise, give a nonzero integer.
@@ -151,6 +141,16 @@ public class Bes {
 
     private Knowledge getKnowledge() {
         return knowledge;
+    }
+
+    /**
+     * Sets the knowledge for the search.
+     *
+     * @param knowledge This knowledge.
+     * @see Knowledge
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
     }
 
     private void delete(Node x, Node y, Set<Node> H, double bump, Set<Node> naYX, Graph graph) {
@@ -313,6 +313,7 @@ public class Bes {
                                     int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack, Map<Edge, ArrowConfigBackward> arrowsMapBackward) {
 
         class BackwardTask extends RecursiveTask<Boolean> {
+            final Map<Edge, ArrowConfigBackward> arrowsMapBackward;
             private final Node r;
             private final List<Node> adj;
             private final Map<Node, Integer> hashIndices;
@@ -320,7 +321,6 @@ public class Bes {
             private final int from;
             private final int to;
             private final SortedSet<Arrow> sortedArrowsBack;
-            final Map<Edge, ArrowConfigBackward> arrowsMapBackward;
 
             private BackwardTask(Node r, List<Node> adj, int chunk, int from, int to, Map<Node, Integer> hashIndices, SortedSet<Arrow> sortedArrowsBack, Map<Edge, ArrowConfigBackward> arrowsMapBackward) {
                 this.adj = adj;

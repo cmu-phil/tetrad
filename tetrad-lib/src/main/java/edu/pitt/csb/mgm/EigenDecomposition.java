@@ -63,6 +63,10 @@ public class EigenDecomposition {
      */
     private static final double EPSILON = 1e-12;
     /**
+     * Whether the matrix is symmetric.
+     */
+    private final boolean isSymmetric;
+    /**
      * Main diagonal of the tridiagonal matrix.
      */
     private double[] main;
@@ -98,10 +102,6 @@ public class EigenDecomposition {
      * Cached value of Vt.
      */
     private RealMatrix cachedVt;
-    /**
-     * Whether the matrix is symmetric.
-     */
-    private final boolean isSymmetric;
 
     /**
      * Calculates the eigen decomposition of the given real matrix.
@@ -380,176 +380,6 @@ public class EigenDecomposition {
             throw new MathUnsupportedOperationException();
         }
         return new Solver(this.realEigenvalues, this.imagEigenvalues, this.eigenvectors);
-    }
-
-    /**
-     * Specialized solver.
-     */
-    private static class Solver implements DecompositionSolver {
-        /**
-         * Real part of the realEigenvalues.
-         */
-        private final double[] realEigenvalues;
-        /**
-         * Imaginary part of the realEigenvalues.
-         */
-        private final double[] imagEigenvalues;
-        /**
-         * Eigenvectors.
-         */
-        private final ArrayRealVector[] eigenvectors;
-
-        /**
-         * Builds a solver from decomposed matrix.
-         *
-         * @param realEigenvalues Real parts of the eigenvalues.
-         * @param imagEigenvalues Imaginary parts of the eigenvalues.
-         * @param eigenvectors    Eigenvectors.
-         */
-        private Solver(double[] realEigenvalues,
-                       double[] imagEigenvalues,
-                       ArrayRealVector[] eigenvectors) {
-            this.realEigenvalues = realEigenvalues;
-            this.imagEigenvalues = imagEigenvalues;
-            this.eigenvectors = eigenvectors;
-        }
-
-        /**
-         * Solves the linear equation A &times; X = B for symmetric matrices A.
-         * <p>
-         * This method only finds exact linear solutions, i.e. solutions for which ||A &times; X - B|| is exactly 0.
-         *
-         * @param b Right-hand side of the equation A &times; X = B.
-         * @return a Vector X that minimizes the two norm of A &times; X - B.
-         * @throws DimensionMismatchException if the matrices dimensions do not match.
-         * @throws SingularMatrixException    if the decomposed matrix is singular.
-         */
-        public RealVector solve(RealVector b) {
-            if (!isNonSingular()) {
-                throw new SingularMatrixException();
-            }
-
-            int m = this.realEigenvalues.length;
-            if (b.getDimension() != m) {
-                throw new DimensionMismatchException(b.getDimension(), m);
-            }
-
-            double[] bp = new double[m];
-            for (int i = 0; i < m; ++i) {
-                ArrayRealVector v = this.eigenvectors[i];
-                double[] vData = v.getDataRef();
-                double s = v.dotProduct(b) / this.realEigenvalues[i];
-                for (int j = 0; j < m; ++j) {
-                    bp[j] += s * vData[j];
-                }
-            }
-
-            return new ArrayRealVector(bp, false);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public RealMatrix solve(RealMatrix b) {
-
-            if (!isNonSingular()) {
-                throw new SingularMatrixException();
-            }
-
-            int m = this.realEigenvalues.length;
-            if (b.getRowDimension() != m) {
-                throw new DimensionMismatchException(b.getRowDimension(), m);
-            }
-
-            int nColB = b.getColumnDimension();
-            double[][] bp = new double[m][nColB];
-            double[] tmpCol = new double[m];
-            for (int k = 0; k < nColB; ++k) {
-                for (int i = 0; i < m; ++i) {
-                    tmpCol[i] = b.getEntry(i, k);
-                    bp[i][k] = 0;
-                }
-                for (int i = 0; i < m; ++i) {
-                    ArrayRealVector v = this.eigenvectors[i];
-                    double[] vData = v.getDataRef();
-                    double s = 0;
-                    for (int j = 0; j < m; ++j) {
-                        s += v.getEntry(j) * tmpCol[j];
-                    }
-                    s /= this.realEigenvalues[i];
-                    for (int j = 0; j < m; ++j) {
-                        bp[j][k] += s * vData[j];
-                    }
-                }
-            }
-
-            return new Array2DRowRealMatrix(bp, false);
-
-        }
-
-        /**
-         * Checks whether the decomposed matrix is non-singular.
-         *
-         * @return true if the decomposed matrix is non-singular.
-         */
-        public boolean isNonSingular() {
-            double largestEigenvalueNorm = 0.0;
-            // Looping over all values (in case they are not sorted in decreasing
-            // order of their norm).
-            for (int i = 0; i < this.realEigenvalues.length; ++i) {
-                largestEigenvalueNorm = FastMath.max(largestEigenvalueNorm, eigenvalueNorm(i));
-            }
-            // Corner case: zero matrix, all exactly 0 eigenvalues
-            if (largestEigenvalueNorm == 0.0) {
-                return false;
-            }
-            for (int i = 0; i < this.realEigenvalues.length; ++i) {
-                // Looking for eigenvalues that are 0, where we consider anything much much smaller
-                // than the largest eigenvalue to be effectively 0.
-                if (Precision.equals(eigenvalueNorm(i) / largestEigenvalueNorm, 0, EigenDecomposition.EPSILON)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        /**
-         * @param i which eigenvalue to find the norm of
-         * @return the norm of ith (complex) eigenvalue.
-         */
-        private double eigenvalueNorm(int i) {
-            double re = this.realEigenvalues[i];
-            double im = this.imagEigenvalues[i];
-            return FastMath.sqrt(re * re + im * im);
-        }
-
-        /**
-         * Get the inverse of the decomposed matrix.
-         *
-         * @return the inverse matrix.
-         * @throws SingularMatrixException if the decomposed matrix is singular.
-         */
-        public RealMatrix getInverse() {
-            if (!isNonSingular()) {
-                throw new SingularMatrixException();
-            }
-
-            int m = this.realEigenvalues.length;
-            double[][] invData = new double[m][m];
-
-            for (int i = 0; i < m; ++i) {
-                double[] invI = invData[i];
-                for (int j = 0; j < m; ++j) {
-                    double invIJ = 0;
-                    for (int k = 0; k < m; ++k) {
-                        double[] vK = this.eigenvectors[k].getDataRef();
-                        invIJ += vK[i] * vK[j] / this.realEigenvalues[k];
-                    }
-                    invI[j] = invIJ;
-                }
-            }
-            return MatrixUtils.createRealMatrix(invData);
-        }
     }
 
     /**
@@ -949,6 +779,176 @@ public class EigenDecomposition {
                 tmp[j] = matrixP[j][i];
             }
             this.eigenvectors[i] = new ArrayRealVector(tmp);
+        }
+    }
+
+    /**
+     * Specialized solver.
+     */
+    private static class Solver implements DecompositionSolver {
+        /**
+         * Real part of the realEigenvalues.
+         */
+        private final double[] realEigenvalues;
+        /**
+         * Imaginary part of the realEigenvalues.
+         */
+        private final double[] imagEigenvalues;
+        /**
+         * Eigenvectors.
+         */
+        private final ArrayRealVector[] eigenvectors;
+
+        /**
+         * Builds a solver from decomposed matrix.
+         *
+         * @param realEigenvalues Real parts of the eigenvalues.
+         * @param imagEigenvalues Imaginary parts of the eigenvalues.
+         * @param eigenvectors    Eigenvectors.
+         */
+        private Solver(double[] realEigenvalues,
+                       double[] imagEigenvalues,
+                       ArrayRealVector[] eigenvectors) {
+            this.realEigenvalues = realEigenvalues;
+            this.imagEigenvalues = imagEigenvalues;
+            this.eigenvectors = eigenvectors;
+        }
+
+        /**
+         * Solves the linear equation A &times; X = B for symmetric matrices A.
+         * <p>
+         * This method only finds exact linear solutions, i.e. solutions for which ||A &times; X - B|| is exactly 0.
+         *
+         * @param b Right-hand side of the equation A &times; X = B.
+         * @return a Vector X that minimizes the two norm of A &times; X - B.
+         * @throws DimensionMismatchException if the matrices dimensions do not match.
+         * @throws SingularMatrixException    if the decomposed matrix is singular.
+         */
+        public RealVector solve(RealVector b) {
+            if (!isNonSingular()) {
+                throw new SingularMatrixException();
+            }
+
+            int m = this.realEigenvalues.length;
+            if (b.getDimension() != m) {
+                throw new DimensionMismatchException(b.getDimension(), m);
+            }
+
+            double[] bp = new double[m];
+            for (int i = 0; i < m; ++i) {
+                ArrayRealVector v = this.eigenvectors[i];
+                double[] vData = v.getDataRef();
+                double s = v.dotProduct(b) / this.realEigenvalues[i];
+                for (int j = 0; j < m; ++j) {
+                    bp[j] += s * vData[j];
+                }
+            }
+
+            return new ArrayRealVector(bp, false);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public RealMatrix solve(RealMatrix b) {
+
+            if (!isNonSingular()) {
+                throw new SingularMatrixException();
+            }
+
+            int m = this.realEigenvalues.length;
+            if (b.getRowDimension() != m) {
+                throw new DimensionMismatchException(b.getRowDimension(), m);
+            }
+
+            int nColB = b.getColumnDimension();
+            double[][] bp = new double[m][nColB];
+            double[] tmpCol = new double[m];
+            for (int k = 0; k < nColB; ++k) {
+                for (int i = 0; i < m; ++i) {
+                    tmpCol[i] = b.getEntry(i, k);
+                    bp[i][k] = 0;
+                }
+                for (int i = 0; i < m; ++i) {
+                    ArrayRealVector v = this.eigenvectors[i];
+                    double[] vData = v.getDataRef();
+                    double s = 0;
+                    for (int j = 0; j < m; ++j) {
+                        s += v.getEntry(j) * tmpCol[j];
+                    }
+                    s /= this.realEigenvalues[i];
+                    for (int j = 0; j < m; ++j) {
+                        bp[j][k] += s * vData[j];
+                    }
+                }
+            }
+
+            return new Array2DRowRealMatrix(bp, false);
+
+        }
+
+        /**
+         * Checks whether the decomposed matrix is non-singular.
+         *
+         * @return true if the decomposed matrix is non-singular.
+         */
+        public boolean isNonSingular() {
+            double largestEigenvalueNorm = 0.0;
+            // Looping over all values (in case they are not sorted in decreasing
+            // order of their norm).
+            for (int i = 0; i < this.realEigenvalues.length; ++i) {
+                largestEigenvalueNorm = FastMath.max(largestEigenvalueNorm, eigenvalueNorm(i));
+            }
+            // Corner case: zero matrix, all exactly 0 eigenvalues
+            if (largestEigenvalueNorm == 0.0) {
+                return false;
+            }
+            for (int i = 0; i < this.realEigenvalues.length; ++i) {
+                // Looking for eigenvalues that are 0, where we consider anything much much smaller
+                // than the largest eigenvalue to be effectively 0.
+                if (Precision.equals(eigenvalueNorm(i) / largestEigenvalueNorm, 0, EigenDecomposition.EPSILON)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /**
+         * @param i which eigenvalue to find the norm of
+         * @return the norm of ith (complex) eigenvalue.
+         */
+        private double eigenvalueNorm(int i) {
+            double re = this.realEigenvalues[i];
+            double im = this.imagEigenvalues[i];
+            return FastMath.sqrt(re * re + im * im);
+        }
+
+        /**
+         * Get the inverse of the decomposed matrix.
+         *
+         * @return the inverse matrix.
+         * @throws SingularMatrixException if the decomposed matrix is singular.
+         */
+        public RealMatrix getInverse() {
+            if (!isNonSingular()) {
+                throw new SingularMatrixException();
+            }
+
+            int m = this.realEigenvalues.length;
+            double[][] invData = new double[m][m];
+
+            for (int i = 0; i < m; ++i) {
+                double[] invI = invData[i];
+                for (int j = 0; j < m; ++j) {
+                    double invIJ = 0;
+                    for (int k = 0; k < m; ++k) {
+                        double[] vK = this.eigenvectors[k].getDataRef();
+                        invIJ += vK[i] * vK[j] / this.realEigenvalues[k];
+                    }
+                    invI[j] = invIJ;
+                }
+            }
+            return MatrixUtils.createRealMatrix(invData);
         }
     }
 }

@@ -29,9 +29,8 @@ import edu.cmu.tetrad.session.SessionModel;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
- * Specifies the methods that all algorithm runners must implement. All
- * algorithm runners must know what their parameters are, must know what their
- * source graph is, and must know what their result graph is (if it has been
+ * Specifies the methods that all algorithm runners must implement. All algorithm runners must know what their
+ * parameters are, must know what their source graph is, and must know what their result graph is (if it has been
  * calculated).
  *
  * @author josephramsey
@@ -39,8 +38,7 @@ import edu.cmu.tetrad.util.Parameters;
 public interface MimRunner extends SessionModel, Executable {
 
     /**
-     * @return the data used to execute this algorithm. Might possibly be a
-     * graph.
+     * @return the data used to execute this algorithm. Might possibly be a graph.
      */
     DataModel getData();
 
@@ -50,26 +48,23 @@ public interface MimRunner extends SessionModel, Executable {
     Parameters getParams();
 
     /**
-     * @return the graph from which data was originally generated, if such a
-     * graph is available. Otherwise, returns null.
+     * @return the graph from which data was originally generated, if such a graph is available. Otherwise, returns
+     * null.
      */
     Graph getSourceGraph();
 
     /**
-     * @return the graph that results from executing the algorithm, if the
-     * algorithm has been successfully executed.
+     * @return the graph that results from executing the algorithm, if the algorithm has been successfully executed.
      */
     Graph getResultGraph();
 
     /**
-     * @return the clusters that resulted from executing the algorithm, if the
-     * algorithm was successfully executed.
+     * @return the clusters that resulted from executing the algorithm, if the algorithm was successfully executed.
      */
     Clusters getClusters();
 
     /**
-     * @return the resulting strucure graph (that is, graph over latents only),
-     * if there is one; otherwise, null.
+     * @return the resulting strucure graph (that is, graph over latents only), if there is one; otherwise, null.
      */
     Graph getStructureGraph();
 

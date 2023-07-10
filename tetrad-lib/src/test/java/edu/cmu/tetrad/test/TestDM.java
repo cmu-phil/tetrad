@@ -32,7 +32,6 @@ import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.*;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
 

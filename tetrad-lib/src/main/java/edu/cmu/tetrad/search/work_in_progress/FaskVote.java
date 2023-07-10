@@ -31,8 +31,8 @@ import static edu.cmu.tetrad.util.Params.*;
 public class FaskVote {
     private final IndependenceWrapper test;
     private final ScoreWrapper score;
-    private Knowledge knowledge = new Knowledge();
     private final List<DataSet> dataSets;
+    private Knowledge knowledge = new Knowledge();
 
     /**
      * Constructor.

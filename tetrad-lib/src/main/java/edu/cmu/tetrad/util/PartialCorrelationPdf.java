@@ -47,20 +47,18 @@ public class PartialCorrelationPdf implements Function, TetradSerializable {
      * @serial
      */
     private final int k;
-
-    /**
-     * The aggregate value of the constant expression in the distribution function for zero partial correlation.
-     *
-     * @serial
-     */
-    private double constant = Double.NaN;
-
     /**
      * The power to which the variable expression is raised in the distribution function for zero partial correlation.
      *
      * @serial
      */
     private final double outsideExp;
+    /**
+     * The aggregate value of the constant expression in the distribution function for zero partial correlation.
+     *
+     * @serial
+     */
+    private double constant = Double.NaN;
 
     //===========================CONSTRUCTORS========================//
 

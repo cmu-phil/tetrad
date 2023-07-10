@@ -63,29 +63,22 @@ import static edu.cmu.tetrad.graph.GraphUtils.gfciExtraEdgeRemovalStep;
  */
 public final class BFci implements IGraphSearch {
 
-    // The background knowledge.
-    private Knowledge knowledge = new Knowledge();
-
     // The conditional independence test.
     private final IndependenceTest independenceTest;
-
-    // Flag for complete rule set, true if it should use complete rule set, false otherwise.
-    private boolean completeRuleSetUsed = true;
-
-    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-    private int maxPathLength = -1;
-
     // The logger to use.
     private final TetradLogger logger = TetradLogger.getInstance();
-
-    // True iff verbose output should be printed.
-    private boolean verbose;
-
-    // The sample size.
-    int sampleSize;
-
     // The score.
     private final Score score;
+    // The sample size.
+    int sampleSize;
+    // The background knowledge.
+    private Knowledge knowledge = new Knowledge();
+    // Flag for complete rule set, true if it should use complete rule set, false otherwise.
+    private boolean completeRuleSetUsed = true;
+    // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+    private int maxPathLength = -1;
+    // True iff verbose output should be printed.
+    private boolean verbose;
     private int numStarts = 1;
     private int depth = -1;
     private boolean doDiscriminatingPathRule = true;

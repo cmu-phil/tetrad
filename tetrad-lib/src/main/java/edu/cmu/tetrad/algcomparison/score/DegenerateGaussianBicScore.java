@@ -56,7 +56,7 @@ public class DegenerateGaussianBicScore implements ScoreWrapper {
 //        DegenerateGaussianScoreOld degenerateGaussianScore = new DegenerateGaussianScoreOld(DataUtils.getMixedDataSet(dataSet));
         DegenerateGaussianScore degenerateGaussianScore = new DegenerateGaussianScore(SimpleDataLoader.getMixedDataSet(dataSet));
         degenerateGaussianScore.setPenaltyDiscount(parameters.getDouble("penaltyDiscount"));
-            return degenerateGaussianScore;
+        return degenerateGaussianScore;
     }
 
     @Override

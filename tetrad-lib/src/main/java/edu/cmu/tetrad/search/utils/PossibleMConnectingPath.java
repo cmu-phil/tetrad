@@ -60,23 +60,6 @@ public class PossibleMConnectingPath {
 
     //========================= Public methods ======================//
 
-    public Graph getPag() {
-        return this.pag;
-    }
-
-    public Set<Node> getConditions() {
-        return Collections.unmodifiableSet(this.conditions);
-    }
-
-    public List<Node> getPath() {
-        return Collections.unmodifiableList(this.path);
-    }
-
-    public String toString() {
-        return this.path.toString();
-    }
-
-
     /**
      * Finds all possible D-connection undirectedPaths as sub-graphs of the pag given at construction time from x to y
      * given z.
@@ -131,18 +114,6 @@ public class PossibleMConnectingPath {
         return connectingPaths;
     }
 
-
-    public boolean equals(Object o) {
-        if (!(o instanceof PossibleMConnectingPath)) {
-            return false;
-        }
-        PossibleMConnectingPath p = (PossibleMConnectingPath) o;
-        return p.pag.equals(this.pag) && p.path.equals(this.path) && p.conditions.equals(this.conditions);
-    }
-
-    //================================== Private methods =======================//
-
-
     private static Set<Node> getConditioningClosure(Graph pag, Collection<Node> z) {
         Set<Node> closure = new HashSet<>();
         for (Node node : z) {
@@ -150,7 +121,6 @@ public class PossibleMConnectingPath {
         }
         return closure;
     }
-
 
     /**
      * Find the closure of a conditioning set of nodes under the parent relation.
@@ -173,7 +143,6 @@ public class PossibleMConnectingPath {
             }
         }
     }
-
 
     /**
      * Recursive methods that finds all the undirectedPaths.
@@ -272,6 +241,32 @@ public class PossibleMConnectingPath {
         }
         edge = pag.getEdge(y, z);
         return edge.getEndpoint1() == Endpoint.CIRCLE && edge.getEndpoint2() == Endpoint.CIRCLE;
+    }
+
+    //================================== Private methods =======================//
+
+    public Graph getPag() {
+        return this.pag;
+    }
+
+    public Set<Node> getConditions() {
+        return Collections.unmodifiableSet(this.conditions);
+    }
+
+    public List<Node> getPath() {
+        return Collections.unmodifiableList(this.path);
+    }
+
+    public String toString() {
+        return this.path.toString();
+    }
+
+    public boolean equals(Object o) {
+        if (!(o instanceof PossibleMConnectingPath)) {
+            return false;
+        }
+        PossibleMConnectingPath p = (PossibleMConnectingPath) o;
+        return p.pag.equals(this.pag) && p.path.equals(this.path) && p.conditions.equals(this.conditions);
     }
 }
 

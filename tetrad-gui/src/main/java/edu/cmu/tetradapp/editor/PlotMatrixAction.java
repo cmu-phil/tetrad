@@ -45,8 +45,7 @@ class PlotMatrixAction extends AbstractAction {
 
 
     /**
-     * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code>
-     * that It's attached to.
+     * Constructs the <code>QQPlotAction</code> given the <code>DataEditor</code> that It's attached to.
      */
     public PlotMatrixAction(DataEditor editor) {
         super("Plot Matrix...");

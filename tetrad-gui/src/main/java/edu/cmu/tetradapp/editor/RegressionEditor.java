@@ -38,35 +38,31 @@ import javax.swing.table.TableModel;
 import java.awt.*;
 
 /**
- * Allows the user to execute a multiple linear regression in the GUI. Contains
- * a panel that lets the user specify a target variable and a list of continuous
- * regressors, plus a tabbed pane that includes (a) a display to show the result
- * of the regression and (b) a graph workbench to show the graph of the target
- * with significant regressors from the regression as parents.
+ * Allows the user to execute a multiple linear regression in the GUI. Contains a panel that lets the user specify a
+ * target variable and a list of continuous regressors, plus a tabbed pane that includes (a) a display to show the
+ * result of the regression and (b) a graph workbench to show the graph of the target with significant regressors from
+ * the regression as parents.
  *
  * @author Tyler Gibosn
  * @author Aaron Powers
  * @author josephramsey
- * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM
- * Bayes estimator
+ * @author Frank Wimberly - adapted for EM Bayes estimator and Strucural EM Bayes estimator
  */
 public class RegressionEditor extends JPanel {
 
     /**
-     * The workbench used to display the graph of significant regression into
-     * the target.
+     * The workbench used to display the graph of significant regression into the target.
      */
     private final GraphWorkbench workbench;
 
     /**
-     * A large text area into which the (String) output of the regression result
-     * is dumped. (This is what needs to change.)
+     * A large text area into which the (String) output of the regression result is dumped. (This is what needs to
+     * change.)
      */
     private final JTextArea reportText;
 
     /**
-     * Presents the same information in reportText as a text preamble with a
-     * table of coefficients etc.
+     * Presents the same information in reportText as a text preamble with a table of coefficients etc.
      */
     private final JComponent textWithTable = TextWithTable.emptyCompoenent();
 
@@ -76,8 +72,7 @@ public class RegressionEditor extends JPanel {
     private final RegressionRunner runner;
 
     /**
-     * Constructs a regression editor. A regression runner is required, since
-     * that's what does the actual regression.
+     * Constructs a regression editor. A regression runner is required, since that's what does the actual regression.
      *
      * @throws NullPointerException if <code>regressionRunner</code> is null.
      */
@@ -202,8 +197,8 @@ public class RegressionEditor extends JPanel {
     }
 
     /**
-     * Puts the output of getReport() into a component with preamble in a
-     * textarea and the rest in a JTable backed by the TextTable. The
+     * Puts the output of getReport() into a component with preamble in a textarea and the rest in a JTable backed by
+     * the TextTable. The
      * <code>TextTable.emptyComponent</code> is just a white JPanel, for initial
      * use. After that, call <code>TextTable.component</code>.
      *

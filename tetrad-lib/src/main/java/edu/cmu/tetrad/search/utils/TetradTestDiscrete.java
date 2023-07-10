@@ -46,33 +46,8 @@ import java.util.List;
  */
 
 public final class TetradTestDiscrete implements TetradTest {
-    DataSet dataSet;
-    //    int rawdata[][];
-    int[][][][] counts; //bivariate coefs only
-    int[][] values;
-    int[] valueIndices;
-    private double[] prob;
-    private double tempProb;
-    private double sig1;
-    private double sig2;
-    private double sig3;
-    private double sig;
-    private boolean[] bvalues;
-    double[][] thresholds;
-    int[] indices;
-    int[][][][] currentCounts;
-    int currentVar1, currentVar2;
-    double[][] currentFiBuffer;
-    double[][] currentPi;
-    double currentRho;
-    double[] rhoGrid;
-    double[][] polyCorr;
-
     private static final int MAX_VALUES = 50;
     private static final int RHO_GRID_SIZE = 1000;
-
-    public boolean verbose;
-
     private static final double[] GHY = {5.55503518732646782452296868771,
             4.77399234341121942970150957712, 4.12199554749184002081690067728,
             3.53197287713767773917138228262, 2.97999120770459800253772781753,
@@ -85,16 +60,36 @@ public final class TetradTestDiscrete implements TetradTest {
             -1.94496294918625384190191671547, -1.44893425065073196265729314868,
             -0.961499634418369064279422271352,
             -0.479450707079107576294598103513};
-
+    public boolean verbose;
+    DataSet dataSet;
+    //    int rawdata[][];
+    int[][][][] counts; //bivariate coefs only
+    int[][] values;
+    int[] valueIndices;
+    double[][] thresholds;
+    int[] indices;
+    int[][][][] currentCounts;
+    int currentVar1, currentVar2;
+    double[][] currentFiBuffer;
+    double[][] currentPi;
+    double currentRho;
+    double[] rhoGrid;
+    double[][] polyCorr;
     /**
      * @serial
      */
     int[][][][] oneFactor4Tests;
-
     /**
      * @serial
      */
     int[][][][] twoFactor4Tests;
+    private double[] prob;
+    private double tempProb;
+    private double sig1;
+    private double sig2;
+    private double sig3;
+    private double sig;
+    private boolean[] bvalues;
 
     public TetradTestDiscrete(DataSet dataSet, double sig) {
         this.dataSet = dataSet;

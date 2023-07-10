@@ -45,6 +45,17 @@ public class TestRevealEvaluator extends TestCase {
     }
 
     /**
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
+     */
+    public static Test suite() {
+
+        // Edit the name of the class in the parens to match the name
+        // of this class.
+        return new TestSuite(TestRevealEvaluator.class);
+    }
+
+    /**
      * Tests whether the calculations in Liang, Figure 6 come out to the correct values.
      */
     public void testLiangFigure6() {
@@ -165,17 +176,6 @@ public class TestRevealEvaluator extends TestCase {
         TestCase.assertEquals(1.0, rmcpabc, TestRevealEvaluator.TOLERANCE);
         System.out.println("M(Cp, [A,B,C]) = " + rmcpabc); //Should be 1.0
 
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestRevealEvaluator.class);
     }
 }
 

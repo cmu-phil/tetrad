@@ -31,13 +31,7 @@ import java.util.Arrays;
  */
 public class BCCausalInference {
 
-    public enum OP {
-        DEPENDENT,
-        INDEPENDENT
-    }
-
     private static final double PESS_VALUE = 1.0;
-
     private final int numberOfNodes;
     private final int numberOfCases;
     private final int maximumNodes;
@@ -46,12 +40,9 @@ public class BCCausalInference {
     private final int maximumParents;
     private final int maximumCells;
     private final double[] logFactorial;
-
     private final int scoreFn;  // score function
-
     private final int[] nodeDimension;
     private final int[][] cases;
-
     public BCCausalInference(int[] nodeDimension, int[][] cases) {
         this.nodeDimension = nodeDimension;
         this.cases = cases;
@@ -64,6 +55,27 @@ public class BCCausalInference {
         this.maximumCells = this.maximumParents * this.maximumValues * this.maximumValues * this.maximumCases;
         this.logFactorial = computeLogFactorial(this.maximumCases, this.maximumValues);
         this.scoreFn = 1;  // right now we just fixed it to 1
+    }
+
+    /**
+     * Takes ln(x) and ln(y) as input, and returns ln(x + y)
+     *
+     * @param lnX is natural log of x
+     * @param lnY is natural log of y
+     * @return natural log of x plus y
+     */
+    private static double lnXpluslnY(double lnX, double lnY) {
+        if (lnY > lnX) {
+            double temp = lnX;
+            lnX = lnY;
+            lnY = temp;
+        }
+
+        double lnYminusLnX = lnY - lnX;
+
+        return (lnYminusLnX < Double.MIN_EXPONENT)
+                ? lnX
+                : FastMath.log1p(FastMath.exp(lnYminusLnX)) + lnX;
     }
 
     /**
@@ -373,27 +385,6 @@ public class BCCausalInference {
         return logFact;
     }
 
-    /**
-     * Takes ln(x) and ln(y) as input, and returns ln(x + y)
-     *
-     * @param lnX is natural log of x
-     * @param lnY is natural log of y
-     * @return natural log of x plus y
-     */
-    private static double lnXpluslnY(double lnX, double lnY) {
-        if (lnY > lnX) {
-            double temp = lnX;
-            lnX = lnY;
-            lnY = temp;
-        }
-
-        double lnYminusLnX = lnY - lnX;
-
-        return (lnYminusLnX < Double.MIN_EXPONENT)
-                ? lnX
-                : FastMath.log1p(FastMath.exp(lnYminusLnX)) + lnX;
-    }
-
     private double gammln(double xx) {
         if (xx == 1) {
             return 0;  // this is a correction to a bug that used to be here
@@ -432,6 +423,11 @@ public class BCCausalInference {
         }
 
         return tmp + FastMath.log(stp * ser);
+    }
+
+    public enum OP {
+        DEPENDENT,
+        INDEPENDENT
     }
 
     private static class CountsTracker {

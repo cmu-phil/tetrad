@@ -25,7 +25,6 @@ import edu.cmu.tetrad.graph.Node;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Jan 21, 2020 11:03:09 AM
@@ -34,28 +33,30 @@ import java.util.Set;
  */
 public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
     static final long serialVersionUID = 23L;
-
+    /**
+     * The BayesIm which this updater modifies.
+     *
+     * @serial Cannot be null.
+     */
+    private final BayesIm bayesIm;
     /**
      * Stores evidence for all variables.
      *
      * @serial Cannot be null.
      */
     private Evidence evidence;
-
     /**
      * The last manipulated BayesIm.
      *
      * @serial Can be null.
      */
     private BayesIm manipulatedBayesIm;
-
     /**
      * The BayesIm after update, if this was calculated.
      *
      * @serial Can be null.
      */
     private BayesIm updatedBayesIm;
-
     /**
      * Calculates probabilities from the manipulated Bayes IM.
      *
@@ -63,13 +64,6 @@ public class JunctionTreeUpdater implements ManipulatingBayesUpdater {
      */
 //    private BayesImProbs bayesImProbs;
     private JunctionTreeAlgorithm jta;
-
-    /**
-     * The BayesIm which this updater modifies.
-     *
-     * @serial Cannot be null.
-     */
-    private final BayesIm bayesIm;
 
     public JunctionTreeUpdater(BayesIm bayesIm) {
         this(bayesIm, Evidence.tautology(bayesIm));

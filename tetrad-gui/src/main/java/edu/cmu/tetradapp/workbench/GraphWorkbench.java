@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetradapp.workbench;
 
-import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetradapp.model.EditorUtils;
 
@@ -37,8 +36,6 @@ import java.util.List;
  */
 public class GraphWorkbench extends AbstractWorkbench implements TripleClassifier {
 
-    private static final long serialVersionUID = 938742592547332849L;
-
     //=================PUBLIC STATIC FINAL FIELDS=========================//
     public static final int MEASURED_NODE = 0;
     public static final int LATENT_NODE = 1;
@@ -47,7 +44,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     public static final int PARTIALLY_ORIENTED_EDGE = 3;
     public static final int BIDIRECTED_EDGE = 4;
     public static final int UNDIRECTED_EDGE = 5;
-
+    private static final long serialVersionUID = 938742592547332849L;
     //====================PRIVATE FIELDS=================================//
     private int nodeType = GraphWorkbench.MEASURED_NODE;
     private int edgeMode = GraphWorkbench.DIRECTED_EDGE;
@@ -55,8 +52,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     //========================CONSTRUCTORS===============================//
 
     /**
-     * Constructs a new workbench with an empty graph; useful if another graph
-     * will be set later.
+     * Constructs a new workbench with an empty graph; useful if another graph will be set later.
      */
     public GraphWorkbench() {
         this(new EdgeListGraph());
@@ -72,6 +68,15 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
 
     //========================PUBLIC METHODS==============================//
 
+    private static boolean containsName(List<Node> nodes, String name) {
+        for (Node node : nodes) {
+            if (name.equals(node.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * The type of edge to be drawn next.
      *
@@ -83,6 +88,27 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
      */
     public int getEdgeMode() {
         return this.edgeMode;
+    }
+
+    /**
+     * Sets the edge mode to the given mode.
+     */
+    public void setEdgeMode(int edgeMode) {
+        switch (edgeMode) {
+            case GraphWorkbench.DIRECTED_EDGE:
+                // Falls through!
+            case GraphWorkbench.NONDIRECTED_EDGE:
+                // Falls through!
+            case GraphWorkbench.UNDIRECTED_EDGE:
+                // Falls through!
+            case GraphWorkbench.PARTIALLY_ORIENTED_EDGE:
+                // Falls through!
+            case GraphWorkbench.BIDIRECTED_EDGE:
+                this.edgeMode = edgeMode;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -115,8 +141,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
-     * Creates a new display node for the workbench based on the given model
-     * node.
+     * Creates a new display node for the workbench based on the given model node.
      *
      * @param modelNode the model node.
      * @return the new display node.
@@ -148,8 +173,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
-     * Creates a new display edge for the workbench based on the given model
-     * edge.
+     * Creates a new display edge for the workbench based on the given model edge.
      *
      * @param modelEdge the model edge.
      * @return the new display edge.
@@ -173,8 +197,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
-     * Creates a new model edge for the workbench connecting the two given model
-     * nodes and using the edge type from #getEdgeType().
+     * Creates a new model edge for the workbench connecting the two given model nodes and using the edge type from
+     * #getEdgeType().
      *
      * @param node1 the one model node.
      * @param node2 the other model node.
@@ -203,9 +227,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
-     * Gets a new "tracking edge"--that is, an edge which is anchored at one end
-     * to a node but tracks the mouse at the other end. Used for drawing new
-     * edges.
+     * Gets a new "tracking edge"--that is, an edge which is anchored at one end to a node but tracks the mouse at the
+     * other end. Used for drawing new edges.
      *
      * @param node     the node to anchor to.
      * @param mouseLoc the location of the mouse.
@@ -237,8 +260,7 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
-     * Determines whether the next node to be constructed will be measured or
-     * latent.
+     * Determines whether the next node to be constructed will be measured or latent.
      *
      * @return MEASURED_NODE or LATENT_NODE
      * @see #MEASURED_NODE
@@ -249,9 +271,8 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
-     * Given base b (a String), returns the first node in the sequence "b1",
-     * "b2", "b3", etc., which is not already the name of a node in the
-     * workbench.
+     * Given base b (a String), returns the first node in the sequence "b1", "b2", "b3", etc., which is not already the
+     * name of a node in the workbench.
      *
      * @param base the base string.
      * @return the first string in the sequence not already being used.
@@ -279,27 +300,6 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
     }
 
     /**
-     * Sets the edge mode to the given mode.
-     */
-    public void setEdgeMode(int edgeMode) {
-        switch (edgeMode) {
-            case GraphWorkbench.DIRECTED_EDGE:
-                // Falls through!
-            case GraphWorkbench.NONDIRECTED_EDGE:
-                // Falls through!
-            case GraphWorkbench.UNDIRECTED_EDGE:
-                // Falls through!
-            case GraphWorkbench.PARTIALLY_ORIENTED_EDGE:
-                // Falls through!
-            case GraphWorkbench.BIDIRECTED_EDGE:
-                this.edgeMode = edgeMode;
-                break;
-            default:
-                throw new IllegalArgumentException();
-        }
-    }
-
-    /**
      * Sets the type of this node to the given type.
      */
     public void setNodeType(int nodeType) {
@@ -311,9 +311,10 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
         }
     }
 
+    //===========================PRIVATE METHODS==========================//
+
     /**
-     * Pastes a list of session elements (SessionNodeWrappers and SessionEdges)
-     * into the workbench.
+     * Pastes a list of session elements (SessionNodeWrappers and SessionEdges) into the workbench.
      */
     public void pasteSubgraph(List graphElements, Point upperLeft) {
 
@@ -340,11 +341,9 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
         }
     }
 
-    //===========================PRIVATE METHODS==========================//
-
     /**
-     * Adjusts the name to avoid name conflicts in the new session and, if the
-     * name is adjusted, adjusts the position so the user can see the two nodes.
+     * Adjusts the name to avoid name conflicts in the new session and, if the name is adjusted, adjusts the position so
+     * the user can see the two nodes.
      *
      * @param node   The node which is being adjusted
      * @param deltaX the shift in x
@@ -383,15 +382,6 @@ public class GraphWorkbench extends AbstractWorkbench implements TripleClassifie
         }
 
         return base + i;
-    }
-
-    private static boolean containsName(List<Node> nodes, String name) {
-        for (Node node : nodes) {
-            if (name.equals(node.getName())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

@@ -34,11 +34,9 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.util.*;
 
 /**
- * Wraps a Simulation object for the Tetrad interface. A Simulation object
- * requires a RandomGraph and a choice of Simulation style and can take a
- * variety of parents, either standalone or with graphs, IM's or PM's as
- * parents. It essentially stores an ordered pair of [Graph, List[DataSet]]. It
- * is edited by SimulationEditor.
+ * Wraps a Simulation object for the Tetrad interface. A Simulation object requires a RandomGraph and a choice of
+ * Simulation style and can take a variety of parents, either standalone or with graphs, IM's or PM's as parents. It
+ * essentially stores an ordered pair of [Graph, List[DataSet]]. It is edited by SimulationEditor.
  *
  * @author josephramsey
  */
@@ -193,15 +191,6 @@ public class Simulation extends DataWrapper implements
         }
     }
 
-    public edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation() {
-        return this.simulation;
-    }
-
-    public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
-        this.simulation = simulation;
-        this.parameters = parameters;
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -209,6 +198,19 @@ public class Simulation extends DataWrapper implements
      */
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
+    }
+
+    public edu.cmu.tetrad.algcomparison.simulation.Simulation getSimulation() {
+        return this.simulation;
+    }
+
+    public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation) {
+        this.simulation = simulation;
+    }
+
+    public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation, Parameters parameters) {
+        this.simulation = simulation;
+        this.parameters = parameters;
     }
 
     public String getName() {
@@ -242,6 +244,10 @@ public class Simulation extends DataWrapper implements
         return list;
     }
 
+    public void setDataModelList(DataModelList dataModelList) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * @return the list of models.
      */
@@ -253,10 +259,6 @@ public class Simulation extends DataWrapper implements
         }
 
         return list;
-    }
-
-    public void setDataModelList(DataModelList dataModelList) {
-        throw new UnsupportedOperationException();
     }
 
     public void setParameters(Parameters parameters) {
@@ -311,10 +313,6 @@ public class Simulation extends DataWrapper implements
         } else {
             return new Knowledge();
         }
-    }
-
-    public void setSimulation(edu.cmu.tetrad.algcomparison.simulation.Simulation simulation) {
-        this.simulation = simulation;
     }
 
     public List<DataModel> getInputDataModelList() {

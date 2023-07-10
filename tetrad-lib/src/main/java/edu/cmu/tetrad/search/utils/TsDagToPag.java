@@ -42,22 +42,18 @@ import java.util.List;
 public final class TsDagToPag {
 
     private final Graph dag;
-
-    /*
-     * The background knowledge.
-     */
-    private Knowledge knowledge = new Knowledge();
-
-    /**
-     * Glag for complete rule set, true if should use complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed = true;
-
     /**
      * The logger to use.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
+    /*
+     * The background knowledge.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * Glag for complete rule set, true if should use complete rule set, false otherwise.
+     */
+    private boolean completeRuleSetUsed = true;
     /**
      * True iff verbose output should be printed.
      */
@@ -107,6 +103,59 @@ public final class TsDagToPag {
 
     }
 
+    public static boolean existsInducingPathInto(Node x, Node y, Graph graph, Knowledge knowledge) {
+        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
+        if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
+
+        LinkedList<Node> path = new LinkedList<>();
+        path.add(x);
+
+        for (Node b : graph.getAdjacentNodes(x)) {
+            Edge edge = graph.getEdge(x, b);
+            if (!edge.pointsTowards(x)) continue;
+
+            if (TsDagToPag.existsInducingPathVisitts(graph, x, b, x, y, path, knowledge)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean existsInducingPathVisitts(Graph graph, Node a, Node b, Node x, Node y,
+                                                    LinkedList<Node> path, Knowledge knowledge) {
+        if (path.contains(b)) {
+            return false;
+        }
+
+        path.addLast(b);
+
+        if (b == y) return true;
+
+        for (Node c : graph.getAdjacentNodes(b)) {
+            if (c == a) continue;
+
+            if (b.getNodeType() == NodeType.MEASURED) {
+                if (!graph.isDefCollider(a, b, c)) continue;
+
+            }
+
+            if (graph.isDefCollider(a, b, c)) {
+                if (!((graph.paths().isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(), x.getName())) ||
+                        (graph.paths().isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(), x.getName())))) {
+                    continue;
+                }
+            }
+
+            if (TsDagToPag.existsInducingPathVisitts(graph, b, c, x, y, path, knowledge)) {
+                return true;
+            }
+        }
+
+        path.removeLast();
+        return false;
+    }
+
     public Graph convert() {
         this.logger.log("info", "Starting DAG to PAG_of_the_true_DAG.");
 //        System.out.println("Knowledge is = " + knowledge);
@@ -143,26 +192,6 @@ public final class TsDagToPag {
 
         return graph;
     }
-
-    public static boolean existsInducingPathInto(Node x, Node y, Graph graph, Knowledge knowledge) {
-        if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-        if (y.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();
-
-        LinkedList<Node> path = new LinkedList<>();
-        path.add(x);
-
-        for (Node b : graph.getAdjacentNodes(x)) {
-            Edge edge = graph.getEdge(x, b);
-            if (!edge.pointsTowards(x)) continue;
-
-            if (TsDagToPag.existsInducingPathVisitts(graph, x, b, x, y, path, knowledge)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
 
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -217,40 +246,6 @@ public final class TsDagToPag {
 
     public void setTruePag(Graph truePag) {
         this.truePag = truePag;
-    }
-
-    public static boolean existsInducingPathVisitts(Graph graph, Node a, Node b, Node x, Node y,
-                                                    LinkedList<Node> path, Knowledge knowledge) {
-        if (path.contains(b)) {
-            return false;
-        }
-
-        path.addLast(b);
-
-        if (b == y) return true;
-
-        for (Node c : graph.getAdjacentNodes(b)) {
-            if (c == a) continue;
-
-            if (b.getNodeType() == NodeType.MEASURED) {
-                if (!graph.isDefCollider(a, b, c)) continue;
-
-            }
-
-            if (graph.isDefCollider(a, b, c)) {
-                if (!((graph.paths().isAncestorOf(b, x) && !knowledge.isForbidden(b.getName(), x.getName())) ||
-                        (graph.paths().isAncestorOf(b, y) && !knowledge.isForbidden(b.getName(), x.getName())))) {
-                    continue;
-                }
-            }
-
-            if (TsDagToPag.existsInducingPathVisitts(graph, b, c, x, y, path, knowledge)) {
-                return true;
-            }
-        }
-
-        path.removeLast();
-        return false;
     }
 
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {

@@ -48,9 +48,8 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
     //============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DataWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DataWrapper must contain a DataSet that is either a DataSet
+     * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     private FactorAnalysisRunner(DataWrapper dataWrapper, Parameters pc) {
         super(dataWrapper, pc, null);
@@ -155,8 +154,7 @@ public class FactorAnalysisRunner extends AbstractAlgorithmRunner {
     }
 
     /**
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
-     * for the given node.
+     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();

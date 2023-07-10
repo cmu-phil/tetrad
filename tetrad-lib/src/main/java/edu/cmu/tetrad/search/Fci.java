@@ -72,16 +72,16 @@ import java.util.Set;
  * @see Knowledge
  */
 public final class Fci implements IGraphSearch {
-    private SepsetMap sepsets;
-    private Knowledge knowledge = new Knowledge();
     private final List<Node> variables = new ArrayList<>();
     private final IndependenceTest independenceTest;
+    private final TetradLogger logger = TetradLogger.getInstance();
+    private SepsetMap sepsets;
+    private Knowledge knowledge = new Knowledge();
     private boolean completeRuleSetUsed = true;
     private boolean possibleMsepSearchDone = true;
     private int maxPathLength = -1;
     private int depth = -1;
     private long elapsedTime;
-    private final TetradLogger logger = TetradLogger.getInstance();
     private boolean verbose;
     private PcCommon.PcHeuristicType heuristic = PcCommon.PcHeuristicType.NONE;
     private boolean stable = true;

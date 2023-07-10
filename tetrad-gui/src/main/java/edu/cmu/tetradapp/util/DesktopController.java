@@ -24,9 +24,8 @@ package edu.cmu.tetradapp.util;
 import edu.cmu.tetrad.session.Session;
 
 /**
- * Indirect control for the desktop to avoid package cycles. The reference to
- * the desktop is set using the <code>activate</code> method, as a
- * DesktopControllable. Once set, the method calls in the DesktopControllable
+ * Indirect control for the desktop to avoid package cycles. The reference to the desktop is set using the
+ * <code>activate</code> method, as a DesktopControllable. Once set, the method calls in the DesktopControllable
  * interface are passed on to it.
  *
  * <p>Note that all argument types are interface-tagged as well to avoid further
@@ -46,9 +45,8 @@ public class DesktopController implements DesktopControllable {
     }
 
     /**
-     * Sets the reference to the desktop that will be used throughout the
-     * application when needed. Done once when the Tetrad application is
-     * launched.
+     * Sets the reference to the desktop that will be used throughout the application when needed. Done once when the
+     * Tetrad application is launched.
      */
     public static void setReference(DesktopControllable component) {
         DesktopController.INSTANCE = component;

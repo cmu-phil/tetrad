@@ -36,8 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Holds a tetrad dag with all of the constructors necessary for it to serve as
- * a model for the tetrad application.
+ * Holds a tetrad dag with all of the constructors necessary for it to serve as a model for the tetrad application.
  *
  * @author josephramsey
  */
@@ -249,14 +248,12 @@ public class SemGraphWrapper implements GraphSource,
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method
-     * must have the standard signature for a readObject method, and the body of
-     * the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from
-     * version to version. A readObject method of this form may be added to any
-     * class, even if Tetrad sessions were previously saved out using a version
-     * of the class that didn't include it. (That's what the
-     * "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for help.
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
      */
     private void readObject(ObjectInputStream s) throws IOException,
             ClassNotFoundException {
@@ -265,6 +262,12 @@ public class SemGraphWrapper implements GraphSource,
 
     public Graph getGraph() {
         return this.graphs.get(getModelIndex());
+    }
+
+    public void setGraph(Graph graph) {
+        this.graphs = new ArrayList<>();
+        this.graphs.add(new SemGraph(graph));
+        log();
     }
 
     public String getName() {
@@ -305,13 +308,13 @@ public class SemGraphWrapper implements GraphSource,
     }
 
     @Override
-    public void setAllParamSettings(Map<String, String> paramSettings) {
-        this.allParamSettings = paramSettings;
+    public Map<String, String> getAllParamSettings() {
+        return this.allParamSettings;
     }
 
     @Override
-    public Map<String, String> getAllParamSettings() {
-        return this.allParamSettings;
+    public void setAllParamSettings(Map<String, String> paramSettings) {
+        this.allParamSettings = paramSettings;
     }
 
     public Parameters getParameters() {
@@ -340,12 +343,6 @@ public class SemGraphWrapper implements GraphSource,
 
     public void setModelSourceName(String modelSourceName) {
         this.modelSourceName = modelSourceName;
-    }
-
-    public void setGraph(Graph graph) {
-        this.graphs = new ArrayList<>();
-        this.graphs.add(new SemGraph(graph));
-        log();
     }
 
     public List<Graph> getGraphs() {

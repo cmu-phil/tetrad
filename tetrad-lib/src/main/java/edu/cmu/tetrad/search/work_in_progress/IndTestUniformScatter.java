@@ -142,10 +142,10 @@ public final class IndTestUniformScatter implements IndependenceTest {
      * Returns true if the two uniformly distributed columns of data in a dataset are marginally independent, false
      * otherwise.
      *
-     * @param data            The data set containing the two variables, uniformly distributed.
-     * @param x               The index of the first variable.
-     * @param y               The index of the second variable.
-     * @param z               The indeces of the conditioning variables
+     * @param data The data set containing the two variables, uniformly distributed.
+     * @param x    The index of the first variable.
+     * @param y    The index of the second variable.
+     * @param z    The indeces of the conditioning variables
      * @return True if the two variables are marginally independent, false otherwise.
      */
     private static double getConditionallyIndependentUniformPvalue(double[][] data, int x, int y, int[] z, int m, int numCondCategories) {

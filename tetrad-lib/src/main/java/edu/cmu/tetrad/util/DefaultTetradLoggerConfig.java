@@ -72,18 +72,18 @@ public class DefaultTetradLoggerConfig implements TetradLoggerConfig {
         }
     }
 
-    public TetradLoggerConfig copy() {
-        DefaultTetradLoggerConfig copy = new DefaultTetradLoggerConfig();
-        copy.events = new ArrayList<>(events);
-        copy.active = new HashSet<>(active);
-        return copy;
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
     public static DefaultTetradLoggerConfig serializableInstance() {
         return new DefaultTetradLoggerConfig();
+    }
+
+    public TetradLoggerConfig copy() {
+        DefaultTetradLoggerConfig copy = new DefaultTetradLoggerConfig();
+        copy.events = new ArrayList<>(events);
+        copy.active = new HashSet<>(active);
+        return copy;
     }
 
     //=========================== public methods ================================//

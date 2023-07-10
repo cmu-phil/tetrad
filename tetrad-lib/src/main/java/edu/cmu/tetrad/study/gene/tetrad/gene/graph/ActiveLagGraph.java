@@ -92,20 +92,6 @@ public class ActiveLagGraph implements LagGraph {
     }
 
     /**
-     * Attemps to set the maximum allowable lag of an edge in the graph. This really is not necessary to use publicly
-     * anymore since the addEdge function will now automatically increase the MaxAllowableLag of the graph if an edge's
-     * lag is greater than MaxAllowableLag. Will throw a propertyChange event of (null, (Integer) newMaxLagAllowable).
-     */
-    public void setMaxLagAllowable(int maxLagAllowable) {
-        if (maxLagAllowable >= getMaxLag()) {
-            this.lagGraph.setMaxLagAllowable(maxLagAllowable);
-            this.lagGraph.setMaxLagAllowable(maxLagAllowable);
-            getPropertyChangeManager().firePropertyChange("maxLagAllowable",
-                    null, getMaxLagAllowable());
-        }
-    }
-
-    /**
      * Attempts to add an edge to the graph. If the lag of the edge is greater than maxLagAllowable, maxLagAllowable
      * will automatically be increased so that the edge can be added. Will throw a propertyChange event of (null,
      * (LaggedEdge) newEdge)
@@ -237,6 +223,20 @@ public class ActiveLagGraph implements LagGraph {
 
     public int getMaxLagAllowable() {
         return this.lagGraph.getMaxLagAllowable();
+    }
+
+    /**
+     * Attemps to set the maximum allowable lag of an edge in the graph. This really is not necessary to use publicly
+     * anymore since the addEdge function will now automatically increase the MaxAllowableLag of the graph if an edge's
+     * lag is greater than MaxAllowableLag. Will throw a propertyChange event of (null, (Integer) newMaxLagAllowable).
+     */
+    public void setMaxLagAllowable(int maxLagAllowable) {
+        if (maxLagAllowable >= getMaxLag()) {
+            this.lagGraph.setMaxLagAllowable(maxLagAllowable);
+            this.lagGraph.setMaxLagAllowable(maxLagAllowable);
+            getPropertyChangeManager().firePropertyChange("maxLagAllowable",
+                    null, getMaxLagAllowable());
+        }
     }
 
     public int getMaxLag() {

@@ -43,9 +43,8 @@ import java.util.Set;
  * on (but not identical to) code by Entner and Hoyer for their 2010 paper. Modified by dmalinsky 4/21/2016.</p>
  *
  * <p>This class is based off a copy of FCI.java taken from the repository on 2008/12/16, revision 7306. The extension
- * is
- * done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented search.
- * (By a remark of Zhang's, the rule applications can be staged in this way.)</p>
+ * is done by extending doFinalOrientation() with methods for Zhang's rules R5-R10 which implements the augmented
+ * search. (By a remark of Zhang's, the rule applications can be staged in this way.)</p>
  *
  * <p>The references are as follows:</p>
  *
@@ -65,43 +64,35 @@ import java.util.Set;
  */
 public final class SvarFci implements IGraphSearch {
 
-    /**
-     * The PAG being constructed.
-     */
-    private Graph graph;
-
-    /**
-     * The SepsetMap being constructed.
-     */
-    private SepsetMap sepsets;
-
-    /**
-     * The background knowledge.
-     */
-    private Knowledge knowledge = new Knowledge();
-
     private final IndependenceTest independenceTest;
-
-    /**
-     * flag for complete rule set, true if it should use complete rule set, false otherwise.
-     */
-    private boolean completeRuleSetUsed;
-
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
-    private int maxPathLength = -1;
-
-    /**
-     * The depth for the fast adjacency search.
-     */
-    private int depth = -1;
-
     /**
      * The logger to use.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
+    /**
+     * The PAG being constructed.
+     */
+    private Graph graph;
+    /**
+     * The SepsetMap being constructed.
+     */
+    private SepsetMap sepsets;
+    /**
+     * The background knowledge.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * flag for complete rule set, true if it should use complete rule set, false otherwise.
+     */
+    private boolean completeRuleSetUsed;
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
+    private int maxPathLength = -1;
+    /**
+     * The depth for the fast adjacency search.
+     */
+    private int depth = -1;
     /**
      * True iff verbose output should be printed.
      */

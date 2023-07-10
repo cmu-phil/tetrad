@@ -23,7 +23,6 @@ package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.graph.Node;
 
-import java.util.List;
 import java.util.Set;
 
 /**

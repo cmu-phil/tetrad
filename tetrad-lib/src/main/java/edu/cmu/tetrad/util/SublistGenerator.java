@@ -46,37 +46,30 @@ public final class SublistGenerator {
      * The number of objects being selected from.
      */
     private final int a;
-
-    /**
-     * The number of objects in the desired selection.
-     */
-    private int b;
-
-    /**
-     * The difference between a and b (should be nonnegative).
-     */
-    private int diff;
-
-    /**
-     * The internally stored choice.
-     */
-    private int[] choiceLocal;
-
-    /**
-     * The choice that is returned. Used, since the returned array can be modified by the user.
-     */
-    private int[] choiceReturned;
-
-    /**
-     * Indicates whether the next() method has been called since the last initialization.
-     */
-    private boolean begun;
-
     /**
      * Maximum a.
      */
     private final int depth;
-
+    /**
+     * The number of objects in the desired selection.
+     */
+    private int b;
+    /**
+     * The difference between a and b (should be nonnegative).
+     */
+    private int diff;
+    /**
+     * The internally stored choice.
+     */
+    private int[] choiceLocal;
+    /**
+     * The choice that is returned. Used, since the returned array can be modified by the user.
+     */
+    private int[] choiceReturned;
+    /**
+     * Indicates whether the next() method has been called since the last initialization.
+     */
+    private boolean begun;
     /**
      * Effective maximum a.
      */
@@ -114,6 +107,37 @@ public final class SublistGenerator {
         }
 
         return numCombinations;
+    }
+
+    /**
+     * This static method will print the series of combinations for a choose depth to System.out.
+     *
+     * @param a     the number of objects being selected from.
+     * @param depth the number of objects in the desired selection.
+     */
+    @SuppressWarnings("SameParameterValue")
+    public static void testPrint(int a, int depth) {
+        SublistGenerator cg = new SublistGenerator(a, depth);
+        int[] choice;
+
+        System.out.println();
+        System.out.println(
+                "Printing combinations for " + a + " choose " + depth + ":");
+        System.out.println();
+
+        while ((choice = cg.next()) != null) {
+            if (choice.length == 0) {
+                System.out.println("zero-length array");
+            } else {
+                for (int aChoice : choice) {
+                    System.out.print(aChoice + "\t");
+                }
+
+                System.out.println();
+            }
+        }
+
+        System.out.println();
     }
 
     private void initialize() {
@@ -170,37 +194,6 @@ public final class SublistGenerator {
             System.arraycopy(this.choiceLocal, 0, this.choiceReturned, 0, this.b);
             return this.choiceReturned;
         }
-    }
-
-    /**
-     * This static method will print the series of combinations for a choose depth to System.out.
-     *
-     * @param a     the number of objects being selected from.
-     * @param depth the number of objects in the desired selection.
-     */
-    @SuppressWarnings("SameParameterValue")
-    public static void testPrint(int a, int depth) {
-        SublistGenerator cg = new SublistGenerator(a, depth);
-        int[] choice;
-
-        System.out.println();
-        System.out.println(
-                "Printing combinations for " + a + " choose " + depth + ":");
-        System.out.println();
-
-        while ((choice = cg.next()) != null) {
-            if (choice.length == 0) {
-                System.out.println("zero-length array");
-            } else {
-                for (int aChoice : choice) {
-                    System.out.print(aChoice + "\t");
-                }
-
-                System.out.println();
-            }
-        }
-
-        System.out.println();
     }
 
     public String toString() {

@@ -104,6 +104,16 @@ public class Cstar {
         return cstar;
     }
 
+    // Meinhausen and Buhlmann E(|V|) bound
+    private static double er(double pi, double q, double p) {
+        return p * Cstar.pcer(pi, q, p);
+    }
+
+    // Meinhausen and Buhlmann per comparison error rate (PCER)
+    private static double pcer(double pi, double q, double p) {
+        return (q * q) / (p * p * (2 * pi - 1));
+    }
+
     /**
      * Sets whether the algorithm should be parallelized. Different runs of the algorithms can be run in different
      * threads in parallel.
@@ -443,53 +453,6 @@ public class Cstar {
     }
 
     /**
-     * Represents a single record in the returned table for CSTaR.
-     */
-    public static class Record implements TetradSerializable {
-        static final long serialVersionUID = 23L;
-
-        private final Node causeNode;
-        private final Node target;
-        private final double pi;
-        private final double effect;
-        private final int q;
-        private final int p;
-
-        Record(Node predictor, Node target, double pi, double minEffect, int q, int p) {
-            this.causeNode = predictor;
-            this.target = target;
-            this.pi = pi;
-            this.effect = minEffect;
-            this.q = q;
-            this.p = p;
-        }
-
-        public Node getCauseNode() {
-            return this.causeNode;
-        }
-
-        public Node getEffectNode() {
-            return this.target;
-        }
-
-        public double getPi() {
-            return this.pi;
-        }
-
-        double getMinBeta() {
-            return this.effect;
-        }
-
-        public int getQ() {
-            return this.q;
-        }
-
-        public int getP() {
-            return this.p;
-        }
-    }
-
-    /**
      * Sets qFrom.
      *
      * @param qFrom This integer.
@@ -561,16 +524,6 @@ public class Cstar {
      */
     public void setNumSubsamples(int numSubsamples) {
         this.numSubsamples = numSubsamples;
-    }
-
-    // Meinhausen and Buhlmann E(|V|) bound
-    private static double er(double pi, double q, double p) {
-        return p * Cstar.pcer(pi, q, p);
-    }
-
-    // Meinhausen and Buhlmann per comparison error rate (PCER)
-    private static double pcer(double pi, double q, double p) {
-        return (q * q) / (p * p * (2 * pi - 1));
     }
 
     private DataSet readData(File dir) {
@@ -805,6 +758,53 @@ public class Cstar {
      * An enumeration of the methods for selecting samples from the full dataset.
      */
     public enum SampleStyle {BOOTSTRAP, SPLIT}
+
+    /**
+     * Represents a single record in the returned table for CSTaR.
+     */
+    public static class Record implements TetradSerializable {
+        static final long serialVersionUID = 23L;
+
+        private final Node causeNode;
+        private final Node target;
+        private final double pi;
+        private final double effect;
+        private final int q;
+        private final int p;
+
+        Record(Node predictor, Node target, double pi, double minEffect, int q, int p) {
+            this.causeNode = predictor;
+            this.target = target;
+            this.pi = pi;
+            this.effect = minEffect;
+            this.q = q;
+            this.p = p;
+        }
+
+        public Node getCauseNode() {
+            return this.causeNode;
+        }
+
+        public Node getEffectNode() {
+            return this.target;
+        }
+
+        public double getPi() {
+            return this.pi;
+        }
+
+        double getMinBeta() {
+            return this.effect;
+        }
+
+        public int getQ() {
+            return this.q;
+        }
+
+        public int getP() {
+            return this.p;
+        }
+    }
 
     private static class Tuple {
         private final Node cause;

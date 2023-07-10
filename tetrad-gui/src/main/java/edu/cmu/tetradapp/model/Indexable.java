@@ -27,9 +27,9 @@ package edu.cmu.tetradapp.model;
  * @author josephramsey
  */
 public interface Indexable {
-    void setIndex(int index);
-
     int getIndex();
+
+    void setIndex(int index);
 }
 
 

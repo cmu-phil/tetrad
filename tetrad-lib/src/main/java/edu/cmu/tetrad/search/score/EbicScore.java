@@ -47,10 +47,10 @@ import static org.apache.commons.math3.util.FastMath.log;
  * @author josephramsey
  */
 public class EbicScore implements Score {
-    private DataSet dataSet;
-    private ICovarianceMatrix covariances;
     private final List<Node> variables;
     private final int sampleSize;
+    private DataSet dataSet;
+    private ICovarianceMatrix covariances;
     private double N;
     private Matrix data;
     private boolean calculateRowSubsets;

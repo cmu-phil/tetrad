@@ -47,8 +47,7 @@ import java.util.prefs.Preferences;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 /**
- * Panel (to be put in a dialog) for letting the user choose how a data file
- * should be loaded.
+ * Panel (to be put in a dialog) for letting the user choose how a data file should be loaded.
  *
  * @author josephramsey
  */
@@ -61,37 +60,21 @@ public final class LoadDataDialog extends JPanel {
     private final List<String> validationResults;
 
     private final List<String> failedFiles;
-
-    private LoadDataSettings loadDataSettings;
-
     private final DataModelList dataModelList;
-
     private final JTextPane validationResultTextPane;
-
     private final JTextArea filePreviewTextArea;
-
     private final int previewFromLine;
-
     private final int previewToLine;
-
     private final int previewNumOfCharactersPerLine;
-
-    private JList fileList;
-
-    private JList validationFileList;
-
-    private JDialog loadingIndicatorDialog;
-
     private final DefaultListModel fileListModel;
-
     private final DefaultListModel validatedFileListModel;
-
-    private Box filePreviewBox;
-
-    private String previewBoxBorderTitle;
-
     private final String defaulyPreviewBoxBorderTitle;
-
+    private LoadDataSettings loadDataSettings;
+    private JList fileList;
+    private JList validationFileList;
+    private JDialog loadingIndicatorDialog;
+    private Box filePreviewBox;
+    private String previewBoxBorderTitle;
     private Box container;
 
     private Box previewContainer;

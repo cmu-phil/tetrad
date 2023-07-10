@@ -44,10 +44,6 @@ public class MeasuredDisplayComp extends JComponent implements DisplayComp {
         setSize(getPreferredSize());
     }
 
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
     public boolean contains(int x, int y) {
         return getShape().contains(x, y);
     }
@@ -97,6 +93,10 @@ public class MeasuredDisplayComp extends JComponent implements DisplayComp {
 
     private boolean isSelected() {
         return this.selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 }
 

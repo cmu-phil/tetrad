@@ -36,8 +36,7 @@ import javax.swing.*;
 public class PagColorer extends JCheckBoxMenuItem {
 
     /**
-     * Creates a new copy subsession action for the given desktop and
-     * clipboard.
+     * Creates a new copy subsession action for the given desktop and clipboard.
      */
     public PagColorer(GraphWorkbench workbench) {
         super("Add/Remove PAG Coloring");

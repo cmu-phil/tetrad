@@ -63,11 +63,6 @@ import static edu.cmu.tetrad.search.utils.GraphSearchUtils.dagToPag;
 public class TimeoutComparison {
 
     private static final DateFormat DF = new SimpleDateFormat("EEE, MMMM dd, yyyy hh:mm:ss a");
-
-    public enum ComparisonGraph {
-        true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
-    }
-
     private boolean[] graphTypeUsed;
     private PrintStream out;
     private boolean tabDelimitedTables;
@@ -928,17 +923,17 @@ public class TimeoutComparison {
     }
 
     /**
-     * @param saveGraphs True if all graphs should be saved to files.
-     */
-    public void setSaveGraphs(boolean saveGraphs) {
-        this.saveGraphs = saveGraphs;
-    }
-
-    /**
      * @return True if all graphs should be saved to files.
      */
     public boolean isSaveGraphs() {
         return this.saveGraphs;
+    }
+
+    /**
+     * @param saveGraphs True if all graphs should be saved to files.
+     */
+    public void setSaveGraphs(boolean saveGraphs) {
+        this.saveGraphs = saveGraphs;
     }
 
     /**
@@ -970,37 +965,6 @@ public class TimeoutComparison {
             throw new NullPointerException("Null compare graph.");
         }
         this.comparisonGraph = comparisonGraph;
-    }
-
-    private class AlgorithmTask implements Callable<Void> {
-
-        private final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
-        private final List<AlgorithmWrapper> algorithmWrappers;
-        private final List<SimulationWrapper> simulationWrappers;
-        private final Statistics statistics;
-        private final int numGraphTypes;
-        private final double[][][][] allStats;
-        private final Run run;
-
-        public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
-                             List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
-                             Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run) {
-            this.algorithmSimulationWrappers = algorithmSimulationWrappers;
-            this.simulationWrappers = simulationWrappers;
-            this.algorithmWrappers = algorithmWrappers;
-            this.statistics = statistics;
-            this.numGraphTypes = numGraphTypes;
-            this.allStats = allStats;
-            this.run = run;
-        }
-
-        @Override
-        public Void call() throws Exception {
-            doRun(this.algorithmSimulationWrappers, this.algorithmWrappers,
-                    this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run);
-            return null;
-        }
-
     }
 
     private void printParameters(List<String> names, Parameters parameters, PrintStream out) {
@@ -1236,10 +1200,6 @@ public class TimeoutComparison {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-    }
-
-    private enum Mode {
-        Average, StandardDeviation, WorstCase
     }
 
     private String getHeader(int u) {
@@ -1565,6 +1525,14 @@ public class TimeoutComparison {
         }
     }
 
+    public enum ComparisonGraph {
+        true_DAG, CPDAG_of_the_true_DAG, PAG_of_the_true_DAG
+    }
+
+    private enum Mode {
+        Average, StandardDeviation, WorstCase
+    }
+
     private static class AlgorithmWrapper implements Algorithm {
 
         static final long serialVersionUID = 23L;
@@ -1740,6 +1708,10 @@ public class TimeoutComparison {
             return this.simulation.getParameters();
         }
 
+        public void setParameters(Parameters parameters) {
+            this.parameters = new Parameters(parameters);
+        }
+
         public void setValue(String name, Object value) {
             if (!(value instanceof Number)) {
                 throw new IllegalArgumentException();
@@ -1762,13 +1734,40 @@ public class TimeoutComparison {
             return this.simulation;
         }
 
-        public void setParameters(Parameters parameters) {
-            this.parameters = new Parameters(parameters);
-        }
-
         public Parameters getSimulationSpecificParameters() {
             return this.parameters;
         }
+    }
+
+    private class AlgorithmTask implements Callable<Void> {
+
+        private final List<AlgorithmSimulationWrapper> algorithmSimulationWrappers;
+        private final List<AlgorithmWrapper> algorithmWrappers;
+        private final List<SimulationWrapper> simulationWrappers;
+        private final Statistics statistics;
+        private final int numGraphTypes;
+        private final double[][][][] allStats;
+        private final Run run;
+
+        public AlgorithmTask(List<AlgorithmSimulationWrapper> algorithmSimulationWrappers,
+                             List<AlgorithmWrapper> algorithmWrappers, List<SimulationWrapper> simulationWrappers,
+                             Statistics statistics, int numGraphTypes, double[][][][] allStats, Run run) {
+            this.algorithmSimulationWrappers = algorithmSimulationWrappers;
+            this.simulationWrappers = simulationWrappers;
+            this.algorithmWrappers = algorithmWrappers;
+            this.statistics = statistics;
+            this.numGraphTypes = numGraphTypes;
+            this.allStats = allStats;
+            this.run = run;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            doRun(this.algorithmSimulationWrappers, this.algorithmWrappers,
+                    this.simulationWrappers, this.statistics, this.numGraphTypes, this.allStats, this.run);
+            return null;
+        }
+
     }
 
     private class Run {

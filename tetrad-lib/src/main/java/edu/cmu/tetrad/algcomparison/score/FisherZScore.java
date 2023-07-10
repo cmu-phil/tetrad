@@ -26,8 +26,8 @@ import java.util.List;
 public class FisherZScore implements ScoreWrapper {
 
     static final long serialVersionUID = 23L;
-    private DataModel dataSet;
     double alpha = 0.001;
+    private DataModel dataSet;
 
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {

@@ -33,20 +33,18 @@ import java.io.ObjectInputStream;
  */
 public class LaggedFactor implements Comparable, TetradSerializable {
     static final long serialVersionUID = 23L;
-
-    /**
-     * The name of the factor.
-     *
-     * @serial
-     */
-    private String factor;
-
     /**
      * The number of time steps back for the lagged factor.
      *
      * @serial
      */
     private final int lag;
+    /**
+     * The name of the factor.
+     *
+     * @serial
+     */
+    private String factor;
 
     //=============================CONSTRUCTORS==========================//
 
@@ -118,19 +116,19 @@ public class LaggedFactor implements Comparable, TetradSerializable {
     }
 
     /**
+     * Sets the name of the lagged factor
+     */
+    public void setFactor(String factor) {
+        this.factor = factor;
+    }
+
+    /**
      * Returns the number of time steps back for this lagged factor.
      *
      * @return the lag.
      */
     public int getLag() {
         return this.lag;
-    }
-
-    /**
-     * Sets the name of the lagged factor
-     */
-    public void setFactor(String factor) {
-        this.factor = factor;
     }
 
     /**

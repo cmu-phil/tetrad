@@ -55,36 +55,6 @@ public class TimeoutComparisonTest {
     public TimeoutComparisonTest() {
     }
 
-    /**
-     * Test of setComparisonGraph method, of class TimeoutComparison.
-     *
-     * @throws IOException
-     */
-    @Ignore
-    @Test
-    public void testTimeoutComparison() throws IOException {
-        Parameters parameters = TimeoutComparisonTest.getParameters();
-        Statistics statistics = TimeoutComparisonTest.getStatistics();
-        Algorithms algorithms = TimeoutComparisonTest.getAlgorithms();
-        Simulations simulations = TimeoutComparisonTest.getSimulations();
-
-        String resultsPath = TimeoutComparisonTest.tmpDir.newFolder("comparison").toString();
-
-        TimeoutComparison comparisonEngine = TimeoutComparisonTest.getTetradComparisonEngine();
-        comparisonEngine.compareFromSimulations(resultsPath, simulations, algorithms, statistics, parameters, 60, TimeUnit.SECONDS);
-
-        out.println("================================================================================");
-        out.println("Output File:");
-        out.println("================================================================================");
-        Path outputFile = Paths.get(resultsPath, "Comparison.txt");
-        if (Files.exists(outputFile)) {
-            try (Stream<String> stream = Files.lines(outputFile)) {
-                stream.forEach(out::println);
-            }
-        }
-        out.println("================================================================================");
-    }
-
     private static TimeoutComparison getTetradComparisonEngine() {
         TimeoutComparison comparison = new TimeoutComparison();
         comparison.setShowAlgorithmIndices(true);
@@ -135,6 +105,36 @@ public class TimeoutComparisonTest {
         parameters.set(Params.ALPHA, 1e-4, 1e-3, 1e-2);
 
         return parameters;
+    }
+
+    /**
+     * Test of setComparisonGraph method, of class TimeoutComparison.
+     *
+     * @throws IOException
+     */
+    @Ignore
+    @Test
+    public void testTimeoutComparison() throws IOException {
+        Parameters parameters = TimeoutComparisonTest.getParameters();
+        Statistics statistics = TimeoutComparisonTest.getStatistics();
+        Algorithms algorithms = TimeoutComparisonTest.getAlgorithms();
+        Simulations simulations = TimeoutComparisonTest.getSimulations();
+
+        String resultsPath = TimeoutComparisonTest.tmpDir.newFolder("comparison").toString();
+
+        TimeoutComparison comparisonEngine = TimeoutComparisonTest.getTetradComparisonEngine();
+        comparisonEngine.compareFromSimulations(resultsPath, simulations, algorithms, statistics, parameters, 60, TimeUnit.SECONDS);
+
+        out.println("================================================================================");
+        out.println("Output File:");
+        out.println("================================================================================");
+        Path outputFile = Paths.get(resultsPath, "Comparison.txt");
+        if (Files.exists(outputFile)) {
+            try (Stream<String> stream = Files.lines(outputFile)) {
+                stream.forEach(out::println);
+            }
+        }
+        out.println("================================================================================");
     }
 
 }

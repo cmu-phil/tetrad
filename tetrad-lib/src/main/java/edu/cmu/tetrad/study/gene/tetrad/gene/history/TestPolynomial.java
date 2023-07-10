@@ -43,6 +43,17 @@ public class TestPolynomial extends TestCase {
     }
 
     /**
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
+     */
+    public static Test suite() {
+
+        // Edit the name of the class in the parens to match the name
+        // of this class.
+        return new TestSuite(TestPolynomial.class);
+    }
+
+    /**
      * Tests to make sure that null parent throw an exception.
      */
     public void testConstruction() {
@@ -78,17 +89,6 @@ public class TestPolynomial extends TestCase {
         double[] values = {1.0, 2.0, 3.0, 4.0};
 
         assertEquals(15.0, p.evaluate(values), 0.00001);
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestPolynomial.class);
     }
 }
 

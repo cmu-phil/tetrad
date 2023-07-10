@@ -45,17 +45,14 @@ import java.util.*;
  */
 public final class SepsetMapDci {
     static final long serialVersionUID = 23L;
-
+    private final Map<Node, LinkedHashSet<Node>> parents = new HashMap<>();
     /**
      * @serial
      */
     private Map<Set<Node>, Set<Node>> sepsets =
             new HashMap<>();
-
     private Map<Set<Node>, Set<Set<Node>>> sepsetSets =
             new HashMap<>();
-
-    private final Map<Node, LinkedHashSet<Node>> parents = new HashMap<>();
 
     //=============================CONSTRUCTORS===========================//
 

@@ -34,29 +34,26 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 
 /**
- * Wraps a dataSet which is possibly smaller than the display window in a larger
- * AbstractTableModel which will fill the window.
+ * Wraps a dataSet which is possibly smaller than the display window in a larger AbstractTableModel which will fill the
+ * window.
  *
  * @author josephramsey
  */
 class TabularDataTable extends AbstractTableModel {
 
     private static final long serialVersionUID = 8832459230421410126L;
-
-    /**
-     * The DataSet being displayed.
-     */
-    private DataSet dataSet;
-
-    /**
-     * True iff category names for discrete variables should be shown.
-     */
-    private boolean categoryNamesShown = true;
-
     /**
      * Fires property change events.
      */
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    /**
+     * The DataSet being displayed.
+     */
+    private DataSet dataSet;
+    /**
+     * True iff category names for discrete variables should be shown.
+     */
+    private boolean categoryNamesShown = true;
 
     /**
      * Constructs a new DisplayTableModel to wrap the given dataSet.
@@ -75,8 +72,7 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     /**
-     * @return the number of rows in the wrapper table model. Guarantees that
-     * this number will be at least 100.
+     * @return the number of rows in the wrapper table model. Guarantees that this number will be at least 100.
      */
     public int getRowCount() {
         int maxRowCount = this.dataSet.getNumRows() + 3;
@@ -84,8 +80,7 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     /**
-     * @return the number of columns in the wrapper table model. Guarantees that
-     * this number will be at least 30.
+     * @return the number of columns in the wrapper table model. Guarantees that this number will be at least 30.
      */
     public int getColumnCount() {
         return (this.dataSet.getNumColumns() < 30) ? 30
@@ -93,12 +88,10 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     /**
-     * @return the value at the given (row, col) coordinates of the table as an
-     * Object. If the variable for the col is a DiscreteVariable, the String
-     * value (as opposed to the integer index value) is extracted and returned.
-     * If the coordinates are out of range of the wrapped table model, 'null' is
-     * returned. Otherwise, the value stored in the wrapped table model at the
-     * given coordinates is returned.
+     * @return the value at the given (row, col) coordinates of the table as an Object. If the variable for the col is a
+     * DiscreteVariable, the String value (as opposed to the integer index value) is extracted and returned. If the
+     * coordinates are out of range of the wrapped table model, 'null' is returned. Otherwise, the value stored in the
+     * wrapped table model at the given coordinates is returned.
      */
     @Override
     public Object getValueAt(int row, int col) {
@@ -174,12 +167,10 @@ class TabularDataTable extends AbstractTableModel {
     }
 
     /**
-     * Sets the value at the given (row, col) coordinates of the table as an
-     * Object. If the variable for the col is a DiscreteVariable, the String
-     * value (as opposed to the integer index value) is extracted and returned.
-     * If the coordinates are out of range of the wrapped table model, 'null' is
-     * returned. Otherwise, the value stored in the wrapped table model at the
-     * given coordinates is returned.
+     * Sets the value at the given (row, col) coordinates of the table as an Object. If the variable for the col is a
+     * DiscreteVariable, the String value (as opposed to the integer index value) is extracted and returned. If the
+     * coordinates are out of range of the wrapped table model, 'null' is returned. Otherwise, the value stored in the
+     * wrapped table model at the given coordinates is returned.
      */
     public void setValueAt(Object value, int row, int col) {
         this.dataSet.ensureColumns(col - getNumLeadingCols() + 1, new ArrayList<>());
@@ -331,13 +322,13 @@ class TabularDataTable extends AbstractTableModel {
         return 1;
     }
 
+    public boolean isCategoryNamesShown() {
+        return this.categoryNamesShown;
+    }
+
     public void setCategoryNamesShown(boolean selected) {
         this.categoryNamesShown = selected;
         fireTableDataChanged();
-    }
-
-    public boolean isCategoryNamesShown() {
-        return this.categoryNamesShown;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

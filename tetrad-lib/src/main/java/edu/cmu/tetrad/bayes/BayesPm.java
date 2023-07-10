@@ -170,18 +170,34 @@ public final class BayesPm implements Pm, VariableSource {
 
     //=========================PUBLIC METHODS=============================//
 
-    /**
-     * @return the DAG as a Graph.
-     */
-    public Graph getDag() {
-        return this.dag;
-    }
-
     public static List<String> getParameterNames() {
         List<String> parameters = new ArrayList<>();
         parameters.add("minCategories");
         parameters.add("maxCategories");
         return parameters;
+    }
+
+    private static int pickNumVals(int lowerBound, int upperBound) {
+        if (lowerBound < 2) {
+            throw new IllegalArgumentException(
+                    "Lower bound must be >= 2: " + lowerBound);
+        }
+
+        if (upperBound < lowerBound) {
+            throw new IllegalArgumentException(
+                    "Upper bound for number of categories must be >= lower " + "bound.");
+        }
+
+        int difference = upperBound - lowerBound;
+        RandomUtil randomUtil = RandomUtil.getInstance();
+        return randomUtil.nextInt(difference + 1) + lowerBound;
+    }
+
+    /**
+     * @return the DAG as a Graph.
+     */
+    public Graph getDag() {
+        return this.dag;
     }
 
     /**
@@ -328,7 +344,6 @@ public final class BayesPm implements Pm, VariableSource {
         return measuredNodes;
     }
 
-
     /**
      * Prints out the list of values for each node.
      */
@@ -365,11 +380,11 @@ public final class BayesPm implements Pm, VariableSource {
         return -1;
     }
 
+    //=========================PRIVATE METHODS=============================//
+
     public int getNumNodes() {
         return this.dag.getNumNodes();
     }
-
-    //=========================PRIVATE METHODS=============================//
 
     private void copyAvailableInformationFromOldBayesPm(BayesPm oldbayesPm,
                                                         int lowerBound, int upperBound) {
@@ -467,22 +482,6 @@ public final class BayesPm implements Pm, VariableSource {
         for (Node node : this.dag.getNodes()) {
             setNewValues(node, lowerBound, upperBound);
         }
-    }
-
-    private static int pickNumVals(int lowerBound, int upperBound) {
-        if (lowerBound < 2) {
-            throw new IllegalArgumentException(
-                    "Lower bound must be >= 2: " + lowerBound);
-        }
-
-        if (upperBound < lowerBound) {
-            throw new IllegalArgumentException(
-                    "Upper bound for number of categories must be >= lower " + "bound.");
-        }
-
-        int difference = upperBound - lowerBound;
-        RandomUtil randomUtil = RandomUtil.getInstance();
-        return randomUtil.nextInt(difference + 1) + lowerBound;
     }
 
     /**

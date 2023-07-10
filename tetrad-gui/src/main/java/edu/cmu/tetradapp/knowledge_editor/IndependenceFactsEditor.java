@@ -36,10 +36,9 @@ import java.io.IOException;
 import java.util.prefs.Preferences;
 
 /**
- * Edits knowledge by letting the user put variable names into tiers. The number
- * of tiers may be set. By default, it is assumed that the structure of the
- * tiers is Tier0 --&gt; Tier1 --&gt; Tier2 --&gt; ..., but special graphical structures
- * among the tiers may be set as well.
+ * Edits knowledge by letting the user put variable names into tiers. The number of tiers may be set. By default, it is
+ * assumed that the structure of the tiers is Tier0 --&gt; Tier1 --&gt; Tier2 --&gt; ..., but special graphical
+ * structures among the tiers may be set as well.
  *
  * @author josephramsey
  */
@@ -50,10 +49,9 @@ public class IndependenceFactsEditor extends JPanel {
     private JTextArea textArea;
 
     /**
-     * Constructs a Knowledge editor for the given knowledge, variable names
-     * (that is, the list of all variable names to be considered, which may vary
-     * from object to object even for the same knowledge), and possible source
-     * graph. The source graph is used only to arrange nodes in the edge panel.
+     * Constructs a Knowledge editor for the given knowledge, variable names (that is, the list of all variable names to
+     * be considered, which may vary from object to object even for the same knowledge), and possible source graph. The
+     * source graph is used only to arrange nodes in the edge panel.
      */
     public IndependenceFactsEditor(IndependenceFactsModel facts) {
         if (facts == null) {
@@ -70,6 +68,16 @@ public class IndependenceFactsEditor extends JPanel {
 
         add(tabbedPane, BorderLayout.CENTER);
         setPreferredSize(new Dimension(550, 500));
+    }
+
+    private static JFileChooser getJFileChooser() {
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation =
+                Preferences.userRoot().get("fileSaveLocation", "");
+        chooser.setCurrentDirectory(new File(sessionSaveLocation));
+        chooser.resetChoosableFileFilters();
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        return chooser;
     }
 
     private Component textDisplay() {
@@ -136,17 +144,6 @@ public class IndependenceFactsEditor extends JPanel {
 
     private JTextArea getTextArea() {
         return this.textArea;
-    }
-
-
-    private static JFileChooser getJFileChooser() {
-        JFileChooser chooser = new JFileChooser();
-        String sessionSaveLocation =
-                Preferences.userRoot().get("fileSaveLocation", "");
-        chooser.setCurrentDirectory(new File(sessionSaveLocation));
-        chooser.resetChoosableFileFilters();
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        return chooser;
     }
 }
 

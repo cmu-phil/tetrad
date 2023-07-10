@@ -35,18 +35,15 @@ import java.util.List;
 class ListTransferable implements Transferable {
 
     /**
-     * The list of graph nodes that constitutes the selection.
-     */
-    private final List list;
-
-    /**
      * Supported dataflavors--only one.
      */
     private static final DataFlavor[] dataFlavors = {
             new DataFlavor(ListTransferable.class, "String List Selection")};
-
-
     public static final DataFlavor DATA_FLAVOR = ListTransferable.dataFlavors[0];
+    /**
+     * The list of graph nodes that constitutes the selection.
+     */
+    private final List list;
 
 
     /**
@@ -63,13 +60,11 @@ class ListTransferable implements Transferable {
 
     /**
      * @param flavor the requested flavor for the data
-     * @return an object which represents the data to be transferred.  The
-     * class of the object returned is defined by the representation class
-     * of the flavor.
-     * @throws java.io.IOException                              if the data is no longer available
-     *                                                          in the requested flavor.
-     * @throws java.awt.datatransfer.UnsupportedFlavorException if the requested data flavor is
-     *                                                          not supported.
+     * @return an object which represents the data to be transferred.  The class of the object returned is defined by
+     * the representation class of the flavor.
+     * @throws java.io.IOException                              if the data is no longer available in the requested
+     *                                                          flavor.
+     * @throws java.awt.datatransfer.UnsupportedFlavorException if the requested data flavor is not supported.
      * @see DataFlavor#getRepresentationClass
      */
     public Object getTransferData(DataFlavor flavor)
@@ -83,18 +78,15 @@ class ListTransferable implements Transferable {
 
     /**
      * @param flavor the requested flavor for the data
-     * @return whether or not the specified data flavor is supported for
-     * this object.
+     * @return whether or not the specified data flavor is supported for this object.
      */
     public boolean isDataFlavorSupported(DataFlavor flavor) {
         return flavor.equals(ListTransferable.dataFlavors[0]);
     }
 
     /**
-     * @return an array of DataFlavor objects indicating the flavors the
-     * data can be provided in.  The array should be ordered according to
-     * preference for providing the data (from most richly descriptive to
-     * least descriptive).
+     * @return an array of DataFlavor objects indicating the flavors the data can be provided in.  The array should be
+     * ordered according to preference for providing the data (from most richly descriptive to least descriptive).
      */
     public DataFlavor[] getTransferDataFlavors() {
         return ListTransferable.dataFlavors;

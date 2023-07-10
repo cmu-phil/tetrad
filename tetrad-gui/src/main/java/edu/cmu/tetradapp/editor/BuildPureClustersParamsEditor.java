@@ -36,9 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class should access the getMappings mapped to it from the mapping to the
- * search classes. This class is the parameter editor currently for
- * BuildPureClusters parameters.
+ * This class should access the getMappings mapped to it from the mapping to the search classes. This class is the
+ * parameter editor currently for BuildPureClusters parameters.
  *
  * @author Ricardo Silva rbas@cs.cmu.edu
  */
@@ -52,18 +51,9 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
     private Object[] parentModels;
 
     /**
-     * Opens up an editor to let the user view the given
-     * BuildPureClustersRunner.
+     * Opens up an editor to let the user view the given BuildPureClustersRunner.
      */
     public BuildPureClustersParamsEditor() {
-    }
-
-    public void setParams(Parameters params) {
-        if (params == null) {
-            throw new NullPointerException();
-        }
-
-        this.params = params;
     }
 
     public void setParentModels(Object[] parentModels) {
@@ -170,6 +160,14 @@ public class BuildPureClustersParamsEditor extends JPanel implements ParameterEd
 
     private Parameters getParams() {
         return this.params;
+    }
+
+    public void setParams(Parameters params) {
+        if (params == null) {
+            throw new NullPointerException();
+        }
+
+        this.params = params;
     }
 }
 

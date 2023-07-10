@@ -117,6 +117,13 @@ public class Mapping implements TetradSerializable {
     }
 
     /**
+     * @return the value of the array element at (i, j).
+     */
+    public double getValue() {
+        return this.a.get(this.i, this.j);
+    }
+
+    /**
      * Sets the value of the array element at the stored coordinates (i, j). If the array is symmetric sets two
      * elements.
      */
@@ -134,13 +141,6 @@ public class Mapping implements TetradSerializable {
             this.a.set(this.j, this.i, x);
             this.a.set(this.i, this.j, x);
         }
-    }
-
-    /**
-     * @return the value of the array element at (i, j).
-     */
-    public double getValue() {
-        return this.a.get(this.i, this.j);
     }
 
     /**

@@ -62,6 +62,30 @@ public class CovSEard implements CovarianceFunction {
         this.numParameters = this.D + 1;
     }
 
+    private static Matrix squareDist(Matrix a) {
+        return CovSEard.squareDist(a, a);
+    }
+
+    private static Matrix squareDist(Matrix a, Matrix b) {
+        Matrix C = new Matrix(a.getColumnDimension(), b.getColumnDimension());
+        int m = a.getColumnDimension();
+        int n = b.getColumnDimension();
+        int d = a.getRowDimension();
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                double z = 0.0;
+                for (int k = 0; k < d; k++) {
+                    double t = a.get(k, i) - b.get(k, j);
+                    z += t * t;
+                }
+                C.set(i, j, z);
+            }
+        }
+
+        return C;
+    }
+
     /**
      * Returns the number of hyperparameters of <code>CovSEard</code>
      *
@@ -128,7 +152,6 @@ public class CovSEard implements CovarianceFunction {
         return new Matrix[]{A, B};
     }
 
-
     /**
      * Coompute the derivatives of this <code>CovarianceFunction</code> with respect to the hyperparameter with index
      * <code>idx</code>
@@ -171,30 +194,6 @@ public class CovSEard implements CovarianceFunction {
         }
 
         return A;
-    }
-
-    private static Matrix squareDist(Matrix a) {
-        return CovSEard.squareDist(a, a);
-    }
-
-    private static Matrix squareDist(Matrix a, Matrix b) {
-        Matrix C = new Matrix(a.getColumnDimension(), b.getColumnDimension());
-        int m = a.getColumnDimension();
-        int n = b.getColumnDimension();
-        int d = a.getRowDimension();
-
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                double z = 0.0;
-                for (int k = 0; k < d; k++) {
-                    double t = a.get(k, i) - b.get(k, j);
-                    z += t * t;
-                }
-                C.set(i, j, z);
-            }
-        }
-
-        return C;
     }
 
 }

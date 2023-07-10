@@ -37,33 +37,27 @@ import java.util.List;
  * @author josephramsey
  */
 public final class ContinuousDiscretizationSpec implements TetradSerializable, DiscretizationSpec {
-    static final long serialVersionUID = 23L;
-
-    /**
-     * Breakpoints, for continuous data.
-     *
-     * @serial
-     */
-    private final double[] breakpoints;
-
-    /**
-     * @serial
-     */
-    private final List<String> categories;
-
-
-    /**
-     * The method used.
-     */
-    private int method;
-
-
     /**
      * The types of discretization
      */
     public static final int EVENLY_DISTRIBUTED_VALUES = 1;
     public static final int EVENLY_DISTRIBUTED_INTERVALS = 2;
     public static final int NONE = 3;
+    static final long serialVersionUID = 23L;
+    /**
+     * Breakpoints, for continuous data.
+     *
+     * @serial
+     */
+    private final double[] breakpoints;
+    /**
+     * @serial
+     */
+    private final List<String> categories;
+    /**
+     * The method used.
+     */
+    private int method;
 
     //============================CONSTRUCTORS==========================//
 

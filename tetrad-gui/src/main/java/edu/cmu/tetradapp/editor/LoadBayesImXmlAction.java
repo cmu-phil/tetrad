@@ -51,6 +51,29 @@ class LoadBayesImXmlAction extends AbstractAction {
         this.bayesImEditor = bayesImEditor;
     }
 
+    private static JFileChooser getJFileChooser() {
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation = Preferences.userRoot().get(
+                "fileSaveLocation", Preferences.userRoot().absolutePath());
+        chooser.setCurrentDirectory(new File(sessionSaveLocation));
+        chooser.resetChoosableFileFilters();
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        return chooser;
+    }
+
+    private static void printDocument(Document document) {
+        Serializer serializer = new Serializer(System.out);
+
+        serializer.setLineSeparator("\n");
+        serializer.setIndent(2);
+
+        try {
+            serializer.write(document);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void actionPerformed(ActionEvent e) {
         if (this.bayesImWrapper == null) {
             throw new RuntimeException("Not a Bayes IM.");
@@ -96,29 +119,6 @@ class LoadBayesImXmlAction extends AbstractAction {
         } catch (IOException e2) {
             e2.printStackTrace();
             throw new RuntimeException("Had trouble reading the file...");
-        }
-    }
-
-    private static JFileChooser getJFileChooser() {
-        JFileChooser chooser = new JFileChooser();
-        String sessionSaveLocation = Preferences.userRoot().get(
-                "fileSaveLocation", Preferences.userRoot().absolutePath());
-        chooser.setCurrentDirectory(new File(sessionSaveLocation));
-        chooser.resetChoosableFileFilters();
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        return chooser;
-    }
-
-    private static void printDocument(Document document) {
-        Serializer serializer = new Serializer(System.out);
-
-        serializer.setLineSeparator("\n");
-        serializer.setIndent(2);
-
-        try {
-            serializer.write(document);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 }

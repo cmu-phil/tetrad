@@ -33,6 +33,16 @@ public class LoadGraphJson extends AbstractAction {
         this.graphEditable = graphEditable;
     }
 
+    private static JFileChooser getJFileChooser() {
+        JFileChooser chooser = new JFileChooser();
+        String sessionSaveLocation =
+                Preferences.userRoot().get("fileSaveLocation", "");
+        chooser.setCurrentDirectory(new File(sessionSaveLocation));
+        chooser.resetChoosableFileFilters();
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        return chooser;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         JFileChooser chooser = LoadGraphJson.getJFileChooser();
@@ -54,16 +64,6 @@ public class LoadGraphJson extends AbstractAction {
         // nodes in a circle.
 //        LayoutUtil.circleLayout(graph, 200, 200, 150);
         this.graphEditable.setGraph(graph);
-    }
-
-    private static JFileChooser getJFileChooser() {
-        JFileChooser chooser = new JFileChooser();
-        String sessionSaveLocation =
-                Preferences.userRoot().get("fileSaveLocation", "");
-        chooser.setCurrentDirectory(new File(sessionSaveLocation));
-        chooser.resetChoosableFileFilters();
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        return chooser;
     }
 
 }

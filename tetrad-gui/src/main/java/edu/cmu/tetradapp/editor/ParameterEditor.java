@@ -24,9 +24,8 @@ package edu.cmu.tetradapp.editor;
 import edu.cmu.tetrad.util.Parameters;
 
 /**
- * Implements an editor some specific type of parameter object. It is assumed
- * that the parameter editor implementing this class has a blank constructor,
- * that <code>setParameters</code> is called first, followed by
+ * Implements an editor some specific type of parameter object. It is assumed that the parameter editor implementing
+ * this class has a blank constructor, that <code>setParameters</code> is called first, followed by
  * <code>setParantModel</code>, then <code>setup</code>. It is also assumed
  * that the implementing class will implement JComponent.
  *
@@ -40,14 +39,13 @@ public interface ParameterEditor {
     void setParams(Parameters params);
 
     /**
-     * Sets the parent models that can be exploited for information in the
-     * editing process.
+     * Sets the parent models that can be exploited for information in the editing process.
      */
     void setParentModels(Object[] parentModels);
 
     /**
-     * Sets up the GUI. Preupposes that the parameter class has been set and
-     * that parent models have been passed, if applicable.
+     * Sets up the GUI. Preupposes that the parameter class has been set and that parent models have been passed, if
+     * applicable.
      */
     void setup();
 

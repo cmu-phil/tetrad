@@ -30,12 +30,12 @@ import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Gfci;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.pag.Rfci;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
-import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.FisherZ;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.independence.MSeparationTest;
 import edu.cmu.tetrad.algcomparison.independence.SemBicDTest;
-import edu.cmu.tetrad.algcomparison.score.MSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.GicScores;
+import edu.cmu.tetrad.algcomparison.score.MSeparationScore;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.simulation.*;
 import edu.cmu.tetrad.algcomparison.statistic.*;
@@ -52,7 +52,10 @@ import edu.cmu.tetrad.search.score.DegenerateGaussianScore;
 import edu.cmu.tetrad.search.score.GraphScore;
 import edu.cmu.tetrad.search.score.Score;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.*;
+import edu.cmu.tetrad.search.test.IndTestChiSquare;
+import edu.cmu.tetrad.search.test.IndTestDegenerateGaussianLrt;
+import edu.cmu.tetrad.search.test.IndTestFisherZ;
+import edu.cmu.tetrad.search.test.MsepTest;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.GraphoidAxioms;
 import edu.cmu.tetrad.search.utils.LogUtilsSearch;
@@ -95,6 +98,70 @@ public final class TestGrasp {
 
         new TestGrasp().testPredictGoodStats();
 
+    }
+
+    @NotNull
+    private static edu.cmu.tetrad.search.Grasp getGrasp(Score score, IndependenceTest test) {
+        edu.cmu.tetrad.search.Grasp grasp;
+
+        if (true) {
+            grasp = new edu.cmu.tetrad.search.Grasp(test);
+        } else {
+            grasp = new edu.cmu.tetrad.search.Grasp(score);
+        }
+
+        return grasp;
+    }
+
+    private static boolean printFailed(Graph g, Graph dag, String alg) {
+        double ap = new AdjacencyPrecision().getValue(g, dag, null);
+        double ar = new AdjacencyRecall().getValue(g, dag, null);
+        double ahp = new ArrowheadPrecision().getValue(g, dag, null);
+        double ahr = new ArrowheadRecall().getValue(g, dag, null);
+
+        NumberFormat nf = new DecimalFormat("0.00");
+
+        if (dag.getNumEdges() != g.getNumEdges()) {
+            System.out.println("Failed " + alg +
+                    " ap = " + nf.format(ap) + " ar = " + nf.format(ar)
+                    + " ahp = " + nf.format(ahp) + " ahr = " + nf.format(ahr));
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void runTestLoop(Graph g, List<Node> order, Score score, IndependenceTest test, boolean useTest) {
+        g = new EdgeListGraph(g);
+        order = new ArrayList<>(order);
+
+        edu.cmu.tetrad.search.Grasp grasp = getGrasp(score, test);
+
+        grasp.setNumStarts(1);
+        grasp.setVerbose(true);
+        List<Node> perm = grasp.bestOrder(order);
+        Graph dag = grasp.getGraph(false);
+
+        printFailed(g, dag, order + " \n" + dag);
+    }
+
+    @AfterClass
+    public static void afterClass() throws Exception {
+
+    }
+
+    private static void extractedWayne(Node x1, Node x2, Node x3, Node x4, IndependenceTest chiSq) {
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet()) + " " + chiSq.checkIndependence(x1, x2).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).isIndependent());
+        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).isIndependent());
+    }
+
+    @NotNull
+    private static Set<Node> nodeSet(Node... n) {
+        Set<Node> list = new HashSet<>();
+        for (Node m : n) list.add(m);
+        return list;
     }
 
     private void testExampleBnSim() {
@@ -260,56 +327,6 @@ public final class TestGrasp {
         comparison.setSortByUtility(true);
         comparison.setShowAlgorithmIndices(true);
         comparison.compareFromSimulations("pvalue_comparison", simulations, algorithms, statistics, params);
-    }
-
-    @NotNull
-    private static edu.cmu.tetrad.search.Grasp getGrasp(Score score, IndependenceTest test) {
-        edu.cmu.tetrad.search.Grasp grasp;
-
-        if (true) {
-            grasp = new edu.cmu.tetrad.search.Grasp(test);
-        } else {
-            grasp = new edu.cmu.tetrad.search.Grasp(score);
-        }
-
-        return grasp;
-    }
-
-    private static boolean printFailed(Graph g, Graph dag, String alg) {
-        double ap = new AdjacencyPrecision().getValue(g, dag, null);
-        double ar = new AdjacencyRecall().getValue(g, dag, null);
-        double ahp = new ArrowheadPrecision().getValue(g, dag, null);
-        double ahr = new ArrowheadRecall().getValue(g, dag, null);
-
-        NumberFormat nf = new DecimalFormat("0.00");
-
-        if (dag.getNumEdges() != g.getNumEdges()) {
-            System.out.println("Failed " + alg +
-                    " ap = " + nf.format(ap) + " ar = " + nf.format(ar)
-                    + " ahp = " + nf.format(ahp) + " ahr = " + nf.format(ahr));
-            return true;
-        }
-
-        return false;
-    }
-
-    private static void runTestLoop(Graph g, List<Node> order, Score score, IndependenceTest test, boolean useTest) {
-        g = new EdgeListGraph(g);
-        order = new ArrayList<>(order);
-
-        edu.cmu.tetrad.search.Grasp grasp = getGrasp(score, test);
-
-        grasp.setNumStarts(1);
-        grasp.setVerbose(true);
-        List<Node> perm = grasp.bestOrder(order);
-        Graph dag = grasp.getGraph(false);
-
-        printFailed(g, dag, order + " \n" + dag);
-    }
-
-    @AfterClass
-    public static void afterClass() throws Exception {
-
     }
 
     //    @Test
@@ -701,7 +718,6 @@ public final class TestGrasp {
                 algorithms, statistics, params);
     }
 
-
     //    @Test
     public void testGraspForClark() {
         Parameters params = new Parameters();
@@ -827,7 +843,6 @@ public final class TestGrasp {
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/testGrasp1",
                 simulations, algorithms, statistics, params);
     }
-
 
     //    @Test
     public void testComparePearlGrowShrink() {
@@ -1118,7 +1133,6 @@ public final class TestGrasp {
         comparison.compareFromSimulations("/Users/josephramsey/Downloads/grasp/Lu.figure.6", simulations,
                 algorithms, statistics, params);
     }
-
 
     //    @Test
     public void testPaperSimulations() {
@@ -1752,20 +1766,6 @@ public final class TestGrasp {
         extractedWayne(x3, x4, x1, x2, chiSq);
 
 
-    }
-
-    private static void extractedWayne(Node x1, Node x2, Node x3, Node x4, IndependenceTest chiSq) {
-        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet()) + " " + chiSq.checkIndependence(x1, x2).isIndependent());
-        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x3)) + " " + chiSq.checkIndependence(x1, x2, x3).isIndependent());
-        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x4)) + " " + chiSq.checkIndependence(x1, x2, x4).isIndependent());
-        System.out.println(LogUtilsSearch.independenceFact(x1, x2, nodeSet(x3, x4)) + " " + chiSq.checkIndependence(x1, x2, x3, x4).isIndependent());
-    }
-
-    @NotNull
-    private static Set<Node> nodeSet(Node... n) {
-        Set<Node> list = new HashSet<>();
-        for (Node m : n) list.add(m);
-        return list;
     }
 
     private Set<Node> set(ContinuousVariable... s) {

@@ -40,7 +40,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * <p>Implements the PC-LiNGAM algorithm which first finds a CPDAG for the variables
@@ -275,16 +274,6 @@ public class PcLingam {
         return this.dataSet;
     }
 
-    private static class Score {
-        public Score(double score, double[] pvals) {
-            this.score = score;
-            this.pvals = pvals;
-        }
-
-        double score;
-        double[] pvals;
-    }
-
     private Node getVariable(List<Node> variables, String name) {
         for (Node node : variables) {
             if (name.equals(node.getName())) {
@@ -293,6 +282,15 @@ public class PcLingam {
         }
 
         return null;
+    }
+
+    private static class Score {
+        double score;
+        double[] pvals;
+        public Score(double score, double[] pvals) {
+            this.score = score;
+            this.pvals = pvals;
+        }
     }
 }
 

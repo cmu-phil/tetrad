@@ -112,9 +112,8 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
      */
     public static class Signature implements ExpressionSignature {
         static final long serialVersionUID = 23L;
-
-        private String signature;
         private final String[] arguments;
+        private String signature;
 
         public Signature(String function, boolean unlimited, boolean commulative, String... arguments) {
             if (function == null) {
@@ -141,6 +140,12 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
             }
         }
 
+        /**
+         * Generates a simple exemplar of this class to test serialization.
+         */
+        public static Signature serializableInstance() {
+            return new Signature("+", true, false, "a");
+        }
 
         public String getSignature() {
             return this.signature;
@@ -152,13 +157,6 @@ abstract class AbstractExpressionDescriptor implements ExpressionDescriptor {
 
         public String getArgument(int index) {
             return this.arguments[index];
-        }
-
-        /**
-         * Generates a simple exemplar of this class to test serialization.
-         */
-        public static Signature serializableInstance() {
-            return new Signature("+", true, false, "a");
         }
     }
 

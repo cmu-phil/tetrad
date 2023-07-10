@@ -35,9 +35,8 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /**
- * Edits a standardized SEM model in which (a) all means are zero, (b) all
- * variances are equal to 1, and (c) the error covariance matrix is always
- * positive definite. Simulations produce standardized data.
+ * Edits a standardized SEM model in which (a) all means are zero, (b) all variances are equal to 1, and (c) the error
+ * covariance matrix is always positive definite. Simulations produce standardized data.
  *
  * @author josephramsey
  */
@@ -49,16 +48,14 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
      * The SemIm being edited.
      */
     private final StandardizedSemIm semIm;
-
-    /**
-     * The graphical editor for the SemIm.
-     */
-    private StandardizedSemImGraphicalEditor standardizedSemImGraphicalEditor;
-
     /**
      * The menu item that lets the user either show or hide error terms.
      */
     private final JMenuItem errorTerms;
+    /**
+     * The graphical editor for the SemIm.
+     */
+    private StandardizedSemImGraphicalEditor standardizedSemImGraphicalEditor;
     private StandardizedSemImImpliedMatricesPanel impliedMatricesPanel;
 
     //========================CONSTRUCTORS===========================//
@@ -138,16 +135,14 @@ public final class StandardizedSemImEditor extends JPanel implements LayoutEdita
     }
 
     /**
-     * @return the knowledge currently stored in the workbench. Required for and
-     * interface.
+     * @return the knowledge currently stored in the workbench. Required for and interface.
      */
     public Knowledge getKnowledge() {
         return this.standardizedSemImGraphicalEditor.getWorkbench().getKnowledge();
     }
 
     /**
-     * @return the source graph currently stored in the workbench. Required for
-     * an interface.
+     * @return the source graph currently stored in the workbench. Required for an interface.
      */
     public Graph getSourceGraph() {
         return this.standardizedSemImGraphicalEditor.getWorkbench().getSourceGraph();
@@ -227,6 +222,15 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
         setMatrixSelection(matrixSelection);
     }
 
+    private static java.util.List<String> getImpliedSelections() {
+        java.util.List<String> list = new ArrayList<>();
+        list.add("Implied covariance matrix (all variables)");
+        list.add("Implied covariance matrix (measured variables only)");
+        list.add("Implied correlation matrix (all variables)");
+        list.add("Implied correlation matrix (measured variables only)");
+        return list;
+    }
+
     private JTable impliedJTable() {
         if (this.impliedJTable == null) {
             this.impliedJTable = new JTable();
@@ -289,15 +293,6 @@ class StandardizedSemImImpliedMatricesPanel extends JPanel {
             impliedJTable().doLayout();
         } catch (IllegalArgumentException ignored) {
         }
-    }
-
-    private static java.util.List<String> getImpliedSelections() {
-        java.util.List<String> list = new ArrayList<>();
-        list.add("Implied covariance matrix (all variables)");
-        list.add("Implied covariance matrix (measured variables only)");
-        list.add("Implied correlation matrix (all variables)");
-        list.add("Implied correlation matrix (measured variables only)");
-        return list;
     }
 
     private StandardizedSemIm getSemIm() {

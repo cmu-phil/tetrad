@@ -13,10 +13,10 @@ import java.util.Set;
  * @author josephramsey
  */
 public class AdjacencyConfusion {
+    private final int tn;
     private int tp;
     private int fp;
     private int fn;
-    private final int tn;
 
     public AdjacencyConfusion(Graph truth, Graph est) {
         this.tp = 0;

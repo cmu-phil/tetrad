@@ -31,8 +31,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- * Displays a workbench editing workbench area together with a toolbench for
- * editing tetrad-style graphs.
+ * Displays a workbench editing workbench area together with a toolbench for editing tetrad-style graphs.
  *
  * @author Aaron Powers
  * @author josephramsey
@@ -49,8 +48,7 @@ public class BayesPmEditor extends JPanel
     private BayesPmEditorWizard wizard;
 
     /**
-     * Constructs a new editor for parameterized models (for now only for Bayes
-     * net parameterized models).
+     * Constructs a new editor for parameterized models (for now only for Bayes net parameterized models).
      */
     public BayesPmEditor(BayesPmWrapper wrapper) {
         this.wrapper = wrapper;
@@ -135,8 +133,7 @@ public class BayesPmEditor extends JPanel
     }
 
     /**
-     * G
-     * Reacts to property change events.
+     * G Reacts to property change events.
      */
     public void propertyChange(PropertyChangeEvent e) {
         if ("editorClosing".equals(e.getPropertyName())) {

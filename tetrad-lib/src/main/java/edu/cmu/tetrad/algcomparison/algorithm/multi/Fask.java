@@ -193,13 +193,13 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
     }
 
     @Override
-    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
-        this.test = independenceWrapper;
+    public IndependenceWrapper getIndependenceWrapper() {
+        return this.test;
     }
 
     @Override
-    public IndependenceWrapper getIndependenceWrapper() {
-        return this.test;
+    public void setIndependenceWrapper(IndependenceWrapper independenceWrapper) {
+        this.test = independenceWrapper;
     }
 
     @Override
@@ -207,14 +207,13 @@ public class Fask implements Algorithm, HasKnowledge, UsesScoreWrapper, TakesInd
         this.algorithm = algorithm;
     }
 
+    @Override
+    public ScoreWrapper getScoreWrapper() {
+        return this.score;
+    }
 
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
-    }
-
-    @Override
-    public ScoreWrapper getScoreWrapper() {
-        return this.score;
     }
 }

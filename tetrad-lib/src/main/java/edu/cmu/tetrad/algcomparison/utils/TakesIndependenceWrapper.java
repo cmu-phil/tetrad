@@ -7,8 +7,8 @@ import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
  */
 public interface TakesIndependenceWrapper {
 
-    void setIndependenceWrapper(IndependenceWrapper independenceWrapper);
-
     IndependenceWrapper getIndependenceWrapper();
+
+    void setIndependenceWrapper(IndependenceWrapper independenceWrapper);
 
 }

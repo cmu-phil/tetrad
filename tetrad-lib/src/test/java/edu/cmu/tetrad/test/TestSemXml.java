@@ -63,22 +63,6 @@ public final class TestSemXml extends TestCase {
         SemIm semIm2 = SemXmlParser.getSemIm(element);
     }
 
-    public void testRoundtrip2() {
-        SemIm semIm = TestSemXml.sampleSemIm1();
-        Element element = SemXmlRenderer.getElement(semIm);
-
-        SemXmlParser parser = new SemXmlParser();
-        SemIm semIm2 = SemXmlParser.getSemIm(element);
-    }
-
-    public void testRoundtrip3() {
-        SemIm semIm = TestSemXml.sampleSemIm1();
-        Element element = SemXmlRenderer.getElement(semIm);
-
-        SemXmlParser parser = new SemXmlParser();
-        SemIm semIm2 = SemXmlParser.getSemIm(element);
-    }
-
     private static SemIm sampleSemIm1() {
         List<Node> nodes = new ArrayList<>();
 
@@ -123,6 +107,22 @@ public final class TestSemXml extends TestCase {
         // Edit the name of the class in the parens to match the name
         // of this class.
         return new TestSuite(TestSemXml.class);
+    }
+
+    public void testRoundtrip2() {
+        SemIm semIm = TestSemXml.sampleSemIm1();
+        Element element = SemXmlRenderer.getElement(semIm);
+
+        SemXmlParser parser = new SemXmlParser();
+        SemIm semIm2 = SemXmlParser.getSemIm(element);
+    }
+
+    public void testRoundtrip3() {
+        SemIm semIm = TestSemXml.sampleSemIm1();
+        Element element = SemXmlRenderer.getElement(semIm);
+
+        SemXmlParser parser = new SemXmlParser();
+        SemIm semIm2 = SemXmlParser.getSemIm(element);
     }
 }
 

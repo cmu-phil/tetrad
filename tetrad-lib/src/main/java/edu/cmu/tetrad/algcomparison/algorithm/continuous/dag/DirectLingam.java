@@ -2,7 +2,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.continuous.dag;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
-import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
@@ -106,5 +105,7 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
     }
 
     @Override
-    public void setScoreWrapper(ScoreWrapper score) { this.score = score; }
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
+    }
 }

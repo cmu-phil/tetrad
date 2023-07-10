@@ -123,13 +123,13 @@ public class SemOptimizerRicf implements SemOptimizer {
     }
 
     @Override
-    public void setNumRestarts(int numRestarts) {
-        this.numRestarts = numRestarts;
+    public int getNumRestarts() {
+        return this.numRestarts;
     }
 
     @Override
-    public int getNumRestarts() {
-        return this.numRestarts;
+    public void setNumRestarts(int numRestarts) {
+        this.numRestarts = numRestarts;
     }
 
     public String toString() {

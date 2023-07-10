@@ -66,13 +66,13 @@ import java.util.Set;
  */
 public final class Cpc implements IGraphSearch {
     private final IndependenceTest independenceTest;
+    private final TetradLogger logger = TetradLogger.getInstance();
     private Knowledge knowledge = new Knowledge();
     private Graph graph;
     private long elapsedTime;
     private Set<Triple> colliderTriples;
     private Set<Triple> noncolliderTriples;
     private Set<Triple> ambiguousTriples;
-    private final TetradLogger logger = TetradLogger.getInstance();
     private SepsetMap sepsets;
     private int depth = 1000;
     private boolean stable = true;
@@ -173,25 +173,6 @@ public final class Cpc implements IGraphSearch {
     }
 
     /**
-     * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
-     * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multicore systems.
-     *
-     * @param depth This maximum.
-     */
-    public void setDepth(int depth) {
-        if (depth < -1) {
-            throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
-        }
-
-        if (depth == Integer.MAX_VALUE) {
-            throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
-                    "due to a known bug.");
-        }
-
-        this.depth = depth;
-    }
-
-    /**
      * Returns the elapsed time of search in milliseconds, after <code>search()</code> has been run.
      *
      * @return This time.
@@ -235,6 +216,25 @@ public final class Cpc implements IGraphSearch {
      */
     public int getDepth() {
         return this.depth;
+    }
+
+    /**
+     * Sets the maximum number of variables conditioned on in any conditional independence test. If set to -1, the value
+     * of 1000 will be used. May not be set to Integer.MAX_VALUE, due to a Java bug on multicore systems.
+     *
+     * @param depth This maximum.
+     */
+    public void setDepth(int depth) {
+        if (depth < -1) {
+            throw new IllegalArgumentException("Depth must be -1 or >= 0: " + depth);
+        }
+
+        if (depth == Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Depth must not be Integer.MAX_VALUE, " +
+                    "due to a known bug.");
+        }
+
+        this.depth = depth;
     }
 
     /**

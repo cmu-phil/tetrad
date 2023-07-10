@@ -55,6 +55,98 @@ public class Discretizer {
         this.specs = specs;
     }
 
+    public static double[] getEqualFrequencyBreakPoints(double[] _data, int numberOfCategories) {
+        double[] data = new double[_data.length];
+        System.arraycopy(_data, 0, data, 0, data.length);
+
+        // first sort the data.
+        Arrays.sort(data);
+
+        int n = data.length / numberOfCategories;
+        double[] breakpoints = new double[numberOfCategories - 1];
+
+        for (int i = 0; i < breakpoints.length; i++) {
+            breakpoints[i] = data[n * (i + 1)];
+        }
+
+        return breakpoints;
+    }
+
+    /**
+     * Discretizes the continuous data in the given column using the specified cutoffs and category names. The following
+     * scheme is used. If cutoffs[i - 1] &lt; v &lt;= cutoffs[i] (where cutoffs[-1] = negative infinity), then v is
+     * mapped to category i. If category names are supplied, the discrete column returned will use these category
+     * names.
+     *
+     * @param cutoffs      The cutoffs used to discretize the data. Should have length c - 1, where c is the number of
+     *                     categories in the discretized data.
+     * @param variableName the name of the returned variable.
+     * @param categories   An optional list of category names; may be null. If this is supplied, the discrete column
+     *                     returned will use these category names. If this is non-null, it must have length c, where c
+     *                     is the number of categories for the discretized data. If any category names are null, default
+     *                     category names will be used for those.
+     * @return The discretized column.
+     */
+    public static Discretization discretize(double[] _data, double[] cutoffs,
+                                            String variableName, List<String> categories) {
+
+        if (cutoffs == null) {
+            throw new NullPointerException();
+        }
+
+        for (int i = 0; i < cutoffs.length - 1; i++) {
+            if (!(cutoffs[i] <= cutoffs[i + 1])) {
+                System.out.println(
+                        "Cutoffs should be in nondecreasing order: "
+                                + Arrays.toString(cutoffs)
+                );
+            }
+        }
+
+        if (variableName == null) {
+            throw new NullPointerException();
+        }
+
+        int numCategories = cutoffs.length + 1;
+
+        if (categories != null && categories.size() != numCategories) {
+            throw new IllegalArgumentException("If specified, the list of " +
+                    "categories names must be one longer than the length of " +
+                    "the cutoffs array.");
+        }
+
+        DiscreteVariable variable;
+
+        if (categories == null) {
+            variable = new DiscreteVariable(variableName, numCategories);
+        } else {
+            variable = new DiscreteVariable(variableName, categories);
+        }
+
+        int[] discreteData = new int[_data.length];
+
+        loop:
+        for (int i = 0; i < _data.length; i++) {
+            if (Double.isNaN(_data[i])) {
+                discreteData[i] = DiscreteVariable.MISSING_VALUE;
+                continue;
+            }
+
+            for (int j = 0; j < cutoffs.length; j++) {
+                if (_data[i] > Double.NEGATIVE_INFINITY
+                        && _data[i] < Double.POSITIVE_INFINITY
+                        && _data[i] < cutoffs[j]) {
+                    discreteData[i] = j;
+                    continue loop;
+                }
+            }
+
+            discreteData[i] = cutoffs.length;
+        }
+
+        return new Discretization(variable, discreteData);
+    }
+
     /**
      * Sets the given node to discretized using evenly distributed values using the given number of categories.
      */
@@ -105,12 +197,12 @@ public class Discretizer {
         this.specs.put(node, spec);
     }
 
-    public void setVariablesCopied(boolean unselectedVariabledCopied) {
-        this.variablesCopied = unselectedVariabledCopied;
-    }
-
     private boolean isVariablesCopied() {
         return this.variablesCopied;
+    }
+
+    public void setVariablesCopied(boolean unselectedVariabledCopied) {
+        this.variablesCopied = unselectedVariabledCopied;
     }
 
     /**
@@ -224,99 +316,6 @@ public class Discretizer {
             }
         }
         return newDataSet;
-    }
-
-    public static double[] getEqualFrequencyBreakPoints(double[] _data, int numberOfCategories) {
-        double[] data = new double[_data.length];
-        System.arraycopy(_data, 0, data, 0, data.length);
-
-        // first sort the data.
-        Arrays.sort(data);
-
-        int n = data.length / numberOfCategories;
-        double[] breakpoints = new double[numberOfCategories - 1];
-
-        for (int i = 0; i < breakpoints.length; i++) {
-            breakpoints[i] = data[n * (i + 1)];
-        }
-
-        return breakpoints;
-    }
-
-
-    /**
-     * Discretizes the continuous data in the given column using the specified cutoffs and category names. The following
-     * scheme is used. If cutoffs[i - 1] &lt; v &lt;= cutoffs[i] (where cutoffs[-1] = negative infinity), then v is
-     * mapped to category i. If category names are supplied, the discrete column returned will use these category
-     * names.
-     *
-     * @param cutoffs      The cutoffs used to discretize the data. Should have length c - 1, where c is the number of
-     *                     categories in the discretized data.
-     * @param variableName the name of the returned variable.
-     * @param categories   An optional list of category names; may be null. If this is supplied, the discrete column
-     *                     returned will use these category names. If this is non-null, it must have length c, where c
-     *                     is the number of categories for the discretized data. If any category names are null, default
-     *                     category names will be used for those.
-     * @return The discretized column.
-     */
-    public static Discretization discretize(double[] _data, double[] cutoffs,
-                                            String variableName, List<String> categories) {
-
-        if (cutoffs == null) {
-            throw new NullPointerException();
-        }
-
-        for (int i = 0; i < cutoffs.length - 1; i++) {
-            if (!(cutoffs[i] <= cutoffs[i + 1])) {
-                System.out.println(
-                        "Cutoffs should be in nondecreasing order: "
-                                + Arrays.toString(cutoffs)
-                );
-            }
-        }
-
-        if (variableName == null) {
-            throw new NullPointerException();
-        }
-
-        int numCategories = cutoffs.length + 1;
-
-        if (categories != null && categories.size() != numCategories) {
-            throw new IllegalArgumentException("If specified, the list of " +
-                    "categories names must be one longer than the length of " +
-                    "the cutoffs array.");
-        }
-
-        DiscreteVariable variable;
-
-        if (categories == null) {
-            variable = new DiscreteVariable(variableName, numCategories);
-        } else {
-            variable = new DiscreteVariable(variableName, categories);
-        }
-
-        int[] discreteData = new int[_data.length];
-
-        loop:
-        for (int i = 0; i < _data.length; i++) {
-            if (Double.isNaN(_data[i])) {
-                discreteData[i] = DiscreteVariable.MISSING_VALUE;
-                continue;
-            }
-
-            for (int j = 0; j < cutoffs.length; j++) {
-                if (_data[i] > Double.NEGATIVE_INFINITY
-                        && _data[i] < Double.POSITIVE_INFINITY
-                        && _data[i] < cutoffs[j]) {
-                    discreteData[i] = j;
-                    continue loop;
-                }
-            }
-
-            discreteData[i] = cutoffs.length;
-        }
-
-        return new Discretization(variable, discreteData);
     }
 
     //======================== Classes ================================//

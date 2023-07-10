@@ -65,32 +65,19 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  */
 public class Ftfc {
 
-    /**
-     * Gives the options to be used in FOFC to sort through the various possibilities for forming clusters to find the
-     * best options. SAG (Seed and Grow) looks for good seed clusters and then grows them by adding one variable at a
-     * time. GAP (Grow and Pick) grows out all the cluster initially and then just picks from among these. SAG is
-     * generally faster; GAP is generally slower but more accurate.
-     */
-    public enum Algorithm {SAG, GAP}
-
     private final CorrelationMatrix corr;
     // The list of all variables.
     private final List<Node> variables;
-
     // The significance level.
     private final double alpha;
-
     // The Delta test. Testing two sextads simultaneously.
     private final DeltaSextadTest test;
-
     // The data.
     private final transient DataModel dataModel;
-
+    private final Algorithm algorithm;
     private List<List<Node>> clusters;
 
     private boolean verbose;
-    private final Algorithm algorithm;
-
     /**
      * Conctructor.
      *
@@ -203,6 +190,57 @@ public class Ftfc {
 
     }
 
+    private Set<List<Integer>> findPurepentads(List<Integer> variables) {
+        if (variables.size() < 6) {
+            return new HashSet<>();
+        }
+
+        log("Finding pure pentads.", true);
+
+        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), 5);
+        int[] choice;
+        Set<List<Integer>> purePentads = new HashSet<>();
+        CHOICE:
+        while ((choice = gen.next()) != null) {
+            int n1 = variables.get(choice[0]);
+            int n2 = variables.get(choice[1]);
+            int n3 = variables.get(choice[2]);
+            int n4 = variables.get(choice[3]);
+            int n5 = variables.get(choice[4]);
+
+            List<Integer> pentad = pentad(n1, n2, n3, n4, n5);
+
+            if (zeroCorr(pentad, 4)) continue;
+
+            for (int o : variables) {
+                if (pentad.contains(o)) {
+                    continue;
+                }
+
+                List<Integer> sextet = sextet(n1, n2, n3, n4, n5, o);
+
+                Collections.sort(sextet);
+
+                boolean vanishes = vanishes(sextet);
+
+                if (!vanishes) {
+                    continue CHOICE;
+                }
+            }
+
+            List<Integer> _cluster = new ArrayList<>(pentad);
+
+            if (this.verbose) {
+                System.out.println(variablesForIndices(pentad));
+                log("++" + variablesForIndices(pentad), false);
+            }
+
+            purePentads.add(_cluster);
+        }
+
+        return purePentads;
+    }
+
 
 //    // renjiey
 //    private int findFrequentestIndex(Integer[] outliers) {
@@ -300,57 +338,6 @@ public class Ftfc {
 //        }
 //        return list.toArray(new Integer[1]);
 //    }
-
-    private Set<List<Integer>> findPurepentads(List<Integer> variables) {
-        if (variables.size() < 6) {
-            return new HashSet<>();
-        }
-
-        log("Finding pure pentads.", true);
-
-        ChoiceGenerator gen = new ChoiceGenerator(variables.size(), 5);
-        int[] choice;
-        Set<List<Integer>> purePentads = new HashSet<>();
-        CHOICE:
-        while ((choice = gen.next()) != null) {
-            int n1 = variables.get(choice[0]);
-            int n2 = variables.get(choice[1]);
-            int n3 = variables.get(choice[2]);
-            int n4 = variables.get(choice[3]);
-            int n5 = variables.get(choice[4]);
-
-            List<Integer> pentad = pentad(n1, n2, n3, n4, n5);
-
-            if (zeroCorr(pentad, 4)) continue;
-
-            for (int o : variables) {
-                if (pentad.contains(o)) {
-                    continue;
-                }
-
-                List<Integer> sextet = sextet(n1, n2, n3, n4, n5, o);
-
-                Collections.sort(sextet);
-
-                boolean vanishes = vanishes(sextet);
-
-                if (!vanishes) {
-                    continue CHOICE;
-                }
-            }
-
-            List<Integer> _cluster = new ArrayList<>(pentad);
-
-            if (this.verbose) {
-                System.out.println(variablesForIndices(pentad));
-                log("++" + variablesForIndices(pentad), false);
-            }
-
-            purePentads.add(_cluster);
-        }
-
-        return purePentads;
-    }
 
     private Set<List<Integer>> combinePurePentads(Set<List<Integer>> purePentads, List<Integer> _variables) {
         log("Growing pure pentads.", true);
@@ -802,17 +789,17 @@ public class Ftfc {
         return 1.0 - q;
     }
 
-//    private int dofDrton(int n) {
-//        int dof = ((n - 2) * (n - 3)) / 2 - 2;
-//        if (dof < 0) dof = 0;
-//        return dof;
-//    }
-
     private int dofHarman(int n) {
         int dof = n * (n - 5) / 2 + 1;
         if (dof < 0) dof = 0;
         return dof;
     }
+
+//    private int dofDrton(int n) {
+//        int dof = ((n - 2) * (n - 3)) / 2 - 2;
+//        if (dof < 0) dof = 0;
+//        return dof;
+//    }
 
     private List<Node> variablesForIndices(List<Integer> cluster) {
         List<Node> _cluster = new ArrayList<>();
@@ -896,6 +883,22 @@ public class Ftfc {
         return est.estimate();
     }
 
+    private List<Integer> sextet(int n1, int n2, int n3, int n4, int n5, int n6) {
+        List<Integer> sextet = new ArrayList<>();
+        sextet.add(n1);
+        sextet.add(n2);
+        sextet.add(n3);
+        sextet.add(n4);
+        sextet.add(n5);
+        sextet.add(n6);
+
+        if (new HashSet<>(sextet).size() < 6)
+            throw new IllegalArgumentException("sextet elements must be unique: <" + n1 + ", " + n2 + ", " + n3
+                    + ", " + n4 + ", " + n5 + ", " + n6 + ">");
+
+        return sextet;
+    }
+
 //    private SemIm estimateModel(List<List<Integer>> clusters) {
 //        Graph g = new EdgeListGraph();
 //
@@ -962,22 +965,6 @@ public class Ftfc {
 //
 //        return est.estimate();
 //    }
-
-    private List<Integer> sextet(int n1, int n2, int n3, int n4, int n5, int n6) {
-        List<Integer> sextet = new ArrayList<>();
-        sextet.add(n1);
-        sextet.add(n2);
-        sextet.add(n3);
-        sextet.add(n4);
-        sextet.add(n5);
-        sextet.add(n6);
-
-        if (new HashSet<>(sextet).size() < 6)
-            throw new IllegalArgumentException("sextet elements must be unique: <" + n1 + ", " + n2 + ", " + n3
-                    + ", " + n4 + ", " + n5 + ", " + n6 + ">");
-
-        return sextet;
-    }
 
     private List<Integer> pentad(int n1, int n2, int n3, int n4, int n5) {
         List<Integer> pentad = new ArrayList<>();
@@ -1135,6 +1122,14 @@ public class Ftfc {
 //            System.out.println(s);
         }
     }
+
+    /**
+     * Gives the options to be used in FOFC to sort through the various possibilities for forming clusters to find the
+     * best options. SAG (Seed and Grow) looks for good seed clusters and then grows them by adding one variable at a
+     * time. GAP (Grow and Pick) grows out all the cluster initially and then just picks from among these. SAG is
+     * generally faster; GAP is generally slower but more accurate.
+     */
+    public enum Algorithm {SAG, GAP}
 }
 
 

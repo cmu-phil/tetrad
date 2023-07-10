@@ -66,8 +66,7 @@ class LoggingMenu extends JMenu {
 
 
     /**
-     * Constructs the logging menu, given the parent component that should be used
-     * to center dialogs on.
+     * Constructs the logging menu, given the parent component that should be used to center dialogs on.
      */
     public LoggingMenu(TetradLoggerConfig config, Component parent) {
         this(config);

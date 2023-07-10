@@ -39,8 +39,7 @@ import java.util.List;
 import java.util.*;
 
 /**
- * Allows the user to specify how a selected list of columns should be
- * discretized.
+ * Allows the user to specify how a selected list of columns should be discretized.
  *
  * @author Tyler Gibson
  * @author josephramsey
@@ -48,15 +47,13 @@ import java.util.*;
 public class DiscretizationParamsEditor extends JPanel implements FinalizingParameterEditor {
 
     /**
-     * The data set that will be discretized.
-     */
-    private DataSet sourceDataSet;
-
-    /**
      * A map from nodes to their editors.
      */
     private final Map<Node, DiscretizationEditor> nodeEditors = new HashMap<>();
-
+    /**
+     * The data set that will be discretized.
+     */
+    private DataSet sourceDataSet;
     /**
      * A tabbed pane to store the editors in.
      */
@@ -66,9 +63,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
 
     /**
-     * Constructs a new editor that will allow the user to specify how to
-     * discretize each of the columns in the given list. The editor will return
-     * the discretized data set.
+     * Constructs a new editor that will allow the user to specify how to discretize each of the columns in the given
+     * list. The editor will return the discretized data set.
      */
     public DiscretizationParamsEditor() {
 
@@ -76,6 +72,16 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
     //============================= Public Methods ===================================//
 
+    private static List<Node> getSelected(JList list) {
+        List selected = list.getSelectedValuesList();
+        List<Node> nodes = new LinkedList<>();
+        if (selected != null) {
+            for (Object o : selected) {
+                nodes.add((Node) o);
+            }
+        }
+        return nodes;
+    }
 
     /**
      * Sets up the GUI.
@@ -204,7 +210,6 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         add(hBox, BorderLayout.CENTER);
     }
 
-
     /**
      * Adds all the discretization info to the params.
      *
@@ -223,7 +228,6 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         this.parameters.set("discretizationSpecs", map);
         return true;
     }
-
 
     /**
      * Sets the previous params, must be <code>DiscretizationParams</code>.
@@ -256,27 +260,14 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         this.sourceDataSet = (DataSet) model;
     }
 
+    //=============================== Private Methods ================================//
+
     /**
      * @return true
      */
     public boolean mustBeShown() {
         return true;
     }
-
-    //=============================== Private Methods ================================//
-
-
-    private static List<Node> getSelected(JList list) {
-        List selected = list.getSelectedValuesList();
-        List<Node> nodes = new LinkedList<>();
-        if (selected != null) {
-            for (Object o : selected) {
-                nodes.add((Node) o);
-            }
-        }
-        return nodes;
-    }
-
 
     private DiscretizationEditor createEditor(Node node) {
         if (node instanceof ContinuousVariable) {
@@ -338,8 +329,8 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
 
     /**
-     * @return the default category num to use for the given nodes. If they all have the same
-     * number then its returned otherwise 3 is returned (or something else?)
+     * @return the default category num to use for the given nodes. If they all have the same number then its returned
+     * otherwise 3 is returned (or something else?)
      */
     private int getDefaultCategoryNum(List<Node> nodes) {
         if (nodes.isEmpty()) {
@@ -369,6 +360,47 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
 
     //============================= Inner class ===============================//
 
+    private static class VariableListModel extends AbstractListModel {
+
+        private final Vector<Node> variables;
+
+
+        public VariableListModel(List<Node> variables) {
+            this.variables = new Vector<>(variables);
+        }
+
+
+        public int getSize() {
+            return this.variables.size();
+        }
+
+        public Object getElementAt(int index) {
+            return this.variables.get(index);
+        }
+
+
+    }
+
+    private static class VariableBoxRenderer extends DefaultListCellRenderer {
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Node node = (Node) value;
+            if (node == null) {
+                this.setText("");
+            } else {
+                this.setText(node.getName());
+            }
+            if (isSelected) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+
+            return this;
+        }
+    }
 
     /**
      * Editor that edits a collection of variables.
@@ -439,50 +471,6 @@ public class DiscretizationParamsEditor extends JPanel implements FinalizingPara
         }
 
 
-    }
-
-
-    private static class VariableListModel extends AbstractListModel {
-
-        private final Vector<Node> variables;
-
-
-        public VariableListModel(List<Node> variables) {
-            this.variables = new Vector<>(variables);
-        }
-
-
-        public int getSize() {
-            return this.variables.size();
-        }
-
-        public Object getElementAt(int index) {
-            return this.variables.get(index);
-        }
-
-
-    }
-
-
-    private static class VariableBoxRenderer extends DefaultListCellRenderer {
-
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Node node = (Node) value;
-            if (node == null) {
-                this.setText("");
-            } else {
-                this.setText(node.getName());
-            }
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-
-            return this;
-        }
     }
 
 }

@@ -46,6 +46,32 @@ public class HungarianAlgorithm {
         Arrays.fill(squareInCol, -1);
     }
 
+    public static void main(String[] args) {
+
+        // the problem is written in the form of a matrix
+        double[][] dataMatrix = {
+                //col0  col1  col2  col3
+                {70, 40, 20, 55},  //row0
+                {65, 60, 45, 90},  //row1
+                {30, 45, 50, 75},  //row2
+                {25, 30, 55, 40}   //row3
+        };
+
+        //find optimal assignment
+        HungarianAlgorithm ha = new HungarianAlgorithm(dataMatrix);
+        int[][] assignment = ha.findOptimalAssignment();
+
+        if (assignment.length > 0) {
+            // print assignment
+            for (int[] ints : assignment) {
+                System.out.print("Col" + ints[0] + " => Row" + ints[1] + " (" + dataMatrix[ints[0]][ints[1]] + ")");
+                System.out.println();
+            }
+        } else {
+            System.out.println("no assignment found!");
+        }
+    }
+
     /**
      * find an optimal assignment
      *
@@ -277,31 +303,5 @@ public class HungarianAlgorithm {
         Arrays.fill(staredZeroesInRow, -1);
         Arrays.fill(rowIsCovered, 0);
         Arrays.fill(colIsCovered, 0);
-    }
-
-    public static void main(String[] args) {
-
-        // the problem is written in the form of a matrix
-        double[][] dataMatrix = {
-                //col0  col1  col2  col3
-                {70, 40, 20, 55},  //row0
-                {65, 60, 45, 90},  //row1
-                {30, 45, 50, 75},  //row2
-                {25, 30, 55, 40}   //row3
-        };
-
-        //find optimal assignment
-        HungarianAlgorithm ha = new HungarianAlgorithm(dataMatrix);
-        int[][] assignment = ha.findOptimalAssignment();
-
-        if (assignment.length > 0) {
-            // print assignment
-            for (int[] ints : assignment) {
-                System.out.print("Col" + ints[0] + " => Row" + ints[1] + " (" + dataMatrix[ints[0]][ints[1]] + ")");
-                System.out.println();
-            }
-        } else {
-            System.out.println("no assignment found!");
-        }
     }
 }

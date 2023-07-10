@@ -41,6 +41,17 @@ public class TestIndexedConnectivity extends TestCase {
     }
 
     /**
+     * This method uses reflection to collect up all of the test methods from this class and return them to the test
+     * runner.
+     */
+    public static Test suite() {
+
+        // Edit the name of the class in the parens to match the name
+        // of this class.
+        return new TestSuite(TestIndexedConnectivity.class);
+    }
+
+    /**
      *
      */
     public void testConstruction() {
@@ -73,17 +84,6 @@ public class TestIndexedConnectivity extends TestCase {
         assertEquals(2, indexedConnectivity.getParent(1, 0).getLag());
         assertEquals(3, indexedConnectivity.getParent(2, 0).getLag());
         assertEquals(4, indexedConnectivity.getParent(2, 1).getLag());
-    }
-
-    /**
-     * This method uses reflection to collect up all of the test methods from this class and return them to the test
-     * runner.
-     */
-    public static Test suite() {
-
-        // Edit the name of the class in the parens to match the name
-        // of this class.
-        return new TestSuite(TestIndexedConnectivity.class);
     }
 }
 

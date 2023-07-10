@@ -49,13 +49,11 @@ import java.util.*;
  */
 public final class DiscreteVariable extends AbstractVariable {
 
-    static final long serialVersionUID = 23L;
-
     /**
      * This is the index in the data which represents missing data internally for this variable.
      */
     public static final int MISSING_VALUE = -99;
-
+    static final long serialVersionUID = 23L;
     /**
      * The string displayed for missing values.
      */
@@ -196,6 +194,29 @@ public final class DiscreteVariable extends AbstractVariable {
 
     //=============================PUBLIC METHODS========================//
 
+    private static List<String> getStoredCategoryList(
+            List<String> categoryList) {
+        if (categoryList == null) {
+            throw new NullPointerException();
+        }
+
+        Set<String> categorySet = new HashSet<>(categoryList);
+
+        if (DiscreteVariable.STORED_CATEGORY_LISTS == null) {
+            DiscreteVariable.STORED_CATEGORY_LISTS = new ArrayList<>();
+        }
+
+        for (LinkedList<String> list : DiscreteVariable.STORED_CATEGORY_LISTS) {
+            if (categorySet.equals(new HashSet<>(list))) {
+                return list;
+            }
+        }
+
+        LinkedList<String> newList = new LinkedList<>(categoryList);
+        DiscreteVariable.STORED_CATEGORY_LISTS.add(newList);
+        return newList;
+    }
+
     /**
      * @return the index of the given String category, or -1 if the category is not a category for this variable.
      */
@@ -238,6 +259,42 @@ public final class DiscreteVariable extends AbstractVariable {
             this.categories = Collections.unmodifiableList(DiscreteVariable.getStoredCategoryList(this.categoriesCopy));
         }
         return this.categories;
+    }
+
+    /**
+     * Sets the category of the category at the given index.
+     *
+     * @throws IllegalArgumentException if the list of categories is longer than 100. Usually this happens only for
+     *                                  index columns in data sets, in which a different type of variable that doesn't
+     *                                  do all of the complicated things discrete variables do should be used.
+     */
+    private void setCategories(String[] categories) {
+        for (String category : categories) {
+            if (category == null) {
+                throw new NullPointerException();
+            }
+        }
+
+        List<String> categoryList = Arrays.asList(categories);
+
+        if (new HashSet<>(categoryList).size() != categoryList.size()) {
+            throw new IllegalArgumentException("Duplicate category.");
+        }
+
+        this.categoriesCopy = Collections.unmodifiableList(DiscreteVariable.getStoredCategoryList(categoryList));
+    }
+
+    /**
+     * Sets the category of the category at the given index.
+     */
+    private void setCategories(int numCategories) {
+        String[] categories = new String[numCategories];
+
+        for (int i = 0; i < numCategories; i++) {
+            categories[i] = DataUtils.defaultCategory(i);
+        }
+
+        setCategories(categories);
     }
 
     /**
@@ -357,26 +414,6 @@ public final class DiscreteVariable extends AbstractVariable {
         this.centerY = centerY;
     }
 
-    /**
-     * Adds a property change listener.
-     */
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        getPcs().addPropertyChangeListener(l);
-    }
-
-    /**
-     * @return the name of the variable followed by its list of categories.
-     */
-    public String toString() {
-        return getName();
-    }
-
-    public Node like(String name) {
-        DiscreteVariable variable = new DiscreteVariable(name);
-        variable.setNodeType(getNodeType());
-        return variable;
-    }
-
 //    public final String toStringFull() {
 //        StringBuilder buf = new StringBuilder();
 //
@@ -397,39 +434,23 @@ public final class DiscreteVariable extends AbstractVariable {
     //==============================PRIVATE METHODS=======================//
 
     /**
-     * Sets the category of the category at the given index.
-     *
-     * @throws IllegalArgumentException if the list of categories is longer than 100. Usually this happens only for
-     *                                  index columns in data sets, in which a different type of variable that doesn't
-     *                                  do all of the complicated things discrete variables do should be used.
+     * Adds a property change listener.
      */
-    private void setCategories(String[] categories) {
-        for (String category : categories) {
-            if (category == null) {
-                throw new NullPointerException();
-            }
-        }
-
-        List<String> categoryList = Arrays.asList(categories);
-
-        if (new HashSet<>(categoryList).size() != categoryList.size()) {
-            throw new IllegalArgumentException("Duplicate category.");
-        }
-
-        this.categoriesCopy = Collections.unmodifiableList(DiscreteVariable.getStoredCategoryList(categoryList));
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        getPcs().addPropertyChangeListener(l);
     }
 
     /**
-     * Sets the category of the category at the given index.
+     * @return the name of the variable followed by its list of categories.
      */
-    private void setCategories(int numCategories) {
-        String[] categories = new String[numCategories];
+    public String toString() {
+        return getName();
+    }
 
-        for (int i = 0; i < numCategories; i++) {
-            categories[i] = DataUtils.defaultCategory(i);
-        }
-
-        setCategories(categories);
+    public Node like(String name) {
+        DiscreteVariable variable = new DiscreteVariable(name);
+        variable.setNodeType(getNodeType());
+        return variable;
     }
 
     private PropertyChangeSupport getPcs() {
@@ -438,29 +459,6 @@ public final class DiscreteVariable extends AbstractVariable {
         }
 
         return this.pcs;
-    }
-
-    private static List<String> getStoredCategoryList(
-            List<String> categoryList) {
-        if (categoryList == null) {
-            throw new NullPointerException();
-        }
-
-        Set<String> categorySet = new HashSet<>(categoryList);
-
-        if (DiscreteVariable.STORED_CATEGORY_LISTS == null) {
-            DiscreteVariable.STORED_CATEGORY_LISTS = new ArrayList<>();
-        }
-
-        for (LinkedList<String> list : DiscreteVariable.STORED_CATEGORY_LISTS) {
-            if (categorySet.equals(new HashSet<>(list))) {
-                return list;
-            }
-        }
-
-        LinkedList<String> newList = new LinkedList<>(categoryList);
-        DiscreteVariable.STORED_CATEGORY_LISTS.add(newList);
-        return newList;
     }
 
     /**

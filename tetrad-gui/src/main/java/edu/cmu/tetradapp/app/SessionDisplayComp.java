@@ -36,8 +36,7 @@ public interface SessionDisplayComp extends DisplayComp {
     void setAcronym(String acronym);
 
     /**
-     * @param b whether the node has a model--i.e. whether it should be rendered
-     *          in the "filled" color or not.
+     * @param b whether the node has a model--i.e. whether it should be rendered in the "filled" color or not.
      */
     void setHasModel(boolean b);
 

@@ -38,8 +38,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Lets the user visually add and remove evidence, perform updates, and view
- * Bayes updating results.
+ * Lets the user visually add and remove evidence, perform updates, and view Bayes updating results.
  *
  * @author William Taysom -- Jun 14, 2003
  * @author josephramsey
@@ -51,10 +50,9 @@ class EvidenceWizardMultiple extends JPanel {
     private JTextArea textArea = new JTextArea("Nothing to display");
 
     /**
-     * This is the wizard for the BayesUpdateEditor class.  It allows you to add
-     * and remove evidence, and to updater based on it.  Parameters are of the
-     * form P(Node=c1|Parent1=c2, Parent2=c2,...); values for these parameters
-     * are probabilities ranging from 0.0 to 1.0.
+     * This is the wizard for the BayesUpdateEditor class.  It allows you to add and remove evidence, and to updater
+     * based on it.  Parameters are of the form P(Node=c1|Parent1=c2, Parent2=c2,...); values for these parameters are
+     * probabilities ranging from 0.0 to 1.0.
      */
     public EvidenceWizardMultiple(UpdaterWrapper updaterWrapper,
                                   GraphWorkbench workbench) {

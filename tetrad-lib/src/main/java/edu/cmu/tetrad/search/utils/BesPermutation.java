@@ -72,20 +72,6 @@ public class BesPermutation {
         this.verbose = verbose;
     }
 
-    /**
-     * Sets the knowledge that BES will use.
-     *
-     * @param knowledge This knowledge.
-     */
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = new Knowledge((Knowledge) knowledge);
-    }
-
-//    public void setDepth(int depth) {
-//        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
-//        this.depth = depth;
-//    }
-
     private void buildIndexing(List<Node> nodes, Map<Node, Integer> hashIndices) {
 
         int i = -1;
@@ -94,6 +80,11 @@ public class BesPermutation {
             hashIndices.put(n, ++i);
         }
     }
+
+//    public void setDepth(int depth) {
+//        if (depth < -1) throw new IllegalArgumentException("Depth should be >= -1.");
+//        this.depth = depth;
+//    }
 
     public void bes(Graph graph, List<Node> order, List<Node> suborder) {
         Map<Node, Integer> hashIndices = new HashMap<>();
@@ -235,6 +226,15 @@ public class BesPermutation {
         return knowledge;
     }
 
+    /**
+     * Sets the knowledge that BES will use.
+     *
+     * @param knowledge This knowledge.
+     */
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = new Knowledge((Knowledge) knowledge);
+    }
+
     private Set<Node> revertToCPDAG(Graph graph) {
         MeekRules rules = new MeekRules();
         rules.setKnowledge(getKnowledge());
@@ -351,6 +351,7 @@ public class BesPermutation {
                                     int[] arrowIndex, SortedSet<Arrow> sortedArrowsBack, Map<Edge, ArrowConfigBackward> arrowsMapBackward) {
 
         class BackwardTask extends RecursiveTask<Boolean> {
+            final Map<Edge, ArrowConfigBackward> arrowsMapBackward;
             private final Node r;
             private final List<Node> adj;
             private final Map<Node, Integer> hashIndices;
@@ -358,7 +359,6 @@ public class BesPermutation {
             private final int from;
             private final int to;
             private final SortedSet<Arrow> sortedArrowsBack;
-            final Map<Edge, ArrowConfigBackward> arrowsMapBackward;
 
             private BackwardTask(Node r, List<Node> adj, int chunk, int from, int to, Map<Node, Integer> hashIndices, SortedSet<Arrow> sortedArrowsBack, Map<Edge, ArrowConfigBackward> arrowsMapBackward) {
                 this.adj = adj;

@@ -43,30 +43,25 @@ import java.util.Set;
 public final class IndTestConditionalCorrelation implements IndependenceTest {
 
     /**
+     * Formats as 0.0000.
+     */
+    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
+    /**
      * The instance of CCI that is wrapped.
      */
     private final ConditionalCorrelationIndependence cci;
-
     /**
      * The variables of the covariance data, in order. (Unmodifiable list.)
      */
     private final List<Node> variables;
-
-    /**
-     * The significance level of the independence tests.
-     */
-    private double alpha;
-
-    /**
-     * Formats as 0.0000.
-     */
-    private static final NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
     /**
      * Stores a reference to the data set passed in through the constructor.
      */
     private final DataSet dataSet;
-
+    /**
+     * The significance level of the independence tests.
+     */
+    private double alpha;
     /**
      * True if verbose output should be printed.
      */
@@ -142,6 +137,15 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
+     * Returns the model significance level.
+     *
+     * @return This level.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    /**
      * Sets the significance level at which independence judgments should be made. Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      *
@@ -154,15 +158,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
 
         this.alpha = alpha;
         this.cci.setAlpha(alpha);
-    }
-
-    /**
-     * Returns the model significance level.
-     *
-     * @return This level.
-     */
-    public double getAlpha() {
-        return this.alpha;
     }
 
     /**

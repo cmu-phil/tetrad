@@ -27,16 +27,13 @@ import edu.cmu.tetrad.util.TetradSerializableExcluded;
 import edu.cmu.tetrad.util.TetradSerializableUtils;
 
 /**
- * Represents a forbidden or required edge in a graph of knowledge facts. The
- * edge is always directed, X--&gt;Y, and is either required or forbidden as
- * indicated in the constructor.
+ * Represents a forbidden or required edge in a graph of knowledge facts. The edge is always directed, X--&gt;Y, and is
+ * either required or forbidden as indicated in the constructor.
  *
  * @author josephramsey
  */
 public class KnowledgeModelEdge extends Edge
         implements TetradSerializableExcluded {
-    static final long serialVersionUID = 23L;
-
     /**
      * Edge types.
      */
@@ -45,7 +42,7 @@ public class KnowledgeModelEdge extends Edge
     public static final int REQUIRED = 2;
     public static final int FORBIDDEN_BY_GROUPS = 3;
     public static final int REQUIRED_BY_GROUPS = 4;
-
+    static final long serialVersionUID = 23L;
     /**
      * The type of the node, FORBIDDEN or REQUIRED.
      *
@@ -56,8 +53,7 @@ public class KnowledgeModelEdge extends Edge
     //=============================CONSTRUCTORS============================//
 
     /**
-     * Constructs a new edge by specifying the nodes it connects and the
-     * endpoint types.
+     * Constructs a new edge by specifying the nodes it connects and the endpoint types.
      *
      * @param node1 the first node
      * @param node2 the second node

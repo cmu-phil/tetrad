@@ -23,8 +23,8 @@ package edu.cmu.tetradapp.model;
 
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.IndependenceTest;
+import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.Parameters;
@@ -50,9 +50,8 @@ public class PcRunner extends AbstractAlgorithmRunner
 
 
     /**
-     * Constructs a wrapper for the given DataWrapper. The DataWrapper must
-     * contain a DataSet that is either a DataSet or a DataSet or a DataList
-     * containing either a DataSet or a DataSet as its selected model.
+     * Constructs a wrapper for the given DataWrapper. The DataWrapper must contain a DataSet that is either a DataSet
+     * or a DataSet or a DataList containing either a DataSet or a DataSet as its selected model.
      */
     public PcRunner(DataWrapper dataWrapper, Parameters params) {
         super(dataWrapper, params, null);
@@ -178,8 +177,7 @@ public class PcRunner extends AbstractAlgorithmRunner
     }
 
     /**
-     * @return the list of triples corresponding to <code>getTripleClassificationNames</code>
-     * for the given node.
+     * @return the list of triples corresponding to <code>getTripleClassificationNames</code> for the given node.
      */
     public List<List<Triple>> getTriplesLists(Node node) {
         return new ArrayList<>();

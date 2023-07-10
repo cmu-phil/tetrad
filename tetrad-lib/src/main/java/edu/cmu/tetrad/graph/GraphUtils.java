@@ -671,7 +671,7 @@ public final class GraphUtils {
         return set;
     }
 
-    public static Set<Node> asSet(Node...nodes) {
+    public static Set<Node> asSet(Node... nodes) {
         Set<Node> set = new HashSet<>();
         Collections.addAll(set, nodes);
         return set;

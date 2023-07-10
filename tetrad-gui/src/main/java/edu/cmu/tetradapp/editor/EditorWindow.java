@@ -39,23 +39,19 @@ import java.awt.event.ActionListener;
 public class EditorWindow extends JInternalFrame
         implements EditorWindowIndirectRef, Comparable {
 
-    private JComponent editor;
-
-    /**
-     * Set to true if the dialog was canceled.
-     */
-    private boolean canceled;
-
     /**
      * The name of the main button; normally "Save."
      */
     private final String buttonName;
-
     /**
      * The bounds of the source component.
      */
     private final Component centeringComp;
-
+    private JComponent editor;
+    /**
+     * Set to true if the dialog was canceled.
+     */
+    private boolean canceled;
     /**
      * The button the user clicks to dismiss the dialog.
      */
@@ -170,6 +166,15 @@ public class EditorWindow extends JInternalFrame
         return this.centeringComp;
     }
 
+    /**
+     * Adds the action listener to the OK button if it's not null.
+     */
+    public void addActionListener(ActionListener l) {
+        if (this.okButton != null) {
+            this.okButton.addActionListener(l);
+        }
+    }
+
     private class OkListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
@@ -189,15 +194,6 @@ public class EditorWindow extends JInternalFrame
         public void actionPerformed(ActionEvent e) {
             EditorWindow.this.canceled = true;
             closeDialog();
-        }
-    }
-
-    /**
-     * Adds the action listener to the OK button if it's not null.
-     */
-    public void addActionListener(ActionListener l) {
-        if (this.okButton != null) {
-            this.okButton.addActionListener(l);
         }
     }
 }

@@ -59,7 +59,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     private double alpha;
     private DataSet dataSet;
     private boolean verbose = true;
-//    private double p = Double.NaN;
+    //    private double p = Double.NaN;
     private double r = Double.NaN;
 
     //==========================CONSTRUCTORS=============================//

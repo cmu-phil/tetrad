@@ -21,26 +21,21 @@ import java.util.concurrent.*;
 public class PagSamplingRfci implements IGraphSearch {
 
     private final int NUM_THREADS = 10;
-
+    private final DataSet dataSet;
     // PagSamplingRfci
     private int numRandomizedSearchModels = 10;
     private boolean verbose = false;
-
     // Rfci parameters
     private int depth = -1;
     private int maxPathLength = -1;
-
     // IndTestProbabilistic parameters
     private boolean threshold = true;
     private double cutoff = 0.5;
     private double priorEquivalentSampleSize = 10;
-
     /**
      * The background knowledge.
      */
     private Knowledge knowledge;
-
-    private final DataSet dataSet;
 
     public PagSamplingRfci(DataSet dataSet) {
         this.dataSet = dataSet;

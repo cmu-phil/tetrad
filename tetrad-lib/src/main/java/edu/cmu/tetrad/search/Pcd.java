@@ -54,43 +54,34 @@ public class Pcd implements IGraphSearch {
      * The independence test used for the PC search.
      */
     private final IndependenceTest independenceTest;
-
-    /**
-     * Forbidden and required edges for the search.
-     */
-    private Knowledge knowledge = new Knowledge();
-
-    /**
-     * Sepset information accumulated in the search.
-     */
-    private SepsetMap sepsets;
-
-    /**
-     * The maximum number of nodes conditioned on in the search. The default it 1000.
-     */
-    private int depth = 1000;
-
-    /**
-     * The graph that's constructed during the search.
-     */
-    private Graph graph;
-
-    /**
-     * Elapsed time of the most recent search.
-     */
-    private long elapsedTime;
-
-    /**
-     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
-     */
-    private boolean meekPreventCycles;
-
     /**
      * The logger for this class. The config needs to be set.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
+    /**
+     * Forbidden and required edges for the search.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * Sepset information accumulated in the search.
+     */
+    private SepsetMap sepsets;
+    /**
+     * The maximum number of nodes conditioned on in the search. The default it 1000.
+     */
+    private int depth = 1000;
+    /**
+     * The graph that's constructed during the search.
+     */
+    private Graph graph;
+    /**
+     * Elapsed time of the most recent search.
+     */
+    private long elapsedTime;
+    /**
+     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large graphs).
+     */
+    private boolean meekPreventCycles;
     /**
      * In an enumeration of triple types, these are the collider triples.
      */

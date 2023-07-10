@@ -25,9 +25,9 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.LayoutUtil;
 import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.search.utils.ClusterUtils;
 import edu.cmu.tetrad.search.utils.MimUtils;
-import edu.cmu.tetrad.search.Mimbuild;
 import edu.cmu.tetrad.sem.ReidentifyVariables;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -38,11 +38,9 @@ import edu.cmu.tetrad.util.TetradSerializableUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 /**
- * Extends AbstractAlgorithmRunner to produce a wrapper for the MIMBuild
- * algorithm.
+ * Extends AbstractAlgorithmRunner to produce a wrapper for the MIMBuild algorithm.
  *
  * @author Ricardo Silva
  */
@@ -80,10 +78,6 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         params.set("clusters", getClusters());
     }
 
-    public ICovarianceMatrix getCovMatrix() {
-        return this.covMatrix;
-    }
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      *
@@ -93,11 +87,14 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         return PcRunner.serializableInstance();
     }
 
+    public ICovarianceMatrix getCovMatrix() {
+        return this.covMatrix;
+    }
+
     //===================PUBLIC METHODS OVERRIDING ABSTRACT================//
 
     /**
-     * Executes the algorithm, producing (at least) a result workbench. Must be
-     * implemented in the extending class.
+     * Executes the algorithm, producing (at least) a result workbench. Must be implemented in the extending class.
      */
     public void execute() throws Exception {
         DataSet data = this.dataSet;
@@ -199,15 +196,11 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
         return builder;
     }
 
-    private void setFullGraph(Graph fullGraph) {
-        this.fullGraph = fullGraph;
-    }
-
-    //===========================PRIVATE METHODS==========================//
-
     public Graph getGraph() {
         return getResultGraph();
     }
+
+    //===========================PRIVATE METHODS==========================//
 
     public SemPm getSemPm() {
         Graph graph = getResultGraph();
@@ -216,6 +209,10 @@ public class MimBuildRunner extends AbstractMimRunner implements GraphSource {
 
     public Graph getFullGraph() {
         return this.fullGraph;
+    }
+
+    private void setFullGraph(Graph fullGraph) {
+        this.fullGraph = fullGraph;
     }
 }
 

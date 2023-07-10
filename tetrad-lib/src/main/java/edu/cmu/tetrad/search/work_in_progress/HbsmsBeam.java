@@ -49,16 +49,16 @@ import java.util.*;
 
 public final class HbsmsBeam implements Hbsms {
     private final CovarianceMatrix cov;
-    private Knowledge knowledge;
     private final Graph externalGraph;
+    private final NumberFormat nf = new DecimalFormat("0.0#########");
+    private final Scorer scorer;
+    private Knowledge knowledge;
     private Graph graph;
     private double alpha = 0.05;
     private double highPValueAlpha = 0.05;
-    private final NumberFormat nf = new DecimalFormat("0.0#########");
     private Graph trueModel;
     private SemIm originalSemIm;
     private SemIm newSemIm;
-    private final Scorer scorer;
     private int beamWidth = 1;
 
     public HbsmsBeam(Graph graph, DataSet data, Knowledge knowledge) {
@@ -423,45 +423,6 @@ public final class HbsmsBeam implements Hbsms {
         return true;
     }
 
-    public static class Move {
-        public enum Type {
-            ADD, REMOVE, REDIRECT, ADD_COLLIDER, REMOVE_COLLIDER, SWAP, DOUBLE_REMOVE
-        }
-
-        private final Edge edge;
-        private Edge secondEdge;
-        private final HbsmsBeam.Move.Type type;
-
-        public Move(Edge edge, HbsmsBeam.Move.Type type) {
-            this.edge = edge;
-            this.type = type;
-        }
-
-        public Move(Edge edge, Edge secondEdge, HbsmsBeam.Move.Type type) {
-            this.edge = edge;
-            this.secondEdge = secondEdge;
-            this.type = type;
-        }
-
-        public Edge getFirstEdge() {
-            return this.edge;
-        }
-
-        public Edge getSecondEdge() {
-            return this.secondEdge;
-        }
-
-        public HbsmsBeam.Move.Type getType() {
-            return this.type;
-        }
-
-        public String toString() {
-            String s = (this.secondEdge != null) ? (this.secondEdge + ", ") : "";
-            return "<" + this.edge + ", " + s + this.type + ">";
-
-        }
-    }
-
     public Score scoreGraph(Graph graph) {
         if (graph == null) {
             return Score.negativeInfinity();
@@ -469,14 +430,6 @@ public final class HbsmsBeam implements Hbsms {
 
         this.scorer.score(graph);
         return new Score(this.scorer);
-    }
-
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
-
-        if (knowledge.isViolatedBy(this.graph)) {
-            throw new IllegalArgumentException("Graph violates knowledge.");
-        }
     }
 
     public double getAlpha() {
@@ -494,6 +447,14 @@ public final class HbsmsBeam implements Hbsms {
 
     public Knowledge getKnowledge() {
         return this.knowledge;
+    }
+
+    public void setKnowledge(Knowledge knowledge) {
+        this.knowledge = knowledge;
+
+        if (knowledge.isViolatedBy(this.graph)) {
+            throw new IllegalArgumentException("Graph violates knowledge.");
+        }
     }
 
     private void addRequiredEdges(Graph graph) {
@@ -546,11 +507,49 @@ public final class HbsmsBeam implements Hbsms {
         }
     }
 
+    public static class Move {
+        private final Edge edge;
+        private final HbsmsBeam.Move.Type type;
+        private Edge secondEdge;
+        public Move(Edge edge, HbsmsBeam.Move.Type type) {
+            this.edge = edge;
+            this.type = type;
+        }
+
+        public Move(Edge edge, Edge secondEdge, HbsmsBeam.Move.Type type) {
+            this.edge = edge;
+            this.secondEdge = secondEdge;
+            this.type = type;
+        }
+
+        public Edge getFirstEdge() {
+            return this.edge;
+        }
+
+        public Edge getSecondEdge() {
+            return this.secondEdge;
+        }
+
+        public HbsmsBeam.Move.Type getType() {
+            return this.type;
+        }
+
+        public String toString() {
+            String s = (this.secondEdge != null) ? (this.secondEdge + ", ") : "";
+            return "<" + this.edge + ", " + s + this.type + ">";
+
+        }
+
+        public enum Type {
+            ADD, REMOVE, REDIRECT, ADD_COLLIDER, REMOVE_COLLIDER, SWAP, DOUBLE_REMOVE
+        }
+    }
+
     public static class Score {
-        private Scorer scorer = null;
         private final double fml;
         private final double chisq;
         private final double bic;
+        private Scorer scorer = null;
         private int dof;
 
         public Score(Scorer scorer) {
@@ -570,6 +569,10 @@ public final class HbsmsBeam implements Hbsms {
             this.bic = this.chisq - this.dof * FastMath.log(sampleSize);
         }
 
+        public static Score negativeInfinity() {
+            return new Score();
+        }
+
         public SemIm getEstimatedSem() {
             return this.scorer.getEstSem();
         }
@@ -584,10 +587,6 @@ public final class HbsmsBeam implements Hbsms {
 
         public double getFml() {
             return this.scorer.getFml();
-        }
-
-        public static Score negativeInfinity() {
-            return new Score();
         }
 
         public int getDof() {

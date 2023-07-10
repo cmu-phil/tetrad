@@ -80,17 +80,15 @@ class DescriptiveStatsEditorPanel extends JPanel {
 
     //========================== Private Methods ================================//
 
-    private void changeDescriptiveStats(String test) {
-        // fire event
-        this.firePropertyChange("histogramChange", null, test);
-    }
-
-
     private static void setPreferredAsMax(JComponent component) {
         component.setMaximumSize(component.getPreferredSize());
 
     }
 
+    private void changeDescriptiveStats(String test) {
+        // fire event
+        this.firePropertyChange("histogramChange", null, test);
+    }
 
     private Box buildEditArea() {
         DescriptiveStatsEditorPanel.setPreferredAsMax(this.variableBox);

@@ -56,47 +56,38 @@ import java.util.*;
 public final class Rfci implements IGraphSearch {
 
     /**
-     * The RFCI-PAG being constructed.
-     */
-    private Graph graph;
-
-    /**
-     * The SepsetMap being constructed.
-     */
-    private SepsetMap sepsets;
-
-    /**
-     * The background knowledge.
-     */
-    private Knowledge knowledge = new Knowledge();
-
-    /**
      * The variables to search over (optional)
      */
     private final List<Node> variables = new ArrayList<>();
-
     private final IndependenceTest independenceTest;
-
-    /**
-     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
-     */
-    private int maxPathLength = -1;
-
-    /**
-     * The depth for the fast adjacency search.
-     */
-    private int depth = -1;
-
-    /**
-     * Elapsed time of last search.
-     */
-    private long elapsedTime;
-
     /**
      * The logger to use.
      */
     private final TetradLogger logger = TetradLogger.getInstance();
-
+    /**
+     * The RFCI-PAG being constructed.
+     */
+    private Graph graph;
+    /**
+     * The SepsetMap being constructed.
+     */
+    private SepsetMap sepsets;
+    /**
+     * The background knowledge.
+     */
+    private Knowledge knowledge = new Knowledge();
+    /**
+     * The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
+     */
+    private int maxPathLength = -1;
+    /**
+     * The depth for the fast adjacency search.
+     */
+    private int depth = -1;
+    /**
+     * Elapsed time of last search.
+     */
+    private long elapsedTime;
     /**
      * True iff verbose output should be printed.
      */

@@ -25,9 +25,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 /**
- * A class that displays a splashScreen with a progress bar. Everything is
- * static so there can only be one Splash Screen. The usage is show,
- * (increment)* and hide.
+ * A class that displays a splashScreen with a progress bar. Everything is static so there can only be one Splash
+ * Screen. The usage is show, (increment)* and hide.
  *
  * @author Juan Casares
  */

@@ -67,34 +67,30 @@ import static org.apache.commons.math3.util.FastMath.pow;
  */
 public final class MlBayesIm implements BayesIm {
 
-    static final long serialVersionUID = 23L;
-    private static final double ALLOWABLE_DIFFERENCE = 1.0e-3;
-
     /**
      * Inidicates that new rows in this BayesIm should be initialized as unknowns, forcing them to be specified
      * manually. This is the default.
      */
     public static final int MANUAL = 0;
-
     /**
      * Indicates that new rows in this BayesIm should be initialized randomly.
      */
     public static final int RANDOM = 1;
-
+    static final long serialVersionUID = 23L;
+    private static final double ALLOWABLE_DIFFERENCE = 1.0e-3;
+    final long[] seed = {new Date().getTime()};
     /**
      * The associated Bayes PM model.
      *
      * @serial
      */
     private final BayesPm bayesPm;
-
     /**
      * The array of nodes from the graph. Order is important.
      *
      * @serial
      */
     private final Node[] nodes;
-
     /**
      * The list of parents for each node from the graph. Order or nodes corresponds to the order of nodes in 'nodes',
      * and order in subarrays is important.
@@ -102,7 +98,6 @@ public final class MlBayesIm implements BayesIm {
      * @serial
      */
     private int[][] parents;
-
     /**
      * The array of dimensionality (number of categories for each node) for each of the subarrays of 'parents'.
      *
@@ -110,6 +105,7 @@ public final class MlBayesIm implements BayesIm {
      */
     private int[][] parentDims;
 
+    //===============================CONSTRUCTORS=========================//
     /**
      * The main data structure; stores the values of all of the conditional probabilities for the Bayes net of the form
      * P(N=v0 | P1=v1, P2=v2,...). The first dimension is the node N, in the order of 'nodes'. The second dimension is
@@ -122,8 +118,6 @@ public final class MlBayesIm implements BayesIm {
      * @serial
      */
     private double[][][] probs;
-
-    //===============================CONSTRUCTORS=========================//
 
     /**
      * Constructs a new BayesIm from the given BayesPm, initializing all values as Double.NaN ("?").
@@ -212,11 +206,83 @@ public final class MlBayesIm implements BayesIm {
         return new MlBayesIm(BayesPm.serializableInstance());
     }
 
+    //===============================PUBLIC METHODS========================//
+
     public static List<String> getParameterNames() {
         return new ArrayList<>();
     }
 
-    //===============================PUBLIC METHODS========================//
+    private static double[] getRandomWeights2(int size, double[] biases) {
+        assert size >= 0;
+
+        double[] row = new double[size];
+        double sum = 0.0;
+
+        for (int i = 0; i < size; i++) {
+//            row[i] = RandomUtil.getInstance().nextDouble() + biases[i];
+            double v = RandomUtil.getInstance().nextUniform(0, biases[i]);
+            row[i] = v > 0.5 ? 2 * v : v;
+            sum += row[i];
+        }
+
+        for (int i = 0; i < size; i++) {
+            row[i] /= sum;
+        }
+
+        return row;
+    }
+
+    private static double[] getRandomWeights3(int size) {
+        assert size >= 0;
+
+        double[] row = new double[size];
+        double sum = 0.0;
+
+        for (int i = 0; i < size; i++) {
+            row[i] = RandomUtil.getInstance().nextBeta(size / 4d, size);
+            sum += row[i];
+        }
+
+        for (int i = 0; i < size; i++) {
+            row[i] /= sum;
+        }
+
+        return row;
+    }
+
+    /**
+     * This method chooses random probabilities for a row which add up to 1.0. Random doubles are drawn from a random
+     * distribution, and the final row is then normalized.
+     *
+     * @param size the length of the row.
+     * @return an array with randomly distributed probabilities of this length.
+     * @see #randomizeRow
+     */
+    private static double[] getRandomWeights(int size) {
+        assert size >= 0;
+
+        double[] row = new double[size];
+        double sum = 0.0;
+
+        // Renders rows more deterministic.
+        final double bias = 0;
+
+        for (int i = 0; i < size; i++) {
+            row[i] = RandomUtil.getInstance().nextDouble();
+
+            if (row[i] > 0.5) {
+                row[i] += bias;
+            }
+
+            sum += row[i];
+        }
+
+        for (int i = 0; i < size; i++) {
+            row[i] /= sum;
+        }
+
+        return row;
+    }
 
     /**
      * @return this PM.
@@ -538,44 +604,6 @@ public final class MlBayesIm implements BayesIm {
     private void randomizeRow2(int nodeIndex, int rowIndex, double[] biases) {
         int size = getNumColumns(nodeIndex);
         this.probs[nodeIndex][rowIndex] = MlBayesIm.getRandomWeights2(size, biases);
-    }
-
-    private static double[] getRandomWeights2(int size, double[] biases) {
-        assert size >= 0;
-
-        double[] row = new double[size];
-        double sum = 0.0;
-
-        for (int i = 0; i < size; i++) {
-//            row[i] = RandomUtil.getInstance().nextDouble() + biases[i];
-            double v = RandomUtil.getInstance().nextUniform(0, biases[i]);
-            row[i] = v > 0.5 ? 2 * v : v;
-            sum += row[i];
-        }
-
-        for (int i = 0; i < size; i++) {
-            row[i] /= sum;
-        }
-
-        return row;
-    }
-
-    private static double[] getRandomWeights3(int size) {
-        assert size >= 0;
-
-        double[] row = new double[size];
-        double sum = 0.0;
-
-        for (int i = 0; i < size; i++) {
-            row[i] = RandomUtil.getInstance().nextBeta(size / 4d, size);
-            sum += row[i];
-        }
-
-        for (int i = 0; i < size; i++) {
-            row[i] /= sum;
-        }
-
-        return row;
     }
 
     /**
@@ -970,8 +998,6 @@ public final class MlBayesIm implements BayesIm {
         }
     }
 
-    final long[] seed = {new Date().getTime()};
-
     private void constructSample(int sampleSize, DataSet dataSet, int[] map, int[] tiers) {
 
 //        //Do the simulation.
@@ -1121,6 +1147,8 @@ public final class MlBayesIm implements BayesIm {
         return true;
     }
 
+    //=============================PRIVATE METHODS=======================//
+
     /**
      * Prints out the probability table for each variable.
      */
@@ -1164,8 +1192,6 @@ public final class MlBayesIm implements BayesIm {
 
         return buf.toString();
     }
-
-    //=============================PRIVATE METHODS=======================//
 
     /**
      * This method initializes the probability tables for all of the nodes in the Bayes net.
@@ -1258,40 +1284,6 @@ public final class MlBayesIm implements BayesIm {
         } else {
             throw new IllegalArgumentException("Unrecognized state.");
         }
-    }
-
-    /**
-     * This method chooses random probabilities for a row which add up to 1.0. Random doubles are drawn from a random
-     * distribution, and the final row is then normalized.
-     *
-     * @param size the length of the row.
-     * @return an array with randomly distributed probabilities of this length.
-     * @see #randomizeRow
-     */
-    private static double[] getRandomWeights(int size) {
-        assert size >= 0;
-
-        double[] row = new double[size];
-        double sum = 0.0;
-
-        // Renders rows more deterministic.
-        final double bias = 0;
-
-        for (int i = 0; i < size; i++) {
-            row[i] = RandomUtil.getInstance().nextDouble();
-
-            if (row[i] > 0.5) {
-                row[i] += bias;
-            }
-
-            sum += row[i];
-        }
-
-        for (int i = 0; i < size; i++) {
-            row[i] /= sum;
-        }
-
-        return row;
     }
 
     private void initializeRowAsUnknowns(int nodeIndex, int rowIndex) {

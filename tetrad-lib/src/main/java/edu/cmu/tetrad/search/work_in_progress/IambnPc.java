@@ -24,9 +24,9 @@ package edu.cmu.tetrad.search.work_in_progress;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.IMbSearch;
+import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.Pc;
 import edu.cmu.tetrad.search.test.IndependenceResult;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.utils.MbUtils;
 
 import java.util.HashSet;

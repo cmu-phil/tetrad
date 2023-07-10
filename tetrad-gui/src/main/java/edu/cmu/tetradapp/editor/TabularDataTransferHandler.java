@@ -52,9 +52,8 @@ class TabularDataTransferHandler extends TransferHandler {
     /**
      * Create a Transferable to use as the source for a data transfer.
      *
-     * @param c The component holding the data to be transfered.  This argument
-     *          is provided to enable sharing of TransferHandlers by multiple
-     *          components.
+     * @param c The component holding the data to be transfered.  This argument is provided to enable sharing of
+     *          TransferHandlers by multiple components.
      * @return The representation of the data to be transfered.
      */
     protected Transferable createTransferable(JComponent c) {

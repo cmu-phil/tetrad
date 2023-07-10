@@ -29,8 +29,7 @@ import java.awt.*;
 import java.text.NumberFormat;
 
 /**
- * This is an editor for a JTable cell for editing numbers in conjunction with
- * tetrad.datatable.NumberCellRenderer.
+ * This is an editor for a JTable cell for editing numbers in conjunction with tetrad.datatable.NumberCellRenderer.
  *
  * @author josephramsey
  * @see NumberCellRenderer
@@ -40,8 +39,7 @@ class NumberCellEditor extends DefaultCellEditor {
     private String emptyString = "";
 
     /**
-     * Constructs a new number cell editor with default number format,
-     * Decimalformat("0.0000").
+     * Constructs a new number cell editor with default number format, Decimalformat("0.0000").
      */
     public NumberCellEditor() {
         this(NumberFormatUtil.getInstance().getNumberFormat());

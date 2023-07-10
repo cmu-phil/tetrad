@@ -31,8 +31,7 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 
 /**
- * Copies a selection of session nodes in the frontmost session editor, to the
- * clipboard.
+ * Copies a selection of session nodes in the frontmost session editor, to the clipboard.
  *
  * @author josephramsey
  */
@@ -44,8 +43,7 @@ public class CopySubgraphAction extends AbstractAction implements ClipboardOwner
     private final GraphEditable graphEditor;
 
     /**
-     * Creates a new copy subsession action for the given desktop and
-     * clipboard.
+     * Creates a new copy subsession action for the given desktop and clipboard.
      */
     public CopySubgraphAction(GraphEditable graphEditor) {
         super("Copy Selected Graph");
@@ -58,8 +56,7 @@ public class CopySubgraphAction extends AbstractAction implements ClipboardOwner
     }
 
     /**
-     * Copies a parentally closed selection of session nodes in the frontmost
-     * session editor to the clipboard.
+     * Copies a parentally closed selection of session nodes in the frontmost session editor to the clipboard.
      */
     public void actionPerformed(ActionEvent e) {
         List modelComponents = this.graphEditor.getSelectedModelComponents();

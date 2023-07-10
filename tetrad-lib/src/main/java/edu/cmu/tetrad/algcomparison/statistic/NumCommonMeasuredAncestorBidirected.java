@@ -19,6 +19,12 @@ import static edu.cmu.tetrad.algcomparison.statistic.LatentCommonAncestorTruePos
 public class NumCommonMeasuredAncestorBidirected implements Statistic {
     static final long serialVersionUID = 23L;
 
+    public static boolean existsCommonAncestor(Graph trueGraph, Edge edge) {
+        List<Node> nodes = trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode1()));
+        nodes.retainAll(trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode2())));
+        return !nodes.isEmpty();
+    }
+
     @Override
     public String getAbbreviation() {
         return "#X<->Y,X<~~MnotL~~>Y";
@@ -50,11 +56,5 @@ public class NumCommonMeasuredAncestorBidirected implements Statistic {
     @Override
     public double getNormValue(double value) {
         return value;
-    }
-
-    public static boolean existsCommonAncestor(Graph trueGraph, Edge edge) {
-        List<Node> nodes = trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode1()));
-        nodes.retainAll(trueGraph.paths().getAncestors(Collections.singletonList(edge.getNode2())));
-        return !nodes.isEmpty();
     }
 }

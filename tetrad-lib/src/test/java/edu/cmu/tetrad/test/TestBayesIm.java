@@ -37,6 +37,30 @@ import static org.junit.Assert.assertTrue;
  */
 public final class TestBayesIm {
 
+    private static boolean rowsEqual(BayesIm bayesIm, int node, int row1,
+                                     int row2) {
+        for (int col = 0; col < bayesIm.getNumColumns(node); col++) {
+            double prob1 = bayesIm.getProbability(node, row1, col);
+            double prob2 = bayesIm.getProbability(node, row2, col);
+            if (prob1 != prob2) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean rowUnspecified(BayesIm bayesIm, int node, int row) {
+        for (int col = 0; col < bayesIm.getNumColumns(node); col++) {
+            double prob = bayesIm.getProbability(node, row, col);
+            if (!Double.isNaN(prob)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     @Test
     public void testCopyConstructor() {
         Graph graph = GraphUtils.convert("X1-->X2,X1-->X3,X2-->X4,X3-->X4");
@@ -197,30 +221,6 @@ public final class TestBayesIm {
                 bayesIm4.setProbability(_c, row, col, cTable[row][col]);
             }
         }
-    }
-
-    private static boolean rowsEqual(BayesIm bayesIm, int node, int row1,
-                                     int row2) {
-        for (int col = 0; col < bayesIm.getNumColumns(node); col++) {
-            double prob1 = bayesIm.getProbability(node, row1, col);
-            double prob2 = bayesIm.getProbability(node, row2, col);
-            if (prob1 != prob2) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static boolean rowUnspecified(BayesIm bayesIm, int node, int row) {
-        for (int col = 0; col < bayesIm.getNumColumns(node); col++) {
-            double prob = bayesIm.getProbability(node, row, col);
-            if (!Double.isNaN(prob)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 }
 

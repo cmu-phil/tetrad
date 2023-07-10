@@ -41,6 +41,34 @@ import static org.junit.Assert.fail;
  */
 public final class TestParser {
 
+    private static void parseInvalid(ExpressionParser parser, String exp) {
+        try {
+            Expression e = parser.parseExpression(exp);
+            fail("Should not have parsed, " + exp + ", but got " + e);
+        } catch (ParseException ex) {
+            // Succeeded
+        }
+    }
+
+    /**
+     * Tests the expression on the given parser.
+     */
+    private static Expression parse(ExpressionParser parser, String expression) {
+        try {
+            return parser.parseExpression(expression);
+        } catch (ParseException ex) {
+            int offset = ex.getErrorOffset();
+            System.out.println(expression);
+            for (int i = 0; i < offset; i++) {
+                System.out.print(" ");
+            }
+            System.out.println("^");
+            ex.printStackTrace();
+            fail(ex.getMessage());
+        }
+        return null;
+    }
+
     /**
      * Tests misc invalid expressions.
      */
@@ -117,7 +145,6 @@ public final class TestParser {
         assertTrue(expression.evaluate(new TestingContext()) == FastMath.PI + 2);
     }
 
-
     /**
      * Tests expressions with variables.
      */
@@ -141,6 +168,8 @@ public final class TestParser {
         context.assign("y", 2.0);
         assertTrue(expression.evaluate(context) == 13.0);
     }
+
+    //============================== Private Methods ===========================//
 
     /**
      * Tests that undefined variables aren't allowed.
@@ -166,36 +195,6 @@ public final class TestParser {
 
         expression = TestParser.parse(parser, "1 * 1 * 2 * 3 * (1 + 1)");
         assertTrue(expression.evaluate(new TestingContext()) == 12.0);
-    }
-
-    //============================== Private Methods ===========================//
-
-    private static void parseInvalid(ExpressionParser parser, String exp) {
-        try {
-            Expression e = parser.parseExpression(exp);
-            fail("Should not have parsed, " + exp + ", but got " + e);
-        } catch (ParseException ex) {
-            // Succeeded
-        }
-    }
-
-    /**
-     * Tests the expression on the given parser.
-     */
-    private static Expression parse(ExpressionParser parser, String expression) {
-        try {
-            return parser.parseExpression(expression);
-        } catch (ParseException ex) {
-            int offset = ex.getErrorOffset();
-            System.out.println(expression);
-            for (int i = 0; i < offset; i++) {
-                System.out.print(" ");
-            }
-            System.out.println("^");
-            ex.printStackTrace();
-            fail(ex.getMessage());
-        }
-        return null;
     }
 
     //====================== Inner class ========================//

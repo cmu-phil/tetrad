@@ -43,11 +43,10 @@ class RandomDagScaleFreeEditor extends JPanel {
     private final DoubleTextField scaleFreeGammaField;
 
     /**
-     * Constructs a dialog to edit the given workbench randomization
-     * parameters.
-     * //     * @param preferredNumNodes an integer which, if greater than 1, will revise the number of nodes,
-     * //     * number of edges,a nd number of latent nodes. Useful if the interface suggests a number of nodes
-     * //     * that overrides the number of nodes set in the preferences.
+     * Constructs a dialog to edit the given workbench randomization parameters. //     * @param preferredNumNodes an
+     * integer which, if greater than 1, will revise the number of nodes, //     * number of edges,a nd number of latent
+     * nodes. Useful if the interface suggests a number of nodes //     * that overrides the number of nodes set in the
+     * preferences.
      */
     public RandomDagScaleFreeEditor() {
         this.numNodesField = new IntTextField(getNumMeasuredNodes(), 4);

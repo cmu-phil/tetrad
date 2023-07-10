@@ -57,29 +57,25 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
      * The covariance matrix.
      */
     private final ICovarianceMatrix covMatrix;
-
+    private final Map<Node, Integer> indexMap;
+    private final Map<String, Node> nameMap;
+    private final NormalDistribution normal = new NormalDistribution(0, 1);
+    private final PartialCorrelation recursivePartialCorrelation;
     /**
      * The variables of the covariance matrix, in order. (Unmodifiable list.)
      */
     private List<Node> variables;
-
     /**
      * The significance level of the independence tests.
      */
     private double alpha;
-
     /**
      * Stores a reference to the dataset being analyzed.
      */
     private DataSet dataSet;
-
-    private final Map<Node, Integer> indexMap;
-    private final Map<String, Node> nameMap;
     private boolean verbose = true;
     private double fisherZ = Double.NaN;
     private double cutoff = Double.NaN;
-    private final NormalDistribution normal = new NormalDistribution(0, 1);
-    private final PartialCorrelation recursivePartialCorrelation;
 
 
     //==========================CONSTRUCTORS=============================//
@@ -211,7 +207,7 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
             }
         }
 
-        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN,abs(this.fisherZ) - this.cutoff);
+        return new IndependenceResult(new IndependenceFact(x, y, z), independent, Double.NaN, abs(this.fisherZ) - this.cutoff);
     }
 
     private double partialCorrelation(Node x, Node y, Set<Node> _z) throws SingularMatrixException {
@@ -230,6 +226,13 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     }
 
     /**
+     * Gets the getModel significance level.
+     */
+    public double getAlpha() {
+        return this.alpha;
+    }
+
+    /**
      * Sets the significance level at which independence judgments should be made.  Affects the cutoff for partial
      * correlations to be considered statistically equal to zero.
      */
@@ -243,18 +246,17 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     }
 
     /**
-     * Gets the getModel significance level.
-     */
-    public double getAlpha() {
-        return this.alpha;
-    }
-
-    /**
      * @return the list of variables over which this independence checker is capable of determinine independence
      * relations-- that is, all the variables in the given graph or the given data set.
      */
     public List<Node> getVariables() {
         return this.variables;
+    }
+
+    public void setVariables(List<Node> variables) {
+        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
+        this.variables = new ArrayList<>(variables);
+        this.covMatrix.setVariables(variables);
     }
 
     /**
@@ -263,7 +265,6 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
     public Node getVariable(String name) {
         return this.nameMap.get(name);
     }
-
 
     /**
      * If <code>isDeterminismAllowed()</code>, deters to IndTestFisherZD; otherwise throws
@@ -301,14 +302,14 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         return this.dataSet;
     }
 
+    //==========================PRIVATE METHODS============================//
+
     /**
      * @return a string representation of this test.
      */
     public String toString() {
         return "Fisher Z, alpha = " + new DecimalFormat("0.0E0").format(getAlpha());
     }
-
-    //==========================PRIVATE METHODS============================//
 
     private int sampleSize() {
         return covMatrix().getSampleSize();
@@ -336,12 +337,6 @@ public final class IndTestFisherZRecursive implements IndependenceTest {
         }
 
         return indexMap;
-    }
-
-    public void setVariables(List<Node> variables) {
-        if (variables.size() != this.variables.size()) throw new IllegalArgumentException("Wrong # of variables.");
-        this.variables = new ArrayList<>(variables);
-        this.covMatrix.setVariables(variables);
     }
 
     public ICovarianceMatrix getCov() {

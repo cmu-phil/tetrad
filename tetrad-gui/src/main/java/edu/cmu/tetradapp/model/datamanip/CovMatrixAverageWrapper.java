@@ -50,6 +50,15 @@ public class CovMatrixAverageWrapper extends DataWrapper {
         calcAverage(matrices);
     }
 
+    /**
+     * Generates a simple exemplar of this class to test serialization.
+     *
+     * @see TetradSerializableUtils
+     */
+    public static PcRunner serializableInstance() {
+        return PcRunner.serializableInstance();
+    }
+
     private void calcAverage(List<DataWrapper> wrappers) {
         List<Matrix> cov = new ArrayList<>();
 
@@ -88,15 +97,6 @@ public class CovMatrixAverageWrapper extends DataWrapper {
         ICovarianceMatrix covWrapper = new CovarianceMatrix(nodes, cov3, n);
 
         setDataModel(covWrapper);
-    }
-
-    /**
-     * Generates a simple exemplar of this class to test serialization.
-     *
-     * @see TetradSerializableUtils
-     */
-    public static PcRunner serializableInstance() {
-        return PcRunner.serializableInstance();
     }
 
 

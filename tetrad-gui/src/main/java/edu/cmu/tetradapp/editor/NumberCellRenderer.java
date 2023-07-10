@@ -29,8 +29,7 @@ import java.awt.*;
 import java.text.NumberFormat;
 
 /**
- * This a renderer for a JTable cell for rending numbers in conjunction with
- * tetrad.datatable.NumberCellEditor.
+ * This a renderer for a JTable cell for rending numbers in conjunction with tetrad.datatable.NumberCellEditor.
  *
  * @author josephramsey
  * @see NumberCellEditor
@@ -58,8 +57,7 @@ class NumberCellRenderer extends DefaultTableCellRenderer {
     }
 
     /**
-     * Sets the value to the formatted version of the stored numerical
-     * value.
+     * Sets the value to the formatted version of the stored numerical value.
      *
      * @param value the stored numerical value.
      */

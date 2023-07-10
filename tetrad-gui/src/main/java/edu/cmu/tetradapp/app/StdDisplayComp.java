@@ -36,47 +36,38 @@ import java.awt.geom.RoundRectangle2D;
 public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
     /**
-     * The color of this node when there is no underlying model that it
-     * represents.
+     * The color of this node when there is no underlying model that it represents.
      */
     private static final Color NO_MODEL_COLOR = new Color(214, 214, 214);
 
     /**
-     * The color of this node when there is an underlying model that it
-     * represents.
+     * The color of this node when there is an underlying model that it represents.
      */
     private static final Color HAS_MODEL_COLOR = DisplayNodeUtils.getNodeFillColor();
-
-    /**
-     * The color this node when unselected; depends on whether there is a model
-     * or not.
-     */
-    private Color unselectedColor = StdDisplayComp.NO_MODEL_COLOR;
-
     /**
      * Font used to render text.
      */
     private static final Font SMALL_FONT = new Font("Dialog", Font.BOLD, 10);
-
     /**
      * A label displaying the name of this node--for instance, "Graph1".
      */
     private final JLabel nameLabel;
-
     /**
      * A label displaying the acronym for this node--for instance, "Lag Graph".
      */
     private final JLabel acronymLabel;
-
-    /**
-     * Whether the node is selected.
-     */
-    private boolean selected;
-
     /**
      * The image that's displayed in the node.
      */
     private final Image image;
+    /**
+     * The color this node when unselected; depends on whether there is a model or not.
+     */
+    private Color unselectedColor = StdDisplayComp.NO_MODEL_COLOR;
+    /**
+     * Whether the node is selected.
+     */
+    private boolean selected;
 
 
     public StdDisplayComp(String imagePath) {
@@ -84,6 +75,10 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         this.acronymLabel = new JLabel("No model");
         this.image = ImageUtils.getImage(this, imagePath);
         layoutComponents();
+    }
+
+    private boolean isSelected() {
+        return this.selected;
     }
 
     /**
@@ -95,10 +90,6 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
         this.selected = selected;
         setBorder(null);
         repaint();
-    }
-
-    private boolean isSelected() {
-        return this.selected;
     }
 
     public void setName(String name) {
@@ -130,8 +121,7 @@ public class StdDisplayComp extends JComponent implements SessionDisplayComp {
 
 
     /**
-     * Paints the background of the component (since it has to be a
-     * JComponent).
+     * Paints the background of the component (since it has to be a JComponent).
      */
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;

@@ -64,12 +64,13 @@ import java.util.*;
 public final class BoxDataSet implements DataSet {
 
     static final long serialVersionUID = 23L;
+    /**
+     * Case ID's. These are strings associated with some or all of the cases of the dataset.
+     *
+     * @serial
+     */
+    private final Map<Integer, String> caseIds = new HashMap<>();
     private Map<String, String> columnToTooltip;
-
-    public Map<String, String> getColumnToTooltip() {
-        return this.columnToTooltip;
-    }
-
     /**
      * The name of the data model. This is not used internally; it is only here in case an external class wants this
      * dataset to have a name.
@@ -100,14 +101,6 @@ public final class BoxDataSet implements DataSet {
      * @serial
      */
     private Set<Node> selection = new HashSet<>();
-
-    /**
-     * Case ID's. These are strings associated with some or all of the cases of the dataset.
-     *
-     * @serial
-     */
-    private final Map<Integer, String> caseIds = new HashMap<>();
-
     /**
      * A map from cases to case multipliers. If a case is not in the domain of this map, its case multiplier is by
      * default 1. This is the number of repetitions of the case in the dataset. The sample size is obtained by summing
@@ -116,19 +109,16 @@ public final class BoxDataSet implements DataSet {
      * @serial
      */
     private Map<Integer, Integer> multipliers = new HashMap<>();
-
     /**
      * The knowledge associated with this data.
      *
      * @serial
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * The number formatter used for printing out continuous values.
      */
     private transient NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
-
     /**
      * The character used as a delimiter when the dataset is printed.
      */
@@ -167,7 +157,48 @@ public final class BoxDataSet implements DataSet {
         return new BoxDataSet(new ShortDataBox(4, 4), vars);
     }
 
+    /**
+     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
+     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
+     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
+     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
+     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
+     * help.
+     */
+    private static void readObject(ObjectInputStream s)
+            throws IOException, ClassNotFoundException {
+        s.defaultReadObject();
+    }
+
     //============================PUBLIC METHODS========================//
+
+    /**
+     * Attempts to translate <code>element</code> into a double value, returning it if successful, otherwise throwing an
+     * exception. To be successful, the object must be either a Number or a String.
+     *
+     * @throws IllegalArgumentException if the translation cannot be made. The reason is in the message.
+     */
+    private static double getValueFromObjectContinuous(Object element) {
+        if ("*".equals(element) || "".equals(element)) {
+            return ContinuousVariable.getDoubleMissingValue();
+        } else if (element instanceof Number) {
+            return ((Number) element).doubleValue();
+        } else if (element instanceof String) {
+            try {
+                return Double.parseDouble((String) element);
+            } catch (NumberFormatException e) {
+                return ContinuousVariable.getDoubleMissingValue();
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "The argument 'element' must be "
+                            + "either a Number or a String.");
+        }
+    }
+
+    public Map<String, String> getColumnToTooltip() {
+        return this.columnToTooltip;
+    }
 
     /**
      * Gets the name of the data set.
@@ -1084,14 +1115,6 @@ public final class BoxDataSet implements DataSet {
         return new BoxDataSet(this.dataBox.like(), this.variables);
     }
 
-    public void setNumberFormat(NumberFormat nf) {
-        if (nf == null) {
-            throw new NullPointerException();
-        }
-
-        this.nf = nf;
-    }
-
     /**
      * Sets the character ('\t', ' ', ',', for instance) that is used to delimit tokens when the data set is printed out
      * using the toString() method.
@@ -1153,19 +1176,6 @@ public final class BoxDataSet implements DataSet {
     }
 
     /**
-     * Adds semantic checks to the default deserialization method. This method must have the standard signature for a
-     * readObject method, and the body of the method must begin with "s.defaultReadObject();". Other than that, any
-     * semantic checks can be specified and do not need to stay the same from version to version. A readObject method of
-     * this form may be added to any class, even if Tetrad sessions were previously saved out using a version of the
-     * class that didn't include it. (That's what the "s.defaultReadObject();" is for. See J. Bloch, Effective Java, for
-     * help.
-     */
-    private static void readObject(ObjectInputStream s)
-            throws IOException, ClassNotFoundException {
-        s.defaultReadObject();
-    }
-
-    /**
      * @return the set of selected nodes, creating a new set if necessary.
      */
     private Set<Node> getSelection() {
@@ -1173,30 +1183,6 @@ public final class BoxDataSet implements DataSet {
             this.selection = new HashSet<>();
         }
         return this.selection;
-    }
-
-    /**
-     * Attempts to translate <code>element</code> into a double value, returning it if successful, otherwise throwing an
-     * exception. To be successful, the object must be either a Number or a String.
-     *
-     * @throws IllegalArgumentException if the translation cannot be made. The reason is in the message.
-     */
-    private static double getValueFromObjectContinuous(Object element) {
-        if ("*".equals(element) || "".equals(element)) {
-            return ContinuousVariable.getDoubleMissingValue();
-        } else if (element instanceof Number) {
-            return ((Number) element).doubleValue();
-        } else if (element instanceof String) {
-            try {
-                return Double.parseDouble((String) element);
-            } catch (NumberFormatException e) {
-                return ContinuousVariable.getDoubleMissingValue();
-            }
-        } else {
-            throw new IllegalArgumentException(
-                    "The argument 'element' must be "
-                            + "either a Number or a String.");
-        }
     }
 
     /**
@@ -1349,6 +1335,14 @@ public final class BoxDataSet implements DataSet {
         }
 
         return this.nf;
+    }
+
+    public void setNumberFormat(NumberFormat nf) {
+        if (nf == null) {
+            throw new NullPointerException();
+        }
+
+        this.nf = nf;
     }
 
     public DataBox getDataBox() {

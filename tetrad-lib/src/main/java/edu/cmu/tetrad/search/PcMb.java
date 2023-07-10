@@ -53,75 +53,60 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * The independence test used to perform the search.
      */
     private final IndependenceTest test;
-
+    /**
+     * The logger for this class. The config needs to be set.
+     */
+    private final TetradLogger logger = TetradLogger.getInstance();
     /**
      * The list of variables being searched over. Must contain the target.
      */
     private List<Node> variables;
-
     /**
      * The target variable.
      */
     private List<Node> targets;
-
     /**
      * The depth to which independence tests should be performed--i.e. the maximum number of conditioning variables for
      * any independence test.
      */
     private int depth;
-
     /**
      * The CPDAG output by the most recent search. This is saved in case the user wants to generate the list of MB
      * DAGs.
      */
     private Graph resultGraph;
-
     /**
      * A count of the number of independence tests performed in the course of the most recent search.
      */
     private int numIndependenceTests;
-
     /**
      * Information to help understand what part of the search is taking the most time.
      */
     private int[] maxRemainingAtDepth;
-
     /**
      * The set of nodes that edges should not be drawn to in the addDepthZeroAssociates method.
      */
     private Set<Node> a;
-
     /**
      * Elapsed time for the last run of the algorithm.
      */
     private long elapsedTime;
-
     /**
      * Knowledge.
      */
     private Knowledge knowledge = new Knowledge();
-
     /**
      * Set of ambiguous unshielded triples.
      */
     private Set<Triple> ambiguousTriples;
-
     /**
      * The most recently returned graph.
      */
     private Graph graph;
-
     /**
-     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large
-     * graphs).
+     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large graphs).
      */
     private boolean meekPreventCycles;
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
-    private final TetradLogger logger = TetradLogger.getInstance();
-
     private boolean findMb = false;
 
 
@@ -152,6 +137,26 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     //===============================PUBLIC METHODS=======================//
+
+    private static List<Node> asList(int[] indices, List<Node> nodes) {
+        List<Node> list = new LinkedList<>();
+
+        for (int i : indices) {
+            list.add(nodes.get(i));
+        }
+
+        return list;
+    }
+
+    private static boolean isArrowheadAllowed1(Node from, Node to,
+                                               Knowledge knowledge) {
+        if (knowledge == null) {
+            return true;
+        }
+
+        return !knowledge.isRequired(to.toString(), from.toString()) &&
+                !knowledge.isForbidden(from.toString(), to.toString());
+    }
 
     /**
      * Sets whether cycles should be prevented, using a cycle checker.
@@ -508,6 +513,8 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         return this.test;
     }
 
+    //================================PRIVATE METHODS====================//
+
     /**
      * Returns The knowledge used in search.
      *
@@ -526,8 +533,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);
     }
-
-    //================================PRIVATE METHODS====================//
 
     private Set<Node> getA() {
         return this.a;
@@ -844,29 +849,9 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);
     }
 
-    private static List<Node> asList(int[] indices, List<Node> nodes) {
-        List<Node> list = new LinkedList<>();
-
-        for (int i : indices) {
-            list.add(nodes.get(i));
-        }
-
-        return list;
-    }
-
     private boolean colliderAllowed(Node x, Node y, Node z, Knowledge knowledge) {
         return PcMb.isArrowheadAllowed1(x, y, knowledge) &&
                 PcMb.isArrowheadAllowed1(z, y, knowledge);
-    }
-
-    private static boolean isArrowheadAllowed1(Node from, Node to,
-                                               Knowledge knowledge) {
-        if (knowledge == null) {
-            return true;
-        }
-
-        return !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     public void setVariables(List<Node> variables) {

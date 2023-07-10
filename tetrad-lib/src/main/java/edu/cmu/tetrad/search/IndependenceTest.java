@@ -63,18 +63,18 @@ public interface IndependenceTest {
     DataModel getData();
 
     /**
-     * Sets whether this test will print verbose output.
-     *
-     * @param verbose True if so.
-     */
-    void setVerbose(boolean verbose);
-
-    /**
      * Returns true if the test prints verbose output.
      *
      * @return True if the case.
      */
     boolean isVerbose();
+
+    /**
+     * Sets whether this test will print verbose output.
+     *
+     * @param verbose True if so.
+     */
+    void setVerbose(boolean verbose);
 
     /**
      * Returns a string representation of this test.

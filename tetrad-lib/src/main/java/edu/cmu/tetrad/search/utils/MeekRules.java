@@ -41,20 +41,16 @@ import java.util.*;
  */
 public class MeekRules {
 
+    //The logger to use.
+    private final Map<Edge, Edge> changedEdges = new HashMap<>();
+    // If knowledge is available.
+    boolean useRule4;
     private Knowledge knowledge = new Knowledge();
-
     //True if cycles are to be prevented. May be expensive for large graphs (but also useful for large
     //graphs).
     private boolean meekPreventCycles;
 
-    // If knowledge is available.
-    boolean useRule4;
-
-    //The logger to use.
-    private final Map<Edge, Edge> changedEdges = new HashMap<>();
-
     // Whether verbose output should be generated.
-
     // True if verbose output should be printed.
     private boolean verbose;
 
@@ -69,6 +65,12 @@ public class MeekRules {
     }
 
     //======================== Public Methods ========================//
+
+    private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
+        if (knowledge.isEmpty()) return true;
+        return !knowledge.isRequired(to.toString(), from.toString()) &&
+                !knowledge.isForbidden(from.toString(), to.toString());
+    }
 
     /**
      * Uses the Meek rules to do as many orientations in the given graph as possible.
@@ -321,12 +323,6 @@ public class MeekRules {
         graph.addEdge(after);
 
         return true;
-    }
-
-    private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
-        if (knowledge.isEmpty()) return true;
-        return !knowledge.isRequired(to.toString(), from.toString()) &&
-                !knowledge.isForbidden(from.toString(), to.toString());
     }
 
     private boolean revertToUnshieldedColliders(Node y, Graph graph, Set<Node> visited) {

@@ -25,12 +25,8 @@ import edu.cmu.tetrad.data.CovarianceMatrix;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.search.Fas;
-import edu.cmu.tetrad.search.Fask;
-import edu.cmu.tetrad.search.IGraphSearch;
-import edu.cmu.tetrad.search.Lofs;
+import edu.cmu.tetrad.search.*;
 import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.util.MillisecondTimes;
 
@@ -58,14 +54,11 @@ import java.util.Collections;
 public final class FasLofs implements IGraphSearch {
 
     private final Lofs.Rule rule;
-
-    // Elapsed time of the search, in milliseconds.
-    private long elapsed;
-
     // The data sets being analyzed. They must all have the same variables and the same
     // number of records.
     private final DataSet dataSet;
-
+    // Elapsed time of the search, in milliseconds.
+    private long elapsed;
     // For the Fast Adjacency Search.
     private int depth = -1;
 

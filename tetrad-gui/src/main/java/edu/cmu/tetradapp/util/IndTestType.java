@@ -27,14 +27,11 @@ import edu.cmu.tetrad.util.TetradSerializable;
 import java.io.ObjectStreamException;
 
 /**
- * A typesafe enumeration of the types of independence tests that are used for basic
- * search algorithm in this package.
+ * A typesafe enumeration of the types of independence tests that are used for basic search algorithm in this package.
  *
  * @author josephramsey
  */
 public final class IndTestType implements TetradSerializable {
-    static final long serialVersionUID = 23L;
-
     public static final IndTestType DEFAULT = new IndTestType("Default", null);
     public static final IndTestType CORRELATION_T =
             new IndTestType("Correlation T Test", DataType.Continuous);
@@ -63,12 +60,24 @@ public final class IndTestType implements TetradSerializable {
             new IndTestType("Fisher Z Pooled Residuals", DataType.Continuous);
     public static final IndTestType FISHER = new IndTestType("Fisher (Fisher Z)", DataType.Continuous);
     public static final IndTestType TIPPETT = new IndTestType("Tippett (Fisher Z)", DataType.Continuous);
+    static final long serialVersionUID = 23L;
+    private static final IndTestType[] TYPES = {IndTestType.DEFAULT, IndTestType.CORRELATION_T, IndTestType.FISHER_Z,
+            IndTestType.LINEAR_REGRESSION, IndTestType.CONDITIONAL_CORRELATION, IndTestType.SEM_BIC, IndTestType.LOGISTIC_REGRESSION,
+            IndTestType.MIXED_MLR, IndTestType.FISHER_ZD,
+            IndTestType.G_SQUARE, IndTestType.CHI_SQUARE,
+            IndTestType.M_SEPARATION, IndTestType.TIME_SERIES,
 
+            IndTestType.INDEPENDENCE_FACTS, IndTestType.POOL_RESIDUALS_FISHER_Z, IndTestType.FISHER, IndTestType.TIPPETT,
+
+    };
+    // Declarations required for serialization.
+    private static int nextOrdinal;
     /**
      * The name of this dataType.
      */
     private final transient String name;
     private final DataType dataType;
+    private final int ordinal = IndTestType.nextOrdinal++;
 
     /**
      * Protected constructor for the types; this allows for extension in case anyone wants to add formula types.
@@ -91,19 +100,6 @@ public final class IndTestType implements TetradSerializable {
     public String toString() {
         return this.name;
     }
-
-    // Declarations required for serialization.
-    private static int nextOrdinal;
-    private final int ordinal = IndTestType.nextOrdinal++;
-    private static final IndTestType[] TYPES = {IndTestType.DEFAULT, IndTestType.CORRELATION_T, IndTestType.FISHER_Z,
-            IndTestType.LINEAR_REGRESSION, IndTestType.CONDITIONAL_CORRELATION, IndTestType.SEM_BIC, IndTestType.LOGISTIC_REGRESSION,
-            IndTestType.MIXED_MLR, IndTestType.FISHER_ZD,
-            IndTestType.G_SQUARE, IndTestType.CHI_SQUARE,
-            IndTestType.M_SEPARATION, IndTestType.TIME_SERIES,
-
-            IndTestType.INDEPENDENCE_FACTS, IndTestType.POOL_RESIDUALS_FISHER_Z, IndTestType.FISHER, IndTestType.TIPPETT,
-
-    };
 
     Object readResolve() throws ObjectStreamException {
         return IndTestType.TYPES[this.ordinal]; // Canonicalize.

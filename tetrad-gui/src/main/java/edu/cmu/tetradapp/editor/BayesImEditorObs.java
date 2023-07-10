@@ -30,10 +30,9 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * An editor for Bayes net instantiated models. Assumes that the workbench and
- * parameterized model have been established (that is, that the nodes have been
- * identified and named and that the number and names of the values for the
- * nodes have been specified).
+ * An editor for Bayes net instantiated models. Assumes that the workbench and parameterized model have been established
+ * (that is, that the nodes have been identified and named and that the number and names of the values for the nodes
+ * have been specified).
  *
  * @author Aaron Powers
  * @author josephramsey
@@ -45,12 +44,11 @@ import java.awt.*;
 public class BayesImEditorObs extends JPanel {
 
     private static final long serialVersionUID = 3600349007912545105L;
-
+    private final BayesImWrapperObs wrapper;
     /**
      * The wizard that allows the user to modify parameter values for this IM.
      */
     private BayesImEditorWizardObs wizard;
-    private final BayesImWrapperObs wrapper;
 
     /**
      * Constructs a new instanted model editor from a Bayes IM.
@@ -62,6 +60,13 @@ public class BayesImEditorObs extends JPanel {
 
         this.wrapper = wrapper;
         init(bayesIm);
+    }
+
+    /**
+     * Constructs a new instanted model editor from a Bayes IM wrapper.
+     */
+    public BayesImEditorObs(BayesImWrapperObs bayesImWrapperObs) {
+        this(bayesImWrapperObs, bayesImWrapperObs.getBayesIm());
     }
 
     private void init(BayesIm bayesIm) {
@@ -117,13 +122,6 @@ public class BayesImEditorObs extends JPanel {
                         evt.getNewValue());
             }
         });
-    }
-
-    /**
-     * Constructs a new instanted model editor from a Bayes IM wrapper.
-     */
-    public BayesImEditorObs(BayesImWrapperObs bayesImWrapperObs) {
-        this(bayesImWrapperObs, bayesImWrapperObs.getBayesIm());
     }
 
     /**
