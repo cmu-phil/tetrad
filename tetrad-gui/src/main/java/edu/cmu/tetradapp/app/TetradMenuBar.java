@@ -43,17 +43,12 @@ import static java.awt.Desktop.getDesktop;
  * @author Chirayu Kong Wongchokprasitti chw20@pitt.edu
  */
 final class TetradMenuBar extends JMenuBar {
-
-    /**
-     *
-     */
     private static final long serialVersionUID = -2734606481426217430L;
 
     /**
      * A reference to the tetrad desktop.
      */
     private final TetradDesktop desktop;
-
 
     /**
      * Creates the main menubar for Tetrad.
