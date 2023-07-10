@@ -22,14 +22,15 @@ import edu.pitt.dbmi.data.reader.*;
 import edu.pitt.dbmi.data.reader.metadata.Metadata;
 import edu.pitt.dbmi.data.reader.metadata.MetadataFileReader;
 import edu.pitt.dbmi.data.reader.metadata.MetadataReader;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Nov 15, 2018 5:22:50 PM
@@ -45,24 +46,24 @@ public class TabularDataFileReaderTest {
     private final boolean hasHeader = true;
 
     private final Path[] continuousDataFiles = {
-        new File(getClass().getResource("/data/tabular/continuous/dos_sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/continuous/mac_sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/continuous/quotes_sim_test_data.csv").getFile()).toPath()
+            new File(getClass().getResource("/data/tabular/continuous/dos_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/continuous/mac_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/continuous/quotes_sim_test_data.csv").getFile()).toPath()
     };
 
     private final Path[] discreteDataFiles = {
-        new File(getClass().getResource("/data/tabular/discrete/dos_sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/discrete/mac_sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/discrete/sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/discrete/quotes_sim_test_data.csv").getFile()).toPath()
+            new File(getClass().getResource("/data/tabular/discrete/dos_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/discrete/mac_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/discrete/sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/discrete/quotes_sim_test_data.csv").getFile()).toPath()
     };
 
     private final Path[] mixedDataFiles = {
-        new File(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile()).toPath()
+            new File(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile()).toPath()
     };
 
     public TabularDataFileReaderTest() {
@@ -753,8 +754,7 @@ public class TabularDataFileReaderTest {
     }
 
     /**
-     * Test of determineDiscreteDataColumns method, of class
-     * TabularColumnFileReader.
+     * Test of determineDiscreteDataColumns method, of class TabularColumnFileReader.
      *
      * @throws IOException
      */

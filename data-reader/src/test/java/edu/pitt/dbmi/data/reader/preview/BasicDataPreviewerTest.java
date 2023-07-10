@@ -18,12 +18,13 @@
  */
 package edu.pitt.dbmi.data.reader.preview;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Mar 6, 2017 8:41:16 PM

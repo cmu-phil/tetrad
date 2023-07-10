@@ -20,11 +20,12 @@ package edu.pitt.dbmi.data.reader.validation.tabular;
 
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.validation.ValidationResult;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Dec 12, 2018 4:16:55 PM

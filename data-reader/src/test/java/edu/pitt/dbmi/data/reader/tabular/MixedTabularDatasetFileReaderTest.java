@@ -21,14 +21,15 @@ package edu.pitt.dbmi.data.reader.tabular;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.Delimiter;
 import edu.pitt.dbmi.data.reader.DiscreteDataColumn;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Jan 2, 2019 4:03:44 PM
@@ -45,10 +46,10 @@ public class MixedTabularDatasetFileReaderTest {
     private final int numberOfDiscreteCategories = 4;
 
     private final Path[] dataFiles = {
-        new File(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile()).toPath()
+            new File(getClass().getResource("/data/tabular/mixed/dos_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/mixed/mac_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/mixed/sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/mixed/quotes_sim_test_data.csv").getFile()).toPath()
     };
 
     public MixedTabularDatasetFileReaderTest() {

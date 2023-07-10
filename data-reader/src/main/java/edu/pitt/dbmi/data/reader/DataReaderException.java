@@ -28,15 +28,13 @@ public class DataReaderException extends RuntimeException {
     private static final long serialVersionUID = 1123054334542973950L;
 
     /**
-     * Creates a new instance of <code>DataReaderException</code> without detail
-     * message.
+     * Creates a new instance of <code>DataReaderException</code> without detail message.
      */
     public DataReaderException() {
     }
 
     /**
-     * Constructs an instance of <code>DataReaderException</code> with the
-     * specified detail message.
+     * Constructs an instance of <code>DataReaderException</code> with the specified detail message.
      *
      * @param message the detail message.
      */
@@ -45,12 +43,10 @@ public class DataReaderException extends RuntimeException {
     }
 
     /**
-     * Constructs an instance of <code>DataReaderException</code> with the
-     * specified detail message and cause.
+     * Constructs an instance of <code>DataReaderException</code> with the specified detail message and cause.
      *
      * @param message the detail message.
-     * @param cause   the cause (which is saved for later retrieval by the
-     *                {@link #getCause()} method).
+     * @param cause   the cause (which is saved for later retrieval by the {@link #getCause()} method).
      */
     public DataReaderException(String message, Throwable cause) {
         super(message, cause);

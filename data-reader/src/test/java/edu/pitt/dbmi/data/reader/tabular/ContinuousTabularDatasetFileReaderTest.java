@@ -22,14 +22,15 @@ import edu.pitt.dbmi.data.reader.ContinuousData;
 import edu.pitt.dbmi.data.reader.Data;
 import edu.pitt.dbmi.data.reader.DataColumn;
 import edu.pitt.dbmi.data.reader.Delimiter;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * Jan 2, 2019 2:19:53 PM
@@ -45,10 +46,10 @@ public class ContinuousTabularDatasetFileReaderTest {
     private final boolean hasHeader = true;
 
     private final Path[] dataFiles = {
-        new File(getClass().getResource("/data/tabular/continuous/dos_sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/continuous/mac_sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile()).toPath(),
-        new File(getClass().getResource("/data/tabular/continuous/quotes_sim_test_data.csv").getFile()).toPath()
+            new File(getClass().getResource("/data/tabular/continuous/dos_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/continuous/mac_sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/continuous/sim_test_data.csv").getFile()).toPath(),
+            new File(getClass().getResource("/data/tabular/continuous/quotes_sim_test_data.csv").getFile()).toPath()
     };
 
     public ContinuousTabularDatasetFileReaderTest() {
