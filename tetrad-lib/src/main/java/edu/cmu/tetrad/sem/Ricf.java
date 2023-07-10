@@ -50,12 +50,8 @@ import java.util.*;
  */
 public class Ricf {
 
-    //==============================CONSTRUCTORS==========================//
-
     public Ricf() {
     }
-
-    //=============================PUBLIC METHODS=========================//
 
     public RicfResult ricf(SemGraph mag, ICovarianceMatrix covMatrix, double tolerance) {
         mag.setShowErrorTerms(false);
@@ -667,8 +663,6 @@ public class Ricf {
         return (algebra.trace(SK) - FastMath.log(algebra.det(SK)) - k) * n;
     }
 
-    //==============================PRIVATE METHODS=======================//
-
     private int[] range(int from, int to) {
         if (from < 0 || to < 0 || from > to) {
             throw new IllegalArgumentException();
@@ -840,8 +834,6 @@ public class Ricf {
 
         return true;
     }
-
-    //==============================PUBLIC CLASSES==========================//
 
     public static class RicfResult {
         private final ICovarianceMatrix covMatrix;

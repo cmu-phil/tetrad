@@ -75,8 +75,6 @@ public final class SemEstimatorGibbs {
     private SemIm estimatedSem;
     private Matrix dataSet;
 
-    //=============================CONSTRUCTORS============================//
-
     /**
      * @param semPm         a SemPm specifying the graph and parameterization for the model.
      * @param startIm       SemIm
@@ -98,8 +96,6 @@ public final class SemEstimatorGibbs {
         this.priorVariance = 16;
         this.priorCov = new Matrix(sampleCovars);
     }
-
-    //==============================PUBLIC METHODS=========================//
 
     public SemEstimatorGibbs(int numIterations, double stretch1, double stretch2, double tolerance, double priorVariance, SemPm semPm, SemIm startIm, boolean flatPrior) {
         this.numIterations = numIterations;

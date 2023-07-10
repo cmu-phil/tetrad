@@ -101,7 +101,6 @@ public class Pcd implements IGraphSearch {
 
     private boolean fdr;
 
-    //=============================CONSTRUCTORS==========================//
 
     /**
      * Constructs a new PC search using the given independence test as oracle.
@@ -117,7 +116,6 @@ public class Pcd implements IGraphSearch {
         this.independenceTest = independenceTest;
     }
 
-    //==============================PUBLIC METHODS========================//
 
     /**
      * @return true iff edges will not be added if they would create cycles.
@@ -303,7 +301,6 @@ public class Pcd implements IGraphSearch {
         return new HashSet<>(nonAdjacencies);
     }
 
-    //===============================PRIVATE METHODS=======================//
 
     private void enumerateTriples() {
         this.unshieldedColliders = new HashSet<>();

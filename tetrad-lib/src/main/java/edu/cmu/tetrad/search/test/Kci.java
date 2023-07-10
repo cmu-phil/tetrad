@@ -107,7 +107,6 @@ public class Kci implements IndependenceTest {
         this.alpha = alpha;
     }
 
-    //====================================PUBLIC METHODS==================================//
 
     /**
      * @throws javax.help.UnsupportedOperationException Method not implemented.

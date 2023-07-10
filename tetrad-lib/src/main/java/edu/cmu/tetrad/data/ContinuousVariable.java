@@ -73,8 +73,6 @@ public final class ContinuousVariable extends AbstractVariable {
      */
     private transient PropertyChangeSupport pcs;
 
-    //============================CONSTRUCTORS=========================//
-
     /**
      * Constructs a new continuous variable with the given name.
      *
@@ -101,8 +99,6 @@ public final class ContinuousVariable extends AbstractVariable {
     public static ContinuousVariable serializableInstance() {
         return new ContinuousVariable("X");
     }
-
-    //==============================PUBLIC METHODS======================//
 
     /**
      * @return the missing value marker.

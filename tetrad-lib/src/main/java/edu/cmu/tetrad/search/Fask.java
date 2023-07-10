@@ -232,8 +232,6 @@ public final class Fask implements IGraphSearch {
     }
 
 
-    //======================================== PUBLIC METHODS ====================================//
-
     // Returns E(XY | Z > 0) / sqrt(E(XX | Z > 0) * E(YY | Z > 0)). Z is typically either X or Y.
     private static double correxp(double[] x, double[] y, double[] z) {
         return Fask.E(x, y, z) / sqrt(Fask.E(x, x, z) * Fask.E(y, y, z));

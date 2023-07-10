@@ -132,8 +132,6 @@ public final class NumberObjectDataSet
         }
     }
 
-    //============================CONSTRUCTORS==========================//
-
     public NumberObjectDataSet(Number[][] data, List<Node> variables) {
         for (Number[] _data : data) {
             if (_data.length != variables.size()) {
@@ -184,8 +182,6 @@ public final class NumberObjectDataSet
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
-
-    //============================PUBLIC METHODS========================//
 
     /**
      * Attempts to translate <code>element</code> into a double value, returning it if successful, otherwise throwing an
@@ -1163,8 +1159,6 @@ public final class NumberObjectDataSet
     public void setOutputDelimiter(Character character) {
         this.outputDelimiter = character;
     }
-
-    //===============================PRIVATE METHODS=====================//
 
     /**
      * Randomly permutes the rows of the dataset.

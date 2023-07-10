@@ -84,8 +84,6 @@ public final class SemEstimator implements TetradSerializable {
     private ScoreType scoreType = ScoreType.Fgls;
     private int numRestarts = 1;
 
-    //=============================CONSTRUCTORS============================//
-
     /**
      * Constructs a Sem Estimator that does default estimation.
      *
@@ -162,8 +160,6 @@ public final class SemEstimator implements TetradSerializable {
         return new SemEstimator(CovarianceMatrix.serializableInstance(),
                 SemPm.serializableInstance());
     }
-
-    //==============================PUBLIC METHODS=========================//
 
     private static boolean containsCovarParam(SemPm semPm) {
         boolean containsCovarParam = false;
@@ -275,8 +271,6 @@ public final class SemEstimator implements TetradSerializable {
     private void setSemPm(SemPm semPm) {
         this.semPm = semPm;
     }
-
-    //============================PRIVATE METHODS==========================//
 
     public ICovarianceMatrix getCovMatrix() {
         return this.covMatrix;

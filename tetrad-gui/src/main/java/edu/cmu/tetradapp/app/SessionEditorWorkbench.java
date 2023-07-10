@@ -52,8 +52,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
      */
     private SimulationStudy simulationStudy;
 
-    //=========================CONSTRUCTORS==============================//
-
     /**
      * Constructs a new workbench for the given SessionWrapper.
      */
@@ -104,8 +102,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
 
         setRightClickPopupAllowed(false);
     }
-
-    //==========================PUBLIC METHODS===========================//
 
     /**
      * @return the model classes associated with the given button type.
@@ -264,8 +260,6 @@ public final class SessionEditorWorkbench extends AbstractWorkbench {
     public SessionWrapper getSessionWrapper() {
         return (SessionWrapper) getGraph();
     }
-
-    //===========================PRIVATE METHODS========================//
 
     /**
      * Resets the session wrapper that this editor is editing to the given session wrapper.

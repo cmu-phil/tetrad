@@ -149,7 +149,6 @@ public final class ConditionalCorrelationIndependence {
         }
     }
 
-    //==================CONSTRUCTORS====================//
 
     /**
      * Calculates the residuals of x regressed nonparametrically onto z. Left public so it can be accessed separately.
@@ -264,7 +263,6 @@ public final class ConditionalCorrelationIndependence {
         return _residualsx;
     }
 
-    //=================PUBLIC METHODS====================//
 
     /**
      * Sets the number of functions to use in (truncated) basis
@@ -397,7 +395,6 @@ public final class ConditionalCorrelationIndependence {
         }
     }
 
-    //=====================PRIVATE METHODS====================//
 
     private double nonparametricFisherZ(double[] _x, double[] _y) {
 

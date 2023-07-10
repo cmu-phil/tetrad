@@ -87,7 +87,6 @@ public final class Fci implements IGraphSearch {
     private boolean stable = true;
     private boolean doDiscriminatingPathRule = true;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructor.
@@ -137,7 +136,6 @@ public final class Fci implements IGraphSearch {
         this.variables.removeAll(remVars);
     }
 
-    //========================PUBLIC METHODS==========================//
 
     public Graph search() {
         long start = MillisecondTimes.timeMillis();

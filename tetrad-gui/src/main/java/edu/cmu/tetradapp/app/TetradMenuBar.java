@@ -98,7 +98,6 @@ final class TetradMenuBar extends JMenuBar {
     }
 
     private void buildFileMenu(JMenu fileMenu) {
-        //=======================FILE MENU=========================//
 
         // These have to be wrapped in JMenuItems to get the keyboard
         // accelerators to work correctly.
@@ -170,10 +169,7 @@ final class TetradMenuBar extends JMenuBar {
 
     }
 
-    //================================ Private Method ===============================//
-
     private void buildEditMenu(JMenu editMenu) {
-        //=======================EDIT MENU=========================//
         JMenuItem cut = new JMenuItem(new CutSubsessionAction());
         JMenuItem copy = new JMenuItem(new CopySubsessionAction());
         JMenuItem paste = new JMenuItem(new PasteSubsessionAction());
@@ -195,16 +191,12 @@ final class TetradMenuBar extends JMenuBar {
      * Builds the logging menu
      */
     private void buildLoggingMenu(JMenu loggingMenu) {
-        //================================= Logging Menu ==========================//
 
         // build the logging menu on the fly.
         loggingMenu.addMenuListener(new LoggingMenuListener());
     }
 
     private void buildTemplateMenu(JMenu templateMenu) {
-//      //=======================EXAMPLES MENU=========================//
-//      // Build a LoadTemplateAction for each file name in
-//      // this.exampleFiles.
         String[] templateNames = ConstructTemplateAction.getTemplateNames();
         for (String templateName : templateNames) {
             if ("--separator--".equals(templateName)) {
@@ -219,16 +211,12 @@ final class TetradMenuBar extends JMenuBar {
     }
 
     private void buildWindowMenu(JMenu windowMenu) {
-        //=======================WINDOW MENU=========================//
-        // These items are created on the fly based on whatever session
-        // editors are available.
         WindowMenuListener windowMenuListener =
                 new WindowMenuListener(windowMenu, this.desktop);
         windowMenu.addMenuListener(windowMenuListener);
     }
 
     private void buildHelpMenu(JMenu helpMenu) {
-        //=======================HELP MENU=========================//
         // A reference to the help item is stored at class level so that
         // it can be "clicked" from other classes.
 
@@ -279,8 +267,6 @@ final class TetradMenuBar extends JMenuBar {
             setLocationRelativeTo(parent);
         }
     }
-
-    //========================= Inner Classes ==========================================//
 
     private class LoggingMenuListener implements MenuListener {
 

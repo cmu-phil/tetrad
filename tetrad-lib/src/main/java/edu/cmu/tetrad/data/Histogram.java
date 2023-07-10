@@ -41,8 +41,6 @@ public class Histogram {
     private Map<Node, double[]> continuousIntervals;
     private Map<Node, Integer> discreteValues;
 
-    //==========================================CONSTRUCTORS==================================//
-
     /**
      * This histogram is for variables in a particular data set. These may be continuous or discrete.
      */
@@ -54,8 +52,6 @@ public class Histogram {
         this.dataSet = dataSet;
         setTarget(target);
     }
-
-    //========================================PUBLIC METHODS=================================//
 
     /**
      * Adds a continuous conditioning variables, conditioning on a range of values.

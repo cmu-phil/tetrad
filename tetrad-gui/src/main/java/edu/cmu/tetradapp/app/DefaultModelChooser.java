@@ -170,9 +170,6 @@ class DefaultModelChooser extends JComponent implements ModelChooser {
         add(b1, BorderLayout.CENTER);
     }
 
-    //============================= Private Methods ================================//
-
-
     /**
      * Basic wrapper class.
      */

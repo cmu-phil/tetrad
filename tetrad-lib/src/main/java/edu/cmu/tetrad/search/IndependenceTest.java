@@ -83,7 +83,6 @@ public interface IndependenceTest {
      */
     String toString();
 
-    //==============================DEFAULT METHODS=========================//
 
     /**
      * Returns an Independence test for a sublist of the variables.

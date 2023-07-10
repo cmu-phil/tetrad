@@ -51,7 +51,6 @@ public final class IndTestTrekSep implements IndependenceTest {
     private List<Node> variables;
     private double alpha;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new independence test that will determine conditional independence facts using the given correlation
@@ -73,7 +72,6 @@ public final class IndTestTrekSep implements IndependenceTest {
         setAlpha(alpha);
     }
 
-    //==========================PUBLIC METHODS=============================//
 
     /**
      * Creates a new independence test instance for a sublist of the variables.

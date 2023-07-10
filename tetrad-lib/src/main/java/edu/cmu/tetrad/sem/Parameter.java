@@ -100,8 +100,6 @@ public final class Parameter implements TetradSerializable {
      */
     private double startingValue = 1.0d;
 
-    //================================CONSTRUCTORS=======================//
-
     /**
      * @param name  The name of the parameter.
      * @param type  The type of the parameter--ParamType.COEF, ParamType.VAR, or ParamType.COVAR.
@@ -148,8 +146,6 @@ public final class Parameter implements TetradSerializable {
         return new Parameter("X", ParamType.COEF, new GraphNode("X"),
                 new GraphNode("Y"));
     }
-
-    //================================PUBLIC METHODS===================//
 
     /**
      * @return the name of the parameter.

@@ -99,7 +99,6 @@ public final class IndTestHsic implements IndependenceTest {
     private double useIncompleteCholesky = 1e-18;
     private boolean verbose;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new HSIC Independence test. The given significance level is used.
@@ -136,8 +135,6 @@ public final class IndTestHsic implements IndependenceTest {
         this.dataSet = dataSet;
     }
 
-
-    //==========================PUBLIC METHODS=============================//
 
     /**
      * Creates a new IndTestHsic instance for a subset of the variables.
@@ -617,8 +614,6 @@ public final class IndTestHsic implements IndependenceTest {
     public boolean determines(List<Node> z, Node x) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Method not implemented");
     }
-
-    //==========================PRIVATE METHODS============================//
 
 
     private int sampleSize() {

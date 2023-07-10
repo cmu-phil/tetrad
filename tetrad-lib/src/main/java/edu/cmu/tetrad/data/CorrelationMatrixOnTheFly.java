@@ -65,8 +65,6 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
      */
     private Set<Node> selectedVariables = new HashSet<>();
 
-    //=============================CONSTRUCTORS=========================//
-
     /**
      * Constructs a new covariance matrix from the given data set. If dataSet is a BoxDataSet with a
      * VerticalDoubleDataBox, the data will be mean-centered by the constructor; is non-mean-centered version of the
@@ -88,8 +86,6 @@ public class CorrelationMatrixOnTheFly implements ICovarianceMatrix {
         Matrix matrix = Matrix.identity(1);
         return new CovarianceMatrix(variables, matrix, 100); //
     }
-
-    //============================PUBLIC METHODS=========================//
 
     /**
      * @return the list of variables (unmodifiable).

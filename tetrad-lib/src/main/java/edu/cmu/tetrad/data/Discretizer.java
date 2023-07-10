@@ -318,8 +318,6 @@ public class Discretizer {
         return newDataSet;
     }
 
-    //======================== Classes ================================//
-
     public static class Discretization {
         /**
          * The variable that was discretized.
@@ -339,8 +337,6 @@ public class Discretizer {
             this.variable = variable;
             this.data = data;
         }
-
-        //============================ Public Methods =================================//
 
         /**
          * @return - discretized variable.

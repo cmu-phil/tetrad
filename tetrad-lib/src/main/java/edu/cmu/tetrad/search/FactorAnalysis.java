@@ -75,7 +75,6 @@ public class FactorAnalysis {
         this.covariance = new CovarianceMatrix(dataSet);
     }
 
-    //================= COMMUNALITY ESTIMATES =================//
 
     //designed for normalizing a vector.
     //as usual, vectors are treated as matrices to simplify operations elsewhere

@@ -63,8 +63,6 @@ public class DoubleTextField extends JTextField {
      */
     private Filter filter;
 
-    //============================CONSTRUCTORS=========================//
-
     /**
      * Constructs a new text field to display double values and allow them to be edited. The initial value and character
      * width of the text field can be specified, along with the format with which the numbers should be displayed. To
@@ -85,8 +83,6 @@ public class DoubleTextField extends JTextField {
         super(width);
         setup(value, format, smallNumberFormat, smallNumberCutoff);
     }
-
-    //============================PUBLIC FIELDS=========================//
 
     /**
      * Accesses the double value currently displayed.
@@ -143,8 +139,6 @@ public class DoubleTextField extends JTextField {
     public Dimension getMinimumSize() {
         return getPreferredSize();
     }
-
-    //==============================PRIVATE METHODS=======================//
 
     private double filter(double value, double oldValue) {
         if (this.filter == null) {
@@ -212,8 +206,6 @@ public class DoubleTextField extends JTextField {
             }
         }
     }
-
-    //==============================Interfaces============================//
 
     /**
      * Filters the given value, returning the value that should actually be displayed. Typical use is to return either

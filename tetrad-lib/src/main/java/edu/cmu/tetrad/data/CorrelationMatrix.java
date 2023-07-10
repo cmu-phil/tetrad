@@ -39,8 +39,6 @@ import java.util.List;
 public final class CorrelationMatrix extends CovarianceMatrix {
     static final long serialVersionUID = 23L;
 
-    //=============================CONSTRUCTORS=========================//
-
     /**
      * Constructs a new correlation matrix using the covariances in the given covariance matrix.
      */
@@ -75,8 +73,6 @@ public final class CorrelationMatrix extends CovarianceMatrix {
         return new CorrelationMatrix(new LinkedList<>(),
                 new Matrix(0, 0), 1);
     }
-
-    //=================================PUBLIC METHODS======================//
 
     public void setMatrix(Matrix matrix) {
         if (!matrix.isSquare()) {

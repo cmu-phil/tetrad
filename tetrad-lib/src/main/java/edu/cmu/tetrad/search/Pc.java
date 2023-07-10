@@ -80,7 +80,6 @@ public class Pc implements IGraphSearch {
     private boolean useMaxPHeuristic = false;
     private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
 
-    //=============================CONSTRUCTORS==========================//
 
     /**
      * Constructs a new PC search using the given independence test as oracle.
@@ -96,7 +95,6 @@ public class Pc implements IGraphSearch {
         this.independenceTest = independenceTest;
     }
 
-    //==============================PUBLIC METHODS========================//
 
     /**
      * Runs PC starting with a complete graph over all nodes of the given conditional independence test, using the given

@@ -59,7 +59,6 @@ public final class IndTestFisherZFisherPValue implements IndependenceTest {
     private double pValue = Double.NaN;
     private boolean verbose;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructor.

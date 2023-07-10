@@ -71,7 +71,6 @@ public class PcLingam {
     private double[] pValues;
     private double alpha = 0.05;
 
-    //===============================CONSTRUCTOR============================//
 
     /**
      * Constructor.
@@ -94,7 +93,6 @@ public class PcLingam {
         this.dataSet = dataSet;
     }
 
-    //===============================PUBLIC METHODS========================//
 
     /**
      * Runs the search and returns the result graph.
@@ -216,7 +214,6 @@ public class PcLingam {
         this.alpha = alpha;
     }
 
-    //=============================PRIVATE METHODS=========================//
 
     private Score getScore(Graph dag, Matrix data, List<Node> variables) {
         Regression regression = new RegressionDataset(data, variables);

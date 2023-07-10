@@ -76,7 +76,6 @@ public final class IndTestRegression implements IndependenceTest {
     private double fishersZ;
     private boolean verbose;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation matrix implied by the
@@ -96,7 +95,6 @@ public final class IndTestRegression implements IndependenceTest {
         setAlpha(alpha);
     }
 
-    //==========================PUBLIC METHODS=============================//
 
     /**
      * Creates a new IndTestCramerT instance for a subset of the variables.
@@ -197,7 +195,6 @@ public final class IndTestRegression implements IndependenceTest {
         return "Linear Regression Test, alpha = " + IndTestRegression.nf.format(getAlpha());
     }
 
-    //==========================PRIVATE METHODS============================//
 
     public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {

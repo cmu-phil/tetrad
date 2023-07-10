@@ -181,7 +181,6 @@ public final class Fges implements IGraphSearch, DagScorer {
         this.graph = new EdgeListGraph(getVariables());
     }
 
-    //==========================PUBLIC METHODS==========================//
 
     // Used to find semidirected paths for cycle checking.
     private static Node traverseSemiDirected(Node node, Edge edge) {
@@ -413,7 +412,6 @@ public final class Fges implements IGraphSearch, DagScorer {
         return logBayesPosteriorFactorsString(factors);
     }
 
-    //===========================PRIVATE METHODS========================//
 
     /**
      * Returns the score of the final search model.
@@ -1135,8 +1133,6 @@ public final class Fges implements IGraphSearch, DagScorer {
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
     }
-
-    //===========================SCORING METHODS===================//
 
     /**
      * Internal.

@@ -57,7 +57,6 @@ public final class MaxP {
         this.independenceTest = test;
     }
 
-    //======================================== PUBLIC METHODS ====================================//
 
     /**
      * Adds colliders to the given graph using the max P rule.

@@ -68,7 +68,6 @@ public class IndTestProbabilistic implements IndependenceTest {
     private double cutoff = 0.5;
     private double priorEquivalentSampleSize = 10;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Initializes the test using a discrete data sets.

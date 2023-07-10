@@ -43,7 +43,6 @@ import java.util.Map;
  */
 final class SessionEditorToolbar extends JPanel {
 
-    //=========================MEMBER FIELDS============================//
     /**
      * The node type of the button that is used for the Select/Move tool.
      */
@@ -65,8 +64,6 @@ final class SessionEditorToolbar extends JPanel {
      * True iff the shift key was down on last click.
      */
     private boolean shiftDown;
-
-    //=============================CONSTRUCTORS==========================//
 
     /**
      * Constructs a new session toolbar.
@@ -256,8 +253,6 @@ final class SessionEditorToolbar extends JPanel {
         System.out.println("process key event " + e);
         super.processKeyEvent(e);
     }
-
-    //===========================PRIVATE METHODS=========================//
 
     /**
      * Constructs the button with the given node type and image prefix. If the node type is "Select", constructs a

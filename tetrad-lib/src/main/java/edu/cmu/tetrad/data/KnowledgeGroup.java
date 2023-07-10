@@ -97,9 +97,6 @@ public final class KnowledgeGroup implements TetradSerializable {
     }
 
 
-    //====================== Public Methods =============================//
-
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
@@ -166,8 +163,6 @@ public final class KnowledgeGroup implements TetradSerializable {
         hash += 17 * Integer.valueOf(this.type).hashCode() + 37;
         return hash;
     }
-
-    //=========================== Private Methods ==========================//
 
     /**
      * Equals when they are the same type and have the same edges.

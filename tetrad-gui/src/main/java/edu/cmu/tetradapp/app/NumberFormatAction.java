@@ -54,16 +54,12 @@ final class NumberFormatAction extends AbstractAction
     private final JTextField formatField = new JTextField(
             Preferences.userRoot().get("numberFormat", "0.0000"));
 
-    //========================CONSTRUCTOR=============================//
-
     /**
      * Constructs a new number format action.
      */
     public NumberFormatAction() {
         super("Number Format");
     }
-
-    //===========================PUBLIC METHODS========================//
 
     /**
      * Pops up a dialog that lets the user decide how to render real numbers. A basic and an advanced version are
@@ -307,8 +303,6 @@ final class NumberFormatAction extends AbstractAction
      */
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
-
-    //============================PRIVATE METHODS=====================//
 
     /**
      * This sets up the behavior in the advanced tab where when you change the format or the example numnber, it updates

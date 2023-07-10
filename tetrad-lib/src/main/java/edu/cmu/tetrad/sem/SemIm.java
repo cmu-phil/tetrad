@@ -217,8 +217,6 @@ public final class SemIm implements Im, ISemIm {
         this(semPm, null, new Parameters());
     }
 
-    //=============================CONSTRUCTORS============================//
-
     /**
      * Constructs a new SEM IM from the given SEM PM, using the given params object to guide the choice of parameter
      * values.
@@ -429,8 +427,6 @@ public final class SemIm implements Im, ISemIm {
     public static SemIm serializableInstance() {
         return new SemIm(SemPm.serializableInstance());
     }
-
-    //==============================PUBLIC METHODS=========================//
 
     /**
      * @return a variant of the getModel model with the given covariance matrix and means. Used for updating.
@@ -1764,7 +1760,6 @@ public final class SemIm implements Im, ISemIm {
         return buf.toString();
     }
 
-    //==============================PRIVATE METHODS====================//
     private void retainPreviousValues(SemIm oldSemIm) {
         if (oldSemIm == null) {
             System.out.println("old sem im null");

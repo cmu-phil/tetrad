@@ -120,13 +120,13 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
     // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
 
-    //===========================CONSTRUCTORS=============================//
+
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
     // Where printed output is sent.
     private PrintStream out = System.out;
 
-    //==========================PUBLIC METHODS==========================//
+
     // A initial adjacencies graph.
     private Graph adjacencies;
     // True if it is assumed that zero effect adjacencies are not in the graph.
@@ -421,7 +421,6 @@ public final class FgesOrienter implements IGraphSearch, DagScorer {
         this.log = log;
     }
 
-    //===========================PRIVATE METHODS========================//
 
     /**
      * @return the initial graph for the search. The search is initialized to this graph and proceeds from there.

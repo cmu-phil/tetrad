@@ -91,7 +91,6 @@ public class Fasd implements IFas {
 
     private PrintStream out = System.out;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new FastAdjacencySearch.

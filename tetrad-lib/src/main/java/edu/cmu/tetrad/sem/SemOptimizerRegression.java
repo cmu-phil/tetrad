@@ -41,8 +41,6 @@ public class SemOptimizerRegression implements SemOptimizer {
     static final long serialVersionUID = 23L;
     private int numRestarts = 1;
 
-    //=============================CONSTRUCTORS============================//
-
     /**
      * Blank constructor.
      */
@@ -56,7 +54,6 @@ public class SemOptimizerRegression implements SemOptimizer {
         return new SemOptimizerRegression();
     }
 
-    //============================PUBLIC METHODS==========================//
 
     private static int[] indexedParents(int[] parents) {
         int[] pp = new int[parents.length];

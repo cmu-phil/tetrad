@@ -166,8 +166,6 @@ public class SemOptimizerEm implements SemOptimizer {
         this.numRestarts = numRestarts;
     }
 
-    //==============================PRIVATE METHODS========================//
-
     private void initialize(SemIm semIm) {
         this.semIm = semIm;
         this.graph = semIm.getSemPm().getGraph();

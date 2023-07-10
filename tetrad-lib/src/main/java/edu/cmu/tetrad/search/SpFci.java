@@ -98,7 +98,6 @@ public final class SpFci implements IGraphSearch {
     private int depth = -1;
     private boolean doDiscriminatingPathRule = true;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -115,7 +114,6 @@ public final class SpFci implements IGraphSearch {
         this.independenceTest = test;
     }
 
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Runs the search and returns the discovered PAG.
@@ -296,7 +294,6 @@ public final class SpFci implements IGraphSearch {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
     }
 
-    //===========================================PRIVATE METHODS=======================================//
 
     // Due to Spirtes.
     private void modifiedR0(Graph fgesGraph, SepsetProducer sepsets) {

@@ -140,8 +140,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
     private int maxIndegree = -1;
 
 
-    //===========================CONSTRUCTORS=============================//
-
     /**
      * Construct a Score and pass it in here. The totalScore should return a positive value in case of conditional
      * dependence and a negative values in case of conditional independence. See Chickering (2002), locally consistent
@@ -153,7 +151,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         this.graph = new EdgeListGraph(getVariables());
     }
 
-    //==========================PUBLIC METHODS==========================//
 
     // Used to find semidirected paths for cycle checking.
     private static Node traverseSemiDirected(Node node, Edge edge) {
@@ -419,7 +416,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         this.maxIndegree = maxIndegree;
     }
 
-    //===========================PRIVATE METHODS========================//
 
     public int getMinChunk(int n) {
         // The minimum number of operations to do before parallelizing.
@@ -1620,7 +1616,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
         return this.variables;
     }
 
-    //===========================SCORING METHODS===================//
 
     // Stores the graph, if its totalScore knocks out one of the top ones.
     private void storeGraph() {

@@ -76,8 +76,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
      */
     private Knowledge knowledge = new Knowledge();
 
-    //=============================CONSTRUCTORS=========================//
-
     /**
      * Constructs a new covariance matrix from the given data set.
      *
@@ -154,8 +152,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
         Matrix matrix = Matrix.identity(1);
         return new CovarianceMatrix(variables, matrix, 100);
     }
-
-    //============================PUBLIC METHODS=========================//
 
     /**
      * @return the list of variables (unmodifiable).
@@ -462,8 +458,6 @@ public class CovarianceMatrix implements ICovarianceMatrix {
     public void removeVariables(List<String> remaining) {
         throw new IllegalStateException();
     }
-
-    //========================PRIVATE METHODS============================//
 
     private Set<Node> getSelectedVariables() {
         return this.selectedVariables;

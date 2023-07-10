@@ -55,8 +55,6 @@ public final class TimeSeriesData implements DataModel {
      */
     private Knowledge knowledge = new Knowledge();
 
-    //==============================CONSTRUCTOR===========================//
-
     /**
      * Constructs a new time series data contains for the given row-major data array and the given list of variables.
      * Each row of the data, data[i], contains a measured for each variable (in order) for a particular time. The series
@@ -95,8 +93,6 @@ public final class TimeSeriesData implements DataModel {
         varNames.add("Y");
         return new TimeSeriesData(new Matrix(2, 2), varNames);
     }
-
-    //=================================PUBLIC METHODS======================//
 
     public String getName() {
         return this.name;

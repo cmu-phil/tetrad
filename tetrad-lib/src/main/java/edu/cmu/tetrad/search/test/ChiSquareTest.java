@@ -58,7 +58,6 @@ public class ChiSquareTest {
      */
     private double alpha;
 
-    //==============================CONSTRUCTORS=========================//
 
     /**
      * Constructs a test using the given data set and significance level.
@@ -279,7 +278,6 @@ public class ChiSquareTest {
         this.alpha = alpha;
     }
 
-    //================================PRIVATE==============================//
 
     private int[] selectFromArray(int[] arr, int[] indices) {
         int[] retArr = new int[indices.length];
@@ -303,7 +301,6 @@ public class ChiSquareTest {
         return this.cellTable;
     }
 
-    //===============================CLASSES==============================//
 
     /**
      * Simple class to store the parameters of the result returned by the G Square test.

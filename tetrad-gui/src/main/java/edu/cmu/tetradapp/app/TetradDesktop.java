@@ -145,7 +145,6 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         frame.setBounds(tx, ty, d.width, d.height);
     }
 
-    // ===========================PUBLIC METHODS============================//
     public void newSessionEditor() {
         String newName = getNewSessionName();
         SessionEditor editor = new SessionEditor(newName);
@@ -493,8 +492,6 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
         return this.logArea != null;
     }
 
-    // ===========================PRIVATE METHODS==========================//
-
     /**
      * Sets whether the display log output should be displayed or not. If true then a text area roughly 20% of the
      * screen size will appear on the bottom and will display any log output, otherwise just the standard tetrad
@@ -638,9 +635,6 @@ public final class TetradDesktop extends JPanel implements DesktopControllable,
 
         return allowed;
     }
-
-    // ================================ Inner class
-    // =======================================//
 
     /**
      * Listener for the logger that will open the display log if not already open.

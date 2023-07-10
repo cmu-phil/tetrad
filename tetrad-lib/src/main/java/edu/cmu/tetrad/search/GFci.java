@@ -87,7 +87,6 @@ public final class GFci implements IGraphSearch {
     private boolean possibleMsepSearchDone = true;
     private int depth = -1;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new GFci algorithm with the given independence test and score.
@@ -103,7 +102,6 @@ public final class GFci implements IGraphSearch {
         this.independenceTest = test;
     }
 
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Runs the graph and returns the search PAG.
@@ -276,6 +274,5 @@ public final class GFci implements IGraphSearch {
         this.depth = depth;
     }
 
-    //===========================================PRIVATE METHODS=======================================//
 
 }

@@ -85,7 +85,6 @@ public final class BFci implements IGraphSearch {
     private boolean bossUseBes = false;
     private boolean allowInternalRandomness = false;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructor. The test and score should be for the same data.
@@ -104,7 +103,6 @@ public final class BFci implements IGraphSearch {
         this.independenceTest = test;
     }
 
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Does the search and returns a PAG.

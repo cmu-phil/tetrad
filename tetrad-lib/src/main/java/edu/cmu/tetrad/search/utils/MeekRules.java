@@ -64,7 +64,6 @@ public class MeekRules {
         this.useRule4 = !this.knowledge.isEmpty();
     }
 
-    //======================== Public Methods ========================//
 
     private static boolean isArrowheadAllowed(Node from, Node to, Knowledge knowledge) {
         if (knowledge.isEmpty()) return true;

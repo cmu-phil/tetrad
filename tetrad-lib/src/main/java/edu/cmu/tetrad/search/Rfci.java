@@ -93,7 +93,6 @@ public final class Rfci implements IGraphSearch {
      */
     private boolean verbose;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new RFCI search for the given independence test and background knowledge.
@@ -134,7 +133,6 @@ public final class Rfci implements IGraphSearch {
         this.variables.removeAll(remVars);
     }
 
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Runs the search and returns the RFCI PAG.
@@ -310,8 +308,6 @@ public final class Rfci implements IGraphSearch {
         return this.independenceTest;
     }
 
-
-    //===========================PRIVATE METHODS=========================//
 
     private Set<Node> getSepset(Node i, Node k) {
         return this.sepsets.get(i, k);

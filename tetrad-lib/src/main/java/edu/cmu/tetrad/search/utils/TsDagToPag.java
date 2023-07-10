@@ -62,7 +62,6 @@ public final class TsDagToPag {
     private Graph truePag;
     private boolean doDiscriminatingPathRule = false;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.

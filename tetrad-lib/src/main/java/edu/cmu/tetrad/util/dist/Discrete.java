@@ -89,8 +89,6 @@ public class Discrete implements Distribution {
         return "Discrete(" + Arrays.toString(this.p) + ")";
     }
 
-    //=============================PRIVATE METHODS=========================//
-
     private double[] convert(double... p) {
         for (double _p : p) {
             if (_p < 0) throw new IllegalArgumentException("All arguments must be >= 0: " + _p);

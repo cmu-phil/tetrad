@@ -76,7 +76,6 @@ public class Fas implements IFas {
     private PrintStream out = System.out;
     private boolean verbose = false;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructor.
@@ -87,7 +86,6 @@ public class Fas implements IFas {
         this.test = test;
     }
 
-    //==========================PUBLIC METHODS===========================//
 
     /**
      * Runs the search and returns the resulting (undirected) graph.

@@ -61,7 +61,6 @@ public final class DagToPag {
     private int maxPathLength = -1;
     private boolean doDiscriminatingPathRule = true;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -70,7 +69,6 @@ public final class DagToPag {
         this.dag = new EdgeListGraph(dag);
     }
 
-    //========================PUBLIC METHODS==========================//
 
     public static boolean existsInducingPathInto(Node x, Node y, Graph graph) {
         if (x.getNodeType() != NodeType.MEASURED) throw new IllegalArgumentException();

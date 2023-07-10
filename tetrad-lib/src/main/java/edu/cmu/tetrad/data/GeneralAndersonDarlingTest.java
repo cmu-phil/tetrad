@@ -58,8 +58,6 @@ public class GeneralAndersonDarlingTest {
      */
     private double p;
 
-    //============================CONSTRUCTOR===========================//
-
     /**
      * Constructs an Anderson-Darling test for the given column of data.
      */
@@ -76,8 +74,6 @@ public class GeneralAndersonDarlingTest {
 
         runTest();
     }
-
-    //============================PUBLIC METHODS=========================//
 
     /**
      * @return the A^2 statistic.
@@ -99,8 +95,6 @@ public class GeneralAndersonDarlingTest {
     public double getP() {
         return this.p;
     }
-
-    //============================PRIVATE METHODS========================//
 
     private void runTest() {
         int n = this.data.size();

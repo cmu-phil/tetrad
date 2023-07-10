@@ -62,7 +62,6 @@ public final class IndTestFisherZ implements IndependenceTest {
     //    private double p = Double.NaN;
     private double r = Double.NaN;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation matrix implied by the
@@ -163,7 +162,6 @@ public final class IndTestFisherZ implements IndependenceTest {
         this.nodesHash = nodesHash;
     }
 
-    //==========================PUBLIC METHODS=============================//
 
     /**
      * Creates a new independence test instance for a subset of the variables.

@@ -94,7 +94,6 @@ public class MimbuildTrek {
     public MimbuildTrek() {
     }
 
-    //=================================== PUBLIC METHODS =========================================//
 
     /**
      * Does the search and returns the graph.
@@ -237,7 +236,6 @@ public class MimbuildTrek {
         this.epsilon = epsilon;
     }
 
-    //=================================== PRIVATE METHODS =========================================//
 
     private List<Node> defineLatents(List<String> names) {
         List<Node> latents = new ArrayList<>();

@@ -69,7 +69,6 @@ public final class Ccd implements IGraphSearch {
         this.nodes = test.getVariables();
     }
 
-    //======================================== PUBLIC METHODS ====================================//
 
     /**
      * The search method assumes that the IndependenceTest provided to the constructor is a conditional independence
@@ -120,7 +119,6 @@ public final class Ccd implements IGraphSearch {
         this.applyR1 = applyR1;
     }
 
-    //======================================== PRIVATE METHODS ====================================//
 
     private void orientAwayFromArrow(Graph graph) {
         for (Edge edge : graph.getEdges()) {

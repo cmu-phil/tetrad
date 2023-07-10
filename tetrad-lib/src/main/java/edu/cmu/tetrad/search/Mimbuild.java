@@ -102,7 +102,6 @@ public class Mimbuild {
     public Mimbuild() {
     }
 
-    //=================================== PUBLIC METHODS =========================================//
 
     /**
      * Does a Mimbuild search.
@@ -246,7 +245,6 @@ public class Mimbuild {
         this.penaltyDiscount = penaltyDiscount;
     }
 
-    //=================================== PRIVATE METHODS =========================================//
 
     private List<Node> defineLatents(List<String> names) {
         List<Node> latents = new ArrayList<>();

@@ -236,7 +236,6 @@ public class Lofs {
         this.orientStrongerDirection = orientStrongerDirection;
     }
 
-    //==========================PRIVATE=======================================//
 
     /**
      * Sets for R2 whether cycles shoudld be oriented.
@@ -1484,7 +1483,6 @@ public class Lofs {
         throw new IllegalStateException("Unrecognized score: " + this.score);
     }
 
-    //=============================PRIVATE METHODS=========================//
 
     private double meanAbsolute(Node node, List<Node> parents) {
         double[] _f = residuals(node, parents, false);

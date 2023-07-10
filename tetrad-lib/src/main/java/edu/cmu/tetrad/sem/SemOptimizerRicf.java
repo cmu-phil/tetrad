@@ -36,8 +36,6 @@ public class SemOptimizerRicf implements SemOptimizer {
     static final long serialVersionUID = 23L;
     private int numRestarts = 1;
 
-    //=============================CONSTRUCTORS=========================//
-
     /**
      * Blank constructor.
      */
@@ -50,8 +48,6 @@ public class SemOptimizerRicf implements SemOptimizer {
     public static SemOptimizerRicf serializableInstance() {
         return new SemOptimizerRicf();
     }
-
-    //==============================PUBLIC METHODS========================//
 
     /**
      * Optimizes the fitting function of the given Sem using the Powell method from Numerical Recipes by adjusting the

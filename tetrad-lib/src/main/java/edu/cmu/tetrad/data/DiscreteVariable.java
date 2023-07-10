@@ -135,8 +135,6 @@ public final class DiscreteVariable extends AbstractVariable {
 
     private Map<String, Object> attributes = new HashMap<>();
 
-    //=========================CONSTRUCTORS=============================//
-
     /**
      * Builds a discrete variable with the given name and an empty list of categories. Use this constructor if a
      * variable is needed to represent just a list of integer categories with no categories associated with the
@@ -191,8 +189,6 @@ public final class DiscreteVariable extends AbstractVariable {
     public static DiscreteVariable serializableInstance() {
         return new DiscreteVariable("X");
     }
-
-    //=============================PUBLIC METHODS========================//
 
     private static List<String> getStoredCategoryList(
             List<String> categoryList) {
@@ -413,25 +409,6 @@ public final class DiscreteVariable extends AbstractVariable {
         this.centerX = centerX;
         this.centerY = centerY;
     }
-
-//    public final String toStringFull() {
-//        StringBuilder buf = new StringBuilder();
-//
-//        buf.append(getNode());
-//        buf.append(" <");
-//
-//        for (int i = 0; i < getNumCategories(); i++) {
-//            buf.append(getCategory(i));
-//
-//            if (i < getNumCategories() - 1) {
-//                buf.append(", ");
-//            }
-//        }
-//
-//        buf.append(">");
-//        return buf.toString();
-//    }
-    //==============================PRIVATE METHODS=======================//
 
     /**
      * Adds a property change listener.

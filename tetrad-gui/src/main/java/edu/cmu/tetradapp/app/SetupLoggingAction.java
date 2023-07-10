@@ -44,8 +44,6 @@ public class SetupLoggingAction extends AbstractAction {
     }
 
 
-    //========================= Public Methods =================================//
-
     /**
      * The component used to config logging.
      */
@@ -189,8 +187,6 @@ public class SetupLoggingAction extends AbstractAction {
 
         return box;
     }
-
-    //========================= Private Methods =================================//
 
     public void actionPerformed(ActionEvent e) {
         JComponent comp = SetupLoggingAction.buildSetupLoggingComponent();

@@ -100,8 +100,6 @@ public class TetradApplicationConfig {
         }
     }
 
-    //============================== Public Methods =====================================//
-
     /**
      * @return an instance of the session configuration.
      */
@@ -157,8 +155,6 @@ public class TetradApplicationConfig {
         }
         return v;
     }
-
-    //============================== Private Methods ====================================//
 
     /**
      * Builds the model configs from the models element.
@@ -337,8 +333,6 @@ public class TetradApplicationConfig {
         return this.configs;
     }
 
-    //============================== Inner classes =======================================//
-
     /**
      * Default implementation of the session config. Most functionality is implemented by static methods from the
      * outer-class.
@@ -433,7 +427,6 @@ public class TetradApplicationConfig {
             return TetradApplicationConfig.createDisplayComp(this.image, this.compClass);
         }
 
-        //========================= Private Methods ===============================//
         private void setChooser(String title, Class chooserClass) {
             if (title == null) {
                 throw new NullPointerException("The chooser title must not be null");

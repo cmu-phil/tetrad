@@ -48,7 +48,6 @@ public final class SepsetMap implements TetradSerializable {
     private Map<Set<Node>, Set<Node>> sepsets = new ConcurrentHashMap<>();
     private Map<Set<Node>, Double> pValues = new ConcurrentHashMap<>();
 
-    //=============================CONSTRUCTORS===========================//
 
     /**
      * Constructor.
@@ -73,7 +72,6 @@ public final class SepsetMap implements TetradSerializable {
         return new SepsetMap();
     }
 
-    //=============================PUBLIC METHODS========================//
 
     /**
      * Sets the sepset for {x, y} to be z. Note that {x, y} is unordered.

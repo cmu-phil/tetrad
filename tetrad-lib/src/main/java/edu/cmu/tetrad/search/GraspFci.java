@@ -87,7 +87,6 @@ public final class GraspFci implements IGraphSearch {
     private int uncoveredDepth = 1;
     private int nonSingularDepth = 1;
 
-    //============================CONSTRUCTORS============================//
     public GraspFci(IndependenceTest test, Score score) {
         if (score == null) {
             throw new NullPointerException();
@@ -96,8 +95,6 @@ public final class GraspFci implements IGraphSearch {
         this.score = score;
         this.independenceTest = test;
     }
-
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Run the search and return s a PAG.
@@ -197,8 +194,6 @@ public final class GraspFci implements IGraphSearch {
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-
-    //===========================================PRIVATE METHODS=======================================//
 
     public void setNumStarts(int numStarts) {
         this.numStarts = numStarts;

@@ -154,7 +154,6 @@ final class SessionUtils {
         return _parentCombinations;
     }
 
-    //======================================== Private Methods ==============================//
 
     /**
      * @return the name of the given model

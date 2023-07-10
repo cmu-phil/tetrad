@@ -59,7 +59,6 @@ public final class IndTestMulti implements IndependenceTest {
 
 //    private DataSet concatenatedData;
 
-    //==========================CONSTRUCTORS=============================//
 
     public IndTestMulti(List<IndependenceTest> independenceTests, ResolveSepsets.Method method) {
         Set<String> nodeNames = new HashSet<>();
@@ -74,7 +73,6 @@ public final class IndTestMulti implements IndependenceTest {
         this.method = method;
     }
 
-    //==========================PUBLIC METHODS=============================//
 
     public IndependenceTest indTestSubset(List<Node> vars) {
         throw new UnsupportedOperationException();

@@ -59,8 +59,6 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
      */
     private int method;
 
-    //============================CONSTRUCTORS==========================//
-
     public ContinuousDiscretizationSpec(double[] breakpoints, List<String> categories) {
         this(breakpoints, categories, ContinuousDiscretizationSpec.EVENLY_DISTRIBUTED_INTERVALS);
     }
@@ -87,9 +85,6 @@ public final class ContinuousDiscretizationSpec implements TetradSerializable, D
     public static DiscretizationSpec serializableInstance() {
         return new ContinuousDiscretizationSpec(new double[0], new ArrayList<>());
     }
-
-    //============================PUBLIC METHODS========================//
-
 
     public int getMethod() {
         return this.method;

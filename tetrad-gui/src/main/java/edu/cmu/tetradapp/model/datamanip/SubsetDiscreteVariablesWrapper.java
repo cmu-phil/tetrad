@@ -65,9 +65,6 @@ public class SubsetDiscreteVariablesWrapper extends DataWrapper {
         return PcRunner.serializableInstance();
     }
 
-    //=========================== Private Methods =================================//
-
-
     private static DataModel createModel(DataSet data) {
 
         List<Node> variables = data.getVariables();

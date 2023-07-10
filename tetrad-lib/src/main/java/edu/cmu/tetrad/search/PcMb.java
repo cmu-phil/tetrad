@@ -110,8 +110,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     private boolean findMb = false;
 
 
-    //==============================CONSTRUCTORS==========================//
-
     /**
      * Constructs a new search.
      *
@@ -136,7 +134,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.variables = test.getVariables();
     }
 
-    //===============================PUBLIC METHODS=======================//
 
     private static List<Node> asList(int[] indices, List<Node> nodes) {
         List<Node> list = new LinkedList<>();
@@ -513,7 +510,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         return this.test;
     }
 
-    //================================PRIVATE METHODS====================//
 
     /**
      * Returns The knowledge used in search.
@@ -862,8 +858,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         this.findMb = findMb;
     }
 
-
-    //==============================CLASSES==============================//
 
     private enum TripleType {
         COLLIDER, NONCOLLIDER, AMBIGUOUS

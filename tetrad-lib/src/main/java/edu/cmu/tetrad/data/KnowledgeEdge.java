@@ -44,8 +44,6 @@ public final class KnowledgeEdge implements TetradSerializable {
      */
     private final String to;
 
-    //===============================CONSTRUCTORS=======================//
-
     /**
      * Constructs a knowledge edge for from--&gt;to.
      */
@@ -64,8 +62,6 @@ public final class KnowledgeEdge implements TetradSerializable {
     public static KnowledgeEdge serializableInstance() {
         return new KnowledgeEdge("X", "Y");
     }
-
-    //===============================PUBLIC METHODS======================//
 
     /**
      * @return the tail node of the edge.

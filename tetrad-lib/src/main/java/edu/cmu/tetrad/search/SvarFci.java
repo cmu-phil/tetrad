@@ -99,8 +99,6 @@ public final class SvarFci implements IGraphSearch {
     private boolean verbose;
 
 
-    //============================CONSTRUCTORS============================//
-
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
      */
@@ -112,7 +110,6 @@ public final class SvarFci implements IGraphSearch {
         this.independenceTest = independenceTest;
     }
 
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Returns the depth of search--i.e., the maximum number of conditioning variables for tests.
@@ -314,7 +311,6 @@ public final class SvarFci implements IGraphSearch {
         return this.independenceTest;
     }
 
-    //===========================PRIVATE METHODS=========================//
 
     // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
     // this version removes edges from graph instead of list of adjacencies

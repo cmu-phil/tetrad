@@ -73,7 +73,6 @@ public final class FciOrient {
     private boolean doDiscriminatingPathColliderRule = true;
     private boolean doDiscriminatingPathTailRule = true;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -82,7 +81,6 @@ public final class FciOrient {
         this.sepsets = sepsets;
     }
 
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Gets a list of every uncovered partially directed path between two nodes in the graph.

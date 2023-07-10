@@ -91,9 +91,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
     private Knowledge knowledge = new Knowledge();
     private double[][] vectors = null;
 
-
-    //=============================CONSTRUCTORS=========================//
-
     /**
      * Constructs a new covariance matrix from the given data set. If dataSet is a BoxDataSet with a
      * VerticalDoubleDataBox, the data will be mean-centered by the constructor; is non-mean-centered version of the
@@ -297,8 +294,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
         Matrix matrix = Matrix.identity(1);
         return new CovarianceMatrix(variables, matrix, 100); //
     }
-
-    //============================PUBLIC METHODS=========================//
 
     /**
      * @return the list of variables (unmodifiable).
@@ -662,8 +657,6 @@ public class CovarianceMatrixOnTheFly implements ICovarianceMatrix {
 
         return m;
     }
-
-    //========================PRIVATE METHODS============================//
 
     public Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {

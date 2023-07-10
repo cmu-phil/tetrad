@@ -75,7 +75,6 @@ public final class LargeScaleSimulation {
     private boolean errorsNormal = true;
     private double selfLoopCoef;
 
-    //=============================CONSTRUCTORS============================//
     public LargeScaleSimulation(Graph graph) {
         this.graph = graph;
         this.variableNodes = graph.getNodes();

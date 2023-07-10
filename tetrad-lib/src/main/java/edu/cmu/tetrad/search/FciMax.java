@@ -79,7 +79,6 @@ public final class FciMax implements IGraphSearch {
     private int depth = -1;
     private boolean verbose = false;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructor.
@@ -92,7 +91,6 @@ public final class FciMax implements IGraphSearch {
         this.independenceTest = independenceTest;
     }
 
-    //========================PUBLIC METHODS==========================//
 
     /**
      * Performs the search and returns the PAG.

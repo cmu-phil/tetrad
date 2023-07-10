@@ -65,8 +65,6 @@ final class ConstructTemplateAction extends AbstractAction {
      */
     private SessionEditorWorkbench sessionWorkbench;
 
-    //============================CONSTUCTORS============================//
-
     /**
      * Constucts an action for adding a new template to the frontmost session.
      */
@@ -80,8 +78,6 @@ final class ConstructTemplateAction extends AbstractAction {
 
         this.templateName = templateName;
     }
-
-    //==========================PUBLIC METHODS===========================//
 
     /**
      * @return a copy of the template names. Must be public.
@@ -217,7 +213,6 @@ final class ConstructTemplateAction extends AbstractAction {
         addEdge(name, thisNode.getName());
     }
 
-    //=============================PRIVATE METHODS========================//
     private int getLeftX() {
         SessionEditorIndirectRef sessionEditorRef
                 = DesktopController.getInstance().getFrontmostSessionEditor();

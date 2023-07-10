@@ -81,7 +81,6 @@ public final class Cpc implements IGraphSearch {
     private boolean verbose = false;
     private PcCommon.PcHeuristicType pcHeuristicType = PcCommon.PcHeuristicType.NONE;
 
-    //=============================CONSTRUCTORS==========================//
 
     /**
      * Constructs a CPC algorithm that uses the given independence test as oracle. This does not make a copy of the
@@ -97,7 +96,6 @@ public final class Cpc implements IGraphSearch {
         this.independenceTest = independenceTest;
     }
 
-    //==============================PUBLIC METHODS========================//
 
     /**
      * Runs CPC starting with a fully connected graph over all the variables in the domain of the independence test. See
@@ -316,7 +314,6 @@ public final class Cpc implements IGraphSearch {
         this.pcHeuristicType = pcHeuristicType;
     }
 
-    //==========================PRIVATE METHODS===========================//
 
     private void logTriples() {
         TetradLogger.getInstance().log("info", "\nCollider triples:");

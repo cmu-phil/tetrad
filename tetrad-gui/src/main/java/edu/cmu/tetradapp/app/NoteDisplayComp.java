@@ -55,8 +55,6 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
         buildComponents();
     }
 
-    //================================ Public Methods ==============================//
-
 
     /**
      * Paints the component.
@@ -118,8 +116,6 @@ public class NoteDisplayComp extends JComponent implements SessionDisplayComp {
         this.name.setText(name);
         //buildComponents();
     }
-
-    //========================== Private methods ===============================//
 
 
     private void buildComponents() {

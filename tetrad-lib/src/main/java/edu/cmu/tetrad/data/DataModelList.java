@@ -68,7 +68,6 @@ public final class DataModelList extends AbstractList<DataModel>
      */
     private Knowledge knowledge = new Knowledge();
 
-    //===========================CONSTRUCTORS============================//
     public DataModelList() {
     }
 
@@ -92,8 +91,6 @@ public final class DataModelList extends AbstractList<DataModel>
     public static DataModelList serializableInstance() {
         return new DataModelList();
     }
-
-    //===========================PUBLIC METHODS (see AbstractList too)===//
 
     /**
      * @return this model, as an Object.

@@ -46,8 +46,6 @@ public final class StringTextField extends JTextField {
      */
     private Filter filter;
 
-    //============================CONSTRUCTORS==========================//
-
     /**
      * Constructs a new text field displaying the given default value.
      */
@@ -102,8 +100,6 @@ public final class StringTextField extends JTextField {
         });
     }
 
-    //===============================PUBLIC METHODS========================//
-
     /**
      * Accesses the int value currently displayed.
      */
@@ -143,8 +139,6 @@ public final class StringTextField extends JTextField {
         return getPreferredSize();
     }
 
-    //=============================PRIVATE METHODS=======================//
-
     private String filter(String value, String oldValue) {
         if (this.filter == null) {
             return value;
@@ -152,8 +146,6 @@ public final class StringTextField extends JTextField {
 
         return this.filter.filter(value, oldValue);
     }
-
-    //==============================INTERFACES===========================//
 
     /**
      * Filters the given value, returning the value that should actually be displayed. Typical use is to return either

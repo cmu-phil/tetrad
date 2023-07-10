@@ -170,9 +170,6 @@ public class StandardizedSemIm implements Simulator {
         }
     }
 
-
-    //========================================CONSTRUCTORS========================================================//
-
     /**
      * Generates a simple exemplar of this class to test serialization.
      */
@@ -183,8 +180,6 @@ public class StandardizedSemIm implements Simulator {
     public int getSampleSize() {
         return this.sampleSize;
     }
-
-    //===========================================PUBLIC METHODS==================================================//
 
     public boolean containsParameter(Edge edge) {
         if (Edges.isBidirectedEdge(edge)) {
@@ -653,8 +648,6 @@ public class StandardizedSemIm implements Simulator {
 
         return errorCovar;
     }
-
-    //========================================PRIVATE METHODS==========================================//
 
     private Matrix implCovar() {
         computeImpliedCovar();

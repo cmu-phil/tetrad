@@ -124,7 +124,6 @@ public final class BoxDataSet implements DataSet {
      */
     private char outputDelimiter = '\t';
 
-    //============================CONSTRUCTORS==========================//
     public BoxDataSet(DataBox dataBox, List<Node> variables) {
         this.dataBox = dataBox;
         this.variables = new ArrayList<>(variables);
@@ -169,8 +168,6 @@ public final class BoxDataSet implements DataSet {
             throws IOException, ClassNotFoundException {
         s.defaultReadObject();
     }
-
-    //============================PUBLIC METHODS========================//
 
     /**
      * Attempts to translate <code>element</code> into a double value, returning it if successful, otherwise throwing an
@@ -1148,7 +1145,6 @@ public final class BoxDataSet implements DataSet {
         this.dataBox = data2;
     }
 
-    //===============================PRIVATE METHODS=====================//
     private void setIntPrivate(int row, int col, int value) {
         this.dataBox.set(row, col, value);
     }

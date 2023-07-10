@@ -58,8 +58,6 @@ public class MultiGeneralAndersonDarlingTest {
      */
     private double p;
 
-    //============================CONSTRUCTOR===========================//
-
     /**
      * Constructs an Anderson-Darling test for the given column of data.
      */
@@ -78,8 +76,6 @@ public class MultiGeneralAndersonDarlingTest {
 
         runTest();
     }
-
-    //============================PUBLIC METHODS=========================//
 
     /**
      * @return the A^2 statistic.

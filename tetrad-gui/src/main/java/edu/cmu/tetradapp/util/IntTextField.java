@@ -48,8 +48,6 @@ public final class IntTextField extends JTextField {
      */
     private Filter filter;
 
-    //==========================CONSTRUCTORS=============================//
-
     /**
      * Constructs a new int text field displaying the given default value, restricting the value to [lowerBound,
      * upperBound].
@@ -109,8 +107,6 @@ public final class IntTextField extends JTextField {
         });
     }
 
-    //=============================PUBLIC METHODS=======================//
-
     public void setUnfilteredValue(int value) {
         setText(String.valueOf(value));
     }
@@ -167,8 +163,6 @@ public final class IntTextField extends JTextField {
         return getPreferredSize();
     }
 
-    //==============================PRIVATE METHODS======================//
-
     /**
      * Determines whether the given value is a legal value for this text field. The default behavior is to constrain the
      * value to be within a certain range--in other words, in the range [lower bound, upper bound]. For any other
@@ -182,8 +176,6 @@ public final class IntTextField extends JTextField {
 
         return this.filter.filter(value, oldValue);
     }
-
-    //==============================Interfaces============================//
 
     /**
      * Filters the given value, returning the value that should actually be displayed. Typical use is to return either

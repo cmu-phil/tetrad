@@ -68,7 +68,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     private boolean verbose;
     private double score = Double.NaN;
 
-    //==========================CONSTRUCTORS=============================//
 
     /**
      * Constructs a new Independence test which checks independence facts based on the correlation data implied by the
@@ -95,7 +94,6 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
         this.dataSet = dataSet;
     }
 
-    //==========================PUBLIC METHODS=============================//
 
     /**
      * @throws UnsupportedOperationException This method is not implemented.

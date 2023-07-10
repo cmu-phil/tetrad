@@ -100,7 +100,6 @@ public final class SvarGfci implements IGraphSearch {
 
     private SepsetProducer sepsets;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new GFCI search for the given independence test and background knowledge.

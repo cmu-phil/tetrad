@@ -102,8 +102,6 @@ public class IntSpinner extends JSpinner {
         this.setEditor(this.editor);
     }
 
-    //=========================== Public Methods ============================//
-
     private static Dimension increment(Dimension dim) {
         return new Dimension(dim.width + 2, dim.height + 2);
     }
@@ -147,8 +145,6 @@ public class IntSpinner extends JSpinner {
         }
     }
 
-    //=========================== private methods ======================//
-
     private int filter(int value) {
         if (this.filter == null) {
             return value;
@@ -158,9 +154,6 @@ public class IntSpinner extends JSpinner {
         }
         return this.filter.filter((Integer) getValue(), value);
     }
-
-    //============================ Inner classer ====================================//
-
 
     public interface Filter {
 

@@ -146,7 +146,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
      */
     private String parametersEstimationInitializationTemplate = "Split(-1.0,-.5,.5,1.0)";
 
-    //===========================CONSTRUCTORS==========================//
     /**
      * The list of variable names.
      */
@@ -430,8 +429,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
         dag.addNode(node1);
         return new GeneralizedSemPm(Dag.serializableInstance());
     }
-
-    //============================PUBLIC METHODS========================//
 
     public static List<String> getParameterNames() {
         List<String> parameters = new ArrayList<>();
@@ -948,8 +945,6 @@ public final class GeneralizedSemPm implements Pm, TetradSerializable {
 
         return buf.toString();
     }
-
-    //============================PRIVATE METHODS======================//
 
     /**
      * @param node A node in the graph.

@@ -39,8 +39,6 @@ public class SemOptimizerScattershot implements SemOptimizer {
     static final long serialVersionUID = 23L;
     private int numRestarts;
 
-    //=============================CONSTRUCTORS=========================//
-
     /**
      * Blank constructor.
      */
@@ -53,8 +51,6 @@ public class SemOptimizerScattershot implements SemOptimizer {
     public static SemOptimizerScattershot serializableInstance() {
         return new SemOptimizerScattershot();
     }
-
-    //==============================PUBLIC METHODS========================//
 
     /**
      * Optimizes the fitting function of the given Sem using the Powell method from Numerical Recipes by adjusting the

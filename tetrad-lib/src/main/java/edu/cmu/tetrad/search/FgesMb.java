@@ -135,10 +135,7 @@ public final class FgesMb {
      */
     private boolean faithfulnessAssumed = false;
 
-    //===========================CONSTRUCTORS=============================//
     private boolean parallelized = false;
-
-    //==========================PUBLIC METHODS==========================//
 
     /**
      * Constructor. Construct a Score and pass it in here. The totalScore should return a positive value in case of
@@ -414,8 +411,6 @@ public final class FgesMb {
     public int getMaxDegree() {
         return this.maxDegree;
     }
-
-    //===========================PRIVATE METHODS========================//
 
     /**
      * The maximum of parents any nodes can have in output CPDAG.
@@ -1586,8 +1581,6 @@ public final class FgesMb {
             this.topGraphs.removeFirst();
         }
     }
-
-    //===========================SCORING METHODS===================//
 
     /**
      * Internal.

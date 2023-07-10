@@ -100,7 +100,6 @@ public final class Cfci implements IGraphSearch {
     private boolean verbose;
     private boolean doDiscriminatingPathRule;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -116,7 +115,6 @@ public final class Cfci implements IGraphSearch {
         this.variables.addAll(independenceTest.getVariables());
     }
 
-    //========================PUBLIC METHODS==========================//
 
     private static List<Node> asList(int[] indices, List<Node> nodes) {
         List<Node> list = new LinkedList<>();
@@ -286,7 +284,6 @@ public final class Cfci implements IGraphSearch {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
-    //===========================PRIVATE METHODS=========================//
 
     /**
      * Returns the ambiguous triples found in the search.

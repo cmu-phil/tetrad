@@ -73,10 +73,6 @@ public class TimeSeriesWrapper2 extends DataWrapper implements KnowledgeTransfer
     public static PcRunner serializableInstance() {
         return PcRunner.serializableInstance();
     }
-
-    //=============================== Private Methods =========================//
-
-
 }
 
 

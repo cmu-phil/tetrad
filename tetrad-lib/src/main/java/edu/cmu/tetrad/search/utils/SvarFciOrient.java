@@ -74,7 +74,6 @@ public final class SvarFciOrient {
     private boolean verbose;
     private Graph truePag;
 
-    //============================CONSTRUCTORS============================//
 
     /**
      * Constructs a new FCI search for the given independence test and background knowledge.
@@ -140,7 +139,6 @@ public final class SvarFciOrient {
         this.completeRuleSetUsed = completeRuleSetUsed;
     }
 
-    //===========================PRIVATE METHODS=========================//
 
     /**
      * Orients colliders in the graph.  (FCI Step C)
