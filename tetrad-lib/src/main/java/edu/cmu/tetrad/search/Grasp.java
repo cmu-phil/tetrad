@@ -234,7 +234,7 @@ public class Grasp {
     /**
      * Sets whether verbose output is printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -287,7 +287,7 @@ public class Grasp {
     /**
      * True if the score should be used (if both a score and a test are provided), false if not.
      *
-     * @param useScore True if so.
+     * @param useScore True, if so.
      */
     public void setUseScore(boolean useScore) {
         this.useScore = useScore;

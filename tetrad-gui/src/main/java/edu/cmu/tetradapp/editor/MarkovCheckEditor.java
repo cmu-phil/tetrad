@@ -441,7 +441,7 @@ public class MarkovCheckEditor extends JPanel {
                 return null;
             }
 
-            public Class getColumnClass(int columnIndex) {
+            public Class<?> getColumnClass(int columnIndex) {
                 if (columnIndex == 0) {
                     return Number.class;
                 }
@@ -627,7 +627,7 @@ public class MarkovCheckEditor extends JPanel {
                 return null;
             }
 
-            public Class getColumnClass(int columnIndex) {
+            public Class<?> getColumnClass(int columnIndex) {
                 if (columnIndex == 0) {
                     return Number.class;
                 }

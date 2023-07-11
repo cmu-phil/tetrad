@@ -166,7 +166,7 @@ public final class DagToPag {
     /**
      * Setws whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

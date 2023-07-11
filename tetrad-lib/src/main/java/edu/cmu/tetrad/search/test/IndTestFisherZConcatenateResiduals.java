@@ -248,7 +248,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     /**
      * Return True if verbose output should be printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean isVerbose() {
         return this.verbose;
@@ -257,7 +257,7 @@ public final class IndTestFisherZConcatenateResiduals implements IndependenceTes
     /**
      * Sets whether verbose output is printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

@@ -284,7 +284,7 @@ public final class Rfci implements IGraphSearch {
     /**
      * Returns whether verbose output should be printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean isVerbose() {
         return this.verbose;
@@ -293,7 +293,7 @@ public final class Rfci implements IGraphSearch {
     /**
      * Sets whether verbose output is printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

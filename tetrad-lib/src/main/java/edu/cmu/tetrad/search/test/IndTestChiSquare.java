@@ -328,7 +328,7 @@ public final class IndTestChiSquare implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

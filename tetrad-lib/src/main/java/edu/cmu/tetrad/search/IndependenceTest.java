@@ -72,7 +72,7 @@ public interface IndependenceTest {
     /**
      * Sets whether this test will print verbose output.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     void setVerbose(boolean verbose);
 
@@ -153,7 +153,7 @@ public interface IndependenceTest {
     /**
      * Returns true if y is determined the variable in z.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     default boolean determines(Set<Node> z, Node y) {
         throw new UnsupportedOperationException("Determines method is not implemented.");

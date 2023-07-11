@@ -60,7 +60,7 @@ public class Fasd implements IFas {
     private final NumberFormat nf = new DecimalFormat("0.00E0");
     /**
      * The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node
-     * x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
+     * x. It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
      */
     private final Graph graph;
     /**
@@ -104,7 +104,7 @@ public class Fasd implements IFas {
 
     /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
-     * variables which are independent conditional on some other set of variables in the graph (the "sepset"). These are
+     * variables which are independent, conditional on some other set of variables in the graph (the "sepset"). These are
      * removed in tiers.  First, edges which are independent conditional on zero other variables are removed, then edges
      * which are independent conditional on one other variable are removed, then two, then three, and so on, until no
      * more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
@@ -223,7 +223,7 @@ public class Fasd implements IFas {
     /**
      * Sets whether verbose output will be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

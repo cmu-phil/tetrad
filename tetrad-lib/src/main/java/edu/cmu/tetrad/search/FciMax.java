@@ -216,7 +216,7 @@ public final class FciMax implements IGraphSearch {
     /**
      * Sets whether the (time-consuming) possible msep step should be done.
      *
-     * @param possibleMsepSearchDone True if so.
+     * @param possibleMsepSearchDone True, if so.
      */
     public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
         this.possibleMsepSearchDone = possibleMsepSearchDone;
@@ -238,7 +238,7 @@ public final class FciMax implements IGraphSearch {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -266,7 +266,7 @@ public final class FciMax implements IGraphSearch {
     /**
      * Sets whether the stable option will be used for search.
      *
-     * @param stable True if so.
+     * @param stable True, if so.
      */
     public void setStable(boolean stable) {
         this.stable = stable;
@@ -275,7 +275,7 @@ public final class FciMax implements IGraphSearch {
     /**
      * Sets whether the discriminating path rule will be used in search.
      *
-     * @param doDiscriminatingPathRule True if so.
+     * @param doDiscriminatingPathRule True, if so.
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;

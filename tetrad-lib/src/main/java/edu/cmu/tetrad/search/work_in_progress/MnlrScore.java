@@ -106,7 +106,7 @@ public class MnlrScore implements Score {
      * A method for FGES returning a judgment of whether an edge with a given bump counts as a effect edge.
      *
      * @param bump The bump.
-     * @return True if so.
+     * @return True, if so.
      * @see edu.cmu.tetrad.search.Fges
      */
     @Override

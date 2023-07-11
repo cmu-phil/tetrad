@@ -223,7 +223,7 @@ public class IndTestIod implements IndependenceTest {
     /**
      * Returns true if the test is verbose.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean isVerbose() {
         return this.verbose;
@@ -232,7 +232,7 @@ public class IndTestIod implements IndependenceTest {
     /**
      * Sets the test to verbose or not.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         for (IndependenceTest test : tests) {

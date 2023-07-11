@@ -152,7 +152,7 @@ public final class IndTestMulti implements IndependenceTest {
     /**
      * Sets whether this test will print verbose output.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

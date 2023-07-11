@@ -127,7 +127,7 @@ public class MeekRules {
     /**
      * Sets whether cycles should be prevented by cycle checking.
      *
-     * @param meekPreventCycles True if so.
+     * @param meekPreventCycles True, if so.
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;
@@ -147,7 +147,7 @@ public class MeekRules {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -157,7 +157,7 @@ public class MeekRules {
      * Sets whether orientations in the graph should be reverted to its unshielded colliders before performing any Meek
      * rule orientations.
      *
-     * @param revertToUnshieldedColliders True if so.
+     * @param revertToUnshieldedColliders True, if so.
      */
     public void setRevertToUnshieldedColliders(boolean revertToUnshieldedColliders) {
         this.revertToUnshieldedColliders = revertToUnshieldedColliders;

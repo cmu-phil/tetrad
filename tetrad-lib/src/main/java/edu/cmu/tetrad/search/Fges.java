@@ -159,7 +159,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
 
-    // True if FGES should run in a single thread, no if parallelized.
+    // True, if FGES should run in a single thread, no if parallelized.
     private boolean parallelized = false;
 
     /**
@@ -196,8 +196,8 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
-     * edges till a minimum is achieved.
+     * Greedy equivalence search: Start from the empty graph, add edges till the model is significant.
+     * Then start deleting edges till a minimum is achieved.
      *
      * @return the resulting Pattern.
      */
@@ -251,7 +251,7 @@ public final class Fges implements IGraphSearch, DagScorer {
      * dependent, then there is an edge between X and Y in the graph. This could in principle be false, as for a path
      * cancellation whether one path is A->B->C->D and the other path is A->D.
      *
-     * @param faithfulnessAssumed True if so.
+     * @param faithfulnessAssumed True, if so.
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
         this.faithfulnessAssumed = faithfulnessAssumed;
@@ -322,7 +322,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * Sets the output stream that output (except for log output) should be sent to. By detault System.out.
+     * Sets the output stream that output (except for log output) should be sent to. By default System.out.
      *
      * @param out This print stream.
      */
@@ -344,7 +344,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * The maximum of parents any nodes can have in output pattern.
+     * The maximum of parents any nodes can have in the output pattern.
      *
      * @return -1 for unlimited.
      */
@@ -353,7 +353,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     }
 
     /**
-     * The maximum of parents any nodes can have in output pattern.
+     * The maximum of parents any nodes can have in the output pattern.
      *
      * @param maxDegree -1 for unlimited.
      */
@@ -1105,7 +1105,7 @@ public final class Fges implements IGraphSearch, DagScorer {
     // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
     // For the forward direction, TNeighbors neighbors are needed; for the backward direction, H neighbors are needed.
     // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
-    // as the "bump".
+    // as the "bump."
     private static class Arrow implements Comparable<Arrow> {
 
         private final double bump;
@@ -1153,7 +1153,7 @@ public final class Fges implements IGraphSearch, DagScorer {
         // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
         // bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
         // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
-        // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
+        // same hash code but not be equal. If we're paranoid, in this case, we calculate a determinate comparison
         // not equal to zero by keeping a list. This last part is commented out by default.
         public int compareTo(@NotNull Arrow arrow) {
 

@@ -162,7 +162,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     /**
      * Returns true if y is determined the variable in z.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
@@ -218,7 +218,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

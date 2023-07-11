@@ -162,7 +162,7 @@ public final class Fask implements IGraphSearch {
     private double twoCycleScreeningCutoff;
     // At the end of the procedure, two cycles marked in the graph (for having small LR differences) are then
     // tested statistically to see if they are two-cycles, using this cutoff. To adjust this cutoff, set the
-    // two cycle alpha to a number in [0, 1]. The default alpha  is 0.01.
+    // two-cycle alpha to a number in [0, 1]. The default alpha  is 0.01.
     private double orientationCutoff;
     // The corresponding alpha.
     private double orientationAlpha;
@@ -239,7 +239,7 @@ public final class Fask implements IGraphSearch {
 
     /**
      * Runs the search on the concatenated data, returning a graph, possibly cyclic, possibly with two-cycles. Runs the
-     * fast adjacency search (FAS, Spirtes et al., 2000) follows by a modification of the robust skew rule (Pairwise
+     * fast adjacency search (FAS, Spirtes et al., 2000) followed by a modification of the robust skew rule (Pairwise
      * Likelihood Ratios for Estimation of Non-Gaussian Structural Equation Models, Smith and Hyvarinen), together with
      * some heuristics for orienting two-cycles.
      *
@@ -469,8 +469,8 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
-     * Returns a natrux matrix of left-right scores for the search. If lr = getLrScores(), then lr[i][j] is the left
-     * right scores leftRight(data[i], data[j]);
+     * Returns a matrix of left-right scores for the search. If lr = getLrScores(), then lr[i][j]
+     * is the left right scores leftRight(data[i], data[j]);
      *
      * @return This matrix as a double[][] array.
      */
@@ -499,7 +499,7 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
-     * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1. unlimited. Making this too
+     * @param depth The depth of search for the Fast Adjacency Search (S). The default is -1. Unlimited. Making this too
      *              high may result in statistical errors.
      */
     public void setDepth(int depth) {
@@ -528,7 +528,7 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
-     * Sets the external graph to use. This graph will be used as a set of adjacencies ot be included in the graph is
+     * Sets the external graph to use. This graph will be used as a set of adjacencies to be included in the graph is
      * the "external graph" options is selected. It doesn't matter what the orientations of the graph are; the graph
      * will be reoriented using the left-right rule selected.
      *
@@ -539,7 +539,7 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
-     * Sets the skew edge threshold.
+     * Sets the skew-edge threshold.
      *
      * @param skewEdgeThreshold This threshold.
      */
@@ -548,7 +548,7 @@ public final class Fask implements IGraphSearch {
     }
 
     /**
-     * Sets the cutoff for two cycle screening.
+     * Sets the cutoff for two-cycle screening.
      *
      * @param twoCycleScreeningCutoff This cutoff.
      */
@@ -602,7 +602,7 @@ public final class Fask implements IGraphSearch {
     /**
      * Sets whether the empirical option is selected.
      *
-     * @param empirical True if so.
+     * @param empirical True, if so.
      */
     public void setEmpirical(boolean empirical) {
         this.empirical = empirical;

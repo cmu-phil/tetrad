@@ -357,7 +357,7 @@ public class Pc implements IGraphSearch {
      * <p>Ramsey, J. (2016). Improving accuracy and scalability of the pc algorithm by maximizing p-value. arXiv
      * preprint arXiv:1610.00378.</p>
      *
-     * @param useMaxPHeuristic True if so.
+     * @param useMaxPHeuristic True, if so.
      */
     public void setUseMaxPHeuristic(boolean useMaxPHeuristic) {
         this.useMaxPHeuristic = useMaxPHeuristic;

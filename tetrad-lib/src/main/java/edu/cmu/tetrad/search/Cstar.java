@@ -118,7 +118,7 @@ public class Cstar {
      * Sets whether the algorithm should be parallelized. Different runs of the algorithms can be run in different
      * threads in parallel.
      *
-     * @param parallelized True if so.
+     * @param parallelized True, if so.
      */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
@@ -482,17 +482,17 @@ public class Cstar {
     /**
      * The CSTaR algorithm can use any CPDAG algorithm; here you can set it.
      *
-     * @param cpdagAlglorithm The CPDAG algorithm.
+     * @param cpdagAlgorithm The CPDAG algorithm.
      * @see CpdagAlgorithm
      */
-    public void setCpdagAlgorithm(CpdagAlgorithm cpdagAlglorithm) {
-        this.cpdagAlgorithm = cpdagAlglorithm;
+    public void setCpdagAlgorithm(CpdagAlgorithm cpdagAlgorithm) {
+        this.cpdagAlgorithm = cpdagAlgorithm;
     }
 
     /**
      * Sets whether verbose output will be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -750,7 +750,7 @@ public class Cstar {
     }
 
     /**
-     * An enumeration of the options available for estiting the CPDAG used for the algorthm.
+     * An enumeration of the options available for determining the CPDAG used for the algorithm.
      */
     public enum CpdagAlgorithm {PC_STABLE, FGES, GRaSP}
 

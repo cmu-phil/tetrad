@@ -51,7 +51,7 @@ public class BayesImParser {
     /**
      * Sets whether to use display names.
      *
-     * @param useDisplayNames True if so.
+     * @param useDisplayNames True, if so.
      */
     public void setUseDisplayNames(boolean useDisplayNames) {
         this.useDisplayNames = useDisplayNames;

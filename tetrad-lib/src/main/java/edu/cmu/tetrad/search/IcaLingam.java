@@ -181,7 +181,7 @@ public class IcaLingam {
      * Whether the ICA-LiNGAM algorithm is guaranteed to produce an acyclic graph. This is implemented by setting small
      * coefficients in B hat to zero until an acyclic model is found.
      *
-     * @param acyclicityGuaranteed True if so.
+     * @param acyclicityGuaranteed True, if so.
      */
     public void setAcyclicityGuaranteed(boolean acyclicityGuaranteed) {
         this.acyclicityGuaranteed = acyclicityGuaranteed;

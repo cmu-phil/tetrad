@@ -394,7 +394,7 @@ public class SemBicScore implements Score {
         }
 
         try {
-            double v = localScore(i, k);
+            localScore(i, k);
         } catch (RuntimeException e) {
             TetradLogger.getInstance().forceLogMessage(e.getMessage());
             return true;

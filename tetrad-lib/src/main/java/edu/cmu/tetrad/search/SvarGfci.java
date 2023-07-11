@@ -209,7 +209,7 @@ public final class SvarGfci implements IGraphSearch {
     /**
      * Sets whether verbose output is printed.
      *
-     * @param verbose true if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

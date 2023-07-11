@@ -159,8 +159,8 @@ public final class FgesMb {
     }
 
     /**
-     * Greedy equivalence search: Start from the empty graph, add edges till model is significant. Then start deleting
-     * edges till a minimum is achieved.
+     * Greedy equivalence search: Start from the empty graph, add edges till the model is significant.
+     * Then start deleting edges till a minimum is achieved.
      *
      * @return the resulting CPDAG.
      */
@@ -333,7 +333,7 @@ public final class FgesMb {
     /**
      * Sets whether verbose output should be produced.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -349,7 +349,7 @@ public final class FgesMb {
     }
 
     /**
-     * Sets the graph of preset adjacencies for the algorithm; edges not in this adjacencies graph will not be added.
+     * Sets the graph of preset adjacencies for the algorithm; edges not in this adjacency graph will not be added.
      *
      * @param adjacencies This graph.
      */
@@ -1393,7 +1393,8 @@ public final class FgesMb {
     }
 
     // Returns true if a path consisting of undirected and directed edges toward 'to' exists of
-    // length at most 'bound'. Cycle checker in other words.
+    // length at most 'bound.'
+    // Cycle checker in other words.
     private boolean existsUnblockedSemiDirectedPath(Node from, Node to, Set<Node> cond, int bound) {
         Queue<Node> Q = new LinkedList<>();
         Set<Node> V = new HashSet<>();
@@ -1543,7 +1544,7 @@ public final class FgesMb {
         return this.variables;
     }
 
-    // Stores the graph, if its totalScore knocks out one of the top ones.
+    // Stores the graph if its totalScore knocks out one of the top ones.
     private void storeGraph(Graph graph) {
         if (getnumCPDAGsToStore() > 0) {
             Graph graphCopy = new EdgeListGraph(graph);
@@ -1566,7 +1567,7 @@ public final class FgesMb {
     // associated sets needed to make this determination. For both forward and backward direction, NaYX is needed.
     // For the forward direction, T neighbors are needed; for the backward direction, H neighbors are needed.
     // See Chickering (2002). The totalScore difference resulting from added in the edge (hypothetically) is recorded
-    // as the "bump".
+    // as the "bump."
     private static class Arrow implements Comparable<Arrow> {
 
         private final double bump;
@@ -1609,7 +1610,7 @@ public final class FgesMb {
         // to zero with an existing element, so for the cases where the comparison is to zero (i.e. have the same
         // bump), we need to determine as quickly as possible a determinate ordering (fixed) ordering for two variables.
         // The fastest way to do this is using a hash code, though it's still possible for two Arrows to have the
-        // same hash code but not be equal. If we're paranoid, in this case we calculate a determinate comparison
+        // same hash code but not be equal. If we're paranoid, in this case, we calculate a determinate comparison
         // not equal to zero by keeping a list. This last part is commented out by default.
         public int compareTo(@NotNull Arrow arrow) {
             int compare = Double.compare(arrow.getBump(), getBump());

@@ -287,7 +287,7 @@ public final class SvarFci implements IGraphSearch {
     /**
      * Returns whether verbose output is to be printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean isVerbose() {
         return this.verbose;
@@ -296,7 +296,7 @@ public final class SvarFci implements IGraphSearch {
     /**
      * Sets whether verbose output is to be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

@@ -98,7 +98,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * First, the data is centered by subtracting the mean of each column of the data matrix X.
  * <p>
  * The data matrix is then `whitened' by projecting the data onto it's principle component directions i.e. X -&gt; XK
- * where K is a pre-whitening matrix. The number of components can be specified by the user.
+ * where K is a pre-whitening matrix.
+ * The user can specify the number of components.
  * <p>
  * The ICA algorithm then estimates a matrix W s.t XKW = S . W is chosen to maximize the neg-entropy approximation under
  * the constraints that W is an orthonormal matrix. This constraint ensures that the estimated components are
@@ -156,8 +157,8 @@ public class FastIca {
     private int numComponents;
 
     /**
-     * If algorithmType == PARALLEL the components are extracted simultaneously (the default). if algorithmType ==
-     * DEFLATION the components are extracted one at a time.
+     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default).
+     * if algorithmType == DEFLATION, the components are extracted one at a time.
      */
     private int algorithmType = FastIca.PARALLEL;
 
@@ -194,7 +195,7 @@ public class FastIca {
     private boolean verbose;
 
     /**
-     * Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default) then a matrix of normal r.v.'s is used.
+     * Initial un-mixing matrix of dimension (n.comp,n.comp). If null (default), then a matrix of normal r.v.'s is used.
      */
     private Matrix wInit;
 
@@ -212,8 +213,8 @@ public class FastIca {
 
 
     /**
-     * If algorithmType == PARALLEL the components are extracted simultaneously (the default). if algorithmType ==
-     * DEFLATION the components are extracted one at a time.
+     * If algorithmType == PARALLEL, the components are extracted simultaneously (the default).
+     * if algorithmType == DEFLATION, the components are extracted one at a time.
      *
      * @param algorithmType This type.
      */
@@ -254,7 +255,7 @@ public class FastIca {
     /**
      * A logical value indicating whether rows of the data matrix 'X' should be standardized beforehand.
      *
-     * @param rowNorm True if so.
+     * @param rowNorm True, if so.
      */
     public void setRowNorm(boolean rowNorm) {
         this.rowNorm = rowNorm;
@@ -289,15 +290,15 @@ public class FastIca {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Sets the initial un-mixing matrix of dimension (n.comp,n.comp). If NULL (default) then a random matrix of normal
-     * r.v.'s is used.
+     * Sets the initial un-mixing matrix of dimension (n.comp,n.comp).
+     * If NULL (default), then a random matrix of normal r.v.'s is used.
      *
      * @param wInit This matrix.
      */
@@ -309,7 +310,7 @@ public class FastIca {
      * Runs the Fast ICA algorithm (following the R version) and returns the list of result items that the R version
      * returns.
      *
-     * @return this list, as an FastIca.IcaResult object.
+     * @return this list, as a FastIca.IcaResult object.
      */
     public IcaResult findComponents() {
         int n = this.X.getNumColumns();
@@ -646,7 +647,7 @@ public class FastIca {
      * <p>
      * X: pre-processed data matrix
      * <p>
-     * K: pre-whitening matrix that projects data onto th first n.comp principal components.
+     * K: pre-whitening matrix that projects data onto the first n.comp principal components.
      * <p>
      * W: estimated un-mixing matrix (see definition in details)
      * <p>

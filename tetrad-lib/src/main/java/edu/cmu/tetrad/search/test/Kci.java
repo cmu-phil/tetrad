@@ -252,7 +252,7 @@ public class Kci implements IndependenceTest {
     /**
      * Returns true if y is determined the variable in z.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean determines(List<Node> z, Node y) {
         throw new UnsupportedOperationException();
@@ -334,7 +334,7 @@ public class Kci implements IndependenceTest {
     /**
      * Sets whether the approximate algorithm should be used.
      *
-     * @param approximate True if so.
+     * @param approximate True, if so.
      */
     public void setApproximate(boolean approximate) {
         this.approximate = approximate;
@@ -382,7 +382,7 @@ public class Kci implements IndependenceTest {
     /**
      * Returns true if verbose output is printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     @Override
     public boolean isVerbose() {
@@ -392,7 +392,7 @@ public class Kci implements IndependenceTest {
     /**
      * Sets whether verbose output is printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

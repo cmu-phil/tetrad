@@ -172,7 +172,7 @@ public class ConditionalGaussianLikelihood {
     /**
      * Sets whether to discretize child variables to avoid integration. An optimization.
      *
-     * @param discretize True if so.
+     * @param discretize True, if so.
      * @see #setNumCategoriesToDiscretize(int)
      */
     public void setDiscretize(boolean discretize) {

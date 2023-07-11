@@ -77,7 +77,7 @@ public final class MaxP {
     /**
      * Sets whether the max P heuristic should be used.
      *
-     * @param useHeuristic True if so.
+     * @param useHeuristic True, if so.
      */
     public void setUseHeuristic(boolean useHeuristic) {
         this.useHeuristic = useHeuristic;

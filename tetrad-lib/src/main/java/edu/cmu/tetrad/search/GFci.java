@@ -212,7 +212,7 @@ public final class GFci implements IGraphSearch {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -239,7 +239,7 @@ public final class GFci implements IGraphSearch {
     /**
      * Sets whether one-edge faithfulness is assumed. For FGES
      *
-     * @param faithfulnessAssumed True if so.
+     * @param faithfulnessAssumed True, if so.
      * @see Fges#setFaithfulnessAssumed(boolean)
      */
     public void setFaithfulnessAssumed(boolean faithfulnessAssumed) {
@@ -249,7 +249,7 @@ public final class GFci implements IGraphSearch {
     /**
      * Sets whether the discriminating path rule should be used.
      *
-     * @param doDiscriminatingPathRule True if so.
+     * @param doDiscriminatingPathRule True, if so.
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;
@@ -258,7 +258,7 @@ public final class GFci implements IGraphSearch {
     /**
      * Sets whether the possible m-sep search should be done.
      *
-     * @param possibleMsepSearchDone True if so.
+     * @param possibleMsepSearchDone True, if so.
      */
     public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
         this.possibleMsepSearchDone = possibleMsepSearchDone;

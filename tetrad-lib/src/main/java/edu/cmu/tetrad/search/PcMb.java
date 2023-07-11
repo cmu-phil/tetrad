@@ -144,7 +144,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     /**
      * Sets whether cycles should be prevented, using a cycle checker.
      *
-     * @param meekPreventCycles True if so.
+     * @param meekPreventCycles True, if so.
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;

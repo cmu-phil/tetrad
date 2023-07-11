@@ -258,7 +258,7 @@ public final class Fci implements IGraphSearch {
     /**
      * Sets whether the (time-consuming) possible msep step should be done.
      *
-     * @param possibleMsepSearchDone True if so.
+     * @param possibleMsepSearchDone True, if so.
      */
     public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
         this.possibleMsepSearchDone = possibleMsepSearchDone;
@@ -280,7 +280,7 @@ public final class Fci implements IGraphSearch {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -308,7 +308,7 @@ public final class Fci implements IGraphSearch {
     /**
      * Sets whether the stable options should be used in the initial adjacency search.
      *
-     * @param stable True if so.
+     * @param stable True, if so.
      * @see Pc
      */
     public void setStable(boolean stable) {
@@ -318,7 +318,7 @@ public final class Fci implements IGraphSearch {
     /**
      * Sets whether the discriminating path rule should be used.
      *
-     * @param doDiscriminatingPathRule True if so.
+     * @param doDiscriminatingPathRule True, if so.
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;

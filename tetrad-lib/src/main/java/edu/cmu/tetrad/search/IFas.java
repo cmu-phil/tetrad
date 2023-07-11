@@ -92,7 +92,7 @@ public interface IFas extends IGraphSearch {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     void setVerbose(boolean verbose);
 
