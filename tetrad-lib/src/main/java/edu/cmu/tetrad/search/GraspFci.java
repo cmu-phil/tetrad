@@ -71,7 +71,7 @@ public final class GraspFci implements IGraphSearch {
     private final Score score;
     // The background knowledge.
     private Knowledge knowledge = new Knowledge();
-    // Flag for complete rule set, true if one should use complete rule set, false otherwise.
+    // Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
     private boolean completeRuleSetUsed = true;
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
@@ -155,9 +155,9 @@ public final class GraspFci implements IGraphSearch {
     }
 
     /**
-     * Sets the knoweldge used in search.
+     * Sets the knowledge used in search.
      *
-     * @param knowledge This knoweldge.
+     * @param knowledge This knowledge.
      */
     public void setKnowledge(Knowledge knowledge) {
         this.knowledge = new Knowledge(knowledge);

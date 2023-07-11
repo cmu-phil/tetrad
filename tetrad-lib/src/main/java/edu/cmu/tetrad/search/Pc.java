@@ -103,7 +103,7 @@ public class Pc implements IGraphSearch {
      * however, contain cycles or bidirected edges if this assumption is not born out, either due to the actual presence
      * of latent common causes, or due to statistical errors in conditional independence judgments.
      *
-     * @return The found CPDAG. In some cases there may be some errant bidirected edges or cycles, depending on the
+     * @return The found CPDAG. In some cases, there may be some errant bidirected edges or cycles, depending on the
      * settings and whether the faithfulness assumption holds. If the faithfulness assumption holds, bidirected edges
      * will indicate the existence of latent variables, so a latent variable search like FCI should be run.
      * @see Fci
@@ -201,7 +201,7 @@ public class Pc implements IGraphSearch {
     /**
      * Sets whether cycles should be checked.
      *
-     * @param meekPreventCycles Set to true just in case edges will not be added if they would create cycles.
+     * @param meekPreventCycles Set to true just in case edges will not be added if they create cycles.
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;
@@ -262,7 +262,7 @@ public class Pc implements IGraphSearch {
      * checked.
      *
      * @param depth The depth of the search. The default is 1000. A value of -1 may be used to indicate that the depth
-     *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multicore
+     *              should be high (1000). A value of Integer.MAX_VALUE may not be used due to a bug on multicore
      *              machines.
      */
     public void setDepth(int depth) {
@@ -340,7 +340,7 @@ public class Pc implements IGraphSearch {
     }
 
     /**
-     * Sets which conflict rule to use for resolving collider orientation conflicts. Default is
+     * Sets which conflict-rule to use for resolving collider orientation conflicts. Default is
      * ConflictRule.PRIORITIZE_EXISTING.
      *
      * @param conflictRule The rule.

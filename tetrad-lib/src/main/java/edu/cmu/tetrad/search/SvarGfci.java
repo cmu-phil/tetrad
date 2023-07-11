@@ -74,7 +74,7 @@ public final class SvarGfci implements IGraphSearch {
     private Knowledge knowledge = new Knowledge();
     // The conditional independence test.
     private final IndependenceTest independenceTest;
-    // Flag for complete rule set, true if one should use complete rule set, false otherwise.
+    // Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
     private boolean completeRuleSetUsed;
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
@@ -117,7 +117,7 @@ public final class SvarGfci implements IGraphSearch {
         fges.setKnowledge(this.knowledge);
         fges.setVerbose(this.verbose);
         fges.setNumCPDAGsToStore(0);
-        // True iff one-edge faithfulness is assumed. Speed up the algorithm for very large searches.
+        // True, iff one-edge faithfulness is assumed. Speed up the algorithm for very large searches.
         // By default, false.
         boolean faithfulnessAssumed = true;
         fges.setFaithfulnessAssumed(faithfulnessAssumed);

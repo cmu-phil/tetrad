@@ -82,7 +82,7 @@ public final class SvarFci implements IGraphSearch {
      */
     private Knowledge knowledge = new Knowledge();
     /**
-     * flag for complete rule set, true if it should use complete rule set, false otherwise.
+     * flag for the complete rule set, true if it should use the complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed;
     /**
@@ -143,7 +143,6 @@ public final class SvarFci implements IGraphSearch {
     public Graph search() {
         getIndependenceTest().getVariables();
         return search(new SvarFas(getIndependenceTest()));
-//        return search(new Fas(getIndependenceTest()));
     }
 
     /**
@@ -313,7 +312,7 @@ public final class SvarFci implements IGraphSearch {
 
 
     // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
-    // this version removes edges from graph instead of list of adjacencies
+    // this version removes edges from graph instead of the list of adjacencies
     private void removeSimilarPairs(IndependenceTest test, Node x, Node y, Set<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");
         System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);

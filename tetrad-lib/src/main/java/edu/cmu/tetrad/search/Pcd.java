@@ -22,7 +22,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -79,7 +82,7 @@ public class Pcd implements IGraphSearch {
      */
     private long elapsedTime;
     /**
-     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large graphs).
+     * True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
      */
     private boolean meekPreventCycles;
     /**
@@ -118,7 +121,7 @@ public class Pcd implements IGraphSearch {
 
 
     /**
-     * @return true iff edges will not be added if they would create cycles.
+     * @return true, iff edges will not be added if they would create cycles.
      */
     public boolean isMeekPreventCycles() {
         return this.meekPreventCycles;
@@ -176,7 +179,7 @@ public class Pcd implements IGraphSearch {
      * checked.
      *
      * @param depth The depth of the search. The default is 1000. A value of -1 may be used to indicate that the depth
-     *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multicore
+     *              should be high (1000). A value of Integer.MAX_VALUE may not be used due to a bug on multicore
      *              machines.
      */
     public void setDepth(int depth) {

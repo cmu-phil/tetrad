@@ -64,7 +64,7 @@ public class Sp implements SuborderSearch {
      *
      * @param prefix   The variable preceding the suborder variables in the permutation, including all variables from
      *                 previous tiers.
-     * @param suborder The suborder of the variables list beign searched over. Only the order of the variables in this
+     * @param suborder The suborder of the variable list beign searched over. Only the order of the variables in this
      *                 suborder will be modified.
      * @param gsts     The GrowShrinkTree used for the search. This is an optimized score-caching class.
      */

@@ -43,7 +43,7 @@ public class MarkovCheck {
     private final MsepTest msep;
     private final List<IndependenceResult> resultsIndep = new ArrayList<>();
     private final List<IndependenceResult> resultsDep = new ArrayList<>();
-    private ConditioningSetType setType = ConditioningSetType.PARENTS;
+    private ConditioningSetType setType;
     private boolean parallelized = false;
     private double fractionDependentIndep = Double.NaN;
     private double fractionDependentDep = Double.NaN;
@@ -74,7 +74,7 @@ public class MarkovCheck {
         resultsDep.clear();
 
         if (setType == ConditioningSetType.ALL_SUBSETS) {
-            final List<Node> variables = independenceTest.getVariables();
+            List<Node> variables = independenceTest.getVariables();
             List<Node> nodes = new ArrayList<>(variables);
             Collections.sort(nodes);
 
@@ -108,7 +108,7 @@ public class MarkovCheck {
                 generateResultsAllSubsets(false, msep, mconn);
             }
         } else {
-            final List<Node> variables = independenceTest.getVariables();
+            List<Node> variables = independenceTest.getVariables();
             List<Node> nodes = new ArrayList<>(variables);
             Collections.sort(nodes);
 

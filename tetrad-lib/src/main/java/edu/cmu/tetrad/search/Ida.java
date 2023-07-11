@@ -44,7 +44,7 @@ public class Ida {
      * Constructor.
      *
      * @param dataSet        The dataset being searched over.
-     * @param cpdag          The CPDAG (found, e.g., by running PC, or some other CPDAG- producing algorithm.
+     * @param cpdag          The CPDAG (found, e.g., by running PC, or some other CPDAG producing algorithm.
      * @param possibleCauses The possible causes to be considered.
      */
     public Ida(DataSet dataSet, Graph cpdag, List<Node> possibleCauses) {

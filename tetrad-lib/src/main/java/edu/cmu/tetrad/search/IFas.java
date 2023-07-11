@@ -30,7 +30,7 @@ import java.io.PrintStream;
 import java.util.List;
 
 /**
- * Gives an interface for fast adjacency searches (i.e. PC adjacency searches).
+ * Gives an interface for fast adjacency searches (i.e., PC adjacency searches).
  *
  * @author josephramsey
  */

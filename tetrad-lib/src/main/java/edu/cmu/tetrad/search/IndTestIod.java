@@ -124,7 +124,7 @@ public class IndTestIod implements IndependenceTest {
     }
 
     /**
-     * Returns the list of TetradNodes over which this independence checker is capable of determinining independence
+     * Returns the list of TetradNodes over which this independence checker is capable of determining independence
      * relations-- that is, all the variables in the given graph or the given data set.
      *
      * @return This list.

@@ -212,7 +212,7 @@ public class Mimbuild {
     }
 
     /**
-     * The full graph inferred, including the edges from latents to measures and all fo the edges inferred among
+     * The full graph inferred, including the edges from latents to measures. And all fo the edges inferred among
      * latents.
      *
      * @return This full graph.

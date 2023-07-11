@@ -109,8 +109,8 @@ public class Grasp {
     }
 
     /**
-     * Given an initial permutation, 'order', of the variables, searches for a best permutation of the variables by
-     * rearranging the variables in 'order'.
+     * Given an initial permutation, 'order,' of the variables, searches for a best permutation of the variables by
+     * rearranging the variables in 'order.'
      *
      * @param order The initial permutation.
      * @return The discovered permutation at the end of the procedure.
@@ -201,8 +201,8 @@ public class Grasp {
      * Sets the number of times the best order algorithm should be rerun with different starting permutations in search
      * of a best BIC scoring permutation.
      *
-     * @param numStarts This number; if 1, it is run just once with the given starting permutation; if 2 or higher, it
-     *                  is rerun subsequently with random initial permutations and the best scoring discovered final
+     * @param numStarts This number, if 1, it is run just once with the given starting permutation, if 2 or higher, it
+     *                  is rerun subsequently with random initial permutations, and the best scoring discovered final
      *                  permutation is reported.
      * @see #setUseDataOrder(boolean)
      */
@@ -254,7 +254,7 @@ public class Grasp {
     }
 
     /**
-     * Sets the maximum depth of the depth first search that GRaSP perform while searching for a weakly increasing tuck
+     * Sets the maximum depth of the depth-first search that GRaSP performs while searching for a weakly increasing tuck
      * sequence that improves the score.
      *
      * @param depth This depth.
@@ -265,7 +265,7 @@ public class Grasp {
     }
 
     /**
-     * Sets the maximum depth at which uncovered tucks can be performed within the depth first search of GRaSP.
+     * Sets the maximum depth at which uncovered tucks can be performed within the depth-first search of GRaSP.
      *
      * @param uncoveredDepth This depth.
      */
@@ -275,7 +275,7 @@ public class Grasp {
     }
 
     /**
-     * Sets the maximum depth at which singular tucks can be performed within the depth first search of GRaSP.
+     * Sets the maximum depth at which singular tucks can be performed within the depth-first search of GRaSP.
      *
      * @param nonSingularDepth This depth.
      */

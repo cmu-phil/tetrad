@@ -196,8 +196,8 @@ public class IcaLingD {
     }
 
     /**
-     * Whether the BHat matrix represents a stable model. The eigenvalues are checked ot make sure they are all less
-     * than 1 in modulus.
+     * Whether the BHat matrix represents a stable model.
+     * The eigenvalues are checked to make sure they are all less than 1 in modulus.
      *
      * @param bHat The bHat matrix.
      * @return True iff the model is stable.
@@ -380,7 +380,7 @@ public class IcaLingD {
     }
 
     /**
-     * Sets the threshold used to prune the matrix for purpose of searching for alternative strong diagonals.
+     * Sets the threshold used to prune the matrix for the purpose of searching for alternative strong diagonals.
      *
      * @param spineThreshold The threshold, a non-negative number.
      */
