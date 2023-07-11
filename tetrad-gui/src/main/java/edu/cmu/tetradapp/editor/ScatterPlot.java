@@ -81,8 +81,8 @@ public class ScatterPlot {
         List<Node> regressors = new ArrayList<>();
         regressors.add(_x);
         RegressionDataset regression = new RegressionDataset(this.dataSet);
-        final List<Integer> conditionedRows = getConditionedRows();
-        final int[] _conditionedRows = new int[conditionedRows.size()];
+        List<Integer> conditionedRows = getConditionedRows();
+        int[] _conditionedRows = new int[conditionedRows.size()];
         for (int i = 0; i < conditionedRows.size(); i++) _conditionedRows[i] = conditionedRows.get(i);
         regression.setRows(_conditionedRows);
         return regression.regress(_y, regressors);
@@ -176,7 +176,7 @@ public class ScatterPlot {
     }
 
     /**
-     * Seives through the sample values and grabs only the values for the response and predictor variables.
+     * Sieves through the sample values and grabs only the values for the response and predictor variables.
      *
      * @return a vector containing the filtered values.
      */
