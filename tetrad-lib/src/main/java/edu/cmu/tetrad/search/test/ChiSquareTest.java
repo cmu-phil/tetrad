@@ -86,7 +86,7 @@ public class ChiSquareTest {
     }
 
     /**
-     * Calculates chi square for a conditional crosstabulation table for independence question 0 _||_ 1 | 2, 3, ...max
+     * Calculates chi square for a conditional cross-tabulation table for independence question 0 _||_ 1 | 2, 3, ...max
      * by summing up chi square and degrees of freedom for each conditional table in turn, where rows or columns that
      * consist entirely of zeros have been removed.
      *
@@ -185,7 +185,7 @@ public class ChiSquareTest {
             }
         }
 
-        // If df == 0, this is definitely an indepedent table.
+        // If df == 0, this is definitely an independent table.
         if (df == 0) {
             final double pValue = 1.0;
             return new Result(xSquare, pValue, 0, true);

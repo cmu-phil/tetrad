@@ -78,11 +78,11 @@ public final class IndependenceResult implements TetradSerializable {
     }
 
     /**
-     * Returns the p-value of the fact under the null hypothesis of independence. A special case obtains is this fact is
+     * Returns the p-value of the fact under the null hypothesis of independence. A special case obtains if this fact is
      * being used to store a d-separation fact, in which case the "p-value" is deemed to be 0 if the fact holds and 1 if
      * it does not.
      *
-     * @return The p-value of result under the null hypothesis.
+     * @return The p-value of the result under the null hypothesis.
      */
     public double getPValue() {
         return this.pValue;
