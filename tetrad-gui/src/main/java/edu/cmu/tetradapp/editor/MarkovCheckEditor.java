@@ -83,8 +83,8 @@ public class MarkovCheckEditor extends JPanel {
     private JLabel fractionDepLabelDep;
     private JLabel ksLabelDep;
     private JLabel ksLabelIndep;
-    private JLabel masLabellDep;
-    private JLabel masLabellIndep;
+    private JLabel masLabelDep;
+    private JLabel masLabelIndep;
     private int sortDir;
     private int lastSortCol;
     private IndependenceWrapper independenceWrapper;
@@ -525,7 +525,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
-        b7.add(masLabellDep);
+        b7.add(masLabelDep);
         b0b1.add(b7);
 
         b0b1.add(Box.createVerticalGlue());
@@ -712,7 +712,7 @@ public class MarkovCheckEditor extends JPanel {
 
         Box b7 = Box.createHorizontalBox();
         b7.add(Box.createHorizontalGlue());
-        b7.add(masLabellIndep);
+        b7.add(masLabelIndep);
         b0b1.add(b7);
 
         b0.add(b0b1);
@@ -760,12 +760,12 @@ public class MarkovCheckEditor extends JPanel {
             fractionDepLabelDep = new JLabel();
         }
 
-        if (masLabellIndep == null) {
-            masLabellIndep = new JLabel();
+        if (masLabelIndep == null) {
+            masLabelIndep = new JLabel();
         }
 
-        if (masLabellDep == null) {
-            masLabellDep = new JLabel();
+        if (masLabelDep == null) {
+            masLabelDep = new JLabel();
         }
 
         ksLabelIndep.setText("P-value of Kolmogorov-Smirnov Uniformity Test = "
@@ -784,11 +784,11 @@ public class MarkovCheckEditor extends JPanel {
                 + ((Double.isNaN(model.getMarkovCheck().getFractionDependent(false))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getFractionDependent(false)))));
-        masLabellIndep.setText("Markov Adequacy Score = "
+        masLabelIndep.setText("Markov Adequacy Score = "
                 + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
-        masLabellDep.setText("Markov Adequacy Score = "
+        masLabelDep.setText("Markov Adequacy Score = "
                 + ((Double.isNaN(model.getMarkovCheck().getMarkovAdequacyScore(0.01))
                 ? "-"
                 : NumberFormatUtil.getInstance().getNumberFormat().format(model.getMarkovCheck().getMarkovAdequacyScore(0.01)))));
@@ -893,15 +893,15 @@ public class MarkovCheckEditor extends JPanel {
         indTestJComboBox.setSelectedItem(IndependenceTestModels.getInstance().getDefaultModel(dataType));
     }
 
-    // Paramter panel code from Kevin Bui.
+    // Parameter panel code from Kevin Bui.
     private JPanel createParamsPanel(IndependenceWrapper independenceWrapper, Parameters params) {
         Set<String> testParameters = new HashSet<>(independenceWrapper.getParameters());
-        return createParamsPanel("Parameters", testParameters, params);
+        return createParamsPanel(testParameters, params);
     }
 
-    private JPanel createParamsPanel(String title, Set<String> params, Parameters parameters) {
+    private JPanel createParamsPanel(Set<String> params, Parameters parameters) {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder(title));
+        panel.setBorder(BorderFactory.createTitledBorder("Parameters"));
 
         Box paramsBox = Box.createVerticalBox();
 
