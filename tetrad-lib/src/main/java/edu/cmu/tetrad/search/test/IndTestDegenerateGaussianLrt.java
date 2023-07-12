@@ -56,7 +56,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     private static final double L2PE = log(2.0 * PI * E);
     private final BoxDataSet ddata;
     private final double[][] _ddata;
-    private final Map<Node, Integer> nodesHash;
+    private final Map<Node, Integer> nodeHash;
     private final DataSet dataSet;
     // The mixed variables of the original dataset.
     private final List<Node> variables;
@@ -93,7 +93,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
             nodesHash.put(this.variables.get(j), j);
         }
 
-        this.nodesHash = nodesHash;
+        this.nodeHash = nodesHash;
 
         int index = 0;
 
@@ -170,7 +170,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Returns an independence result specifying whether x _||_ y | Z and what its p-value are.
+     * Returns an independence result specifying whether x _||_ y | Z and what its p-values are.
      *
      * @return This result
      * @see IndependenceResult
@@ -185,13 +185,13 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         List<Node> z = new ArrayList<>(_z);
         Collections.sort(z);
 
-        List<Integer> rows = getRows(allNodes, this.nodesHash);
+        List<Integer> rows = getRows(allNodes, this.nodeHash);
 
         if (rows.isEmpty()) return new IndependenceResult(new IndependenceFact(x, y, _z),
                 true, NaN, pValue);
 
-        int _x = this.nodesHash.get(x);
-        int _y = this.nodesHash.get(y);
+        int _x = this.nodeHash.get(x);
+        int _y = this.nodeHash.get(y);
 
         int[] list0 = new int[z.size() + 1];
         int[] list2 = new int[z.size()];
@@ -199,7 +199,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
         list0[0] = _x;
 
         for (int i = 0; i < z.size(); i++) {
-            int __z = this.nodesHash.get(z.get(i));
+            int __z = this.nodeHash.get(z.get(i));
             list0[i + 1] = __z;
             list2[i] = __z;
         }
@@ -244,7 +244,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
 
     /**
      * Returns the probability associated with the most recently executed independence test, of Double.NaN if p value is
-     * not meaningful for tis test.
+     * not meaningful for this test.
      *
      * @return This p-value.
      */
@@ -272,7 +272,7 @@ public class IndTestDegenerateGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Returns  the significance level of the independence test.
+     * Returns the significance level of the independence test.
      *
      * @return this level.
      */
