@@ -157,7 +157,7 @@ public final class DataWriter {
             List<String> tier = knowledge.getTier(i);
 
             if (!(tier == null || tier.isEmpty())) {
-                buf.append("\n").append(i + 1).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
+                buf.append("\n").append(i).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
                 buf.append(" ");
                 buf.append(String.join(" ", tier));
             }

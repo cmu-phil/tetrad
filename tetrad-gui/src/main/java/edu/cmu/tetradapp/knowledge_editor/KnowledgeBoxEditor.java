@@ -357,7 +357,7 @@ public class KnowledgeBoxEditor extends JPanel {
 
         for (int tier = 0; tier < numTiers; tier++) {
             Box textRow = Box.createHorizontalBox();
-            textRow.add(new JLabel("Tier " + (tier + 1)));
+            textRow.add(new JLabel("Tier " + (tier)));
             int _tier = tier;
 
             textRow.add(Box.createHorizontalGlue());

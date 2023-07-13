@@ -446,12 +446,12 @@ public class SimpleDataLoader {
                         }
 
                         tier = Integer.parseInt(token);
-                        if (tier < 1) {
+                        if (tier < 0) {
                             throw new IllegalArgumentException(
-                                    lineizer.getLineNumber() + ": Tiers must be 1, 2...");
+                                    lineizer.getLineNumber() + ": Tiers must be 0, 1, 2...");
                         }
                         if (forbiddenWithin) {
-                            knowledge.setTierForbiddenWithin(tier - 1, true);
+                            knowledge.setTierForbiddenWithin(tier, true);
                         }
                     }
 
@@ -467,9 +467,9 @@ public class SimpleDataLoader {
 
                         addVariable(knowledge, name);
 
-                        knowledge.addToTier(tier - 1, name);
+                        knowledge.addToTier(tier, name);
 
-                        TetradLogger.getInstance().log("info", "Adding to tier " + (tier - 1) + " " + name);
+                        TetradLogger.getInstance().log("info", "Adding to tier " + (tier) + " " + name);
                     }
                 }
             } else if ("forbiddengroup".equalsIgnoreCase(line.trim())) {
