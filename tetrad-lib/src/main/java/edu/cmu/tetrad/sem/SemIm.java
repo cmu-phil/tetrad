@@ -1345,6 +1345,9 @@ public final class SemIm implements Im, ISemIm {
                 } else if (errorType == 4) {
                     exoData[i] = RandomUtil.getInstance().nextGumbel(this.errorParam1,
                             this.errorParam2);
+                } else if (errorType == 5) {
+                    exoData[i] = RandomUtil.getInstance().nextGamma(this.errorParam1,
+                            this.errorParam2);
                 }
             }
 
@@ -1474,6 +1477,8 @@ public final class SemIm implements Im, ISemIm {
                     e.set(i, RandomUtil.getInstance().nextExponential(errorParam1));
                 } else if (errorType == 4) {
                     e.set(i, RandomUtil.getInstance().nextGumbel(errorParam1, errorParam2));
+                } else if (errorType == 5) {
+                   e.set(i, RandomUtil.getInstance().nextGamma(errorParam1, errorParam2));
                 }
             }
 
