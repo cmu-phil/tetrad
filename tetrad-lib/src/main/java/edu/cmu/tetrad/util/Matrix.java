@@ -206,13 +206,19 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix inverse() throws SingularMatrixException {
-        if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
-
-        if (getNumRows() == 0) {
+        if (m == 0 || n == 0) {
             return new Matrix(0, 0);
+        } else {
+            return new Matrix(org.apache.commons.math3.linear.MatrixUtils.inverse(this.apacheData));
         }
 
-        return new Matrix(new LUDecomposition(this.apacheData, 1e-10).getSolver().getInverse());
+//        if (!isSquare()) throw new IllegalArgumentException("I can only invert square matrices.");
+//
+//        if (getNumRows() == 0) {
+//            return new Matrix(0, 0);
+//        }
+//
+//        return new Matrix(new LUDecomposition(this.apacheData, 1e-10).getSolver().getInverse());
     }
 
     public Matrix symmetricInverse() {

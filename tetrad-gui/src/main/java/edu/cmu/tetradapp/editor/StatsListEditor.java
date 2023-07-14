@@ -69,7 +69,7 @@ public class StatsListEditor extends JPanel {
 
     @NotNull
     private String tableTextWithHeader() {
-        String table = CompareTwoGraphs.getStatsListTable(this.targetGraph, this.referenceGraph, this.dataModel);
+        String table = CompareTwoGraphs.getStatsListTable(this.referenceGraph, this.targetGraph, this.dataModel);
         return "True graph from " + this.comparison.getReferenceName() + "\nTarget graph from " + this.comparison.getTargetName()
                 + "\n\n" + table;
     }
