@@ -83,9 +83,7 @@ public class Matrix implements TetradSerializable {
     }
 
     public static Matrix identity(int rows) {
-        Matrix m = new Matrix(rows, rows);
-        for (int i = 0; i < rows; i++) m.set(i, i, 1);
-        return m;
+        return new Matrix(org.apache.commons.math3.linear.MatrixUtils.createRealIdentityMatrix(rows));
     }
 
     public static Matrix sparseMatrix(int m, int n) {
@@ -126,16 +124,6 @@ public class Matrix implements TetradSerializable {
     }
 
     public Matrix getSelection(int[] rows, int[] cols) {
-//        Matrix m = new Matrix(rows.length, cols.length);
-//
-//        for (int i = 0; i < rows.length; i++) {
-//            for (int j = 0; j < cols.length; j++) {
-//                m.set(i, j, this.apacheData.getEntry(rows[i], cols[j]));
-//            }
-//        }
-//
-//        return m;
-
         if (rows.length == 0 || cols.length == 0) {
             return new Matrix(rows.length, cols.length);
         }
