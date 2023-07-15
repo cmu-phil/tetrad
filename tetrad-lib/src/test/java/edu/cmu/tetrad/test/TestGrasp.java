@@ -3385,19 +3385,16 @@ public final class TestGrasp {
             DataSet data = SimpleDataLoader.loadContinuousData(new File(path), "//", '\"',
                     "*", true, Delimiter.TAB);
 
-
             System.out.println(data.getNumColumns());
 
             Knowledge knowledge = new Knowledge();
             List<Node> variables = data.getVariables();
 
             for (int i = 0; i < variables.size() - 1; i++) {
-                knowledge.addToTier(0, variables.get(i).getName());
+                knowledge.addToTier(1, variables.get(i).getName());
             }
 
-            knowledge.addToTier(1, variables.get(variables.size() - 1).getName());
-
-            System.out.println("Knowledge constructed.");
+            knowledge.addToTier(2, variables.get(variables.size() - 1).getName());
 
             Parameters parameters = new Parameters();
             parameters.set(Params.PENALTY_DISCOUNT, 20);
@@ -3409,8 +3406,6 @@ public final class TestGrasp {
             fges.setKnowledge(knowledge);
 
             Graph graph = fges.search(data, parameters);
-
-            System.out.println("Done");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

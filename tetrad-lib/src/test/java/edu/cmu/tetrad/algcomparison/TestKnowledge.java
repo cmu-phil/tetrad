@@ -10,10 +10,7 @@ import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.Endpoint;
-import edu.cmu.tetrad.graph.Graph;
-import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.graph.RandomGraph;
+import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.util.Parameters;
@@ -29,6 +26,7 @@ public class TestKnowledge {
     private static void testKnowledge(DataSet dataSet, Knowledge knowledge, Parameters parameters, HasKnowledge algorithm) {
         algorithm.setKnowledge(knowledge);
         Graph _graph = ((Algorithm) algorithm).search(dataSet, parameters);
+        _graph = GraphUtils.replaceNodes(_graph, dataSet.getVariables());
         Node x1 = _graph.getNode("X1");
         List<Node> innodes = _graph.getNodesOutTo(x1, Endpoint.ARROW);
         assertTrue(innodes.isEmpty());

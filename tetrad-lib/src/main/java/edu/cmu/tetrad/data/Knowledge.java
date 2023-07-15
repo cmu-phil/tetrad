@@ -161,9 +161,9 @@ public final class Knowledge implements TetradSerializable {
         for (int i = this.tierSpecs.size(); i <= tier; i++) {
             this.tierSpecs.add(new HashSet<>());
 
-            for (int j = 0; j < i; j++) {
-                this.forbiddenRulesSpecs.add(new OrderedPair<>(this.tierSpecs.get(i), this.tierSpecs.get(j)));
-            }
+//            for (int j = 0; j < i; j++) {
+//                this.forbiddenRulesSpecs.add(new OrderedPair<>(this.tierSpecs.get(i), this.tierSpecs.get(j)));
+//            }
         }
     }
 
@@ -220,12 +220,17 @@ public final class Knowledge implements TetradSerializable {
         spec = checkSpec(spec);
         ensureTiers(tier);
 
-        getExtent(spec).stream()
-                .filter(this::checkVarName)
-                .forEach(e -> {
-                    this.variables.add(e);
-                    this.tierSpecs.get(tier).add(e);
-                });
+        Set<String> extent = getExtent(spec);
+
+        for (String var : extent) {
+            for (int i = 0; i < tierSpecs.size(); i++) {
+                if (i == tier) {
+                    this.tierSpecs.get(i).add(var);
+                } else {
+                    this.tierSpecs.get(i).remove(var);
+                }
+            }
+        }
     }
 
     /**
@@ -335,9 +340,9 @@ public final class Knowledge implements TetradSerializable {
         ensureTiers(tier);
 
         try {
-            return this.tierSpecs.get(tier).stream()
-                    .sorted()
-                    .collect(Collectors.toList());
+            List<String> list = new ArrayList<>(tierSpecs.get(tier));
+            Collections.sort(list);
+            return list;
         } catch (Exception e) {
             throw new RuntimeException("Unexpected knowledge configuration.", e);
         }
@@ -490,7 +495,13 @@ public final class Knowledge implements TetradSerializable {
         }
 
         spec = checkSpec(spec);
-        getExtent(spec).forEach(s -> this.tierSpecs.forEach(tier -> tier.remove(s)));
+        Set<String> extent = getExtent(spec);
+
+        for (Set<String> tier : this.tierSpecs) {
+            for (String s : extent) {
+                tier.remove(s);
+            }
+        }
     }
 
     /**
