@@ -42,10 +42,7 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IndependenceFacts;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.DegenerateGaussianScore;
@@ -64,6 +61,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.data.reader.Delimiter;
 import org.apache.commons.collections4.OrderedMap;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.jetbrains.annotations.NotNull;
@@ -96,7 +94,7 @@ public final class TestGrasp {
 
 //        new TestGrasp().testMsep();
 
-        new TestGrasp().testPredictGoodStats();
+        new TestGrasp().testJaime();
 
     }
 
@@ -3378,6 +3376,44 @@ public final class TestGrasp {
 
         public int getTruth() {
             return truth;
+        }
+    }
+
+    public void testJaime() {
+        try {
+            String path = "/Users/josephramsey/Downloads/Subsample1_noRN.csv1.impute.txt";
+            DataSet data = SimpleDataLoader.loadContinuousData(new File(path), "//", '\"',
+                    "*", true, Delimiter.TAB);
+
+
+            System.out.println(data.getNumColumns());
+
+            Knowledge knowledge = new Knowledge();
+            List<Node> variables = data.getVariables();
+
+            for (int i = 0; i < variables.size() - 1; i++) {
+                knowledge.addToTier(0, variables.get(i).getName());
+            }
+
+            knowledge.addToTier(1, variables.get(variables.size() - 1).getName());
+
+            System.out.println(knowledge);
+
+            Parameters parameters = new Parameters();
+            parameters.set(Params.PENALTY_DISCOUNT, 20);
+            parameters.set(Params.VERBOSE, true);
+            parameters.set(Params.PARALLELIZED, true);
+            parameters.set(Params.FAITHFULNESS_ASSUMED, true);
+
+            Fges fges = new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+            fges.setKnowledge(knowledge);
+
+
+            Graph graph = fges.search(data, parameters);
+
+            System.out.println("Graph = " + graph);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

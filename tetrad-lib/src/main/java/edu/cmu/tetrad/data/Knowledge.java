@@ -159,7 +159,7 @@ public final class Knowledge implements TetradSerializable {
 
     private void ensureTiers(int tier) {
         for (int i = this.tierSpecs.size(); i <= tier; i++) {
-            this.tierSpecs.add(new LinkedHashSet<>());
+            this.tierSpecs.add(new HashSet<>());
 
             for (int j = 0; j < i; j++) {
                 this.forbiddenRulesSpecs.add(new OrderedPair<>(this.tierSpecs.get(i), this.tierSpecs.get(j)));
@@ -677,7 +677,7 @@ public final class Knowledge implements TetradSerializable {
     } // added by DMalinsky for tsFCI on 4/20/16
 
     public List<KnowledgeEdge> getListOfRequiredEdges() {
-        Set<KnowledgeEdge> edges = new LinkedHashSet<>();
+        Set<KnowledgeEdge> edges = new HashSet<>();
 
         this.requiredRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
             if (!e1.equals(e2)) {
@@ -693,7 +693,7 @@ public final class Knowledge implements TetradSerializable {
     }
 
     public List<KnowledgeEdge> getListOfForbiddenEdges() {
-        Set<KnowledgeEdge> edges = new LinkedHashSet<>();
+        Set<KnowledgeEdge> edges = new HashSet<>();
 
         this.forbiddenRulesSpecs.forEach(e -> e.getFirst().forEach(e1 -> e.getSecond().forEach(e2 -> {
             if (!e1.equals(e2)) {
