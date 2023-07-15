@@ -3397,7 +3397,7 @@ public final class TestGrasp {
 
             knowledge.addToTier(1, variables.get(variables.size() - 1).getName());
 
-            System.out.println(knowledge);
+            System.out.println("Knowledge constructed.");
 
             Parameters parameters = new Parameters();
             parameters.set(Params.PENALTY_DISCOUNT, 20);
@@ -3408,10 +3408,9 @@ public final class TestGrasp {
             Fges fges = new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
             fges.setKnowledge(knowledge);
 
-
             Graph graph = fges.search(data, parameters);
 
-            System.out.println("Graph = " + graph);
+            System.out.println("Done");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
