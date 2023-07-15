@@ -23,6 +23,7 @@ package edu.cmu.tetrad.algcomparison.examples;
 
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
+import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Dagma;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.DirectLingam;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
@@ -45,26 +46,24 @@ import edu.cmu.tetrad.util.Params;
 public class TestBoss {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-        parameters.set(Params.NUM_RUNS, 1);
+        parameters.set(Params.NUM_RUNS, 3);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
-        parameters.set(Params.NUM_MEASURES, 100);
-        parameters.set(Params.AVG_DEGREE, 20);
+        parameters.set(Params.NUM_MEASURES, 20);
+        parameters.set(Params.AVG_DEGREE, 4);
         parameters.set(Params.SAMPLE_SIZE, 1000);
         parameters.set(Params.COEF_LOW, 0);
         parameters.set(Params.COEF_HIGH, 1);
-
+        parameters.set(Params.VAR_LOW, 1);
+        parameters.set(Params.VAR_HIGH, 3);
 //        parameters.set(Params.BOSS_ALG, 1);
 
-        parameters.set(Params.PENALTY_DISCOUNT, 1);
+        parameters.set(Params.PENALTY_DISCOUNT, 2);
         parameters.set(Params.SEM_BIC_STRUCTURE_PRIOR, 0);
         parameters.set(Params.ALPHA, 1e-2);
 
-        parameters.set(Params.SIMULATION_ERROR_TYPE, 3);
-        parameters.set(Params.SIMULATION_PARAM1, 1.0);
+//        parameters.set(Params.SIMULATION_ERROR_TYPE, 3);
+//        parameters.set(Params.SIMULATION_PARAM1, 1.0);
 //        parameters.set(Params.SIMULATION_PARAM2, 1.0);
-
-//        parameters.set(Params.GENERAL_SEM_FUNCTION_TEMPLATE_MEASURED, "TSUM(NEW(B)*$");
-//        parameters.set(Params.GENERAL_SEM_ERROR_TEMPLATE, "Beta(2, 5)");
 
         parameters.set(Params.VERBOSE, false);
 
@@ -76,12 +75,10 @@ public class TestBoss {
         statistics.add(new ElapsedCpuTime());
 
         Algorithms algorithms = new Algorithms();
-        algorithms.add(new DirectLingam(new SemBicScore()));
-//        algorithms.add(new Fges(new SemBicScore()));
-//        algorithms.add(new Fges(new DegenerateGaussianBicScore()));
+//        algorithms.add(new DirectLingam(new SemBicScore()));
+        algorithms.add(new Fges(new SemBicScore()));
         algorithms.add(new Boss(new SemBicScore()));
-//        algorithms.add(new Grasp(new FisherZ(), new SemBicScore()));
-//        algorithms.add(new SP(new SemBicScore()));
+        algorithms.add(new Dagma());
 
         Simulations simulations = new Simulations();
         simulations.add(new SemSimulation(new RandomForward()));
