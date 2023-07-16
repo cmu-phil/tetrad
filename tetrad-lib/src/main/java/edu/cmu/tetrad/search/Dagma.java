@@ -101,7 +101,7 @@ public class Dagma {
      * NEEDS DOCUMENTATION
      */
     public Graph search() {
-        RealMatrix wEst = createRealMatrix(this.d, this.d);
+        RealMatrix W = createRealMatrix(this.d, this.d);
 
         double mu = this.muInit;
         double lrAdam;
@@ -112,46 +112,14 @@ public class Dagma {
         for (double s : this.T) {
             lrAdam = this.lr;
             if (outerIters-- == 1) innerIters = this.maxIter;
-            while (minimize(wEst, mu, innerIters, s, lrAdam)) {
+            while (minimize(W, mu, innerIters, s, lrAdam)) {
                 lrAdam *= 0.5;
                 s += 0.1;
             }
             mu *= this.muFactor;
         }
 
-        // Convert W to graph
-        double wMin;
-        double wThreshold = this.wThreshold;
-        do {
-            wMin = Double.MAX_VALUE;
-            for (int i = 0; i < this.d; i++) {
-                for (int j = 0; j < this.d; j++) {
-
-                    double w = abs(wEst.getEntry(i, j));
-                    if (w < wThreshold) {
-                        wEst.setEntry(i, j, 0);
-                    } else if (w < wMin) {
-                        wMin = w;
-                    }
-                }
-            }
-            wThreshold = wMin + 1e-6;
-        } while (prod(wEst, wEst).power(this.d).getTrace() != 0);
-
-        Graph graph = new EdgeListGraph(this.variables);
-        for (int i = 0; i < this.d; i++) {
-            for (int j = 0; j < this.d; j++) {
-                if (wEst.getEntry(i, j) == 0) continue;
-                graph.addDirectedEdge(this.variables.get(i), this.variables.get(j));
-            }
-        }
-
-        if (this.cpdag) {
-            MeekRules rules = new MeekRules();
-            rules.orientImplied(graph);
-        }
-
-        return graph;
+        return toGraph(W);
     }
 
     public double getLambda1() {
@@ -200,22 +168,24 @@ public class Dagma {
     }
 
     private void adamUpdate(RealMatrix grad, int iter, RealMatrix optM, RealMatrix optV) {
-        int d = grad.getRowDimension();
 
         double b1_ = 1 - this.b1;
         double b2_ = 1 - this.b2;
 
-        for (int i = 0; i < d; i++) {
-            for (int j = 0; j < d; j++) {
+        for (int i = 0; i < this.d; i++) {
+            for (int j = 0; j < this.d; j++) {
                 double g = grad.getEntry(i, j);
                 double m = optM.getEntry(i, j);
                 double v = optV.getEntry(i, j);
+
                 double a = this.b1 * m + b1_ * g;
                 double b = this.b2 * v + b2_ * pow(g, 2);
+
                 optM.setEntry(i, j, a);
                 optV.setEntry(i, j, b);
                 a /= 1 - pow(this.b1, iter);
                 b /= 1 - pow(this.b2, iter);
+
                 grad.setEntry(i, j, a / (sqrt(b) + 1e-8));
             }
         }
@@ -238,29 +208,33 @@ public class Dagma {
 
                 if ((iter == 1) || (s <= 0.9)) {
 
-                    for (int i = 0; i < this.d; i++) {
-                        for (int j = 0; j < this.d; j++) {
-                            W.setEntry(i, j, W_old.getEntry(i, j));
-                        }
-                    }
+                    update(W, W_old, 1.0);
+//                    for (int i = 0; i < this.d; i++) {
+//                        for (int j = 0; j < this.d; j++) {
+//                            W.setEntry(i, j, W_old.getEntry(i, j));
+//                        }
+//                    }
+
                     return true;
                 }
                 else {
 
-                    for (int i = 0; i < this.d; i++) {
-                        for (int j = 0; j < this.d; j++) {
-                            W.addToEntry(i, j, lrAdam * grad.getEntry(i, j));
-                        }
-                    }
+                    update(W, grad, lrAdam);
+//                    for (int i = 0; i < this.d; i++) {
+//                        for (int j = 0; j < this.d; j++) {
+//                            W.addToEntry(i, j, lrAdam * grad.getEntry(i, j));
+//                        }
+//                    }
 
                     lrAdam *= 0.5;
                     if (lrAdam <= 1e-16) return false;
 
-                    for (int i = 0; i < this.d; i++) {
-                        for (int j = 0; j < this.d; j++) {
-                            W.addToEntry(i, j, -lrAdam * grad.getEntry(i, j));
-                        }
-                    }
+                    update(W, grad, -lrAdam);
+//                    for (int i = 0; i < this.d; i++) {
+//                        for (int j = 0; j < this.d; j++) {
+//                            W.addToEntry(i, j, -lrAdam * grad.getEntry(i, j));
+//                        }
+//                    }
 
                     M = inverse(this.I.scalarMultiply(s).subtract(prod(W, W))).scalarAdd(1e-16);
                 }
@@ -272,21 +246,25 @@ public class Dagma {
                     double g = grad.getEntry(i, j);
                     double c = this.cov.getEntry(i, j);
                     double w = W.getEntry(i, j);
+                    double mt = M.getEntry(j, i);
+
                     double sign = 0;
                     if (w > 0) sign = 1;
                     if (w < 0) sign = -1;
-                    double mt = M.getEntry(j, i);
+
                     grad.setEntry(i, j, mu * (g - c + this.lambda1 * sign) + 2 * w * mt);
                 }
             }
 
             // Adam step
             adamUpdate(grad, iter, optM, optV);
-            for (int i = 0; i < this.d; i++) {
-                for (int j = 0; j < this.d; j++) {
-                    W.addToEntry(i, j, -lrAdam * grad.getEntry(i, j));
-                }
-            }
+            update(W, grad, -lrAdam);
+//            for (int i = 0; i < this.d; i++) {
+//                for (int j = 0; j < this.d; j++) {
+//                    W.addToEntry(i, j, -lrAdam * grad.getEntry(i, j));
+//                }
+//            }
+
 
             // Check obj convergence
             if (iter % this.checkpoint == 0) {
@@ -295,19 +273,28 @@ public class Dagma {
                 objPrev = objNew;
             }
         }
+
         return false;
     }
 
 
 
-
+    private void update(RealMatrix W, RealMatrix A, double b) {
+        for (int i = 0; i < this.d; i++) {
+            for (int j = 0; j < this.d; j++) {
+                W.addToEntry(i, j, b * A.getEntry(i, j));
+            }
+        }
+    }
 
 
 
 
     // Assumes square positive semi-definite matrix
     private double logDet(RealMatrix M) {
+        assert M.isSquare();
         int d = M.getRowDimension();
+
         LUDecomposition lud = new LUDecomposition(M);
         RealMatrix P = lud.getP();
         RealMatrix L = lud.getL();
@@ -322,9 +309,8 @@ public class Dagma {
         return logDet;
     }
 
-    // Assumes square matrix
-    // Return M is not an M-matrix
     private boolean notMMatrix(RealMatrix M) {
+        assert M.isSquare();
         int d = M.getRowDimension();
 
         for (int i = 0; i < d; i++) {
@@ -338,12 +324,11 @@ public class Dagma {
         return false;
     }
 
-    // Assumes square matrix
-    // Returns abs sum of matrix entries
     private double absSum(RealMatrix M) {
+        assert M.isSquare();
         int d = M.getRowDimension();
-        double s = 0;
 
+        double s = 0;
         for (int i = 0; i < d; i++) {
             for (int j = 0; j < d; j++) {
                 s += abs(M.getEntry(i, j));
@@ -367,4 +352,45 @@ public class Dagma {
         return C;
     }
 
+    private Graph toGraph(RealMatrix W) {
+        RealMatrix W_ = createRealMatrix(this.d, this.d);
+        for (int i = 0; i < this.d; i++) {
+            for (int j = 0; j < this.d; j++) {
+                W_.setEntry(i, j, abs(W.getEntry(i, j)));
+            }
+        }
+
+        double wThreshold = this.wThreshold;
+        double wMin;
+
+        do {
+            wMin = Double.MAX_VALUE;
+            for (int i = 0; i < this.d; i++) {
+                for (int j = 0; j < this.d; j++) {
+                    double w_ = W_.getEntry(i, j);
+                    if (w_ < wThreshold) {
+                        W_.setEntry(i, j, 0);
+                    } else if (w_ < wMin) {
+                        wMin = w_;
+                    }
+                }
+            }
+            wThreshold = wMin + 1e-6;
+        } while (W_.power(this.d).getTrace() > 0);
+
+        Graph graph = new EdgeListGraph(this.variables);
+        for (int i = 0; i < this.d; i++) {
+            for (int j = 0; j < this.d; j++) {
+                if (W_.getEntry(i, j) == 0) continue;
+                graph.addDirectedEdge(this.variables.get(i), this.variables.get(j));
+            }
+        }
+
+        if (this.cpdag) {
+            MeekRules rules = new MeekRules();
+            rules.orientImplied(graph);
+        }
+
+        return graph;
+    }
 }
