@@ -75,8 +75,8 @@ public class Dagma {
 
         this.I = createRealIdentityMatrix(this.d);
 
-        this.lambda1 = 0.01;
-        this.w_threshold = 0.01;
+        this.lambda1 = 0.1;
+        this.w_threshold = 0.1;
 
         this.T = new double[] {1.0, .9, .8, .7};
 
@@ -149,7 +149,7 @@ public class Dagma {
         RealMatrix C = createRealMatrix(d, d);
 
         for (int i = 0; i < d; i++) {
-            for (int j = 0; i < d; i++) {
+            for (int j = 0; j < d; j++) {
                 C.setEntry(i, j, A.getEntry(i, j) * B.getEntry(i, j));
             }
         }
@@ -199,7 +199,7 @@ public class Dagma {
         }
     }
 
-    private boolean minimize(RealMatrix W, double mu, int inner_iter, double s, double lr) {
+    private boolean minimize(RealMatrix W, double mu, int inner_iter, double s, double lr_adam) {
         double obj_prev = 1e16;
         double obj_new;
         this.opt_m = createRealMatrix(this.d, this.d);
@@ -211,9 +211,8 @@ public class Dagma {
         for (int iter = 1; iter <= inner_iter; iter++) {
             // Compute the (sub) gradient of the objective
             RealMatrix M = inverse(this.I.scalarMultiply(s).subtract(prod(W, W))).scalarAdd(1e-16);
-            // sI - W o W is not an M -matrix
 
-
+            // sI - W o W is not an M-matrix
             while (any_neg(M)) {
 
                 if ((iter == 1) || (s <= 0.9)) {
@@ -229,16 +228,16 @@ public class Dagma {
 
                     for (int i = 0; i < this.d; i++) {
                         for (int j = 0; j < this.d; j++) {
-                            W.addToEntry(i, j, lr * grad.getEntry(i, j));
+                            W.addToEntry(i, j, lr_adam * grad.getEntry(i, j));
                         }
                     }
 
-                    lr *= 0.5;
-                    if (lr <= 1e-16) return false;
+                    lr_adam *= 0.5;
+                    if (lr_adam <= 1e-16) return false;
 
                     for (int i = 0; i < this.d; i++) {
                         for (int j = 0; j < this.d; j++) {
-                            W.addToEntry(i, j, -lr * grad.getEntry(i, j));
+                            W.addToEntry(i, j, -lr_adam * grad.getEntry(i, j));
                         }
                     }
 
@@ -264,12 +263,12 @@ public class Dagma {
             _adam_update(grad, iter);
             for (int i = 0; i < this.d; i++) {
                 for (int j = 0; j < this.d; j++) {
-                    W.addToEntry(i, j, -lr * grad.getEntry(i, j));
+                    W.addToEntry(i, j, -lr_adam * grad.getEntry(i, j));
                 }
             }
 
             // Check obj convergence
-            if ((iter % this.checkpoint == 0) || (iter == this.max_iter)) {
+            if (iter % this.checkpoint == 0) {
                 obj_new = _func(W, mu, s);
                 if (abs((obj_prev - obj_new) / obj_prev) <= this.tol) break;
                 obj_prev = obj_new;
@@ -309,7 +308,6 @@ public class Dagma {
         do {
             w_min = Double.MAX_VALUE;
             for (int i = 0; i < this.d; i++) {
-                W_est.setEntry(i, i, 0.0);
                 for (int j = 0; j < this.d; j++) {
 
                     double w = abs(W_est.getEntry(i, j));
@@ -321,7 +319,7 @@ public class Dagma {
                 }
             }
             w_threshold = w_min + 1e-6;
-        } while (W_est.power(this.d).getTrace() != 0);
+        } while (prod(W_est, W_est).power(this.d).getTrace() != 0);
 
         Graph graph = new EdgeListGraph(this.variables);
         for (int i = 0; i < this.d; i++) {

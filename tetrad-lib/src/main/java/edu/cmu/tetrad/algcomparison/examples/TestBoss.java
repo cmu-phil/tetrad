@@ -46,15 +46,15 @@ import edu.cmu.tetrad.util.Params;
 public class TestBoss {
     public static void main(String... args) {
         Parameters parameters = new Parameters();
-        parameters.set(Params.NUM_RUNS, 3);
+        parameters.set(Params.NUM_RUNS, 1);
         parameters.set(Params.DIFFERENT_GRAPHS, true);
         parameters.set(Params.NUM_MEASURES, 20);
         parameters.set(Params.AVG_DEGREE, 4);
         parameters.set(Params.SAMPLE_SIZE, 1000);
-        parameters.set(Params.COEF_LOW, 0);
+        parameters.set(Params.COEF_LOW, 0.5);
         parameters.set(Params.COEF_HIGH, 1);
         parameters.set(Params.VAR_LOW, 1);
-        parameters.set(Params.VAR_HIGH, 3);
+        parameters.set(Params.VAR_HIGH, 1);
 //        parameters.set(Params.BOSS_ALG, 1);
 
         parameters.set(Params.PENALTY_DISCOUNT, 2);
