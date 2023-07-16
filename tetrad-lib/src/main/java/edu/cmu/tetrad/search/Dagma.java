@@ -45,25 +45,25 @@ public class Dagma {
 
     private RealMatrix cov;
     private List<Node> variables;
-    private int d;
-    private double lambda1;
-    private double w_threshold;
-    private double[] T;
-    private double mu_init;
-    private double mu_factor;
-
-
-    private int warm_iter;
-    private int max_iter;
-    private double lr;
-    private int checkpoint;
-    private double b1;
-    private double b2;
-    private RealMatrix opt_m;
-    private RealMatrix opt_v;
     private RealMatrix I;
-    private double tol;
+    private int d;
+
+    private double lambda1;
+    private double wThreshold;
     private boolean cpdag;
+
+    private final double[] T;
+
+    private final double muInit;
+    private final double muFactor;
+    private final int warmIter;
+    private final int maxIter;
+    private final double lr;
+    private final int checkpoint;
+    private final double b1;
+    private final double b2;
+    private final double tol;
+
 
     /**
      * Constructor.
@@ -72,90 +72,112 @@ public class Dagma {
         this.variables = dataset.getVariables();
         this.cov = dataset.getCorrelationMatrix().getApacheData();
         this.d = cov.getRowDimension();
-
         this.I = createRealIdentityMatrix(this.d);
 
-        this.lambda1 = 0.1;
-        this.w_threshold = 0.1;
+        // tunable parameters
+        this.lambda1 = 0.05;
+        this.wThreshold = 0.1;
+        this.cpdag = true;
 
+        // M-matrix s values
         this.T = new double[] {1.0, .9, .8, .7};
 
-        this.mu_init = 1.0;
-        this.mu_factor = 0.1;
-        this.warm_iter = 20000;
-        this.max_iter = 70000;
+        // central path coefficient and decay factor
+        this.muInit = 1.0;
+        this.muFactor = 0.1;
+
+        // ADAM optimizer parameters
+        this.warmIter = 20000;
+        this.maxIter = 70000;
         this.lr = 3e-4;
         this.checkpoint = 1000;
         this.b1=0.99;
         this.b2=0.999;
         this.tol = 1e-6;
-
-        this.cpdag = true;
-
     }
+
 
     /**
      * NEEDS DOCUMENTATION
      */
+    public Graph search() {
+        RealMatrix wEst = createRealMatrix(this.d, this.d);
 
-    // Assumes square positive semi-definite matrix
-    private double log_det(RealMatrix M) {
-        int d = M.getRowDimension();
-        LUDecomposition lud = new LUDecomposition(M);
-        RealMatrix P = lud.getP();
-        RealMatrix L = lud.getL();
-        RealMatrix U = lud.getU();
+        double mu = this.muInit;
+        double lrAdam;
 
-        double ldet = log(abs(d - P.getTrace() - 1));
-        for (int i = 0; i < d; i++) {
-            ldet += log(abs(L.getEntry(i, i)));
-            ldet += log(abs(U.getEntry(i, i)));
+        int outerIters = this.T.length;
+        int innerIters = this.warmIter;
+
+        for (double s : this.T) {
+            lrAdam = this.lr;
+            if (outerIters-- == 1) innerIters = this.maxIter;
+            while (minimize(wEst, mu, innerIters, s, lrAdam)) {
+                lrAdam *= 0.5;
+                s += 0.1;
+            }
+            mu *= this.muFactor;
         }
 
-        return ldet;
-    }
+        // Convert W to graph
+        double wMin;
+        double wThreshold = this.wThreshold;
+        do {
+            wMin = Double.MAX_VALUE;
+            for (int i = 0; i < this.d; i++) {
+                for (int j = 0; j < this.d; j++) {
 
-    // Assumes square matrix
-    private boolean any_neg(RealMatrix M) {
-        for (int i = 0; i < this.d; i++) {
-            for (int j = 0; j < this.d; j++) {
-                if (M.getEntry(i, j) < 0) {
-                    return true;
+                    double w = abs(wEst.getEntry(i, j));
+                    if (w < wThreshold) {
+                        wEst.setEntry(i, j, 0);
+                    } else if (w < wMin) {
+                        wMin = w;
+                    }
                 }
             }
-        }
+            wThreshold = wMin + 1e-6;
+        } while (prod(wEst, wEst).power(this.d).getTrace() != 0);
 
-        return false;
-    }
-
-
-    // Assumes square matrix
-    private double abs_sum(RealMatrix M) {
-        double s = 0;
-
+        Graph graph = new EdgeListGraph(this.variables);
         for (int i = 0; i < this.d; i++) {
             for (int j = 0; j < this.d; j++) {
-                s += abs(M.getEntry(i, j));
+                if (wEst.getEntry(i, j) == 0) continue;
+                graph.addDirectedEdge(this.variables.get(i), this.variables.get(j));
             }
         }
 
-        return s;
-    }
-
-
-    // Assumes two square matrices of equal dimension
-    private RealMatrix prod(RealMatrix A, RealMatrix B) {
-        int d = A.getRowDimension();
-        RealMatrix C = createRealMatrix(d, d);
-
-        for (int i = 0; i < d; i++) {
-            for (int j = 0; j < d; j++) {
-                C.setEntry(i, j, A.getEntry(i, j) * B.getEntry(i, j));
-            }
+        if (this.cpdag) {
+            MeekRules rules = new MeekRules();
+            rules.orientImplied(graph);
         }
 
-        return C;
+        return graph;
     }
+
+    public double getLambda1() {
+        return this.lambda1;
+    }
+
+    public void setLambda1(double lambda1) {
+        this.lambda1 = lambda1;
+    }
+
+    public double getWThreshold() {
+        return this.wThreshold;
+    }
+
+    public void setWThreshold(double wThreshold) {
+        this.wThreshold = wThreshold;
+    }
+
+    public boolean getCpdag() {
+        return this.cpdag;
+    }
+
+    public void setCpdag(boolean cpdag) {
+        this.cpdag = cpdag;
+    }
+
 
     // Evaluate value and gradient of the score function.
     private double _score(RealMatrix W) {
@@ -167,17 +189,17 @@ public class Dagma {
     // Evaluate value and gradient of the logdet acyclicity constraint.
     private double _h(RealMatrix W, double s) {
         RealMatrix M = this.I.scalarMultiply(s).subtract(prod(W, W));
-        return this.d * log(s) - log_det(M);
+        return this.d * log(s) - logDet(M);
     }
 
     // Evaluate value of the penalized objective function.
     private double _func(RealMatrix W, double mu, double s) {
         double score = _score(W);
         double h = _h(W, s);
-        return mu * (score + this.lambda1 * abs_sum(W)) + h;
+        return mu * (score + this.lambda1 * absSum(W)) + h;
     }
 
-    private void _adam_update(RealMatrix grad, int iter) {
+    private void adamUpdate(RealMatrix grad, int iter, RealMatrix optM, RealMatrix optV) {
         int d = grad.getRowDimension();
 
         double b1_ = 1 - this.b1;
@@ -186,12 +208,12 @@ public class Dagma {
         for (int i = 0; i < d; i++) {
             for (int j = 0; j < d; j++) {
                 double g = grad.getEntry(i, j);
-                double m = this.opt_m.getEntry(i, j);
-                double v = this.opt_v.getEntry(i, j);
+                double m = optM.getEntry(i, j);
+                double v = optV.getEntry(i, j);
                 double a = this.b1 * m + b1_ * g;
                 double b = this.b2 * v + b2_ * pow(g, 2);
-                this.opt_m.setEntry(i, j, a);
-                this.opt_v.setEntry(i, j, b);
+                optM.setEntry(i, j, a);
+                optV.setEntry(i, j, b);
                 a /= 1 - pow(this.b1, iter);
                 b /= 1 - pow(this.b2, iter);
                 grad.setEntry(i, j, a / (sqrt(b) + 1e-8));
@@ -199,21 +221,20 @@ public class Dagma {
         }
     }
 
-    private boolean minimize(RealMatrix W, double mu, int inner_iter, double s, double lr_adam) {
-        double obj_prev = 1e16;
-        double obj_new;
-        this.opt_m = createRealMatrix(this.d, this.d);
-        this.opt_v = createRealMatrix(this.d, this.d);
+    private boolean minimize(RealMatrix W, double mu, int innerIter, double s, double lrAdam) {
+        RealMatrix optM = createRealMatrix(this.d, this.d);
+        RealMatrix optV = createRealMatrix(this.d, this.d);
+
+        double objPrev = 1e16;
+        double objNew;
 
         RealMatrix W_old = W.copy();
         RealMatrix grad = null;
 
-        for (int iter = 1; iter <= inner_iter; iter++) {
-            // Compute the (sub) gradient of the objective
+        for (int iter = 1; iter <= innerIter; iter++) {
             RealMatrix M = inverse(this.I.scalarMultiply(s).subtract(prod(W, W))).scalarAdd(1e-16);
 
-            // sI - W o W is not an M-matrix
-            while (any_neg(M)) {
+            while (notMMatrix(M)) {
 
                 if ((iter == 1) || (s <= 0.9)) {
 
@@ -228,16 +249,16 @@ public class Dagma {
 
                     for (int i = 0; i < this.d; i++) {
                         for (int j = 0; j < this.d; j++) {
-                            W.addToEntry(i, j, lr_adam * grad.getEntry(i, j));
+                            W.addToEntry(i, j, lrAdam * grad.getEntry(i, j));
                         }
                     }
 
-                    lr_adam *= 0.5;
-                    if (lr_adam <= 1e-16) return false;
+                    lrAdam *= 0.5;
+                    if (lrAdam <= 1e-16) return false;
 
                     for (int i = 0; i < this.d; i++) {
                         for (int j = 0; j < this.d; j++) {
-                            W.addToEntry(i, j, -lr_adam * grad.getEntry(i, j));
+                            W.addToEntry(i, j, -lrAdam * grad.getEntry(i, j));
                         }
                     }
 
@@ -260,18 +281,18 @@ public class Dagma {
             }
 
             // Adam step
-            _adam_update(grad, iter);
+            adamUpdate(grad, iter, optM, optV);
             for (int i = 0; i < this.d; i++) {
                 for (int j = 0; j < this.d; j++) {
-                    W.addToEntry(i, j, -lr_adam * grad.getEntry(i, j));
+                    W.addToEntry(i, j, -lrAdam * grad.getEntry(i, j));
                 }
             }
 
             // Check obj convergence
             if (iter % this.checkpoint == 0) {
-                obj_new = _func(W, mu, s);
-                if (abs((obj_prev - obj_new) / obj_prev) <= this.tol) break;
-                obj_prev = obj_new;
+                objNew = _func(W, mu, s);
+                if (abs((objPrev - objNew) / objPrev) <= this.tol) break;
+                objPrev = objNew;
             }
         }
         return false;
@@ -281,59 +302,69 @@ public class Dagma {
 
 
 
-    public Graph search() {
 
 
-        RealMatrix W_est = createRealMatrix(this.d, this.d);
 
-        double mu = this.mu_init;
-        double lr_adam;
+    // Assumes square positive semi-definite matrix
+    private double logDet(RealMatrix M) {
+        int d = M.getRowDimension();
+        LUDecomposition lud = new LUDecomposition(M);
+        RealMatrix P = lud.getP();
+        RealMatrix L = lud.getL();
+        RealMatrix U = lud.getU();
 
-        int outer_iters = this.T.length;
-        int inner_iters = this.warm_iter;
-
-        for (double s : this.T) {
-            lr_adam = this.lr;
-            if (--outer_iters == 0) inner_iters = this.max_iter;
-            while (minimize(W_est, mu, inner_iters, s, lr_adam)) {
-                lr_adam *= 0.5;
-                s += 0.1;
-            }
-            mu *= this.mu_factor;
+        double logDet = log(abs(d - P.getTrace() - 1));
+        for (int i = 0; i < d; i++) {
+            logDet += log(abs(L.getEntry(i, i)));
+            logDet += log(abs(U.getEntry(i, i)));
         }
 
-        // Convert W to graph
-        double w_min;
-        double w_threshold = this.w_threshold;
-        do {
-            w_min = Double.MAX_VALUE;
-            for (int i = 0; i < this.d; i++) {
-                for (int j = 0; j < this.d; j++) {
+        return logDet;
+    }
 
-                    double w = abs(W_est.getEntry(i, j));
-                    if (w < w_threshold) {
-                        W_est.setEntry(i, j, 0);
-                    } else if (w < w_min) {
-                        w_min = w;
-                    }
+    // Assumes square matrix
+    // Return M is not an M-matrix
+    private boolean notMMatrix(RealMatrix M) {
+        int d = M.getRowDimension();
+
+        for (int i = 0; i < d; i++) {
+            for (int j = 0; j < d; j++) {
+                if (M.getEntry(i, j) < 0) {
+                    return true;
                 }
             }
-            w_threshold = w_min + 1e-6;
-        } while (prod(W_est, W_est).power(this.d).getTrace() != 0);
+        }
 
-        Graph graph = new EdgeListGraph(this.variables);
-        for (int i = 0; i < this.d; i++) {
-            for (int j = 0; j < this.d; j++) {
-                if (W_est.getEntry(i, j) == 0) continue;
-                graph.addDirectedEdge(this.variables.get(i), this.variables.get(j));
+        return false;
+    }
+
+    // Assumes square matrix
+    // Returns abs sum of matrix entries
+    private double absSum(RealMatrix M) {
+        int d = M.getRowDimension();
+        double s = 0;
+
+        for (int i = 0; i < d; i++) {
+            for (int j = 0; j < d; j++) {
+                s += abs(M.getEntry(i, j));
             }
         }
 
-        if (this.cpdag) {
-            MeekRules rules = new MeekRules();
-            rules.orientImplied(graph);
+        return s;
+    }
+
+    // Assumes two square matrices of equal dimension
+    private RealMatrix prod(RealMatrix A, RealMatrix B) {
+        int d = A.getRowDimension();
+        RealMatrix C = createRealMatrix(d, d);
+
+        for (int i = 0; i < d; i++) {
+            for (int j = 0; j < d; j++) {
+                C.setEntry(i, j, A.getEntry(i, j) * B.getEntry(i, j));
+            }
         }
 
-        return graph;
+        return C;
     }
+
 }
