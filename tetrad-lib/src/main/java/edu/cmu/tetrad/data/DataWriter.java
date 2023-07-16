@@ -165,8 +165,9 @@ public final class DataWriter {
 
         buf.append("\n\nforbiddirect");
 
-        for (Iterator<KnowledgeEdge> i = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
-            KnowledgeEdge pair = i.next();
+        for (KnowledgeEdge pair : knowledge.getListOfExplicitlyForbiddenEdges()) {
+//        for (Iterator<KnowledgeEdge> i = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
+//            KnowledgeEdge pair = i.next();
             String from = pair.getFrom();
             String to = pair.getTo();
 
