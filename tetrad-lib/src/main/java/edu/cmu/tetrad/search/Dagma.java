@@ -122,25 +122,31 @@ public class Dagma {
         return toGraph(W);
     }
 
+
     public double getLambda1() {
         return this.lambda1;
     }
+
 
     public void setLambda1(double lambda1) {
         this.lambda1 = lambda1;
     }
 
+
     public double getWThreshold() {
         return this.wThreshold;
     }
+
 
     public void setWThreshold(double wThreshold) {
         this.wThreshold = wThreshold;
     }
 
+
     public boolean getCpdag() {
         return this.cpdag;
     }
+
 
     public void setCpdag(boolean cpdag) {
         this.cpdag = cpdag;
@@ -154,11 +160,13 @@ public class Dagma {
         return 0.5 * dif.transpose().multiply(rhs).getTrace();
     }
 
+
     // Evaluate value and gradient of the logdet acyclicity constraint.
     private double _h(RealMatrix W, double s) {
-        RealMatrix M = this.I.scalarMultiply(s).subtract(prod(W, W));
+        RealMatrix M = getMMatrix(W, s);
         return this.d * log(s) - logDet(M);
     }
+
 
     // Evaluate value of the penalized objective function.
     private double _func(RealMatrix W, double mu, double s) {
@@ -166,6 +174,7 @@ public class Dagma {
         double h = _h(W, s);
         return mu * (score + this.lambda1 * absSum(W)) + h;
     }
+
 
     private void adamUpdate(RealMatrix grad, int iter, RealMatrix optM, RealMatrix optV) {
 
@@ -191,6 +200,7 @@ public class Dagma {
         }
     }
 
+
     private boolean minimize(RealMatrix W, double mu, int innerIter, double s, double lrAdam) {
         RealMatrix optM = createRealMatrix(this.d, this.d);
         RealMatrix optV = createRealMatrix(this.d, this.d);
@@ -202,41 +212,21 @@ public class Dagma {
         RealMatrix grad = null;
 
         for (int iter = 1; iter <= innerIter; iter++) {
-            RealMatrix M = inverse(this.I.scalarMultiply(s).subtract(prod(W, W))).scalarAdd(1e-16);
+            RealMatrix M = inverse(getMMatrix(W, s));
+            addToEntries(M, 1e-16);
 
             while (notMMatrix(M)) {
-
                 if ((iter == 1) || (s <= 0.9)) {
-
-                    update(W, W_old, 1.0);
-//                    for (int i = 0; i < this.d; i++) {
-//                        for (int j = 0; j < this.d; j++) {
-//                            W.setEntry(i, j, W_old.getEntry(i, j));
-//                        }
-//                    }
-
+                    setEntries(W, W_old);
                     return true;
-                }
-                else {
-
-                    update(W, grad, lrAdam);
-//                    for (int i = 0; i < this.d; i++) {
-//                        for (int j = 0; j < this.d; j++) {
-//                            W.addToEntry(i, j, lrAdam * grad.getEntry(i, j));
-//                        }
-//                    }
-
+                } else if (lrAdam <= 2e-16) {
+                    addToEntries(W, grad, lrAdam);
+                    return false;
+                } else {
                     lrAdam *= 0.5;
-                    if (lrAdam <= 1e-16) return false;
-
-                    update(W, grad, -lrAdam);
-//                    for (int i = 0; i < this.d; i++) {
-//                        for (int j = 0; j < this.d; j++) {
-//                            W.addToEntry(i, j, -lrAdam * grad.getEntry(i, j));
-//                        }
-//                    }
-
-                    M = inverse(this.I.scalarMultiply(s).subtract(prod(W, W))).scalarAdd(1e-16);
+                    addToEntries(W, grad, lrAdam);
+                    M = inverse(getMMatrix(W, s));
+                    addToEntries(M, 1e-16);
                 }
             }
 
@@ -258,13 +248,7 @@ public class Dagma {
 
             // Adam step
             adamUpdate(grad, iter, optM, optV);
-            update(W, grad, -lrAdam);
-//            for (int i = 0; i < this.d; i++) {
-//                for (int j = 0; j < this.d; j++) {
-//                    W.addToEntry(i, j, -lrAdam * grad.getEntry(i, j));
-//                }
-//            }
-
+            addToEntries(W, grad, -lrAdam);
 
             // Check obj convergence
             if (iter % this.checkpoint == 0) {
@@ -278,19 +262,46 @@ public class Dagma {
     }
 
 
+    private RealMatrix getMMatrix(RealMatrix W, double s) {
+        RealMatrix M = this.I.scalarMultiply(s);
 
-    private void update(RealMatrix W, RealMatrix A, double b) {
+        for (int i = 0; i < this.d; i++) {
+                for (int j = 0; j < this.d; j++) {
+                    M.addToEntry(i, j, -W.getEntry(i, j) * W.getEntry(i, j));
+                }
+            }
+
+        return M;
+    }
+
+
+    private void setEntries(RealMatrix A, RealMatrix B) {
         for (int i = 0; i < this.d; i++) {
             for (int j = 0; j < this.d; j++) {
-                W.addToEntry(i, j, b * A.getEntry(i, j));
+                A.setEntry(i, j, B.getEntry(i, j));
             }
         }
     }
 
 
+    private void addToEntries(RealMatrix A, double c) {
+        for (int i = 0; i < this.d; i++) {
+            for (int j = 0; j < this.d; j++) {
+                A.addToEntry(i, j, c);
+            }
+        }
+    }
 
 
-    // Assumes square positive semi-definite matrix
+    private void addToEntries(RealMatrix A, RealMatrix B, double c) {
+        for (int i = 0; i < this.d; i++) {
+            for (int j = 0; j < this.d; j++) {
+                A.addToEntry(i, j, c * B.getEntry(i, j));
+            }
+        }
+    }
+
+
     private double logDet(RealMatrix M) {
         assert M.isSquare();
         int d = M.getRowDimension();
@@ -309,6 +320,7 @@ public class Dagma {
         return logDet;
     }
 
+
     private boolean notMMatrix(RealMatrix M) {
         assert M.isSquare();
         int d = M.getRowDimension();
@@ -324,6 +336,7 @@ public class Dagma {
         return false;
     }
 
+
     private double absSum(RealMatrix M) {
         assert M.isSquare();
         int d = M.getRowDimension();
@@ -338,19 +351,6 @@ public class Dagma {
         return s;
     }
 
-    // Assumes two square matrices of equal dimension
-    private RealMatrix prod(RealMatrix A, RealMatrix B) {
-        int d = A.getRowDimension();
-        RealMatrix C = createRealMatrix(d, d);
-
-        for (int i = 0; i < d; i++) {
-            for (int j = 0; j < d; j++) {
-                C.setEntry(i, j, A.getEntry(i, j) * B.getEntry(i, j));
-            }
-        }
-
-        return C;
-    }
 
     private Graph toGraph(RealMatrix W) {
         RealMatrix W_ = createRealMatrix(this.d, this.d);
