@@ -67,7 +67,14 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
                 search.setOut((PrintStream) obj);
             }
 
-            String[] _targets = parameters.getString(Params.TARGETS).split(",");
+            String string = parameters.getString(Params.TARGETS);
+            String[] _targets;
+
+            if (string.contains(",")) {
+                _targets = string.split(",");
+            } else {
+                _targets = string.split(" ");
+            }
 
             List<Node> targets = new ArrayList<>();
 
