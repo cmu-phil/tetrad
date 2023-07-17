@@ -45,6 +45,9 @@ public class Dagma implements Algorithm, ReturnsBootstrapGraphs {
             DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
 
             edu.cmu.tetrad.search.Dagma search = new edu.cmu.tetrad.search.Dagma(data);
+            search.setLambda1(parameters.getDouble(Params.LAMBDA1));
+            search.setWThreshold(parameters.getDouble(Params.W_THRESHOLD));
+            search.setCpdag(parameters.getBoolean(Params.CPDAG));
             Graph graph = search.search();
             TetradLogger.getInstance().forceLogMessage(graph.toString());
 
@@ -83,6 +86,9 @@ public class Dagma implements Algorithm, ReturnsBootstrapGraphs {
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.VERBOSE);
+        parameters.add(Params.LAMBDA1);
+        parameters.add(Params.W_THRESHOLD);
+        parameters.add(Params.CPDAG);
         return parameters;
     }
 
