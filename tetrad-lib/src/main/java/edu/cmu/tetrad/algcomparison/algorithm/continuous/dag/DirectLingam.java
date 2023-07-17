@@ -74,9 +74,7 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) {
-        return new EdgeListGraph(graph);
-    }
+    public Graph getComparisonGraph(Graph graph) { return new EdgeListGraph(graph); }
 
     public String getDescription() {
         return "Direct-LiNGAM (Direct Linear Non-Gaussian Acyclic Model";
