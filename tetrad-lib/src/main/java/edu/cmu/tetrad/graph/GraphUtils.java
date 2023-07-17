@@ -1230,9 +1230,11 @@ public final class GraphUtils {
         }
 
         // Nodes Attributes
-        String graphNodeAttributes = GraphUtils.graphNodeAttributesToText(graph, "Graph Node Attributes:", ';');
-        if (graphNodeAttributes != null) {
-            fmt.format("%s%n", graphNodeAttributes);
+        if (graph.getNumNodes() < 50) {
+            String graphNodeAttributes = GraphUtils.graphNodeAttributesToText(graph, "Graph Node Attributes:", ';');
+            if (graphNodeAttributes != null) {
+                fmt.format("%s%n", graphNodeAttributes);
+            }
         }
 
         Set<Triple> ambiguousTriples = graph.getAmbiguousTriples();

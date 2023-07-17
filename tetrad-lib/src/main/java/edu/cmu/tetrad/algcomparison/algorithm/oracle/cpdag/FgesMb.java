@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * FGES (the heuristic version).
+ * FGES-MB (the heuristic version).
  *
  * @author josephramsey
  */
@@ -67,10 +67,15 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
                 search.setOut((PrintStream) obj);
             }
 
-            this.targetName = parameters.getString(Params.TARGET_NAME);
-            Node target = this.score.getVariable(this.targetName);
+            String[] _targets = parameters.getString(Params.TARGETS).split(",");
 
-            return search.search(Collections.singletonList(target));
+            List<Node> targets = new ArrayList<>();
+
+            for (String _target : _targets) {
+                targets.add(dataSet.getVariable(_target));
+            }
+
+            return search.search(targets);
         } else {
             FgesMb fgesMb = new FgesMb(this.score);
 
@@ -93,7 +98,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
 
     @Override
     public String getDescription() {
-        return "FGES (Fast Greedy Search) using " + this.score.getDescription();
+        return "FGES-MB (Fast Greedy Search MB) using " + this.score.getDescription();
     }
 
     @Override
@@ -104,7 +109,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
     @Override
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
-        parameters.add(Params.TARGET_NAME);
+        parameters.add(Params.TARGETS);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_DEGREE);
         parameters.add(Params.VERBOSE);

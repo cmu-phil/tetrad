@@ -156,7 +156,7 @@ public final class DataWriter {
             String onlyCanCauseNextTier = knowledge.isOnlyCanCauseNextTier(i) ? "-" : "";
             List<String> tier = knowledge.getTier(i);
 
-            if (!(tier == null || tier.isEmpty())) {
+            if (!tier.isEmpty()) {
                 buf.append("\n").append(i).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
                 buf.append(" ");
                 buf.append(String.join(" ", tier));
