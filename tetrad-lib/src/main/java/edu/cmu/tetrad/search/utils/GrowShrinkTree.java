@@ -39,7 +39,9 @@ public class GrowShrinkTree {
         return this.root.trace(new HashSet<>(prefix), available, parents);
     }
 
-    public Node getNode() { return this.node; }
+    public Node getNode() {
+        return this.node;
+    }
 
     public List<Node> getFirstLayer() {
         List<Node> firstLayer = new ArrayList<>();
