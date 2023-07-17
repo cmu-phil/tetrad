@@ -22,43 +22,38 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Direct LiNGAM.
+ * DAGMA.
  *
  * @author bryanandrews
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "Direct-LiNGAM",
-        command = "direct-lingam",
+        name = "DAGMA",
+        command = "dagma",
         algoType = AlgType.forbid_latent_common_causes,
         dataType = DataType.Continuous
 )
 @Bootstrapping
-public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstrapGraphs {
+public class Dagma implements Algorithm, ReturnsBootstrapGraphs {
 
     static final long serialVersionUID = 23L;
-    private ScoreWrapper score;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-    public DirectLingam() {
-        // Used in reflection; do not delete.
-    }
-
-    public DirectLingam(ScoreWrapper score) {
-        this.score = score;
-    }
+    public Dagma() {}
 
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
             DataSet data = SimpleDataLoader.getContinuousDataSet(dataSet);
-            Score score = this.score.getScore(dataSet, parameters);
 
-            edu.cmu.tetrad.search.DirectLingam search = new edu.cmu.tetrad.search.DirectLingam(data, score);
+            edu.cmu.tetrad.search.Dagma search = new edu.cmu.tetrad.search.Dagma(data);
+            search.setLambda1(parameters.getDouble(Params.LAMBDA1));
+            search.setWThreshold(parameters.getDouble(Params.W_THRESHOLD));
+            search.setCpdag(parameters.getBoolean(Params.CPDAG));
             Graph graph = search.search();
             TetradLogger.getInstance().forceLogMessage(graph.toString());
 
             return graph;
         } else {
-            DirectLingam algorithm = new DirectLingam();
+            Dagma algorithm = new Dagma();
 
             DataSet data = (DataSet) dataSet;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm,
@@ -74,10 +69,12 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
     }
 
     @Override
-    public Graph getComparisonGraph(Graph graph) { return new EdgeListGraph(graph); }
+    public Graph getComparisonGraph(Graph graph) {
+        return new EdgeListGraph(graph);
+    }
 
     public String getDescription() {
-        return "Direct-LiNGAM (Direct Linear Non-Gaussian Acyclic Model";
+        return "DAGMA (DAGs via M-matrices for Acyclicity)";
     }
 
     @Override
@@ -89,6 +86,9 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
     public List<String> getParameters() {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.VERBOSE);
+        parameters.add(Params.LAMBDA1);
+        parameters.add(Params.W_THRESHOLD);
+        parameters.add(Params.CPDAG);
         return parameters;
     }
 
@@ -97,13 +97,4 @@ public class DirectLingam implements Algorithm, UsesScoreWrapper, ReturnsBootstr
         return this.bootstrapGraphs;
     }
 
-    @Override
-    public ScoreWrapper getScoreWrapper() {
-        return this.score;
-    }
-
-    @Override
-    public void setScoreWrapper(ScoreWrapper score) {
-        this.score = score;
-    }
 }
