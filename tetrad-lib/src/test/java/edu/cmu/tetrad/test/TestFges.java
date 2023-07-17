@@ -339,7 +339,7 @@ public class TestFges {
         Graph mb1 = CPDAG1.subgraph(new ArrayList<>(mb));
 
         FgesMb fgesMb = new FgesMb(fgesScore);
-        Graph mb2 = fgesMb.search(x1);
+        Graph mb2 = fgesMb.search(Collections.singletonList(x1));
 
         assertEquals(mb1, mb2);
     }
@@ -373,7 +373,7 @@ public class TestFges {
             Graph mb1 = CPDAG1.subgraph(new ArrayList<>(mb));
 
             FgesMb fgesMb = new FgesMb(fgesScore);
-            Graph mb2 = fgesMb.search(x1);
+            Graph mb2 = fgesMb.search(Collections.singletonList(x1));
 
             assertEquals(mb1, mb2);
         }
