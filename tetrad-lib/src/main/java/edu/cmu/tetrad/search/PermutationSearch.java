@@ -135,6 +135,10 @@ public class PermutationSearch {
         return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
     }
 
+    public GrowShrinkTree getGST(Node node) {
+        return this.gsts.get(node);
+    }
+
     /**
      * Returns the variables.
      *
