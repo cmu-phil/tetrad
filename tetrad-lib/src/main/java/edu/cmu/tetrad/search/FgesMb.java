@@ -240,8 +240,6 @@ public final class FgesMb implements DagScorer {
             this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
-//        if (true) return graph;
-
         this.modelScore = scoreDag(GraphSearchUtils.dagFromCPDAG(graph), true);
 
         switch (trimmingStyle) {
