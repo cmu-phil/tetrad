@@ -243,6 +243,9 @@ public final class Params {
     public static final String SIGNIFICANCE_CHECKED = "significanceChecked";
     public static final String PROB_REMOVE_COLUMN = "probRemoveColumn";
     public static final String SAVE_BOOTSTRAP_GRAPHS = "saveBootstrapGraphs";
+    public static final String LAMBDA1 = "lambda1";
+    public static final String W_THRESHOLD = "wThreshold";
+    public static final String CPDAG = "cpdag";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
