@@ -22,7 +22,6 @@ import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -56,11 +55,35 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+            edu.cmu.tetrad.search.FgesMb.TrimmingStyle trimmingStyle;
+
+            int anInt = parameters.getInt(Params.TRIMMING_STYLE);
+
+            switch (anInt) {
+                case 1:
+                    trimmingStyle = edu.cmu.tetrad.search.FgesMb.TrimmingStyle.NONE;
+                    break;
+                case 2:
+                    trimmingStyle = edu.cmu.tetrad.search.FgesMb.TrimmingStyle.ADJACENT_TO_TARGETS;
+                    break;
+                case 3:
+                    trimmingStyle = edu.cmu.tetrad.search.FgesMb.TrimmingStyle.MARKOV_BLANKET_GRAPH;
+                    break;
+                case 4:
+                    trimmingStyle = edu.cmu.tetrad.search.FgesMb.TrimmingStyle.SEMIDIRECTED_PATHS_TO_TARGETS;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown trimming style: " + anInt);
+            }
+
             Score score = this.score.getScore(dataSet, parameters);
             edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
+            search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
+            search.setNumExpansions(parameters.getInt(Params.NUMBER_OF_EXPANSIONS));
+            search.setTrimmingStyle(trimmingStyle);
+            search.setFaithfulnessAssumed(parameters.getBoolean(Params.FAITHFULNESS_ASSUMED));
             search.setKnowledge(this.knowledge);
             search.setVerbose(parameters.getBoolean(Params.VERBOSE));
-            search.setMaxDegree(parameters.getInt(Params.MAX_DEGREE));
 
             Object obj = parameters.get(Params.PRINT_STREAM);
             if (obj instanceof PrintStream) {
@@ -119,6 +142,8 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
         parameters.add(Params.TARGETS);
         parameters.add(Params.FAITHFULNESS_ASSUMED);
         parameters.add(Params.MAX_DEGREE);
+        parameters.add(Params.TRIMMING_STYLE);
+        parameters.add(Params.NUMBER_OF_EXPANSIONS);
         parameters.add(Params.VERBOSE);
 
         return parameters;

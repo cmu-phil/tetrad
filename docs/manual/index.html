@@ -4444,6 +4444,47 @@ tabs will not appear.</p> -->
             Boolean.</p> <!-- Insert the parameter descriptions here, must follow
         the same structure and naming conventions -->
 
+        public static final String TRIMMING_STYLE = "trimmingStyle";
+        public static final String NUMBER_EXPANSIONS = "numberExpansions";
+
+        <h3 class="parameter_description"
+            id="trimmingStyle">trimmingStyle</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="trimmingStyle_short_desc">Trimming Style: 1 = None, 2 = Adjacencies, 3 = Markov Blanekt, 4 = Semidirected paths</span></li>
+            <li>Long Description: <span
+                    id="trimmingStyle_long_desc">Trimming style for FGES-MB/span>
+            </li>
+            <li>Default Value: <span
+                    id="trimmingStyle_default_value">3</span></li>
+            <li>Lower
+                Bound: <span id="trimmingStyle_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="trimmingStyle_upper_bound">4</span></li>
+            <li>Value Type:
+                <span id="trimmingStyle_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="numberOfExpansions">numberOfExpansions</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="numberOfExpansions_short_desc">Number of expansions for FGES-MB</span></li>
+            <li>Long Description: <span
+                    id="numberOfExpansions_long_desc">Each expansion iterates to more variables/span>
+            </li>
+            <li>Default Value: <span
+                    id="numberOfExpansions_default_value">1</span></li>
+            <li>Lower
+                Bound: <span id="numberOfExpansions_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="numberOfExpansions_upper_bound">1000</span></li>
+            <li>Value Type:
+                <span id="numberOfExpansions_value_type">Integer</span></li>
+        </ul>
+
         <h3 class="parameter_description"
             id="lambda1">lambda1</h3>
         <ul

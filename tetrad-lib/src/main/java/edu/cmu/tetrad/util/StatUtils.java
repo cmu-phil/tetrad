@@ -1250,8 +1250,9 @@ public final class StatUtils {
         double esss = thirdMoment / N;
 
         if (secondMoment == 0) {
-            throw new ArithmeticException("StatUtils.skew:  There is no skew " +
-                    "when the variance is zero.");
+            return Double.NaN;
+//            throw new ArithmeticException("StatUtils.skew:  There is no skew " +
+//                    "when the variance is zero.");
         }
 
         return esss / FastMath.pow(ess, 1.5);

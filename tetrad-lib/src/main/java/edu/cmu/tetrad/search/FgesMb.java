@@ -84,85 +84,69 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Knowledge
  */
 public final class FgesMb implements DagScorer {
+    public void setTrimmingStyle(TrimmingStyle trimmingStyle) {
+        this.trimmingStyle = trimmingStyle;
+    }
+
+    public enum TrimmingStyle {
+        NONE, ADJACENT_TO_TARGETS, MARKOV_BLANKET_GRAPH, SEMIDIRECTED_PATHS_TO_TARGETS
+    }
+
+    // The number of times the forward phase is iterated to expand to new adjacencies.
+    private int numExpansions = 2;
+
+    // The style of trimming to use.
+    private TrimmingStyle trimmingStyle = TrimmingStyle.NONE;
+
+    // Bounds the degree of the graph.
+    private int maxDegree = -1;
+
+    // Whether one-edge faithfulness is assumed (less general but faster).
+    private boolean faithfulnessAssumed = false;
+
+    // The knowledge to use in the search.
+    private Knowledge knowledge = new Knowledge();
+
+    // True, if FGES should run in a single thread, no if parallelized.
+    private boolean parallelized = false;
+
+    //===internal===//
     private final Set<Node> emptySet = new HashSet<>();
     private final int[] count = new int[1];
     private final int depth = 10000;
-    /**
-     * The top n graphs found by the algorithm, where n is numPatternsToStore.
-     */
+    //The top n graphs found by the algorithm, where n is numPatternsToStore.
     private final LinkedList<ScoredGraph> topGraphs = new LinkedList<>();
     // Potential arrows sorted by bump high to low. The first one is a candidate for adding to the graph.
     private final SortedSet<Arrow> sortedArrows = new ConcurrentSkipListSet<>();
-
-    /**
-     * The logger for this class. The config needs to be set.
-     */
     private final TetradLogger logger = TetradLogger.getInstance();
-    //    private final SortedSet<Arrow> sortedArrowsBack = new ConcurrentSkipListSet<>();
     private final Map<Edge, ArrowConfig> arrowsMap = new ConcurrentHashMap<>();
     List<Node> targets = new ArrayList<>();
-    private boolean findMb = false;
-    //    private final Map<Edge, ArrowConfigBackward> arrowsMapBackward = new ConcurrentHashMap<>();
-    private boolean faithfulnessAssumed = false;
-    /**
-     * Specification of forbidden and required edges.
-     */
-    private Knowledge knowledge = new Knowledge();
-    /**
-     * List of variables in the data set, in order.
-     */
     private List<Node> variables;
-    /**
-     * An initial graph to start from.
-     */
     private Graph initialGraph;
-    /**
-     * If non-null, edges not adjacent in this graph will not be added.
-     */
     private Graph boundGraph = null;
-    /**
-     * Elapsed time of the most recent search.
-     */
     private long elapsedTime;
-    /**
-     * The totalScore for discrete searches.
-     */
     private Score score;
-    /**
-     * True if verbose output should be printed.
-     */
     private boolean verbose = false;
     private boolean meekVerbose = false;
     // Map from variables to their column indices in the data set.
     private ConcurrentMap<Node, Integer> hashIndices;
     // A graph where X--Y means that X and Y have non-zero total effect on one another.
     private Graph effectEdgesGraph;
-
     // Where printed output is sent.
     private PrintStream out = System.out;
-
     // The graph being constructed.
     private Graph graph;
-
     // Arrows with the same totalScore are stored in this list to distinguish their order in sortedArrows.
     // The ordering doesn't matter; it just has to be transitive.
     private int arrowIndex = 0;
-
     // The score of the model.
     private double modelScore;
-
     // Internal.
     private Mode mode = Mode.heuristicSpeedup;
-
-    // Bounds the degree of the graph.
-    private int maxDegree = -1;
 
     // True if the first step of adding an edge to an empty graph should be scored in both directions
     // for each edge with the maximum score chosen.
     private boolean symmetricFirstStep = false;
-
-    // True, if FGES should run in a single thread, no if parallelized.
-    private boolean parallelized = false;
     private ArrayList<Node> allTargets;
 
     /**
@@ -232,24 +216,22 @@ public final class FgesMb implements DagScorer {
             graph = GraphUtils.replaceNodes(graph, getVariables());
         }
 
-        Graph g = new EdgeListGraph(graph);
-
         this.allTargets = new ArrayList<>(targets);
 
-        doLoop();
-
-        for (Node n : new ArrayList<>(targets)) {
-            for (Node a : graph.getAdjacentNodes(n)) {
-                if (!allTargets.contains(a)) {
-                    allTargets.add(a);
+        for (int i = 0; i < numExpansions; i++) {
+            for (Node n : new ArrayList<>(allTargets)) {
+                for (Node a : graph.getAdjacentNodes(n)) {
+                    if (!allTargets.contains(a)) {
+                        allTargets.add(a);
+                    }
                 }
             }
+
+            graph = new EdgeListGraph(getVariables());
+
+            doLoop();
+
         }
-
-        this.graph = new EdgeListGraph(g);
-
-        doLoop();
-
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
@@ -258,33 +240,79 @@ public final class FgesMb implements DagScorer {
             this.logger.forceLogMessage("Elapsed time = " + (elapsedTime) / 1000. + " s");
         }
 
+//        if (true) return graph;
+
         this.modelScore = scoreDag(GraphSearchUtils.dagFromCPDAG(graph), true);
 
-        List<Node> nl = new ArrayList<>(targets);
-
-        for (Node n : new ArrayList<>(nl)) {
-            for (Node m : graph.getAdjacentNodes(n)) {
-                if (!nl.contains(m)) {
-                    nl.add(m);
-                }
-            }
-        }
-
-        for (Node n : new ArrayList<>(nl)) {
-            for (Node m : graph.getAdjacentNodes(n)) {
-                if (!nl.contains(m)) {
-                    nl.add(m);
-                }
-            }
-        }
-
-        for (Edge e : graph.getEdges()) {
-            if (!(nl.contains(e.getNode1()) && nl.contains(e.getNode2()))) {
-                graph.removeEdge(e);
-            }
+        switch (trimmingStyle) {
+            case NONE:
+                break;
+            case ADJACENT_TO_TARGETS:
+                trimAdjacentToTarget(targets);
+                break;
+            case MARKOV_BLANKET_GRAPH:
+                trimMarkovBlanketGraph(targets);
+                break;
+            case SEMIDIRECTED_PATHS_TO_TARGETS:
+                trimSemidirected(targets);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown trimming style: " + trimmingStyle);
         }
 
         return graph;
+    }
+
+    private void trimAdjacentToTarget(List<Node> targets) {
+        M:
+        for (Node m : graph.getNodes()) {
+            if (!targets.contains(m)) {
+                for (Node n : targets) {
+                    if (graph.isAdjacentTo(m, n)) {
+                        continue M;
+                    }
+                }
+
+                graph.removeNode(m);
+            }
+        }
+    }
+
+    private void trimMarkovBlanketGraph(List<Node> targets) {
+        M:
+        for (Node m : graph.getNodes()) {
+            if (!targets.contains(m)) {
+                for (Node n : targets) {
+                    if (graph.isAdjacentTo(m, n)) {
+                        continue M;
+                    }
+
+                    Set<Node> ch = new HashSet<>(graph.getChildren(m));
+                    ch.retainAll(graph.getChildren(n));
+
+                    if (!ch.isEmpty()) {
+                        continue M;
+                    }
+                }
+
+                graph.removeNode(m);
+            }
+        }
+    }
+
+    private void trimSemidirected(List<Node> targets) {
+        M:
+        for (Node m : graph.getNodes()) {
+            if (!targets.contains(m)) {
+                for (Node n : targets) {
+                    if (graph.paths().existsSemidirectedPath(m, n)) {
+                        continue M;
+                    }
+                }
+
+                graph.removeNode(m);
+            }
+        }
     }
 
     private void doLoop() {
@@ -308,32 +336,6 @@ public final class FgesMb implements DagScorer {
             fes();
             bes();
         }
-    }
-
-    private void iterateFes(List<Node> targets) {
-        this.allTargets = new ArrayList<>(targets);
-
-        fes();
-
-        for (Node t : new ArrayList<>(allTargets)) {
-            for (Node n : graph.getAdjacentNodes(t)) {
-                if (!allTargets.contains(n)) {
-                    allTargets.add(n);
-                }
-            }
-        }
-
-        fes();
-
-        for (Node t : new ArrayList<>(allTargets)) {
-            for (Node n : graph.getAdjacentNodes(t)) {
-                if (!allTargets.contains(n)) {
-                    allTargets.add(n);
-                }
-            }
-        }
-
-        fes();
     }
 
     /**
@@ -1149,6 +1151,11 @@ public final class FgesMb implements DagScorer {
 
     public void setInitialGraph(Graph initialGraph) {
         this.initialGraph = initialGraph;
+    }
+
+    public void setNumExpansions(int numExpansions) {
+        if (numExpansions < 1) throw new IllegalArgumentException("Number of expansions must be at least 1.");
+        this.numExpansions = numExpansions;
     }
 
     /**
