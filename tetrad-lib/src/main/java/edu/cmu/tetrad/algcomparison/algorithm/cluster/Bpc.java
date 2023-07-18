@@ -42,7 +42,9 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataSet);
+            boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
+
+            ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
             double alpha = parameters.getDouble(Params.ALPHA);
 
             boolean wishart = parameters.getBoolean(Params.USE_WISHART, true);
@@ -142,6 +144,7 @@ public class Bpc implements Algorithm, ClusterAlgorithm {
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.INCLUDE_STRUCTURE_MODEL);
         parameters.add(Params.CHECK_TYPE);
+        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.VERBOSE);
 
         return parameters;

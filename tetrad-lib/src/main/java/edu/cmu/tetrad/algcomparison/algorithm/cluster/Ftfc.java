@@ -40,7 +40,8 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
             ICovarianceMatrix cov;
 
             if (dataSet instanceof DataSet) {
-                cov = SimpleDataLoader.getCovarianceMatrix(dataSet);
+                boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
+                cov = SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
             } else if (dataSet instanceof ICovarianceMatrix) {
                 cov = (ICovarianceMatrix) dataSet;
             } else {
@@ -97,6 +98,7 @@ public class Ftfc implements Algorithm, HasKnowledge, ClusterAlgorithm {
         parameters.add(Params.ALPHA);
         parameters.add(Params.USE_WISHART);
         parameters.add(Params.USE_GAP);
+        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         parameters.add(Params.VERBOSE);
 
         return parameters;

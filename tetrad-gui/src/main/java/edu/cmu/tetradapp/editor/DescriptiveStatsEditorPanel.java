@@ -37,6 +37,8 @@ import java.awt.event.ItemEvent;
  */
 class DescriptiveStatsEditorPanel extends JPanel {
 
+    boolean precomputeCovariances = true;
+
 
     /**
      * Combo box of all the variables.
@@ -70,7 +72,8 @@ class DescriptiveStatsEditorPanel extends JPanel {
         this.variableBox.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 Node node = (Node) e.getItem();
-                changeDescriptiveStats(DescriptiveStats.generateDescriptiveStats(DescriptiveStatsEditorPanel.this.dataSet, node));
+                changeDescriptiveStats(DescriptiveStats.generateDescriptiveStats(
+                        DescriptiveStatsEditorPanel.this.dataSet, node, precomputeCovariances));
             }
         });
 

@@ -43,7 +43,8 @@ class DescriptiveStats {
      * Constructs a readable table of normality test results
      */
 
-    public static String generateDescriptiveStats(DataSet dataSet, Node variable) {
+    public static String generateDescriptiveStats(DataSet dataSet, Node variable,
+                                                  boolean precomputeCovariances) {
         NumberFormat nf = NumberFormatUtil.getInstance().getNumberFormat();
 
         int col = dataSet.getColumn(variable);
@@ -85,7 +86,7 @@ class DescriptiveStats {
         int rowindex = 0;
 
         table.setToken(rowindex, 0, "Sample Size:");
-        table.setToken(rowindex++, 1, "" + dataSet.getNumRows());
+        table.setToken(rowindex++, 1, String.valueOf(dataSet.getNumRows()));
 
         table.setToken(rowindex, 0, "Mean:");
         table.setToken(rowindex++, 1, nf.format(normalValues[0]));
@@ -124,7 +125,8 @@ class DescriptiveStats {
 
         table.setToken(rowindex, 0, "Example Nonsingular (2 - 3 vars):");
 
-        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
+//        CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
+        ICovarianceMatrix covarianceMatrix = SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
         List<Node> exampleNonsingular = DataUtils.getExampleNonsingular(covarianceMatrix, 3);
         table.setToken(rowindex, 1, exampleNonsingular == null ? "None" : exampleNonsingular.toString());
 

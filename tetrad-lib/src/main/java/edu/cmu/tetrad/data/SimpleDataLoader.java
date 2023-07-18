@@ -335,7 +335,7 @@ public class SimpleDataLoader {
      * Returns the model cast to ICovarianceMatrix if already a covariance matric, or else returns the covariance matrix
      * for a dataset.
      */
-    public static ICovarianceMatrix getCovarianceMatrix(DataModel dataModel) {
+    public static ICovarianceMatrix getCovarianceMatrix(DataModel dataModel, boolean precomputeCovariances) {
         if (dataModel == null) {
             throw new IllegalArgumentException("Expecting either a tabular dataset or a covariance matrix.");
         }
@@ -343,7 +343,8 @@ public class SimpleDataLoader {
         if (dataModel instanceof ICovarianceMatrix) {
             return (ICovarianceMatrix) dataModel;
         } else if (dataModel instanceof DataSet) {
-            return new CovarianceMatrix((DataSet) dataModel);
+            return getCovarianceMatrix((DataSet) dataModel, precomputeCovariances);
+//            return new CovarianceMatrix((DataSet) dataModel);
         } else {
             throw new IllegalArgumentException("Sorry, I was expecting either a tabular dataset or a covariance matrix.");
         }
@@ -351,7 +352,7 @@ public class SimpleDataLoader {
 
     @NotNull
     public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet, boolean precomputeCovariances) {
-        return new CovarianceMatrix(dataSet);
+        return new CovarianceMatrix(dataSet, precomputeCovariances);
     }
 
     @NotNull
