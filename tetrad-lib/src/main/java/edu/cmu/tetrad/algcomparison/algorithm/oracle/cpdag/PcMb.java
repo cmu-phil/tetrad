@@ -79,13 +79,20 @@ public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
 
     @NotNull
     private List<Node> targets(IndependenceTest test, String targetString) {
-        String[] tokens = targetString.split(",");
+        String[] _targets;
+
+        if (targetString.contains(",")) {
+            _targets = targetString.split(",");
+        } else {
+            _targets = targetString.split(" ");
+        }
+
         List<Node> targets = new ArrayList<>();
 
-        for (String t : tokens) {
-            String name = t.trim();
-            targets.add(test.getVariable(name));
+        for (String _target : _targets) {
+            targets.add(test.getVariable(_target));
         }
+
         return targets;
     }
 

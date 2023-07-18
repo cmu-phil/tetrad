@@ -4471,9 +4471,10 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="trimmingStyle_short_desc">Trimming Style: 1 = None, 2 = Adjacencies, 3 = MBs, 4 = Semidirected paths</span></li>
+                    id="trimmingStyle_short_desc">Trimming Style: 1 = None, 2 = Adjacencies, 3 = MB DAG, 4 = Semidirected paths</span></li>
             <li>Long Description: <span
-                    id="trimmingStyle_long_desc">Trimming style for FGES-MB/span>
+                    id="trimmingStyle_long_desc">'Adjacencies' trims to the adjacencies the targets, MB DAGs to the Union(MB(targets)) U targets,
+                semidirected trims to nodes with semidirected paths to the targets. </span>
             </li>
             <li>Default Value: <span
                     id="trimmingStyle_default_value">3</span></li>
@@ -4490,9 +4491,9 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="numberOfExpansions_short_desc">Number of expansions for FGES-MB</span></li>
+                    id="numberOfExpansions_short_desc">Number of expansions of the algorithm away from the target</span></li>
             <li>Long Description: <span
-                    id="numberOfExpansions_long_desc">Each expansion iterates to more variables/span>
+                    id="numberOfExpansions_long_desc">Each expansion iterates to concentrically more variables </span>
             </li>
             <li>Default Value: <span
                     id="numberOfExpansions_default_value">2</span></li>
@@ -5012,7 +5013,7 @@ tabs will not appear.</p> -->
             <li>Short Description: <span id="targets_short_desc">Target names
         (comma separated)</span></li>
             <li>Long Description: <span
-                    id="targets_long_desc">Target names (comma separated).</span>
+                    id="targets_long_desc">Target names (comma or space separated).</span>
             </li>
             <li>Default Value: <span
                     id="targets_default_value"></span></li>

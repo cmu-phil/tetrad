@@ -193,6 +193,12 @@ public final class FgesMb implements DagScorer {
             throw new IllegalArgumentException("Target(s) weren't specified");
         }
 
+        for (Node target : targets) {
+            if (target == null) {
+                throw new IllegalArgumentException("Target(s) weren't specified");
+            }
+        }
+
         List<Node> _targets = new ArrayList<>();
 
         for (Node target : targets) {
