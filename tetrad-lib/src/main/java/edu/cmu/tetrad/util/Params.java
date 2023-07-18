@@ -248,6 +248,7 @@ public final class Params {
     public static final String CPDAG = "cpdag";
     public static final String TRIMMING_STYLE = "trimmingStyle";
     public static final String NUMBER_OF_EXPANSIONS = "numberOfExpansions";
+    public static final String CSTAR_CPDAG_ALGORITHM = "cstarCpdagAlgorithm";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

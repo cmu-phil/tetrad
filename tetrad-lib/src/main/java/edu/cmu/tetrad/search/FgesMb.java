@@ -246,13 +246,13 @@ public final class FgesMb implements DagScorer {
             case NONE:
                 break;
             case ADJACENT_TO_TARGETS:
-                trimAdjacentToTarget(targets);
+                graph = trimAdjacentToTarget(targets, graph);
                 break;
             case MARKOV_BLANKET_GRAPH:
-                trimMarkovBlanketGraph(targets);
+                graph = trimMarkovBlanketGraph(targets, graph);
                 break;
             case SEMIDIRECTED_PATHS_TO_TARGETS:
-                trimSemidirected(targets);
+                graph = trimSemidirected(targets, graph);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown trimming style: " + trimmingStyle);
@@ -261,7 +261,9 @@ public final class FgesMb implements DagScorer {
         return graph;
     }
 
-    private void trimAdjacentToTarget(List<Node> targets) {
+    private Graph trimAdjacentToTarget(List<Node> targets, Graph graph) {
+        Graph _graph = new EdgeListGraph(graph);
+
         M:
         for (Node m : graph.getNodes()) {
             if (!targets.contains(m)) {
@@ -271,20 +273,26 @@ public final class FgesMb implements DagScorer {
                     }
                 }
 
-                graph.removeNode(m);
+                _graph.removeNode(m);
             }
         }
+
+        return _graph;
     }
 
-    private void trimMarkovBlanketGraph(List<Node> targets) {
+    private Graph trimMarkovBlanketGraph(List<Node> targets, Graph graph) {
+        Graph mbDag = new EdgeListGraph(graph);
+
         M:
-        for (Node m : graph.getNodes()) {
-            if (!targets.contains(m)) {
-                for (Node n : targets) {
-                    if (graph.isAdjacentTo(m, n)) {
+        for (Node n : graph.getNodes()) {
+            if (!targets.contains(n)) {
+                for (Node m : targets) {
+                    if (graph.isAdjacentTo(n, m)) {
                         continue M;
                     }
+                }
 
+                for (Node m : targets) {
                     Set<Node> ch = new HashSet<>(graph.getChildren(m));
                     ch.retainAll(graph.getChildren(n));
 
@@ -293,12 +301,16 @@ public final class FgesMb implements DagScorer {
                     }
                 }
 
-                graph.removeNode(m);
+                mbDag.removeNode(n);
             }
         }
+
+        return mbDag;
     }
 
-    private void trimSemidirected(List<Node> targets) {
+    private Graph trimSemidirected(List<Node> targets, Graph graph) {
+        Graph _graph = new EdgeListGraph(graph);
+
         M:
         for (Node m : graph.getNodes()) {
             if (!targets.contains(m)) {
@@ -308,9 +320,11 @@ public final class FgesMb implements DagScorer {
                     }
                 }
 
-                graph.removeNode(m);
+                _graph.removeNode(m);
             }
         }
+
+        return _graph;
     }
 
     private void doLoop() {

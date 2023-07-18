@@ -357,8 +357,6 @@ public class SimpleDataLoader {
         } else {
             return new CovarianceMatrixOnTheFly(dataSet);
         }
-
-//        return new CovarianceMatrix(dataSet, true);
     }
 
     @NotNull
