@@ -20,8 +20,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * BOSS-DC (Best Order Score Search Divide and Conquer)
@@ -55,6 +54,8 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
+            DataSet dataSet = (DataSet) dataModel;
+
             String string = parameters.getString(Params.TARGETS);
             String[] _targets;
 
@@ -67,9 +68,8 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge
             List<Node> targets = new ArrayList<>();
 
             for (String _target : _targets) {
-                targets.add(dataModel.getVariable(_target));
+                targets.add(dataSet.getVariable(_target));
             }
-
 
 
             // We will run BOSS with the target variables Tier 2 and the rest as Tier 1,
@@ -81,23 +81,47 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge
 
             Knowledge knowledge = new Knowledge();;
             for (Node node : targets) knowledge.addToTier(2, node.getName());
-            for (Node node : dataModel.getVariables()) {
+            for (Node node : dataSet.getVariables()) {
                 if (!targets.contains(node)) knowledge.addToTier(1, node.getName());
             }
             knowledge.setTierForbiddenWithin(1, true);
 
-            Score score = this.score.getScore(dataModel, parameters);
+            Score score = this.score.getScore(dataSet, parameters);
             edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
             boss.setUseBes(parameters.getBoolean(Params.USE_BES));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             boss.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(knowledge);
+            permutationSearch.search();
 
+            Set<Node> restrictedSet = new HashSet<>(targets);
 
-            DataSet dataSet = (DataSet) dataModel;
+            for (Node node : targets) {
+                restrictedSet.addAll(permutationSearch.getGST(node).getFirstLayer());
+            }
 
+            List<Node> restrictedList = new ArrayList<>(restrictedSet);
+            Collections.sort(restrictedList);
 
+            DataSet restrictedData = dataSet.subsetColumns(restrictedList);
+
+            System.out.println("Restricted data # vars: " + restrictedData.getVariables().size());
+
+            knowledge = new Knowledge();
+            for (Node node : targets) knowledge.addToTier(2, node.getName());
+            for (Node node : restrictedData.getVariables()) {
+                if (!targets.contains(node)) knowledge.addToTier(1, node.getName());
+            }
+            knowledge.setTierForbiddenWithin(1, false);
+
+            score = this.score.getScore(restrictedData, parameters);
+            boss = new edu.cmu.tetrad.search.Boss(score);
+            boss.setUseBes(parameters.getBoolean(Params.USE_BES));
+            boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+            boss.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
+            permutationSearch = new PermutationSearch(boss);
+            permutationSearch.setKnowledge(knowledge);
 
             return permutationSearch.search();
         } else {
@@ -121,7 +145,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge
 
     @Override
     public String getDescription() {
-        return "BOSS (Best Order Score Search) using " + this.score.getDescription();
+        return "Restricted BOSS (Best Order Score Search) using " + this.score.getDescription();
     }
 
     @Override
