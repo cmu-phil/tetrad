@@ -33,11 +33,12 @@ public class MagSemBicTest implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         MagSemBicScore score;
+        boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         if (dataSet instanceof ICovarianceMatrix) {
             score = new MagSemBicScore((ICovarianceMatrix) dataSet);
         } else {
-            score = new MagSemBicScore((DataSet) dataSet);
+            score = new MagSemBicScore((DataSet) dataSet, precomputeCovariances);
         }
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
 
@@ -59,6 +60,7 @@ public class MagSemBicTest implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.STRUCTURE_PRIOR);
+        params.add(Params.PRECOMPUTE_COVARIANCES);
         return params;
     }
 }

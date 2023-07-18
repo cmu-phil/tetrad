@@ -77,8 +77,6 @@ public class GicScores implements Score {
             throw new NullPointerException();
         }
 
-//        this.correlationThreshold = correlationThreshold;
-
         setCovariances(covariances);
         this.variables = covariances.getVariables();
         this.sampleSize = covariances.getSampleSize();
@@ -88,12 +86,12 @@ public class GicScores implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public GicScores(DataSet dataSet/*, double correlationThreshold*/) {
+    public GicScores(DataSet dataSet, boolean precomputeCovariances) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
-        ICovarianceMatrix covarianceMatrix = (SimpleDataLoader.getCovarianceMatrix(dataSet));
+        ICovarianceMatrix covarianceMatrix = (SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances));
 
         this.data = dataSet.getDoubleData();
         this.dataSet = dataSet;

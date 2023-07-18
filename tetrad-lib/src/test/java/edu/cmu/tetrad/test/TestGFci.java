@@ -58,6 +58,7 @@ import static org.junit.Assert.assertTrue;
  * @author josephramsey
  */
 public class TestGFci {
+    boolean precomputeCovariances = true;
 
     public void test1() {
         RandomUtil.getInstance().setSeed(1450189593459L);
@@ -223,7 +224,7 @@ public class TestGFci {
 //        System.out.println(data.getCorrelationMatrix());
 
         IndependenceTest test = new IndTestFisherZ(data, 0.001);
-        SemBicScore score = new SemBicScore(data);
+        SemBicScore score = new SemBicScore(data, precomputeCovariances);
         score.setRuleType(SemBicScore.RuleType.CHICKERING);
         score.setPenaltyDiscount(2);
         GFci gFci = new GFci(test, score);

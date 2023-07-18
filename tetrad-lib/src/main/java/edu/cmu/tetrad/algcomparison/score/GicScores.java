@@ -32,11 +32,12 @@ public class GicScores implements ScoreWrapper {
     @Override
     public Score getScore(DataModel dataSet, Parameters parameters) {
         this.dataSet = dataSet;
+        boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         edu.cmu.tetrad.search.score.GicScores score;
 
         if (dataSet instanceof DataSet) {
-            score = new edu.cmu.tetrad.search.score.GicScores((DataSet) this.dataSet);
+            score = new edu.cmu.tetrad.search.score.GicScores((DataSet) this.dataSet, precomputeCovariances);
         } else if (dataSet instanceof ICovarianceMatrix) {
             score = new edu.cmu.tetrad.search.score.GicScores((ICovarianceMatrix) this.dataSet);
         } else {
@@ -90,6 +91,7 @@ public class GicScores implements ScoreWrapper {
         List<String> parameters = new ArrayList<>();
         parameters.add(Params.SEM_GIC_RULE);
         parameters.add(Params.PENALTY_DISCOUNT_ZS);
+        parameters.add(Params.PRECOMPUTE_COVARIANCES);
         return parameters;
     }
 

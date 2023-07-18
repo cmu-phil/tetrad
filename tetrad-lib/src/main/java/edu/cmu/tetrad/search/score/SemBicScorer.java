@@ -26,8 +26,8 @@ public class SemBicScorer {
      * @param data a continuous dataset or a covariance matrix.
      * @return The BIC score of the DAG.
      */
-    public static double scoreDag(Graph dag, DataModel data) {
-        return scoreDag(dag, data, 1.0);
+    public static double scoreDag(Graph dag, DataModel data, boolean precomputeCovariances) {
+        return scoreDag(dag, data, 1.0, precomputeCovariances);
     }
 
     /**
@@ -38,7 +38,7 @@ public class SemBicScorer {
      * @param penaltyDiscount The penalty discount.
      * @return The BIC score of the DAG.
      */
-    public static double scoreDag(Graph dag, DataModel data, double penaltyDiscount) {
+    public static double scoreDag(Graph dag, DataModel data, double penaltyDiscount, boolean precomputeCovariances) {
         if (dag == null) throw new NullPointerException("DAG not specified.");
 
         SemBicScore score;
@@ -46,7 +46,7 @@ public class SemBicScorer {
         if (data instanceof ICovarianceMatrix) {
             score = new SemBicScore((ICovarianceMatrix) dag);
         } else if (data instanceof DataSet) {
-            score = new SemBicScore((DataSet) data);
+            score = new SemBicScore((DataSet) data, precomputeCovariances);
         } else {
             throw new IllegalArgumentException("Expecting a covariance matrix of a dataset.");
         }

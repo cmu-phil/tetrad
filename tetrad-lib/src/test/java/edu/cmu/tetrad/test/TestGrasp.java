@@ -84,6 +84,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  */
 @SuppressWarnings("ALL")
 public final class TestGrasp {
+    boolean precomputeCovariances = true;
 
     public static void main(String[] args) {
 //        new TestGrasp().testLuFigure3();
@@ -216,7 +217,7 @@ public final class TestGrasp {
         double structurePrior = 1.0;
         boolean discretize = true;
 
-        DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data);
+        DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data, precomputeCovariances);
 
         IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt((DataSet) data);
         test.setAlpha(0.01);
@@ -3116,7 +3117,7 @@ public final class TestGrasp {
 
                         MsepTest msep = new MsepTest(graph);
 
-                        SemBicScore score = new SemBicScore(dataSet);
+                        SemBicScore score = new SemBicScore(dataSet, precomputeCovariances);
                         score.setPenaltyDiscount(1);
 
                         // Random permutation over 1...|V|.
@@ -3238,7 +3239,7 @@ public final class TestGrasp {
             DataSet d = im.simulateData(1000, false);
 
             IndTestFisherZ test = new IndTestFisherZ(d, 0.001);
-            SemBicScore score = new SemBicScore(d);
+            SemBicScore score = new SemBicScore(d, precomputeCovariances);
             score.setPenaltyDiscount(2);
 
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);

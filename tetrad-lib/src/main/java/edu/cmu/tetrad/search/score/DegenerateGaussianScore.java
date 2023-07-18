@@ -59,7 +59,7 @@ public class DegenerateGaussianScore implements Score {
 
     private final SemBicScore bic;
 
-    public DegenerateGaussianScore(DataSet dataSet) {
+    public DegenerateGaussianScore(DataSet dataSet, boolean precomputeCovariances) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
@@ -131,7 +131,7 @@ public class DegenerateGaussianScore implements Score {
         }
 
         RealMatrix D = new BlockRealMatrix(B_);
-        this.bic = new SemBicScore(new BoxDataSet(new DoubleDataBox(D.getData()), A));
+        this.bic = new SemBicScore(new BoxDataSet(new DoubleDataBox(D.getData()), A), precomputeCovariances);
         this.bic.setStructurePrior(0);
     }
 

@@ -68,7 +68,7 @@ import static org.junit.Assert.assertTrue;
  * @author josephramsey
  */
 public class TestFges {
-
+    boolean precomputeCovariances = true;
 
     private final PrintStream out = System.out;
     //    private OutputStream out =
@@ -761,7 +761,7 @@ public class TestFges {
                             SemPm pm = new SemPm(dag);
                             SemIm im = new SemIm(pm, params);
                             DataSet data = im.simulateData(sampleSize, false);
-                            SemBicScore score = new SemBicScore(data);
+                            SemBicScore score = new SemBicScore(data, precomputeCovariances);
                             score.setPenaltyDiscount(.5);
                             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
                             fges.setFaithfulnessAssumed(false);
@@ -1625,7 +1625,7 @@ public class TestFges {
         SemPm pm = new SemPm(graph);
         SemIm im = new SemIm(pm);
         DataSet dataSet = im.simulateData(N, false);
-        SemBicScore score = new SemBicScore(dataSet);
+        SemBicScore score = new SemBicScore(dataSet, precomputeCovariances);
 
         MsepTest msep = new MsepTest(graph);
         int count = 1;

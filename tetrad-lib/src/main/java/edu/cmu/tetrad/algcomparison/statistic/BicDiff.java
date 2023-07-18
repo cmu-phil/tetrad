@@ -14,6 +14,7 @@ import static org.apache.commons.math3.util.FastMath.tanh;
  */
 public class BicDiff implements Statistic {
     static final long serialVersionUID = 23L;
+    private boolean precomputeCovariances = true;
 
     @Override
     public String getAbbreviation() {
@@ -27,14 +28,18 @@ public class BicDiff implements Statistic {
 
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
-        double _true = SemBicScorer.scoreDag(GraphSearchUtils.dagFromCPDAG(trueGraph), dataModel);
-        double est = SemBicScorer.scoreDag(GraphSearchUtils.dagFromCPDAG(estGraph), dataModel);
+        double _true = SemBicScorer.scoreDag(GraphSearchUtils.dagFromCPDAG(trueGraph), dataModel, precomputeCovariances);
+        double est = SemBicScorer.scoreDag(GraphSearchUtils.dagFromCPDAG(estGraph), dataModel, precomputeCovariances);
         return (_true - est);
     }
 
     @Override
     public double getNormValue(double value) {
         return tanh(value / 1e6);
+    }
+
+    public void setPrecomputeCovariances(boolean precomputeCovariances) {
+        this.precomputeCovariances = precomputeCovariances;
     }
 }
 

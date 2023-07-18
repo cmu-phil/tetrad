@@ -32,12 +32,14 @@ public class SemBicTest implements IndependenceWrapper {
 
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
+        boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
+
         SemBicScore score;
 
         if (dataSet instanceof ICovarianceMatrix) {
             score = new SemBicScore((ICovarianceMatrix) dataSet);
         } else {
-            score = new SemBicScore((DataSet) dataSet);
+            score = new SemBicScore((DataSet) dataSet, precomputeCovariances);
         }
         score.setPenaltyDiscount(parameters.getDouble(Params.PENALTY_DISCOUNT));
         score.setStructurePrior(parameters.getDouble(Params.STRUCTURE_PRIOR));
@@ -60,6 +62,7 @@ public class SemBicTest implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.PENALTY_DISCOUNT);
         params.add(Params.STRUCTURE_PRIOR);
+        params.add(Params.PRECOMPUTE_COVARIANCES);
         return params;
     }
 }

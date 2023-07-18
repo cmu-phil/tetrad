@@ -72,12 +72,12 @@ public class MagSemBicScore implements Score {
      *
      * @param dataSet The continuous dataset to analyze.
      */
-    public MagSemBicScore(DataSet dataSet) {
+    public MagSemBicScore(DataSet dataSet, boolean precomputeCovariances) {
         if (dataSet == null) {
             throw new NullPointerException();
         }
 
-        this.score = new SemBicScore(dataSet);
+        this.score = new SemBicScore(dataSet, precomputeCovariances);
         this.mag = null;
         this.order = null;
     }

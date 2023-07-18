@@ -350,7 +350,7 @@ public class SimpleDataLoader {
     }
 
     @NotNull
-    public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet) {
+    public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet, boolean precomputeCovariances) {
         return new CovarianceMatrix(dataSet);
     }
 

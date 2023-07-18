@@ -103,8 +103,8 @@ public class ZsbScore implements Score {
      *
      * @param dataSet The data set.
      */
-    public ZsbScore(DataSet dataSet) {
-        this(SimpleDataLoader.getCovarianceMatrix(dataSet));
+    public ZsbScore(DataSet dataSet, boolean precomputeCovariances) {
+        this(SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances));
         this.data = dataSet.getDoubleData();
     }
 

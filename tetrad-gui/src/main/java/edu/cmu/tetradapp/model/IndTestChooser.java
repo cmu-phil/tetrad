@@ -45,6 +45,8 @@ import java.util.List;
  * @author josephramsey
  */
 final class IndTestChooser {
+    private boolean precomputeCovariances = true;
+
     public IndependenceTest getTest(Object dataSource, Parameters params) {
         return getTest(dataSource, params, IndTestType.DEFAULT);
     }
@@ -170,7 +172,7 @@ final class IndTestChooser {
         if (IndTestType.SEM_BIC == testType) {
             List<Score> scores = new ArrayList<>();
             for (DataSet dataSet : dataSets) {
-                SemBicScore _score = new SemBicScore(dataSet);
+                SemBicScore _score = new SemBicScore(dataSet, precomputeCovariances);
                 scores.add(_score);
             }
 
@@ -210,6 +212,10 @@ final class IndTestChooser {
                                               Parameters params) {
         return new IndTestFisherZ(covMatrix,
                 params.getDouble("alpha", 0.001));
+    }
+
+    public void setPrecomputeCovariances(boolean precomputeCovariances) {
+        this.precomputeCovariances = precomputeCovariances;
     }
 }
 
