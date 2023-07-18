@@ -3382,7 +3382,7 @@ public final class TestGrasp {
 
     public void testJaime() {
         try {
-            String path = "/Users/josephramsey/Downloads/Subsample1_noRN.csv1.impute.txt";
+            String path = "/Users/josephramsey/Downloads/Arabidopsis_dataset_Wdtf.csv1.impute.txt";
             DataSet data = SimpleDataLoader.loadContinuousData(new File(path), "//", '\"',
                     "*", true, Delimiter.TAB);
 
@@ -3398,15 +3398,17 @@ public final class TestGrasp {
             knowledge.addToTier(2, variables.get(variables.size() - 1).getName());
 
             Parameters parameters = new Parameters();
-            parameters.set(Params.PENALTY_DISCOUNT, 20);
+            parameters.set(Params.PENALTY_DISCOUNT, 4);
             parameters.set(Params.VERBOSE, true);
             parameters.set(Params.PARALLELIZED, true);
             parameters.set(Params.FAITHFULNESS_ASSUMED, true);
+            parameters.set(Params.PRECOMPUTE_COVARIANCES, false);
+            parameters.set(Params.TARGETS, "DTF_16LD DTF_16LDVern DTF_23LD DTF_23SD");
 
-            Fges fges = new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
-            fges.setKnowledge(knowledge);
+            RestrictedBoss alg = new RestrictedBoss(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+            alg.setKnowledge(knowledge);
 
-            Graph graph = fges.search(data, parameters);
+            Graph graph = alg.search(data, parameters);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
