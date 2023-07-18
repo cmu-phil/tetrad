@@ -212,6 +212,8 @@ public class Ida {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
 
         for (Node x : this.possibleCauses) {
+            if (!(this.pattern.containsNode(x) && this.pattern.containsNode(y))) continue;
+
             LinkedList<Double> effects = getEffects(x, y);
             minEffects.put(x, effects.getFirst());
         }

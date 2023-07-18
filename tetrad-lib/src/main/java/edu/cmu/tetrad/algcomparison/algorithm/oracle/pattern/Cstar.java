@@ -2,7 +2,9 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern;
 
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.algcomparison.utils.TakesIndependenceWrapper;
+import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.data.DataModel;
 import edu.cmu.tetrad.data.DataSet;
@@ -25,9 +27,10 @@ import java.util.List;
         command = "cstar",
         algoType = AlgType.forbid_latent_common_causes
 )
-public class Cstar implements Algorithm, TakesIndependenceWrapper {
+public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrapper {
     static final long serialVersionUID = 23L;
     private IndependenceWrapper test;
+    private ScoreWrapper score;
     private LinkedList<edu.cmu.tetrad.search.Cstar.Record> records;
 
     public Cstar() {
@@ -38,7 +41,7 @@ public class Cstar implements Algorithm, TakesIndependenceWrapper {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());
         System.out.println("Parallelized = " + parameters.getBoolean("parallelized"));
 
-        edu.cmu.tetrad.search.Cstar cStaR = new edu.cmu.tetrad.search.Cstar();
+        edu.cmu.tetrad.search.Cstar cStaR = new edu.cmu.tetrad.search.Cstar(test, score, parameters);
 
         CpdagAlgorithm algorithm;
 
@@ -65,7 +68,7 @@ public class Cstar implements Algorithm, TakesIndependenceWrapper {
         cStaR.setqTo(parameters.getInt(Params.CSTAR_Q));
         cStaR.setSelectionAlpha(parameters.getDouble(Params.SELECTION_MIN_EFFECT));
         cStaR.setqIncrement(1);
-        cStaR.setCpdagAlgorithm(CpdagAlgorithm.PC_STABLE);
+        cStaR.setCpdagAlgorithm(algorithm);
         cStaR.setSampleStyle(SampleStyle.SPLIT);
         cStaR.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
@@ -82,10 +85,17 @@ public class Cstar implements Algorithm, TakesIndependenceWrapper {
                 possibleEffects.add(dataSet.getVariable(name));
             }
         } else {
-            String[] names = targetNames.split(",");
+            String string = parameters.getString(Params.TARGETS);
+            String[] _targets;
 
-            for (String name : names) {
-                possibleEffects.add(dataSet.getVariable(name.trim()));
+            if (string.contains(",")) {
+                _targets = string.split(",");
+            } else {
+                _targets = string.split(" ");
+            }
+
+            for (String _target : _targets) {
+                possibleEffects.add(dataSet.getVariable(_target));
             }
         }
 
@@ -97,7 +107,8 @@ public class Cstar implements Algorithm, TakesIndependenceWrapper {
         }
 
         LinkedList<LinkedList<edu.cmu.tetrad.search.Cstar.Record>> allRecords
-                = cStaR.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, test.getTest(dataSet, parameters));
+                = cStaR.getRecords(
+                (DataSet) dataSet, possibleCauses, possibleEffects);
 
         if (allRecords.isEmpty()) {
             throw new IllegalStateException("There were no records.");
@@ -137,8 +148,19 @@ public class Cstar implements Algorithm, TakesIndependenceWrapper {
         parameters.add(Params.TARGETS);
         parameters.add(Params.CSTAR_Q);
         parameters.add(Params.PARALLELIZED);
+        parameters.add(Params.CSTAR_CPDAG_ALGORITHM);
         parameters.add(Params.VERBOSE);
         return parameters;
+    }
+
+    @Override
+    public ScoreWrapper getScoreWrapper() {
+        return this.score;
+    }
+
+    @Override
+    public void setScoreWrapper(ScoreWrapper score) {
+        this.score = score;
     }
 
     public LinkedList<edu.cmu.tetrad.search.Cstar.Record> getRecords() {

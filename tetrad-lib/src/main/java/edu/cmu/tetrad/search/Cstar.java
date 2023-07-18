@@ -1,16 +1,11 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.RestrictedBoss;
-import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
+import edu.cmu.tetrad.algcomparison.independence.IndependenceWrapper;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
-import edu.cmu.tetrad.search.score.ConditionalGaussianScore;
-import edu.cmu.tetrad.search.score.IndTestScore;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.score.SemBicScore;
-import edu.cmu.tetrad.search.test.IndTestFisherZ;
-import edu.cmu.tetrad.search.test.ScoreIndTest;
 import edu.cmu.tetrad.util.*;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
@@ -47,7 +42,9 @@ public class Cstar {
     private int qTo = 1;
     private int qIncrement = 1;
     private double selectionAlpha = 0.0;
-    private IndependenceTest test;
+    private IndependenceWrapper test;
+    private ScoreWrapper score;
+    private Parameters parameters = new Parameters();
     private CpdagAlgorithm cpdagAlgorithm = CpdagAlgorithm.PC_STABLE;
     private SampleStyle sampleStyle = SampleStyle.BOOTSTRAP;
     private boolean verbose;
@@ -55,7 +52,10 @@ public class Cstar {
     /**
      * Constructor.
      */
-    public Cstar() {
+    public Cstar(IndependenceWrapper test, ScoreWrapper score, Parameters parameters) {
+        this.test = test;
+        this.score = score;
+        this.parameters = parameters;
     }
 
     /**
@@ -132,13 +132,11 @@ public class Cstar {
      * @param dataSet         The full datasets to search over.
      * @param possibleCauses  A set of variables in the datasets over which to search.
      * @param possibleEffects The effect variables.
-     * @param test            This test is only used to make more tests like it for subsamples.
      * @see Record
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses,
-                                                     List<Node> possibleEffects,
-                                                     IndependenceTest test) {
-        return getRecords(dataSet, possibleCauses, possibleEffects, test, null);
+                                                     List<Node> possibleEffects) {
+        return getRecords(dataSet, possibleCauses, possibleEffects, null);
     }
 
     /**
@@ -147,15 +145,14 @@ public class Cstar {
      * @param dataSet         The full datasets to search over.
      * @param possibleCauses  A set of variables in the datasets over which to search.
      * @param possibleEffects The effect variables.
-     * @param test            This test is only used to make more tests like it for subsamples.
      * @param path            A path where interim results are to be stored. If null, interim results will not be
      *                        stored. If the path is specified, then if the process is stopped and restarted, previously
      *                        computed interim results will be loaded.
      * @see Record
      */
-    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, IndependenceTest test, String path) {
+    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses,
+                                                     List<Node> possibleEffects, String path) {
         System.out.println("path = " + path);
-        test.setVerbose(false);
 
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
@@ -202,16 +199,6 @@ public class Cstar {
                 writeVars(possibleEffects, dir, "possible.effects.txt");
                 writeData(dataSet, dir);
             }
-        }
-
-        if (test instanceof ScoreIndTest && ((ScoreIndTest) test).getWrappedScore() instanceof SemBicScore) {
-            this.test = test;
-        } else if (test instanceof IndTestFisherZ) {
-            this.test = test;
-        } else if (test instanceof ChiSquare) {
-            this.test = test;
-        } else {
-            throw new IllegalArgumentException("Expecting Fisher Z, Chi Square, or Sem BIC.");
         }
 
         List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
@@ -270,10 +257,10 @@ public class Cstar {
                     }
 
                     if (pattern == null || effects == null) {
-                        if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.FGES) {
-                            pattern = getPatternFges(sample);
-                        } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.PC_STABLE) {
+                        if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.PC_STABLE) {
                             pattern = getPatternPcStable(sample);
+                        } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.FGES) {
+                            pattern = getPatternFges(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.BOSS) {
                             pattern = getPatternBoss(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.RESTRICTED_BOSS) {
@@ -297,7 +284,8 @@ public class Cstar {
                             Map<Node, Double> minEffects = ida.calculateMinimumEffectsOnY(this.possibleEffects.get(e));
 
                             for (int c = 0; c < this.possibleCauses.size(); c++) {
-                                effects[c][e] = minEffects.get(this.possibleCauses.get(c));
+                                final Double _e = minEffects.get(this.possibleCauses.get(c));
+                                effects[c][e] = _e != null ? _e : 0.0;
                             }
                         }
 
@@ -660,7 +648,7 @@ public class Cstar {
     }
 
     private Graph getPatternPcStable(DataSet sample) {
-        IndependenceTest test = getIndependenceTest(sample, this.test);
+        IndependenceTest test = this.test.getTest(sample, parameters);
         test.setVerbose(false);
         Pc pc = new Pc(test);
         pc.setStable(true);
@@ -669,45 +657,21 @@ public class Cstar {
     }
 
     private Graph getPatternFges(DataSet sample) {
-        Score score = new IndTestScore(getIndependenceTest(sample, this.test));
+        Score score = this.score.getScore(sample, parameters);
         Fges fges = new Fges(score);
         fges.setVerbose(false);
         return fges.search();
     }
 
     private Graph getPatternBoss(DataSet sample) {
-        Score score = new IndTestScore(getIndependenceTest(sample, this.test));
+        Score score = this.score.getScore(sample, parameters);
         PermutationSearch boss = new PermutationSearch(new Boss(score));
         return boss.search();
     }
 
     private Graph getPatternRestrictedBoss(DataSet sample) {
-        Parameters parameters = new Parameters();
-        ScoreWrapper scoreWrapper = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
-        RestrictedBoss restrictedBoss = new RestrictedBoss(scoreWrapper);
+        RestrictedBoss restrictedBoss = new RestrictedBoss(score);
         return restrictedBoss.search(sample, parameters);
-    }
-
-    private IndependenceTest getIndependenceTest(DataSet sample, IndependenceTest test) {
-        if (test instanceof ScoreIndTest && ((ScoreIndTest) test).getWrappedScore() instanceof SemBicScore) {
-            SemBicScore score = new SemBicScore(new CorrelationMatrix(sample));
-            score.setPenaltyDiscount(((SemBicScore) ((ScoreIndTest) test).getWrappedScore()).getPenaltyDiscount());
-            return new ScoreIndTest(score);
-        } else if (test instanceof IndTestFisherZ) {
-            double alpha = test.getAlpha();
-            return new IndTestFisherZ(new CorrelationMatrix(sample), alpha);
-        } else if (test instanceof ChiSquare) {
-            double alpha = test.getAlpha();
-            return new IndTestFisherZ(sample, alpha);
-        } else if (test instanceof ScoreIndTest && ((ScoreIndTest) test).getWrappedScore() instanceof ConditionalGaussianScore) {
-            ConditionalGaussianScore score = (ConditionalGaussianScore) ((ScoreIndTest) test).getWrappedScore();
-            double penaltyDiscount = score.getPenaltyDiscount();
-            ConditionalGaussianScore _score = new ConditionalGaussianScore(sample, penaltyDiscount, false);
-            _score.setStructurePrior(0);
-            return new ScoreIndTest(_score);
-        } else {
-            throw new IllegalArgumentException("That test is not configured: " + test);
-        }
     }
 
     private void saveMatrix(double[][] effects, File file) {

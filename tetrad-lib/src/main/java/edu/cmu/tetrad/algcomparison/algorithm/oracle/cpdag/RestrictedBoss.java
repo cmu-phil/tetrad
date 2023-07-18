@@ -71,6 +71,8 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge
                 targets.add(dataSet.getVariable(_target));
             }
 
+            System.out.println("targets: " + targets);
+
             // We will run BOSS with the target variables Tier 2 and the rest as Tier 1,
             // with edges forbidden in Tier1, then grab all of the first layer variables
             // together with the target nodes, restrict the score to just these variables,
