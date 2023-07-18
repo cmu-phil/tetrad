@@ -352,7 +352,13 @@ public class SimpleDataLoader {
 
     @NotNull
     public static ICovarianceMatrix getCovarianceMatrix(DataSet dataSet, boolean precomputeCovariances) {
-        return new CovarianceMatrix(dataSet, precomputeCovariances);
+        if (precomputeCovariances) {
+            return new CovarianceMatrix(dataSet);
+        } else {
+            return new CovarianceMatrixOnTheFly(dataSet);
+        }
+
+//        return new CovarianceMatrix(dataSet, true);
     }
 
     @NotNull

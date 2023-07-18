@@ -155,7 +155,7 @@ public class TestFges {
 
         System.out.println("data done");
 
-        ICovarianceMatrix cov = new CovarianceMatrixOnTheFly(data);
+        ICovarianceMatrix cov = SimpleDataLoader.getCovarianceMatrix(data, false);
         SemBicScore score = new SemBicScore(cov);
         score.setPenaltyDiscount(penaltyDiscount);
 
