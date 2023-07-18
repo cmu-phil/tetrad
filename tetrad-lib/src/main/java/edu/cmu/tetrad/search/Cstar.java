@@ -264,7 +264,7 @@ public class Cstar {
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.BOSS) {
                             pattern = getPatternBoss(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.RESTRICTED_BOSS) {
-                            pattern = getPatternRestrictedBoss(sample);
+                            pattern = getPatternRestrictedBoss(sample, this._dataSet);
                         } else {
                             throw new IllegalArgumentException("That type of of pattern algorithm is not configured: " + Cstar.this.cpdagAlgorithm);
                         }
@@ -631,7 +631,7 @@ public class Cstar {
             column = 0;
 
 
-            table.setToken(i + 1, column++, "" + (i + 1));
+            table.setToken(i + 1, column++, String.valueOf(i + 1));
             table.setToken(i + 1, column++, cause.getName());
             table.setToken(i + 1, column++, effect.getName());
             table.setToken(i + 1, column++, nf.format(records.get(i).getPi()));
@@ -641,10 +641,9 @@ public class Cstar {
             table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(er));
             double pcer = Cstar.pcer(records.get(i).getPi(), (i + 1), p);
             table.setToken(i + 1, column, records.get(i).getPi() <= 0.5 ? "*" : nf.format(pcer));
-
         }
 
-        return (printTable ? "\n" + table : "" + "") + "p = " + p + " q = " + q + (printTable ? " Type: C = continuous, D = discrete\n" : "");
+        return (printTable ? "\n" + table : "") + "p = " + p + " q = " + q + (printTable ? " Type: C = continuous, D = discrete\n" : "");
     }
 
     private Graph getPatternPcStable(DataSet sample) {
@@ -669,9 +668,11 @@ public class Cstar {
         return boss.search();
     }
 
-    private Graph getPatternRestrictedBoss(DataSet sample) {
+    private Graph getPatternRestrictedBoss(DataSet sample, DataSet data) {
         RestrictedBoss restrictedBoss = new RestrictedBoss(score);
-        return restrictedBoss.search(sample, parameters);
+        Graph g = restrictedBoss.search(sample, parameters);
+        g = GraphUtils.replaceNodes(g, data.getVariables());
+        return g;
     }
 
     private void saveMatrix(double[][] effects, File file) {

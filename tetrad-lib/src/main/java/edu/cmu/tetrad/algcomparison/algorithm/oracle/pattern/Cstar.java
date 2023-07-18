@@ -141,9 +141,8 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
     @Override
     public List<String> getParameters() {
-        List<String> parameters = new ArrayList<>(test.getParameters());
+        List<String> parameters = new ArrayList<>();
         parameters.add(Params.SELECTION_MIN_EFFECT);
-        parameters.add(Params.PENALTY_DISCOUNT);
         parameters.add(Params.NUM_SUBSAMPLES);
         parameters.add(Params.TARGETS);
         parameters.add(Params.CSTAR_Q);
