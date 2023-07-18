@@ -164,7 +164,7 @@ public class GraphoidAxioms {
     /**
      * Checked whether the IM is a semigraphoid.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean semigraphoid() {
         return symmetry() && decomposition() && weakUnion() && contraction();
@@ -173,7 +173,7 @@ public class GraphoidAxioms {
     /**
      * Checks whether teh IM is a semigraphoid.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean graphoid() {
         return semigraphoid() && intersection();
@@ -182,7 +182,7 @@ public class GraphoidAxioms {
     /**
      * Checks whether the IM is a compositional graphoid.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean compositionalGraphoid() {
         return graphoid() && composition();

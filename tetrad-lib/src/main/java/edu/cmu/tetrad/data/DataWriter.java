@@ -156,8 +156,8 @@ public final class DataWriter {
             String onlyCanCauseNextTier = knowledge.isOnlyCanCauseNextTier(i) ? "-" : "";
             List<String> tier = knowledge.getTier(i);
 
-            if (!(tier == null || tier.isEmpty())) {
-                buf.append("\n").append(i + 1).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
+            if (!tier.isEmpty()) {
+                buf.append("\n").append(i).append(forbiddenWithin).append(onlyCanCauseNextTier).append(" ");
                 buf.append(" ");
                 buf.append(String.join(" ", tier));
             }
@@ -165,8 +165,9 @@ public final class DataWriter {
 
         buf.append("\n\nforbiddirect");
 
-        for (Iterator<KnowledgeEdge> i = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
-            KnowledgeEdge pair = i.next();
+        for (KnowledgeEdge pair : knowledge.getListOfExplicitlyForbiddenEdges()) {
+//        for (Iterator<KnowledgeEdge> i = knowledge.forbiddenEdgesIterator(); i.hasNext(); ) {
+//            KnowledgeEdge pair = i.next();
             String from = pair.getFrom();
             String to = pair.getTo();
 

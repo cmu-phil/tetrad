@@ -376,7 +376,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     /**
      * Returns true iff verbose output should be printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean isVerbose() {
         return this.verbose;
@@ -385,7 +385,7 @@ public final class IndTestFisherZ implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

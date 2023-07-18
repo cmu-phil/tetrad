@@ -30,7 +30,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * <p>This algorithm is implemented as a "plugin-in" algorithm to a PermutationSearch object (see), which deals with
  * certain details of knowledge handling that are common to different permutation searches.</p>
  *
- * <p>BOSS, like GRaSP (see), is characterized by high adjacency and oreintation precision (especially) and recall for
+ * <p>BOSS, like GRaSP (see), is characterized by high adjacency and orientation precision (especially) and recall for
  * moderate sample sizes. BOSS scales up currently further than GRaSP to larger variable sets and denser graphs and so
  * is currently preferable from a practical standpoint, though performance is essentially identical.</p>
  *
@@ -49,13 +49,13 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  * are already oriented, so a parameter is included to turn that step off.</o>
  *
  * <p>Knowledge can be used with this search. If tiered knowledge is used,
- * then the procedure is carried out for each tier separately, given the v
- * ariables preceding that tier, which allows the Boss algorithm to address
+ * then the procedure is carried out for each tier separately, given the
+ * variables preceding that tier, which allows the Boss algorithm to address
  * tiered (e.g., time series) problems with larger numbers of variables.
  * However, knowledge of required and forbidden edges is correctly implemented
  * for arbitrary such knowledge.</p>
  *
- * <p>A paremeter is included to restart the search a certain number of time.
+ * <p>A parameter is included to restart the search a certain number of time.
  * The idea is that the goal is to optimize a BIC score, so if several runs
  * are done of the algorithm for the same data, the model with the highest
  * BIC score should be returned and the others ignored.</p>
@@ -158,7 +158,7 @@ public class Boss implements SuborderSearch {
     }
 
     /**
-     * Sets the number of random starts to use. The model with the best score from these restartes will be reported.
+     * Sets the number of random starts to use. The model with the best score from these restarts will be reported.
      *
      * @param numStarts The number of random starts to use.
      */

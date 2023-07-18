@@ -279,7 +279,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -288,7 +288,7 @@ public final class IndTestFisherZGeneralizedInverse implements IndependenceTest 
     /**
      * Returns true just in case the varialbe in zList determine xVar.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean determines(List<Node> zList, Node xVar) {
         if (zList == null) {

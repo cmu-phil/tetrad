@@ -103,8 +103,8 @@ public class ZsbScore implements Score {
      *
      * @param dataSet The data set.
      */
-    public ZsbScore(DataSet dataSet) {
-        this(SimpleDataLoader.getCovarianceMatrix(dataSet));
+    public ZsbScore(DataSet dataSet, boolean precomputeCovariances) {
+        this(SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances));
         this.data = dataSet.getDoubleData();
     }
 
@@ -237,7 +237,7 @@ public class ZsbScore implements Score {
      * Returns a judgement for FGES for whether a certain bump in score gives efidence of an effect edges.
      *
      * @param bump The bump.
-     * @return True if so.
+     * @return True, if so.
      * @see Fges
      */
     @Override
@@ -269,7 +269,7 @@ public class ZsbScore implements Score {
     /**
      * Returns true if the variable in Z determine y.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     @Override
     public boolean determines(List<Node> z, Node y) {

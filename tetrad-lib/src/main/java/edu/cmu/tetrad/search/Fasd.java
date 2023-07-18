@@ -59,10 +59,10 @@ public class Fasd implements IFas {
     private final TetradLogger logger = TetradLogger.getInstance();
     private final NumberFormat nf = new DecimalFormat("0.00E0");
     /**
-     * The search graph. It is assumed going in that all of the true adjacencies of x are in this graph for every node
-     * x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
+     * The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node
+     * x. It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
      */
-    private Graph graph;
+    private final Graph graph;
     /**
      * Specification of which edges are forbidden or required.
      */
@@ -95,17 +95,6 @@ public class Fasd implements IFas {
     /**
      * Constructs a new FastAdjacencySearch.
      *
-     * @param graph An initial graph of edges that will be removed.
-     * @param test  A test to use as a conditional independence oracle.
-     */
-    public Fasd(Graph graph, IndependenceTest test) {
-        this.graph = graph;
-        this.test = test;
-    }
-
-    /**
-     * Constructs a new FastAdjacencySearch.
-     *
      * @param test A test to use as a conditional independence oracle.
      */
     public Fasd(IndependenceTest test) {
@@ -114,15 +103,8 @@ public class Fasd implements IFas {
     }
 
     /**
-     * @throws UnsupportedOperationException This contructor is not implemented.
-     */
-    public Graph search(List<Node> nodes) {
-        throw new UnsupportedOperationException("Constructor not implemented.");
-    }
-
-    /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
-     * variables which are independent conditional on some other set of variables in the graph (the "sepset"). These are
+     * variables which are independent, conditional on some other set of variables in the graph (the "sepset"). These are
      * removed in tiers.  First, edges which are independent conditional on zero other variables are removed, then edges
      * which are independent conditional on one other variable are removed, then two, then three, and so on, until no
      * more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
@@ -181,7 +163,7 @@ public class Fasd implements IFas {
 
 
     /**
-     * Sets the maximum number of variables conditoined on in any test.
+     * Sets the maximum number of variables conditioned on in any test.
      *
      * @param depth This maximum.
      */
@@ -207,7 +189,7 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Returns the nubmer of conditional independence tests done in the course of search.
+     * Returns the number of conditional independence tests done in the course of search.
      *
      * @return This number.
      */
@@ -241,7 +223,7 @@ public class Fasd implements IFas {
     /**
      * Sets whether verbose output will be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -258,7 +240,7 @@ public class Fasd implements IFas {
     }
 
     /**
-     * Returns the nodes beign searched over.
+     * Returns the nodes being searched over.
      *
      * @return This list.
      */

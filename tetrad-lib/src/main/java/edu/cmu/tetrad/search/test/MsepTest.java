@@ -236,7 +236,7 @@ public class MsepTest implements IndependenceTest {
     /**
      * Auxiliary method to calculate msep(x, y | z) directly from nodes instead of from variables.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean isMSeparated(Node x, Node y, Set<Node> z) {
         if (z == null) {
@@ -332,7 +332,7 @@ public class MsepTest implements IndependenceTest {
     /**
      * Returns True just in case verbose output should be printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean isVerbose() {
         return verbose;
@@ -341,7 +341,7 @@ public class MsepTest implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

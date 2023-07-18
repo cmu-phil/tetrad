@@ -41,7 +41,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * Learning Research, 12(Apr): 1225–1248, 2011.</p>
  *
  * <p>A. Hyvärinen and S. M. Smith. Pairwise likelihood ratios for estimation of non-Gaussian
- * structural eauation models. Journal of Machine Learning Research 14:111-152, 2013.</p>
+ * structural evaluation models. Journal of Machine Learning Research 14:111-152, 2013.</p>
  *
  * <p>NEEDS DOCUMENTATION</p>
  *

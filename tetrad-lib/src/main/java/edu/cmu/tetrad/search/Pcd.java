@@ -22,7 +22,10 @@
 package edu.cmu.tetrad.search;
 
 import edu.cmu.tetrad.data.Knowledge;
-import edu.cmu.tetrad.graph.*;
+import edu.cmu.tetrad.graph.Edge;
+import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
+import edu.cmu.tetrad.graph.Triple;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.search.utils.SepsetMap;
@@ -79,7 +82,7 @@ public class Pcd implements IGraphSearch {
      */
     private long elapsedTime;
     /**
-     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large graphs).
+     * True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
      */
     private boolean meekPreventCycles;
     /**
@@ -93,7 +96,7 @@ public class Pcd implements IGraphSearch {
     private Set<Triple> unshieldedNoncolliders;
 
     /**
-     * The number of indepdendence tests in the last search.
+     * The number of independence tests in the last search.
      */
     private int numIndependenceTests;
 
@@ -118,14 +121,14 @@ public class Pcd implements IGraphSearch {
 
 
     /**
-     * @return true iff edges will not be added if they would create cycles.
+     * @return true, iff edges will not be added if they would create cycles.
      */
     public boolean isMeekPreventCycles() {
         return this.meekPreventCycles;
     }
 
     /**
-     * @param meekPreventCycles Set to true just in case edges will not be addeds if they would create cycles.
+     * @param meekPreventCycles Set to true just in case edges will not be added if they would create cycles.
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;
@@ -176,7 +179,7 @@ public class Pcd implements IGraphSearch {
      * checked.
      *
      * @param depth The depth of the search. The default is 1000. A value of -1 may be used to indicate that the depth
-     *              should be high (1000). A value of Integer.MAX_VALUE may not be used, due to a bug on multi-core
+     *              should be high (1000). A value of Integer.MAX_VALUE may not be used due to a bug on multicore
      *              machines.
      */
     public void setDepth(int depth) {
@@ -203,13 +206,13 @@ public class Pcd implements IGraphSearch {
     }
 
     /**
-     * Runs PC starting with a commplete graph over the given list of nodes, using the given independence test and
+     * Runs PC starting with a complete graph over the given list of nodes, using the given independence test and
      * knowledge and returns the resultant graph. The returned graph will be a CPDAG if the independence information is
      * consistent with the hypothesis that there are no latent common causes. It may, however, contain cycles or
      * bidirected edges if this assumption is not born out, either due to the actual presence of latent common causes,
      * or due to statistical errors in conditional independence judgments.
      * <p>
-     * All of the given nodes must be in the domain of the given conditional independence test.
+     * All the given nodes must be in the domain of the given conditional independence test.
      */
     public Graph search(List<Node> nodes) {
         nodes = new ArrayList<>(nodes);
@@ -230,7 +233,7 @@ public class Pcd implements IGraphSearch {
         }
 
         List<Node> allNodes = getIndependenceTest().getVariables();
-        if (!allNodes.containsAll(nodes)) {
+        if (!new HashSet<>(allNodes).containsAll(nodes)) {
             throw new IllegalArgumentException("All of the given nodes must " +
                     "be in the domain of the independence test provided.");
         }
@@ -292,15 +295,6 @@ public class Pcd implements IGraphSearch {
     public Set<Edge> getAdjacencies() {
         return new HashSet<>(this.graph.getEdges());
     }
-
-    public Set<Edge> getNonadjacencies() {
-        Graph complete = GraphUtils.completeGraph(this.graph);
-        Set<Edge> nonAdjacencies = complete.getEdges();
-        Graph undirected = GraphUtils.undirectedGraph(this.graph);
-        nonAdjacencies.removeAll(undirected.getEdges());
-        return new HashSet<>(nonAdjacencies);
-    }
-
 
     private void enumerateTriples() {
         this.unshieldedColliders = new HashSet<>();

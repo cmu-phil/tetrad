@@ -58,7 +58,8 @@ class DescriptiveStatisticsTransferHandler extends TransferHandler {
             buf.append(tabularData.getModel().getColumnName(selectedColumns[selectedColumns.length - 1]));
             buf.append("\n");
 
-            for (int selectedRow : selectedRows) {
+            for (int i = 0; i < selectedRows.length; i++) {
+                int selectedRow = selectedRows[i];
                 buf.append(tabularData.getValueAt(selectedRow, 0)).append("\t");
 
                 for (int j = 0; j < selectedColumns.length - 1; j++) {
@@ -66,7 +67,10 @@ class DescriptiveStatisticsTransferHandler extends TransferHandler {
                 }
 
                 buf.append(tabularData.getValueAt(selectedRow, selectedColumns[selectedColumns.length - 1]));
-                buf.append("\n");
+
+                if (i < selectedRows.length - 1) {
+                    buf.append("\n");
+                }
             }
 
             return new StringSelection(buf.toString());

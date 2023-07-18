@@ -120,7 +120,7 @@ public class SemBicScore implements Score {
     /**
      * Constructs the score using a covariance matrix.
      */
-    public SemBicScore(DataSet dataSet) {
+    public SemBicScore(DataSet dataSet, boolean precomputeCovariances) {
 
         if (dataSet == null) {
             throw new NullPointerException();
@@ -130,7 +130,7 @@ public class SemBicScore implements Score {
         this.data = dataSet.getDoubleData();
 
         if (!dataSet.existsMissingValue()) {
-            setCovariances(getiCovarianceMatrix(dataSet));
+            setCovariances(getCovarianceMatrix(dataSet, precomputeCovariances));
 
             this.variables = this.covariances.getVariables();
             this.sampleSize = this.covariances.getSampleSize();
@@ -236,8 +236,8 @@ public class SemBicScore implements Score {
     }
 
     @NotNull
-    private ICovarianceMatrix getiCovarianceMatrix(DataSet dataSet) {
-        return SimpleDataLoader.getCovarianceMatrix(dataSet);
+    private ICovarianceMatrix getCovarianceMatrix(DataSet dataSet, boolean precomputeCovariances) {
+        return SimpleDataLoader.getCovarianceMatrix(dataSet, precomputeCovariances);
     }
 
     @Override
@@ -394,7 +394,7 @@ public class SemBicScore implements Score {
         }
 
         try {
-            double v = localScore(i, k);
+            localScore(i, k);
         } catch (RuntimeException e) {
             TetradLogger.getInstance().forceLogMessage(e.getMessage());
             return true;

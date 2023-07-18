@@ -44,7 +44,8 @@ import static org.apache.commons.math3.util.FastMath.*;
  * <p>
  * This all follows the original Daudin paper, which is this:
  * <p>
- * Daudin, J. J. (1980). Partial association measures and a  application to qualitative regression. Biometrika, 67(3),
+ * Daudin, J. J. (1980). Partial association measures and ann application to qualitative regression.
+ * Biometrika, 67(3),
  * 581-590.
  * <p>
  * We use Nadaraya-Watson kernel regression, though we further restrict the sample size to nearby points.
@@ -153,8 +154,8 @@ public final class ConditionalCorrelationIndependence {
     /**
      * Calculates the residuals of x regressed nonparametrically onto z. Left public so it can be accessed separately.
      *
-     * @return a double[2][] array. The first double[] array contains the residuals for x and the second double[] array
-     * contains the resituls for y.
+     * @return a double[2][] array. The first double[] array contains the residuals for x, and the second double[] array
+     * contains the residuals for y.
      */
     public double[] residuals(Node x, List<Node> z, List<Integer> rows) {
         int[] _rows = new int[rows.size()];
@@ -349,7 +350,7 @@ public final class ConditionalCorrelationIndependence {
     }
 
     /**
-     * @return true just in the case the x and y vectors are independent, once undefined values have been removed. Left
+     * @return True, just in case the x and y vectors are independent, once undefined values have been removed. Left
      * public so it can be accessed separately.
      */
     private double independent(double[] x, double[] y) {
@@ -447,7 +448,7 @@ public final class ConditionalCorrelationIndependence {
         }
     }
 
-    // Optimal bandwidth qsuggested by Bowman and Bowman and Azzalini (1997) q.31,
+    // Optimal bandwidth suggested by Bowman and Bowman and Azzalini (1997) q.31,
     // using MAD.
     private double h(double[] xCol) {
         double[] g = new double[xCol.length];
@@ -560,7 +561,7 @@ public final class ConditionalCorrelationIndependence {
     }
 
     /**
-     * Gives a choice of kernels to use for the independence judgmnts for conditional correlation independence.
+     * Gives a choice of kernels to use for the independence judgments for conditional correlation independence.
      *
      * @see ConditionalCorrelationIndependence
      */

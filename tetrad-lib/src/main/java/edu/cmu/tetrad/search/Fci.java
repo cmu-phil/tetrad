@@ -246,10 +246,10 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the Zhang complete rule set should be used; if false if only R1-R4 (the rule set of the original
+     * Sets whether the Zhang complete rule set should be used; false if only R1-R4 (the rule set of the original
      * FCI) should be used. False by default.
      *
-     * @param completeRuleSetUsed True for the complete Zhang ruleset.
+     * @param completeRuleSetUsed True for the complete Zhang rule set.
      */
     public void setCompleteRuleSetUsed(boolean completeRuleSetUsed) {
         this.completeRuleSetUsed = completeRuleSetUsed;
@@ -258,7 +258,7 @@ public final class Fci implements IGraphSearch {
     /**
      * Sets whether the (time-consuming) possible msep step should be done.
      *
-     * @param possibleMsepSearchDone True if so.
+     * @param possibleMsepSearchDone True, if so.
      */
     public void setPossibleMsepSearchDone(boolean possibleMsepSearchDone) {
         this.possibleMsepSearchDone = possibleMsepSearchDone;
@@ -280,7 +280,7 @@ public final class Fci implements IGraphSearch {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -296,7 +296,7 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets which PC heuristic type should be used in the intitial adjacency search.
+     * Sets which PC heuristic type should be used in the initial adjacency search.
      *
      * @param heuristic The heuristic type.
      * @see edu.cmu.tetrad.search.utils.PcCommon.PcHeuristicType
@@ -306,9 +306,9 @@ public final class Fci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the stable options hould be used in the initial adjacency search.
+     * Sets whether the stable options should be used in the initial adjacency search.
      *
-     * @param stable True if so.
+     * @param stable True, if so.
      * @see Pc
      */
     public void setStable(boolean stable) {
@@ -318,7 +318,7 @@ public final class Fci implements IGraphSearch {
     /**
      * Sets whether the discriminating path rule should be used.
      *
-     * @param doDiscriminatingPathRule True if so.
+     * @param doDiscriminatingPathRule True, if so.
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;

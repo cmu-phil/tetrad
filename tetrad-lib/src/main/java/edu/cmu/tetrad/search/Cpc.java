@@ -164,7 +164,7 @@ public final class Cpc implements IGraphSearch {
     /**
      * Sets to true just in case edges will not be added if they would create cycles.
      *
-     * @param meekPreventCycles True if so.
+     * @param meekPreventCycles True, if so.
      */
     public void meekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;
@@ -275,7 +275,7 @@ public final class Cpc implements IGraphSearch {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

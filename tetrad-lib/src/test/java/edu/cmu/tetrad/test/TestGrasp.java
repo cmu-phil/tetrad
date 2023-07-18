@@ -42,10 +42,7 @@ import edu.cmu.tetrad.algcomparison.statistic.*;
 import edu.cmu.tetrad.bayes.BayesIm;
 import edu.cmu.tetrad.bayes.BayesPm;
 import edu.cmu.tetrad.bayes.MlBayesIm;
-import edu.cmu.tetrad.data.ContinuousVariable;
-import edu.cmu.tetrad.data.DataModel;
-import edu.cmu.tetrad.data.DataSet;
-import edu.cmu.tetrad.data.IndependenceFacts;
+import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.IndependenceTest;
 import edu.cmu.tetrad.search.score.DegenerateGaussianScore;
@@ -64,6 +61,7 @@ import edu.cmu.tetrad.sem.SemIm;
 import edu.cmu.tetrad.sem.SemPm;
 import edu.cmu.tetrad.sem.StandardizedSemIm;
 import edu.cmu.tetrad.util.*;
+import edu.pitt.dbmi.data.reader.Delimiter;
 import org.apache.commons.collections4.OrderedMap;
 import org.apache.commons.collections4.map.ListOrderedMap;
 import org.jetbrains.annotations.NotNull;
@@ -86,6 +84,7 @@ import static edu.cmu.tetrad.util.RandomUtil.shuffle;
  */
 @SuppressWarnings("ALL")
 public final class TestGrasp {
+    boolean precomputeCovariances = true;
 
     public static void main(String[] args) {
 //        new TestGrasp().testLuFigure3();
@@ -96,7 +95,7 @@ public final class TestGrasp {
 
 //        new TestGrasp().testMsep();
 
-        new TestGrasp().testPredictGoodStats();
+        new TestGrasp().testJaime();
 
     }
 
@@ -218,7 +217,7 @@ public final class TestGrasp {
         double structurePrior = 1.0;
         boolean discretize = true;
 
-        DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data);
+        DegenerateGaussianScore score = new DegenerateGaussianScore((DataSet) data, precomputeCovariances);
 
         IndTestDegenerateGaussianLrt test = new IndTestDegenerateGaussianLrt((DataSet) data);
         test.setAlpha(0.01);
@@ -3118,7 +3117,7 @@ public final class TestGrasp {
 
                         MsepTest msep = new MsepTest(graph);
 
-                        SemBicScore score = new SemBicScore(dataSet);
+                        SemBicScore score = new SemBicScore(dataSet, precomputeCovariances);
                         score.setPenaltyDiscount(1);
 
                         // Random permutation over 1...|V|.
@@ -3240,7 +3239,7 @@ public final class TestGrasp {
             DataSet d = im.simulateData(1000, false);
 
             IndTestFisherZ test = new IndTestFisherZ(d, 0.001);
-            SemBicScore score = new SemBicScore(d);
+            SemBicScore score = new SemBicScore(d, precomputeCovariances);
             score.setPenaltyDiscount(2);
 
             edu.cmu.tetrad.search.Fges fges = new edu.cmu.tetrad.search.Fges(score);
@@ -3378,6 +3377,38 @@ public final class TestGrasp {
 
         public int getTruth() {
             return truth;
+        }
+    }
+
+    public void testJaime() {
+        try {
+            String path = "/Users/josephramsey/Downloads/Subsample1_noRN.csv1.impute.txt";
+            DataSet data = SimpleDataLoader.loadContinuousData(new File(path), "//", '\"',
+                    "*", true, Delimiter.TAB);
+
+            System.out.println(data.getNumColumns());
+
+            Knowledge knowledge = new Knowledge();
+            List<Node> variables = data.getVariables();
+
+            for (int i = 0; i < variables.size() - 1; i++) {
+                knowledge.addToTier(1, variables.get(i).getName());
+            }
+
+            knowledge.addToTier(2, variables.get(variables.size() - 1).getName());
+
+            Parameters parameters = new Parameters();
+            parameters.set(Params.PENALTY_DISCOUNT, 20);
+            parameters.set(Params.VERBOSE, true);
+            parameters.set(Params.PARALLELIZED, true);
+            parameters.set(Params.FAITHFULNESS_ASSUMED, true);
+
+            Fges fges = new Fges(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+            fges.setKnowledge(knowledge);
+
+            Graph graph = fges.search(data, parameters);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

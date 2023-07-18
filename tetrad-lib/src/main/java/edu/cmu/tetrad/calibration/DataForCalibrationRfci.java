@@ -30,6 +30,7 @@ public class DataForCalibrationRfci {
     PrintWriter outProb;
     private PrintWriter outGraph;
     private PrintWriter outPag;
+    private static boolean precomputeCovariances = false;
 
     public static void main(String[] args) throws IOException {
 
@@ -134,7 +135,7 @@ public class DataForCalibrationRfci {
 //        if (algorithm.equals("RFCI")) {
 
         final IndTestFisherZ test = new IndTestFisherZ(data, 0.001);
-        final SemBicScore score = new SemBicScore(data);
+        final SemBicScore score = new SemBicScore(data, precomputeCovariances);
         score.setPenaltyDiscount(2);
 
         System.out.println("Starting search with all data");
@@ -354,7 +355,7 @@ public class DataForCalibrationRfci {
 
     public Graph learnBNRFCI(DataSet bootstrapSample, int depth, Graph truePag) {
         final IndTestFisherZ test = new IndTestFisherZ(bootstrapSample, 0.001);
-        final SemBicScore score = new SemBicScore(bootstrapSample);
+        final SemBicScore score = new SemBicScore(bootstrapSample, precomputeCovariances);
         score.setPenaltyDiscount(2);
 
         System.out.println("Starting search with a bootstrap");
@@ -414,6 +415,10 @@ public class DataForCalibrationRfci {
         out.flush();
         out.print(s);
         out.flush();
+    }
+
+    public void setPrecomputeCovariances(boolean precomputeCovariances) {
+        this.precomputeCovariances = precomputeCovariances;
     }
 
     private interface EdgeProbabiity {

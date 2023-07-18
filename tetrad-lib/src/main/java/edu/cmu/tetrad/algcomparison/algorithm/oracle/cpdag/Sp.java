@@ -69,7 +69,6 @@ public class Sp implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBoo
             Score score = this.score.getScore(dataModel, parameters);
             PermutationSearch permutationSearch = new PermutationSearch(new edu.cmu.tetrad.search.Sp(score));
             permutationSearch.setKnowledge(this.knowledge);
-            permutationSearch.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
             return permutationSearch.search();
         } else {
@@ -105,13 +104,7 @@ public class Sp implements Algorithm, UsesScoreWrapper, HasKnowledge, ReturnsBoo
 
     @Override
     public List<String> getParameters() {
-        ArrayList<String> params = new ArrayList<>();
-
-        // Flags
-        params.add(Params.VERBOSE);
-
-
-        return params;
+        return new ArrayList<>();
     }
 
     @Override

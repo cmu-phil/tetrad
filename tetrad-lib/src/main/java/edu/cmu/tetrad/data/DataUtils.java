@@ -1542,7 +1542,7 @@ public final class DataUtils {
         return constantColumns;
     }
 
-    public static List<Node> getExampleNonsingular(CovarianceMatrix covarianceMatrix, int depth) {
+    public static List<Node> getExampleNonsingular(ICovarianceMatrix covarianceMatrix, int depth) {
         List<Node> variables = covarianceMatrix.getVariables();
 
         SublistGenerator generator = new SublistGenerator(variables.size(), depth);

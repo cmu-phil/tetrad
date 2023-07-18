@@ -88,7 +88,6 @@ public class MimbuildTrek {
      */
     private double pValue;
     private List<Node> latents;
-    private double epsilon = 1e-4;
     private int minClusterSize = 3;
 
     public MimbuildTrek() {
@@ -160,7 +159,7 @@ public class MimbuildTrek {
     /**
      * The clustering used.
      *
-     * @return This clusterng.
+     * @return This clustering.
      */
     public List<List<Node>> getClustering() {
         return this.clustering;
@@ -185,9 +184,9 @@ public class MimbuildTrek {
     }
 
     /**
-     * The covaraince matrix over the latents that is implied by the clustering.
+     * The covariance matrix over the latents that is implied by the clustering.
      *
-     * @return This covarianc matrix.
+     * @return This covariance matrix.
      */
     public ICovarianceMatrix getLatentsCov() {
         return this.latentsCov;
@@ -233,7 +232,6 @@ public class MimbuildTrek {
      */
     public void setEpsilon(double epsilon) {
         if (epsilon < 0) throw new IllegalArgumentException("Epsilon mut be >= 0: " + epsilon);
-        this.epsilon = epsilon;
     }
 
 

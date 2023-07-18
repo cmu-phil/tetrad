@@ -30,14 +30,14 @@ import java.io.PrintStream;
 import java.util.List;
 
 /**
- * Gives an interface for fast adjacency searches (i.e. PC adjacency searches).
+ * Gives an interface for fast adjacency searches (i.e., PC adjacency searches).
  *
  * @author josephramsey
  */
 public interface IFas extends IGraphSearch {
 
     /**
-     * Sets the knoweledge for the search.
+     * Sets the knowledge for the search.
      *
      * @param knowledge This knowledge.
      */
@@ -45,7 +45,7 @@ public interface IFas extends IGraphSearch {
 
     /**
      * Returns the sepset map discovered during search--that is, the map from node pairs to the sepsets used in the
-     * search to removed the corresponding edges from the complete graph.
+     * search to remove the corresponding edges from the complete graph.
      *
      * @return This map.
      */
@@ -92,7 +92,7 @@ public interface IFas extends IGraphSearch {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     void setVerbose(boolean verbose);
 

@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class TestRubenData {
+    boolean precomputeCovariances = true;
 
     public static void main(String... arge) {
         new TestRubenData().test3();
@@ -54,7 +55,7 @@ public class TestRubenData {
 
                 graph = GraphSearchUtils.cpdagForDag(graph);
 
-                SemBicScore score = new SemBicScore(data);
+                SemBicScore score = new SemBicScore(data, precomputeCovariances);
                 score.setPenaltyDiscount(2);
 //                Fges alg = new Fges(score);
                 PermutationSearch alg = new PermutationSearch(new Boss(score));

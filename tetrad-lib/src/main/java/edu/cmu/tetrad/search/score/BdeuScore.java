@@ -244,7 +244,7 @@ public class BdeuScore implements DiscreteScore {
      * For FGES, this determines whether an edge counts as an effect edge.
      *
      * @param bump The bump for the edge.
-     * @return True if so.
+     * @return True, if so.
      * @see Fges
      */
     public boolean isEffectEdge(double bump) {

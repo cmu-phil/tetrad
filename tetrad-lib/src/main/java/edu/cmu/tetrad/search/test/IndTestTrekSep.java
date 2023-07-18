@@ -300,7 +300,7 @@ public final class IndTestTrekSep implements IndependenceTest {
     /**
      * Returns true if verbose output should be printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     @Override
     public boolean isVerbose() {
@@ -310,7 +310,7 @@ public final class IndTestTrekSep implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {

@@ -24,8 +24,8 @@ package edu.cmu.tetrad.algcomparison.examples;
 import edu.cmu.tetrad.algcomparison.Comparison;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithms;
 import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.Dagma;
-import edu.cmu.tetrad.algcomparison.algorithm.continuous.dag.DirectLingam;
 import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Boss;
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.Fges;
 import edu.cmu.tetrad.algcomparison.graph.RandomForward;
 import edu.cmu.tetrad.algcomparison.score.SemBicScore;
 import edu.cmu.tetrad.algcomparison.simulation.SemSimulation;
@@ -51,15 +51,10 @@ public class TestBoss {
         parameters.set(Params.COEF_HIGH, 1);
         parameters.set(Params.VAR_LOW, 1);
         parameters.set(Params.VAR_HIGH, 3);
-//        parameters.set(Params.BOSS_ALG, 1);
 
         parameters.set(Params.PENALTY_DISCOUNT, 2);
         parameters.set(Params.SEM_BIC_STRUCTURE_PRIOR, 0);
         parameters.set(Params.ALPHA, 1e-2);
-
-//        parameters.set(Params.SIMULATION_ERROR_TYPE, 3);
-//        parameters.set(Params.SIMULATION_PARAM1, 1.0);
-//        parameters.set(Params.SIMULATION_PARAM2, 1.0);
 
         parameters.set(Params.VERBOSE, false);
 

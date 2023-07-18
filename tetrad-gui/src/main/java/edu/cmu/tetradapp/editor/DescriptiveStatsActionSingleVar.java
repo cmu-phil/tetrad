@@ -37,7 +37,7 @@ import java.beans.PropertyChangeListener;
  * @author Michael Freenor
  */
 
-class DescriptiveStatsActionSingleVAr extends AbstractAction {
+class DescriptiveStatsActionSingleVar extends AbstractAction {
 
 
     /**
@@ -49,7 +49,7 @@ class DescriptiveStatsActionSingleVAr extends AbstractAction {
     /**
      * Constructs the <code>DescriptiveStatsAction</code> given the <code>DataEditor</code> that its attached to.
      */
-    public DescriptiveStatsActionSingleVAr(DataEditor editor) {
+    public DescriptiveStatsActionSingleVar(DataEditor editor) {
         super("Descriptive Statistics...");
         this.dataEditor = editor;
     }
@@ -104,7 +104,7 @@ class DescriptiveStatsActionSingleVAr extends AbstractAction {
         DescriptiveStatsEditorPanel editorPanel = new DescriptiveStatsEditorPanel(selected, dataSet);
 
         JTextArea display = new JTextArea(DescriptiveStats.generateDescriptiveStats(dataSet,
-                selected), 20, 65);
+                selected, editorPanel.precomputeCovariances), 20, 65);
         display.setEditable(false);
         display.setFont(new Font("Monospaced", Font.PLAIN, 12));
         editorPanel.addPropertyChangeListener(new DescriptiveStatsListener(display));

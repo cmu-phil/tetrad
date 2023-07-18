@@ -79,7 +79,7 @@ import static org.apache.commons.math3.util.FastMath.*;
  * respective diagonals in W, which are then scaled, and the separate
  * satisfactory B Hat matrices reported.</p>
  *
- * <p>ICA-LiNG-D, which takes this W as an imput, is a method for estimating
+ * <p>ICA-LiNG-D, which takes this W as an impute, is a method for estimating
  * a directed graph (DG) from a dataset. The graph is estimated by finding a
  * permutation of the columns of the dataset so that the resulting matrix has
  * a strong diagonal. This permutation is then used to estimate a DG. The method
@@ -107,7 +107,7 @@ public class IcaLingD {
     }
 
     /**
-     * Determines whether a BHat matrix parses to an acyclic graph..
+     * Determines whether a BHat matrix parses to an acyclic graph.
      *
      * @param scaledBHat The BHat matrix..
      */
@@ -134,7 +134,7 @@ public class IcaLingD {
     public static Matrix estimateW(DataSet data, int fastIcaMaxIter, double fastIcaTolerance,
                                    double fastIcaA) {
         double[][] _data = data.getDoubleData().transpose().toArray();
-        TetradLogger.getInstance().forceLogMessage("Anderson Darling P-values Per Variables (p < alpha means Non-Guassian)");
+        TetradLogger.getInstance().forceLogMessage("Anderson Darling P-values Per Variables (p < alpha means Non-Gaussian)");
         TetradLogger.getInstance().forceLogMessage("");
 
         for (int i = 0; i < _data.length; i++) {
@@ -196,8 +196,8 @@ public class IcaLingD {
     }
 
     /**
-     * Whether the BHat matrix represents a stable model. The eigenvalues are checked ot make sure they are all less
-     * than 1 in modulus.
+     * Whether the BHat matrix represents a stable model.
+     * The eigenvalues are checked to make sure they are all less than 1 in modulus.
      *
      * @param bHat The bHat matrix.
      * @return True iff the model is stable.
@@ -241,7 +241,7 @@ public class IcaLingD {
     }
 
     /**
-     * Thresholds the givem matrix, sending any small entries in absolute value to zero.
+     * Thresholds the given matrix, sending any small entries in absolute value to zero.
      *
      * @param M         The matrix to threshold.
      * @param threshold The value such that M(i, j) is set to zero if |M(i, j)| < threshold. Should be non-negative.
@@ -380,7 +380,7 @@ public class IcaLingD {
     }
 
     /**
-     * Sets the threshold used to prune the matrix for purpose of searching for alterantive strong diagonals.
+     * Sets the threshold used to prune the matrix for the purpose of searching for alternative strong diagonals.
      *
      * @param spineThreshold The threshold, a non-negative number.
      */

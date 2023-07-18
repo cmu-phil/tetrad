@@ -49,7 +49,7 @@ public interface IndependenceTest {
     IndependenceResult checkIndependence(Node x, Node y, Set<Node> z);
 
     /**
-     * @return the list of variables over which this independence checker is capable of determinining independence
+     * @return the list of variables over which this independence checker is capable of determining independence
      * relations.
      */
     List<Node> getVariables();
@@ -72,7 +72,7 @@ public interface IndependenceTest {
     /**
      * Sets whether this test will print verbose output.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     void setVerbose(boolean verbose);
 
@@ -123,7 +123,7 @@ public interface IndependenceTest {
     /**
      * Returns The variable by the given name.
      *
-     * @return This variables.
+     * @return This variable.
      */
     default Node getVariable(String name) {
         for (int i = 0; i < getVariables().size(); i++) {
@@ -153,10 +153,10 @@ public interface IndependenceTest {
     /**
      * Returns true if y is determined the variable in z.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     default boolean determines(Set<Node> z, Node y) {
-        throw new UnsupportedOperationException("Determines method is not implmeented.");
+        throw new UnsupportedOperationException("Determines method is not implemented.");
     }
 
     /**
@@ -182,7 +182,7 @@ public interface IndependenceTest {
      * Returns the covariance matrix.
      *
      * @return This matrix.
-     * @throws UnsupportedOperationException If this method is not suppored for a particular test.
+     * @throws UnsupportedOperationException If this method is not supported for a particular test.
      */
     default ICovarianceMatrix getCov() {
         throw new UnsupportedOperationException("The getCov() method is not implemented for this test.");

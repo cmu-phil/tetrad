@@ -1,6 +1,8 @@
 package edu.cmu.tetrad.search;
 
+import edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag.RestrictedBoss;
 import edu.cmu.tetrad.algcomparison.independence.ChiSquare;
+import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.*;
 import edu.cmu.tetrad.search.score.ConditionalGaussianScore;
@@ -118,7 +120,7 @@ public class Cstar {
      * Sets whether the algorithm should be parallelized. Different runs of the algorithms can be run in different
      * threads in parallel.
      *
-     * @param parallelized True if so.
+     * @param parallelized True, if so.
      */
     public void setParallelized(boolean parallelized) {
         this.parallelized = parallelized;
@@ -272,8 +274,10 @@ public class Cstar {
                             pattern = getPatternFges(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.PC_STABLE) {
                             pattern = getPatternPcStable(sample);
-                        } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.GRaSP) {
-                            pattern = getPatternPcStable(sample);
+                        } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.BOSS) {
+                            pattern = getPatternBoss(sample);
+                        } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.RESTRICTED_BOSS) {
+                            pattern = getPatternRestrictedBoss(sample);
                         } else {
                             throw new IllegalArgumentException("That type of of pattern algorithm is not configured: " + Cstar.this.cpdagAlgorithm);
                         }
@@ -482,17 +486,17 @@ public class Cstar {
     /**
      * The CSTaR algorithm can use any CPDAG algorithm; here you can set it.
      *
-     * @param cpdagAlglorithm The CPDAG algorithm.
+     * @param cpdagAlgorithm The CPDAG algorithm.
      * @see CpdagAlgorithm
      */
-    public void setCpdagAlgorithm(CpdagAlgorithm cpdagAlglorithm) {
-        this.cpdagAlgorithm = cpdagAlglorithm;
+    public void setCpdagAlgorithm(CpdagAlgorithm cpdagAlgorithm) {
+        this.cpdagAlgorithm = cpdagAlgorithm;
     }
 
     /**
      * Sets whether verbose output will be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -671,6 +675,19 @@ public class Cstar {
         return fges.search();
     }
 
+    private Graph getPatternBoss(DataSet sample) {
+        Score score = new IndTestScore(getIndependenceTest(sample, this.test));
+        PermutationSearch boss = new PermutationSearch(new Boss(score));
+        return boss.search();
+    }
+
+    private Graph getPatternRestrictedBoss(DataSet sample) {
+        Parameters parameters = new Parameters();
+        ScoreWrapper scoreWrapper = new edu.cmu.tetrad.algcomparison.score.SemBicScore();
+        RestrictedBoss restrictedBoss = new RestrictedBoss(scoreWrapper);
+        return restrictedBoss.search(sample, parameters);
+    }
+
     private IndependenceTest getIndependenceTest(DataSet sample, IndependenceTest test) {
         if (test instanceof ScoreIndTest && ((ScoreIndTest) test).getWrappedScore() instanceof SemBicScore) {
             SemBicScore score = new SemBicScore(new CorrelationMatrix(sample));
@@ -750,9 +767,9 @@ public class Cstar {
     }
 
     /**
-     * An enumeration of the options available for estiting the CPDAG used for the algorthm.
+     * An enumeration of the options available for determining the CPDAG used for the algorithm.
      */
-    public enum CpdagAlgorithm {PC_STABLE, FGES, GRaSP}
+    public enum CpdagAlgorithm {PC_STABLE, FGES, BOSS, RESTRICTED_BOSS}
 
     /**
      * An enumeration of the methods for selecting samples from the full dataset.

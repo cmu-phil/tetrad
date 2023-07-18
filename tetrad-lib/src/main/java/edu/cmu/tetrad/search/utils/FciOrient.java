@@ -1095,7 +1095,7 @@ public final class FciOrient {
     /**
      * Sets whether verbose output is printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;

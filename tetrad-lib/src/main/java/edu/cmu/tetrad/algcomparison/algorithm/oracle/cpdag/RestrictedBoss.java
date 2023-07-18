@@ -13,15 +13,14 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
-import edu.cmu.tetrad.search.utils.TsUtils;
 import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.pitt.dbmi.algo.resampling.GeneralResamplingTest;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * BOSS-DC (Best Order Score Search Divide and Conquer)
@@ -30,12 +29,12 @@ import java.util.List;
  * @author josephramsey
  */
 @edu.cmu.tetrad.annotation.Algorithm(
-        name = "BOSS",
-        command = "boss",
+        name = "Restricted-BOSS",
+        command = "r-boss",
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
+public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         ReturnsBootstrapGraphs {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
@@ -43,11 +42,11 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
 
-    public Boss() {
+    public RestrictedBoss() {
         // Used in reflection; do not delete.
     }
 
-    public Boss(ScoreWrapper score) {
+    public RestrictedBoss(ScoreWrapper score) {
         this.score = score;
     }
 
@@ -55,28 +54,77 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
     @Override
     public Graph search(DataModel dataModel, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            if (parameters.getInt(Params.TIME_LAG) > 0) {
-                DataSet dataSet = (DataSet) dataModel;
-                DataSet timeSeries = TsUtils.createLagData(dataSet, parameters.getInt(Params.TIME_LAG));
-                if (dataSet.getName() != null) {
-                    timeSeries.setName(dataSet.getName());
-                }
-                dataModel = timeSeries;
-                knowledge = timeSeries.getKnowledge();
+            DataSet dataSet = (DataSet) dataModel;
+
+            String string = parameters.getString(Params.TARGETS);
+            String[] _targets;
+
+            if (string.contains(",")) {
+                _targets = string.split(",");
+            } else {
+                _targets = string.split(" ");
             }
 
-            Score score = this.score.getScore(dataModel, parameters);
+            List<Node> targets = new ArrayList<>();
 
+            for (String _target : _targets) {
+                targets.add(dataSet.getVariable(_target));
+            }
+
+            // We will run BOSS with the target variables Tier 2 and the rest as Tier 1,
+            // with edges forbidden in Tier1, then grab all of the first layer variables
+            // together with the target nodes, restrict the score to just these variables,
+            // for the knowedge again restrict to just these variables, with the target
+            // variables as Tier 2 and the rest as Tier 1, and run BOSS again and return
+            // the result.
+
+            Knowledge knowledge = new Knowledge();;
+            for (Node node : targets) knowledge.addToTier(2, node.getName());
+            for (Node node : dataSet.getVariables()) {
+                if (!targets.contains(node)) knowledge.addToTier(1, node.getName());
+            }
+            knowledge.setTierForbiddenWithin(1, true);
+
+            Score score = this.score.getScore(dataSet, parameters);
             edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
             boss.setUseBes(parameters.getBoolean(Params.USE_BES));
             boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
             boss.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
             PermutationSearch permutationSearch = new PermutationSearch(boss);
-            permutationSearch.setKnowledge(this.knowledge);
+            permutationSearch.setKnowledge(knowledge);
+            permutationSearch.search();
+
+            Set<Node> restrictedSet = new HashSet<>(targets);
+
+            for (Node node : targets) {
+                restrictedSet.addAll(permutationSearch.getGST(node).getFirstLayer());
+            }
+
+            List<Node> restrictedList = new ArrayList<>(restrictedSet);
+            Collections.sort(restrictedList);
+
+            DataSet restrictedData = dataSet.subsetColumns(restrictedList);
+
+            System.out.println("Restricted data # vars: " + restrictedData.getVariables().size());
+
+            knowledge = new Knowledge();
+            for (Node node : targets) knowledge.addToTier(2, node.getName());
+            for (Node node : restrictedData.getVariables()) {
+                if (!targets.contains(node)) knowledge.addToTier(1, node.getName());
+            }
+            knowledge.setTierForbiddenWithin(1, false);
+
+            score = this.score.getScore(restrictedData, parameters);
+            boss = new edu.cmu.tetrad.search.Boss(score);
+            boss.setUseBes(parameters.getBoolean(Params.USE_BES));
+            boss.setNumStarts(parameters.getInt(Params.NUM_STARTS));
+            boss.setAllowInternalRandomness(parameters.getBoolean(Params.ALLOW_INTERNAL_RANDOMNESS));
+            permutationSearch = new PermutationSearch(boss);
+            permutationSearch.setKnowledge(knowledge);
 
             return permutationSearch.search();
         } else {
-            Boss algorithm = new Boss(this.score);
+            RestrictedBoss algorithm = new RestrictedBoss(this.score);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
@@ -96,7 +144,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
 
     @Override
     public String getDescription() {
-        return "BOSS (Best Order Score Search) using " + this.score.getDescription();
+        return "Restricted BOSS (Best Order Score Search) using " + this.score.getDescription();
     }
 
     @Override
@@ -112,7 +160,7 @@ public class Boss implements Algorithm, UsesScoreWrapper, HasKnowledge,
         params.add(Params.USE_BES);
         params.add(Params.NUM_STARTS);
         params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
-        params.add(Params.TIME_LAG);
+        params.add(Params.TARGETS);
 
         return params;
     }

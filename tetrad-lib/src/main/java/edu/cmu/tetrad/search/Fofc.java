@@ -46,7 +46,7 @@ import static org.apache.commons.math3.util.FastMath.sqrt;
  * 1655-1664).</p>
  *
  * <p>The algorithm employs tests of vanishing tetrads (list of 4 variables that follow
- * a certain pattern in the exchangeability of latent paths with respect to the data). The notion of vanishng tetrads is
+ * a certain pattern in the exchangeability of latent paths with respect to the data). The notion of vanishing tetrads is
  * old one but is explained in this book:</p>
  *
  * <p>Spirtes, P., Glymour, C. N., Scheines, R., &amp; Heckerman, D. (2000). Causation,
@@ -79,7 +79,7 @@ public class Fofc {
     private ClusterSignificance.CheckType checkType = ClusterSignificance.CheckType.Clique;
 
     /**
-     * Conctructor.
+     * Constructor.
      *
      * @param cov       The covariance matrix searched over.
      * @param testType  The type of test used.
@@ -157,9 +157,9 @@ public class Fofc {
     }
 
     /**
-     * Sets whether the significant of cluster should be checked for each cluster.
+     * Sets whether the significance of the cluster should be checked for each cluster.
      *
-     * @param significanceChecked True if so.
+     * @param significanceChecked True, if so.
      */
     public void setSignificanceChecked(boolean significanceChecked) {
         this.significanceChecked = significanceChecked;
@@ -189,8 +189,8 @@ public class Fofc {
 
         Set<Map.Entry<Integer, Integer>> set = map.entrySet();
         Iterator<Map.Entry<Integer, Integer>> it = set.iterator();
-        int nums = 0;// how many times variable occur
-        int key = 0;// the number occur the most times
+        int nums = 0;// how many times variables occur?
+        int key = 0;// the number occurs the most times
 
         while (it.hasNext()) {
             Map.Entry<Integer, Integer> entry = it.next();
@@ -947,7 +947,7 @@ public class Fofc {
     }
 
     /**
-     * The clusters output by the algorithm from the last call to search().
+     * The clusters that are output by the algorithm from the last call to search().
      */
     public List<List<Node>> getClusters() {
         return this.clusters;

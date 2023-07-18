@@ -73,7 +73,7 @@ public final class BFci implements IGraphSearch {
     int sampleSize;
     // The background knowledge.
     private Knowledge knowledge = new Knowledge();
-    // Flag for complete rule set, true if it should use complete rule set, false otherwise.
+    // Flag for the complete rule set, true if it should use the complete rule set, false otherwise.
     private boolean completeRuleSetUsed = true;
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
@@ -122,7 +122,6 @@ public final class BFci implements IGraphSearch {
         subAlg.setAllowInternalRandomness(this.allowInternalRandomness);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
-        alg.setVerbose(this.verbose);
 
         Graph graph = alg.search();
 
@@ -159,7 +158,7 @@ public final class BFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the complete (Zhang's) ruleset should be used.
+     * Sets whether the complete (Zhang's) rule set should be used.
      *
      * @param completeRuleSetUsed True if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of
      *                            the original FCI) should be used. False by default.

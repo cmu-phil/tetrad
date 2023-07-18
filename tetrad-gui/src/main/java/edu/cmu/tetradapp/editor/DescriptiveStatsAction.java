@@ -90,9 +90,9 @@ class DescriptiveStatsAction extends AbstractAction {
         java.util.List<Node> constantColumns = DataUtils.getConstantColumns(dataSet);
         coonstantColumnsString += constantColumns.isEmpty() ? "None" : constantColumns.toString();
 
-        String nonsingularString = "Example Nonsingular (2 - 3 vars): ";
+        String nonsingularString = "Example Nonsingular (2 vars): ";
         CovarianceMatrix covarianceMatrix = new CovarianceMatrix(dataSet);
-        List<Node> exampleNonsingular = DataUtils.getExampleNonsingular(covarianceMatrix, 3);
+        List<Node> exampleNonsingular = DataUtils.getExampleNonsingular(covarianceMatrix, 2);
         nonsingularString += exampleNonsingular == null ? "None" : exampleNonsingular.toString();
 
         Box box = Box.createVerticalBox();

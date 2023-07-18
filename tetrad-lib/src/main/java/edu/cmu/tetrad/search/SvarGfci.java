@@ -73,27 +73,13 @@ public final class SvarGfci implements IGraphSearch {
     // The background knowledge.
     private Knowledge knowledge = new Knowledge();
     // The conditional independence test.
-    private IndependenceTest independenceTest;
-    // Flag for complete rule set, true if one should use complete rule set, false otherwise.
+    private final IndependenceTest independenceTest;
+    // Flag for the complete rule set, true if one should use the complete rule set, false otherwise.
     private boolean completeRuleSetUsed;
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
     private int maxPathLength = -1;
-    // The maxIndegree for the fast adjacency search.
-    private int maxIndegree = -1;
     // True iff verbose output should be printed.
     private boolean verbose;
-    // The penalty discount for the GES search. By default, 2.
-    private double penaltyDiscount = 2;
-
-    // The sample prior for the BDeu score (discrete data).
-    private double samplePrior = 10;
-
-    // The structure prior for the Bdeu score (discrete data).
-    private double structurePrior = 1;
-
-    // True iff one-edge faithfulness is assumed. Speed up the algorith for very large searches.
-    // By default, false.
-    private boolean faithfulnessAssumed = true;
 
     // The score.
     private Score score;
@@ -131,11 +117,16 @@ public final class SvarGfci implements IGraphSearch {
         fges.setKnowledge(this.knowledge);
         fges.setVerbose(this.verbose);
         fges.setNumCPDAGsToStore(0);
-        fges.setFaithfulnessAssumed(this.faithfulnessAssumed);
+        // True, iff one-edge faithfulness is assumed. Speed up the algorithm for very large searches.
+        // By default, false.
+        boolean faithfulnessAssumed = true;
+        fges.setFaithfulnessAssumed(faithfulnessAssumed);
         this.graph = fges.search();
         Graph fgesGraph = new EdgeListGraph(this.graph);
 
-        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, this.maxIndegree, knowledge);
+        // The maxIndegree for the fast adjacency search.
+        int maxIndegree = -1;
+        this.sepsets = new SepsetsGreedy(fgesGraph, this.independenceTest, null, maxIndegree, knowledge);
 
         for (Node b : independenceTest.getVariables()) {
             List<Node> adjacentNodes = new ArrayList<>(fgesGraph.getAdjacentNodes(b));
@@ -193,7 +184,7 @@ public final class SvarGfci implements IGraphSearch {
     }
 
     /**
-     * Sets whether the complete ruleset is used.
+     * Sets whether the complete rule set is used.
      *
      * @param completeRuleSetUsed True if Zhang's complete rule set should be used, False if only R1-R4 (the rule set of
      *                            the original FCI) should be used. False by default.
@@ -218,14 +209,15 @@ public final class SvarGfci implements IGraphSearch {
     /**
      * Sets whether verbose output is printed.
      *
-     * @param verbose true if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     private void chooseScore() {
-        double penaltyDiscount = this.penaltyDiscount;
+        // The penalty discount for the GES search. By default, 2.
+        double penaltyDiscount = 2;
 
         DataSet dataSet = (DataSet) this.independenceTest.getData();
         ICovarianceMatrix cov = this.independenceTest.getCov();
@@ -245,8 +237,12 @@ public final class SvarGfci implements IGraphSearch {
             score = score0;
         } else if (dataSet.isDiscrete()) {
             BdeuScore score0 = new BdeuScore(dataSet);
-            score0.setSamplePrior(this.samplePrior);
-            score0.setStructurePrior(this.structurePrior);
+            // The sample prior for the BDeu score (discrete data).
+            double samplePrior = 10;
+            score0.setSamplePrior(samplePrior);
+            // The structure prior for the Bdeu score (discrete data).
+            double structurePrior = 1;
+            score0.setStructurePrior(structurePrior);
             score = score0;
         } else {
             throw new IllegalArgumentException("Mixed data not supported.");

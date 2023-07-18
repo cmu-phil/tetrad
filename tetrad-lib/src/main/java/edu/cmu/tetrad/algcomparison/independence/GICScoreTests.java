@@ -33,9 +33,10 @@ public class GICScoreTests implements IndependenceWrapper {
     @Override
     public IndependenceTest getTest(DataModel dataSet, Parameters parameters) {
         GicScores score;
+        boolean precomputeCovariances = parameters.getBoolean(Params.PRECOMPUTE_COVARIANCES);
 
         if (dataSet instanceof DataSet) {
-            score = new GicScores((DataSet) dataSet);
+            score = new GicScores((DataSet) dataSet, precomputeCovariances);
         } else if (dataSet instanceof ICovarianceMatrix) {
             score = new GicScores((ICovarianceMatrix) dataSet);
         } else {
@@ -90,6 +91,7 @@ public class GICScoreTests implements IndependenceWrapper {
         List<String> params = new ArrayList<>();
         params.add(Params.SEM_GIC_RULE);
         params.add(Params.PENALTY_DISCOUNT_ZS);
+        params.add(Params.PRECOMPUTE_COVARIANCES);
         return params;
     }
 }

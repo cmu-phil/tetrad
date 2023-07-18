@@ -121,7 +121,7 @@ public class PcLingam {
             throw new IllegalArgumentException("The data set is empty.");
         }
 
-        // Check that all the daga and the data contain the same variables.
+        // Check that all the dags and the data contain the same variables.
 
         List<Score> scores = new ArrayList<>();
 

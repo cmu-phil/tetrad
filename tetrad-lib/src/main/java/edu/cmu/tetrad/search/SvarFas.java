@@ -62,7 +62,7 @@ public class SvarFas implements IFas {
 
     /**
      * The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node x.
-     * It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
+     * It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
      */
     private final Graph graph;
 
@@ -113,7 +113,7 @@ public class SvarFas implements IFas {
 
     /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
-     * variables which are independent conditional on some other set of variables in the graph (the "sepset"). These are
+     * variables which are independent, conditional on some other set of variables in the graph (the "sepset"). These are
      * removed in tiers.  First, edges which are independent conditional on zero other variables are removed, then edges
      * which are independent conditional on one other variable are removed, then two, then three, and so on, until no
      * more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
@@ -212,7 +212,7 @@ public class SvarFas implements IFas {
     /**
      * Sets an external graph.
      *
-     * @param externalGraph This grpah.
+     * @param externalGraph This graph.
      */
     public void setExternalGraph(Graph externalGraph) {
         this.externalGraph = externalGraph;
@@ -221,7 +221,7 @@ public class SvarFas implements IFas {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -358,7 +358,7 @@ public class SvarFas implements IFas {
                     System.out.println("adding edge between x = " + x + " and y = " + y);
                     adjacencies.get(x).add(y);
                     adjacencies.get(y).add(x);
-                    // This would add edges to all similar pairs which are found to be dependent...
+                    // This would add edges to all similar pairs that are found to be dependent...
                     List<List<Node>> simList = returnSimilarPairs(test, x, y);
                     if (simList.isEmpty()) continue;
                     List<Node> x1List = simList.get(0);

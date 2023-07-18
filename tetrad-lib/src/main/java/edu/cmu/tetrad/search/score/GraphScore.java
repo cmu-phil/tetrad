@@ -156,7 +156,7 @@ public class GraphScore implements Score {
      * Returns a judgment for FGES as to whether a score with the bump is for an effect edge.
      *
      * @param bump The bump
-     * @return True if so.
+     * @return True, if so.
      * @see Fges
      */
     @Override

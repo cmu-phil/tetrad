@@ -1135,11 +1135,9 @@ public class PerformanceTests {
 
             fges = new FgesMb(score);
             fges.setVerbose(false);
-            fges.setNumCpdagsToStore(0);
             fges.setOut(System.out);
 //            fges.setHeuristicSpeedup(faithfulness);
             fges.setMaxDegree(maxIndegree);
-            fges.setCycleBound(-1);
         } else {
             init(new File("FgesMb.comparison.discrete" + numVars + "." + (int) (edgeFactor * numVars) +
                     "." + numCases + "." + numRuns + ".txt"), "Num runs = " + numRuns);
@@ -1180,11 +1178,9 @@ public class PerformanceTests {
 
             fges = new FgesMb(score);
             fges.setVerbose(false);
-            fges.setNumCpdagsToStore(0);
             fges.setOut(System.out);
 //            fges.setHeuristicSpeedup(faithfulness);
             fges.setMaxDegree(maxIndegree);
-            fges.setCycleBound(-1);
 
             long timeb = MillisecondTimes.timeMillis();
 
@@ -1202,7 +1198,7 @@ public class PerformanceTests {
             System.out.println("Target = " + target);
             long timea = MillisecondTimes.timeMillis();
 
-            estCPDAG = fges.search(target);
+            estCPDAG = fges.search(Collections.singletonList(target));
 
             long timed = MillisecondTimes.timeMillis();
 

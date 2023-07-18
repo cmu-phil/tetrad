@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
  * Performs a test of conditional independence X _||_ Y | Z1...Zn where all searchVariables are either continuous or
  * discrete. This test is valid for both ordinal and non-ordinal discrete searchVariables.
  * <p>
- * Assumes a conditional Gaussain model and uses a likelihood ratio test.
+ * Assumes a conditional Gaussian model and uses a likelihood ratio test.
  *
  * @author josephramsey
  */
@@ -55,10 +55,10 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     private int numCategoriesToDiscretize = 3;
 
     /**
-     * Consstructor.
+     * Constructor.
      *
      * @param data       The data to analyze.
-     * @param alpha      The signifcance level.
+     * @param alpha      The significance level.
      * @param discretize Whether discrete children of continuous parents should be discretized.
      */
     public IndTestConditionalGaussianLrt(DataSet data, double alpha, boolean discretize) {
@@ -84,7 +84,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Returns and independence result that states whetehr x _||_y | z and what the p-value of the test is.
+     * Returns and independence result that states whether x _||_y | z and what the p-value of the test is.
      *
      * @return an independence result (see)
      * @see IndependenceResult
@@ -162,7 +162,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     /**
      * Returns true if y is determined the variable in z.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean determines(List<Node> z, Node y) {
         return false; //stub
@@ -218,7 +218,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     @Override
     public void setVerbose(boolean verbose) {
@@ -226,7 +226,7 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
     }
 
     /**
-     * Sets the nubmer of categories used to discretize variables.
+     * Sets the number of categories used to discretize variables.
      *
      * @param numCategoriesToDiscretize This number, by default 3.
      */
@@ -234,16 +234,16 @@ public class IndTestConditionalGaussianLrt implements IndependenceTest {
         this.numCategoriesToDiscretize = numCategoriesToDiscretize;
     }
 
-    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodesHash) {
+    private List<Integer> getRows(List<Node> allVars, Map<Node, Integer> nodeHash) {
         List<Integer> rows = new ArrayList<>();
 
         K:
         for (int k = 0; k < this.data.getNumRows(); k++) {
             for (Node node : allVars) {
                 if (node instanceof ContinuousVariable) {
-                    if (Double.isNaN(this.data.getDouble(k, nodesHash.get(node)))) continue K;
+                    if (Double.isNaN(this.data.getDouble(k, nodeHash.get(node)))) continue K;
                 } else if (node instanceof DiscreteVariable) {
-                    if (this.data.getInt(k, nodesHash.get(node)) == -99) continue K;
+                    if (this.data.getInt(k, nodeHash.get(node)) == -99) continue K;
                 }
             }
 

@@ -36,7 +36,7 @@ import java.util.Set;
 
 /**
  * Checks conditional independence of variable in a continuous data set using a conditional correlation test for the
- * nonlinear nonGaussian with additive error case. This is for additive (but otherwise general) models.
+ * nonlinear nonGaussian with the additive error case. This is for additive (but otherwise general) models.
  *
  * @author josephramsey
  */
@@ -126,7 +126,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Returns the p-value of the test,
+     * Returns the p-value of the test.
      *
      * @return The p-value.
      */
@@ -159,7 +159,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Returns the list of variables over which this independence checker is capable of determinine independence
+     * Returns the list of variables over which this independence checker is capable of determining independence
      * relations-- that is, all the variables in the given graph or the given data set.
      *
      * @return This list.
@@ -205,14 +205,14 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     /**
      * Sets whether verbose output should be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
 
     /**
-     * Sets the number of orthogal functions to use to do the calculations.
+     * Sets the number of orthogonal functions to use to do the calculations.
      *
      * @param numFunctions This number.
      */
@@ -259,7 +259,7 @@ public final class IndTestConditionalCorrelation implements IndependenceTest {
     }
 
     /**
-     * Sets the kernal regression sample size.
+     * Sets the kernel regression sample size.
      *
      * @param size This size.
      */

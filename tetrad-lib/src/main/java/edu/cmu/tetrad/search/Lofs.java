@@ -230,7 +230,7 @@ public class Lofs {
     /**
      * Sets whether orientation should be done in the stronger direction, where applicable.
      *
-     * @param orientStrongerDirection True if so.
+     * @param orientStrongerDirection True, if so.
      */
     public void setOrientStrongerDirection(boolean orientStrongerDirection) {
         this.orientStrongerDirection = orientStrongerDirection;
@@ -238,9 +238,9 @@ public class Lofs {
 
 
     /**
-     * Sets for R2 whether cycles shoudld be oriented.
+     * Sets for R2 whether cycles should be oriented.
      *
-     * @param r2Orient2Cycles True if so.
+     * @param r2Orient2Cycles True, if so.
      */
     public void setR2Orient2Cycles(boolean r2Orient2Cycles) {
         this.r2Orient2Cycles = r2Orient2Cycles;

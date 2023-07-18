@@ -82,7 +82,7 @@ public final class SvarFci implements IGraphSearch {
      */
     private Knowledge knowledge = new Knowledge();
     /**
-     * flag for complete rule set, true if it should use complete rule set, false otherwise.
+     * flag for the complete rule set, true if it should use the complete rule set, false otherwise.
      */
     private boolean completeRuleSetUsed;
     /**
@@ -143,7 +143,6 @@ public final class SvarFci implements IGraphSearch {
     public Graph search() {
         getIndependenceTest().getVariables();
         return search(new SvarFas(getIndependenceTest()));
-//        return search(new Fas(getIndependenceTest()));
     }
 
     /**
@@ -243,7 +242,7 @@ public final class SvarFci implements IGraphSearch {
     }
 
     /**
-     * Returns whether Zhang's complete ruleset is to be used.
+     * Returns whether Zhang's complete rule set is to be used.
      *
      * @return true if Zhang's complete rule set should be used, false if only R1-R4 (the rule set of the original FCI)
      * should be used. False by default.
@@ -253,7 +252,7 @@ public final class SvarFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether Zhang's complete ruleset is to be used.
+     * Sets whether Zhang's complete rule set is to be used.
      *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
@@ -287,7 +286,7 @@ public final class SvarFci implements IGraphSearch {
     /**
      * Returns whether verbose output is to be printed.
      *
-     * @return True if so.
+     * @return True, if so.
      */
     public boolean isVerbose() {
         return this.verbose;
@@ -296,7 +295,7 @@ public final class SvarFci implements IGraphSearch {
     /**
      * Sets whether verbose output is to be printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -313,7 +312,7 @@ public final class SvarFci implements IGraphSearch {
 
 
     // removeSimilarPairs based on orientSimilarPairs in SvarFciOrient.java by Entner and Hoyer
-    // this version removes edges from graph instead of list of adjacencies
+    // this version removes edges from graph instead of the list of adjacencies
     private void removeSimilarPairs(IndependenceTest test, Node x, Node y, Set<Node> condSet) {
         System.out.println("Entering removeSimilarPairs method...");
         System.out.println("original independence: " + x + " and " + y + " conditional on " + condSet);

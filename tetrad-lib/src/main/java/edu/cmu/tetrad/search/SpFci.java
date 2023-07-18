@@ -20,7 +20,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 package edu.cmu.tetrad.search;
 
-import edu.cmu.tetrad.data.ICovarianceMatrix;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.data.KnowledgeEdge;
 import edu.cmu.tetrad.graph.*;
@@ -75,8 +74,6 @@ public final class SpFci implements IGraphSearch {
     private final TetradLogger logger = TetradLogger.getInstance();
     // The score.
     private final Score score;
-    // The covariance matrix beign searched over. Assumes continuous data.
-    ICovarianceMatrix covarianceMatrix;
     // The sample size.
     int sampleSize;
     // The PAG being constructed.
@@ -84,7 +81,7 @@ public final class SpFci implements IGraphSearch {
     // The background knowledge.
     private Knowledge knowledge = new Knowledge();
     // The conditional independence test.
-    private IndependenceTest independenceTest;
+    private final IndependenceTest independenceTest;
     // Flag for complete rule set, true if you should use complete rule set, false otherwise.
     private boolean completeRuleSetUsed = true;
     // The maximum length for any discriminating path. -1 if unlimited; otherwise, a positive integer.
@@ -93,11 +90,8 @@ public final class SpFci implements IGraphSearch {
     private int maxDegree = -1;
     // True iff verbose output should be printed.
     private boolean verbose;
-    // The print stream that output is directed to.
-    private PrintStream out = System.out;
     private int depth = -1;
     private boolean doDiscriminatingPathRule = true;
-
 
     /**
      * Constructor; requires by ta test and a score, over the same variables.
@@ -132,7 +126,6 @@ public final class SpFci implements IGraphSearch {
         Sp subAlg = new Sp(this.score);
         PermutationSearch alg = new PermutationSearch(subAlg);
         alg.setKnowledge(this.knowledge);
-        alg.setVerbose(this.verbose);
 
         this.graph = alg.search();
 
@@ -192,7 +185,7 @@ public final class SpFci implements IGraphSearch {
     /**
      * Returns the knowledge.
      *
-     * @return This knowedge.
+     * @return This knowledge.
      */
     public Knowledge getKnowledge() {
         return this.knowledge;
@@ -210,7 +203,7 @@ public final class SpFci implements IGraphSearch {
     /**
      * Returns whether the complete rule set is used.
      *
-     * @return True if Zhang's complete rule set should be used, Talse if only R1-R4 (the rule set of the original FCI)
+     * @return True if Zhang's complete rule set should be used, False if only R1-R4 (the rule set of the original FCI)
      * should be used. False by default.
      */
     public boolean isCompleteRuleSetUsed() {
@@ -218,7 +211,7 @@ public final class SpFci implements IGraphSearch {
     }
 
     /**
-     * Sets whether Zhang's complete ruleset is used.
+     * Sets whether Zhang's complete rule set is used.
      *
      * @param completeRuleSetUsed set to true if Zhang's complete rule set should be used, false if only R1-R4 (the rule
      *                            set of the original FCI) should be used. False by default.
@@ -252,7 +245,7 @@ public final class SpFci implements IGraphSearch {
     /**
      * Sets whether verbose output is printed.
      *
-     * @param verbose True if so.
+     * @param verbose True, if so.
      */
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
@@ -273,7 +266,7 @@ public final class SpFci implements IGraphSearch {
      * @param out This print stream.
      */
     public void setOut(PrintStream out) {
-        this.out = out;
+        // The print stream that output is directed to.
     }
 
     /**
@@ -288,7 +281,7 @@ public final class SpFci implements IGraphSearch {
     /**
      * Sets whether the discriminating path search is done.
      *
-     * @param doDiscriminatingPathRule True if so.
+     * @param doDiscriminatingPathRule True, if so.
      */
     public void setDoDiscriminatingPathRule(boolean doDiscriminatingPathRule) {
         this.doDiscriminatingPathRule = doDiscriminatingPathRule;

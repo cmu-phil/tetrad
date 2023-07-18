@@ -99,14 +99,14 @@ public class Fas implements IFas {
 
     /**
      * Discovers all adjacencies in data.  The procedure is to remove edges in the graph which connect pairs of
-     * variables which are independent conditional on some other set of variables in the graph (the "sepset"). These are
+     * variables which are independent, conditional on some other set of variables in the graph (the "sepset"). These are
      * removed in tiers.  First, edges which are independent conditional on zero other variables are removed, then edges
      * which are independent conditional on one other variable are removed, then two, then three, and so on, until no
      * more edges can be removed from the graph.  The edges which remain in the graph after this procedure are the
      * adjacencies in the data.
      *
      * @param nodes A list of nodes to search over.
-     * @return An undirected graph that summarizes the conditional independendencies that obtain in the data.
+     * @return An undirected graph that summarizes the conditional independencies that obtain in the data.
      */
     public Graph search(List<Node> nodes) {
         long startTime = MillisecondTimes.timeMillis();
@@ -197,7 +197,7 @@ public class Fas implements IFas {
         }
 
         // The search graph. It is assumed going in that all the true adjacencies of x are in this graph for every node
-        // x. It is hoped (i.e. true in the large sample limit) that true adjacencies are never removed.
+        // x. It is hoped (i.e., true in the large sample limit) that true adjacencies are never removed.
         Graph graph = new EdgeListGraph(nodes);
 
         for (int i = 0; i < nodes.size(); i++) {
@@ -236,9 +236,9 @@ public class Fas implements IFas {
     }
 
     /**
-     * Sets the knowledge to be used int the search.
+     * Sets the knowledge to be used in the search.
      *
-     * @param knowledge This knoweldge.
+     * @param knowledge This knowledge.
      * @see Knowledge
      */
     public void setKnowledge(Knowledge knowledge) {
@@ -394,8 +394,6 @@ public class Fas implements IFas {
             ppx.sort(Comparator.comparing(scores2::get));
             Collections.reverse(ppx);
         }
-
-        Graph g0 = new EdgeListGraph(getNodes());
 
         if (ppx.size() >= depth) {
             ChoiceGenerator cg = new ChoiceGenerator(ppx.size(), depth);

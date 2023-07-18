@@ -13,7 +13,8 @@ version of Tetrad and Causal Command.
 
 ## Setting up Java
 
-You will need to set up Java on your machine. For setting up Java, see our Wiki article, [Setting up Java for Tetrad](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Java-for-Tetrad).
+You will need to set up Java on your machine. For setting up Java, see our Wiki
+article, [Setting up Java for Tetrad](https://github.com/cmu-phil/tetrad/wiki/Setting-up-Java-for-Tetrad).
 
 ## Tetrad GUI Application
 
@@ -44,9 +45,12 @@ which shows how to integrate arbitrary Java code in the Tetrad project into a Py
 the [JPype Python project](https://jpype.readthedocs.io/en/latest/).
 
 Also, please see the [causal-learn Python package](https://causal-learn.readthedocs.io/en/latest/), translating some
-Tetrad algorithms into Python and adding some algorithms not in Tetrad, now part of the [py-why space](https://github.com/py-why)
+Tetrad algorithms into Python and adding some algorithms not in Tetrad, now part of
+the [py-why space](https://github.com/py-why)
 
-We added [a method to use Tetrad algorithms in R via py-tetrad](https://github.com/cmu-phil/py-tetrad/blob/main/pytetrad/R/). This is work in progress.
+We
+added [a method to use Tetrad algorithms in R via py-tetrad](https://github.com/cmu-phil/py-tetrad/blob/main/pytetrad/R/).
+This is work in progress.
 
 ## Documentation
 
@@ -87,9 +91,13 @@ our [Wish List
 
 ## Open Code
 
-All of our code is public and we welcome suggestions, especially suggestions that improve clarity or performance of our code.
+All of our code is public and we welcome suggestions, especially suggestions that improve clarity or performance of our
+code.
 
-If you're writing code using (or for!) Tetrad in either [Java](https://github.com/cmu-phil/tetrad) or [Python](https://github.com/cmu-phil/py-tetrad) (or R, which we're working toward!), thank you! Please contribute if you are doing amazing work, or publish and send us links to your papers. Please keep us abreast of how Tetrad could be improved for your applications; we will do what we can.
+If you're writing code using (or for!) Tetrad in either [Java](https://github.com/cmu-phil/tetrad)
+or [Python](https://github.com/cmu-phil/py-tetrad) (or R, which we're working toward!), thank you! Please contribute if
+you are doing amazing work, or publish and send us links to your papers. Please keep us abreast of how Tetrad could be
+improved for your applications; we will do what we can.
 
 ## Citation
 

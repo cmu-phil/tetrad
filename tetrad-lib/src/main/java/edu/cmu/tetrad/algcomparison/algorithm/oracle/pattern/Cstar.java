@@ -40,6 +40,25 @@ public class Cstar implements Algorithm, TakesIndependenceWrapper {
 
         edu.cmu.tetrad.search.Cstar cStaR = new edu.cmu.tetrad.search.Cstar();
 
+        CpdagAlgorithm algorithm;
+
+        switch (parameters.getInt(Params.CSTAR_CPDAG_ALGORITHM)) {
+            case 1:
+                algorithm = CpdagAlgorithm.PC_STABLE;
+                break;
+            case 2:
+                algorithm = CpdagAlgorithm.FGES;
+                break;
+            case 3:
+                algorithm = CpdagAlgorithm.BOSS;
+                break;
+            case 4:
+                algorithm = CpdagAlgorithm.RESTRICTED_BOSS;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown CPDAG algorithm: " + parameters.getInt(Params.CSTAR_CPDAG_ALGORITHM));
+        }
+
         cStaR.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         cStaR.setNumSubsamples(parameters.getInt(Params.NUM_SUBSAMPLES));
         cStaR.setqFrom(parameters.getInt(Params.CSTAR_Q));

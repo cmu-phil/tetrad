@@ -33,7 +33,7 @@ import java.util.Set;
 public interface IMbSearch {
 
     /**
-     * Given the target this returns all the nodes in the Markov Blanket.
+     * Given the target, this returns all the nodes in the Markov Blanket.
      */
     Set<Node> findMb(Node target);
 

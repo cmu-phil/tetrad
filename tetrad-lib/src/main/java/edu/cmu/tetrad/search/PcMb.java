@@ -66,7 +66,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      */
     private List<Node> targets;
     /**
-     * The depth to which independence tests should be performed--i.e. the maximum number of conditioning variables for
+     * The depth to which independence tests should be performed--i.e., the maximum number of conditioning variables for
      * any independence test.
      */
     private int depth;
@@ -100,11 +100,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      */
     private Set<Triple> ambiguousTriples;
     /**
-     * The most recently returned graph.
-     */
-    private Graph graph;
-    /**
-     * True if cycles are to be prevented. May be expensive for large graphs (but also useful for large graphs).
+     * True if cycles are to be prevented. Maybe expensive for large graphs (but also useful for large graphs).
      */
     private boolean meekPreventCycles;
     private boolean findMb = false;
@@ -135,16 +131,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
 
-    private static List<Node> asList(int[] indices, List<Node> nodes) {
-        List<Node> list = new LinkedList<>();
-
-        for (int i : indices) {
-            list.add(nodes.get(i));
-        }
-
-        return list;
-    }
-
     private static boolean isArrowheadAllowed1(Node from, Node to,
                                                Knowledge knowledge) {
         if (knowledge == null) {
@@ -158,7 +144,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     /**
      * Sets whether cycles should be prevented, using a cycle checker.
      *
-     * @param meekPreventCycles True if so.
+     * @param meekPreventCycles True, if so.
      */
     public void setMeekPreventCycles(boolean meekPreventCycles) {
         this.meekPreventCycles = meekPreventCycles;
@@ -349,7 +335,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
 
         this.logger.log("graph", "\nReturning this graph: " + graph);
 
-        this.graph = graph;
         return graph;
     }
 
@@ -429,7 +414,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * Returns the targets of the most recent search.
+     * Return the targets of the most recent search.
      *
      * @return This list.
      */
@@ -576,7 +561,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
     }
 
     /**
-     * Tries node remove the edge node---from using adjacent nodes of node 'from', then tries node remove each other
+     * Tries to remove the edge node---from using adjacent nodes of node 'from.' then tries to remove each other
      * edge adjacent node 'from' using remaining edges adjacent node 'from.' If the edge 'node' is removed, the method
      * immediately returns.
      *
@@ -818,7 +803,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      *
      * @param node    The node being discussed.
      * @param adjNode The list of adjacencies to <code>node</code>.
-     * @return The revised list of nodes--i.e. the possible parents among adjx, according to knowledge.
+     * @return The revised list of nodes--i.e., the possible parents among adjx, according to knowledge.
      */
     private List<Node> possibleParents(Node node, List<Node> adjNode) {
         List<Node> possibleParents = new LinkedList<>();
@@ -839,7 +824,7 @@ public final class PcMb implements IMbSearch, IGraphSearch {
      * @param z         The name of a node.
      * @param x         The name of another node.
      * @param knowledge The knowledge set--see the Knowledge class.
-     * @return True just in case z is a possible parent of x.
+     * @return True, just in case z is a possible parent of x.
      */
     private boolean possibleParentOf(String z, String x, Knowledge knowledge) {
         return !knowledge.isForbidden(z, x) && !knowledge.isRequired(x, z);

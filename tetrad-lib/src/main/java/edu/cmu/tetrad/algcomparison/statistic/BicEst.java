@@ -16,6 +16,7 @@ public class BicEst implements Statistic {
     static final long serialVersionUID = 23L;
 
     private double penaltyDiscount = 1.0;
+    private boolean precomputeCovariances = true;
 
     public BicEst() {
     }
@@ -37,12 +38,16 @@ public class BicEst implements Statistic {
     @Override
     public double getValue(Graph trueGraph, Graph estGraph, DataModel dataModel) {
 //        double _true = SemBicScorer.scoreDag(SearchGraphUtils.dagFromCPDAG(trueGraph), dataModel);
-        return SemBicScorer.scoreDag(GraphSearchUtils.dagFromCPDAG(estGraph), dataModel);
+        return SemBicScorer.scoreDag(GraphSearchUtils.dagFromCPDAG(estGraph), dataModel, precomputeCovariances);
     }
 
     @Override
     public double getNormValue(double value) {
         return tanh(value / 1e6);
+    }
+
+    public void setPrecomputeCovariances(boolean precomputeCovariances) {
+        this.precomputeCovariances = precomputeCovariances;
     }
 }
 

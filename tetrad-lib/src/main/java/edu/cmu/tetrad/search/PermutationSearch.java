@@ -16,7 +16,7 @@ import java.util.*;
  *
  * <p>This class specifically handles an optimization for tiered knowledge, whereby
  * tiers in the knowledge can be searched one at a time in order from the lowest to highest, taking all variables from
- * previous tiers as a fixed previs for a later tier. This allows these permutation searches to search over many more
+ * previous tiers as a fixed for a later tier. This allows these permutation searches to search over many more
  * variables than otherwise, so long as tiered knowledge is available to organize the search.</p>
  *
  * <p>This class is configured to respect the knowledge of forbidden and required
@@ -35,7 +35,6 @@ public class PermutationSearch {
     private final Map<Node, GrowShrinkTree> gsts;
     private final Map<String, Node> nodeMap;
     private Knowledge knowledge = new Knowledge();
-    private boolean verbose = false;
 
     /**
      * Constructs a new PermutationSearch using the given SuborderSearch.
@@ -66,7 +65,7 @@ public class PermutationSearch {
      * @param nodes   The nodes.
      * @param parents A map from each node to its parents.
      * @param cpDag   Whether a CPDAG is wanted, if false, a DAG.
-     * @return The construted graph.
+     * @return The constructed graph.
      */
     public static Graph getGraph(List<Node> nodes, Map<Node, Set<Node>> parents, boolean cpDag) {
         return getGraph(nodes, parents, null, cpDag);
@@ -143,19 +142,10 @@ public class PermutationSearch {
     /**
      * Returns the variables.
      *
-     * @return This lsit.
+     * @return This list.
      */
     public List<Node> getVariables() {
         return new ArrayList<>(this.variables);
-    }
-
-    /**
-     * Sets whether verbose output should be printed.
-     *
-     * @param verbose True if so.
-     */
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
     }
 
     /**

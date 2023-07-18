@@ -27,7 +27,6 @@ import edu.cmu.tetrad.bayes.MlBayesIm;
 import edu.cmu.tetrad.data.ContinuousVariable;
 import edu.cmu.tetrad.data.DataSet;
 import edu.cmu.tetrad.data.Histogram;
-import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.Dag;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.graph.RandomGraph;
@@ -48,7 +47,6 @@ import static org.junit.Assert.assertEquals;
  * @author josephramsey
  */
 public final class TestHistogram {
-    private Knowledge knowledge;
 
     @Test
     public void testHistogram() {
@@ -101,12 +99,12 @@ public final class TestHistogram {
         // this particular test is run repeatedly.
         Histogram histogram2 = new Histogram(data2, "X1");
 //        histogram2.setTarget("X1");
-        int[] frequencies1 = histogram2.getFrequencies();
+        histogram2.getFrequencies();
 
 //        histogram2.setTarget("X1");
         histogram2.addConditioningVariable("X2", 0);
         histogram2.addConditioningVariable("X3", 1);
-        int[] frequencies = histogram2.getFrequencies();
+        histogram2.getFrequencies();
     }
 }
 

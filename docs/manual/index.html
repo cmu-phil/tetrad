@@ -1665,12 +1665,12 @@ raf mek pip2    erk akt cd3_s   cd3_v   icam
         to the scatterplots or select the number of bins to include in the histograms.</p>
 
     <p>Finally, one may condition on ranges of variables or particular discrete values by
-    selecting “Edit Conditioning Variables and Ranges.” This brings up a dialog that lets one
-    add conditioning variables with particular ranges for continuous variables or values for
-    discrete values. For continuous ranges, one may pick “Above Average,” “Below Average,” or
-    “In n-tile” (where n is specified) or give a particular range manually. One may add as many
-    conditions as one prefers; when one clicks “OK,” all plots will be updated to reflect these
-    conditioning choices.</p>
+        selecting “Edit Conditioning Variables and Ranges.” This brings up a dialog that lets one
+        add conditioning variables with particular ranges for continuous variables or values for
+        discrete values. For continuous ranges, one may pick “Above Average,” “Below Average,” or
+        “In n-tile” (where n is specified) or give a particular range manually. One may add as many
+        conditions as one prefers; when one clicks “OK,” all plots will be updated to reflect these
+        conditioning choices.</p>
 
     <img alt="" src="images/data_box_8b.png" width="650">
     <img alt="" src="images/data_box_8a.png" width="650">
@@ -4430,12 +4430,12 @@ tabs will not appear.</p> -->
     </p>
     </div>
 
-<!--    <h3>MAG SEM BIC Score</h3>-->
+    <!--    <h3>MAG SEM BIC Score</h3>-->
 
-<!--    <div id="mag-sem-bic-score"><p>-->
-<!--        This gives a BIC score for a Mixed Ancestral Graph (MAG).-->
-<!--    </p>-->
-<!--    </div>-->
+    <!--    <div id="mag-sem-bic-score"><p>-->
+    <!--        This gives a BIC score for a Mixed Ancestral Graph (MAG).-->
+    <!--    </p>-->
+    <!--    </div>-->
 
     <div id="parameters"><h2>Search Parameters</h2>
 
@@ -4443,6 +4443,67 @@ tabs will not appear.</p> -->
             the value type must be one of the following: Integer, Long, Double, String,
             Boolean.</p> <!-- Insert the parameter descriptions here, must follow
         the same structure and naming conventions -->
+
+        public static final String TRIMMING_STYLE = "trimmingStyle";
+        public static final String NUMBER_EXPANSIONS = "numberExpansions";
+
+        <h3 class="parameter_description"
+            id="cstarCpdagAlgorithm">cstarCpdagAlgorithm</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="cstarCpdagAlgorithm_short_desc">Algorithm: 1 = PC Stable, 2 = FGES, 3 = BOSS, 4 = Restricted BOSS</span></li>
+            <li>Long Description: <span
+                    id="cstarCpdagAlgorithm_long_desc">The CPDAG algorithm to use: 1 = PC Stable, 2 = FGES, 3 = BOSS, 4 = Restricted BOSS/span>
+            </li>
+            <li>Default Value: <span
+                    id="cstarCpdagAlgorithm_default_value">4</span></li>
+            <li>Lower
+                Bound: <span id="cstarCpdagAlgorithm_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="cstarCpdagAlgorithm_upper_bound">4</span></li>
+            <li>Value Type:
+                <span id="cstarCpdagAlgorithm_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="trimmingStyle">trimmingStyle</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="trimmingStyle_short_desc">Trimming Style: 1 = None, 2 = Adjacencies, 3 = MB DAG, 4 = Semidirected paths</span></li>
+            <li>Long Description: <span
+                    id="trimmingStyle_long_desc">'Adjacencies' trims to the adjacencies the targets, MB DAGs to the Union(MB(targets)) U targets,
+                semidirected trims to nodes with semidirected paths to the targets. </span>
+            </li>
+            <li>Default Value: <span
+                    id="trimmingStyle_default_value">3</span></li>
+            <li>Lower
+                Bound: <span id="trimmingStyle_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="trimmingStyle_upper_bound">4</span></li>
+            <li>Value Type:
+                <span id="trimmingStyle_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="numberOfExpansions">numberOfExpansions</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="numberOfExpansions_short_desc">Number of expansions of the algorithm away from the target</span></li>
+            <li>Long Description: <span
+                    id="numberOfExpansions_long_desc">Each expansion iterates to concentrically more variables </span>
+            </li>
+            <li>Default Value: <span
+                    id="numberOfExpansions_default_value">2</span></li>
+            <li>Lower
+                Bound: <span id="numberOfExpansions_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="numberOfExpansions_upper_bound">1000</span></li>
+            <li>Value Type:
+                <span id="numberOfExpansions_value_type">Integer</span></li>
+        </ul>
 
         <h3 class="parameter_description"
             id="lambda1">lambda1</h3>
@@ -4952,7 +5013,7 @@ tabs will not appear.</p> -->
             <li>Short Description: <span id="targets_short_desc">Target names
         (comma separated)</span></li>
             <li>Long Description: <span
-                    id="targets_long_desc">Target names (comma separated).</span>
+                    id="targets_long_desc">Target names (comma or space separated).</span>
             </li>
             <li>Default Value: <span
                     id="targets_default_value"></span></li>
@@ -6376,7 +6437,7 @@ tabs will not appear.</p> -->
                 <span id="maxIndegree_value_type">Integer</span></li>
         </ul>
 
-        <h3 id="zsMaxIndegree" class="parameter_description">zsMaxIndegree</h3>
+        <h3 class="parameter_description" id="zsMaxIndegree">zsMaxIndegree</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="zsMaxIndegree_short_desc">Maximum indegree of true graph (min = 0)</span>
             </li>
@@ -6903,7 +6964,8 @@ tabs will not appear.</p> -->
         <h3 class="parameter_description" id="probRemoveColumn">probRemoveColumn</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span
-                    id="probRemoveColumn_short_desc">Probability of randomly removing a column from a dataset</span></li>
+                    id="probRemoveColumn_short_desc">Probability of randomly removing a column from a dataset</span>
+            </li>
             <li>Long
                 Description: <span id="probRemoveColumn_long_desc">
                 	For testing algorithms with overlapping variables, columns may be removed
@@ -7540,7 +7602,7 @@ tabs will not appear.</p> -->
                     id="penaltyDiscountZs_value_type">Double</span></li>
         </ul>
 
-        <h3 id="zSRiskBound" class="parameter_description">zSRiskBound</h3>
+        <h3 class="parameter_description" id="zSRiskBound">zSRiskBound</h3>
         <ul class="parameter_description_list">
             <li>Short Description: <span id="zSRiskBound_short_desc">Risk bound</span></li>
             <li>Long Description: <span id="zSRiskBound_long_desc">
@@ -8515,9 +8577,9 @@ tabs will not appear.</p> -->
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="simulationErrorType_short_desc"> 1 = Usual LG SEM, 2 = Indep
-        U(lb, ub), 3 = Indep Exp(lambda), 4 = Indep Gumbel(mu,
-        beta)</span></li>
+                    id="simulationErrorType_short_desc"> 1 = Usual LG SEM, 2 =
+        U(lb, ub), 3 = Exp(lambda), 4 = Gumbel(mu,
+        beta), 5 = Gamma(shape, scale)</span></li>
             <li>Long Description: <span
                     id="simulationErrorType_long_desc">Exogenous error type</span></li>
             <li>Default Value: <span
@@ -8525,7 +8587,7 @@ tabs will not appear.</p> -->
             <li>Lower Bound:
                 <span id="simulationErrorType_lower_bound">1</span></li>
             <li>Upper
-                Bound: <span id="simulationErrorType_upper_bound">4</span></li>
+                Bound: <span id="simulationErrorType_upper_bound">5</span></li>
             <li>Value Type: <span
                     id="simulationErrorType_value_type">Integer</span></li>
         </ul>
@@ -9264,6 +9326,7 @@ ga.q = [];
 ga.l = +new Date;
 ga('create', 'UA-XXXXX-Y', 'auto');
 ga('send', 'pageview')
+
 
 
 
