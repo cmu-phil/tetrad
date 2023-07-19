@@ -36,6 +36,11 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     public Cstar() {
     }
 
+    public Cstar(IndependenceWrapper test, ScoreWrapper score) {
+        this.test = test;
+        this.score = score;
+    }
+
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         System.out.println("# Available Processors = " + Runtime.getRuntime().availableProcessors());

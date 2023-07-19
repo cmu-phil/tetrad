@@ -3406,7 +3406,6 @@ public final class TestGrasp {
             parameters.set(Params.TARGETS, "DTF_16LD DTF_16LDVern DTF_23LD DTF_23SD");
 
             RestrictedBoss alg = new RestrictedBoss(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
-            alg.setKnowledge(knowledge);
 
             Graph graph = alg.search(data, parameters);
         } catch (IOException e) {
