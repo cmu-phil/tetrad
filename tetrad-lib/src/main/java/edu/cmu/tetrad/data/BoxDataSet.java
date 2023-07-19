@@ -627,7 +627,7 @@ public final class BoxDataSet implements DataSet {
             rows[i] = i;
         }
 
-        int[] cols = new int[this.dataBox.numCols()];
+        int[] cols = new int[this.dataBox.numCols() - 1];
 
         int m = -1;
 
