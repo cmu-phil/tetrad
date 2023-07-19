@@ -152,7 +152,6 @@ public class Cstar {
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses,
                                                      List<Node> possibleEffects, String path) {
-        System.out.println("path = " + path);
 
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
@@ -244,39 +243,39 @@ public class Cstar {
                         throw new IllegalArgumentException("That type of sample is not configured: " + Cstar.this.sampleStyle);
                     }
 
-                    Graph pattern = null;
+                    Graph cpdag = null;
                     double[][] effects = null;
 
-                    if (dir != null && new File(dir, "pattern." + (this.k + 1) + ".txt").exists() && new File(dir, "effects." + (this.k + 1) + ".txt").exists()) {
+                    if (dir != null && new File(dir, "cpdag." + (this.k + 1) + ".txt").exists() && new File(dir, "effects." + (this.k + 1) + ".txt").exists()) {
                         try {
-                            pattern = GraphSaveLoadUtils.loadGraphTxt(new File(dir, "pattern." + (this.k + 1) + ".txt"));
+                            cpdag = GraphSaveLoadUtils.loadGraphTxt(new File(dir, "cpdag." + (this.k + 1) + ".txt"));
                             effects = loadMatrix(new File(dir, "effects." + (this.k + 1) + ".txt"));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
 
-                    if (pattern == null || effects == null) {
+                    if (cpdag == null || effects == null) {
                         if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.PC_STABLE) {
-                            pattern = getPatternPcStable(sample);
+                            cpdag = getPatternPcStable(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.FGES) {
-                            pattern = getPatternFges(sample);
+                            cpdag = getPatternFges(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.BOSS) {
-                            pattern = getPatternBoss(sample);
+                            cpdag = getPatternBoss(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.RESTRICTED_BOSS) {
-                            pattern = getPatternRestrictedBoss(sample, this._dataSet);
+                            cpdag = getPatternRestrictedBoss(sample, this._dataSet);
                         } else {
-                            throw new IllegalArgumentException("That type of of pattern algorithm is not configured: " + Cstar.this.cpdagAlgorithm);
+                            throw new IllegalArgumentException("That type of of cpdag algorithm is not configured: " + Cstar.this.cpdagAlgorithm);
                         }
 
-                        edgesTotal[0] += pattern.getNumEdges();
+                        edgesTotal[0] += cpdag.getNumEdges();
                         edgesCount[0]++;
 
                         if (dir != null) {
-                            GraphSaveLoadUtils.saveGraph(pattern, new File(dir, "pattern." + (this.k + 1) + ".txt"), false);
+                            GraphSaveLoadUtils.saveGraph(cpdag, new File(dir, "cpdag." + (this.k + 1) + ".txt"), false);
                         }
 
-                        Ida ida = new Ida(sample, pattern, this.possibleCauses);
+                        Ida ida = new Ida(sample, cpdag, this.possibleCauses);
 
                         effects = new double[this.possibleCauses.size()][this.possibleEffects.size()];
 
@@ -311,11 +310,10 @@ public class Cstar {
 
         List<double[][]> allEffects = runCallablesDoubleArray(tasks, parallelized);
 
-        int avgEdges = (int) (edgesTotal[0] / (double) edgesCount[0]);
+        int avgEdges = (int) (edgesTotal[0] / (double) edgesCount[0]) + 1;
 
         qs.clear();
         qs.add(avgEdges);
-
 
         List<List<Double>> doubles = new ArrayList<>();
 
@@ -346,6 +344,11 @@ public class Cstar {
             private Task2(List<Node> possibleCauses, List<Node> possibleEffects, int q) {
                 this.possibleCauses = possibleCauses;
                 this.possibleEffects = possibleEffects;
+
+                if (q == 0) {
+                    throw new IllegalArgumentException("q must be positive");
+                }
+
                 this.q = q;
             }
 
@@ -596,8 +599,8 @@ public class Cstar {
     /**
      * Returns a text table from the given records
      */
-    public String makeTable(LinkedList<Record> records, boolean printTable) {
-        int numColumns = 8;
+    public String makeTable(LinkedList<Record> records, boolean printTable, boolean cstar) {
+        int numColumns = 7;
 
         TextTable table = new TextTable(records.size() + 1, numColumns);
 //        table.setLatex(true);
@@ -610,8 +613,12 @@ public class Cstar {
         table.setToken(0, column++, "PI");
         table.setToken(0, column++, "Effect");
         table.setToken(0, column++, "R-SUM(Pi)");
-        table.setToken(0, column++, "E(V)");
-        table.setToken(0, column, "PCER");
+
+        if (cstar) {
+            table.setToken(0, column, "PCER");
+        } else {
+            table.setToken(0, column++, "E(V)");
+        }
 
         double sumPi = 0.0;
 
@@ -637,10 +644,16 @@ public class Cstar {
             table.setToken(i + 1, column++, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, column++, nf.format(records.get(i).getMinBeta()));
             table.setToken(i + 1, column++, nf.format(R - sumPi));
-            double er = Cstar.er(records.get(i).getPi(), (i + 1), p);
-            table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(er));
-            double pcer = Cstar.pcer(records.get(i).getPi(), (i + 1), p);
-            table.setToken(i + 1, column, records.get(i).getPi() <= 0.5 ? "*" : nf.format(pcer));
+
+            if (cstar) {
+                double pcer = Cstar.pcer(records.get(i).getPi(), (i + 1), p);
+                table.setToken(i + 1, column, records.get(i).getPi() <= 0.5 ? "*" : nf.format(pcer));
+            } else {
+                double er = Cstar.er(records.get(i).getPi(), (i + 1), p);
+                table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(er));
+            }
+//            double er = Cstar.er(records.get(i).getPi(), (i + 1), p);
+//            table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(er));
         }
 
         return (printTable ? "\n" + table : "") + "p = " + p + " q = " + q + (printTable ? " Type: C = continuous, D = discrete\n" : "");

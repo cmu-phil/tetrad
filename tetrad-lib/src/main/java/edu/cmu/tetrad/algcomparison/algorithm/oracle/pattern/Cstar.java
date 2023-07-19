@@ -18,6 +18,9 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,7 +72,7 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
         cStaR.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         cStaR.setNumSubsamples(parameters.getInt(Params.NUM_SUBSAMPLES));
-        cStaR.setqFrom(parameters.getInt(Params.CSTAR_Q));
+        cStaR.setqFrom(1);//parameters.getInt(Params.CSTAR_Q));
         cStaR.setqTo(parameters.getInt(Params.CSTAR_Q));
         cStaR.setSelectionAlpha(parameters.getDouble(Params.SELECTION_MIN_EFFECT));
         cStaR.setqIncrement(1);
@@ -111,9 +114,18 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             throw new IllegalArgumentException("Expecting tabular data for CStaR.");
         }
 
+        String path = parameters.getString(Params.FILE_OUT_PATH);
+
+        int i;
+
+        for (i = 1;; i++) {
+            if (!new File(path + "." + i).exists()) break;
+        }
+
+        path = path + "." + i;
+
         LinkedList<LinkedList<edu.cmu.tetrad.search.Cstar.Record>> allRecords
-                = cStaR.getRecords(
-                (DataSet) dataSet, possibleCauses, possibleEffects);
+                = cStaR.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, path);
 
         if (allRecords.isEmpty()) {
             throw new IllegalStateException("There were no records.");
@@ -122,9 +134,32 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         records = allRecords.getLast();
 
         TetradLogger.getInstance().forceLogMessage("CStaR Table");
-        TetradLogger.getInstance().forceLogMessage(cStaR.makeTable(edu.cmu.tetrad.search.Cstar.cStar(allRecords), true));
+        String table1 = cStaR.makeTable(edu.cmu.tetrad.search.Cstar.cStar(allRecords), true, true);
+        TetradLogger.getInstance().forceLogMessage(table1);
+
+        // Print table1 to file.
+        String filename = path + "/cstar_table.txt";
+        try {
+            PrintWriter writer = new PrintWriter(filename, "UTF-8");
+            writer.println(table1);
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Error writing to file: " + filename);
+        }
+
         TetradLogger.getInstance().forceLogMessage("\nStability Selection Table");
-        TetradLogger.getInstance().forceLogMessage(cStaR.makeTable(getRecords(), true));
+        String message = cStaR.makeTable(getRecords(), true, false);
+        TetradLogger.getInstance().forceLogMessage(message);
+
+        // Print table2 to file.
+        filename = path + "/stability_selection_table.txt";
+        try {
+            PrintWriter writer = new PrintWriter(filename, "UTF-8");
+            writer.println(message);
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Error writing to file: " + filename);
+        }
 
         return cStaR.makeGraph(this.getRecords());
     }

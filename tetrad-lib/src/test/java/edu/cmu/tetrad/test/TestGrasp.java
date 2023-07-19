@@ -3382,7 +3382,8 @@ public final class TestGrasp {
 
     public void testJaime() {
         try {
-            String path = "/Users/josephramsey/Downloads/Arabidopsis_dataset_Wdtf.csv1.impute.txt";
+            String path = "/Users/josephramsey/Downloads/sample100genes.csv1.imputed.txt";
+//            String path = "/Users/josephramsey/Downloads/Arabidopsis_dataset_Wdtf.csv1.impute.txt";
             DataSet data = SimpleDataLoader.loadContinuousData(new File(path), "//", '\"',
                     "*", true, Delimiter.TAB);
 
@@ -3398,15 +3399,24 @@ public final class TestGrasp {
             knowledge.addToTier(2, variables.get(variables.size() - 1).getName());
 
             Parameters parameters = new Parameters();
-            parameters.set(Params.PENALTY_DISCOUNT, 4);
-            parameters.set(Params.VERBOSE, true);
-            parameters.set(Params.PARALLELIZED, true);
-            parameters.set(Params.FAITHFULNESS_ASSUMED, true);
-            parameters.set(Params.PRECOMPUTE_COVARIANCES, false);
+            parameters.set(Params.PENALTY_DISCOUNT, 1);
+//            parameters.set(Params.VERBOSE, true);
+//            parameters.set(Params.PARALLELIZED, true);
+//            parameters.set(Params.FAITHFULNESS_ASSUMED, true);
+//            parameters.set(Params.PRECOMPUTE_COVARIANCES, false);
+//            parameters.set(Params.TARGETS, "DTF_16LD DTF_16LDVern DTF_23LD DTF_23SD");
+
+            parameters.set(Params.SELECTION_MIN_EFFECT, 0.0);
+            parameters.set(Params.NUM_SUBSAMPLES, 20);
             parameters.set(Params.TARGETS, "DTF_16LD DTF_16LDVern DTF_23LD DTF_23SD");
+            parameters.set(Params.CSTAR_Q, 10);
+            parameters.set(Params.PARALLELIZED, true);
+            parameters.set(Params.CSTAR_CPDAG_ALGORITHM, 4);
+            parameters.set(Params.FILE_OUT_PATH, "/Users/josephramsey/Desktop/cstar.out");
 
-            RestrictedBoss alg = new RestrictedBoss(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
+//            RestrictedBoss alg = new RestrictedBoss(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
 
+            edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore());
             Graph graph = alg.search(data, parameters);
         } catch (IOException e) {
             throw new RuntimeException(e);

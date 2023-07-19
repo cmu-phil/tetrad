@@ -114,10 +114,11 @@ public class LogUtilsSearch {
     public static String getScoreFact(int i, int[] parents, List<Node> variables) {
         StringBuilder fact = new StringBuilder(variables.get(i) + " | ");
 
-        for (int p : parents) {
+        for (int j = 0; j < parents.length; j++) {
+            int p = parents[j];
             fact.append(variables.get(p));
 
-            if (p < parents.length - 1) {
+            if (j < parents.length - 1) {
                 fact.append(", ");
             }
         }
