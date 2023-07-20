@@ -188,6 +188,7 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         parameters.add(Params.CSTAR_Q);
         parameters.add(Params.PARALLELIZED);
         parameters.add(Params.CSTAR_CPDAG_ALGORITHM);
+        parameters.add(Params.FILE_OUT_PATH);
         parameters.add(Params.VERBOSE);
         return parameters;
     }
