@@ -1868,6 +1868,92 @@ public final class GraphUtils {
         }
     }
 
+    public static Graph trimGraph(List<Node> targets, Graph graph, int trimmingStyle) {
+        switch (trimmingStyle) {
+            case 1:
+                break;
+            case 2:
+                graph = trimAdjacentToTarget(targets, graph);
+                break;
+            case 3:
+                graph = trimMarkovBlanketGraph(targets, graph);
+                break;
+            case 4:
+                graph = trimSemidirected(targets, graph);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown trimming style: " + trimmingStyle);
+        }
+
+        return graph;
+    }
+
+    private static Graph trimAdjacentToTarget(List<Node> targets, Graph graph) {
+        Graph _graph = new EdgeListGraph(graph);
+
+        M:
+        for (Node m : graph.getNodes()) {
+            if (!targets.contains(m)) {
+                for (Node n : targets) {
+                    if (graph.isAdjacentTo(m, n)) {
+                        continue M;
+                    }
+                }
+
+                _graph.removeNode(m);
+            }
+        }
+
+        return _graph;
+    }
+
+    private static Graph trimMarkovBlanketGraph(List<Node> targets, Graph graph) {
+        Graph mbDag = new EdgeListGraph(graph);
+
+        M:
+        for (Node n : graph.getNodes()) {
+            if (!targets.contains(n)) {
+                for (Node m : targets) {
+                    if (graph.isAdjacentTo(n, m)) {
+                        continue M;
+                    }
+                }
+
+                for (Node m : targets) {
+                    Set<Node> ch = new HashSet<>(graph.getChildren(m));
+                    ch.retainAll(graph.getChildren(n));
+
+                    if (!ch.isEmpty()) {
+                        continue M;
+                    }
+                }
+
+                mbDag.removeNode(n);
+            }
+        }
+
+        return mbDag;
+    }
+
+    private static Graph trimSemidirected(List<Node> targets, Graph graph) {
+        Graph _graph = new EdgeListGraph(graph);
+
+        M:
+        for (Node m : graph.getNodes()) {
+            if (!targets.contains(m)) {
+                for (Node n : targets) {
+                    if (graph.paths().existsSemidirectedPath(m, n)) {
+                        continue M;
+                    }
+                }
+
+                _graph.removeNode(m);
+            }
+        }
+
+        return _graph;
+    }
+
     private static class Counts {
 
         private final int[][] counts;

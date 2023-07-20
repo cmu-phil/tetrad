@@ -12,6 +12,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
@@ -90,6 +91,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
                 if (!targets.contains(node)) knowledge.addToTier(1, node.getName());
             }
             knowledge.setTierForbiddenWithin(1, true);
+//            knowledge.setTierForbiddenWithin(2, true);
 
             Score score = this.score.getScore(dataSet, parameters);
             edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
@@ -119,6 +121,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
                 if (!targets.contains(node)) knowledge.addToTier(1, node.getName());
             }
             knowledge.setTierForbiddenWithin(1, false);
+//            knowledge.setTierForbiddenWithin(2, true);
 
             score = this.score.getScore(restrictedData, parameters);
             boss = new edu.cmu.tetrad.search.Boss(score);
@@ -128,7 +131,9 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
             permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(knowledge);
 
-            return permutationSearch.search();
+            Graph graph = permutationSearch.search();
+            graph = GraphUtils.trimGraph(targets, graph, parameters.getInt(Params.TRIMMING_STYLE));
+            return graph;
         } else {
             RestrictedBoss algorithm = new RestrictedBoss(this.score);
 
@@ -167,6 +172,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
         params.add(Params.NUM_STARTS);
         params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
         params.add(Params.TARGETS);
+        params.add(Params.TRIMMING_STYLE);
 
         return params;
     }

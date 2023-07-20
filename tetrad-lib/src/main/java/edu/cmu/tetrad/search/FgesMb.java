@@ -31,6 +31,7 @@ import edu.cmu.tetrad.search.utils.DagScorer;
 import edu.cmu.tetrad.search.utils.GraphSearchUtils;
 import edu.cmu.tetrad.search.utils.MeekRules;
 import edu.cmu.tetrad.util.MillisecondTimes;
+import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.SublistGenerator;
 import edu.cmu.tetrad.util.TetradLogger;
 import org.jetbrains.annotations.NotNull;
@@ -84,10 +85,6 @@ import static org.apache.commons.math3.util.FastMath.min;
  * @see Knowledge
  */
 public final class FgesMb implements DagScorer {
-    public void setTrimmingStyle(TrimmingStyle trimmingStyle) {
-        this.trimmingStyle = trimmingStyle;
-    }
-
     public enum TrimmingStyle {
         NONE, ADJACENT_TO_TARGETS, MARKOV_BLANKET_GRAPH, SEMIDIRECTED_PATHS_TO_TARGETS
     }
@@ -96,7 +93,7 @@ public final class FgesMb implements DagScorer {
     private int numExpansions = 2;
 
     // The style of trimming to use.
-    private TrimmingStyle trimmingStyle = TrimmingStyle.NONE;
+    private int trimmingStyle = 3; // default MB trimming.
 
     // Bounds the degree of the graph.
     private int maxDegree = -1;
@@ -166,21 +163,10 @@ public final class FgesMb implements DagScorer {
         this.graph = new EdgeListGraph(getVariables());
     }
 
-
-    // Used to find semidirected paths for cycle checking.
-    private static Node traverseSemiDirected(Node node, Edge edge) {
-        if (node == edge.getNode1()) {
-            if (edge.getEndpoint1() == Endpoint.TAIL) {
-                return edge.getNode2();
-            }
-        } else if (node == edge.getNode2()) {
-            if (edge.getEndpoint2() == Endpoint.TAIL) {
-                return edge.getNode1();
-            }
-        }
-
-        return null;
+    public void setTrimmingStyle(int trimmingStyle) {
+        this.trimmingStyle = trimmingStyle;
     }
+
 
     /**
      * Greedy equivalence search: Start from the empty graph, add edges till the model is significant. Then start
@@ -247,90 +233,8 @@ public final class FgesMb implements DagScorer {
         }
 
         this.modelScore = scoreDag(GraphSearchUtils.dagFromCPDAG(graph), true);
-
-        switch (trimmingStyle) {
-            case NONE:
-                break;
-            case ADJACENT_TO_TARGETS:
-                graph = trimAdjacentToTarget(targets, graph);
-                break;
-            case MARKOV_BLANKET_GRAPH:
-                graph = trimMarkovBlanketGraph(targets, graph);
-                break;
-            case SEMIDIRECTED_PATHS_TO_TARGETS:
-                graph = trimSemidirected(targets, graph);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown trimming style: " + trimmingStyle);
-        }
-
+        graph = GraphUtils.trimGraph(targets, graph, trimmingStyle);
         return graph;
-    }
-
-    private Graph trimAdjacentToTarget(List<Node> targets, Graph graph) {
-        Graph _graph = new EdgeListGraph(graph);
-
-        M:
-        for (Node m : graph.getNodes()) {
-            if (!targets.contains(m)) {
-                for (Node n : targets) {
-                    if (graph.isAdjacentTo(m, n)) {
-                        continue M;
-                    }
-                }
-
-                _graph.removeNode(m);
-            }
-        }
-
-        return _graph;
-    }
-
-    private Graph trimMarkovBlanketGraph(List<Node> targets, Graph graph) {
-        Graph mbDag = new EdgeListGraph(graph);
-
-        M:
-        for (Node n : graph.getNodes()) {
-            if (!targets.contains(n)) {
-                for (Node m : targets) {
-                    if (graph.isAdjacentTo(n, m)) {
-                        continue M;
-                    }
-                }
-
-                for (Node m : targets) {
-                    Set<Node> ch = new HashSet<>(graph.getChildren(m));
-                    ch.retainAll(graph.getChildren(n));
-
-                    if (!ch.isEmpty()) {
-                        continue M;
-                    }
-                }
-
-                mbDag.removeNode(n);
-            }
-        }
-
-        return mbDag;
-    }
-
-    private Graph trimSemidirected(List<Node> targets, Graph graph) {
-        Graph _graph = new EdgeListGraph(graph);
-
-        M:
-        for (Node m : graph.getNodes()) {
-            if (!targets.contains(m)) {
-                for (Node n : targets) {
-                    if (graph.paths().existsSemidirectedPath(m, n)) {
-                        continue M;
-                    }
-                }
-
-                _graph.removeNode(m);
-            }
-        }
-
-        return _graph;
     }
 
     private void doLoop() {
@@ -492,6 +396,21 @@ public final class FgesMb implements DagScorer {
      */
     public double getModelScore() {
         return modelScore;
+    }
+
+    // Used to find semidirected paths for cycle checking.
+    private static Node traverseSemiDirected(Node node, Edge edge) {
+        if (node == edge.getNode1()) {
+            if (edge.getEndpoint1() == Endpoint.TAIL) {
+                return edge.getNode2();
+            }
+        } else if (node == edge.getNode2()) {
+            if (edge.getEndpoint2() == Endpoint.TAIL) {
+                return edge.getNode1();
+            }
+        }
+
+        return null;
     }
 
     //Sets the discrete scoring function to use.

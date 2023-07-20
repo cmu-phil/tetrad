@@ -263,7 +263,7 @@ public class Cstar {
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.BOSS) {
                             cpdag = getPatternBoss(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.RESTRICTED_BOSS) {
-                            cpdag = getPatternRestrictedBoss(sample, this._dataSet);
+                            cpdag = getPatternRestrictedBoss(sample, this._dataSet, possibleEffects);
                         } else {
                             throw new IllegalArgumentException("That type of of cpdag algorithm is not configured: " + Cstar.this.cpdagAlgorithm);
                         }
@@ -681,9 +681,10 @@ public class Cstar {
         return boss.search();
     }
 
-    private Graph getPatternRestrictedBoss(DataSet sample, DataSet data) {
+    private Graph getPatternRestrictedBoss(DataSet sample, DataSet data, List<Node> targets) {
         RestrictedBoss restrictedBoss = new RestrictedBoss(score);
         Graph g = restrictedBoss.search(sample, parameters);
+//        g = GraphUtils.trimGraph(targets, g, 4);
         g = GraphUtils.replaceNodes(g, data.getVariables());
         return g;
     }
