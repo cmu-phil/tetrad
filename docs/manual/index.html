@@ -4444,8 +4444,24 @@ tabs will not appear.</p> -->
             Boolean.</p> <!-- Insert the parameter descriptions here, must follow
         the same structure and naming conventions -->
 
-        public static final String TRIMMING_STYLE = "trimmingStyle";
-        public static final String NUMBER_EXPANSIONS = "numberExpansions";
+        <h3 class="parameter_description"
+            id="piThr">piThr</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="piThr_short_desc">A fixed threshold for calculating E[V] and PCER</span></li>
+            <li>Long Description: <span
+                    id="piThr_long_desc"> A fixed threshold, default 0.5/span>
+            </li>
+            <li>Default Value: <span
+                    id="piThr_default_value">0.6</span></li>
+            <li>Lower
+                Bound: <span id="piThr_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="piThr_upper_bound">1</span></li>
+            <li>Value Type:
+                <span id="piThr_value_type">Double</span></li>
+        </ul>
 
         <h3 class="parameter_description"
             id="cstarCpdagAlgorithm">cstarCpdagAlgorithm</h3>
@@ -4990,21 +5006,21 @@ tabs will not appear.</p> -->
                     id="connected_value_type">Boolean</span></li>
         </ul>
 
-        <h3 class="parameter_description" id="cstarQ">cstarQ</h3>
+        <h3 class="parameter_description" id="topBracket">topBracket</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="cstarQ_short_desc">Examine this q</span></li>
+                    id="topBracket_short_desc">Top bracket to look for causes in</span></li>
             <li>Long
-                Description: <span id="cstarQ_long_desc"></span></li>
+                Description: <span id="topBracket_long_desc">Top bracket, 'q'</span></li>
             <li>Default
-                Value: <span id="cstarQ_default_value">1</span></li>
+                Value: <span id="topBracket_default_value">1</span></li>
             <li>Lower Bound:
-                <span id="cstarQ_lower_bound">1</span></li>
+                <span id="topBracket_lower_bound">1</span></li>
             <li>Upper Bound: <span
-                    id="cstarQ_upper_bound">500000</span></li>
+                    id="topBracket_upper_bound">500000</span></li>
             <li>Value Type: <span
-                    id="cstarQ_value_type">Integer</span></li>
+                    id="topBracket_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"

@@ -234,7 +234,7 @@ public final class Params {
     public static final String NUM_SUBSAMPLES = "numSubsamples";
     public static final String TARGETS = "targets";
     public static final String MB = "mb";
-    public static final String CSTAR_Q = "cstarQ";
+    public static final String TOP_BRACKET = "topBracket";
     public static final String TIME_LAG = "timeLag";
     public static final String PRECOMPUTE_COVARIANCES = "precomputeCovariances";
     public static final String IMAGES_META_ALG = "imagesMetaAlg";
@@ -250,6 +250,7 @@ public final class Params {
     public static final String NUMBER_OF_EXPANSIONS = "numberOfExpansions";
     public static final String CSTAR_CPDAG_ALGORITHM = "cstarCpdagAlgorithm";
     public static final String FILE_OUT_PATH = "fileOutPath";
+    public static final String PI_THR = "piThr";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(

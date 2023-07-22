@@ -38,9 +38,12 @@ import java.util.concurrent.*;
 public class Cstar {
     private boolean parallelized = false;
     private int numSubsamples = 30;
-    private int qFrom = 1;
-    private int qTo = 1;
-    private int qIncrement = 1;
+//    private int qFrom = 1;
+//    private int qTo = 1;
+//    private int qIncrement = 1;
+
+
+    private int topBracket = 5;
     private double selectionAlpha = 0.0;
     private IndependenceWrapper test;
     private ScoreWrapper score;
@@ -91,7 +94,7 @@ public class Cstar {
             double medianPis = StatUtils.median(pis);
             double medianEffects = StatUtils.median(effects);
 
-            Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, -1, recordList.get(0).p);
+            Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, -1, recordList.get(0).numCauses);
             cstar.add(_record);
         }
 
@@ -106,14 +109,14 @@ public class Cstar {
         return cstar;
     }
 
-    // Meinhausen and Buhlmann E(|V|) bound
-    private static double er(double pi, double q, double p) {
-        return p * Cstar.pcer(pi, q, p);
-    }
+//    // Meinhausen and Buhlmann E(|V|) bound
+//    private static double er(double pi, double topBracket, double numPossibleCauses) {
+//        return numPossibleCauses * Cstar.pcer(pi, topBracket, numPossibleCauses);
+//    }
 
-    // Meinhausen and Buhlmann per comparison error rate (PCER)
+    // Meinhausen and Buhlmann per comparison error rate (PCER) bound
     private static double pcer(double pi, double q, double p) {
-        return (q * q) / (p * p * (2 * pi - 1));
+        return (1.0 / ((2. * pi - 1.))) * ((q * q) / (p * p));
     }
 
     /**
@@ -152,23 +155,23 @@ public class Cstar {
      */
     public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses,
                                                      List<Node> possibleEffects, String path) {
+        if (path != null && path.isEmpty()) path = null;
 
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
 
-        int p = possibleCauses.size();// * possibleEffects.size();
+        List<Integer> topBrackets = new ArrayList<>();
+        topBrackets.add(topBracket);
 
-        List<Integer> qs = new ArrayList<>();
+//        for (int topBracket = this.qFrom; topBracket <= this.qTo; topBracket += this.qIncrement) {
+//            if (topBracket <= possibleCauses.size()) {
+//                topBrackets.add(topBracket);
+//            } else {
+//                TetradLogger.getInstance().forceLogMessage("q = " + topBracket + " > p = " + possibleCauses.size() + "; skipping");
+//            }
+//        }
 
-        for (int q = this.qFrom; q <= this.qTo; q += this.qIncrement) {
-            if (q <= p) {
-                qs.add(q);
-            } else {
-                TetradLogger.getInstance().forceLogMessage("q = " + q + " > p = " + p + "; skipping");
-            }
-        }
-
-        if (qs.isEmpty()) return new LinkedList<>();
+        if (topBrackets.isEmpty()) return new LinkedList<>();
 
         LinkedList<LinkedList<Record>> allRecords = new LinkedList<>();
 
@@ -188,7 +191,6 @@ public class Cstar {
         File dir = _dir;
 
         if (dir != null) {
-
             if (new File(dir, "possible.causes.txt").exists() && new File(dir, "possible.causes.txt").exists()) {
                 possibleCauses = readVars(dataSet, dir, "possible.causes.txt");
                 possibleEffects = readVars(dataSet, dir, "possible.effects.txt");
@@ -202,27 +204,27 @@ public class Cstar {
 
         List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
 
-        for (int t = 0; t < possibleEffects.size(); t++) {
+        for (int e = 0; e < possibleEffects.size(); e++) {
             minimalEffects.add(new ConcurrentHashMap<>());
 
-            for (int b = 0; b < this.numSubsamples; b++) {
+            for (int s = 0; s < this.numSubsamples; s++) {
                 Map<Node, Double> map = new ConcurrentHashMap<>();
                 for (Node node : possibleCauses) map.put(node, 0.0);
-                minimalEffects.get(t).put(b, map);
+                minimalEffects.get(e).put(s, map);
             }
         }
 
-        int[] edgesTotal = new int[1];
-        int[] edgesCount = new int[1];
-
+//        int[] edgesTotal = new int[1];
+//        int[] edgesCount = new int[1];
+//
         class Task implements Callable<double[][]> {
             private final List<Node> possibleCauses;
             private final List<Node> possibleEffects;
-            private final int k;
+            private final int subsample;
             private final DataSet _dataSet;
 
-            private Task(int k, List<Node> possibleCauses, List<Node> possibleEffects, DataSet _dataSet) {
-                this.k = k;
+            private Task(int subsample, List<Node> possibleCauses, List<Node> possibleEffects, DataSet _dataSet) {
+                this.subsample = subsample;
                 this.possibleCauses = possibleCauses;
                 this.possibleEffects = possibleEffects;
                 this._dataSet = _dataSet;
@@ -235,7 +237,7 @@ public class Cstar {
 
                     if (Cstar.this.sampleStyle == SampleStyle.BOOTSTRAP) {
                         sampler.setWithoutReplacements(false);
-                        sample = sampler.sample(this._dataSet, this._dataSet.getNumRows());
+                        sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
                     } else if (Cstar.this.sampleStyle == SampleStyle.SPLIT) {
                         sampler.setWithoutReplacements(true);
                         sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
@@ -246,10 +248,11 @@ public class Cstar {
                     Graph cpdag = null;
                     double[][] effects = null;
 
-                    if (dir != null && new File(dir, "cpdag." + (this.k + 1) + ".txt").exists() && new File(dir, "effects." + (this.k + 1) + ".txt").exists()) {
+                    if (dir != null && new File(dir, "cpdag." + (this.subsample + 1) + ".txt").exists() &&
+                            new File(dir, "effects." + (this.subsample + 1) + ".txt").exists()) {
                         try {
-                            cpdag = GraphSaveLoadUtils.loadGraphTxt(new File(dir, "cpdag." + (this.k + 1) + ".txt"));
-                            effects = loadMatrix(new File(dir, "effects." + (this.k + 1) + ".txt"));
+                            cpdag = GraphSaveLoadUtils.loadGraphTxt(new File(dir, "cpdag." + (this.subsample + 1) + ".txt"));
+                            effects = loadMatrix(new File(dir, "effects." + (this.subsample + 1) + ".txt"));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -268,11 +271,11 @@ public class Cstar {
                             throw new IllegalArgumentException("That type of of cpdag algorithm is not configured: " + Cstar.this.cpdagAlgorithm);
                         }
 
-                        edgesTotal[0] += cpdag.getNumEdges();
-                        edgesCount[0]++;
+//                        edgesTotal[0] += cpdag.getNumEdges();
+//                        edgesCount[0]++;
 
                         if (dir != null) {
-                            GraphSaveLoadUtils.saveGraph(cpdag, new File(dir, "cpdag." + (this.k + 1) + ".txt"), false);
+                            GraphSaveLoadUtils.saveGraph(cpdag, new File(dir, "cpdag." + (this.subsample + 1) + ".txt"), false);
                         }
 
                         Ida ida = new Ida(sample, cpdag, this.possibleCauses);
@@ -289,7 +292,7 @@ public class Cstar {
                         }
 
                         if (dir != null) {
-                            saveMatrix(effects, new File(dir, "effects." + (this.k + 1) + ".txt"));
+                            saveMatrix(effects, new File(dir, "effects." + (this.subsample + 1) + ".txt"));
                         } else {
                             saveMatrix(effects, null);
                         }
@@ -304,24 +307,24 @@ public class Cstar {
 
         List<Callable<double[][]>> tasks = new ArrayList<>();
 
-        for (int k = 0; k < this.numSubsamples; k++) {
-            tasks.add(new Task(k, possibleCauses, possibleEffects, dataSet));
+        for (int subsample = 0; subsample < this.numSubsamples; subsample++) {
+            tasks.add(new Task(subsample, possibleCauses, possibleEffects, dataSet));
         }
 
         List<double[][]> allEffects = runCallablesDoubleArray(tasks, parallelized);
 
-        int avgEdges = (int) (edgesTotal[0] / (double) edgesCount[0]) + 1;
-
-        qs.clear();
-        qs.add(avgEdges);
+//        int avgEdges = (int) (edgesTotal[0] / (double) edgesCount[0]) + 1;
+//
+//        topBrackets.clear();
+//        topBrackets.add(avgEdges);
 
         List<List<Double>> doubles = new ArrayList<>();
 
-        for (int k = 0; k < this.numSubsamples; k++) {
-            double[][] effects = allEffects.get(k);
+        for (int subsample = 0; subsample < this.numSubsamples; subsample++) {
+            double[][] effects = allEffects.get(subsample);
 
             if (effects.length != possibleCauses.size() || effects[0].length != possibleEffects.size()) {
-                throw new IllegalStateException("Bootstrap " + (k + 1) + " is damaged; delete the pattern and effect files for that bootstrap and rerun");
+                throw new IllegalStateException("Bootstrap " + (subsample + 1) + " is damaged; delete the pattern and effect files for that bootstrap and rerun");
             }
 
             List<Double> _doubles = new ArrayList<>();
@@ -339,23 +342,23 @@ public class Cstar {
         class Task2 implements Callable<Boolean> {
             private final List<Node> possibleCauses;
             private final List<Node> possibleEffects;
-            private final int q;
+            private final int topBracket;
 
-            private Task2(List<Node> possibleCauses, List<Node> possibleEffects, int q) {
+            private Task2(List<Node> possibleCauses, List<Node> possibleEffects, int topBracket) {
                 this.possibleCauses = possibleCauses;
                 this.possibleEffects = possibleEffects;
 
-                if (q == 0) {
-                    throw new IllegalArgumentException("q must be positive");
+                if (topBracket == 0) {
+                    throw new IllegalArgumentException("Top bracket must be positive");
                 }
 
-                this.q = q;
+                this.topBracket = topBracket;
             }
 
             public Boolean call() {
                 try {
                     if (Cstar.this.verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Examining q = " + this.q);
+                        TetradLogger.getInstance().forceLogMessage("Examining top bracket = " + this.topBracket);
                     }
 
                     List<Tuple> tuples = new ArrayList<>();
@@ -364,23 +367,25 @@ public class Cstar {
                         for (int c = 0; c < this.possibleCauses.size(); c++) {
                             int count = 0;
 
-                            for (int k = 0; k < Cstar.this.numSubsamples; k++) {
-                                if (this.q > doubles.get(k).size()) {
-                                    continue;
+                            for (int subsample = 0; subsample < Cstar.this.numSubsamples; subsample++) {
+                                if (this.topBracket > doubles.get(subsample).size()) {
+                                    throw new IllegalArgumentException("Top bracket (q) is too large; it is " + this.topBracket
+                                            + " but the number of doubles is " + doubles.get(subsample).size());
                                 }
 
-                                double cutoff = doubles.get(k).get(this.q - 1);
+                                double cutoff = doubles.get(subsample).get(this.topBracket - 1);
 
-                                if (allEffects.get(k)[c][e] >= cutoff) {
+                                if (allEffects.get(subsample)[c][e] >= cutoff) {
                                     count++;
                                 }
                             }
 
                             double pi = count / ((double) Cstar.this.numSubsamples);
-                            if (pi < (this.q / (double) p)) continue;
+                            if (pi <= 0) continue;
                             Node cause = this.possibleCauses.get(c);
                             Node effect = this.possibleEffects.get(e);
-                            tuples.add(new Tuple(cause, effect, pi, avgMinEffect(this.possibleCauses, this.possibleEffects, allEffects, cause, effect)));
+                            tuples.add(new Tuple(cause, effect, pi, avgMinEffect(this.possibleCauses, this.possibleEffects,
+                                    allEffects, cause, effect)));
                         }
                     }
 
@@ -401,7 +406,8 @@ public class Cstar {
                         Node effectNode = tuple.getEffectNode();
 
                         if (tuple.getMinBeta() > selectionAlpha) {
-                            records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, this.q, p));
+                            records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, this.topBracket,
+                                    possibleCauses.size()));
                         }
                     }
 
@@ -417,8 +423,8 @@ public class Cstar {
 
         List<Callable<Boolean>> task2s = new ArrayList<>();
 
-        for (int q : qs) {
-            task2s.add(new Task2(possibleCauses, possibleEffects, q));
+        for (int topBracket : topBrackets) {
+            task2s.add(new Task2(possibleCauses, possibleEffects, topBracket));
         }
 
         ConcurrencyUtils.runCallables(task2s, parallelized);
@@ -447,32 +453,32 @@ public class Cstar {
         return graph;
     }
 
-    /**
-     * Sets qFrom.
-     *
-     * @param qFrom This integer.
-     */
-    public void setqFrom(int qFrom) {
-        this.qFrom = qFrom;
-    }
-
-    /**
-     * Sets qTo.
-     *
-     * @param qTo This integer.
-     */
-    public void setqTo(int qTo) {
-        this.qTo = qTo;
-    }
-
-    /**
-     * Sets q increment.
-     *
-     * @param qIncrement This integer.
-     */
-    public void setqIncrement(int qIncrement) {
-        this.qIncrement = qIncrement;
-    }
+//    /**
+//     * Sets qFrom.
+//     *
+//     * @param qFrom This integer.
+//     */
+//    public void setqFrom(int qFrom) {
+//        this.qFrom = qFrom;
+//    }
+//
+//    /**
+//     * Sets qTo.
+//     *
+//     * @param qTo This integer.
+//     */
+//    public void setqTo(int qTo) {
+//        this.qTo = qTo;
+//    }
+//
+//    /**
+//     * Sets q increment.
+//     *
+//     * @param qIncrement This integer.
+//     */
+//    public void setqIncrement(int qIncrement) {
+//        this.qIncrement = qIncrement;
+//    }
 
     /**
      * The CSTaR algorithm can use any CPDAG algorithm; here you can set it.
@@ -599,8 +605,8 @@ public class Cstar {
     /**
      * Returns a text table from the given records
      */
-    public String makeTable(LinkedList<Record> records, boolean printTable, boolean cstar) {
-        int numColumns = 7;
+    public String makeTable(LinkedList<Record> records, boolean printTable) {
+        int numColumns = 6;
 
         TextTable table = new TextTable(records.size() + 1, numColumns);
 //        table.setLatex(true);
@@ -612,13 +618,9 @@ public class Cstar {
         table.setToken(0, column++, "Effect");
         table.setToken(0, column++, "PI");
         table.setToken(0, column++, "Effect");
-        table.setToken(0, column++, "R-SUM(Pi)");
+//        table.setToken(0, column++, "R-SUM(Pi)");
 
-        if (cstar) {
-            table.setToken(0, column, "PCER");
-        } else {
-            table.setToken(0, column++, "E(V)");
-        }
+        table.setToken(0, column, "PCER");
 
         double sumPi = 0.0;
 
@@ -626,8 +628,8 @@ public class Cstar {
             return "\nThere are no records above chance.\n";
         }
 
-        int p = records.getLast().getP();
-        int q = records.getLast().getQ();
+        int p = records.getLast().getNumCauses();
+        int q = records.getLast().getTopBacket();
 
         for (int i = 0; i < records.size(); i++) {
             Node cause = records.get(i).getCauseNode();
@@ -643,20 +645,13 @@ public class Cstar {
             table.setToken(i + 1, column++, effect.getName());
             table.setToken(i + 1, column++, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, column++, nf.format(records.get(i).getMinBeta()));
-            table.setToken(i + 1, column++, nf.format(R - sumPi));
+//            table.setToken(i + 1, column++, nf.format(R - sumPi));
 
-            if (cstar) {
-                double pcer = Cstar.pcer(records.get(i).getPi(), (i + 1), p);
-                table.setToken(i + 1, column, records.get(i).getPi() <= 0.5 ? "*" : nf.format(pcer));
-            } else {
-                double er = Cstar.er(records.get(i).getPi(), (i + 1), p);
-                table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(er));
-            }
-//            double er = Cstar.er(records.get(i).getPi(), (i + 1), p);
-//            table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(er));
+            double pcer = Cstar.pcer(records.get(i).getPi(), (i + 1), p);
+            table.setToken(i + 1, column, records.get(i).getPi() <= 0.5 ? "*" : nf.format(pcer));
         }
 
-        return (printTable ? "\n" + table : "") + " s = " + p + " q = " + q + (printTable ? " Type: C = continuous, D = discrete\n" : "");
+        return (printTable ? "\n" + table : "") + " s = " + p;
     }
 
     private Graph getPatternPcStable(DataSet sample) {
@@ -745,6 +740,10 @@ public class Cstar {
         return results;
     }
 
+    public void setTopBracket(int topBracket) {
+        this.topBracket = topBracket;
+    }
+
     /**
      * An enumeration of the options available for determining the CPDAG used for the algorithm.
      */
@@ -760,21 +759,30 @@ public class Cstar {
      */
     public static class Record implements TetradSerializable {
         static final long serialVersionUID = 23L;
-
         private final Node causeNode;
         private final Node target;
         private final double pi;
         private final double effect;
-        private final int q;
-        private final int p;
+        private final int topBacket;
+        private final int numCauses;
 
-        Record(Node predictor, Node target, double pi, double minEffect, int q, int p) {
+        /**
+         * For X->Y.
+         *
+         * @param predictor  X
+         * @param target     Y
+         * @param pi         The percentage of the time the predictor is a cause of the target across subsamples.
+         * @param minEffect  The mimimum effect size of the predictor on the target across subsamples calculated by IDA
+         * @param topBracket The top bracket the predictor falls into based on the effect size, 'q'.
+         * @param numCauses  The number of possible causes of the target.
+         */
+        Record(Node predictor, Node target, double pi, double minEffect, int topBracket, int numCauses) {
             this.causeNode = predictor;
             this.target = target;
             this.pi = pi;
             this.effect = minEffect;
-            this.q = q;
-            this.p = p;
+            this.topBacket = topBracket;
+            this.numCauses = numCauses;
         }
 
         public Node getCauseNode() {
@@ -793,12 +801,12 @@ public class Cstar {
             return this.effect;
         }
 
-        public int getQ() {
-            return this.q;
+        public int getTopBacket() {
+            return this.topBacket;
         }
 
-        public int getP() {
-            return this.p;
+        public int getNumCauses() {
+            return this.numCauses;
         }
     }
 
@@ -831,5 +839,4 @@ public class Cstar {
             return this.minBeta;
         }
     }
-
 }
