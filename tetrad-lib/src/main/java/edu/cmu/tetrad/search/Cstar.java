@@ -40,9 +40,9 @@ public class Cstar {
     private int numSubsamples = 30;
     private int topBracket = 5;
     private double selectionAlpha = 0.0;
-    private IndependenceWrapper test;
-    private ScoreWrapper score;
-    private Parameters parameters = new Parameters();
+    private final IndependenceWrapper test;
+    private final ScoreWrapper score;
+    private final Parameters parameters;
     private CpdagAlgorithm cpdagAlgorithm = CpdagAlgorithm.PC_STABLE;
     private SampleStyle sampleStyle = SampleStyle.BOOTSTRAP;
     private boolean verbose;
@@ -538,7 +538,6 @@ public class Cstar {
         int numColumns = 6;
 
         TextTable table = new TextTable(records.size() + 1, numColumns);
-//        table.setLatex(true);
         NumberFormat nf = new DecimalFormat("0.0000");
         int column = 0;
 
@@ -547,7 +546,6 @@ public class Cstar {
         table.setToken(0, column++, "Effect");
         table.setToken(0, column++, "PI");
         table.setToken(0, column++, "Effect");
-//        table.setToken(0, column++, "R-SUM(Pi)");
 
         table.setToken(0, column, "PCER");
 
@@ -567,7 +565,6 @@ public class Cstar {
             table.setToken(i + 1, column++, effect.getName());
             table.setToken(i + 1, column++, nf.format(records.get(i).getPi()));
             table.setToken(i + 1, column++, nf.format(records.get(i).getMinBeta()));
-//            table.setToken(i + 1, column++, nf.format(R - sumPi));
 
             double pcer = Cstar.pcer(records.get(i).getPi(), (i + 1), p);
             table.setToken(i + 1, column, records.get(i).getPi() <= 0.5 ? "*" : nf.format(pcer));
@@ -622,9 +619,6 @@ public class Cstar {
     private double[][] loadMatrix(File file) {
         try {
             DataSet dataSet = SimpleDataLoader.loadContinuousData(file, "//", '\"', "*", true, Delimiter.TAB);
-
-//            TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
-
             return dataSet.getDoubleData().toArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
