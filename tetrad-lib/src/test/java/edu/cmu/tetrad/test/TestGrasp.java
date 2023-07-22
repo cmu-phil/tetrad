@@ -3400,12 +3400,6 @@ public final class TestGrasp {
 
             Parameters parameters = new Parameters();
             parameters.set(Params.PENALTY_DISCOUNT, 1);
-//            parameters.set(Params.VERBOSE, true);
-//            parameters.set(Params.PARALLELIZED, true);
-//            parameters.set(Params.FAITHFULNESS_ASSUMED, true);
-//            parameters.set(Params.PRECOMPUTE_COVARIANCES, false);
-//            parameters.set(Params.TARGETS, "DTF_16LD DTF_16LDVern DTF_23LD DTF_23SD");
-
             parameters.set(Params.SELECTION_MIN_EFFECT, 0.0);
             parameters.set(Params.NUM_SUBSAMPLES, 20);
             parameters.set(Params.TARGETS, "DTF_16LD DTF_16LDVern DTF_23LD DTF_23SD");
@@ -3415,7 +3409,6 @@ public final class TestGrasp {
             parameters.set(Params.FILE_OUT_PATH, "/Users/josephramsey/Desktop/cstar.out");
 
 //            RestrictedBoss alg = new RestrictedBoss(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
-
             edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore());
             Graph graph = alg.search(data, parameters);
         } catch (IOException e) {
