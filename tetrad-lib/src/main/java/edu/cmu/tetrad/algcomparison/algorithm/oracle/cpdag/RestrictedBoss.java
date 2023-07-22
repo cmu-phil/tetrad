@@ -67,7 +67,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
             List<Node> targets = new ArrayList<>();
 
             for (String _target : _targets) {
-                targets.add(dataSet.getVariable(_target.trim()));
+                targets.add(dataSet.getVariable(_target));
             }
 
             for (Node node : targets) {

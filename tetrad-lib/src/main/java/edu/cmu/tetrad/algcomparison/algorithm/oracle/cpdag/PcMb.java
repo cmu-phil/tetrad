@@ -90,7 +90,7 @@ public class PcMb implements Algorithm, HasKnowledge, TakesIndependenceWrapper,
         List<Node> targets = new ArrayList<>();
 
         for (String _target : _targets) {
-            targets.add(test.getVariable(_target.trim()));
+            targets.add(test.getVariable(_target));
         }
 
         return targets;

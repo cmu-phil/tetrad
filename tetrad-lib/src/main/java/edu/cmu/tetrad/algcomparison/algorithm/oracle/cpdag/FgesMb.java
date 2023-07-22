@@ -83,7 +83,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
             List<Node> targets = new ArrayList<>();
 
             for (String _target : _targets) {
-                Node variable = dataSet.getVariable(_target.trim());
+                Node variable = dataSet.getVariable(_target);
 
                 if (variable == null) {
                     throw new IllegalArgumentException("Target not in data: " + _target);
