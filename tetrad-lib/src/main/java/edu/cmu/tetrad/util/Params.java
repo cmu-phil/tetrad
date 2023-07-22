@@ -250,6 +250,7 @@ public final class Params {
     public static final String NUMBER_OF_EXPANSIONS = "numberOfExpansions";
     public static final String CSTAR_CPDAG_ALGORITHM = "cstarCpdagAlgorithm";
     public static final String FILE_OUT_PATH = "fileOutPath";
+    public static final String CSTAR_SAMPLE_STYLE = "cstarSampleStyle";
 
     // All parameters that are found in HTML manual documentation
     private static final Set<String> ALL_PARAMS_IN_HTML_MANUAL = new HashSet<>(Arrays.asList(
