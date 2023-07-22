@@ -91,7 +91,7 @@ public class Cstar {
             double medianPis = StatUtils.median(pis);
             double medianEffects = StatUtils.median(effects);
 
-            Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, -1, -1);
+            Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, -1, recordList.get(0).p);
             cstar.add(_record);
         }
 
@@ -156,7 +156,7 @@ public class Cstar {
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
 
-        int p = possibleCauses.size() * possibleEffects.size();
+        int p = possibleCauses.size();// * possibleEffects.size();
 
         List<Integer> qs = new ArrayList<>();
 
@@ -656,7 +656,7 @@ public class Cstar {
 //            table.setToken(i + 1, column++, records.get(i).getPi() <= 0.5 ? "*" : nf.format(er));
         }
 
-        return (printTable ? "\n" + table : "") + "p = " + p + " q = " + q + (printTable ? " Type: C = continuous, D = discrete\n" : "");
+        return (printTable ? "\n" + table : "") + " s = " + p + " q = " + q + (printTable ? " Type: C = continuous, D = discrete\n" : "");
     }
 
     private Graph getPatternPcStable(DataSet sample) {
