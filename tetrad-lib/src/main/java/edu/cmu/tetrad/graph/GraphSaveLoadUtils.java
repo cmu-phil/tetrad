@@ -9,6 +9,7 @@ import edu.pitt.dbmi.data.reader.tabular.ContinuousTabularDatasetFileReader;
 import nu.xom.*;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -146,12 +147,12 @@ public class GraphSaveLoadUtils {
 
         for (int i = 0; i < m.length; i++) {
             for (int j = 0; j < m[0].length; j++) {
-                table.setToken(i + 1, j + 1, m[i][j] + "");
+                table.setToken(i + 1, j + 1, String.valueOf(m[i][j]));
             }
         }
 
         for (int i = 0; i < m.length; i++) {
-            table.setToken(i + 1, 0, (i + 1) + "");
+            table.setToken(i + 1, 0, String.valueOf(i + 1));
         }
 
         List<Node> nodes = graph.getNodes();
@@ -273,12 +274,12 @@ public class GraphSaveLoadUtils {
 
         for (int i = 0; i < m.length; i++) {
             for (int j = 0; j < m[0].length; j++) {
-                table.setToken(i + 1, j + 1, m[i][j] + "");
+                table.setToken(i + 1, j + 1, String.valueOf(m[i][j]));
             }
         }
 
         for (int i = 0; i < m.length; i++) {
-            table.setToken(i + 1, 0, (i + 1) + "");
+            table.setToken(i + 1, 0, String.valueOf(i + 1));
         }
 
         List<Node> nodes = graph.getNodes();
@@ -324,7 +325,7 @@ public class GraphSaveLoadUtils {
         PrintWriter out;
 
         try {
-            out = new PrintWriter(new FileOutputStream(file));
+            out = new PrintWriter(Files.newOutputStream(file.toPath()));
 
             if (xml) {
                 out.print(graphToXml(graph));
@@ -376,7 +377,7 @@ public class GraphSaveLoadUtils {
                 fields = semicolonPattern.split(fields[3]);
                 if (fields.length > 1) {
                     for (String prop : fields) {
-                        setEdgeTypeProperties(prop, edge, graph, spacePattern, colonPattern);
+                        setEdgeTypeProperties(edge, prop, spacePattern, colonPattern);
                     }
                 } else {
                     getEdgeProperties(fields[0], spacePattern)
@@ -388,7 +389,7 @@ public class GraphSaveLoadUtils {
         }
     }
 
-    private static void setEdgeTypeProperties(String prop, Edge edge, Graph graph, Pattern spacePattern, Pattern colonPattern) {
+    private static void setEdgeTypeProperties(Edge edge, String prop, Pattern spacePattern, Pattern colonPattern) {
         prop = prop.replace("[", "").replace("]", "");
         String[] fields = colonPattern.split(prop);
         if (fields.length == 2) {
@@ -418,7 +419,6 @@ public class GraphSaveLoadUtils {
                         edge.setProbability(Double.parseDouble(bootstrapEdgeTypeProb));
                     }
                 } else if ("no edge".equals(bootstrapEdge)) {
-                    fields = spacePattern.split(bootstrapEdgeTypeProb);
                     edge.addEdgeTypeProbability(new EdgeTypeProbability(EdgeTypeProbability.EdgeType.nil, Double.parseDouble(bootstrapEdgeTypeProb)));
                 }
             }
@@ -523,19 +523,10 @@ public class GraphSaveLoadUtils {
             Endpoint end1 = edge.getEndpoint1();
             Endpoint end2 = edge.getEndpoint2();
 
-            // These may be in the graph but they represent edges not in the ensemble for which
+            // These may be in the graph, but they represent edges not in the ensemble for which
             // bootstrap information is available.
             if (end1 == Endpoint.NULL || end2 == Endpoint.NULL) continue;
 
-//            if (n1.compareTo(n2) > 0) {
-//                String temp = n1;
-//                n1 = n2;
-//                n2 = temp;
-//
-//                Endpoint tmp = end1;
-//                end1 = end2;
-//                end2 = tmp;
-//            }
             builder.append(" \"").append(n1).append("\" -> \"").append(n2).append("\" [");
 
             if (end1 != Endpoint.TAIL) {
@@ -776,7 +767,7 @@ public class GraphSaveLoadUtils {
     }
 
     public static String graphToPcalg(Graph g) {
-        Map<Endpoint, Integer> mark2Int = new HashMap();
+        Map<Endpoint, Integer> mark2Int = new HashMap<>();
         mark2Int.put(Endpoint.NULL, 0);
         mark2Int.put(Endpoint.CIRCLE, 1);
         mark2Int.put(Endpoint.ARROW, 2);
@@ -802,7 +793,7 @@ public class GraphSaveLoadUtils {
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                table.setToken(i + 1, j, "" + A[i][j]);
+                table.setToken(i + 1, j, String.valueOf(A[i][j]));
             }
         }
 
