@@ -16,7 +16,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * <p>Implements the CStaR algorithm (Steckoven et al., 2012), which finds a CPDAG of that
+ * <p>Implements the CStaR algorithm (Stekhoven et al., 2012), which finds a CPDAG of that
  * data and then tries all orientations of the undirected edges about a variable in the CPDAG to estimate a minimum
  * bound on the effect for a given edge. Some references include the following:</p>
  *
@@ -38,11 +38,6 @@ import java.util.concurrent.*;
 public class Cstar {
     private boolean parallelized = false;
     private int numSubsamples = 30;
-//    private int qFrom = 1;
-//    private int qTo = 1;
-//    private int qIncrement = 1;
-
-
     private int topBracket = 5;
     private double selectionAlpha = 0.0;
     private IndependenceWrapper test;
@@ -94,7 +89,7 @@ public class Cstar {
             double medianPis = StatUtils.median(pis);
             double medianEffects = StatUtils.median(effects);
 
-            Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, -1, recordList.get(0).numCauses);
+            Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, recordList.get(0).numCauses);
             cstar.add(_record);
         }
 
@@ -108,11 +103,6 @@ public class Cstar {
 
         return cstar;
     }
-
-//    // Meinhausen and Buhlmann E(|V|) bound
-//    private static double er(double pi, double topBracket, double numPossibleCauses) {
-//        return numPossibleCauses * Cstar.pcer(pi, topBracket, numPossibleCauses);
-//    }
 
     // Meinhausen and Buhlmann per comparison error rate (PCER) bound
     private static double pcer(double pi, double q, double p) {
@@ -135,19 +125,6 @@ public class Cstar {
      * @param dataSet         The full datasets to search over.
      * @param possibleCauses  A set of variables in the datasets over which to search.
      * @param possibleEffects The effect variables.
-     * @see Record
-     */
-    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses,
-                                                     List<Node> possibleEffects) {
-        return getRecords(dataSet, possibleCauses, possibleEffects, null);
-    }
-
-    /**
-     * Returns records for a set of variables with expected number of false positives bounded by q.
-     *
-     * @param dataSet         The full datasets to search over.
-     * @param possibleCauses  A set of variables in the datasets over which to search.
-     * @param possibleEffects The effect variables.
      * @param path            A path where interim results are to be stored. If null, interim results will not be
      *                        stored. If the path is specified, then if the process is stopped and restarted, previously
      *                        computed interim results will be loaded.
@@ -162,16 +139,6 @@ public class Cstar {
 
         List<Integer> topBrackets = new ArrayList<>();
         topBrackets.add(topBracket);
-
-//        for (int topBracket = this.qFrom; topBracket <= this.qTo; topBracket += this.qIncrement) {
-//            if (topBracket <= possibleCauses.size()) {
-//                topBrackets.add(topBracket);
-//            } else {
-//                TetradLogger.getInstance().forceLogMessage("q = " + topBracket + " > p = " + possibleCauses.size() + "; skipping");
-//            }
-//        }
-
-        if (topBrackets.isEmpty()) return new LinkedList<>();
 
         LinkedList<LinkedList<Record>> allRecords = new LinkedList<>();
 
@@ -214,9 +181,6 @@ public class Cstar {
             }
         }
 
-//        int[] edgesTotal = new int[1];
-//        int[] edgesCount = new int[1];
-//
         class Task implements Callable<double[][]> {
             private final List<Node> possibleCauses;
             private final List<Node> possibleEffects;
@@ -266,13 +230,10 @@ public class Cstar {
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.BOSS) {
                             cpdag = getPatternBoss(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.RESTRICTED_BOSS) {
-                            cpdag = getPatternRestrictedBoss(sample, this._dataSet, possibleEffects);
+                            cpdag = getPatternRestrictedBoss(sample, this._dataSet);
                         } else {
                             throw new IllegalArgumentException("That type of of cpdag algorithm is not configured: " + Cstar.this.cpdagAlgorithm);
                         }
-
-//                        edgesTotal[0] += cpdag.getNumEdges();
-//                        edgesCount[0]++;
 
                         if (dir != null) {
                             GraphSaveLoadUtils.saveGraph(cpdag, new File(dir, "cpdag." + (this.subsample + 1) + ".txt"), false);
@@ -312,11 +273,6 @@ public class Cstar {
         }
 
         List<double[][]> allEffects = runCallablesDoubleArray(tasks, parallelized);
-
-//        int avgEdges = (int) (edgesTotal[0] / (double) edgesCount[0]) + 1;
-//
-//        topBrackets.clear();
-//        topBrackets.add(avgEdges);
 
         List<List<Double>> doubles = new ArrayList<>();
 
@@ -406,7 +362,7 @@ public class Cstar {
                         Node effectNode = tuple.getEffectNode();
 
                         if (tuple.getMinBeta() > selectionAlpha) {
-                            records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, this.topBracket,
+                            records.add(new Record(causeNode, effectNode, tuple.getPi(), avg,
                                     possibleCauses.size()));
                         }
                     }
@@ -452,33 +408,6 @@ public class Cstar {
 
         return graph;
     }
-
-//    /**
-//     * Sets qFrom.
-//     *
-//     * @param qFrom This integer.
-//     */
-//    public void setqFrom(int qFrom) {
-//        this.qFrom = qFrom;
-//    }
-//
-//    /**
-//     * Sets qTo.
-//     *
-//     * @param qTo This integer.
-//     */
-//    public void setqTo(int qTo) {
-//        this.qTo = qTo;
-//    }
-//
-//    /**
-//     * Sets q increment.
-//     *
-//     * @param qIncrement This integer.
-//     */
-//    public void setqIncrement(int qIncrement) {
-//        this.qIncrement = qIncrement;
-//    }
 
     /**
      * The CSTaR algorithm can use any CPDAG algorithm; here you can set it.
@@ -622,23 +551,16 @@ public class Cstar {
 
         table.setToken(0, column, "PCER");
 
-        double sumPi = 0.0;
-
         if (records.isEmpty()) {
             return "\nThere are no records above chance.\n";
         }
 
         int p = records.getLast().getNumCauses();
-        int q = records.getLast().getTopBacket();
 
         for (int i = 0; i < records.size(); i++) {
             Node cause = records.get(i).getCauseNode();
             Node effect = records.get(i).getEffectNode();
-
-            int R = (i + 1);
-            sumPi += records.get(i).getPi();
             column = 0;
-
 
             table.setToken(i + 1, column++, String.valueOf(i + 1));
             table.setToken(i + 1, column++, cause.getName());
@@ -676,10 +598,9 @@ public class Cstar {
         return boss.search();
     }
 
-    private Graph getPatternRestrictedBoss(DataSet sample, DataSet data, List<Node> targets) {
+    private Graph getPatternRestrictedBoss(DataSet sample, DataSet data) {
         RestrictedBoss restrictedBoss = new RestrictedBoss(score);
         Graph g = restrictedBoss.search(sample, parameters);
-//        g = GraphUtils.trimGraph(targets, g, 4);
         g = GraphUtils.replaceNodes(g, data.getVariables());
         return g;
     }
@@ -763,25 +684,22 @@ public class Cstar {
         private final Node target;
         private final double pi;
         private final double effect;
-        private final int topBacket;
         private final int numCauses;
 
         /**
          * For X->Y.
          *
-         * @param predictor  X
-         * @param target     Y
-         * @param pi         The percentage of the time the predictor is a cause of the target across subsamples.
-         * @param minEffect  The mimimum effect size of the predictor on the target across subsamples calculated by IDA
-         * @param topBracket The top bracket the predictor falls into based on the effect size, 'q'.
-         * @param numCauses  The number of possible causes of the target.
+         * @param predictor X
+         * @param target    Y
+         * @param pi        The percentage of the time the predictor is a cause of the target across subsamples.
+         * @param minEffect The minimum effect size of the predictor on the target across subsamples calculated by IDA
+         * @param numCauses The number of possible causes of the target.
          */
-        Record(Node predictor, Node target, double pi, double minEffect, int topBracket, int numCauses) {
+        Record(Node predictor, Node target, double pi, double minEffect, int numCauses) {
             this.causeNode = predictor;
             this.target = target;
             this.pi = pi;
             this.effect = minEffect;
-            this.topBacket = topBracket;
             this.numCauses = numCauses;
         }
 
@@ -799,10 +717,6 @@ public class Cstar {
 
         double getMinBeta() {
             return this.effect;
-        }
-
-        public int getTopBacket() {
-            return this.topBacket;
         }
 
         public int getNumCauses() {

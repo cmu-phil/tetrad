@@ -72,9 +72,6 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
         cStaR.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         cStaR.setNumSubsamples(parameters.getInt(Params.NUM_SUBSAMPLES));
-//        cStaR.setqFrom(1);//parameters.getInt(Params.CSTAR_Q));
-//        cStaR.setqTo(parameters.getInt(Params.CSTAR_Q));
-//        cStaR.setqIncrement(1);
         cStaR.setTopBracket(parameters.getInt(Params.TOP_BRACKET));
         cStaR.setSelectionAlpha(parameters.getDouble(Params.SELECTION_MIN_EFFECT));
         cStaR.setCpdagAlgorithm(algorithm);
@@ -147,20 +144,6 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         } catch (IOException e) {
             System.out.println("Error writing to file: " + filename);
         }
-
-//        TetradLogger.getInstance().forceLogMessage("\nStability Selection Table");
-//        String message = cStaR.makeTable(getRecords(), true, false);
-//        TetradLogger.getInstance().forceLogMessage(message);
-//
-//        // Print table2 to file.
-//        filename = path + "/stability_selection_table.txt";
-//        try {
-//            PrintWriter writer = new PrintWriter(filename, "UTF-8");
-//            writer.println(message);
-//            writer.close();
-//        } catch (IOException e) {
-//            System.out.println("Error writing to file: " + filename);
-//        }
 
         return cStaR.makeGraph(this.getRecords());
     }
