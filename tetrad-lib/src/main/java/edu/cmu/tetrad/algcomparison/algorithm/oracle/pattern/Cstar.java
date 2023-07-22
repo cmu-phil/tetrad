@@ -36,6 +36,7 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
     private ScoreWrapper score;
     private LinkedList<edu.cmu.tetrad.search.Cstar.Record> records;
 
+    // Don't delete.
     public Cstar() {
     }
 
