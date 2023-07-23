@@ -292,7 +292,7 @@ public class Cstar {
                         }
                     }
 
-                    saveMatrix(effects, new File(origDir, "effects." + (this.subsample + 1) + ".txt"));
+                    saveMatrix(effects, new File(newDir, "effects." + (this.subsample + 1) + ".txt"));
 
                     try {
                         GraphSaveLoadUtils.saveGraph(cpdag, new File(newDir, "cpdag." + (this.subsample + 1) + ".txt"), false);
