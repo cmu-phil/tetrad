@@ -46,6 +46,7 @@ public class Cstar {
     private CpdagAlgorithm cpdagAlgorithm = CpdagAlgorithm.PC_STABLE;
     private SampleStyle sampleStyle = SampleStyle.BOOTSTRAP;
     private boolean verbose;
+    private File newDir = null;
 
     /**
      * Constructor.
@@ -89,8 +90,8 @@ public class Cstar {
             double medianPis = StatUtils.median(pis);
             double medianEffects = StatUtils.median(effects);
 
-            Record _record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, recordList.get(0).numCauses);
-            cstar.add(_record);
+            Record record = new Record(edge.getNode1(), edge.getNode2(), medianPis, medianEffects, recordList.get(0).getNumCauses(), recordList.get(0).getNumEffects());
+            cstar.add(record);
         }
 
         cstar.sort((o1, o2) -> {
@@ -130,44 +131,82 @@ public class Cstar {
      *                        computed interim results will be loaded.
      * @see Record
      */
-    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses,
-                                                     List<Node> possibleEffects, String path) {
-        if (path != null && path.isEmpty()) path = null;
+    public LinkedList<LinkedList<Record>> getRecords(DataSet dataSet, List<Node> possibleCauses, List<Node> possibleEffects, int topBracket, String path) {
+        if (topBracket < 1) {
+            throw new IllegalArgumentException("Top bracket must be at least 1.");
+        }
+
+        if (topBracket > possibleCauses.size()) {
+            throw new IllegalArgumentException("Top bracket (q) is too large; it is " + topBracket + " but the number of possible causes is " + possibleCauses.size());
+        }
+
+        this.topBracket = topBracket;
+
+        if (path == null || path.isEmpty()) {
+            path = "cstar-out";
+            System.out.println();
+        }
+
+        File origDir = null;
+
+        if (new File(path).exists()) {
+            origDir = new File(path);
+        }
+
+        File newDir;
+
+        int i;
+
+        for (i = 1; ; i++) {
+            if (!new File(path + "." + i).exists()) break;
+        }
+
+        path = path + "." + i;
+
+        newDir = new File(path);
+
+        if (origDir == null) {
+            origDir = newDir;
+        }
+
+        boolean made = newDir.mkdirs();
+
+        if (!made) {
+            throw new IllegalStateException("Could not make a new directory; perhaps file permissions need to be adjusted.");
+        }
+
+        System.out.println("Creating directories for " + newDir.getAbsolutePath());
+
+        newDir = new File(path);
+        System.out.println("Using files in directory " + origDir.getAbsolutePath());
+
+        this.newDir = newDir;
 
         possibleEffects = GraphUtils.replaceNodes(possibleEffects, dataSet.getVariables());
         possibleCauses = GraphUtils.replaceNodes(possibleCauses, dataSet.getVariables());
 
-        List<Integer> topBrackets = new ArrayList<>();
-        topBrackets.add(topBracket);
-
         LinkedList<LinkedList<Record>> allRecords = new LinkedList<>();
 
-        File _dir = null;
+        System.out.println("Results directory = " + newDir.getAbsolutePath());
 
-        if (path != null) {
-            _dir = new File(path);
-            System.out.println("dir = " + _dir.getAbsolutePath());
+        if (new File(origDir, "possible.causes.txt").exists() && new File(newDir, "possible.causes.txt").exists()) {
+            System.out.println("Loading data, possible causes, and possible effects from " + origDir.getAbsolutePath());
+            possibleCauses = readVars(dataSet, origDir, "possible.causes.txt");
+            possibleEffects = readVars(dataSet, origDir, "possible.effects.txt");
+        }
 
-            boolean b = _dir.mkdirs();
+        writeVars(possibleCauses, newDir, "possible.causes.txt");
+        writeVars(possibleEffects, newDir, "possible.effects.txt");
 
-            if (b) {
-                System.out.println("Creating directories for " + _dir.getAbsolutePath());
+        if (new File(origDir, "data.txt").exists()) {
+            try {
+                dataSet = SimpleDataLoader.loadContinuousData(new File(origDir, "data.txt"), "//", '\"', "*", true, Delimiter.TAB);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Could not load data from " + new File(origDir, "data.txt").getAbsolutePath());
             }
         }
 
-        File dir = _dir;
-
-        if (dir != null) {
-            if (new File(dir, "possible.causes.txt").exists() && new File(dir, "possible.causes.txt").exists()) {
-                possibleCauses = readVars(dataSet, dir, "possible.causes.txt");
-                possibleEffects = readVars(dataSet, dir, "possible.effects.txt");
-                dataSet = readData(dir);
-            } else {
-                writeVars(possibleCauses, dir, "possible.causes.txt");
-                writeVars(possibleEffects, dir, "possible.effects.txt");
-                writeData(dataSet, dir);
-            }
-        }
+        writeData(dataSet, newDir);
 
         List<Map<Integer, Map<Node, Double>>> minimalEffects = new ArrayList<>();
 
@@ -186,12 +225,16 @@ public class Cstar {
             private final List<Node> possibleEffects;
             private final int subsample;
             private final DataSet _dataSet;
+            private final File origDir;
+            private final File newDir;
 
-            private Task(int subsample, List<Node> possibleCauses, List<Node> possibleEffects, DataSet _dataSet) {
+            private Task(int subsample, List<Node> possibleCauses, List<Node> possibleEffects, DataSet dataSet, File origDir, File newDir) {
                 this.subsample = subsample;
                 this.possibleCauses = possibleCauses;
                 this.possibleEffects = possibleEffects;
-                this._dataSet = _dataSet;
+                this._dataSet = dataSet;
+                this.origDir = origDir;
+                this.newDir = newDir;
             }
 
             public double[][] call() {
@@ -212,11 +255,11 @@ public class Cstar {
                     Graph cpdag = null;
                     double[][] effects = null;
 
-                    if (dir != null && new File(dir, "cpdag." + (this.subsample + 1) + ".txt").exists() &&
-                            new File(dir, "effects." + (this.subsample + 1) + ".txt").exists()) {
+                    if (new File(origDir, "cpdag." + (this.subsample + 1) + ".txt").exists() && new File(origDir, "effects." + (this.subsample + 1) + ".txt").exists()) {
                         try {
-                            cpdag = GraphSaveLoadUtils.loadGraphTxt(new File(dir, "cpdag." + (this.subsample + 1) + ".txt"));
-                            effects = loadMatrix(new File(dir, "effects." + (this.subsample + 1) + ".txt"));
+                            System.out.println("Loading CPDAG and effects from " + origDir.getAbsolutePath() + " for index " + (this.subsample + 1));
+                            cpdag = GraphSaveLoadUtils.loadGraphTxt(new File(origDir, "cpdag." + (this.subsample + 1) + ".txt"));
+                            effects = loadMatrix(new File(origDir, "effects." + (this.subsample + 1) + ".txt"));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -235,10 +278,6 @@ public class Cstar {
                             throw new IllegalArgumentException("That type of of cpdag algorithm is not configured: " + Cstar.this.cpdagAlgorithm);
                         }
 
-                        if (dir != null) {
-                            GraphSaveLoadUtils.saveGraph(cpdag, new File(dir, "cpdag." + (this.subsample + 1) + ".txt"), false);
-                        }
-
                         Ida ida = new Ida(sample, cpdag, this.possibleCauses);
 
                         effects = new double[this.possibleCauses.size()][this.possibleEffects.size()];
@@ -251,12 +290,14 @@ public class Cstar {
                                 effects[c][e] = _e != null ? _e : 0.0;
                             }
                         }
+                    }
 
-                        if (dir != null) {
-                            saveMatrix(effects, new File(dir, "effects." + (this.subsample + 1) + ".txt"));
-                        } else {
-                            saveMatrix(effects, null);
-                        }
+                    saveMatrix(effects, new File(origDir, "effects." + (this.subsample + 1) + ".txt"));
+
+                    try {
+                        GraphSaveLoadUtils.saveGraph(cpdag, new File(newDir, "cpdag." + (this.subsample + 1) + ".txt"), false);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
                     }
 
                     return effects;
@@ -269,7 +310,7 @@ public class Cstar {
         List<Callable<double[][]>> tasks = new ArrayList<>();
 
         for (int subsample = 0; subsample < this.numSubsamples; subsample++) {
-            tasks.add(new Task(subsample, possibleCauses, possibleEffects, dataSet));
+            tasks.add(new Task(subsample, possibleCauses, possibleEffects, dataSet, origDir, newDir));
         }
 
         List<double[][]> allEffects = runCallablesDoubleArray(tasks, parallelized);
@@ -280,7 +321,7 @@ public class Cstar {
             double[][] effects = allEffects.get(subsample);
 
             if (effects.length != possibleCauses.size() || effects[0].length != possibleEffects.size()) {
-                throw new IllegalStateException("Bootstrap " + (subsample + 1) + " is damaged; delete the pattern and effect files for that bootstrap and rerun");
+                throw new IllegalStateException("Length of subsample " + (subsample + 1) + "does not match the number of possible causes.");
             }
 
             List<Double> _doubles = new ArrayList<>();
@@ -295,95 +336,59 @@ public class Cstar {
             doubles.add(_doubles);
         }
 
-        class Task2 implements Callable<Boolean> {
-            private final List<Node> possibleCauses;
-            private final List<Node> possibleEffects;
-            private final int topBracket;
-
-            private Task2(List<Node> possibleCauses, List<Node> possibleEffects, int topBracket) {
-                this.possibleCauses = possibleCauses;
-                this.possibleEffects = possibleEffects;
-
-                if (topBracket == 0) {
-                    throw new IllegalArgumentException("Top bracket must be positive");
-                }
-
-                this.topBracket = topBracket;
+        try {
+            if (Cstar.this.verbose) {
+                TetradLogger.getInstance().forceLogMessage("Examining top bracket = " + this.topBracket + ".");
             }
 
-            public Boolean call() {
-                try {
-                    if (Cstar.this.verbose) {
-                        TetradLogger.getInstance().forceLogMessage("Examining top bracket = " + this.topBracket);
-                    }
+            List<Tuple> tuples = new ArrayList<>();
 
-                    List<Tuple> tuples = new ArrayList<>();
+            for (int e = 0; e < possibleEffects.size(); e++) {
+                for (int c = 0; c < possibleCauses.size(); c++) {
+                    int count = 0;
 
-                    for (int e = 0; e < this.possibleEffects.size(); e++) {
-                        for (int c = 0; c < this.possibleCauses.size(); c++) {
-                            int count = 0;
+                    for (int subsample = 0; subsample < Cstar.this.numSubsamples; subsample++) {
+                        double cutoff = doubles.get(subsample).get(this.topBracket * possibleEffects.size() - 1);
 
-                            for (int subsample = 0; subsample < Cstar.this.numSubsamples; subsample++) {
-                                if (this.topBracket > doubles.get(subsample).size()) {
-                                    throw new IllegalArgumentException("Top bracket (q) is too large; it is " + this.topBracket
-                                            + " but the number of doubles is " + doubles.get(subsample).size());
-                                }
-
-                                double cutoff = doubles.get(subsample).get(this.topBracket - 1);
-
-                                if (allEffects.get(subsample)[c][e] >= cutoff) {
-                                    count++;
-                                }
-                            }
-
-                            double pi = count / ((double) Cstar.this.numSubsamples);
-                            if (pi <= 0) continue;
-                            Node cause = this.possibleCauses.get(c);
-                            Node effect = this.possibleEffects.get(e);
-                            tuples.add(new Tuple(cause, effect, pi, avgMinEffect(this.possibleCauses, this.possibleEffects,
-                                    allEffects, cause, effect)));
+                        if (allEffects.get(subsample)[c][e] >= cutoff) {
+                            count++;
                         }
                     }
 
-                    tuples.sort((o1, o2) -> {
-                        if (o1.getPi() == o2.getPi()) {
-                            return Double.compare(o2.getMinBeta(), o1.getMinBeta());
-                        } else {
-                            return Double.compare(o2.getPi(), o1.getPi());
-                        }
-                    });
-
-                    LinkedList<Record> records = new LinkedList<>();
-
-                    for (Tuple tuple : tuples) {
-                        double avg = tuple.getMinBeta();
-
-                        Node causeNode = tuple.getCauseNode();
-                        Node effectNode = tuple.getEffectNode();
-
-                        if (tuple.getMinBeta() > selectionAlpha) {
-                            records.add(new Record(causeNode, effectNode, tuple.getPi(), avg,
-                                    possibleCauses.size()));
-                        }
-                    }
-
-                    allRecords.add(records);
-                    return true;
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    double pi = count / ((double) Cstar.this.numSubsamples);
+                    if (pi <= 0) continue;
+                    Node cause = possibleCauses.get(c);
+                    Node effect = possibleEffects.get(e);
+                    tuples.add(new Tuple(cause, effect, pi, avgMinEffect(possibleCauses, possibleEffects,
+                            allEffects, cause, effect)));
                 }
-
-                return null;
             }
+
+            tuples.sort((o1, o2) -> {
+                if (o1.getPi() == o2.getPi()) {
+                    return Double.compare(o2.getMinBeta(), o1.getMinBeta());
+                } else {
+                    return Double.compare(o2.getPi(), o1.getPi());
+                }
+            });
+
+            LinkedList<Record> records = new LinkedList<>();
+
+            for (Tuple tuple : tuples) {
+                double avg = tuple.getMinBeta();
+
+                Node causeNode = tuple.getCauseNode();
+                Node effectNode = tuple.getEffectNode();
+
+                if (tuple.getMinBeta() > selectionAlpha) {
+                    records.add(new Record(causeNode, effectNode, tuple.getPi(), avg, possibleCauses.size(), possibleEffects.size()));
+                }
+            }
+
+            allRecords.add(records);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        List<Callable<Boolean>> task2s = new ArrayList<>();
-
-        for (int topBracket : topBrackets) {
-            task2s.add(new Task2(possibleCauses, possibleEffects, topBracket));
-        }
-
-        ConcurrencyUtils.runCallables(task2s, parallelized);
 
         allRecords.sort(Comparator.comparingDouble(List::size));
 
@@ -401,9 +406,11 @@ public class Cstar {
         Graph graph = new EdgeListGraph(outNodes);
 
         for (Record record : records) {
-            graph.addNode(record.getCauseNode());
-            graph.addNode(record.getEffectNode());
-            graph.addDirectedEdge(record.getCauseNode(), record.getEffectNode());
+            if (record.getPi() > 0.5) {
+                graph.addNode(record.getCauseNode());
+                graph.addNode(record.getEffectNode());
+                graph.addDirectedEdge(record.getCauseNode(), record.getEffectNode());
+            }
         }
 
         return graph;
@@ -466,6 +473,10 @@ public class Cstar {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public File getDir() {
+        return newDir;
     }
 
     private void writeData(DataSet dataSet, File dir) {
@@ -535,6 +546,11 @@ public class Cstar {
      * Returns a text table from the given records
      */
     public String makeTable(LinkedList<Record> records, boolean printTable) {
+        String header = "# Potential Causes = " + records.get(0).getNumCauses() + "\n"
+                + "# Potential Effects = " + records.get(0).getNumEffects() + "\n" +
+                "Top Bracket (‘q’) = " + this.topBracket +
+                "\n\n";
+
         int numColumns = 6;
 
         TextTable table = new TextTable(records.size() + 1, numColumns);
@@ -570,7 +586,7 @@ public class Cstar {
             table.setToken(i + 1, column, records.get(i).getPi() <= 0.5 ? "*" : nf.format(pcer));
         }
 
-        return (printTable ? "\n" + table : "") + " s = " + p;
+        return header + table;
     }
 
     private Graph getPatternPcStable(DataSet sample) {
@@ -655,10 +671,6 @@ public class Cstar {
         return results;
     }
 
-    public void setTopBracket(int topBracket) {
-        this.topBracket = topBracket;
-    }
-
     /**
      * An enumeration of the options available for determining the CPDAG used for the algorithm.
      */
@@ -679,22 +691,25 @@ public class Cstar {
         private final double pi;
         private final double effect;
         private final int numCauses;
+        private final int numEffects;
 
         /**
          * For X->Y.
          *
-         * @param predictor X
-         * @param target    Y
-         * @param pi        The percentage of the time the predictor is a cause of the target across subsamples.
-         * @param minEffect The minimum effect size of the predictor on the target across subsamples calculated by IDA
-         * @param numCauses The number of possible causes of the target.
+         * @param predictor  X
+         * @param target     Y
+         * @param pi         The percentage of the time the predictor is a cause of the target across subsamples.
+         * @param minEffect  The minimum effect size of the predictor on the target across subsamples calculated by IDA
+         * @param numCauses  The number of possible causes of the target.
+         * @param numEffects The nuber of possible effects of the target.
          */
-        Record(Node predictor, Node target, double pi, double minEffect, int numCauses) {
+        Record(Node predictor, Node target, double pi, double minEffect, int numCauses, int numEffects) {
             this.causeNode = predictor;
             this.target = target;
             this.pi = pi;
             this.effect = minEffect;
             this.numCauses = numCauses;
+            this.numEffects = numEffects;
         }
 
         public Node getCauseNode() {
@@ -715,6 +730,10 @@ public class Cstar {
 
         public int getNumCauses() {
             return this.numCauses;
+        }
+
+        public int getNumEffects() {
+            return this.numEffects;
         }
     }
 

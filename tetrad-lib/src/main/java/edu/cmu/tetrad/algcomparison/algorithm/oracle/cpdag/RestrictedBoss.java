@@ -40,9 +40,8 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
     private ScoreWrapper score;
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-
+    // Don't delete.
     public RestrictedBoss() {
-        // Used in reflection; do not delete.
     }
 
     public RestrictedBoss(ScoreWrapper score) {

@@ -18,6 +18,7 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -71,9 +72,10 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
                 throw new IllegalArgumentException("Unknown CPDAG algorithm: " + parameters.getInt(Params.CSTAR_CPDAG_ALGORITHM));
         }
 
+        int topBracket = parameters.getInt(Params.TOP_BRACKET);
+
         cStaR.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         cStaR.setNumSubsamples(parameters.getInt(Params.NUM_SUBSAMPLES));
-        cStaR.setTopBracket(parameters.getInt(Params.TOP_BRACKET));
         cStaR.setSelectionAlpha(parameters.getDouble(Params.SELECTION_MIN_EFFECT));
         cStaR.setCpdagAlgorithm(algorithm);
         cStaR.setSampleStyle(SampleStyle.SPLIT);
@@ -107,7 +109,7 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         }
 
         List<Node> possibleCauses = new ArrayList<>(dataSet.getVariables());
-//        possibleCauses.removeAll(possibleEffects);
+        possibleCauses.removeAll(possibleEffects);
 
         if (!(dataSet instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting tabular data for CStaR.");
@@ -115,16 +117,8 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
 
         String path = parameters.getString(Params.FILE_OUT_PATH);
 
-        int i;
-
-        for (i = 1;; i++) {
-            if (!new File(path + "." + i).exists()) break;
-        }
-
-        path = path + "." + i;
-
         LinkedList<LinkedList<edu.cmu.tetrad.search.Cstar.Record>> allRecords
-                = cStaR.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, path);
+                = cStaR.getRecords((DataSet) dataSet, possibleCauses, possibleEffects, topBracket, path);
 
         if (allRecords.isEmpty()) {
             throw new IllegalStateException("There were no records.");
@@ -137,14 +131,17 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         TetradLogger.getInstance().forceLogMessage(table1);
 
         // Print table1 to file.
-        String filename = path + "/cstar_table.txt";
+        File _file = new File(cStaR.getDir(), "/cstar_table.txt");
         try {
-            PrintWriter writer = new PrintWriter(filename, "UTF-8");
+            PrintWriter writer = new PrintWriter(_file, "UTF-8");
             writer.println(table1);
             writer.close();
         } catch (IOException e) {
-            System.out.println("Error writing to file: " + filename);
+            System.out.println("Error writing to file: " + _file.getAbsolutePath());
         }
+
+        System.out.println("Files stored in : " + cStaR.getDir().getAbsolutePath() + ".");
+        JOptionPane.showMessageDialog(null, "Files stored in : " + cStaR.getDir().getAbsolutePath() + ".");
 
         return cStaR.makeGraph(this.getRecords());
     }
