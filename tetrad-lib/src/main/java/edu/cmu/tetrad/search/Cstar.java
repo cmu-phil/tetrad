@@ -144,7 +144,7 @@ public class Cstar {
 
         if (path == null || path.isEmpty()) {
             path = "cstar-out";
-            System.out.println();
+            TetradLogger.getInstance().forceLogMessage("Using path = 'cstar-out'.");
         }
 
         File origDir = null;
@@ -175,10 +175,10 @@ public class Cstar {
             throw new IllegalStateException("Could not make a new directory; perhaps file permissions need to be adjusted.");
         }
 
-        System.out.println("Creating directories for " + newDir.getAbsolutePath());
+        TetradLogger.getInstance().forceLogMessage("Creating directories for " + newDir.getAbsolutePath());
 
         newDir = new File(path);
-        System.out.println("Using files in directory " + origDir.getAbsolutePath());
+        TetradLogger.getInstance().forceLogMessage("Using files in directory " + origDir.getAbsolutePath());
 
         this.newDir = newDir;
 
@@ -187,10 +187,10 @@ public class Cstar {
 
         LinkedList<LinkedList<Record>> allRecords = new LinkedList<>();
 
-        System.out.println("Results directory = " + newDir.getAbsolutePath());
+        TetradLogger.getInstance().forceLogMessage("Results directory = " + newDir.getAbsolutePath());
 
         if (new File(origDir, "possible.causes.txt").exists() && new File(newDir, "possible.causes.txt").exists()) {
-            System.out.println("Loading data, possible causes, and possible effects from " + origDir.getAbsolutePath());
+            TetradLogger.getInstance().forceLogMessage("Loading data, possible causes, and possible effects from " + origDir.getAbsolutePath());
             possibleCauses = readVars(dataSet, origDir, "possible.causes.txt");
             possibleEffects = readVars(dataSet, origDir, "possible.effects.txt");
         }
@@ -238,7 +238,7 @@ public class Cstar {
             }
 
             public double[][] call() {
-                System.out.println("\nRunning subsample " + (this.subsample + 1) + " of " + Cstar.this.numSubsamples + ".");
+                TetradLogger.getInstance().forceLogMessage("\nRunning subsample " + (this.subsample + 1) + " of " + Cstar.this.numSubsamples + ".");
 
                 try {
                     BootstrapSampler sampler = new BootstrapSampler();
@@ -247,11 +247,11 @@ public class Cstar {
                     double[][] effects;
 
                     if (new File(origDir, "cpdag." + (this.subsample + 1) + ".txt").exists() && new File(origDir, "effects." + (this.subsample + 1) + ".txt").exists()) {
-                        System.out.println("Loading CPDAG and effects from " + origDir.getAbsolutePath() + " for index " + (this.subsample + 1));
+                        TetradLogger.getInstance().forceLogMessage("Loading CPDAG and effects from " + origDir.getAbsolutePath() + " for index " + (this.subsample + 1));
                         cpdag = GraphSaveLoadUtils.loadGraphTxt(new File(origDir, "cpdag." + (this.subsample + 1) + ".txt"));
                         effects = loadMatrix(new File(origDir, "effects." + (this.subsample + 1) + ".txt"));
                     } else {
-                        System.out.println("Sampling data for index " + (this.subsample + 1));
+                        TetradLogger.getInstance().forceLogMessage("Sampling data for index " + (this.subsample + 1));
 
                         if (Cstar.this.sampleStyle == SampleStyle.BOOTSTRAP) {
                             sampler.setWithoutReplacements(false);
@@ -264,16 +264,16 @@ public class Cstar {
                         }
 
                         if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.PC_STABLE) {
-                            System.out.println("Running PC-Stable for index " + (this.subsample + 1));
+                            TetradLogger.getInstance().forceLogMessage("Running PC-Stable for index " + (this.subsample + 1));
                             cpdag = getPatternPcStable(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.FGES) {
-                            System.out.println("Running FGES for index " + (this.subsample + 1));
+                            TetradLogger.getInstance().forceLogMessage("Running FGES for index " + (this.subsample + 1));
                             cpdag = getPatternFges(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.BOSS) {
-                            System.out.println("Running BOSS for index " + (this.subsample + 1));
+                            TetradLogger.getInstance().forceLogMessage("Running BOSS for index " + (this.subsample + 1));
                             cpdag = getPatternBoss(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.RESTRICTED_BOSS) {
-                            System.out.println("Running Restricted BOSS for index " + (this.subsample + 1));
+                            TetradLogger.getInstance().forceLogMessage("Running Restricted BOSS for index " + (this.subsample + 1));
                             cpdag = getPatternRestrictedBoss(sample, this._dataSet);
                         } else {
                             throw new IllegalArgumentException("That type of of cpdag algorithm is not configured: " + Cstar.this.cpdagAlgorithm);
@@ -283,7 +283,7 @@ public class Cstar {
 
                         effects = new double[this.possibleCauses.size()][this.possibleEffects.size()];
 
-                        System.out.println("Running IDA for index " + (this.subsample + 1));
+                        TetradLogger.getInstance().forceLogMessage("Running IDA for index " + (this.subsample + 1));
                         for (int e = 0; e < this.possibleEffects.size(); e++) {
                             Map<Node, Double> minEffects = ida.calculateMinimumEffectsOnY(this.possibleEffects.get(e));
 
@@ -294,7 +294,7 @@ public class Cstar {
                         }
                     }
 
-                    System.out.println("Saving CPDAG and effects for index " + (this.subsample + 1));
+                    TetradLogger.getInstance().forceLogMessage("Saving CPDAG and effects for index " + (this.subsample + 1));
                     saveMatrix(effects, new File(newDir, "effects." + (this.subsample + 1) + ".txt"));
 
                     try {

@@ -143,7 +143,7 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
             System.out.println("Error writing to file: " + _file.getAbsolutePath());
         }
 
-        System.out.println("Files stored in : " + cStaR.getDir().getAbsolutePath());
+        TetradLogger.getInstance().forceLogMessage("Files stored in : " + cStaR.getDir().getAbsolutePath());
 
         // This stops the program from running in R.
 //        JOptionPane.showMessageDialog(null, "Files stored in : " + cStaR.getDir().getAbsolutePath());
