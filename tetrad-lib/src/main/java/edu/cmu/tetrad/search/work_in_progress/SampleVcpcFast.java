@@ -615,9 +615,6 @@ public final class SampleVcpcFast implements IGraphSearch {
 
         TetradLogger.getInstance().log("CPDAGs", "Disambiguated CPDAGs: " + CPDAGs);
 
-        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
-
-
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
 

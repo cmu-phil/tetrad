@@ -143,8 +143,6 @@ public final class Cpc implements IGraphSearch {
         this.graph = search.search();
         this.sepsets = fas.getSepsets();
 
-        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
-
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 

@@ -127,7 +127,7 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         records = allRecords.getLast();
 
         TetradLogger.getInstance().forceLogMessage("CStaR Table");
-        String table1 = cStaR.makeTable(edu.cmu.tetrad.search.Cstar.cStar(allRecords), true);
+        String table1 = cStaR.makeTable(edu.cmu.tetrad.search.Cstar.cStar(allRecords));
         TetradLogger.getInstance().forceLogMessage(table1);
 
         // Print table1 to file.

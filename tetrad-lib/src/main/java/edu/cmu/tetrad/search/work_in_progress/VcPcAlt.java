@@ -459,9 +459,6 @@ public final class VcPcAlt implements IGraphSearch {
 
         TetradLogger.getInstance().log("patterns", "Disambiguated Patterns: " + patterns);
 
-
-        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
-
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - startTime;
 

@@ -238,41 +238,42 @@ public class Cstar {
             }
 
             public double[][] call() {
+                System.out.println("\nRunning subsample " + (this.subsample + 1) + " of " + Cstar.this.numSubsamples + ".");
+
                 try {
                     BootstrapSampler sampler = new BootstrapSampler();
                     DataSet sample;
-
-                    if (Cstar.this.sampleStyle == SampleStyle.BOOTSTRAP) {
-                        sampler.setWithoutReplacements(false);
-                        sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
-                    } else if (Cstar.this.sampleStyle == SampleStyle.SPLIT) {
-                        sampler.setWithoutReplacements(true);
-                        sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
-                    } else {
-                        throw new IllegalArgumentException("That type of sample is not configured: " + Cstar.this.sampleStyle);
-                    }
-
-                    Graph cpdag = null;
-                    double[][] effects = null;
+                    Graph cpdag;
+                    double[][] effects;
 
                     if (new File(origDir, "cpdag." + (this.subsample + 1) + ".txt").exists() && new File(origDir, "effects." + (this.subsample + 1) + ".txt").exists()) {
-                        try {
-                            System.out.println("Loading CPDAG and effects from " + origDir.getAbsolutePath() + " for index " + (this.subsample + 1));
-                            cpdag = GraphSaveLoadUtils.loadGraphTxt(new File(origDir, "cpdag." + (this.subsample + 1) + ".txt"));
-                            effects = loadMatrix(new File(origDir, "effects." + (this.subsample + 1) + ".txt"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
+                        System.out.println("Loading CPDAG and effects from " + origDir.getAbsolutePath() + " for index " + (this.subsample + 1));
+                        cpdag = GraphSaveLoadUtils.loadGraphTxt(new File(origDir, "cpdag." + (this.subsample + 1) + ".txt"));
+                        effects = loadMatrix(new File(origDir, "effects." + (this.subsample + 1) + ".txt"));
+                    } else {
+                        System.out.println("Sampling data for index " + (this.subsample + 1));
 
-                    if (cpdag == null || effects == null) {
+                        if (Cstar.this.sampleStyle == SampleStyle.BOOTSTRAP) {
+                            sampler.setWithoutReplacements(false);
+                            sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
+                        } else if (Cstar.this.sampleStyle == SampleStyle.SPLIT) {
+                            sampler.setWithoutReplacements(true);
+                            sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
+                        } else {
+                            throw new IllegalArgumentException("That type of sample is not configured: " + Cstar.this.sampleStyle);
+                        }
+
                         if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.PC_STABLE) {
+                            System.out.println("Running PC-Stable for index " + (this.subsample + 1));
                             cpdag = getPatternPcStable(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.FGES) {
+                            System.out.println("Running FGES for index " + (this.subsample + 1));
                             cpdag = getPatternFges(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.BOSS) {
+                            System.out.println("Running BOSS for index " + (this.subsample + 1));
                             cpdag = getPatternBoss(sample);
                         } else if (Cstar.this.cpdagAlgorithm == CpdagAlgorithm.RESTRICTED_BOSS) {
+                            System.out.println("Running Restricted BOSS for index " + (this.subsample + 1));
                             cpdag = getPatternRestrictedBoss(sample, this._dataSet);
                         } else {
                             throw new IllegalArgumentException("That type of of cpdag algorithm is not configured: " + Cstar.this.cpdagAlgorithm);
@@ -282,6 +283,7 @@ public class Cstar {
 
                         effects = new double[this.possibleCauses.size()][this.possibleEffects.size()];
 
+                        System.out.println("Running IDA for index " + (this.subsample + 1));
                         for (int e = 0; e < this.possibleEffects.size(); e++) {
                             Map<Node, Double> minEffects = ida.calculateMinimumEffectsOnY(this.possibleEffects.get(e));
 
@@ -292,6 +294,7 @@ public class Cstar {
                         }
                     }
 
+                    System.out.println("Saving CPDAG and effects for index " + (this.subsample + 1));
                     saveMatrix(effects, new File(newDir, "effects." + (this.subsample + 1) + ".txt"));
 
                     try {
@@ -463,18 +466,6 @@ public class Cstar {
         this.numSubsamples = numSubsamples;
     }
 
-    private DataSet readData(File dir) {
-        try {
-            DataSet dataSet = SimpleDataLoader.loadContinuousData(new File(dir, "data.txt"), "//", '*', "*", true, Delimiter.TAB);
-
-            TetradLogger.getInstance().forceLogMessage("Loaded data " + dataSet.getNumRows() + " x " + dataSet.getNumColumns());
-
-            return dataSet;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public File getDir() {
         return newDir;
     }
@@ -545,7 +536,7 @@ public class Cstar {
     /**
      * Returns a text table from the given records
      */
-    public String makeTable(LinkedList<Record> records, boolean printTable) {
+    public String makeTable(LinkedList<Record> records) {
         String header = "# Potential Causes = " + records.get(0).getNumCauses() + "\n"
                 + "# Potential Effects = " + records.get(0).getNumEffects() + "\n" +
                 "Top Bracket (‘q’) = " + this.topBracket +
