@@ -286,8 +286,9 @@ public class SemBicScore implements Score {
             double varey = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
             lik = -(double) (this.sampleSize / 2.0) * log(varey);
         } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity encountered when scoring " +
+            System.out.println("Singularity encountered when scoring " +
                     LogUtilsSearch.getScoreFact(i, parents, variables));
+            return Double.NaN;
         }
 
 

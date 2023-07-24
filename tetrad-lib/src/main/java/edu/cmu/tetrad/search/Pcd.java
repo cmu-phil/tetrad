@@ -258,8 +258,6 @@ public class Pcd implements IGraphSearch {
         rules.setKnowledge(this.knowledge);
         rules.orientImplied(this.graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + this.graph);
-
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
         this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");

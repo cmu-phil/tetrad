@@ -187,8 +187,6 @@ public class Pc implements IGraphSearch {
 
         this.numIndependenceTests = fas.getNumIndependenceTests();
 
-        this.logger.forceLogMessage("Returning this graph: " + this.graph);
-
         this.elapsedTime = MillisecondTimes.timeMillis() - startTime;
 
         this.logger.forceLogMessage("Elapsed time = " + (this.elapsedTime) / 1000. + " s");

@@ -480,7 +480,6 @@ public final class VcPc implements IGraphSearch {
         TetradLogger.getInstance().log("apparentlyNonadjacencies", "\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
         TetradLogger.getInstance().log("definitelyNonadjacencies", "\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
 //        TetradLogger.getInstance().log("CPDAG", "Disambiguated CPDAGs: " + CPDAG);
-        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
 //        logTriples();

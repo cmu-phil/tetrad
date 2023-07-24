@@ -164,8 +164,6 @@ public final class Bpc {
         ClusterUtils.logClusters(clusters, variables);
         Graph graph = convertSearchGraph(clustering);
 
-        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + graph);
-
         long stop = MillisecondTimes.timeMillis();
         long elapsed = stop - start;
 

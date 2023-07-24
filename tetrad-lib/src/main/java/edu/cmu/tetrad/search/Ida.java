@@ -212,6 +212,8 @@ public class Ida {
         SortedMap<Node, Double> minEffects = new TreeMap<>();
 
         for (Node x : this.possibleCauses) {
+            if (!(this.pattern.containsNode(x) && this.pattern.containsNode(y))) continue;
+
             LinkedList<Double> effects = getEffects(x, y);
             minEffects.put(x, effects.getFirst());
         }
@@ -228,16 +230,16 @@ public class Ida {
 
             Matrix rX = this.allCovariances.getSelection(xIndices, xIndices);
             Matrix rY = this.allCovariances.getSelection(xIndices, new int[]{yIndex});
-            Matrix bStar;
+            Matrix bStar = null;
 
             try {
                 bStar = rX.inverse().times(rY);
             } catch (SingularMatrixException e) {
-                throw new RuntimeException("Singularity encountered when regressing " +
+                System.out.println("Singularity encountered when regressing " +
                         LogUtilsSearch.getScoreFact(child, regressors));
             }
 
-            return bStar.get(0, 0);
+            return bStar != null ? bStar.get(0, 0) : 0.0;
         } catch (SingularMatrixException e) {
             throw new RuntimeException("Singularity encountered when regressing " +
                     LogUtilsSearch.getScoreFact(child, regressors));

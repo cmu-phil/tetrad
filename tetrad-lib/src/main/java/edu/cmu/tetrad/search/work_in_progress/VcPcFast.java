@@ -486,13 +486,9 @@ public final class VcPcFast implements IGraphSearch {
 
         TetradLogger.getInstance().log("apparentlyNonadjacencies", "\n Apparent Non-adjacencies" + this.apparentlyNonadjacencies);
         TetradLogger.getInstance().log("definitelyNonadjacencies", "\n Definite Non-adjacencies" + this.definitelyNonadjacencies);
-//        TetradLogger.getInstance().log("patterns", "Disambiguated Patterns: " + patterns);
-        TetradLogger.getInstance().log("graph", "\nReturning this graph: " + this.graph);
         TetradLogger.getInstance().log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         TetradLogger.getInstance().log("info", "Finishing CPC algorithm.");
-//        logTriples();
         TetradLogger.getInstance().flush();
-//        SearchGraphUtils.verifySepsetIntegrity(Map<Edge, List<Node>>, graph);
         return this.graph;
     }
 

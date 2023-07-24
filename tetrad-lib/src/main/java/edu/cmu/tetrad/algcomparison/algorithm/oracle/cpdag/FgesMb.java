@@ -55,26 +55,7 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
     @Override
     public Graph search(DataModel dataSet, Parameters parameters) {
         if (parameters.getInt(Params.NUMBER_RESAMPLING) < 1) {
-            edu.cmu.tetrad.search.FgesMb.TrimmingStyle trimmingStyle;
-
-            int anInt = parameters.getInt(Params.TRIMMING_STYLE);
-
-            switch (anInt) {
-                case 1:
-                    trimmingStyle = edu.cmu.tetrad.search.FgesMb.TrimmingStyle.NONE;
-                    break;
-                case 2:
-                    trimmingStyle = edu.cmu.tetrad.search.FgesMb.TrimmingStyle.ADJACENT_TO_TARGETS;
-                    break;
-                case 3:
-                    trimmingStyle = edu.cmu.tetrad.search.FgesMb.TrimmingStyle.MARKOV_BLANKET_GRAPH;
-                    break;
-                case 4:
-                    trimmingStyle = edu.cmu.tetrad.search.FgesMb.TrimmingStyle.SEMIDIRECTED_PATHS_TO_TARGETS;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown trimming style: " + anInt);
-            }
+            int trimmingStyle = parameters.getInt(Params.TRIMMING_STYLE);
 
             Score score = this.score.getScore(dataSet, parameters);
             edu.cmu.tetrad.search.FgesMb search = new edu.cmu.tetrad.search.FgesMb(score);
@@ -102,8 +83,15 @@ public class FgesMb implements Algorithm, HasKnowledge, UsesScoreWrapper,
             List<Node> targets = new ArrayList<>();
 
             for (String _target : _targets) {
-                targets.add(dataSet.getVariable(_target));
+                Node variable = dataSet.getVariable(_target);
+
+                if (variable == null) {
+                    throw new IllegalArgumentException("Target not in data: " + _target);
+                }
+
+                targets.add(variable);
             }
+
 
             return search.search(targets);
         } else {

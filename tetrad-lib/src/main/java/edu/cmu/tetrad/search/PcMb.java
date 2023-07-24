@@ -333,8 +333,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
 
         finishUp(start, graph);
 
-        this.logger.log("graph", "\nReturning this graph: " + graph);
-
         return graph;
     }
 
@@ -389,8 +387,6 @@ public final class PcMb implements IMbSearch, IGraphSearch {
         meekRules.setMeekPreventCycles(this.meekPreventCycles);
         meekRules.setKnowledge(this.knowledge);
         meekRules.orientImplied(graph);
-
-        this.logger.log("graph", "\nReturning this graph: " + graph);
 
         return graph;
     }

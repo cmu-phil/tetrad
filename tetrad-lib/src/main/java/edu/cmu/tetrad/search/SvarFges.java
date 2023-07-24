@@ -219,7 +219,6 @@ public final class SvarFges implements IGraphSearch, DagScorer {
 
         long endTime = MillisecondTimes.timeMillis();
         this.elapsedTime = endTime - start;
-        this.logger.log("graph", "\nReturning this graph: " + this.graph);
 
         this.logger.log("info", "Elapsed time = " + (this.elapsedTime) / 1000. + " s");
         this.logger.flush();

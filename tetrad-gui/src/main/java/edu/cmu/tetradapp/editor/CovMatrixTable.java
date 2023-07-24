@@ -236,7 +236,11 @@ class CovMatrixTable extends AbstractTableModel {
     }
 
     private String getVariableName(int matrixRow) {
-        return getCovMatrix().getVariableName(matrixRow);
+        try {
+            return getCovMatrix().getVariableName(matrixRow);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private double getValue(int matrixRow, int matrixCol) {

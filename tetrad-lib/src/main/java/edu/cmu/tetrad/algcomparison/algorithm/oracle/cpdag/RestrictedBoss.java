@@ -3,7 +3,6 @@ package edu.cmu.tetrad.algcomparison.algorithm.oracle.cpdag;
 import edu.cmu.tetrad.algcomparison.algorithm.Algorithm;
 import edu.cmu.tetrad.algcomparison.algorithm.ReturnsBootstrapGraphs;
 import edu.cmu.tetrad.algcomparison.score.ScoreWrapper;
-import edu.cmu.tetrad.algcomparison.utils.HasKnowledge;
 import edu.cmu.tetrad.algcomparison.utils.UsesScoreWrapper;
 import edu.cmu.tetrad.annotation.AlgType;
 import edu.cmu.tetrad.annotation.Bootstrapping;
@@ -13,6 +12,7 @@ import edu.cmu.tetrad.data.DataType;
 import edu.cmu.tetrad.data.Knowledge;
 import edu.cmu.tetrad.graph.EdgeListGraph;
 import edu.cmu.tetrad.graph.Graph;
+import edu.cmu.tetrad.graph.GraphUtils;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.search.PermutationSearch;
 import edu.cmu.tetrad.search.score.Score;
@@ -34,16 +34,14 @@ import java.util.*;
         algoType = AlgType.forbid_latent_common_causes
 )
 @Bootstrapping
-public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge,
+public class RestrictedBoss implements Algorithm, UsesScoreWrapper,
         ReturnsBootstrapGraphs {
     static final long serialVersionUID = 23L;
     private ScoreWrapper score;
-    private Knowledge knowledge = new Knowledge();
     private List<Graph> bootstrapGraphs = new ArrayList<>();
 
-
+    // Don't delete.
     public RestrictedBoss() {
-        // Used in reflection; do not delete.
     }
 
     public RestrictedBoss(ScoreWrapper score) {
@@ -71,6 +69,14 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge
                 targets.add(dataSet.getVariable(_target));
             }
 
+            for (Node node : targets) {
+                if (node == null) {
+                    throw new IllegalArgumentException("Targets need to be specified correctly.");
+                }
+            }
+
+            System.out.println("targets: " + targets);
+
             // We will run BOSS with the target variables Tier 2 and the rest as Tier 1,
             // with edges forbidden in Tier1, then grab all of the first layer variables
             // together with the target nodes, restrict the score to just these variables,
@@ -84,6 +90,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge
                 if (!targets.contains(node)) knowledge.addToTier(1, node.getName());
             }
             knowledge.setTierForbiddenWithin(1, true);
+//            knowledge.setTierForbiddenWithin(2, true);
 
             Score score = this.score.getScore(dataSet, parameters);
             edu.cmu.tetrad.search.Boss boss = new edu.cmu.tetrad.search.Boss(score);
@@ -113,6 +120,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge
                 if (!targets.contains(node)) knowledge.addToTier(1, node.getName());
             }
             knowledge.setTierForbiddenWithin(1, false);
+//            knowledge.setTierForbiddenWithin(2, true);
 
             score = this.score.getScore(restrictedData, parameters);
             boss = new edu.cmu.tetrad.search.Boss(score);
@@ -122,13 +130,15 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge
             permutationSearch = new PermutationSearch(boss);
             permutationSearch.setKnowledge(knowledge);
 
-            return permutationSearch.search();
+            Graph graph = permutationSearch.search();
+            graph = GraphUtils.trimGraph(targets, graph, parameters.getInt(Params.TRIMMING_STYLE));
+            return graph;
         } else {
             RestrictedBoss algorithm = new RestrictedBoss(this.score);
 
             DataSet data = (DataSet) dataModel;
             GeneralResamplingTest search = new GeneralResamplingTest(data, algorithm, parameters.getInt(Params.NUMBER_RESAMPLING), parameters.getDouble(Params.PERCENT_RESAMPLE_SIZE), parameters.getBoolean(Params.RESAMPLING_WITH_REPLACEMENT), parameters.getInt(Params.RESAMPLING_ENSEMBLE), parameters.getBoolean(Params.ADD_ORIGINAL_DATASET));
-            search.setKnowledge(this.knowledge);
+//            search.setKnowledge(this.knowledge);
 
             search.setParameters(parameters);
             Graph graph = search.search();
@@ -161,6 +171,7 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge
         params.add(Params.NUM_STARTS);
         params.add(Params.ALLOW_INTERNAL_RANDOMNESS);
         params.add(Params.TARGETS);
+        params.add(Params.TRIMMING_STYLE);
 
         return params;
     }
@@ -173,16 +184,6 @@ public class RestrictedBoss implements Algorithm, UsesScoreWrapper, HasKnowledge
     @Override
     public void setScoreWrapper(ScoreWrapper score) {
         this.score = score;
-    }
-
-    @Override
-    public Knowledge getKnowledge() {
-        return this.knowledge;
-    }
-
-    @Override
-    public void setKnowledge(Knowledge knowledge) {
-        this.knowledge = knowledge;
     }
 
     @Override

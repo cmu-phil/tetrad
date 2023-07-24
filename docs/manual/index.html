@@ -3956,28 +3956,57 @@ tabs will not appear.</p> -->
 
     <div id="cstar">
 
-        <p>The CStaR algorithm (Causal Stability Ranking, Stekhoven,
-            D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L.,
-            Maathuis, M. H., & Bühlmann, P. 2012. Causal stability
-            ranking. Bioinformatics, 28(21), 2819-2823) calculates
-            lower bounds on estimated parameters for the causally
-            sufficient case. It first runs a CPDAG algorithm and then
-            for X->Y locally about Y finds all possible orientation of
-            the edges in the CPDAG and does an estimation for each of
-            these and finds their lower bound. In the interface,
-            all nodes that are found to have significant impace on
-            a given target nodes are marked as into that target node.
-            However, the more useful thing is to look at the CStaR
-            table produced by the procedure. To see this table, either
-            run CStaR on a dataset, specifying a target node, and the
-            table will be printed out, or run Tetrad using java -jar
-            and look at the console output, or if these methods are
-            not available, turn on logging in the interface before
-            running the methods, and the table will be printed out.
-            The table is to interpreted as in the Steckhoven et al.
-            paper cited above (see), and is in the same format.
-        </p>
+        <p>The CStaR algorithm (Causal Stability Ranking, Stekhoven, D. J., Moraes, I., Sveinbjörnsson, G., Hennig, L.,
+            Maathuis, M. H., & Bühlmann, P. 2012. Causal stability ranking. Bioinformatics, 28(21), 2819-2823)
+            calculates lower bounds on estimated parameters for the causally sufficient case. It first runs a CPDAG
+            algorithm and then for X->Y locally, about Y, finds all possible orientations of the edges in the CPDAG and
+            does an estimation for each of these, and finds their lower bound. In the interface, all nodes that are
+            found in the top bracket more than 50% of the time are marked as into that target node.</p>
+        <p>The procedure is best used, however, as a command line procedure, in py-causal, rpy-causal, or Causal
+            Command. Upon running the algorithm (even in the interface), a directory of result files will be produced as
+            a record, including the dataset used, the possible causes and effects used, all of the CPDAGs used and the
+            tables of their IDA effects, and the CStaR output table itself.</p>
+        <p></p>
+        <p>Parameters.</p>
+        <p>Algorithm. This is the algorithm to use to calculate bootstrapped CPDAGs. Current options are PC Stable,
+            FGES, BOSS, or Restricted BOSS. For large datasets, we recommend Restricted BOSS, which calculates variables
+            with marginal effect on one of the targets and then runs BOSS over this restricted set.</p>
+        <p>Results Output Path. A default is “cstar-out”, which will place result-files in a subdirectory of the current
+            directory named path = “cstar-out”.[n], where n is the first index for which no such directory exists. If a
+            directory already exists at the path, then any information available in path directory will be used to
+            generate results in the path-.[n] directory.</p>
+        <p>Number of Subsamples. CStaR finds CPDAGs over subsampled data of size n / 2; this specifies how many
+            subsamples to use.</p>
+        <p>Minimum effect size. This allows a shorter table to be produced. It this is set to a value m > 0, then only
+            records with PI > m will be displayed.</p>
+        <p>Target Names. A list of names of variables (comma or space separated) can be given that are considered
+            possible effects. These will be excluded from the list of possible causes, which will be all other variables
+            in the dataset.</p>
+        <p>Top Bracket. The CStaR algorithm tries to find possible causes that regularly sort into the top set of
+            variables by minimum IDA effect. This gives the number q of variables to include in the top bracket, where 1
+            <= q <= # possible causes.</p>
+        <p>Parallelized. Yes, if the search should be parallelized, no if not. Default no.</p>
+        <p>The main results of the algorithm is table in the format of Table 1 in Stekhoven et al. here is the beginning
+            of one such table.</p>
+        <pre>
+        # Potential Causes = 19
+        # Potential Effects = 1
+        Top Bracket ('q') = 10
 
+        Index  Cause  Effect      PI  Effect    PCER
+        1    X15     X20  0.9000  0.0691  0.0035
+        2     X4     X20  0.8800  0.0888  0.0146
+        3    X18     X20  0.7200  0.0451  0.0567
+        4    X17     X20  0.7000  0.0765  0.1108
+        5    X19     X20  0.6800  0.0559  0.1924
+        6     X1     X20  0.6600  0.0635  0.3116
+        7     X3     X20  0.6600  0.0438  0.4242
+        </pre>
+        <p>Here, the number of possible causes and the number of possible effects is listed, as well as the top bracket
+            (‘q’) used to generate the table. For each record considered, its cause and effect (e.g., X15 to X20). The
+            percentage of times this cause/effect pair ended up in the top bracket is given as PI, and the minimum IDA
+            effect size for it is given in Effect. The Per Comparison Error Rate (which can only be calculated for PI >
+            0.5) is given in PCER. See the Stekhoven paper for details.</p>
     </div>
 
     <h4>Input Assumptions</h4>
@@ -4444,17 +4473,70 @@ tabs will not appear.</p> -->
             Boolean.</p> <!-- Insert the parameter descriptions here, must follow
         the same structure and naming conventions -->
 
-        public static final String TRIMMING_STYLE = "trimmingStyle";
-        public static final String NUMBER_EXPANSIONS = "numberExpansions";
+        <h3 class="parameter_description"
+            id="sampleStyle">sampleStyle</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="sampleStyle_short_desc">Sample style: 1 = Subsample, 2 = Bootstrap</span></li>
+            <li>Long Description: <span
+                    id="sampleStyle_long_desc"> Sample style: 1 = Subsample, 2 = Bootstrap </span>
+            </li>
+            <li>Default Value: <span
+                    id="sampleStyle_default_value">1</span></li>
+            <li>Lower
+                Bound: <span id="sampleStyle_lower_bound">1</span></li>
+            <li>Upper Bound: <span
+                    id="sampleStyle_upper_bound">2</span></li>
+            <li>Value Type:
+                <span id="sampleStyle_value_type">Integer</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="removeEffectNodes">removeEffectNodes</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="removeEffectNodes_short_desc">True if effect nodes should bre removed from possible causes </span></li>
+            <li>Long Description: <span
+                    id="removeEffectNodes_long_desc">True if effect nodes should be removed from possible causes </span></li>
+            <li>Default Value: <span
+                    id="removeEffectNodes_default_value">True</span></li>
+            <li>Lower
+                Bound: <span id="removeEffectNodes_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="removeEffectNodes_upper_bound"></span></li>
+            <li>Value Type:
+                <span id="removeEffectNodes_value_type">Boolean</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="piThr">piThr</h3>
+        <ul
+                class="parameter_description_list">
+            <li>Short Description: <span
+                    id="piThr_short_desc">A fixed threshold for calculating E[V] and PCER</span></li>
+            <li>Long Description: <span
+                    id="piThr_long_desc"> A fixed threshold, default 0.5 </span>
+            </li>
+            <li>Default Value: <span
+                    id="piThr_default_value">0.6</span></li>
+            <li>Lower
+                Bound: <span id="piThr_lower_bound">0</span></li>
+            <li>Upper Bound: <span
+                    id="piThr_upper_bound">1</span></li>
+            <li>Value Type:
+                <span id="piThr_value_type">Double</span></li>
+        </ul>
 
         <h3 class="parameter_description"
             id="cstarCpdagAlgorithm">cstarCpdagAlgorithm</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="cstarCpdagAlgorithm_short_desc">Algorithm: 1 = PC Stable, 2 = FGES, 3 = BOSS, 4 = Restricted BOSS</span></li>
+                    id="cstarCpdagAlgorithm_short_desc">Algorithm: 1 = PC Stable, 2 = FGES, 3 = BOSS, 4 = Restricted BOSS </span></li>
             <li>Long Description: <span
-                    id="cstarCpdagAlgorithm_long_desc">The CPDAG algorithm to use: 1 = PC Stable, 2 = FGES, 3 = BOSS, 4 = Restricted BOSS/span>
+                    id="cstarCpdagAlgorithm_long_desc">The CPDAG algorithm to use: 1 = PC Stable, 2 = FGES, 3 = BOSS, 4 = Restricted BOSS </span>
             </li>
             <li>Default Value: <span
                     id="cstarCpdagAlgorithm_default_value">4</span></li>
@@ -4990,28 +5072,28 @@ tabs will not appear.</p> -->
                     id="connected_value_type">Boolean</span></li>
         </ul>
 
-        <h3 class="parameter_description" id="cstarQ">cstarQ</h3>
+        <h3 class="parameter_description" id="topBracket">topBracket</h3>
         <ul
                 class="parameter_description_list">
             <li>Short Description: <span
-                    id="cstarQ_short_desc">Examine this q</span></li>
+                    id="topBracket_short_desc">Top bracket to look for causes in</span></li>
             <li>Long
-                Description: <span id="cstarQ_long_desc"></span></li>
+                Description: <span id="topBracket_long_desc">Top bracket, 'q'</span></li>
             <li>Default
-                Value: <span id="cstarQ_default_value">1</span></li>
+                Value: <span id="topBracket_default_value">1</span></li>
             <li>Lower Bound:
-                <span id="cstarQ_lower_bound">1</span></li>
+                <span id="topBracket_lower_bound">1</span></li>
             <li>Upper Bound: <span
-                    id="cstarQ_upper_bound">500000</span></li>
+                    id="topBracket_upper_bound">500000</span></li>
             <li>Value Type: <span
-                    id="cstarQ_value_type">Integer</span></li>
+                    id="topBracket_value_type">Integer</span></li>
         </ul>
 
         <h3 class="parameter_description"
             id="targets">targets</h3>
         <ul class="targets_list">
             <li>Short Description: <span id="targets_short_desc">Target names
-        (comma separated)</span></li>
+        (comma or space separated)</span></li>
             <li>Long Description: <span
                     id="targets_long_desc">Target names (comma or space separated).</span>
             </li>
@@ -5023,6 +5105,23 @@ tabs will not appear.</p> -->
                     id="targets_upper_bound"></span></li>
             <li>Value Type: <span
                     id="targets_value_type">String</span></li>
+        </ul>
+
+        <h3 class="parameter_description"
+            id="fileOutPath">fileOutPath</h3>
+        <ul class="fileOutPath_list">
+            <li>Short Description: <span id="fileOutPath_short_desc">Results output path</span></li>
+            <li>Long Description: <span
+                    id="fileOutPath_long_desc">Path to a directory in which results can be stored</span>
+            </li>
+            <li>Default Value: <span
+                    id="fileOutPath_default_value">cstar-out</span></li>
+            <li>Lower Bound: <span
+                    id="fileOutPath_lower_bound"></span></li>
+            <li>Upper Bound: <span
+                    id="fileOutPath_upper_bound"></span></li>
+            <li>Value Type: <span
+                    id="fileOutPath_value_type">String</span></li>
         </ul>
 
         <h3 class="parameter_description"
@@ -5049,9 +5148,9 @@ tabs will not appear.</p> -->
             id="numSubsamples">numSubsamples</h3>
         <ul class="numSubsamples_list">
             <li>Short Description: <span id="numSubsamples_short_desc">Number of
-        sumbsamples.</span></li>
+        subsamples</span></li>
             <li>Long Description: <span
-                    id="numSubsamples_long_desc"></span></li>
+                    id="numSubsamples_long_desc">Number of subsamples</span></li>
             <li>Default Value: <span
                     id="numSubsamples_default_value">50</span></li>
             <li>Lower Bound:

@@ -256,9 +256,7 @@ public class Purify {
      */
 
     public Graph search() {
-        Graph graph = getResultGraph();
-        this.logger.log("graph", "\nReturning this graph: " + graph);
-        return graph;
+        return getResultGraph();
     }
 
     private Graph getResultGraph() {
