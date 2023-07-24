@@ -604,6 +604,7 @@ public class Cstar {
 
     private Graph getPatternRestrictedBoss(DataSet sample, DataSet data) {
         RestrictedBoss restrictedBoss = new RestrictedBoss(score);
+        parameters.set(Params.TRIMMING_STYLE, 1);
         Graph g = restrictedBoss.search(sample, parameters);
         g = GraphUtils.replaceNodes(g, data.getVariables());
         return g;

@@ -3401,12 +3401,15 @@ public final class TestGrasp {
             Parameters parameters = new Parameters();
             parameters.set(Params.PENALTY_DISCOUNT, 4);
             parameters.set(Params.SELECTION_MIN_EFFECT, 0.1);
-            parameters.set(Params.NUM_SUBSAMPLES, 20);
+            parameters.set(Params.NUM_SUBSAMPLES, 50);
             parameters.set(Params.TARGETS, "DTF_16LD DTF_16LDVern DTF_23LD DTF_23SD");
             parameters.set(Params.TOP_BRACKET, 2000);
             parameters.set(Params.PARALLELIZED, false);
             parameters.set(Params.CSTAR_CPDAG_ALGORITHM, 4);
-            parameters.set(Params.FILE_OUT_PATH, "/Users/josephramsey/Desktop/cstar.out.22");
+            parameters.set(Params.FILE_OUT_PATH, "cstar-out");
+            parameters.set(Params.REMOVE_EFFECT_NODES, false);
+            parameters.set(Params.SAMPLE_STYLE, 1);
+//            parameters.set(Params.TRIMMING_STYLE, 1);
 
 //            RestrictedBoss alg = new RestrictedBoss(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
             edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore());
