@@ -109,7 +109,10 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         }
 
         List<Node> possibleCauses = new ArrayList<>(dataSet.getVariables());
-        possibleCauses.removeAll(possibleEffects);
+
+        if (parameters.getBoolean(Params.REMOVE_EFFECT_NODES)) {
+            possibleCauses.removeAll(possibleEffects);
+        }
 
         if (!(dataSet instanceof DataSet)) {
             throw new IllegalArgumentException("Expecting tabular data for CStaR.");
@@ -133,15 +136,17 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         // Print table1 to file.
         File _file = new File(cStaR.getDir(), "/cstar_table.txt");
         try {
-            PrintWriter writer = new PrintWriter(_file, "UTF-8");
+            PrintWriter writer = new PrintWriter(_file);
             writer.println(table1);
             writer.close();
         } catch (IOException e) {
             System.out.println("Error writing to file: " + _file.getAbsolutePath());
         }
 
-        System.out.println("Files stored in : " + cStaR.getDir().getAbsolutePath() + ".");
-        JOptionPane.showMessageDialog(null, "Files stored in : " + cStaR.getDir().getAbsolutePath() + ".");
+        System.out.println("Files stored in : " + cStaR.getDir().getAbsolutePath());
+
+        // This stops the program from running in R.
+//        JOptionPane.showMessageDialog(null, "Files stored in : " + cStaR.getDir().getAbsolutePath());
 
         return cStaR.makeGraph(this.getRecords());
     }
@@ -171,6 +176,7 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         parameters.add(Params.PARALLELIZED);
         parameters.add(Params.CSTAR_CPDAG_ALGORITHM);
         parameters.add(Params.FILE_OUT_PATH);
+        parameters.add(Params.REMOVE_EFFECT_NODES);
         parameters.add(Params.VERBOSE);
         return parameters;
     }
