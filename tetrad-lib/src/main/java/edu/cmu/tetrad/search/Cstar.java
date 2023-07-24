@@ -44,7 +44,7 @@ public class Cstar {
     private final ScoreWrapper score;
     private final Parameters parameters;
     private CpdagAlgorithm cpdagAlgorithm = CpdagAlgorithm.PC_STABLE;
-    private SampleStyle sampleStyle = SampleStyle.BOOTSTRAP;
+    private SampleStyle sampleStyle = SampleStyle.SUBSAMPLE;
     private boolean verbose;
     private File newDir = null;
 
@@ -256,7 +256,7 @@ public class Cstar {
                         if (Cstar.this.sampleStyle == SampleStyle.BOOTSTRAP) {
                             sampler.setWithoutReplacements(false);
                             sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
-                        } else if (Cstar.this.sampleStyle == SampleStyle.SPLIT) {
+                        } else if (Cstar.this.sampleStyle == SampleStyle.SUBSAMPLE) {
                             sampler.setWithoutReplacements(true);
                             sample = sampler.sample(this._dataSet, this._dataSet.getNumRows() / 2);
                         } else {
@@ -670,7 +670,7 @@ public class Cstar {
     /**
      * An enumeration of the methods for selecting samples from the full dataset.
      */
-    public enum SampleStyle {BOOTSTRAP, SPLIT}
+    public enum SampleStyle {BOOTSTRAP, SUBSAMPLE}
 
     /**
      * Represents a single record in the returned table for CSTaR.

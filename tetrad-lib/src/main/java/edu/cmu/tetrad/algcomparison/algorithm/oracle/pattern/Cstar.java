@@ -18,7 +18,6 @@ import edu.cmu.tetrad.util.Parameters;
 import edu.cmu.tetrad.util.Params;
 import edu.cmu.tetrad.util.TetradLogger;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -72,13 +71,26 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
                 throw new IllegalArgumentException("Unknown CPDAG algorithm: " + parameters.getInt(Params.CSTAR_CPDAG_ALGORITHM));
         }
 
+        SampleStyle sampleStyle;
+
+        switch (parameters.getInt(Params.SAMPLE_STYLE)) {
+            case 1:
+                sampleStyle = SampleStyle.SUBSAMPLE;
+                break;
+            case 2:
+                sampleStyle = SampleStyle.BOOTSTRAP;
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown sample style: " + parameters.getInt(Params.SAMPLE_STYLE));
+        }
+
         int topBracket = parameters.getInt(Params.TOP_BRACKET);
 
         cStaR.setParallelized(parameters.getBoolean(Params.PARALLELIZED));
         cStaR.setNumSubsamples(parameters.getInt(Params.NUM_SUBSAMPLES));
         cStaR.setSelectionAlpha(parameters.getDouble(Params.SELECTION_MIN_EFFECT));
         cStaR.setCpdagAlgorithm(algorithm);
-        cStaR.setSampleStyle(SampleStyle.SPLIT);
+        cStaR.setSampleStyle(sampleStyle);
         cStaR.setVerbose(parameters.getBoolean(Params.VERBOSE));
 
         List<Node> possibleEffects = new ArrayList<>();
@@ -177,6 +189,7 @@ public class Cstar implements Algorithm, UsesScoreWrapper, TakesIndependenceWrap
         parameters.add(Params.CSTAR_CPDAG_ALGORITHM);
         parameters.add(Params.FILE_OUT_PATH);
         parameters.add(Params.REMOVE_EFFECT_NODES);
+        parameters.add(Params.SAMPLE_STYLE);
         parameters.add(Params.VERBOSE);
         return parameters;
     }
