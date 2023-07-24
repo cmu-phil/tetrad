@@ -3970,7 +3970,9 @@ tabs will not appear.</p> -->
         <p>Parameters.</p>
         <p>Algorithm. This is the algorithm to use to calculate bootstrapped CPDAGs. Current options are PC Stable,
             FGES, BOSS, or Restricted BOSS. For large datasets, we recommend Restricted BOSS, which calculates variables
-            with marginal effect on one of the targets and then runs BOSS over this restricted set.</p>
+            For large datasets, we recommend Restricted BOSS, which calculates variables as a superset of the
+            anteriority of the targets and then runs BOSS over this restricted set. and then runs BOSS over this
+            restricted set. </p>
         <p>Results Output Path. A default is “cstar-out”, which will place result-files in a subdirectory of the current
             directory named path = “cstar-out”.[n], where n is the first index for which no such directory exists. If a
             directory already exists at the path, then any information available in path directory will be used to

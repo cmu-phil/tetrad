@@ -3389,15 +3389,6 @@ public final class TestGrasp {
 
             System.out.println(data.getNumColumns());
 
-            Knowledge knowledge = new Knowledge();
-            List<Node> variables = data.getVariables();
-
-            for (int i = 0; i < variables.size() - 1; i++) {
-                knowledge.addToTier(1, variables.get(i).getName());
-            }
-
-            knowledge.addToTier(2, variables.get(variables.size() - 1).getName());
-
             Parameters parameters = new Parameters();
             parameters.set(Params.PENALTY_DISCOUNT, 4);
             parameters.set(Params.SELECTION_MIN_EFFECT, 0.1);
@@ -3409,7 +3400,6 @@ public final class TestGrasp {
             parameters.set(Params.FILE_OUT_PATH, "cstar-out.2");
             parameters.set(Params.REMOVE_EFFECT_NODES, false);
             parameters.set(Params.SAMPLE_STYLE, 1);
-//            parameters.set(Params.TRIMMING_STYLE, 1);
 
 //            RestrictedBoss alg = new RestrictedBoss(new edu.cmu.tetrad.algcomparison.score.SemBicScore());
             edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar alg = new edu.cmu.tetrad.algcomparison.algorithm.oracle.pattern.Cstar(new FisherZ(), new edu.cmu.tetrad.algcomparison.score.SemBicScore());
