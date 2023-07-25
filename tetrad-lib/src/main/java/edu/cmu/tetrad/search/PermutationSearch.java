@@ -108,28 +108,28 @@ public class PermutationSearch {
      * @return The CPDAG.
      */
     public Graph search() {
-        List<int[]> tasks = new ArrayList<>();
+        List<Node> prefix;
         if (!this.knowledge.isEmpty() && this.knowledge.getVariablesNotInTiers().isEmpty()) {
-            int start, end = 0;
+            int start = 0;
+            List<Node> suborder;
             for (int i = 0; i < this.knowledge.getNumTiers(); i++) {
-                start = end;
-                for (String name : this.knowledge.getTier(i)) {
+                prefix = new ArrayList<>(this.order);
+                List<String> tier = this.knowledge.getTier(i);
+                for (String name : tier) {
                     this.order.add(this.nodeMap.get(name));
-                    end++;
+                    if (!this.knowledge.isTierForbiddenWithin(i)) continue;
+                    suborder = this.order.subList(start++, this.order.size());
+                    this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
                 }
-                if (!this.knowledge.isTierForbiddenWithin(i)) {
-                    tasks.add(new int[]{start, end});
-                }
+                if (this.knowledge.isTierForbiddenWithin(i)) continue;
+                suborder = this.order.subList(start, this.order.size());
+                this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
+                start = this.order.size();
             }
         } else {
+            prefix = Collections.emptyList();
             this.order.addAll(this.variables);
-            tasks.add(new int[]{0, this.variables.size()});
-        }
-
-        for (int[] task : tasks) {
-            List<Node> prefix = new ArrayList<>(this.order.subList(0, task[0]));
-            List<Node> suborder = this.order.subList(task[0], task[1]);
-            this.suborderSearch.searchSuborder(prefix, suborder, this.gsts);
+            this.suborderSearch.searchSuborder(prefix, this.order, this.gsts);
         }
 
         return getGraph(this.variables, this.suborderSearch.getParents(), this.knowledge, true);
