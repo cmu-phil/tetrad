@@ -133,7 +133,9 @@ public class TextFileUtils {
                                     skipLine = true;
                                     byteBuffer.clear();
                                 } else {
-                                    if (byteBuffer.position() > 0) {
+
+                                    // Do not delete this casting; it is needed to fix a versioning problem.
+                                    if (((java.nio.Buffer) buffer).position() > 0) {
                                         byteBuffer.flip();
                                         while (byteBuffer.hasRemaining() && !Thread.currentThread().isInterrupted()) {
                                             byte c = byteBuffer.get();
