@@ -105,10 +105,13 @@ public class NLSemSimulation implements Simulation {
                     }
                 }
 
+                if (Pa.isEmpty()) {
+                    data.setColumn(k, StatUtils.standardizeData(data.getColumn(k)));
+                    continue;
+                }
+                
                 // Parents effect
-
-                if (Pa.isEmpty()) continue;
-
+                
                 double low = parameters.getDouble(Params.COEF_LOW);
                 double high = parameters.getDouble(Params.COEF_HIGH);
                 double beta = RandomUtil.getInstance().nextUniform(low, high);
