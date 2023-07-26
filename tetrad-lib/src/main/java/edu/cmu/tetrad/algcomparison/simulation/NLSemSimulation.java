@@ -6,17 +6,14 @@ import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
 import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.distribution.MultivariateNormalDistribution;
-import org.apache.commons.math3.linear.BlockRealMatrix;
-import org.apache.commons.math3.linear.EigenDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.commons.math3.linear.MatrixUtils.*;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
@@ -97,58 +94,46 @@ public class NLSemSimulation implements Simulation {
                     }
                 }
 
-                if (Pa.isEmpty()) continue;
+                // Parents effect
 
-//                RealMatrix cov = new BlockRealMatrix(sampleSize, sampleSize);
-//
-//                for (int j = 0; j < sampleSize; j++) {
-//                    for (int l = 0; l <= j; l++) {
-//                        double d = 0;
-//                        for (Node z : Pa) {
-//                            int w = indices.get(z);
-//                            d +=  pow(data.getEntry(j, w) - data.getEntry(l, w), 2);
-//                        }
-//                        cov.setEntry(j, l, exp(- d / Pa.size() / sampleSize));
-//                        cov.setEntry(l, j, cov.getEntry(j, l));
-//                    }
-//                    RealMatrix XX = cov.getSubMatrix(j, j, j, j);
-//                    if (j > 0) {
-//                        RealMatrix XY = cov.getSubMatrix(j, j, 0, j - 1);
-//                        RealMatrix YY = cov.getSubMatrix(0, j - 1, 0, j - 1);
-//                        RealMatrix B = XY.multiply(MatrixUtils.inverse(YY));
-//                        XX = XX.subtract(B.multiply(XY.transpose()));
-//                    }
-//                    System.out.println(XX);
-//                }
+                if (Pa.isEmpty()) continue;
 
                 double low = parameters.getDouble(Params.COEF_LOW);
                 double high = parameters.getDouble(Params.COEF_HIGH);
                 double beta = RandomUtil.getInstance().nextUniform(low, high);
                 double[] mu = new double[sampleSize];
 
-                RealMatrix kernel = new BlockRealMatrix(sampleSize, sampleSize);
-                double[][] cov = new double[sampleSize][sampleSize];
+                RealMatrix kernel = createRealMatrix(sampleSize, sampleSize);
+                RealMatrix cov = createRealMatrix(sampleSize, sampleSize);
 
                 for (Node z : Pa) {
                     int w = indices.get(z);
                     for (int j = 0; j < sampleSize; j++) {
                         mu[j] = beta * data.getEntry(j, w);
                         for (int l = 0; l < sampleSize; l++) {
-                            kernel.addToEntry(j, l, abs(data.getEntry(j, w) - data.getEntry(l, w)) / Pa.size());
+                            kernel.addToEntry(j, l, pow(data.getEntry(j, w) - data.getEntry(l, w), 2) / Pa.size());
                         }
                     }
                 }
 
                 for (int j = 0; j < sampleSize; j++) {
                     for (int l = 0; l < sampleSize; l++) {
-                        cov[j][l] = exp(-kernel.getEntry(j, l));
+                        // Should the -1 be a tunable parameter?
+                        cov.setEntry(j, l, exp(-1 * kernel.getEntry(j, l)));
                     }
                 }
 
-                MultivariateNormalDistribution N = new MultivariateNormalDistribution(mu, cov);
-                double[] X = N.sample();
+                SingularValueDecomposition svd = new SingularValueDecomposition(cov);
+                RealMatrix S = svd.getS();
+                RealMatrix N = createRealMatrix(sampleSize, 1);
                 for (int j = 0; j < sampleSize; j++) {
-                    data.addToEntry(j, k, X[j]);
+                    S.setEntry(j, j, sqrt(S.getEntry(j, j)));
+                    N.setEntry(j, 0, RandomUtil.getInstance().nextNormal(0, 1));
+                }
+                double[] X = svd.getU().multiply(S).multiply(N).getColumn(0);
+
+                for (int j = 0; j < sampleSize; j++) {
+                    data.addToEntry(j, k, mu[j] + X[j]);
                 }
 
                 data.setColumn(k, StatUtils.standardizeData(data.getColumn(k)));
