@@ -3394,7 +3394,7 @@ public final class TestGrasp {
             parameters.set(Params.SELECTION_MIN_EFFECT, 0.1);
             parameters.set(Params.NUM_SUBSAMPLES, 100);
             parameters.set(Params.TARGETS, "DTF_16LD DTF_16LDVern DTF_23LD DTF_23SD");
-            parameters.set(Params.TOP_BRACKET, 200);
+            parameters.set(Params.TOP_BRACKET, 500);
             parameters.set(Params.PARALLELIZED, false);
             parameters.set(Params.CSTAR_CPDAG_ALGORITHM, 4);
             parameters.set(Params.FILE_OUT_PATH, "cstar-out.2.1");
