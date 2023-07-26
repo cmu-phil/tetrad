@@ -5,15 +5,20 @@ import edu.cmu.tetrad.algcomparison.graph.SingleGraph;
 import edu.cmu.tetrad.data.*;
 import edu.cmu.tetrad.graph.Graph;
 import edu.cmu.tetrad.graph.Node;
-import edu.cmu.tetrad.util.*;
-import org.apache.commons.math3.linear.*;
+import edu.cmu.tetrad.util.Parameters;
+import edu.cmu.tetrad.util.Params;
+import edu.cmu.tetrad.util.RandomUtil;
+import edu.cmu.tetrad.util.StatUtils;
+import org.apache.commons.math3.linear.BlockRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.commons.math3.linear.MatrixUtils.*;
+import static org.apache.commons.math3.linear.MatrixUtils.createRealMatrix;
 import static org.apache.commons.math3.util.FastMath.*;
 
 /**
@@ -92,6 +97,12 @@ public class NLSemSimulation implements Simulation {
                     for (int j = 0; j < sampleSize; j++) {
                         data.setEntry(j, k, RandomUtil.getInstance().nextGumbel(mu, beta));
                     }
+                } else if (errorType == 5) {
+                    double shape = parameters.getDouble(Params.SIMULATION_PARAM1);
+                    double scale = parameters.getDouble(Params.SIMULATION_PARAM2);
+                    for (int j = 0; j < sampleSize; j++) {
+                        data.setEntry(j, k, RandomUtil.getInstance().nextGamma(shape, scale));
+                    }
                 }
 
                 // Parents effect
@@ -152,7 +163,7 @@ public class NLSemSimulation implements Simulation {
                 dataSet = DataUtils.shuffleColumns(dataSet);
             }
 
-            dataSet.setName("" + (i + 1));
+            dataSet.setName(String.valueOf(i + 1));
             this.dataSets.add(dataSet);
         }
     }
