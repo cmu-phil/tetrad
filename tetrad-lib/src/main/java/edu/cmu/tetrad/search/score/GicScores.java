@@ -130,8 +130,9 @@ public class GicScores implements Score {
         try {
             varry = SemBicScore.getVarRy(i, parents, data, covariances, calculateRowSubsets);
         } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity encountered when scoring " +
+            System.out.println("Singularity encountered when scoring " +
                     LogUtilsSearch.getScoreFact(i, parents, variables));
+            return Double.NaN;
         }
 
         double lambda;

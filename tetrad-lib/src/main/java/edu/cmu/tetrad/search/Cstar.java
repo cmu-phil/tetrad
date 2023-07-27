@@ -238,6 +238,10 @@ public class Cstar {
             }
 
             public double[][] call() {
+                if (Thread.currentThread().isInterrupted()) {
+                    return null;
+                }
+
                 TetradLogger.getInstance().forceLogMessage("\nRunning subsample " + (this.subsample + 1) + " of " + Cstar.this.numSubsamples + ".");
 
                 try {

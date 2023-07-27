@@ -131,8 +131,9 @@ public class PoissonPriorScore implements Score {
         try {
             varRy = SemBicScore.getVarRy(i, parents, this.data, this.covariances, this.calculateRowSubsets);
         } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity encountered when scoring " +
+            System.out.println("Singularity encountered when scoring " +
                     LogUtilsSearch.getScoreFact(i, parents, variables));
+            return Double.NaN;
         }
 
         double r = k * log(lambda);

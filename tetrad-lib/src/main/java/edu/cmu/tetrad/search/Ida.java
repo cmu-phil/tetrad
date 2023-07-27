@@ -223,27 +223,22 @@ public class Ida {
 
     // x must be the first regressor.
     private double getBeta(List<Node> regressors, Node child) {
+        int yIndex = this.nodeIndices.get(child.getName());
+        int[] xIndices = new int[regressors.size()];
+        for (int i = 0; i < regressors.size(); i++) xIndices[i] = this.nodeIndices.get(regressors.get(i).getName());
+
+        Matrix rX = this.allCovariances.getSelection(xIndices, xIndices);
+        Matrix rY = this.allCovariances.getSelection(xIndices, new int[]{yIndex});
+        Matrix bStar = null;
+
         try {
-            int yIndex = this.nodeIndices.get(child.getName());
-            int[] xIndices = new int[regressors.size()];
-            for (int i = 0; i < regressors.size(); i++) xIndices[i] = this.nodeIndices.get(regressors.get(i).getName());
-
-            Matrix rX = this.allCovariances.getSelection(xIndices, xIndices);
-            Matrix rY = this.allCovariances.getSelection(xIndices, new int[]{yIndex});
-            Matrix bStar = null;
-
-            try {
-                bStar = rX.inverse().times(rY);
-            } catch (SingularMatrixException e) {
-                System.out.println("Singularity encountered when regressing " +
-                        LogUtilsSearch.getScoreFact(child, regressors));
-            }
-
-            return bStar != null ? bStar.get(0, 0) : 0.0;
+            bStar = rX.inverse().times(rY);
         } catch (SingularMatrixException e) {
-            throw new RuntimeException("Singularity encountered when regressing " +
+            System.out.println("Singularity encountered when regressing " +
                     LogUtilsSearch.getScoreFact(child, regressors));
         }
+
+        return bStar != null ? bStar.get(0, 0) : 0.0;
     }
 
     /**

@@ -206,6 +206,10 @@ public class Boss implements SuborderSearch {
         int curr = 0;
 
         while (itr.hasNext()) {
+            if (Thread.currentThread().isInterrupted()) {
+                return false;
+            }
+
             Node z = itr.next();
 
             // THE CORRECTNESS OF THIS NEEDS TO BE VERIFIED
