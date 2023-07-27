@@ -126,7 +126,7 @@ public final class Knowledge implements TetradSerializable {
 //                    + "string of such characters.");
 //        }
 
-        return spec.replace(".", "\\.");
+        return spec;//.replace(".", "\\.");
     }
 
     private Set<String> getExtent(String spec) {
