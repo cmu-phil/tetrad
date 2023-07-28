@@ -61,8 +61,11 @@ public class GeneralResamplingTest {
             case 3:
                 this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
                 break;
+            case 4:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Threshold;
+                break;
             default:
-                throw new IllegalArgumentException("Expecting 1, 2, or 3.");
+                throw new IllegalArgumentException("Expecting 1, 2, 3 or 4.");
         }
     }
 
@@ -88,8 +91,11 @@ public class GeneralResamplingTest {
             case 3:
                 this.edgeEnsemble = ResamplingEdgeEnsemble.Majority;
                 break;
+            case 4:
+                this.edgeEnsemble = ResamplingEdgeEnsemble.Threshold;
+                break;
             default:
-                throw new IllegalArgumentException("Expecting 1, 2, or 3.");
+                throw new IllegalArgumentException("Expecting 1, 2, 3, or 4.");
         }
     }
 
