@@ -17,5 +17,9 @@ public enum ResamplingEdgeEnsemble {
     Highest,
 
     // Choose an edge iff its prob. > .5 even it's nil.
-    Majority
+    Majority,
+
+    // Choose an edge iff its prob. > some user-defimed threshold (even it's nil,
+    // which means that that there is no edge).
+    Threshold,
 }

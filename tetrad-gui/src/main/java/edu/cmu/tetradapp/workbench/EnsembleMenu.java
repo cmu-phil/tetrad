@@ -28,6 +28,7 @@ import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 /**
  * Mar 19, 2023 1:45:50 AM
@@ -49,6 +50,7 @@ public class EnsembleMenu extends JMenu {
         JMenuItem highestEnsemble = new JMenuItem(ResamplingEdgeEnsemble.Highest.name());
         JMenuItem majorityEnsemble = new JMenuItem(ResamplingEdgeEnsemble.Majority.name());
         JMenuItem preservedEnsemble = new JMenuItem(ResamplingEdgeEnsemble.Preserved.name());
+        JMenuItem thresholdEnsemble = new JMenuItem(ResamplingEdgeEnsemble.Threshold.name());
 
         highestEnsemble.addActionListener(action -> {
             Graph workbenchGraph = graphWorkbench.getGraph();
@@ -61,11 +63,9 @@ public class EnsembleMenu extends JMenu {
                     graphWorkbench.setSamplingGraph(samplingGraph);
                 }
 
-                if (samplingGraph != null) {
-                    graphWorkbench.setGraph(
-                            GraphSampling.createDisplayGraph(samplingGraph,
-                                    ResamplingEdgeEnsemble.Highest));
-                }
+                graphWorkbench.setGraph(
+                        GraphSampling.createDisplayGraph(samplingGraph,
+                                ResamplingEdgeEnsemble.Highest));
             } else {
                 graphWorkbench.setSamplingGraph(null);
             }
@@ -81,11 +81,9 @@ public class EnsembleMenu extends JMenu {
                     graphWorkbench.setSamplingGraph(samplingGraph);
                 }
 
-                if (samplingGraph != null) {
-                    graphWorkbench.setGraph(
-                            GraphSampling.createDisplayGraph(samplingGraph,
-                                    ResamplingEdgeEnsemble.Majority));
-                }
+                graphWorkbench.setGraph(
+                        GraphSampling.createDisplayGraph(samplingGraph,
+                                ResamplingEdgeEnsemble.Majority));
             } else {
                 graphWorkbench.setSamplingGraph(null);
             }
@@ -101,11 +99,51 @@ public class EnsembleMenu extends JMenu {
                     graphWorkbench.setSamplingGraph(samplingGraph);
                 }
 
-                if (samplingGraph != null) {
-                    graphWorkbench.setGraph(
-                            GraphSampling.createDisplayGraph(samplingGraph,
-                                    ResamplingEdgeEnsemble.Preserved));
+                graphWorkbench.setGraph(
+                        GraphSampling.createDisplayGraph(samplingGraph,
+                                ResamplingEdgeEnsemble.Preserved));
+            } else {
+                graphWorkbench.setSamplingGraph(null);
+            }
+        });
+        thresholdEnsemble.addActionListener(action -> {
+            Graph workbenchGraph = graphWorkbench.getGraph();
+            if (isSamplingGraph(workbenchGraph)) {
+                while (true) {
+                    String response = JOptionPane.showInputDialog(graphWorkbench,
+                            "Please enter a treshold between 0 and 1:",
+                            "Threshold",
+                            JOptionPane.QUESTION_MESSAGE);
+
+                    if (response != null) {
+                        try {
+                            double threshold = Double.parseDouble(response);
+
+                            if (threshold < 0 || threshold > 1) {
+                                throw new NumberFormatException();
+                            }
+
+                            Preferences.userRoot().putDouble("edge.ensemble.threshold", threshold);
+                            break;
+                        } catch (NumberFormatException e) {
+                            // try again.
+                        }
+                    } else {
+                        return;
+                    }
                 }
+
+                Graph samplingGraph = graphWorkbench.getSamplingGraph();
+
+                // replace the original sampling graph if it's a different sampling graph
+                if (!isSameGraph(samplingGraph, workbenchGraph)) {
+                    samplingGraph = workbenchGraph;
+                    graphWorkbench.setSamplingGraph(samplingGraph);
+                }
+
+                graphWorkbench.setGraph(
+                        GraphSampling.createDisplayGraph(samplingGraph,
+                                ResamplingEdgeEnsemble.Threshold));
             } else {
                 graphWorkbench.setSamplingGraph(null);
             }
@@ -114,14 +152,7 @@ public class EnsembleMenu extends JMenu {
         add(highestEnsemble);
         add(majorityEnsemble);
         add(preservedEnsemble);
-    }
-
-    private boolean isEmptyGraph(Graph graph) {
-        if (graph == null) {
-            return true;
-        }
-
-        return graph.getEdges().isEmpty();
+        add(thresholdEnsemble);
     }
 
     private boolean isSamplingGraph(Graph graph) {

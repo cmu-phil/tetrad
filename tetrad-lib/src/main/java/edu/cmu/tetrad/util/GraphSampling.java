@@ -6,6 +6,7 @@ import edu.cmu.tetrad.graph.EdgeTypeProbability.EdgeType;
 import edu.pitt.dbmi.algo.resampling.ResamplingEdgeEnsemble;
 
 import java.util.*;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 /**
@@ -190,6 +191,13 @@ public final class GraphSampling {
                     break;
                 case Majority:
                     if (noEdgeProb > maxEdgeProb || maxEdgeProb < .5) {
+                        highestEdgeTypeProb = null;
+                    }
+                    break;
+                case Threshold:
+                    double threshold = Preferences.userRoot().getDouble("edge.ensemble.threshold", .5);
+
+                    if (noEdgeProb > maxEdgeProb || maxEdgeProb < threshold) {
                         highestEdgeTypeProb = null;
                     }
                     break;
