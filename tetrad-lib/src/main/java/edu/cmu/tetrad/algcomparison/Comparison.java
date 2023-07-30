@@ -48,6 +48,7 @@ import org.reflections.Reflections;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.nio.file.Files;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -202,7 +203,7 @@ public class Comparison {
             File dir = new File(resultsPath);
             dir.mkdirs();
             File file = new File(dir, outputFileName);
-            this.out = new PrintStream(new FileOutputStream(file));
+            this.out = new PrintStream(Files.newOutputStream(file.toPath()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -564,7 +565,7 @@ public class Comparison {
 
                 }
 
-                PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
+                PrintStream out = new PrintStream(Files.newOutputStream(new File(subdir, "parameters.txt").toPath()));
                 out.println(simulationWrapper.getDescription());
                 out.println(simulationWrapper.getSimulationSpecificParameters());
                 out.close();
@@ -589,7 +590,7 @@ public class Comparison {
         dir.mkdirs();
 
         try {
-            PrintStream _out = new PrintStream(new FileOutputStream(new File(dir, "parameters.txt")));
+            PrintStream _out = new PrintStream(Files.newOutputStream(new File(dir, "parameters.txt").toPath()));
             _out.println(simulation.getDescription());
             _out.println(parameters);
             _out.close();
@@ -660,7 +661,7 @@ public class Comparison {
         try {
             new File(path).mkdirs();
 
-            PrintStream out = new PrintStream(new FileOutputStream(new File(path, "Configuration.txt")));
+            PrintStream out = new PrintStream(Files.newOutputStream(new File(path, "Configuration.txt").toPath()));
 
             Parameters allParams = new Parameters();
 

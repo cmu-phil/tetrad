@@ -34,6 +34,8 @@ import edu.cmu.tetrad.search.work_in_progress.IndTestCramerT;
 import edu.pitt.dbmi.data.reader.Delimiter;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,7 +83,7 @@ public class YeastPcCcdSearchWrapper {
         OutputStream s2 = null;
 
         try {
-            s1 = new FileOutputStream(outverbosefile);
+            s1 = Files.newOutputStream(Paths.get(outverbosefile));
         } catch (IOException e) {
             System.out.println("Cannot open file file " + outverbosefile);
             System.exit(0);
@@ -90,7 +92,7 @@ public class YeastPcCcdSearchWrapper {
         DataOutputStream d1 = new DataOutputStream(s1);
 
         try {
-            s2 = new FileOutputStream(outsummaryfile);
+            s2 = Files.newOutputStream(Paths.get(outsummaryfile));
         } catch (IOException e) {
             System.out.println("Cannot open file file " + outsummaryfile);
             System.exit(0);
