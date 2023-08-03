@@ -29,6 +29,7 @@ import edu.cmu.tetrad.util.TetradLogger;
 import edu.cmu.tetrad.util.TextTable;
 import edu.cmu.tetradapp.model.RegressionRunner;
 import edu.cmu.tetradapp.workbench.GraphWorkbench;
+import org.apache.commons.math3.linear.SingularMatrixException;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -180,6 +181,14 @@ public class RegressionEditor extends JPanel {
      * Runs the regression, resetting the text output and graph output.
      */
     private void runRegression() {
+
+        try {
+            this.runner.execute();
+        } catch (SingularMatrixException e) {
+            JOptionPane.showMessageDialog(this, "Singular matrix exception.  Try removing redundant      variables.");
+            throw e;
+        }
+
         this.runner.execute();
         Graph graph = this.runner.getOutGraph();
         LayoutUtil.circleLayout(graph, 200, 200, 150);

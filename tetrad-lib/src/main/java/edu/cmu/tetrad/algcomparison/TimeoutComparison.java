@@ -46,6 +46,7 @@ import org.reflections.Reflections;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -507,7 +508,7 @@ public class TimeoutComparison {
                     }
                 }
 
-                PrintStream out = new PrintStream(new FileOutputStream(new File(subdir, "parameters.txt")));
+                PrintStream out = new PrintStream(Files.newOutputStream(new File(subdir, "parameters.txt").toPath()));
                 out.println(simulationWrapper.getDescription());
 //                out.println();
                 out.println(simulationWrapper.getSimulationSpecificParameters());
@@ -525,7 +526,7 @@ public class TimeoutComparison {
         try {
             new File(path).mkdirs();
 
-            PrintStream out = new PrintStream(new FileOutputStream(new File(path, "Configuration.txt")));
+            PrintStream out = new PrintStream(Files.newOutputStream(new File(path, "Configuration.txt").toPath()));
 
             Parameters allParams = new Parameters();
 

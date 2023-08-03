@@ -96,7 +96,9 @@ public class TextFileUtils {
                         }
                     } else {
                         if (currChar == TextFileUtils.CARRIAGE_RETURN || currChar == TextFileUtils.LINE_FEED) {
-                            byteBuffer.clear();
+
+                            // Do not delete this casting; it is needed to fix a versioning problem.
+                            ((java.nio.Buffer)byteBuffer).clear();
                             reqCheck = prefix.length > 0;
 
                             if (!(currChar == TextFileUtils.LINE_FEED && prevChar == TextFileUtils.CARRIAGE_RETURN)) {
@@ -114,7 +116,9 @@ public class TextFileUtils {
                                         index = 0;
                                         skipLine = true;
                                         prevNonBlankChar = TextFileUtils.SPACE_CHAR;
-                                        byteBuffer.clear();
+
+                                        // Do not delete this casting; it is needed to fix a versioning problem.
+                                        ((java.nio.Buffer)byteBuffer).clear();
 
                                         prevChar = currChar;
                                         continue;
@@ -131,9 +135,13 @@ public class TextFileUtils {
                                 if (skip > 0) {
                                     skip--;
                                     skipLine = true;
-                                    byteBuffer.clear();
+
+                                    // Do not delete this casting; it is needed to fix a versioning problem.
+                                    ((java.nio.Buffer)byteBuffer).clear();
                                 } else {
-                                    if (byteBuffer.position() > 0) {
+
+                                    // Do not delete this casting; it is needed to fix a versioning problem.
+                                    if (((java.nio.Buffer) buffer).position() > 0) {
                                         byteBuffer.flip();
                                         while (byteBuffer.hasRemaining() && !Thread.currentThread().isInterrupted()) {
                                             byte c = byteBuffer.get();
@@ -145,7 +153,9 @@ public class TextFileUtils {
                                                 }
                                             }
                                         }
-                                        byteBuffer.clear();
+
+                                        // Do not delete this casting; it is needed to fix a versioning problem.
+                                        ((java.nio.Buffer)byteBuffer).clear();
                                     }
 
                                     if (currChar == quoteChar) {
